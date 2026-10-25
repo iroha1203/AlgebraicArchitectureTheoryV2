@@ -1,4 +1,4 @@
-//! 固定観測状態の局所系。自由位置を補わず、恒等coverの有限matchingを計算する。
+//! 固定観測状態の局所系。支持coverの有限matchingを計算する。
 use super::{
     PreparedObserved,
     build_result::{Builder, Part},
@@ -25,6 +25,8 @@ use crate::{
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "local_compare.rs"]
 mod comparison;
+#[path = "local_geometry.rs"]
+mod geometry;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -44,6 +46,7 @@ struct System {
     equation: NodeRef,
     domain: NodeRef,
     inhabited: bool,
+    patch_count: usize,
     fixed_positions: Vec<Fact>,
 }
 #[derive(Clone, Debug)]
@@ -417,6 +420,9 @@ fn compute(
         let mut common: Option<(Vec<Json>, Vec<Fact>)> = None;
         let mut readings = vec![];
         let mut reading_refs = vec![];
+        let mut patches = vec![];
+        let mut read_supports = vec![];
+        let mut truth = vec![];
         let mut retained = std::collections::BTreeSet::new();
         for (
             declaration,
@@ -436,20 +442,17 @@ fn compute(
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
+            patches.push(geometry::Support {
+                carrier: carrier.clone(),
+                positions: positions.clone(),
+            });
             if let Some((prior_carrier, prior_positions)) = &mut common {
-                if locals.is_empty() {
-                    if prior_carrier != &carrier || prior_positions != &positions {
-                        return Err(unsupported("異なる支持contextのLaw族の局所系は未実装"));
-                    }
-                } else {
-                    // 必要支持を集めるだけで公開権限を足さない。作者のlocalで後から被覆検査する。
-                    prior_carrier.extend(carrier);
-                    prior_carrier.sort_by_key(Json::canonical);
-                    prior_carrier.dedup();
-                    prior_positions.extend(positions);
-                    prior_positions.sort();
-                    prior_positions.dedup();
-                }
+                prior_carrier.extend(carrier);
+                prior_carrier.sort_by_key(Json::canonical);
+                prior_carrier.dedup();
+                prior_positions.extend(positions);
+                prior_positions.sort();
+                prior_positions.dedup();
             } else {
                 common = Some((carrier, positions));
             }
@@ -533,6 +536,7 @@ fn compute(
                 expressions.push(expression);
                 continue;
             }
+            truth.push(row.guard == Some(false) || row.predicate == Some(true));
             inhabited &= row.guard == Some(false) || row.predicate == Some(true);
             let law = b.push(
                 NodeType::LawInstance,
@@ -609,6 +613,18 @@ fn compute(
                 if !retained.insert(key) {
                     continue;
                 }
+                let (read_carrier, read_positions) =
+                    super::environment::local_read::implicit_support(
+                        &fixed,
+                        read.expression,
+                        &read.bindings,
+                        reading,
+                        c,
+                    )?;
+                read_supports.push(geometry::Support {
+                    carrier: read_carrier,
+                    positions: read_positions,
+                });
                 let bs = read
                     .bindings
                     .iter()
@@ -673,300 +689,72 @@ fn compute(
         }
         let mut fixed_positions = positions.clone();
         for reference in &carrier {
-            let Json::Obj(reference) = reference else { return Err("局所carrierが参照でない".into()); };
-            let Some(Json::Arr(value)) = reference.get("value") else { return Err("局所carrierの値がない".into()); };
-            let [Json::Str(snapshot), Json::Str(subject)] = value.as_slice() else { return Err("局所carrierが原始参照でない".into()); };
-            fixed_positions.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: None, atom: None });
+            let Json::Obj(reference) = reference else {
+                return Err("局所carrierが参照でない".into());
+            };
+            let Some(Json::Arr(value)) = reference.get("value") else {
+                return Err("局所carrierの値がない".into());
+            };
+            let [Json::Str(snapshot), Json::Str(subject)] = value.as_slice() else {
+                return Err("局所carrierが原始参照でない".into());
+            };
+            fixed_positions.push(Fact {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                field: None,
+                atom: None,
+            });
         }
-        let carrier_size = carrier.len();
         let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
-        let mut slot_values = vec![];
-        let mut slot_subjects = vec![];
-        for position in &positions {
-            c.checkpoint(super::control::Checkpoint::Localize)?;
-            let subject = env.subject(&position.snapshot, &position.subject)?;
-            let reference = change_result::value(
-                &mut b,
-                &Scalar::Subject {
-                    snapshot: position.snapshot.clone(),
-                    subject: position.subject.clone(),
-                    entity: subject.ty.clone(),
-                },
-            )?;
-            slot_subjects.push(reference);
-            slot_values.push(Json::obj([
-                ("subject", reference.wire()),
-                (
-                    "field",
-                    Json::str(position.field.as_ref().ok_or("固定位置にfieldがない")?),
-                ),
-            ]));
+        if !locals.is_empty() {
+            patches = vec![geometry::Support {
+                carrier: carrier.clone(),
+                positions: positions.clone(),
+            }];
+            read_supports = vec![patches[0].clone(); readings.len()];
         }
-        let slots = Json::Arr(slot_values);
-        let unit = change_result::value(&mut b, &Scalar::Unit)?;
-        let point = domain(&mut b, &Type::Unit, &[unit])?;
-        let elements = if inhabited { vec![unit] } else { vec![] };
-        let states = domain(&mut b, &Type::Unit, &elements)?;
-        let action = state_map(&mut b, point, point, &[(unit, unit)])?;
-        let space = b.push(
-            NodeType::Construction(T::StateSpace),
-            "state_space",
-            Json::obj([
-                ("base", target.wire()),
-                ("slots", Json::Arr(vec![])),
-                ("state_type", Type::Unit.wire()),
-            ]),
-            vec![target],
-            None,
-            None,
-        )?;
-        let candidates = b.push(
-            NodeType::Construction(T::CandidateSpace),
-            "candidate_space",
-            Json::obj([
-                ("kind", Json::str("identity")),
-                ("base", target.wire()),
-                ("bindings", Json::Arr(vec![])),
-                ("parameters", point.wire()),
-                ("states", space.wire()),
-                ("action", action.wire()),
-                ("instances", Json::Arr(vec![])),
-                ("guards", Json::Arr(vec![])),
-                ("requirements", refs(&laws)),
-            ]),
-            [target, point, space, action]
-                .into_iter()
-                .chain(laws.iter().copied())
-                .collect(),
-            None,
-            None,
-        )?;
-        let representation =
-            Json::obj([("kind", Json::str("finite")), ("values", refs(&elements))]);
-        let semantic = b.push(
-            NodeType::Construction(T::SolutionSet),
-            "solution_set",
-            Json::obj([
-                ("domain", candidates.wire()),
-                ("requirements", refs(&laws)),
-                ("representation", representation.clone()),
-            ]),
-            [candidates, states]
-                .into_iter()
-                .chain(laws.iter().copied())
-                .collect(),
-            None,
-            None,
-        )?;
-        let equations = b.push(
-            NodeType::Construction(T::EquationSpace),
-            "equation_space",
-            Json::obj([
-                ("base", target.wire()),
-                ("variables", Json::Arr(vec![])),
-                ("fixed", slots.clone()),
-                ("parameters", point.wire()),
-                ("requirements", refs(&laws)),
-            ]),
-            [target, point]
-                .into_iter()
-                .chain(laws.iter().copied())
-                .chain(slot_subjects.iter().copied())
-                .collect(),
-            None,
-            None,
-        )?;
-        let equation = b.push(
-            NodeType::Construction(T::EquationSolutionSet),
-            "equation_solutions",
-            Json::obj([
-                ("domain", equations.wire()),
-                ("representation", representation),
-            ]),
-            vec![equations, states],
-            None,
-            None,
-        )?;
-        let context = b.push(
-            NodeType::Construction(T::Context),
-            "context",
-            Json::obj([
-                ("base", target.wire()),
-                ("locals", Json::Arr(local_instances)),
-                ("carrier", Json::Arr(carrier)),
-                ("dependencies", slots),
-                ("readings", Json::Arr(readings)),
-                ("law_coordinates", refs(&laws)),
-            ]),
-            std::iter::once(target)
-                .chain(laws.iter().copied())
-                .chain(reading_refs)
-                .chain(slot_subjects)
-                .collect(),
-            None,
-            None,
-        )?;
-        b.parts[context.0 - base].scope.merge(&local_scope);
-        let pairs = elements.iter().map(|r| (*r, *r)).collect::<Vec<_>>();
-        let identity = state_map(&mut b, states, states, &pairs)?;
-        let arrow = b.push(
-            NodeType::Construction(T::ContextMap),
-            "context_map",
-            Json::obj([
-                ("source", context.wire()),
-                ("target", context.wire()),
-                (
-                    "images",
-                    Json::Arr((0..carrier_size).map(|i| Json::Nat(i as u64)).collect()),
-                ),
-                ("restrictions", refs(&[identity])),
-            ]),
-            vec![context, identity],
-            None,
-            None,
-        )?;
-        let overlap = b.push(
-            NodeType::Construction(T::Overlap),
-            // 恒等contextの引戻しとその射影はcontextの閉包構成である。
-            "context",
-            Json::obj([
-                ("left", context.wire()),
-                ("right", context.wire()),
-                ("context", context.wire()),
-                ("left_projection", arrow.wire()),
-                ("right_projection", arrow.wire()),
-            ]),
-            vec![context, arrow],
-            None,
-            None,
-        )?;
-        let adequacy = b.proposition(
-            "cover_adequate",
-            vec![context],
-            vec![],
-            Decision::Established,
-        )?;
-        let cover = b.push(
-            NodeType::Construction(T::Cover),
-            "cover",
-            Json::obj([
-                ("base", context.wire()),
-                ("patches", refs(&[context])),
-                ("overlaps", refs(&[overlap])),
-                ("adequacy", adequacy.wire()),
-            ]),
-            vec![context, overlap, adequacy],
-            None,
-            None,
-        )?;
-        let topology = b.push(
-            NodeType::Construction(T::Topology),
-            "topology",
-            Json::obj([
-                ("contexts", refs(&[context])),
-                ("maps", refs(&[arrow])),
-                ("generators", refs(&[cover])),
-                (
-                    "covering_sieves",
-                    Json::Arr(vec![Json::obj([
-                        ("base", context.wire()),
-                        ("arrows", refs(&[arrow])),
-                    ])]),
-                ),
-            ]),
-            vec![context, arrow, cover],
-            None,
-            None,
-        )?;
-        let mut checks = vec![];
-        let mut restrictions = vec![];
-        for side in ["equation", "semantic"] {
-            restrictions.push(Json::obj([
-                ("side", Json::str(side)),
-                ("arrow", arrow.wire()),
-                ("map", identity.wire()),
-            ]));
-            for (scope, object) in [("cover", cover), ("topology", topology)] {
-                let proposition = b.proposition(
-                    "sheaf_condition",
-                    vec![object, identity],
-                    vec![],
-                    Decision::Established,
-                )?;
-                checks.push((
-                    proposition,
-                    Json::obj([
-                        ("scope", Json::str(scope)),
-                        ("side", Json::str(side)),
-                        ("proposition", proposition.wire()),
-                    ]),
-                ));
+        let built = match geometry::build(
+            env,
+            &mut b,
+            target,
+            &laws,
+            &truth,
+            &patches,
+            geometry::Support { carrier, positions },
+            &readings,
+            &read_supports,
+            &reading_refs,
+            &local_instances,
+            &local_scope,
+            c,
+        ) {
+            Ok(built) => built,
+            Err(ValidationFailure::Stop(stop)) => {
+                // 完成済みの型付き断片だけを転送し、未完成のLocalSystemを公開しない。
+                let mut reason = Reason::stopped(&request.id, stop);
+                let mut scope = Scope::default();
+                for (index, part) in b.parts.iter().enumerate() {
+                    scope.merge(&part.scope);
+                    if matches!(part.ty, NodeType::Construction(T::Context | T::ContextMap | T::Overlap | T::Cover | T::Topology)) {
+                        reason.dependencies.push(NodeRef(base + index));
+                    }
+                }
+                return Ok(Source {base,parts:b.parts,scope_domains,
+                    answer:Answer {id:request.id.clone(),status:Decision::Undetermined,
+                        outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons:vec![reason],scope},
+                    request:request.clone(),witness:witness.clone(),system:None});
             }
-        }
-        let mut fields = BTreeMap::from([
-            ("base".into(), target.wire()),
-            ("laws".into(), refs(&laws)),
-            ("contexts".into(), refs(&[context])),
-            ("maps".into(), refs(&[arrow])),
-            ("cover".into(), cover.wire()),
-            ("topology".into(), topology.wire()),
-            (
-                "semantic_states".into(),
-                Json::Arr(vec![Json::obj([
-                    ("context", context.wire()),
-                    ("parameters", semantic.wire()),
-                    ("state_image", states.wire()),
-                    ("action", identity.wire()),
-                ])]),
-            ),
-            (
-                "equation_states".into(),
-                Json::Arr(vec![Json::obj([
-                    ("context", context.wire()),
-                    ("space", equations.wire()),
-                    ("solutions", equation.wire()),
-                ])]),
-            ),
-            ("restrictions".into(), Json::Arr(restrictions)),
-            (
-                "state_comparisons".into(),
-                Json::Arr(vec![Json::obj([
-                    ("context", context.wire()),
-                    ("map", identity.wire()),
-                    ("conditions", Json::Arr(vec![])),
-                ])]),
-            ),
-            (
-                "sheaf_checks".into(),
-                Json::Arr(checks.iter().map(|(_, v)| v.clone()).collect()),
-            ),
-        ]);
-        for name in [
-            "coefficients",
-            "coefficient_restrictions",
-            "actions",
-            "presentations",
-            "polynomial_inclusions",
-            "residual_restrictions",
-            "conditions",
-        ] {
-            fields.insert(name.into(), Json::Arr(vec![]));
-        }
-        let system = b.push(
-            NodeType::Construction(T::LocalSystem),
-            "local_system",
-            Json::Obj(fields),
-            [
-                target, context, arrow, cover, topology, semantic, states, equations, equation,
-                identity,
-            ]
-            .into_iter()
-            .chain(laws.iter().copied())
-            .chain(checks.iter().map(|(r, _)| *r))
-            .collect(),
-            None,
-            None,
-        )?;
+            Err(failure) => return Err(failure),
+        };
+        let geometry::Built {
+            system,
+            adequacy,
+            point,
+            semantic,
+            equation,
+            states,
+            patch_count,
+        } = built;
         let label = change_result::value(&mut b, &Scalar::Text("local_system".into()))?;
         let proposition = b.proposition(
             "constructible",
@@ -1003,6 +791,7 @@ fn compute(
                 equation,
                 domain: states,
                 inhabited,
+                patch_count,
                 fixed_positions,
             }),
         })
@@ -1107,10 +896,10 @@ fn diagnose(
         parts: vec![],
     };
     let unit = change_result::value(&mut b, &Scalar::Unit)?;
-    let tuple = change_result::value(&mut b, &Scalar::Tuple(vec![Scalar::Unit]))?;
+    let tuple = change_result::value(&mut b, &Scalar::Tuple(vec![Scalar::Unit; system.patch_count]))?;
     let matching = domain(
         &mut b,
-        &Type::Tuple(vec![Type::Unit]),
+        &Type::Tuple(vec![Type::Unit; system.patch_count]),
         &if system.inhabited {
             vec![tuple]
         } else {
@@ -1314,6 +1103,22 @@ impl Environment<'_> {
                 &mut self.control.clone(),
             )
         })?;
+        if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
+            if let ReasonKind::Stop(stop) = &r.kind { Some(stop.clone()) } else { None }
+        }) {
+            return Err(ValidationFailure::Stop(stop));
+        }
+        if d.source.answer.reasons.iter().any(|r|matches!(r.kind,ReasonKind::Stop(_))) {
+            if rebuilt.scope_domains != d.source.scope_domains
+                || !rebuilt.parts.starts_with(&d.source.parts)
+                || d.source.system.is_some()
+                || d.source.answer.status != Decision::Undetermined
+                || !d.source.answer.outputs.is_empty()
+                || d.source.answer.claim.is_some()
+            { return Err("局所系の停止断片の再構成が違う".into()); }
+            self.remember_local_source(d.source.clone());
+            return Ok(());
+        }
         if rebuilt.scope_domains != d.source.scope_domains
             || rebuilt.parts != d.source.parts
             || rebuilt.answer != d.source.answer
@@ -1350,7 +1155,7 @@ pub(super) fn validate_answer(
                 .find(|r| {
                     matches!(
                         r.kind,
-                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. }
+                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. } | ReasonKind::Stop(_)
                     )
                 })
                 .and_then(|r| r.dependencies.first())

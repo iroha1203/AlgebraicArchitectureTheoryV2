@@ -939,10 +939,14 @@ fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
             "l=localize($a.object)",
         ],
     );
-    assert_ne!(r.code, 0);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
-    assert!(!has(get(&answers[2], "outputs"), "system"));
+    assert!(has(get(&answers[2], "outputs"), "system"));
+    let system = get(output(&result, 2, "system"), "value");
+    assert_eq!(arr(get(system,"contexts")).len(),2);
+    let cover=get(node(&result,get(system,"cover")),"value");
+    assert_eq!(arr(get(cover,"patches")).len(),2);
     assert_eq!(
         get(output(&result, 1, "value"), "value").value,
         archsig::json::JValue::Bool(true)
@@ -1885,4 +1889,271 @@ fn matching_display_values_do_not_replace_the_operation_action_or_system_identit
     let answer = &arr(get(&result, "answers"))[5];
     assert_eq!(s(get(answer, "status")), "undetermined");
     assert!(format!("{:?}", get(answer, "reasons")).contains("unsupported_algorithm"));
+}
+
+fn implicit_multiple_input(name: &str, left: bool, right: Option<bool>) -> std::path::PathBuf {
+    let dir = multiple_read_input(name, left, right, "t.flag,t.other");
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(
+        path,
+        law.replace("local here(t:State) reads t.flag,t.other;", ""),
+    )
+    .unwrap();
+    dir
+}
+
+#[test]
+fn implicit_support_cover_has_actual_intersections_and_matching_families() {
+    for (left, right) in [(true, true), (false, true), (true, false)] {
+        let dir = implicit_multiple_input("implicit-cover", left, Some(right));
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "v=evaluate(Fixed.current,on=$e.diagnostic.global.domain.base,s=@fixed/s)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if left && right { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(arr(get(system, "contexts")).len(), 4);
+        assert_eq!(arr(get(system, "maps")).len(), 9);
+        let cover = get(node(&j, get(system, "cover")), "value");
+        let patches = arr(get(cover, "patches"));
+        assert_eq!(patches.len(), 2);
+        assert!(patches.iter().all(|p| p.value != get(cover, "base").value));
+        assert_eq!(arr(get(cover, "overlaps")).len(), 4);
+        let topology = get(node(&j, get(system, "topology")), "value");
+        assert_eq!(arr(get(topology, "covering_sieves")).len(), 5);
+        let bottom = arr(get(system, "contexts"))
+            .iter()
+            .map(|r| get(node(&j, r), "value"))
+            .find(|v| arr(get(v, "dependencies")).is_empty())
+            .unwrap();
+        assert_eq!(arr(get(bottom, "carrier")).len(), 1);
+        assert!(arr(get(bottom, "law_coordinates")).is_empty());
+        for patch in patches {
+            let p = get(node(&j, patch), "value");
+            assert_eq!(arr(get(p, "dependencies")).len(), 1);
+            assert_eq!(arr(get(p, "law_coordinates")).len(), 1);
+        }
+        for check in arr(get(system, "sheaf_checks")) {
+            assert_eq!(
+                s(get(
+                    get(node(&j, get(check, "proposition")), "judgment"),
+                    "status"
+                )),
+                "established"
+            );
+        }
+        for i in [2, 3] {
+            assert_eq!(
+                s(get(&arr(get(&j, "answers"))[i], "status")),
+                if left && right {
+                    "established"
+                } else {
+                    "refuted"
+                }
+            );
+            let diagnostic = get(output(&j, i, "diagnostic"), "value");
+            let matching = get(node(&j, get(diagnostic, "matching")), "value");
+            assert_eq!(
+                arr(get(matching, "elements")).len(),
+                usize::from(left && right)
+            );
+            if left && right {
+                let tuple = node(&j, &arr(get(matching, "elements"))[0]);
+                assert_eq!(arr(get(tuple, "value")).len(), 2);
+            }
+        }
+        assert_eq!(
+            get(output(&j, 4, "value"), "value").value,
+            archsig::json::JValue::Bool(left)
+        );
+    }
+}
+
+#[test]
+fn implicit_support_cover_preserves_missing_and_saved_reuse() {
+    for right in [Some(true), None] {
+        let dir = implicit_multiple_input("implicit-cover-reuse", true, right);
+        let asks = [
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "d=diagnose($l.system)",
+            "n=needed($l)",
+        ];
+        let first = execute(&dir, "out", &asks);
+        assert_eq!(
+            first.code,
+            if right.is_some() { 0 } else { 2 },
+            "{} {}",
+            first.stdout,
+            first.stderr
+        );
+        let before = result_json(&dir, &first);
+        if right.is_none() {
+            assert!(!has(
+                get(&arr(get(&before, "answers"))[1], "outputs"),
+                "system"
+            ));
+            let plan = get(output(&before, 3, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.other")
+            );
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let second = run(&dir, &args);
+        assert_eq!(
+            second.code, first.code,
+            "{} {}",
+            second.stdout, second.stderr
+        );
+        let after = result_json(&dir, &second);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&before, field).value, get(&after, field).value);
+        }
+    }
+}
+
+#[test]
+fn support_closure_stop_retains_completed_contexts_without_claiming_a_system() {
+    use archsig::observed::{
+        control::{Checkpoint, Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        input::InputSources,
+    };
+    use std::{cell::Cell, rc::Rc};
+    let dir = implicit_multiple_input("implicit-closure-stop", true, Some(true));
+    let sources = || {
+        InputSources::from_bytes(
+            vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),
+            std::fs::read(dir.join("a.json")).unwrap(),
+        )
+    };
+    let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object)"];
+    let seen = Rc::new(Cell::new(0usize));
+    let count = seen.clone();
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Localize {
+            count.set(count.get() + 1);
+        }
+        Usage::default()
+    });
+    let normal = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+    assert_eq!(normal.status(), "complete");
+    let total = seen.get();
+    for mode in 0..3 {
+        let mut retained = false;
+        // 実際の実行長から途中位置を選ぶ。特定のcheckpoint件数を契約にしない。
+        for stop in 1..total {
+            let mut count = 0;
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: Some(1),
+                },
+                move |point| {
+                    if point == Checkpoint::Localize {
+                        count += 1;
+                    }
+                    if count >= stop {
+                        match mode {
+                            0 => Usage {
+                                elapsed_ms: 2,
+                                ..Usage::default()
+                            },
+                            1 => Usage {
+                                memory_mib: 2,
+                                ..Usage::default()
+                            },
+                            _ => Usage {
+                                signal: Some(archsig::result::Signal::Term),
+                                ..Usage::default()
+                            },
+                        }
+                    } else {
+                        Usage::default()
+                    }
+                },
+            );
+            let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+            let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
+            let answer = &arr(get(&j, "answers"))[1];
+            assert!(
+                arr(get(answer, "reasons"))
+                    .iter()
+                    .all(|r| s(get(r, "code")) != "internal"),
+                "stop {stop}/{total}: {answer:?}"
+            );
+            let contexts = arr(get(&j, "nodes"))
+                .iter()
+                .filter(|n| {
+                    has(get(n, "rule"), "name")
+                        && s(get(get(n, "rule"), "name")) == "context"
+                        && has(get(n, "value"), "readings")
+                        && !arr(get(get(n, "value"), "readings")).is_empty()
+                })
+                .count();
+            if !has(get(answer, "outputs"), "system") && contexts > 0 {
+                retained = true;
+                assert_eq!(s(get(answer, "status")), "undetermined");
+                assert!(!has(answer, "claim"));
+                let reason = arr(get(answer, "reasons"))
+                    .iter()
+                    .find(|r| {
+                        s(get(r, "code"))
+                            == if mode == 2 {
+                                "cancelled"
+                            } else {
+                                "budget_exhausted"
+                            }
+                    })
+                    .unwrap_or_else(|| panic!("stop {stop}/{total}: {answer:?}"));
+                assert!(!arr(get(reason, "dependencies")).is_empty());
+                for r in arr(get(reason, "dependencies")) {
+                    node(&j, r);
+                }
+                assert!(
+                    arr(get(&j, "nodes"))
+                        .iter()
+                        .all(|n| !has(get(n, "rule"), "name")
+                            || s(get(get(n, "rule"), "name")) != "local_system")
+                );
+            }
+        }
+        assert!(
+            retained,
+            "mode {mode}, checkpoints {total}: closure fragments were lost"
+        );
+    }
 }
