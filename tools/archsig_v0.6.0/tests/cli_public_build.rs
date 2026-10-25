@@ -629,3 +629,116 @@ fn integer_fields_keep_all_finite_guard_rows_and_feed_later_checks() {
     assert_eq!(arr(get(algebra, "circuits")).len(), 4);
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn unsupported_integer_order_presentation_keeps_the_object_for_checks_and_localization() {
+    for (tag, body, expected) in [
+        ("less", "c.quantity<2", true),
+        ("greater", "c.quantity>2", false),
+    ] {
+        let dir = files(
+            &format!("build-order-{tag}"),
+            &format!("view amount(c:Part):Z=c.quantity; law required ordered(c:Part):{body};"),
+            false,
+        );
+        let requests = [
+            "b=build(R,on=@v/root)",
+            "v=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "c=check(R.ordered,on=$b.object,c=@v/q)",
+            "l=localize($b.object,law=R.ordered,c=@v/q)",
+            "d=diagnose($l.system)",
+            "n=needed($b)",
+        ];
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "partial", 2);
+        let b = answer(&result, "b");
+        assert_eq!(s(get(b, "status")), "undetermined");
+        assert!(has(get(b, "outputs"), "object"));
+        assert!(!has(get(b, "outputs"), "algebra"));
+        let reasons = arr(get(b, "reasons"));
+        assert!(!reasons.is_empty());
+        for reason in reasons {
+            assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+            assert_eq!(s(get(get(reason, "details"), "question")), "build");
+            assert_eq!(
+                s(get(get(reason, "details"), "method")),
+                "integer_order_equation_presentation"
+            );
+            assert!(!arr(get(reason, "dependencies")).is_empty());
+            assert!(arr(get(reason, "missing")).is_empty());
+        }
+        assert_eq!(
+            s(value(
+                &result,
+                get(get(answer(&result, "v"), "outputs"), "value")
+            )),
+            "1"
+        );
+        for id in ["c", "d"] {
+            assert_eq!(
+                s(get(answer(&result, id), "status")),
+                if expected { "established" } else { "refuted" }
+            );
+        }
+        assert_eq!(s(get(answer(&result, "l"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        for reason in reasons {
+            assert!(arr(get(plan, "blockers")).contains(reason));
+        }
+
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+            "--time-ms",
+            "120000",
+        ];
+        for r in requests {
+            args.extend(["--ask", r]);
+        }
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, run.code, "{} {}", reused.stdout, reused.stderr);
+        let again = result_json(&dir, &reused);
+        assert_eq!(get(&again, "answers").value, get(&result, "answers").value);
+        assert_eq!(get(&again, "nodes").value, get(&result, "nodes").value);
+    }
+}
+
+#[test]
+fn unsupported_order_presentation_does_not_replace_an_unobserved_value() {
+    let dir = files(
+        "build-order-missing",
+        "view amount(c:Part):Z=c.quantity; law required ordered(c:Part):c.quantity<2;",
+        true,
+    );
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "v=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "c=check(R.ordered,on=$b.object,c=@v/q)",
+            "n=needed($b)",
+        ],
+    );
+    let result = saved(&dir, &run, "partial", 2);
+    assert!(has(get(answer(&result, "b"), "outputs"), "object"));
+    assert!(!has(get(answer(&result, "b"), "outputs"), "algebra"));
+    for id in ["v", "c"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "undetermined");
+    }
+    assert!(!has(get(answer(&result, "v"), "outputs"), "value"));
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+        let field = get(r, "field");
+        s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
+    }));
+}
