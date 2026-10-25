@@ -1,6 +1,6 @@
 //! 観測位置の全単射から局所状態とordered Čech座標の実写像を作る。
 use super::*;
-use crate::archmap::{Slot, Value};
+use crate::archmap::Slot;
 use integer_fiber::Matrix;
 use std::collections::BTreeSet;
 
@@ -8,17 +8,20 @@ pub(in crate::observed::local_result) struct Maps {
     pub forward: Vec<Matrix>,
     pub inverse: Option<Vec<Matrix>>,
 }
-pub(in crate::observed::local_result) struct Renaming {
+pub(in crate::observed::local_result) struct Renaming<'a> {
+    law: &'a crate::law::CheckedLaw,
     fields: BTreeMap<(String, String, Option<String>), Fact>,
 }
-impl Renaming {
+impl<'a> Renaming<'a> {
     pub(in crate::observed::local_result) fn operation(
         g: &Graph,
+        law: &'a crate::law::CheckedLaw,
         along: NodeRef,
         c: &mut Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         let op = public_compose::op(g, along)?;
         let mut rename = Renaming {
+            law,
             fields: BTreeMap::new(),
         };
         for (source, image) in op
@@ -81,7 +84,14 @@ impl Renaming {
                 else {
                     return Ok(false);
                 };
-                if sf.ty != tf.ty || !self.value(x, y, c)? {
+                if sf.ty != tf.ty {
+                    return Ok(false);
+                }
+                let (Some(x), Some(y)) = (
+                    crate::observed::environment::scalar_from(x, &sf.ty, self.law, c)?,
+                    crate::observed::environment::scalar_from(y, &tf.ty, self.law, c)?,
+                ) else { return Ok(false); };
+                if !self.binding(&x, &y, c)? {
                     return Ok(false);
                 }
             }
@@ -178,86 +188,6 @@ impl Renaming {
         );
         Some(Json::Obj(fields))
     }
-    fn value(&self, a: &Value, b: &Value, c: &mut Control) -> Result<bool, ValidationFailure> {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            Ok(match (a, b) {
-                (
-                    Value::Ref { snapshot, subject },
-                    Value::Ref {
-                        snapshot: bs,
-                        subject: bu,
-                    },
-                ) => self
-                    .subject(snapshot, subject)
-                    .is_some_and(|f| f.snapshot == *bs && f.subject == *bu),
-                (Value::Tuple(a), Value::Tuple(b)) | (Value::List(a), Value::List(b)) => {
-                    if a.len() != b.len() {
-                        return Ok(false);
-                    }
-                    for (a, b) in a.iter().zip(b) {
-                        if !self.value(a, b, c)? {
-                            return Ok(false);
-                        }
-                    }
-                    true
-                }
-                (Value::Set(a), Value::Set(b)) => {
-                    if a.len() != b.len() {
-                        return Ok(false);
-                    }
-                    for a in a {
-                        let mut found = false;
-                        for b in b {
-                            found |= self.value(a, b, c)?;
-                        }
-                        if !found {
-                            return Ok(false);
-                        }
-                    }
-                    true
-                }
-                (Value::Map(a), Value::Map(b)) => {
-                    if a.len() != b.len() {
-                        return Ok(false);
-                    }
-                    for (ak, av) in a {
-                        let mut found = false;
-                        for (bk, bv) in b {
-                            found |= self.value(ak, bk, c)? && self.value(av, bv, c)?;
-                        }
-                        if !found {
-                            return Ok(false);
-                        }
-                    }
-                    true
-                }
-                (Value::Option(Some(a)), Value::Option(Some(b))) => self.value(a, b, c)?,
-                (
-                    Value::Data {
-                        constructor: a,
-                        args: x,
-                    },
-                    Value::Data {
-                        constructor: b,
-                        args: y,
-                    },
-                ) => {
-                    if a != b || x.len() != y.len() {
-                        return Ok(false);
-                    }
-                    for (a, b) in x.iter().zip(y) {
-                        if !self.value(a, b, c)? {
-                            return Ok(false);
-                        }
-                    }
-                    true
-                }
-                (Value::Term(_), _) | (_, Value::Term(_)) => false,
-                _ => a == b,
-            })
-        })
-    }
     pub(in crate::observed::local_result) fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -311,6 +241,8 @@ impl Renaming {
                     for (x,y) in x.iter().zip(y) { if !self.binding(x,y,c)? { return Ok(false); } }
                     true
                 }
+                (Scalar::Term(_), Scalar::Term(_)) =>
+                    crate::observed::value_equality::equal(a, b, self.law, c)? == Some(true),
                 (Scalar::Path(a), Scalar::Path(b)) => self.path(a, b, c)?,
                 (Scalar::Path(_) | Scalar::Term(_), _) | (_, Scalar::Path(_) | Scalar::Term(_)) => false,
                 _ => a == b,
@@ -486,7 +418,7 @@ pub(in crate::observed::local_result) fn between(
     {
         return Ok(None);
     }
-    let Some(rename) = Renaming::operation(g, along, c)? else {
+    let Some(rename) = Renaming::operation(g, env.inputs.law(), along, c)? else {
         return Ok(None);
     };
     if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, true, c)? {
@@ -706,7 +638,12 @@ mod tests {
     #[test]
     fn compound_bindings_preserve_structure_and_actual_images() {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
-        let rename=Renaming {fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
+        let law = crate::law::CheckedLaw {
+            bytes_digest: String::new(), model_digest: String::new(), declarations: BTreeMap::new(),
+            exprs: vec![], expr_types: vec![], quantifier_types: vec![], infos: vec![],
+            definitions: crate::definition::CheckedDefinitions::default(),
+        };
+        let rename=Renaming {law: &law, fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
             (("v".into(),a.into(),None),Fact{snapshot:"v".into(),subject:b.into(),field:None,atom:None})).collect()};
         let ty=Type::Ref("R.Item".into());
         let set=|items|Scalar::Set{element:ty.clone(),items};
