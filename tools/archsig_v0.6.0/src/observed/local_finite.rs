@@ -21,7 +21,7 @@ pub(super) fn compute(
     .collect::<Vec<_>>();
     let fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
         .ok_or("有限局所系の元Architectureが不適合")?;
-    let (model, missing) = finite_model::analyze(&fixed, g, &witness, request, c)?;
+    let (model, missing) = finite_model::analyze(env, &fixed, g, &witness, request, c)?;
     let Some(model) = model else {
         let using = request
             .arguments
@@ -90,7 +90,23 @@ pub(super) fn compute(
     };
     let mut laws = vec![];
     let mut expressions = vec![];
+    let mut scope_domains = vec![];
+    let mut quantifiers = vec![];
     let result = (|| -> Result<(geometry::Built, Vec<Fact>), ValidationFailure> {
+        for (name, parameter, values) in &model.universal {
+            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
+            let reference = domain(&mut b, &parameter.ty.erase(), &items)?;
+            scope_domains.push((reference, parameter.ty.erase()));
+            quantifiers.push((name, Quantifier {
+                kind: crate::law::ast::QuantKind::Forall,
+                name: parameter.name.clone(),
+                ty: parameter.ty.erase(),
+                domain: Some(reference),
+                occurrence: parameter.span,
+                context: Some(env.current_context(g)),
+            }));
+        }
         for (name, bindings) in &model.requirements {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let law = &env.inputs.law().declarations[name];
@@ -106,6 +122,10 @@ pub(super) fn compute(
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let expression = change_result::source_expression(&mut b, env, body, &bindings, &[])?;
             b.parts[expression.0 - base].scope.merge(&model.scope);
+            for (_, quantifier) in quantifiers.iter().filter(|(law, _)| *law == name) {
+                b.parts[expression.0 - base].arguments.extend(quantifier.domain);
+                b.parts[expression.0 - base].scope.quantifiers.push(quantifier.clone());
+            }
             expressions.push(expression);
             let guard = guard
                 .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
@@ -280,10 +300,14 @@ pub(super) fn compute(
                 missing: model.missing.clone(),
                 location: None,
             };
+            let scope = b.parts.iter().fold(model.scope.clone(), |mut scope, part| {
+                scope.merge(&part.scope);
+                scope
+            });
             return Ok(Source {
                 base,
                 parts: b.parts,
-                scope_domains: vec![],
+                scope_domains,
                 answer: Answer {
                     id: request.id.clone(),
                     status: Decision::Undetermined,
@@ -291,7 +315,7 @@ pub(super) fn compute(
                     claim: None,
                     evidence: vec![],
                     reasons: vec![reason],
-                    scope: model.scope,
+                    scope,
                 },
                 request: request.clone(),
                 witness,
@@ -318,7 +342,7 @@ pub(super) fn compute(
         claim: Some(proposition),
         evidence: vec![],
         reasons: vec![],
-        scope: model.scope,
+        scope: b.parts[proposition.0 - base].scope.clone(),
     };
     let expression = *expressions.first().ok_or("有限局所Lawの原式がない")?;
     let inhabited = built
@@ -328,7 +352,7 @@ pub(super) fn compute(
     Ok(Source {
         base,
         parts: b.parts,
-        scope_domains: vec![],
+        scope_domains,
         answer,
         request: request.clone(),
         witness,

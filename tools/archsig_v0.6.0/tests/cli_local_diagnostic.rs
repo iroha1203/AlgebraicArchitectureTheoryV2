@@ -2773,3 +2773,42 @@ fn finite_change_short_circuit_keeps_fixed_missing_observations() {
         }
     }
 }
+
+#[test]
+fn finite_change_preserves_unbound_law_domains_and_bound_selection_in_scope() {
+    let dir = input("finite-local-quantifiers", Some(true));
+    explicit_local(&dir, "law optional scoped(s:State,p:Bool) when p:s.flag; change choose(t:State,b:Bool)=t with {flag=b};");
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "v=evaluate(Fixed.current,s=@fixed/s)",
+        "all=localize($a.object,law=Fixed.scoped,using=Fixed.choose,s=@fixed/s)",
+        "one=localize($a.object,law=Fixed.scoped,using=Fixed.choose,s=@fixed/s,p=$v.value)",
+        "da=diagnose($all.system)",
+        "do=diagnose($one.system)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    let named = |index: usize| arr(get(get(&answers[index], "scope"), "quantifiers")).iter().filter(|q| s(get(q,"name")) == "p").collect::<Vec<_>>();
+    let inherited = arr(get(get(output(&result, 0, "object"), "scope"), "quantifiers"))
+        .iter().filter(|q| s(get(q,"name")) == "p").collect::<Vec<_>>();
+    let all = named(2);
+    assert_eq!(all.len(), inherited.len()+1);
+    assert_eq!(named(3).len(), inherited.len());
+    let added = all.iter().find(|q| !inherited.iter().any(|old| old.value == q.value)).unwrap();
+    assert_eq!(s(get(added, "kind")), "forall");
+    let values = arr(get(get(node(&result, get(added,"domain")),"value"),"elements"));
+    assert_eq!(values.len(), 2);
+    assert!(values.iter().any(|r| matches!(get(node(&result,r),"value").value, archsig::json::JValue::Bool(false))));
+    assert!(values.iter().any(|r| matches!(get(node(&result,r),"value").value, archsig::json::JValue::Bool(true))));
+    for (index, count) in [(2, 2), (3, 1)] {
+        assert_eq!(arr(get(get(output(&result,index,"system"),"value"),"laws")).len(), count);
+    }
+    let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in &asks { args.extend(["--ask", *ask]); }
+    let r = run(&dir, &args);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let after = result_json(&dir, &r);
+    for field in ["answers", "nodes"] { assert_eq!(get(&result,field).value,get(&after,field).value); }
+}

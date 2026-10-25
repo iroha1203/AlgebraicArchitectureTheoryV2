@@ -142,16 +142,25 @@ pub(super) fn summary(
         },
     })
 }
-pub(super) fn bijective(summary: &FiniteSide) -> bool {
-    summary.matching.iter().all(|value| {
-        summary
-            .restriction
-            .iter()
-            .filter(|(_, v)| v == value)
-            .count()
-            == 1
-    })
+pub(super) fn bijective(summary: &FiniteSide, c: &mut Control) -> Result<bool, ValidationFailure> {
+    let key = |value: &Scalar| Json::obj([
+        ("type", value.ty().wire()), ("value", value.wire())
+    ]).canonical();
+    let mut counts = BTreeMap::<String, usize>::new();
+    for (_, value) in &summary.restriction {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        *counts.entry(key(value)).or_default() += 1;
+    }
+    for value in &summary.matching {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        if counts.get(&key(value)) != Some(&1) {
+            return Ok(false);
+        }
+    }
+    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+    Ok(true)
 }
+
 fn scalar_domain(
     b: &mut Builder<'_>,
     ty: &Type,

@@ -621,11 +621,11 @@ pub(super) fn build(
     for (side, equation_side) in [("semantic", false), ("equation", true)] {
         let summary =
             finite_state::summary(&states, &supports, &patch_indices, 0, equation_side, c)?;
-        let cover_holds = finite_state::bijective(&summary);
+        let cover_holds = finite_state::bijective(&summary, c)?;
         let mut topology_holds = true;
         for (w, sources) in &matching_checks {
             let test = finite_state::summary(&states, &supports, sources, *w, equation_side, c)?;
-            topology_holds &= finite_state::bijective(&test);
+            topology_holds &= finite_state::bijective(&test, c)?;
         }
         for (scope, object, holds) in [
             ("cover", cover, cover_holds),

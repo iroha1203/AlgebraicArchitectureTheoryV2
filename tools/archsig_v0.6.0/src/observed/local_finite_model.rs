@@ -17,6 +17,7 @@ pub(super) struct Model {
     pub points: Vec<Vec<Scalar>>,
     pub candidate_points: Vec<Option<usize>>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
+    pub universal: Vec<(String, crate::law::model::Param, Vec<Scalar>)>,
     pub truth: Vec<Vec<bool>>,
     pub law_supports: Vec<geometry::Support>,
     pub readings: Vec<Reading>,
@@ -57,6 +58,7 @@ fn normalize(support: &mut geometry::Support) {
     support.visible = support.positions.clone();
 }
 pub(super) fn analyze(
+    original: &Environment<'_>,
     env: &Environment<'_>,
     g: &Graph,
     witness: &ArchitectureWitness,
@@ -168,10 +170,11 @@ pub(super) fn analyze(
         .arguments
         .iter()
         .filter_map(|a| a.name.strip_prefix("bind.").map(|name| (name, a)))
-        .map(|(name, a)| Ok((name.to_owned(), change_search::selector(env, g, &a.value)?)))
+        .map(|(name, a)| Ok((name.to_owned(), change_search::selector(original, g, &a.value)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
     let selected = request.declaration();
     let mut requirements = vec![];
+    let mut universal = vec![];
     for law in env.inputs.law().declarations.values().filter(|d| {
         d.reading == reading
             && match selected {
@@ -195,13 +198,15 @@ pub(super) fn analyze(
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
             {
-                vec![change_search::selector(env, g, &arg.value)?]
+                vec![change_search::selector(original, g, &arg.value)?]
             } else {
                 let values = change_search::domain(&fixed, &p.ty, p.span, &mut missing)?;
                 if !missing.is_empty() {
                     return Ok((None, missing));
                 }
-                values.ok_or_else(|| unsupported("局所Lawのparameter域が未確定"))?
+                let values = values.ok_or_else(|| unsupported("局所Lawのparameter域が未確定"))?;
+                universal.push((law.name.clone(), p.clone(), values.clone()));
+                values
             };
             let mut next = vec![];
             for row in rows {
@@ -408,6 +413,7 @@ pub(super) fn analyze(
             points,
             candidate_points,
             requirements,
+            universal,
             truth,
             law_supports,
             readings,
