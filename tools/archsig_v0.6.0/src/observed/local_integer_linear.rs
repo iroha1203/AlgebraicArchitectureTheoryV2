@@ -90,20 +90,6 @@ pub(super) fn coordinates(
 pub(super) fn project(a: &Matrix, positions: &[usize]) -> Matrix {
     positions.iter().map(|i| a[*i].clone()).collect()
 }
-pub(super) fn restrict(
-    from: &Fiber,
-    to: &Fiber,
-    positions: &[usize],
-    c: &Control,
-) -> Result<Matrix, ValidationFailure> {
-    coordinates(
-        &to.basis,
-        to.rank,
-        &project(&from.basis, positions),
-        from.rank,
-        c,
-    )
-}
 pub(super) fn affine_image(
     fiber: &Fiber,
     action: &Matrix,
@@ -209,27 +195,32 @@ pub(super) fn glues(
             c.clone()
                 .checkpoint(crate::observed::control::Checkpoint::Localize)?;
             let intersection = diagram.intersections[*i][*j];
-            for k in &diagram.free[intersection] {
-                let x = diagram.free[*i]
-                    .iter()
-                    .position(|s| s == k)
-                    .ok_or("matchingの位置がない")?;
-                let y = diagram.free[*j]
-                    .iter()
-                    .position(|s| s == k)
-                    .ok_or("matchingの位置がない")?;
+            let left_map = &diagram.state_restrictions[&(intersection, *i)];
+            let right_map = &diagram.state_restrictions[&(intersection, *j)];
+            let left_basis =
+                integer_fiber::multiply(left_map, &states[*i].basis, states[*i].rank, c)?;
+            let right_basis =
+                integer_fiber::multiply(right_map, &states[*j].basis, states[*j].rank, c)?;
+            let left = apply(
+                left_map,
+                states[*i].origin.as_ref().ok_or("局所特解がない")?,
+                c,
+            )?;
+            let right = apply(
+                right_map,
+                states[*j].origin.as_ref().ok_or("局所特解がない")?,
+                c,
+            )?;
+            for k in 0..left.len() {
                 let mut row = vec![Z::zero(); n];
-                for (l, v) in states[*i].basis[x].iter().enumerate() {
+                for (l, v) in left_basis[k].iter().enumerate() {
                     row[offsets[a] + l] += v;
                 }
-                for (l, v) in states[*j].basis[y].iter().enumerate() {
+                for (l, v) in right_basis[k].iter().enumerate() {
                     row[offsets[b] + l] -= v;
                 }
                 equations.push(row);
-                rhs.push(
-                    &states[*j].origin.as_ref().ok_or("局所特解がない")?[y]
-                        - &states[*i].origin.as_ref().ok_or("局所特解がない")?[x],
-                );
+                rhs.push(&right[k] - &left[k]);
             }
         }
     }
@@ -243,16 +234,9 @@ pub(super) fn glues(
     let mut map = vec![];
     let mut origin = vec![];
     for i in sources {
-        let positions = diagram.free[*i]
-            .iter()
-            .map(|k| {
-                diagram.free[target]
-                    .iter()
-                    .position(|j| j == k)
-                    .ok_or("全域制限の位置がない")
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-        let projected = project(&states[target].basis, &positions);
+        let restriction = &diagram.state_restrictions[&(*i, target)];
+        let projected =
+            integer_fiber::multiply(restriction, &states[target].basis, states[target].rank, c)?;
         map.extend(coordinates(
             &states[*i].basis,
             states[*i].rank,
@@ -261,10 +245,11 @@ pub(super) fn glues(
             c,
         )?);
         let local = states[*i].origin.as_ref().ok_or("局所特解がない")?;
-        let delta = positions
+        let restricted = apply(restriction, global, c)?;
+        let delta = restricted
             .iter()
-            .enumerate()
-            .map(|(j, k)| vec![&global[*k] - &local[j]])
+            .zip(local)
+            .map(|(x, y)| vec![x - y])
             .collect();
         origin.extend(
             coordinates(&states[*i].basis, states[*i].rank, &delta, 1, c)?
@@ -291,4 +276,74 @@ pub(super) fn glues(
     Ok(image.rank == matching.rank
         && image.rank == states[target].rank
         && (0..image.rank).all(|i| image.diagonal[i][i] == Z::one()))
+}
+
+/// 整数readの同じfiberを同一視した自由座標。mapは全射、liftはその切断。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Reading {
+    pub map: Matrix,
+    pub lift: Matrix,
+    pub kernel: Matrix,
+}
+impl Reading {
+    pub fn new(rows: &Matrix, n: usize, c: &Control) -> Result<Self, ValidationFailure> {
+        let fiber = integer_fiber::solve(rows, n, &vec![Z::zero(); rows.len()], c)?;
+        if fiber.rank == n {
+            return Ok(Self {
+                map: identity(n),
+                lift: identity(n),
+                kernel: vec![vec![]; n],
+            });
+        }
+        let inverse = coordinates(&fiber.right, n, &identity(n), n, c)?;
+        Ok(Self {
+            map: inverse[..fiber.rank].to_vec(),
+            lift: fiber
+                .right
+                .iter()
+                .map(|row| row[..fiber.rank].to_vec())
+                .collect(),
+            kernel: fiber.kernel,
+        })
+    }
+    pub fn contains(&self, other: &Self, c: &Control) -> Result<bool, ValidationFailure> {
+        let hidden = self.kernel.first().map_or(0, Vec::len);
+        Ok(
+            integer_fiber::multiply(&other.map, &self.kernel, hidden, c)?
+                .iter()
+                .flatten()
+                .all(Z::is_zero),
+        )
+    }
+    pub fn restriction(&self, to: &Self, c: &Control) -> Result<Matrix, ValidationFailure> {
+        if !self.contains(to, c)? {
+            return Err("読取り制限が元の公開情報を通じて因子分解しない".into());
+        }
+        integer_fiber::multiply(&to.map, &self.lift, self.map.len(), c)
+    }
+    pub fn intersect(&self, other: &Self, c: &Control) -> Result<Self, ValidationFailure> {
+        let n = self.kernel.len();
+        let mut rows = vec![];
+        for kernel in [&self.kernel, &other.kernel] {
+            for j in 0..kernel.first().map_or(0, Vec::len) {
+                rows.push(kernel.iter().map(|r| r[j].clone()).collect());
+            }
+        }
+        let common = integer_fiber::solve(&rows, n, &vec![Z::zero(); rows.len()], c)?;
+        let rows = (0..n - common.rank)
+            .map(|j| common.kernel.iter().map(|r| r[j].clone()).collect())
+            .collect();
+        Self::new(&rows, n, c)
+    }
+    pub fn sees(&self, rows: &Matrix, c: &Control) -> Result<bool, ValidationFailure> {
+        Ok(integer_fiber::multiply(
+            rows,
+            &self.kernel,
+            self.kernel.first().map_or(0, Vec::len),
+            c,
+        )?
+        .iter()
+        .flatten()
+        .all(Z::is_zero))
+    }
 }

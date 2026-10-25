@@ -162,16 +162,17 @@ pub(super) fn build(
     support: &geometry::Support,
     positions: &[usize],
     laws: &[NodeRef],
+    reading: &linear::Reading,
+    equation_state: &linear::Fiber,
     semantic: &linear::Fiber,
     c: &mut Control,
 ) -> Result<State, ValidationFailure> {
-    let selected = model
-        .supports
-        .iter()
-        .enumerate()
-        .filter(|(_, s)| support.contains(s))
-        .map(|(i, _)| i)
-        .collect::<Vec<_>>();
+    let mut selected = vec![];
+    for i in 0..model.supports.len() {
+        if visible_law(model, support, reading, i, c)? {
+            selected.push(i);
+        }
+    }
     let requirements = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
     let mut d = vec![];
     let mut rhs = vec![];
@@ -239,7 +240,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let (equation, equation_domain, eq_coeff) = solutions(
+    let (equation, mut equation_domain, mut eq_coeff) = solutions(
         b,
         ring,
         ambient,
@@ -381,15 +382,54 @@ pub(super) fn build(
         false,
         c,
     )?;
+    let projection: Matrix = reading
+        .map
+        .iter()
+        .map(|row| positions.iter().map(|i| row[*i].clone()).collect())
+        .collect();
+    let (ambient, read_domain) = if projection == linear::identity(positions.len()) {
+        (ambient, parameter_domain)
+    } else {
+        let read_module = wire::module(b, ring, reading.map.len(), "image", vec![equation])?;
+        let read_domain = wire::domain(b, read_module)?;
+        let quotient = affine_map(
+            b,
+            equation_domain,
+            read_domain,
+            ambient,
+            read_module,
+            &projection,
+            positions.len(),
+            &vec![Z::zero(); reading.map.len()],
+            c,
+        )?;
+        equation_domain = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("image")),
+                ("map", quotient.wire()),
+                ("source", equation.wire()),
+            ]),
+            vec![quotient, equation],
+            None,
+            None,
+        )?;
+        eq_coeff = wire::module(b, ring, equation_state.rank, "image", vec![quotient])?;
+        (read_module, read_domain)
+    };
+    let read_action =
+        integer_fiber::multiply(&projection, &action, model.action.parameter_count, c)?;
+    let read_offset = linear::apply(&projection, &offset, c)?;
     let restricted_action = affine_map(
         b,
         solution_domain,
-        parameter_domain,
+        read_domain,
         parameters,
         ambient,
-        &action,
+        &read_action,
         model.action.parameter_count,
-        &offset,
+        &read_offset,
         c,
     )?;
     let semantic_domain = b.push(
@@ -411,9 +451,9 @@ pub(super) fn build(
         equation_domain,
         ambient,
         ambient,
-        &linear::identity(positions.len()),
-        positions.len(),
-        &vec![Z::zero(); positions.len()],
+        &linear::identity(reading.map.len()),
+        reading.map.len(),
+        &vec![Z::zero(); reading.map.len()],
         c,
     )?;
     Ok(State {

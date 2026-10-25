@@ -3385,9 +3385,11 @@ fn integer_local_variant(name:&str, edit:impl FnOnce(String)->String, remove:Opt
 #[test]
 fn integer_local_input_forms_keep_direct_implicit_guarded_and_tuple_readings() {
     let local="local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;";
-    for mode in ["implicit","direct","true-guard","tuple","empty-laws","let-law","let-subject","affine-read"] {
+    for mode in ["implicit","direct","true-guard","tuple","empty-laws","let-law","let-subject","affine-read","joint-read","affine-tuple"] {
         let dir=integer_local_variant(&format!("integer-forms-{mode}"),|s|match mode {
             "implicit"=>s.replace(local,""),
+            "joint-read"=>s.replace("reads e.shift,e.from.coordinate,e.to.coordinate","reads e.shift,e.from.coordinate+e.to.coordinate,e.from.coordinate"),
+            "affine-tuple"=>s.replace("reads e.shift,e.from.coordinate,e.to.coordinate","reads e.shift,(2*e.from.coordinate,e.to.coordinate)"),
             "affine-read"=>s.replace("reads e.shift,e.from.coordinate,e.to.coordinate","reads e.shift,2*e.from.coordinate,e.to.coordinate"),
             "let-law"=>s.replace("e.to.coordinate-e.from.coordinate=e.shift;","let delta=e.to.coordinate-e.from.coordinate in delta=e.shift;"),
             "let-subject"=>s.replace("e.to.coordinate-e.from.coordinate=e.shift;","let endpoint=e.to in endpoint.coordinate-e.from.coordinate=e.shift;"),
@@ -3544,4 +3546,68 @@ fn integer_local_vectors_compare_only_in_the_same_module() {
     assert!(has(get(&answers[4],"outputs"),"comparison"));
     assert!(arr(get(&answers[5],"reasons")).iter().any(|r|s(get(r,"code"))=="condition_failed"));
     assert!(!has(get(&answers[5],"outputs"),"comparison"));
+}
+
+#[test]
+fn integer_local_empty_cover_degree_iteration_observes_budget() {
+    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},evaluate::evaluate_observed_bytes,input::InputSources};
+    use std::{cell::Cell,rc::Rc};
+    let dir=integer_local_variant("integer-empty-degree-budget",|s|s
+        .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","")
+        .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;",""),None);
+    let map=std::fs::read_to_string(dir.join("a.json")).unwrap();
+    let prefix=map.split_once("\"subjects\":[").unwrap().0;
+    let map=format!(r#"{prefix}"subjects":[{{"id":"root","type":"Coordinates.System","origin":"model"}}],"atoms":[]}}]}}"#);
+    let inputs=||InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),map.as_bytes().to_vec());
+    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)"];
+    let total=Rc::new(Cell::new(0usize));let count=total.clone();
+    let mut c=Control::new(Limits::default(),move |point|{if point==Checkpoint::Localize {count.set(count.get()+1);}Usage::default()});
+    evaluate_observed_bytes(inputs(),&asks,&mut c).unwrap();
+    let stop=total.get()+2;let mut count=0;
+    let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:None},move |point|{
+        if point==Checkpoint::Localize {count+=1;}
+        if count>=stop {Usage{elapsed_ms:2,..Usage::default()}}else{Usage::default()}
+    });
+    let result=evaluate_observed_bytes(inputs(),&[asks[0],asks[1],"d=diagnose($l.system,degree=20)"],&mut c).unwrap();
+    let j=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let d=&arr(get(&j,"answers"))[2];
+    assert_eq!(s(get(d,"status")),"undetermined");
+    assert!(!has(get(d,"outputs"),"space"));
+    assert!(arr(get(d,"reasons")).iter().any(|r|s(get(r,"code"))=="budget_exhausted"));
+}
+
+#[test]
+fn integer_local_noninjective_reads_keep_the_image_and_cover_conditions() {
+    let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの整数座標。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
+    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies["Pair"].digest;
+    for mode in ["sum-only","constrained","free"] {
+        let extra=if mode=="sum-only" {""} else {"local Both(s:State) reads (s.x,s.y);"};
+        let requirement=if mode=="free" {""} else {"law required total(s:State):s.x+s.y=0;"};
+        let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; {requirement} local Sum(s:State) reads s.x+s.y; {extra} change movePair(s:State,a:Z,b:Z)=s with{{x=a,y=b}}; }}");
+        let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"合計の読取り試験。","locations":[],"note":"二座標の原始値。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
+        let dir=workdir(&format!("integer-sum-{mode}"));for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
+        let mut asks=vec!["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.movePair)"];
+        if mode!="sum-only" {asks.extend(["z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);}
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);
+        if mode=="sum-only" {
+            let reasons=arr(get(&arr(get(&j,"answers"))[1],"reasons"));
+            assert!(reasons.iter().any(|r|s(get(r,"code"))=="visibility_insufficient"));
+            assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));
+            continue;
+        }
+        let system=get(output(&j,1,"system"),"value");
+        let sum=arr(get(system,"contexts")).iter().find(|r|{
+            let locals=arr(get(get(node(&j,r),"value"),"locals"));
+            locals.len()==1 && s(get(&locals[0],"declaration"))=="Pair.Sum"
+        }).expect("Sumだけの局所がない");
+        let context=get(node(&j,sum),"value");assert_eq!(arr(get(context,"readings")).len(),1);
+        for coefficient in arr(get(system,"coefficients")).iter().filter(|v|get(v,"context").value==sum.value) {
+            assert_eq!(num(get(get(node(&j,get(coefficient,"module")),"value"),"free_rank")),if mode=="free"{1}else{0});
+        }
+        for (i,rank) in [(2,if mode=="free"{2}else{1}),(3,0)] {
+            let space=get(output(&j,i,"space"),"value");
+            assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
+        }
+    }
 }

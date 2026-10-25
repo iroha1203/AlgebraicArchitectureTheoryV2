@@ -91,6 +91,7 @@ pub(in crate::observed::local_result) fn diagnose(
         diagram.patches.iter().map(|i| vec![*i]).collect(),
     )];
     for _ in 0..=degree {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         let mut tuples = vec![];
         for tuple in &levels.last().ok_or("Čechの次数がない")?.tuples {
             for patch in &diagram.patches {
@@ -311,7 +312,7 @@ pub(in crate::observed::local_result) fn diagnose(
                 let ambient = wire::module(
                     &mut b,
                     ring,
-                    diagram.free[*i].len(),
+                    diagram.readings[*i].map.len(),
                     "free",
                     vec![diagram.contexts[*i]],
                 )?;
@@ -327,20 +328,11 @@ pub(in crate::observed::local_result) fn diagnose(
                 let context = levels[1].contexts[i];
                 let left = states[tuple[0]].origin.as_ref().ok_or("局所特解がない")?;
                 let right = states[tuple[1]].origin.as_ref().ok_or("局所特解がない")?;
-                let delta = diagram.free[context]
-                    .iter()
-                    .map(|slot| {
-                        let a = diagram.free[tuple[0]]
-                            .iter()
-                            .position(|s| s == slot)
-                            .ok_or("局所差の位置がない")?;
-                        let z = diagram.free[tuple[1]]
-                            .iter()
-                            .position(|s| s == slot)
-                            .ok_or("局所差の位置がない")?;
-                        Ok(vec![&right[z] - &left[a]])
-                    })
-                    .collect::<Result<Matrix, ValidationFailure>>()?;
+                let left =
+                    linear::apply(&diagram.state_restrictions[&(context, tuple[0])], left, c)?;
+                let right =
+                    linear::apply(&diagram.state_restrictions[&(context, tuple[1])], right, c)?;
+                let delta = right.iter().zip(&left).map(|(r, l)| vec![r - l]).collect();
                 let coordinates = linear::coordinates(
                     &states[context].basis,
                     states[context].rank,
@@ -565,7 +557,8 @@ fn gluing(
     witness: &ArchitectureWitness,
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    let mut merged: BTreeMap<usize, Z> = BTreeMap::new();
+    let mut equations = vec![];
+    let mut rhs = vec![];
     let mut local = vec![];
     for (j, i) in diagram.patches.iter().enumerate() {
         let adjustment = linear::apply(
@@ -581,25 +574,14 @@ fn gluing(
             .zip(adjustment)
             .map(|(x, y)| x - y)
             .collect::<Vec<_>>();
-        for (slot, value) in diagram.free[*i].iter().zip(&values) {
-            if let Some(prior) = merged.insert(*slot, value.clone()) {
-                if prior != *value {
-                    return Err("補正した局所解がmatchingでない".into());
-                }
-            }
-        }
+        equations.extend(diagram.readings[*i].map.iter().cloned());
+        rhs.extend(values.iter().cloned());
         let ambient = wire::module(b, ring, values.len(), "free", vec![diagram.contexts[*i]])?;
         local.push(wire::vector(b, ambient, &values, c)?);
     }
-    let global_values = diagram.free[0]
-        .iter()
-        .map(|i| {
-            merged
-                .get(i)
-                .cloned()
-                .ok_or("大域証人の位置が被覆されない".into())
-        })
-        .collect::<Result<Vec<_>, ValidationFailure>>()?;
+    let global_values = integer_fiber::solve(&equations, diagram.slots.len(), &rhs, c)?
+        .particular
+        .ok_or("補正した局所族の大域持上げがない")?;
     let origin = states[0]
         .origin
         .as_ref()

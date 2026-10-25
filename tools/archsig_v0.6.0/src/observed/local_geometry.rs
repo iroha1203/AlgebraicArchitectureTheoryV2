@@ -40,6 +40,7 @@ impl Support {
 pub(in crate::observed) struct Projection {
     pub read: usize,
     pub path: Vec<usize>,
+    pub arguments: Vec<NodeRef>,
     pub field: Option<(Scalar, Location)>,
     pub values: Vec<Scalar>,
     pub support: Support,
@@ -62,7 +63,7 @@ pub(super) fn project(
                 ("bindings", Json::Arr(vec![Json::obj([
                     ("name", Json::str("subject")), ("value", subject.wire())
                 ])])),
-            ]), vec![expression, subject], None, None,
+            ]), [expression,subject].into_iter().chain(p.arguments.iter().copied()).collect(), None, None,
         )?;
     } else {
     for position in &p.path {
@@ -777,7 +778,7 @@ pub(super) fn topology(
             .filter(|v| {
                 patch_indices
                     .iter()
-                    .any(|p| supports[*p].contains(&supports[*v]))
+                    .any(|p| arrows.contains_key(&(*v,*p)))
             })
             .collect::<Vec<_>>();
         matching_checks.push((0, sources.clone()));

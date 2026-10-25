@@ -16,6 +16,8 @@ pub(super) use cech::diagnose;
 pub(super) struct Diagram {
     pub slots: Vec<Fact>,
     pub free: Vec<Vec<usize>>,
+    pub readings: Vec<linear::Reading>,
+    pub state_restrictions: BTreeMap<(usize, usize), Matrix>,
     pub patches: Vec<usize>,
     pub intersections: Vec<Vec<usize>>,
     pub equation: Vec<linear::Fiber>,
@@ -220,15 +222,70 @@ fn analyze(
     })
 }
 
+fn visible_law(
+    model: &Model,
+    support: &geometry::Support,
+    reading: &linear::Reading,
+    i: usize,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    let mut required = model.supports[i].clone();
+    required.visible.retain(|f| !model.action.slots.contains(f));
+    Ok(support.contains(&required) && reading.sees(&model.laws[i].0, c)?)
+}
+fn context_reading(
+    model: &Model,
+    context: &local_read::Context,
+    c: &Control,
+) -> Result<linear::Reading, ValidationFailure> {
+    reading_from(model, context.information.as_ref(), &context.visible, c)
+}
+fn reading_from(
+    model: &Model,
+    information: Option<&(Vec<Fact>, Matrix)>,
+    visible: &[Fact],
+    c: &Control,
+) -> Result<linear::Reading, ValidationFailure> {
+    let n = model.action.slots.len();
+    let rows = if let Some((slots, matrix)) = information {
+        matrix
+            .iter()
+            .map(|row| {
+                let mut result = vec![Z::zero(); n];
+                for (slot, value) in slots.iter().zip(row) {
+                    let i = model
+                        .action
+                        .slots
+                        .iter()
+                        .position(|f| f == slot)
+                        .ok_or("読取りの更新位置がない")?;
+                    result[i] = value.clone();
+                }
+                Ok(result)
+            })
+            .collect::<Result<Vec<_>, ValidationFailure>>()?
+    } else {
+        model
+            .action
+            .slots
+            .iter()
+            .enumerate()
+            .filter(|(_, slot)| visible.contains(slot))
+            .map(|(i, _)| linear::identity(n)[i].clone())
+            .collect()
+    };
+    linear::Reading::new(&rows, n, c)
+}
 fn fibers(
     model: &Model,
     supports: &[geometry::Support],
+    readings: &[linear::Reading],
     c: &Control,
 ) -> Result<(Vec<Vec<usize>>, Vec<linear::Fiber>, Vec<linear::Fiber>), ValidationFailure> {
     let mut free = vec![];
     let mut equation = vec![];
     let mut semantic = vec![];
-    for support in supports {
+    for (support, reading) in supports.iter().zip(readings) {
         c.clone()
             .checkpoint(super::super::control::Checkpoint::Localize)?;
         let positions = model
@@ -241,8 +298,8 @@ fn fibers(
             .collect::<Vec<_>>();
         let mut d = vec![];
         let mut rhs = vec![];
-        for (i, law_support) in model.supports.iter().enumerate() {
-            if !support.contains(law_support) {
+        for (i, _) in model.supports.iter().enumerate() {
+            if !visible_law(model, support, reading, i, c)? {
                 continue;
             }
             for row in &model.laws[i].0 {
@@ -273,9 +330,24 @@ fn fibers(
         parameter_guards(model, &mut da, &mut shifted);
         let parameters = linear::solve_partial(&da, model.action.parameter_count, &shifted, c)?;
         let sem = linear::affine_image(&parameters, &action, &offset, c)?;
+        let projection = reading
+            .map
+            .iter()
+            .map(|row| positions.iter().map(|i| row[*i].clone()).collect())
+            .collect();
+        equation.push(linear::affine_image(
+            &eq,
+            &projection,
+            &vec![Z::zero(); reading.map.len()],
+            c,
+        )?);
+        semantic.push(linear::affine_image(
+            &sem,
+            &projection,
+            &vec![Z::zero(); reading.map.len()],
+            c,
+        )?);
         free.push(positions);
-        equation.push(eq);
-        semantic.push(sem);
     }
     Ok((free, equation, semantic))
 }
@@ -313,7 +385,15 @@ pub(super) fn compute(
     fixed.select_local_object(&witness, c)?;
     let mut pending = change_affine::Pending::default();
     let mut missing_domain = false;
-    let result = analyze(&fixed, g, &witness, request, c, &mut pending, &mut missing_domain);
+    let result = analyze(
+        &fixed,
+        g,
+        &witness,
+        request,
+        c,
+        &mut pending,
+        &mut missing_domain,
+    );
     let mut b = Builder {
         g,
         base,
@@ -356,7 +436,9 @@ pub(super) fn compute(
                     location: Some(location),
                 });
             }
-            b.parts[expression.0 - base].reasons.extend(reasons.iter().cloned());
+            b.parts[expression.0 - base]
+                .reasons
+                .extend(reasons.iter().cloned());
             let scope = b.parts[expression.0 - base].scope.clone();
             return Ok(Source {
                 base,
@@ -577,16 +659,25 @@ pub(super) fn compute(
                 visible: x.visible.clone(),
             })
             .collect::<Vec<_>>();
-        if model
-            .supports
+        let patch_readings = explicit
             .iter()
-            .any(|s| !patches.iter().any(|p| p.contains(s)))
-            || model
-                .action
-                .slots
-                .iter()
-                .any(|s| !patches.iter().any(|p| p.visible.contains(s)))
-        {
+            .filter(|x| implicit || !x.locals.is_empty())
+            .map(|x| context_reading(&model, x, c))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut covered = true;
+        for i in 0..model.supports.len() {
+            let mut visible = false;
+            for (patch, reading) in patches.iter().zip(&patch_readings) {
+                visible |= visible_law(&model, patch, reading, i, c)?;
+            }
+            covered &= visible;
+        }
+        let all_reads = patch_readings
+            .iter()
+            .flat_map(|r| r.map.iter().cloned())
+            .collect();
+        let joint = linear::Reading::new(&all_reads, model.action.slots.len(), c)?;
+        if !covered || joint.map.len() != model.action.slots.len() {
             let reason = Reason {
                 kind: ReasonKind::VisibilityInsufficient {
                     locals: local_names,
@@ -631,12 +722,28 @@ pub(super) fn compute(
         global.visible.dedup();
         let fixed_positions = global.positions.clone();
         let mut supports = vec![global];
+        let mut readings = vec![linear::Reading::new(
+            &linear::identity(model.action.slots.len()),
+            model.action.slots.len(),
+            c,
+        )?];
         let mut patch_indices = vec![];
-        for patch in &patches {
-            let i = if let Some(i) = supports.iter().position(|p| p == patch) {
+        for (patch, reading) in patches.iter().zip(&patch_readings) {
+            let mut found = None;
+            for (i, prior) in supports.iter().enumerate() {
+                if prior == patch
+                    && readings[i].contains(reading, c)?
+                    && reading.contains(&readings[i], c)?
+                {
+                    found = Some(i);
+                    break;
+                }
+            }
+            let i = if let Some(i) = found {
                 i
             } else {
                 supports.push(patch.clone());
+                readings.push(reading.clone());
                 supports.len() - 1
             };
             if !patch_indices.contains(&i) {
@@ -648,13 +755,25 @@ pub(super) fn compute(
             for j in 0..i {
                 c.checkpoint(super::super::control::Checkpoint::Localize)?;
                 let support = supports[i].intersect(&supports[j]);
-                if !supports.contains(&support) {
+                let reading = readings[i].intersect(&readings[j], c)?;
+                let mut found = false;
+                for (k, prior) in supports.iter().enumerate() {
+                    if prior == &support
+                        && readings[k].contains(&reading, c)?
+                        && reading.contains(&readings[k], c)?
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
                     supports.push(support);
+                    readings.push(reading);
                 }
             }
             i += 1;
         }
-        let (free, equation, semantic) = fibers(&model, &supports, c)?;
+        let (free, equation, semantic) = fibers(&model, &supports, &readings, c)?;
         let ring = b.push(
             NodeType::Construction(T::Ring),
             "ring",
@@ -675,10 +794,12 @@ pub(super) fn compute(
                 support,
                 &free[i],
                 &laws,
+                &readings[i],
+                &equation[i],
                 &semantic[i],
                 c,
             )?;
-            let mut readings = vec![];
+            let mut context_readings = vec![];
             let mut instances = vec![];
             let mut arguments = vec![target];
             let mut included = vec![];
@@ -688,13 +809,21 @@ pub(super) fn compute(
                     positions: e.positions.clone(),
                     visible: e.visible.clone(),
                 };
-                if support.contains(&es) {
+                if support.contains(&es)
+                    && readings[i].contains(&context_reading(&model, e, c)?, c)?
+                {
                     instances.extend(e.locals.iter().cloned());
                     arguments.extend(e.arguments.iter().copied());
                 }
                 for (j, rs) in e.read_supports.iter().enumerate() {
-                    if support.contains(rs) {
-                        readings.push(e.readings[j].clone());
+                    let read = reading_from(
+                        &model,
+                        e.read_information.get(j).and_then(Option::as_ref),
+                        &rs.visible,
+                        c,
+                    )?;
+                    if support.contains(rs) && readings[i].contains(&read, c)? {
+                        context_readings.push(e.readings[j].clone());
                         arguments.extend(e.read_refs[2 * j..2 * j + 2].iter().copied());
                         included.push(rs.clone());
                     }
@@ -703,7 +832,9 @@ pub(super) fn compute(
             let mut projected = vec![];
             for e in &explicit {
                 for p in &e.projections {
+                    let projection_read = reading_from(&model, None, &p.support.visible, c)?;
                     if !support.contains(&p.support)
+                        || !readings[i].contains(&projection_read, c)?
                         || included.iter().any(|s| s.contains(&p.support))
                         || projected.contains(&p.support)
                     {
@@ -711,7 +842,7 @@ pub(super) fn compute(
                     }
                     let (expression, image) =
                         geometry::project(&mut b, e.read_refs[2 * p.read], p, &model.action.slots)?;
-                    readings.push(Json::obj([
+                    context_readings.push(Json::obj([
                         ("expression", expression.wire()),
                         ("type", p.values[0].ty().wire()),
                         ("domain", image.wire()),
@@ -726,13 +857,12 @@ pub(super) fn compute(
                 dependencies.push(v);
                 arguments.push(r);
             }
-            let selected = model
-                .supports
-                .iter()
-                .enumerate()
-                .filter(|(_, s)| support.contains(s))
-                .map(|(i, _)| laws[i])
-                .collect::<Vec<_>>();
+            let mut selected = vec![];
+            for (j, law) in laws.iter().enumerate() {
+                if visible_law(&model, support, &readings[i], j, c)? {
+                    selected.push(*law);
+                }
+            }
             arguments.extend(selected.iter().copied());
             let context = b.push(
                 NodeType::Construction(T::Context),
@@ -742,7 +872,7 @@ pub(super) fn compute(
                     ("locals", Json::Arr(instances)),
                     ("carrier", Json::Arr(support.carrier.clone())),
                     ("dependencies", Json::Arr(dependencies)),
-                    ("readings", Json::Arr(readings)),
+                    ("readings", Json::Arr(context_readings)),
                     ("law_coordinates", refs(&selected)),
                 ]),
                 arguments,
@@ -755,14 +885,24 @@ pub(super) fn compute(
         let mut intersections = vec![vec![0; supports.len()]; supports.len()];
         for i in 0..supports.len() {
             for j in 0..supports.len() {
-                intersections[i][j] = supports
-                    .iter()
-                    .position(|s| *s == supports[i].intersect(&supports[j]))
-                    .ok_or("整数局所の交わりがない")?;
+                let support = supports[i].intersect(&supports[j]);
+                let reading = readings[i].intersect(&readings[j], c)?;
+                let mut found = None;
+                for (k, prior) in supports.iter().enumerate() {
+                    if prior == &support
+                        && readings[k].contains(&reading, c)?
+                        && reading.contains(&readings[k], c)?
+                    {
+                        found = Some(k);
+                        break;
+                    }
+                }
+                intersections[i][j] = found.ok_or("整数局所の交わりがない")?;
             }
         }
         let mut arrows = BTreeMap::new();
         let mut restrictions = BTreeMap::new();
+        let mut state_restrictions = BTreeMap::new();
         let mut maps = vec![];
         let mut restriction_refs = vec![];
         let mut restriction_values = vec![];
@@ -770,21 +910,29 @@ pub(super) fn compute(
         for v in 0..supports.len() {
             for w in 0..supports.len() {
                 c.checkpoint(super::super::control::Checkpoint::Localize)?;
-                if !supports[w].contains(&supports[v]) {
+                if !supports[w].contains(&supports[v]) || !readings[w].contains(&readings[v], c)? {
                     continue;
                 }
-                let indices = free[v]
-                    .iter()
-                    .map(|i| {
-                        free[w]
-                            .iter()
-                            .position(|j| i == j)
-                            .ok_or("制限先の自由位置が元にない")
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
-                let eq = linear::restrict(&equation[w], &equation[v], &indices, c)?;
-                let sem = linear::restrict(&semantic[w], &semantic[v], &indices, c)?;
-                let projection = linear::project(&linear::identity(free[w].len()), &indices);
+                let projection = readings[w].restriction(&readings[v], c)?;
+                let eq_image =
+                    integer_fiber::multiply(&projection, &equation[w].basis, equation[w].rank, c)?;
+                let sem_image =
+                    integer_fiber::multiply(&projection, &semantic[w].basis, semantic[w].rank, c)?;
+                let eq = linear::coordinates(
+                    &equation[v].basis,
+                    equation[v].rank,
+                    &eq_image,
+                    equation[w].rank,
+                    c,
+                )?;
+                let sem = linear::coordinates(
+                    &semantic[v].basis,
+                    semantic[v].rank,
+                    &sem_image,
+                    semantic[w].rank,
+                    c,
+                )?;
+                state_restrictions.insert((v, w), projection.clone());
                 let mut rr = vec![];
                 let mut cr = vec![];
                 for side in 0..2 {
@@ -800,8 +948,8 @@ pub(super) fn compute(
                         states[w].ambient,
                         states[v].ambient,
                         &projection,
-                        free[w].len(),
-                        &vec![Z::zero(); free[v].len()],
+                        readings[w].map.len(),
+                        &vec![Z::zero(); readings[v].map.len()],
                         c,
                     )?);
                     cr.push(change_result::linear_result::map(
@@ -935,6 +1083,8 @@ pub(super) fn compute(
             solutions,
             slots: model.action.slots.clone(),
             free,
+            readings,
+            state_restrictions,
             patches: patch_indices,
             intersections,
             equation,
