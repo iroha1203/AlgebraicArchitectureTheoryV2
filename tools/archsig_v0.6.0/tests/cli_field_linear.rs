@@ -338,14 +338,25 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
 }
 
 #[test]
-fn rational_missing_law_guard_keeps_source_binding_and_needed_field() {
-    for guard in ["s.y=0", "s.y=0 and s.x=0"] {
-        let dir = input(
-            "rational-missing-law-guard",
-            &format!(
-                "change choose(s:State,a:Q)=s with{{x=a}}; law required pinned(s:State) when {guard}:s.x=0;"
-            ),
-        );
+fn rational_missing_conditions_keep_source_binding_and_needed_field() {
+    for (guard, body, parameter_count) in [
+        (
+            "s.y=0",
+            "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0:s.x=0;",
+            0,
+        ),
+        (
+            "s.y=0 and s.x=0",
+            "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0 and s.x=0:s.x=0;",
+            0,
+        ),
+        (
+            "s.y=0",
+            "change choose(s:State,a:Q)=if s.y=0 then s with{x=a} else s with{x=a};law required pinned(s:State):s.x=0;",
+            1,
+        ),
+    ] {
+        let dir = input("rational-missing-conditions", body);
         let path = dir.join("a.json");
         let map = std::fs::read_to_string(&path).unwrap();
         let missing=map.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");
@@ -378,7 +389,7 @@ fn rational_missing_law_guard_keeps_source_binding_and_needed_field() {
                 .collect::<Vec<_>>(),
             ["v", "s"]
         );
-        assert!(arr(get(expression, "parameters")).is_empty());
+        assert_eq!(arr(get(expression, "parameters")).len(), parameter_count);
         let plan = get(output(&j, 1, "plan"), "value");
         assert!(
             arr(get(plan, "requirements"))

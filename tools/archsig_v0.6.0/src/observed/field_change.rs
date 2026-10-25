@@ -226,11 +226,9 @@ pub(in crate::observed) fn compute(
                         Some(Scalar::Bool(true)) => *then_branch,
                         Some(Scalar::Bool(false)) => *else_branch,
                         _ => {
-                            return Err(unsupported(
-                                env,
-                                *cond,
-                                "有理changeのparameter依存分岐は未実装",
-                            ));
+                            missing.expression = Some(*cond);
+                            guard_missing(env, *cond, &vars, &change.reading, missing)?;
+                            return Err(unsupported(env, *cond, "有理changeの未確定分岐は未実装"));
                         }
                     };
                 }
