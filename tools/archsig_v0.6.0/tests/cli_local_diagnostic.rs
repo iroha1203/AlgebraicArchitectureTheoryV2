@@ -2739,3 +2739,37 @@ fn finite_change_unknown_owner_keeps_the_observation_requirement() {
         s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.owner"
     }));
 }
+
+#[test]
+fn finite_change_short_circuit_keeps_fixed_missing_observations() {
+    for expression in ["(s.other and false)=false", "(s.other or true)=true"] {
+        for value in [None, Some(false), Some(true)] {
+            let dir = implicit_multiple_input("finite-local-short", false, value);
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path).unwrap().replace("s.other=true", expression);
+            std::fs::write(path, law).unwrap();
+            explicit_local(&dir, "change choose(t:State,b:Bool)=t with {flag=b};");
+            let r = execute(&dir, "out", &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object,using=Fixed.choose)",
+                "d=diagnose($l.system)",
+                "n=needed($l)",
+            ]);
+            assert_eq!(r.code, if value.is_some() { 0 } else { 2 }, "{} {}", r.stdout, r.stderr);
+            let j = result_json(&dir, &r);
+            let answers = arr(get(&j, "answers"));
+            if value.is_none() {
+                assert!(!has(get(&answers[1], "outputs"), "system"));
+                assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
+                assert_eq!(s(get(&answers[1], "status")), "undetermined");
+                let plan = get(output(&j, 3, "plan"), "value");
+                assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                    let f = get(r, "field");
+                    s(get(f, "subject")) == "s" && s(get(f, "field")) == "Fixed.State.other"
+                }));
+            } else {
+                assert_eq!(s(get(&answers[2], "status")), "established");
+            }
+        }
+    }
+}

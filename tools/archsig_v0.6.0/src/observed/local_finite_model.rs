@@ -311,6 +311,11 @@ pub(super) fn analyze(
                 }
             };
             row_truth.push(holds);
+            // 短絡で値が確定しても、固定位置の欠測は読取りを完成させない。
+            // 各点の欠測収集は続け、公開構成はMissingとして返す。
+            if !missing.is_empty() {
+                continue;
+            }
             let support = &mut law_supports[i];
             for (_, value) in bindings {
                 add_subject(support, value, c)?;
