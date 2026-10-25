@@ -265,3 +265,22 @@ pub(in crate::observed) fn view_value(
     }
     Ok(value)
 }
+
+pub(in crate::observed) fn coordinate_names(
+    ty: &Type,
+    prefix: &str,
+    c: &Control,
+) -> Result<Vec<String>, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::Quotient)?;
+        if let Type::Tuple(items) = ty {
+            let mut names = vec![];
+            for (i, item) in items.iter().enumerate() {
+                names.extend(coordinate_names(item, &format!("{prefix}.{i}"), c)?);
+            }
+            Ok(names)
+        } else {
+            Ok(vec![prefix.to_owned()])
+        }
+    })
+}
