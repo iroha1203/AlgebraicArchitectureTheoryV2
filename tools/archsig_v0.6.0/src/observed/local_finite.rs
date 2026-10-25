@@ -446,7 +446,18 @@ pub(super) fn compute(
         reasons: vec![],
         scope: b.parts[proposition.0 - base].scope.clone(),
     };
-    let expression = *expressions.first().ok_or("有限局所Lawの原式がない")?;
+    let expression = if let Some(expression) = expressions.first() {
+        *expression
+    } else {
+        let declaration = &env.inputs.law().declarations[&model.change];
+        let Signature::Change { params, body, .. } = &declaration.signature else {
+            return Err("局所changeの署名がない".into());
+        };
+        change_result::source_expression(
+            &mut b, env, *body, &[],
+            &params.iter().map(|p| (p.name.clone(), p.ty.clone())).collect::<Vec<_>>(),
+        )?
+    };
     let inhabited = built
         .finite
         .as_ref()

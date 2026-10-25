@@ -4137,3 +4137,88 @@ fn different_finite_localization_plans_are_not_equal_by_shared_position_names() 
         .any(|r| s(get(r, "code")) == "unsupported_algorithm"));
     assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
 }
+
+#[test]
+fn finite_localization_without_required_laws_keeps_equation_and_action_states_distinct() {
+    for explicit in [false, true] {
+        for side in ["equation", "semantic"] {
+            for degree in [0, 1] {
+                let dir = finite_diagnostic_input(&format!("empty-local-laws-{explicit}-{side}-{degree}"), false);
+                let path = dir.join("l.law");
+                let law = std::fs::read_to_string(&path).unwrap();
+                let extra = if explicit { "local each(s:State) reads s.free;" } else { "" };
+                std::fs::write(&path, law.replace("law optional localValid", &format!(
+                    "change constant(s:State,b:Bool)=s with{{free=true}}; {extra} law optional localValid"))).unwrap();
+                let d = format!("d=diagnose($l.system,side={side},degree={degree})");
+                let e = format!("e=diagnose($r.system,side={side},degree={degree})");
+                let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                    "l=localize($m.candidate.source,using=Reservations.constant)",
+                    "r=localize($m.candidate.source,using=Reservations.constant)", &d, &e,
+                    "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+                    "n=needed($c)"];
+                let result = execute(&dir, "out", &asks);
+                assert_eq!(result.code, 0, "{explicit}/{side}/{degree}: {} {}", result.stdout, result.stderr);
+                let j = result_json(&dir, &result);
+                for answer in arr(get(&j, "answers")) { assert_eq!(s(get(answer, "status")), "established"); }
+                let diagnostic = get(output(&j, 3, "diagnostic"), "value");
+                let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
+                let global = get(node(&j, get(restriction, "source")), "value");
+                let elements = arr(get(global, "elements"));
+                let states = elements.iter().map(|r| arr(get(node(&j, r), "value")).iter().map(|v| {
+                    match v.value { archsig::json::JValue::Bool(value) => value, _ => panic!("Bool状態") }
+                }).collect::<Vec<_>>()).collect::<Vec<_>>();
+                assert_eq!(states, if side == "equation" {
+                    vec![vec![false,false],vec![false,true],vec![true,false],vec![true,true]]
+                } else { vec![vec![true,true]] });
+                let matching = get(node(&j, get(diagnostic, "matching")), "value");
+                assert_eq!(arr(get(matching, "elements")).len(), states.len());
+                let comparison = get(output(&j, 5, "comparison"), "value");
+                let map = get(node(&j, get(comparison, "finite_map")), "value");
+                assert_eq!(arr(get(map, "pairs")).len(), states.len());
+                let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+                for ask in asks { args.extend(["--ask", ask]); }
+                let reused = run(&dir, &args);
+                assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
+                let again = result_json(&dir, &reused);
+                for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
+            }
+        }
+    }
+}
+
+#[test]
+fn empty_local_law_family_keeps_change_expression_for_unsupported_followups() {
+    let dir = finite_diagnostic_input("empty-local-laws-followups", false);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path, law.replace("law optional localValid",
+        "change constant(s:State,b:Bool)=s with{free=true}; law optional localValid")).unwrap();
+    let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,using=Reservations.constant)",
+        "r=localize($m.candidate.source,using=Reservations.choose)",
+        "d=diagnose($l.system,side=semantic,degree=0)",
+        "e=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+        "h=diagnose($l.system,degree=2)", "n=needed($c)", "k=needed($h)"];
+    let result = execute(&dir, "out", &asks);
+    assert_eq!(result.code, 2, "{} {}", result.stdout, result.stderr);
+    let j = result_json(&dir, &result);
+    let answers = arr(get(&j, "answers"));
+    for i in [1,2,3,4,7,8] { assert_eq!(s(get(&answers[i], "status")), "established"); }
+    for i in [5,6] {
+        assert_eq!(s(get(&answers[i], "status")), "undetermined");
+        let reason = arr(get(&answers[i], "reasons")).iter().find(|r| s(get(r,"code")) == "unsupported_algorithm").unwrap();
+        let dependencies = arr(get(reason, "dependencies"));
+        assert!(!dependencies.is_empty());
+        let expression = dependencies.iter().map(|r| get(node(&j, r), "value"))
+            .find(|value| has(value, "kind") && s(get(value, "kind")) == "source").unwrap();
+        assert_eq!(arr(get(expression, "parameters")).iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(), vec!["s", "b"]);
+        assert!(arr(get(expression, "bindings")).is_empty());
+    }
+    let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+    for ask in asks { args.extend(["--ask", ask]); }
+    let reused = run(&dir, &args);
+    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
+    let again = result_json(&dir, &reused);
+    for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
+}
