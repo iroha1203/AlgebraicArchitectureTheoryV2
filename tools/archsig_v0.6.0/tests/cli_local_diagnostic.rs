@@ -3008,3 +3008,64 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
 }
 }
+
+#[test]
+fn finite_explicit_read_stop_keeps_the_missing_field_already_observed() {
+    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage}, evaluate::evaluate_observed_bytes, input::InputSources};
+    use std::{cell::Cell, rc::Rc};
+    let dir = multiple_read_input("explicit-read-stop", true, None, "t.other");
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
+    std::fs::write(path, law).unwrap();
+    explicit_local(&dir, "change choose(t:State,b:Bool)=t with {flag=b};");
+    let sources = || InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()], std::fs::read(dir.join("l.law")).unwrap(), std::fs::read(dir.join("a.json")).unwrap());
+    let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)"];
+    let seen = Rc::new(Cell::new(0usize));
+    let count = seen.clone();
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Localize { count.set(count.get()+1); }
+        Usage::default()
+    });
+    let normal = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+    let j = archsig::json::parse(normal.wire().canonical().as_bytes()).unwrap();
+    assert!(arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().any(|r| s(get(r,"code")) == "missing_observation"));
+    let missing = arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().find(|r| s(get(r,"code")) == "missing_observation").unwrap();
+    let expression = s(get(&arr(get(missing,"dependencies"))[0],"node")).to_owned();
+    // 読取り式が保持された最初の停止点は最初のstate開始。その次が二つ目のstate開始。
+    let mut last = None;
+    for stop in 1..seen.get() {
+        let mut count = 0;
+        let mut control = Control::new(Limits { time_ms: Some(1), memory_mib: None }, move |point| {
+            if point == Checkpoint::Localize { count += 1; }
+            Usage { elapsed_ms: if count >= stop { 2 } else { 0 }, ..Usage::default() }
+        });
+        let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+        let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
+        if arr(get(&j,"nodes")).iter().any(|n| s(get(n,"id")) == expression) {
+            last = Some(stop + 1);
+            break;
+        }
+    }
+    let last = last.expect("読取り開始の停止点");
+    for mode in 0..3 {
+        let mut count = 0;
+        let mut control = Control::new(Limits { time_ms: Some(1), memory_mib: Some(1) }, move |point| {
+            if point == Checkpoint::Localize { count += 1; }
+            if count < last { return Usage::default(); }
+            match mode {
+                0 => Usage { elapsed_ms: 2, ..Usage::default() },
+                1 => Usage { memory_mib: 2, ..Usage::default() },
+                _ => Usage { signal: Some(archsig::result::Signal::Term), ..Usage::default() },
+            }
+        });
+        let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+        let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
+        let answer = &arr(get(&j,"answers"))[1];
+        assert_eq!(s(get(answer,"status")), "undetermined");
+        assert!(!has(get(answer,"outputs"),"system"));
+        let reasons = arr(get(answer,"reasons"));
+        assert!(reasons.iter().any(|r| s(get(r,"code")) == if mode == 2 { "cancelled" } else { "budget_exhausted" }));
+        let missing = reasons.iter().find(|r| s(get(r,"code")) == "missing_observation").unwrap_or_else(|| panic!("mode {mode}: {answer:?}"));
+        assert!(format!("{missing:?}").contains("Fixed.State.other"));
+    }
+}

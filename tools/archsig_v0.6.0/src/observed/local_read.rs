@@ -517,7 +517,7 @@ fn materialize_instance(
         let mut carrier = vec![];
         let mut dependencies = vec![];
         let mut visible = vec![];
-        let mut absent = vec![];
+        let mut missing_reason: Option<usize> = None;
         let mut projected = vec![];
         for state in &states {
             c.checkpoint(Checkpoint::Localize)?;
@@ -527,12 +527,23 @@ fn materialize_instance(
             b.parts[expression.0 - b.base].scope.merge(&read.scope);
             out.scope.merge(&read.scope);
             dependencies.extend(positions);
-            absent.extend(missing);
+            if !missing.is_empty() {
+                let index = if let Some(index) = missing_reason { index } else {
+                    let index = out.reasons.len();
+                    reason(&mut out, request, ReasonKind::Missing, vec![],
+                        declaration.span, vec![expression]);
+                    missing_reason = Some(index);
+                    index
+                };
+                out.reasons[index].missing.extend(missing);
+                out.reasons[index].missing.sort();
+                out.reasons[index].missing.dedup();
+            }
             if read.condition_failed {
                 return Err(unsupported(declaration.span, "local読取りの式の適用条件が不成立"));
             }
             if read.condition_pending || read.known_value.is_none() {
-                if absent.is_empty() {
+                if missing_reason.is_none() {
                     return Err(unsupported(declaration.span, "localの読取り値が未確定"));
                 }
                 continue;
@@ -545,12 +556,7 @@ fn materialize_instance(
         }
         out.positions.extend(dependencies.iter().cloned());
         out.visible.extend(visible.iter().cloned());
-        if !absent.is_empty() {
-            absent.sort(); absent.dedup();
-            reason(&mut out, request, ReasonKind::Missing, absent,
-                declaration.span, vec![expression]);
-            continue;
-        }
+        if missing_reason.is_some() { continue; }
         let ty = values.first().ok_or("localの読取り像が空")?.ty();
         let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
         let image = local_result::domain(b, &ty, &actual)?;
