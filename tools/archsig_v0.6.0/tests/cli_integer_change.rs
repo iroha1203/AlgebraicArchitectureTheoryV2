@@ -690,3 +690,46 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
         assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
     }
 }
+
+#[test]
+fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift() {
+    #[path = "common/three_edge.rs"]
+    mod triangle;
+    for gamma in [Some(2),Some(3),None] {
+        let input = triangle::input(gamma);
+        let dir = workdir("integer-three-edge");
+        for (name, bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
+            std::fs::write(dir.join(name),bytes).unwrap();
+        }
+        let asks=["a=build(Coordinates,on=@triangle/root)","r=repair(Coordinates.aligned,on=$a.object,using=Coordinates.move)","n=needed($r)"];
+        let r = execute(&dir,"out", &asks);
+        assert_eq!(r.code,if gamma.is_some() {1} else {2},"gamma {gamma:?}: {} {}",r.stdout,r.stderr);
+        let j = result_json(&dir,&r);
+        let answer = &arr(get(&j,"answers"))[1];
+        assert!(!has(get(answer,"outputs"),"object"));
+        if let Some(gamma)=gamma {
+            let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
+            assert_eq!(s(get(representation,"kind")),if gamma==2 {"affine"} else {"empty"});
+            assert_eq!(s(get(get(output(&j,1,"existence"),"judgment"),"status")),if gamma==2 {"established"} else {"refuted"});
+            if gamma==2 {
+                let directions = get(node(&j,get(representation,"directions")),"value");
+                assert_eq!(num(get(directions,"free_rank")),1);
+            }
+        } else {
+            assert_eq!(s(get(answer,"status")),"undetermined");
+            assert!(!has(answer,"claim"));
+            assert!(arr(get(answer,"reasons")).iter().any(|r| s(get(r,"code"))=="unsupported_algorithm"));
+            let plan = get(output(&j,2,"plan"),"value");
+            assert!(arr(get(plan,"requirements")).iter().any(|r| {
+                let field=get(r,"field");
+                s(get(field,"subject"))=="c" && s(get(field,"field"))=="Coordinates.Shift.shift"
+            }));
+        }
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks { args.extend(["--ask",ask]); }
+        let reused=run(&dir,&args);
+        assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);
+        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
+    }
+}

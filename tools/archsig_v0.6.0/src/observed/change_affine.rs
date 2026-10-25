@@ -61,9 +61,11 @@ fn coordinates(
     id: usize,
     form: &Form,
     axes: &[Parameter],
+    missing: &mut Vec<Fact>,
 ) -> Result<(Z, Vec<Z>), ValidationFailure> {
     form.integer_coordinates(axes, &env.control)?
         .ok_or_else(|| {
+            missing.extend(form.missing_facts());
             unsupported(
                 env,
                 id,
@@ -79,6 +81,7 @@ fn equations(
     axes: &[Parameter],
     matrix: &mut Matrix,
     rhs: &mut Vec<Z>,
+    missing: &mut Vec<Fact>,
 ) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
@@ -93,21 +96,21 @@ fn equations(
             return Ok(());
         }
         match &env.inputs.law().exprs[id].kind {
-            ExprKind::Group(body) => equations(env, *body, vars, reading, axes, matrix, rhs),
+            ExprKind::Group(body) => equations(env, *body, vars, reading, axes, matrix, rhs, missing),
             ExprKind::Let { name, value, body } => {
                 let mut vars = vars.clone();
                 let v = env.scoped_ast(*value, &vars, &base, reading)?;
                 usable(env, *value, &v)?;
                 vars.insert(name.name.clone(), v);
-                equations(env, *body, &vars, reading, axes, matrix, rhs)
+                equations(env, *body, &vars, reading, axes, matrix, rhs, missing)
             }
             ExprKind::Binary {
                 op: BinOp::And,
                 lhs,
                 rhs: right,
             } => {
-                equations(env, *lhs, vars, reading, axes, matrix, rhs)?;
-                equations(env, *right, vars, reading, axes, matrix, rhs)
+                equations(env, *lhs, vars, reading, axes, matrix, rhs, missing)?;
+                equations(env, *right, vars, reading, axes, matrix, rhs, missing)
             }
             _ => {
                 let Some(p) = v
@@ -122,7 +125,7 @@ fn equations(
                 };
                 let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
                     .ok_or("整数等式の差がない")?;
-                let (constant, coefficients) = coordinates(env, id, &form, axes)?;
+                let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 matrix.push(coefficients);
                 rhs.push(-constant);
                 Ok(())
@@ -136,6 +139,7 @@ pub(in crate::observed) fn compute(
     change: &Declaration,
     subjects: &[Scalar],
     requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Vec<Fact>,
 ) -> Result<Linear, ValidationFailure> {
     let Signature::Change {
         params,
@@ -192,6 +196,7 @@ pub(in crate::observed) fn compute(
                 &axes,
                 &mut guard_matrix,
                 &mut guard_rhs,
+                missing,
             )?;
         }
         let mut current = *body;
@@ -245,7 +250,7 @@ pub(in crate::observed) fn compute(
                         let form = v.affine.ok_or_else(|| {
                             unsupported(env, *id, "整数changeの更新式がZアフィンでない")
                         })?;
-                        coordinates(env, *id, &form, &axes)?;
+                        coordinates(env, *id, &form, &axes, missing)?;
                         let position = Fact {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
@@ -274,7 +279,7 @@ pub(in crate::observed) fn compute(
     let mut action = vec![];
     let mut offset = vec![];
     for (slot, form) in &updates {
-        let (constant, row) = coordinates(env, *body, form, &axes)?;
+        let (constant, row) = coordinates(env, *body, form, &axes, missing)?;
         slots.push(slot.clone());
         action.push(row);
         offset.push(constant);
@@ -380,6 +385,7 @@ pub(in crate::observed) fn compute(
             &axes,
             &mut matrix,
             &mut rhs,
+            missing,
         )?;
     }
     let free_count = guard

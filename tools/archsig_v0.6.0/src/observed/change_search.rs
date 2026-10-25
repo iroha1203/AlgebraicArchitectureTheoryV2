@@ -305,7 +305,7 @@ pub(in crate::observed) fn search(
         }
         result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
         if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
-            let linear=change_affine::compute(&environment,change,&subjects,&result.requirements)?;
+            let linear=change_affine::compute(&environment,change,&subjects,&result.requirements,&mut result.missing)?;
             let mut points=vec![];
             if let Some(particular)=&linear.particular {
                 points.push(particular.clone());

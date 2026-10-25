@@ -184,6 +184,12 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    pub(in crate::observed) fn missing_facts(&self) -> Vec<Fact> {
+        self.coefficients.keys().filter_map(|key| match key {
+            Symbol::Missing(key) => Some(key.fact.clone()),
+            _ => None,
+        }).collect()
+    }
     /// 元changeの全parameter軸だけを持つ整数式を係数列へ移す。
     /// 欠測や別binderを候補の自由軸へ取り込まない。
     pub(in crate::observed) fn integer_coordinates(
