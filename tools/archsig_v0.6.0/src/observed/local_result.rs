@@ -406,7 +406,7 @@ fn compute(
         let mut expressions = vec![];
         let mut reasons = vec![];
         let mut inhabited = true;
-        let mut common = None;
+        let mut common: Option<(Vec<Json>, Vec<Fact>)> = None;
         let mut readings = vec![];
         let mut reading_refs = vec![];
         let mut retained = std::collections::BTreeSet::new();
@@ -428,9 +428,19 @@ fn compute(
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
-            if let Some((prior_carrier, prior_positions)) = &common {
-                if prior_carrier != &carrier || prior_positions != &positions {
-                    return Err(unsupported("異なる支持contextのLaw族の局所系は未実装"));
+            if let Some((prior_carrier, prior_positions)) = &mut common {
+                if locals.is_empty() {
+                    if prior_carrier != &carrier || prior_positions != &positions {
+                        return Err(unsupported("異なる支持contextのLaw族の局所系は未実装"));
+                    }
+                } else {
+                    // 必要支持を集めるだけで公開権限を足さない。作者のlocalで後から被覆検査する。
+                    prior_carrier.extend(carrier);
+                    prior_carrier.sort_by_key(Json::canonical);
+                    prior_carrier.dedup();
+                    prior_positions.extend(positions);
+                    prior_positions.sort();
+                    prior_positions.dedup();
                 }
             } else {
                 common = Some((carrier, positions));
