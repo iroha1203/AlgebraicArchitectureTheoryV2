@@ -2886,7 +2886,7 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
 
 #[test]
 fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
-    for explicit in [false, true] {
+    for (explicit, chain) in [(false,false),(true,false),(true,true)] {
         let dir = input("finite-read-bindings", Some(true));
         let mut entities = String::new();
         for entity in ["Left", "Right"] {
@@ -2922,7 +2922,11 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
     let law=std::fs::read_to_string(&path).unwrap().replace("law required valid(s:State):s.flag=true;", "");
     std::fs::write(path,law).unwrap();
     explicit_local(&dir,"law required left(t:State,u:Left[t]):t.flag=u.flag; law required right(t:State,v:Right[t]):t.flag=v.flag; change choose(t:State,b:Bool)=t with {flag=b};");
-    if explicit { explicit_local(&dir,"local LeftRead(t:State,u:Left[t]) reads (t.flag,u.flag,u.owner); local RightRead(t:State,v:Right[t]) reads (t.flag,v.flag,v.owner);"); }
+    if explicit {
+        let reads="local LeftRead(t:State,u:Left[t]) reads (t.flag,u.flag,u.owner); local RightRead(t:State,v:Right[t]) reads (t.flag,v.flag,v.owner);";
+        let reads=if chain { reads.replacen("t.flag","u.owner.flag",1).replacen("t.flag","v.owner.flag",1) } else { reads.to_owned() };
+        explicit_local(&dir,&reads);
+    }
     let asks=["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
     let r=execute(&dir,"out",&asks);
     let j=result_json(&dir,&r);
@@ -2934,7 +2938,16 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
     for reading in readings {
         assert_eq!(s(get(reading,"type")),"Bool");
         let expression=get(node(&j,get(reading,"expression")),"value");
-        if explicit { assert_eq!(s(get(expression,"operation")), "project"); } else {
+        if explicit {
+            if !chain { assert_eq!(s(get(expression,"operation")), "project"); }
+            else {
+                assert_eq!(s(get(expression,"kind")),"source");
+                let binding=&arr(get(expression,"bindings"))[0];
+                let subject=arr(get(node(&j,get(binding,"value")),"value"));
+                assert_eq!((s(&subject[0]),s(&subject[1])),("fixed","s"));
+                assert_eq!(s(get(get(expression,"location"),"pointer")),"/vocabularies/0/declarations/2/fields/0");
+            }
+        } else {
         let bindings=arr(get(expression,"bindings"));
         assert_eq!(bindings.len(),1);
         assert_eq!(s(get(&bindings[0],"name")),"t");
@@ -3101,4 +3114,64 @@ fn finite_explicit_local_keeps_unpublished_guard_dependencies_fixed() {
     let equations = get(node(&j,get(solutions,"domain")),"value");
     assert!(arr(get(equations,"fixed")).iter().any(|slot| s(get(slot,"field"))=="Fixed.State.flag"));
     assert_eq!(arr(get(equations,"variables")).len(),1);
+}
+
+#[test]
+fn explicit_local_reference_chain_reads_reach_actual_point_coordinates() {
+    #[path = "common/three_edge.rs"]
+    mod triangle;
+    for (label, missing, atom) in [
+        ("known",None,""),
+        ("reference",Some("Coordinates.Shift.from"),r#",{"id":"a-Shift.from","subject":"a","field":"Coordinates.Shift.from","value":["triangle","p"],"origin":"model"}"#),
+        ("value",Some("Coordinates.Point.coordinate"),r#",{"id":"p-Point.coordinate","subject":"p","field":"Coordinates.Point.coordinate","value":"0","origin":"model"}"#),
+    ] {
+        let input=triangle::input(Some(2));
+        let dir=workdir(&format!("local-reference-chain-{label}"));
+        for (name,bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
+            let mut text=String::from_utf8(bytes.to_vec()).unwrap();
+            if name=="a.json" && missing.is_some() {
+                assert!(text.contains(atom));
+                text=text.replace(atom,"");
+            }
+            std::fs::write(dir.join(name),text).unwrap();
+        }
+        let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object)","d=diagnose($l.system)","n=needed($l)"];
+        let r=execute(&dir,"out",&asks);
+        let j=result_json(&dir,&r);
+        assert_eq!(r.code,if missing.is_some(){2}else{1},"{} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
+        if let Some(field)=missing {
+            let plan=get(output(&j,3,"plan"),"value");
+            assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))==field));
+        } else {
+            assert!(has(get(&arr(get(&j,"answers"))[1],"outputs"),"system"));
+            assert!(has(get(&arr(get(&j,"answers"))[2],"outputs"),"diagnostic"));
+            let system=get(output(&j,1,"system"),"value");
+            let mut shared=std::collections::BTreeSet::new();
+            for context in arr(get(system,"contexts")) {
+                for reading in arr(get(get(node(&j,context),"value"),"readings")) {
+                    let expression=get(node(&j,get(reading,"expression")),"value");
+                    if !has(expression,"location") {continue;}
+                    let location=get(expression,"location");
+                    if !has(location,"pointer") || s(get(location,"pointer"))!="/vocabularies/0/declarations/1/fields/0" {continue;}
+                    let binding=&arr(get(expression,"bindings"))[0];
+                    let subject=arr(get(node(&j,get(binding,"value")),"value"));
+                    shared.insert(s(&subject[1]).to_owned());
+                    let image=get(node(&j,get(reading,"domain")),"value");
+                    let values=arr(get(image,"elements"));
+                    assert_eq!(values.len(),1);
+                    assert_eq!(s(get(node(&j,&values[0]),"value")),"0");
+                }
+            }
+            assert_eq!(shared, ["p","q","r"].into_iter().map(str::to_owned).collect());
+            let diagnostic=get(output(&j,2,"diagnostic"),"value");
+            let global=get(node(&j,get(diagnostic,"global")),"value");
+            assert!(arr(get(get(global,"representation"),"values")).is_empty());
+        }
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}
+        let reused=run(&dir,&args);
+        assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);
+        for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }
 }

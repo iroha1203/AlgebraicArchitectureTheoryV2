@@ -40,6 +40,7 @@ impl Support {
 pub(in crate::observed) struct Projection {
     pub read: usize,
     pub path: Vec<usize>,
+    pub field: Option<(Scalar, Location)>,
     pub values: Vec<Scalar>,
     pub support: Support,
 }
@@ -48,6 +49,21 @@ fn project(
     mut expression: NodeRef,
     p: &Projection,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
+    if let Some((subject, location)) = &p.field {
+        let subject = change_result::value(b, subject)?;
+        let ty = p.values.first().ok_or("field読取りの像が空")?.ty();
+        expression = b.push(
+            NodeType::Expression(ty), "expression",
+            Json::obj([
+                ("kind", Json::str("source")),
+                ("location", crate::result::location_wire(location)),
+                ("parameters", Json::Arr(vec![])),
+                ("bindings", Json::Arr(vec![Json::obj([
+                    ("name", Json::str("subject")), ("value", subject.wire())
+                ])])),
+            ]), vec![expression, subject], None, None,
+        )?;
+    } else {
     for position in &p.path {
         let NodeType::Expression(Type::Tuple(types)) = &b.parts[expression.0 - b.base].ty else {
             return Err("Tuple射影の入力型が積でない".into());
@@ -71,6 +87,7 @@ fn project(
             None,
             None,
         )?;
+    }
     }
     let ty = p.values.first().ok_or("Tuple射影の像が空")?.ty();
     let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;

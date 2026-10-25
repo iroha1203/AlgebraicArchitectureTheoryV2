@@ -200,6 +200,26 @@ fn projections(
                     pending.push((*child, value, child_path));
                 }
             }
+            _ if field_path(env, id)?.is_some_and(|(_, fields)| fields.len() > 1) => {
+                let slots = visible_slots(env, id, bindings, reading)?;
+                let slot = slots.first().ok_or("参照経路の末端slotがない")?;
+                let owner = env.subject(&slot.snapshot, &slot.subject)?;
+                let subject = Scalar::Subject { snapshot: slot.snapshot.clone(),
+                    subject: slot.subject.clone(), entity: owner.ty.clone() };
+                let declaration = &env.inputs.definitions().declarations[&owner.ty];
+                let (params, fields) = declaration.signature.record_fields().ok_or("末端fieldのrecordがない")?;
+                let field = params.iter().chain(fields).find(|f|
+                    slot.field.as_ref() == Some(&format!("{}.{}", owner.ty, f.name)))
+                    .ok_or("末端fieldの宣言がない")?;
+                let mut carrier = vec![];
+                subject_carrier(value, &mut carrier, c)?;
+                out.push(local_result::geometry::Projection {
+                    read, path, field: Some((subject, field.location.clone())), values: vec![value.clone()],
+                    support: local_result::geometry::Support {
+                        carrier, positions: slots.clone(), visible: slots,
+                    },
+                });
+            }
             _ if !path.is_empty() => {
                 // 成分を読むための束縛だけを残す。他成分の参照は射影の支持ではない。
                 let used = read_bindings(env, id, bindings, c)?;
@@ -207,11 +227,12 @@ fn projections(
                 out.push(local_result::geometry::Projection {
                     read,
                     path,
+                    field: None,
                     values: vec![value.clone()],
                     support: local_result::geometry::Support {
                         carrier,
                         positions,
-                        visible: visible_slots(env, id, &used)?,
+                        visible: visible_slots(env, id, &used, reading)?,
                     },
                 });
             }
@@ -220,77 +241,95 @@ fn projections(
     }
     Ok(())
 }
-fn bound_name<'a>(env: &'a Environment<'_>, id: usize) -> Option<&'a str> {
-    match &env.inputs.law().exprs[id].kind {
-        ExprKind::Group(child) => bound_name(env, *child),
-        ExprKind::Dotted(parts) if parts.len() == 1 => Some(parts[0].name.as_str()),
-        _ => None,
+fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a str, Vec<&'a str>)>, ValidationFailure> {
+    let mut fields = vec![];
+    loop {
+        env.control.clone().checkpoint(Checkpoint::Localize)?;
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(child) => id = *child,
+            ExprKind::Field { base, name } => {
+                fields.push(name.name.as_str());
+                id = *base;
+            }
+            ExprKind::Dotted(parts) if !parts.is_empty() => {
+                fields.extend(parts[1..].iter().rev().map(|p| p.name.as_str()));
+                fields.reverse();
+                return Ok(Some((parts[0].name.as_str(), fields)));
+            }
+            _ => return Ok(None),
+        }
     }
 }
 fn visible_slots(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
+    reading: &str,
 ) -> Result<Vec<Fact>, ValidationFailure> {
     let mut visible = vec![];
     let mut pending = vec![id];
     while let Some(id) = pending.pop() {
         env.control.clone().checkpoint(Checkpoint::Localize)?;
         let expr = &env.inputs.law().exprs[id];
-        let (variable, field) = match &expr.kind {
-            ExprKind::Group(child) => {
-                pending.push(*child);
-                continue;
-            }
-            ExprKind::Tuple(items) => {
-                pending.extend(items.iter().rev());
-                continue;
-            }
-            ExprKind::Dotted(parts) if parts.len() == 2 => {
-                (parts[0].name.as_str(), parts[1].name.as_str())
-            }
-            ExprKind::Field { base, name } => (
-                bound_name(env, *base)
-                    .ok_or_else(|| unsupported(expr.span, "明示localの複合field読取りは未実装"))?,
-                name.name.as_str(),
-            ),
-            ExprKind::Dotted(parts)
-                if parts.len() == 1 && bindings.iter().any(|(n, _)| n == &parts[0].name) =>
-            {
-                continue;
-            }
-            ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {
-                continue;
-            }
-            _ => {
-                return Err(unsupported(
-                    expr.span,
-                    "明示localの複合読取りの因子分解は未実装",
-                ));
-            }
+        match &expr.kind {
+            ExprKind::Group(child) => { pending.push(*child); continue; }
+            ExprKind::Tuple(items) => { pending.extend(items.iter().rev()); continue; }
+            ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => continue,
+            _ => {}
+        }
+        let (variable, fields) = field_path(env, id)?
+            .ok_or_else(|| unsupported(expr.span, "明示localの複合読取りの因子分解は未実装"))?;
+        let (_, root) = bindings.iter().find(|(n, _)| n == variable)
+            .ok_or_else(|| unsupported(expr.span, "明示localの読取り元が束縛でない"))?;
+        let Some((last, prefix)) = fields.split_last() else { continue; };
+        let mut owner = known(root.clone());
+        for field in prefix {
+            env.control.clone().checkpoint(Checkpoint::Localize)?;
+            owner = env.scoped_field(owner, field, &Scope::default(), reading, expr.span)?;
+        }
+        let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
+            return Err(unsupported(expr.span, "明示localのfield読取り元が確定した参照でない"));
         };
-        let Some((
-            _,
-            Scalar::Subject {
-                snapshot,
-                subject,
-                entity,
-            },
-        )) = bindings.iter().find(|(n, _)| n == variable)
-        else {
-            return Err(unsupported(
-                expr.span,
-                "明示localの直接読取り元が参照でない",
-            ));
-        };
-        visible.push(Fact {
-            snapshot: snapshot.clone(),
-            subject: subject.clone(),
-            field: Some(format!("{entity}.{field}")),
-            atom: None,
-        });
+        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some(format!("{entity}.{last}")), atom: None });
     }
+    visible.sort();
+    visible.dedup();
     Ok(visible)
+}
+/// 固定状態の参照経路では、中間参照を値座標の公開要件へ混ぜない。
+/// let/helper等の一般因子分解はここで推測せず、従来の支持検査へ戻す。
+pub(in crate::observed) fn fixed_chain_visibility(
+    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
+    c: &mut Control,
+) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
+    let mut pending = roots.to_vec();
+    let mut carrier = vec![];
+    for (_, value) in bindings { subject_carrier(value, &mut carrier, c)?; }
+    let variables = bindings.iter().map(|(n,v)|(n.clone(),known(v.clone()))).collect();
+    let mut visible = vec![];
+    let mut chain = false;
+    while let Some(id) = pending.pop() {
+        c.checkpoint(Checkpoint::Localize)?;
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push(*child),
+            ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs,*rhs]),
+            ExprKind::Tuple(items) => pending.extend(items),
+            ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {},
+            ExprKind::Dotted(_) | ExprKind::Field { .. } => {
+                let Some((name, fields)) = field_path(env,id)? else { return Ok(None); };
+                if !bindings.iter().any(|(n,_)|n==name) { return Ok(None); }
+                chain |= fields.len()>1;
+                visible.extend(visible_slots(env,id,bindings,reading)?);
+                let value = env.scoped_ast(id,&variables,&Scope::default(),reading)?;
+                if value.condition_failed || value.condition_pending { return Ok(None); }
+                if let Some(value)=value.known_value { subject_carrier(&value,&mut carrier,c)?; }
+            }
+            _ => return Ok(None),
+        }
+    }
+    carrier.sort_by_key(Json::canonical); carrier.dedup();
+    visible.sort(); visible.dedup();
+    Ok(chain.then_some((carrier,visible)))
 }
 fn reason(
     context: &mut Context,
@@ -535,7 +574,6 @@ fn materialize_instance(
         let mut projected = vec![];
         for state in &states {
             c.checkpoint(Checkpoint::Localize)?;
-            visible.extend(visible_slots(state, *id, bindings)?);
             let (read, positions, missing) =
                 evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
             b.parts[expression.0 - b.base].scope.merge(&read.scope);
@@ -562,6 +600,9 @@ fn materialize_instance(
                 }
                 continue;
             }
+            let state_visible = visible_slots(state, *id, bindings, &declaration.reading)?;
+            // changeは参照fieldを更新しない。fieldだけの経路の末端位置は各状態で同じ。
+            visible = state_visible;
             let value = read.known_value.ok_or("localの確定値がない")?;
             subject_carrier(&value, &mut carrier, c)?;
             projections(state, *id, &value, out.readings.len(), bindings,
