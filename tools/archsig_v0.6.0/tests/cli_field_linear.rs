@@ -660,3 +660,68 @@ fn rational_quotient_varying_guard_is_not_fixed_by_an_arbitrary_assignment() {
     let dir=input("rational-varying-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional indexed(s:State,b:Bool) when (s.x+s.y=1) and b:s.x=s.x;");
     let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("商の候補域で変化するLaw guard")));let j=result_json(&dir,&r);assert!(!has(get(&arr(get(&j,"answers"))[1],"outputs"),"quotient"));
 }
+
+#[test]
+fn rational_local_system_keeps_exact_equation_and_semantic_fibers() {
+    let dir=input("rational-local","change choose(s:State,a:Q,b:Q)=s with{x=rat(1,2)*a,y=b};law required total(s:State):s.x+s.y=1;");
+    let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","e=diagnose($l.system)","m=diagnose($l.system,side=semantic)","z=diagnose($l.system,degree=0)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    for i in [2,3,4] {let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");let ring=get(node(&j,get(module,"ring")),"value");assert_eq!(s(get(ring,"scalar")),"Q");assert!(arr(get(module,"torsion")).is_empty());assert_eq!(num(get(module,"free_rank")),if i==4{1}else{0});}
+    assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks {args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,0,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
+}
+#[path="common/three_edge.rs"] mod rational_triangle_source;
+fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
+    let original=rational_triangle_source::input(gamma);
+    let before=std::str::from_utf8(original.definitions()[0].bytes()).unwrap();
+    let d=before.replace("\"type\":\"Z\"","\"type\":\"Q\"");
+    let old=definition::check_definitions(&[("d",before.as_bytes())]).unwrap();
+    let new=definition::check_definitions(&[("d",d.as_bytes())]).unwrap();
+    let digest=&old.vocabularies["Coordinates"].digest;
+    let new_digest=&new.vocabularies["Coordinates"].digest;
+    let law=std::str::from_utf8(original.law().bytes()).unwrap().replace(digest,new_digest).replace("d:Z","d:Q");
+    let mut map=std::str::from_utf8(original.archmap().bytes()).unwrap().replace(digest,new_digest);
+    for (n,q) in [("0",r#"["0","1"]"#),("1",r#"["1","2"]"#),("2",r#"["1","1"]"#),("3",r#"["3","2"]"#)] {
+        map=map.replace(&format!(r#""value":"{n}""#),&format!(r#""value":{q}"#));
+    }
+    let dir=workdir(name);
+    for (name,text) in [("d.json",d),("l.law",law),("a.json",map)]{std::fs::write(dir.join(name),text).unwrap();}
+    dir
+}
+#[test]
+fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
+    for gamma in [Some(2),Some(3),None] {
+        let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
+        let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);
+        for i in [2,3] {
+            let answer=&arr(get(&j,"answers"))[i];
+            assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
+            let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
+            assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
+            assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
+            if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
+            let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
+            if gamma==Some(2){
+                assert_eq!(coordinates[0],vec!["0","1"]);
+                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value")).find(|e|s(get(e,"kind"))=="gluing").unwrap();
+                let data=get(proof,"data");assert_eq!(arr(get(data,"rechecks")).len(),3);
+                for check in arr(get(data,"rechecks")){assert_eq!(s(get(get(node(&j,check),"judgment"),"status")),"established");}
+            }else{
+                assert_ne!(coordinates[0][0],"0");
+                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value")).find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
+                let pairing=arr(get(node(&j,get(get(proof,"data"),"pairing")),"value"));assert_ne!(s(&pairing[0]),"0");
+            }
+        }
+        if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
+        assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="evidence"&&s(get(get(n,"value"),"kind"))=="smith"));
+    }
+}
+#[test]
+fn rational_local_equations_do_not_expand_the_change_image() {
+    let dir=input("rational-local-image","change choose(s:State,a:Q)=s with{x=a,y=0};law required total(s:State):s.x+s.y=1;");
+    let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","e=diagnose($l.system,degree=0)","m=diagnose($l.system,degree=0,side=semantic)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    for (i,rank) in [(2,1),(3,0)]{let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),rank);}
+}

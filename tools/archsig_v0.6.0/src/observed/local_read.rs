@@ -581,7 +581,7 @@ fn affine_read_image(
     for slot in free {
         arbitrary
             .affine_valuation
-            .insert(slot.clone(), crate::observed::affine::Form::state(slot, c)?);
+            .insert(slot.clone(), crate::observed::affine::Form::typed_state(&env.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase(), slot, c)?);
     }
     let variables = bindings
         .iter()
@@ -1009,7 +1009,7 @@ fn materialize_instance(
                 for slot in free {
                     arbitrary
                         .affine_valuation
-                        .insert(slot.clone(), crate::observed::affine::Form::state(slot, c)?);
+                        .insert(slot.clone(), crate::observed::affine::Form::typed_state(&env.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase(), slot, c)?);
                 }
                 let (all, _, _) =
                     evaluate_read(&arbitrary, *id, &variables, &scope, &declaration.reading)?;
@@ -1178,12 +1178,12 @@ fn materialize_instance(
             let ty = ty.clone();
             let information_before = information.len();
             let image = if visible.iter().any(|slot| free.contains(slot)) {
-                if ty == Type::Z && visible.len() == 1 && field_path(env, *id)?.is_some() {
+                if matches!(ty, Type::Z | Type::Q) && visible.len() == 1 && field_path(env, *id)?.is_some() {
                     information.push((visible.clone(), vec![vec![1.into()]]));
                     b.push(
                         NodeType::Domain,
                         "domain",
-                        Json::obj([("kind", Json::str("type")), ("type", Type::Z.wire())]),
+                        Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
                         vec![],
                         None,
                         None,

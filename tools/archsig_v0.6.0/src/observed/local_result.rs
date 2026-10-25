@@ -25,6 +25,8 @@ use crate::{
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "local_integer.rs"]
 mod integer;
+#[path = "local_rational.rs"]
+mod rational;
 #[path = "local_compare.rs"]
 mod comparison;
 #[path = "local_finite.rs"]
@@ -55,6 +57,7 @@ struct System {
     patch_count: usize,
     finite: Option<geometry::Finite>,
     integer: Option<integer::Diagram>,
+    rational: Option<rational::Diagram>,
     fixed_positions: Vec<Fact>,
 }
 #[derive(Clone, Debug)]
@@ -286,6 +289,9 @@ fn compute(
         }) {
             if matches!(&env.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
                 return integer::compute(env, g, request, target, original, base, witness.clone(), c);
+            }
+            if matches!(&env.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Q)) {
+                return rational::compute(env, g, request, target, original, base, witness.clone(), c);
             }
             return finite::compute(env, g, request, target, original, base, witness.clone(), c);
         }
@@ -916,6 +922,7 @@ fn compute(
                 patch_count,
                 finite,
                 integer,
+                rational: None,
                 fixed_positions,
             }),
         })
@@ -953,6 +960,9 @@ fn diagnose(
     if let Some(diagram) = &system.integer {
         let semantic=request.arguments.iter().any(|a|a.name=="side"&&matches!(&a.value,Selector::Enum{value} if value=="semantic"));
         if !diagram.equation_only || !semantic { return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
+    }
+    if let Some(diagram) = &system.rational {
+        return rational::diagnose(env, g, request, target, base, witness, diagram, degree, c);
     }
     if degree > 1 {
         let mut b = Builder {

@@ -1,6 +1,5 @@
 //! 順序付きpatch tupleから微分を構成し、整数核/像の商と局所差の類を求める。
 use super::*;
-use crate::observed::change_result::linear_result as wire;
 use num_traits::One;
 struct Level {
     tuples: Vec<Vec<usize>>,
@@ -147,7 +146,7 @@ pub(in crate::observed::local_result) fn diagnose(
         let ring = b.push(
             NodeType::Construction(T::Ring),
             "ring",
-            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
+            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str(coefficient_name()))]),
             vec![target],
             None,
             None,
@@ -218,7 +217,7 @@ pub(in crate::observed::local_result) fn diagnose(
             for j in 0..rank {
                 row.push(change_result::value(
                     &mut b,
-                    &Scalar::Z(if i == j { divisor.clone() } else { Z::zero() }),
+                    &coefficient_value(if i == j { divisor.clone() } else { Z::zero() }),
                 )?);
             }
             relations.push(refs(&row));
@@ -365,7 +364,7 @@ pub(in crate::observed::local_result) fn diagnose(
             .collect::<Vec<_>>();
             let mut values = linear::apply(&cohomology.projection, &cycle_coordinates, c)?;
             for (v, m) in values.iter_mut().zip(&cohomology.torsion) {
-                *v = ((&*v % m) + m) % m;
+                reduce_torsion(v, m);
             }
             let representative = wire::vector(&mut b, modules[1], &cocycle, c)?;
             let coordinates = wire::vector(&mut b, module, &values, c)?;
@@ -383,7 +382,7 @@ pub(in crate::observed::local_result) fn diagnose(
             )?;
             class = Some(r);
             let correction = integer_fiber::solve(&differentials[0], levels[0].rank, &cocycle, c)?;
-            let (_, certificate) = wire::smith(
+            let (_, certificate) = wire::certificate(
                 &mut b,
                 ring,
                 modules[0],
@@ -407,7 +406,7 @@ pub(in crate::observed::local_result) fn diagnose(
                 let annihilator = wire::vector(&mut b, modules[1], &correction.left[row], c)?;
                 let pairing = change_result::value(
                     &mut b,
-                    &Scalar::Z(correction.transformed_rhs[row].clone()),
+                    &coefficient_value(correction.transformed_rhs[row].clone()),
                 )?;
                 let mut data = BTreeMap::from([
                     ("map".into(), maps[0].wire()),
@@ -609,7 +608,7 @@ fn gluing(
         .cloned()
         .collect::<BTreeMap<_, _>>();
     for (i, v) in diagram.free[0].iter().zip(&global_values) {
-        assignments.insert(diagram.slots[*i].clone(), Scalar::Z(v.clone()));
+        assignments.insert(diagram.slots[*i].clone(), coefficient_value(v.clone()));
     }
     let mut evaluated = Environment::try_primitive_valuation(
         env.inputs,

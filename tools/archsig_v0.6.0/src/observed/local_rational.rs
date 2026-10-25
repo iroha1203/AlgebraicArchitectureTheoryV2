@@ -1,0 +1,31 @@
+//! Q係数の局所状態。整数の整除性を使わず、正確な体上の消去を使う。
+#[path = "local_rational_number.rs"]
+mod number;
+use crate::observed::environment::local_read;
+use number::Q as Z;
+#[path = "local_rational_fiber.rs"]
+mod integer_fiber;
+use integer_fiber::Matrix;
+#[path = "local_rational_action.rs"]
+mod change_affine;
+#[path = "local_rational_wire.rs"]
+mod wire;
+fn coefficient_type() -> crate::types::Type {
+    crate::types::Type::Q
+}
+fn coefficient_name() -> &'static str {
+    "Q"
+}
+fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
+    v.scalar()
+}
+fn read_coefficient(v: &num_bigint::BigInt) -> Z {
+    Z::from(v.clone())
+}
+fn reduce_torsion(_: &mut Z, _: &Z) {
+    unreachable!("体上の商にtorsionはない")
+}
+fn save_diagram(system: &mut super::System, diagram: Diagram) {
+    system.rational = Some(diagram);
+}
+include!("local_affine.rs");

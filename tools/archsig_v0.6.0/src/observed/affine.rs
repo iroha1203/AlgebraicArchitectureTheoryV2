@@ -187,10 +187,14 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 
 impl Form {
     pub(in crate::observed) fn state(position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
+        Self::typed_state(&Type::Z, position, c)
+    }
+    pub(in crate::observed) fn typed_state(ty: &Type, position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
         fact_check(position)?;
         tick(c)?;
-        Ok(Self { ty: Type::Z, constant: Scalar::Z(BigInt::zero()),
-            coefficients: BTreeMap::from([(Symbol::State(position.clone()), Scalar::Z(BigInt::one()))]) })
+        if !matches!(ty, Type::Z | Type::Q) { return Err("自由状態の係数型がZ/Qでない".into()); }
+        Ok(Self { ty: ty.clone(), constant: numeric::zero(ty, c)?,
+            coefficients: BTreeMap::from([(Symbol::State(position.clone()), numeric::literal("1", ty, c)?)]) })
     }
     pub(in crate::observed) fn state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(Option<BigInt>, Vec<BigInt>)>, ValidationFailure> {
         self.check(c)?;
@@ -213,6 +217,25 @@ impl Form {
             });
         }
         Ok(Some((known.then(||constant.clone()), row)))
+    }
+    pub(in crate::observed) fn rational_state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(Option<Scalar>, Vec<Scalar>)>, ValidationFailure> {
+        self.check(c)?;
+        if self.ty != Type::Q { return Ok(None); }
+        let mut known = true;
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            match key {
+                Symbol::State(position) if positions.contains(position) => {},
+                Symbol::Missing(_) => known = false,
+                _ => return Ok(None),
+            }
+        }
+        let mut row = vec![];
+        for position in positions {
+            tick(c)?;
+            row.push(self.coefficients.get(&Symbol::State(position.clone())).cloned().unwrap_or(numeric::zero(&Type::Q, c)?));
+        }
+        Ok(Some((known.then(||self.constant.clone()), row)))
     }
     pub(in crate::observed) fn missing_facts(&self) -> Vec<Fact> {
         self.coefficients.keys().filter_map(|key| match key {
@@ -315,7 +338,7 @@ impl Form {
                     }
                     Symbol::State(position) => {
                         fact_check(position)?;
-                        if self.ty != Type::Z { return Err("整数自由状態の係数型がZでない".into()); }
+                        if !matches!(self.ty, Type::Z | Type::Q) { return Err("自由状態の係数型がZ/Qでない".into()); }
                     }
                     Symbol::TermArgument(argument) => {
                         if argument.kind.ty() != self.ty {

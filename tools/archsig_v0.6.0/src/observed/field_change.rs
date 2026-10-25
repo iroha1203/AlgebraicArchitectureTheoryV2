@@ -48,31 +48,52 @@ fn usable(env: &Environment<'_>, id: usize, v: &SourceValue) -> Result<(), Valid
     }
     Ok(())
 }
+#[derive(Clone, Copy)]
+enum Axes<'a> {
+    Parameters(&'a [Parameter]),
+    State(&'a [Fact]),
+}
+impl Axes<'_> {
+    fn len(self) -> usize {
+        match self {
+            Self::Parameters(v) => v.len(),
+            Self::State(v) => v.len(),
+        }
+    }
+}
 fn coordinates(
     env: &Environment<'_>,
     id: usize,
     form: &Form,
-    axes: &[Parameter],
+    axes: Axes<'_>,
     missing: &mut Pending,
-) -> Result<(Scalar, Vec<Scalar>), ValidationFailure> {
-    form.rational_coordinates(axes, &env.control)?
-        .ok_or_else(|| {
+) -> Result<(Option<Scalar>, Vec<Scalar>), ValidationFailure> {
+    (match axes {
+        Axes::Parameters(axes) => form
+            .rational_coordinates(axes, &env.control)?
+            .map(|(v, row)| (Some(v), row)),
+        Axes::State(slots) => {
             missing.facts.extend(form.missing_facts());
-            unsupported(
-                env,
-                id,
-                "有理changeの係数に欠測または元parameter以外の記号がある",
-            )
-        })
+            form.rational_state_coordinates(slots, &env.control)?
+        }
+    })
+    .ok_or_else(|| {
+        missing.facts.extend(form.missing_facts());
+        unsupported(
+            env,
+            id,
+            "有理changeの係数に欠測または元parameter以外の記号がある",
+        )
+    })
 }
 fn equations(
     env: &Environment<'_>,
     id: usize,
     vars: &BTreeMap<String, SourceValue>,
     reading: &str,
-    axes: &[Parameter],
+    axes: Axes<'_>,
     matrix: &mut Matrix,
-    rhs: &mut Vec<Scalar>,
+    rhs: &mut Vec<Option<Scalar>>,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -83,7 +104,7 @@ fn equations(
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
                 matrix.push(vec![numeric::zero(&Type::Q, &env.control)?; axes.len()]);
-                rhs.push(numeric::literal("1", &Type::Q, &env.control)?);
+                rhs.push(Some(numeric::literal("1", &Type::Q, &env.control)?));
             }
             return Ok(());
         }
@@ -121,12 +142,19 @@ fn equations(
                     .ok_or("有理等式の差がない")?;
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 matrix.push(coefficients);
-                rhs.push(numeric::binary(
-                    BinOp::Sub,
-                    &numeric::zero(&Type::Q, &env.control)?,
-                    &constant,
-                    &env.control,
-                )?);
+                rhs.push(
+                    constant
+                        .as_ref()
+                        .map(|constant| {
+                            numeric::binary(
+                                BinOp::Sub,
+                                &numeric::zero(&Type::Q, &env.control)?,
+                                constant,
+                                &env.control,
+                            )
+                        })
+                        .transpose()?,
+                );
                 Ok(())
             }
         }
@@ -210,7 +238,7 @@ fn compute_inner(
                 *guard,
                 &vars,
                 &change.reading,
-                &axes,
+                Axes::Parameters(&axes),
                 &mut guard_matrix,
                 &mut guard_rhs,
                 missing,
@@ -265,7 +293,7 @@ fn compute_inner(
                         let form = v.affine.ok_or_else(|| {
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
                         })?;
-                        coordinates(env, *id, &form, &axes, missing)?;
+                        coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
                         let position = Fact {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
@@ -294,12 +322,16 @@ fn compute_inner(
     let mut action = vec![];
     let mut offset = vec![];
     for (slot, form) in &updates {
-        let (constant, row) = coordinates(env, *body, form, &axes, missing)?;
+        let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
         slots.push(slot.clone());
         action.push(row);
-        offset.push(constant);
+        offset.push(constant.ok_or("有理作用の固定項が未確定")?);
     }
 
+    let mut guard_rhs = guard_rhs
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("有理guardの固定項が未確定")?;
     let guard_fiber = field_fiber::solve(
         &Type::Q,
         &guard_matrix,
@@ -319,11 +351,15 @@ fn compute_inner(
         (vec![], vec![])
     } else {
         with_missing(&updated, missing, |missing| {
-            requirement_equations(&updated, &axes, requirements, missing)
+            requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)
         })?
     };
     guard_matrix.extend(matrix);
-    guard_rhs.extend(rhs);
+    guard_rhs.extend(
+        rhs.into_iter()
+            .collect::<Option<Vec<_>>>()
+            .ok_or("有理要求の固定項が未確定")?,
+    );
     let fiber = field_fiber::solve(
         &Type::Q,
         &guard_matrix,
@@ -370,12 +406,47 @@ fn with_missing<T>(
     }
     result
 }
-fn requirement_equations(
+pub(in crate::observed) fn state_equations(
     env: &Environment<'_>,
-    axes: &[Parameter],
+    slots: &[Fact],
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
-) -> Result<(Matrix, Vec<Scalar>), ValidationFailure> {
+) -> Result<(Matrix, Vec<Option<Scalar>>), ValidationFailure> {
+    let mut state = Environment::with_primitive_valuation(
+        env.inputs,
+        &env.fixed_values(),
+        &mut env.control.clone(),
+    )?;
+    state.object = env.object_domain();
+    for slot in slots {
+        env.tick()?;
+        if env
+            .field(
+                &slot.snapshot,
+                &slot.subject,
+                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+            )?
+            .ty
+            .erase()
+            != Type::Q
+        {
+            return Err("有理局所状態の自由位置がQでない".into());
+        }
+        state.affine_valuation.insert(
+            slot.clone(),
+            Form::typed_state(&Type::Q, slot, &env.control)?,
+        );
+    }
+    with_missing(&state, missing, |missing| {
+        requirement_equations(&state, Axes::State(slots), requirements, missing)
+    })
+}
+fn requirement_equations(
+    env: &Environment<'_>,
+    axes: Axes<'_>,
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<(Matrix, Vec<Option<Scalar>>), ValidationFailure> {
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
