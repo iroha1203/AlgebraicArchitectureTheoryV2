@@ -361,12 +361,14 @@ pub(in crate::observed) fn materialize(
         }
         assignments = next;
     }
-    assignments
-        .iter()
-        .map(|bindings| {
-            materialize_instance(env, b, declaration, request, bindings, coordinates, states, c)
-        })
-        .collect()
+    let mut contexts = vec![];
+    for bindings in &assignments {
+        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, c)?;
+        let stopped = context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
+        contexts.push(context);
+        if stopped { break; }
+    }
+    Ok(contexts)
 }
 fn materialize_instance(
     env: &Environment<'_>,
@@ -399,6 +401,7 @@ fn materialize_instance(
         reasons: vec![],
         scope: Scope::default(),
     };
+    let result = (|| -> Result<(), ValidationFailure> {
     let mut absent = vec![];
     let mut checks = owned_call::Checks::default();
     let mut owner_values = BTreeMap::new();
@@ -431,7 +434,7 @@ fn materialize_instance(
     out.scope.merge(&checks.scope);
     out.positions.extend(positions(&checks.support));
     if checks.failure.is_some() {
-        return Ok(out);
+        return Ok(());
     }
     absent.extend(checks.missing);
     if checks.blocked || !absent.is_empty() {
@@ -446,7 +449,7 @@ fn materialize_instance(
             declaration.span,
             coordinates.to_vec(),
         );
-        return Ok(out);
+        return Ok(());
     }
     let variables = bindings
         .iter()
@@ -496,10 +499,10 @@ fn materialize_instance(
                 declaration.span,
                 vec![expression],
             );
-            return Ok(out);
+            return Ok(());
         }
         if value.known_value == Some(Scalar::Bool(false)) {
-            return Ok(out);
+            return Ok(());
         }
         if value.known_value != Some(Scalar::Bool(true)) {
             return Err("local guardがBoolでない".into());
@@ -602,5 +605,28 @@ fn materialize_instance(
             ),
         ),
     ]));
+    Ok(())
+    })();
+    if let Err(error) = result {
+        let (kind, location) = match error {
+            ValidationFailure::Stop(stop) => (ReasonKind::Stop(stop), None),
+            ValidationFailure::UnsupportedExpression { location, .. } => {
+                let mut types = vec![];
+                for r in &out.arguments {
+                    if let Some(part) = r.0.checked_sub(b.base).and_then(|i| b.parts.get(i)) {
+                        if let NodeType::Expression(ty) = &part.ty {
+                            if !types.contains(ty) { types.push(ty.clone()); }
+                        }
+                    }
+                }
+                (ReasonKind::UnsupportedAlgorithm { question: QuestionKind::Localize,
+                    operand_types: types, method: "local_reading".into() }, Some(location))
+            }
+            other => return Err(other),
+        };
+        out.reasons.push(Reason { kind, request: request.id.clone(),
+            dependencies: coordinates.iter().chain(&out.arguments).copied().collect(),
+            missing: vec![], location });
+    }
     Ok(out)
 }

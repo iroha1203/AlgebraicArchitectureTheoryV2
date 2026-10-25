@@ -285,7 +285,9 @@ pub(super) fn compute(
                     &fixed, &mut b, declaration, request, &expressions, &states, c,
                 )? {
                     local_scope.merge(&explicit.scope);
+                    let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
                     reasons.extend(explicit.reasons);
+                    if stopped { return Ok((None, vec![])); }
                     if explicit.locals.is_empty() { continue; }
                     let support = geometry::Support { carrier: explicit.carrier, positions: explicit.positions, visible: explicit.visible };
                     projections.extend(explicit.projections.into_iter().map(|mut p| { p.read += readings.len(); p }));

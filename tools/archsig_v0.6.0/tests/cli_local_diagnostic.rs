@@ -2978,13 +2978,18 @@ fn finite_explicit_local_keeps_visibility_and_variable_guard_limits() {
 
 #[test]
 fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
-    for late_guard in [false, true] {
-    let dir = multiple_read_input("finite-explicit-missing", true, None, "t.flag,t.other");
+    for failure in 0..4 {
+    let dir = multiple_read_input("finite-explicit-missing", true, None, if failure == 2 { "t.other,not t.flag" } else { "t.flag,t.other" });
     let path=dir.join("l.law");
     let law=std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
     std::fs::write(path,law).unwrap();
     explicit_local(&dir,"change choose(t:State,b:Bool)=t with {flag=b};");
-    if late_guard { explicit_local(&dir,"local zzz(t:State) when t.flag reads t.flag;"); }
+    if failure == 1 { explicit_local(&dir,"local zzz(t:State) when t.flag reads t.flag;"); }
+    if failure == 3 {
+        let path=dir.join("l.law");
+        let law=std::fs::read_to_string(&path).unwrap().replace("local here(t:State) reads t.flag,t.other;", "local here(t:State,b:Bool) when (not b or t.flag) reads (t.flag,t.other);");
+        std::fs::write(path,law).unwrap();
+    }
     let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)", "n=needed($l)"];
     let r=execute(&dir,"out",&asks);
     assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
@@ -2992,7 +2997,7 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     let local=&arr(get(&j,"answers"))[1];
     assert!(!has(get(local,"outputs"),"system"));
     assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
-    if late_guard { assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm")); }
+    if failure != 0 { assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm")); }
     let plan=get(output(&j,2,"plan"),"value");
     assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Fixed.State.other"));
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
