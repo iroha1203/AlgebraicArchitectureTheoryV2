@@ -86,7 +86,7 @@ pub(super) fn analyze(
         return Err(unsupported("局所changeと対象readingが異なる"));
     }
     let mut fixed =
-        Environment::try_primitive_valuation(env.inputs, &env.architecture_values(), c)?
+        Environment::try_primitive_valuation(env.inputs, &env.fixed_values(), c)?
             .ok_or("局所対象の値が不適合")?;
     fixed.select_local_object(witness, c)?;
     let mut missing = vec![];
@@ -303,7 +303,7 @@ pub(super) fn analyze(
     for point in &points {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         let mut assignments = env
-            .architecture_values()
+            .fixed_values()
             .into_iter()
             .collect::<BTreeMap<_, _>>();
         assignments.extend(slots.iter().cloned().zip(point.iter().cloned()));
@@ -436,7 +436,7 @@ pub(super) fn analyze(
     missing.dedup();
     Ok((
         Some(Model {
-            assignments: env.architecture_values(),
+            assignments: env.fixed_values(),
             integer_equations,
             bindings,
             change: change_name.clone(),

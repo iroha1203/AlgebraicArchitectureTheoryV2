@@ -4951,3 +4951,45 @@ fn finite_integer_localization_keeps_missing_fixed_fields() {
         assert_eq!(get(&j, field).value, get(&again, field).value);
     }
 }
+
+#[test]
+fn finite_integer_localization_reads_repaired_fixed_values() {
+    let dir = diagnostic_compare_input("finite-integer-repaired-fixed", true, true);
+    let digest = definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
+        .unwrap().vocabularies["Reservations"].digest.clone();
+    std::fs::write(dir.join("l.law"), format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change setHeld(s:State)=s with{{held=3}}; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional ready(s:State):s.held=3; law optional localValid(s:State):s.free=s.held; view held(s:State):Z=s.held; }}"
+    )).unwrap();
+    let asks = [
+        "a=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "r=repair(Reservations.ready,on=$a.candidate.source,using=Reservations.setHeld)",
+        "l=localize($r.object,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+        "d=diagnose($l.system,side=equation,degree=0)",
+        "e=diagnose($l.system,side=semantic,degree=0)",
+        "n=needed($l)",
+        "v=evaluate(Reservations.held,on=$r.object,s=@v/p)",
+        "old=evaluate(Reservations.held,on=$a.candidate.source,s=@v/p)",
+    ];
+    let r = execute(&dir,"out",&asks);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    assert_eq!(s(get(output(&j,6,"value"),"value")),"3");
+    assert_eq!(s(get(output(&j,7,"value"),"value")),"0");
+    let space=get(output(&j,3,"space"),"value");
+    assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),1);
+    let diagnostic=get(output(&j,4,"diagnostic"),"value");
+    let restriction=get(node(&j,get(diagnostic,"restriction")),"value");
+    let domain=get(node(&j,get(restriction,"source")),"value");
+    let mut states=arr(get(domain,"elements")).iter().map(|v|
+        arr(get(node(&j,v),"value")).iter().map(|x|s(x).to_owned()).collect::<Vec<_>>()
+    ).collect::<Vec<_>>();
+    states.sort();
+    assert_eq!(states,vec![vec!["3".to_string(),"2".to_string()],vec!["3".to_string(),"3".to_string()]]);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}
+    let reused=run(&dir,&args);
+    assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+    let again=result_json(&dir,&reused);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+}

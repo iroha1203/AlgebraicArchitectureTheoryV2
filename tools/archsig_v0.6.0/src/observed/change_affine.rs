@@ -446,7 +446,7 @@ pub(in crate::observed) fn state_equations(
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
-    let assignments = env.architecture_values();
+    let assignments = env.fixed_values();
     let mut state = Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
     state.object = env.object_domain();
     for slot in slots {

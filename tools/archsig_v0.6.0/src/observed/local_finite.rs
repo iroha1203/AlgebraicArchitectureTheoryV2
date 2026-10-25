@@ -354,7 +354,7 @@ pub(super) fn compute(
         global.visible.dedup();
         let positions = global.positions.clone();
         let built = geometry::build(
-            env,
+            &fixed,
             &mut b,
             target,
             &laws,

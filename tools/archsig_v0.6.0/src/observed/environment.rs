@@ -439,6 +439,13 @@ impl<'a> Environment<'a> {
         if let Some(outer)=self.missing_slot_reads.borrow_mut().as_mut(){outer.extend(reads.iter().cloned());}
         Ok((result?,reads.into_iter().filter(|f|!self.primitive_valuation.as_ref().is_some_and(|v|v.contains_key(f))).collect(),capture.nodes))
     }
+    pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
+        let mut values = self.architecture_values().into_iter().collect::<BTreeMap<_, _>>();
+        if let Some(primitive) = &self.primitive_valuation {
+            values.extend(primitive.iter().map(|(f,v)|(f.clone(),v.clone())));
+        }
+        values.into_iter().collect()
+    }
     pub(super) fn select_local_object(&mut self, w:&super::construction_result::ArchitectureWitness,c:&mut Control)->Result<(),ValidationFailure>{
         self.object=Some(std::sync::Arc::new(super::object_evaluate::ObjectDomain::from_readings(self.inputs,w.readings(),0,c)?)); Ok(())
     }
