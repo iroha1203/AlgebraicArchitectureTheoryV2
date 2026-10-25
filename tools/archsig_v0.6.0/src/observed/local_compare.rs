@@ -258,29 +258,7 @@ pub(super) fn compute(
         let target_domain = field(g, rr, "source")?;
         let global_pairs = if let Some(maps) = &finite_transported { maps.global.clone() } else { identity_pairs(g, global_domain, target_domain, c)? };
         let global_map = state_map(&mut b, global_domain, target_domain, &global_pairs)?;
-        let global_inverse = if global_domain == target_domain && finite_transported.is_none() {
-            global_map
-        } else {
-            state_map(
-                &mut b,
-                target_domain,
-                global_domain,
-                &global_pairs
-                    .iter()
-                    .map(|(a, z)| (*z, *a))
-                    .collect::<Vec<_>>(),
-            )?
-        };
         let matching_map = state_map(&mut b, lm, rm, &correspondence)?;
-        let inverse = state_map(
-            &mut b,
-            rm,
-            lm,
-            &correspondence
-                .iter()
-                .map(|(a, z)| (*z, *a))
-                .collect::<Vec<_>>(),
-        )?;
         let lp = pairs(g, lr)?;
         let rp = pairs(g, rr)?;
         for (x, y) in &lp {
@@ -309,26 +287,42 @@ pub(super) fn compute(
                 return Err("診断の制限写像が可換でない".into());
             }
         }
-        let conditions = vec![
-            b.proposition(
-                "inverse_maps",
-                vec![global_map, global_inverse],
-                vec![along],
-                Decision::Established,
-            )?,
-            b.proposition(
-                "inverse_maps",
-                vec![matching_map, inverse],
-                vec![along],
-                Decision::Established,
-            )?,
-            b.proposition(
-                "naturality",
-                vec![global_map, matching_map, lr, rr],
-                vec![along],
-                Decision::Established,
-            )?,
-        ];
+        let outside_image = finite_transported.as_ref().and_then(|m| m.outside_image);
+        let status = if outside_image.is_none() { Decision::Established } else { Decision::Refuted };
+        let mut conditions = if outside_image.is_none() {
+            let global_inverse = if global_domain == target_domain && finite_transported.is_none() {
+                global_map
+            } else {
+                state_map(
+                    &mut b,
+                    target_domain,
+                    global_domain,
+                    &global_pairs
+                        .iter()
+                        .map(|(a, z)| (*z, *a))
+                        .collect::<Vec<_>>(),
+                )?
+            };
+            let inverse = state_map(
+                &mut b,
+                rm,
+                lm,
+                &correspondence
+                    .iter()
+                    .map(|(a, z)| (*z, *a))
+                    .collect::<Vec<_>>(),
+            )?;
+            vec![
+                b.proposition("inverse_maps", vec![global_map, global_inverse], vec![along], Decision::Established)?,
+                b.proposition("inverse_maps", vec![matching_map, inverse], vec![along], Decision::Established)?,
+            ]
+        } else {
+            let count = change_result::value(&mut b, &Scalar::Z(finite_transported.as_ref().ok_or("有限輸送の像がない")?.outside_count.clone()))?;
+            let zero = change_result::value(&mut b, &Scalar::Z(num_bigint::BigInt::from(0)))?;
+            vec![b.proposition("equal", vec![count, zero],
+                [global_map, matching_map].into_iter().chain(outside_image.iter().copied()).collect(), status)?]
+        };
+        conditions.push(b.proposition("naturality", vec![global_map, matching_map, lr, rr], vec![along], Decision::Established)?);
         let comparison = b.push(
             NodeType::Construction(T::Comparison),
             "comparison",
@@ -351,11 +345,11 @@ pub(super) fn compute(
             "diagnostics_preserved",
             vec![comparison],
             vec![],
-            Decision::Established,
+            status,
         )?;
         Answer {
             id: request.id.clone(),
-            status: Decision::Established,
+            status,
             outputs: BTreeMap::from([
                 ("comparison".into(), comparison),
                 ("proposition".into(), proposition),

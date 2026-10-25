@@ -5,6 +5,8 @@ use std::collections::BTreeSet;
 pub(super) struct Maps {
     pub global: Vec<(NodeRef, NodeRef)>,
     pub matching: Vec<(NodeRef, NodeRef)>,
+    pub outside_count: num_bigint::BigInt,
+    pub outside_image: Option<NodeRef>,
 }
 fn object(value: &Json) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = value else {
@@ -176,14 +178,14 @@ fn state_matches(
     }
     Ok(true)
 }
-fn bijection(
+fn injection(
     g: &Graph,
     a: &[NodeRef],
     b: &[NodeRef],
     c: &mut Control,
     mut same: impl FnMut(&Scalar, &Scalar, &mut Control) -> Result<bool, ValidationFailure>,
 ) -> Result<Option<Vec<(NodeRef, NodeRef)>>, ValidationFailure> {
-    if a.len() != b.len() {
+    if a.len() > b.len() {
         return Ok(None);
     }
     let mut result = vec![];
@@ -205,6 +207,29 @@ fn bijection(
         result.push((*x, y));
     }
     Ok(Some(result))
+}
+fn record_outside(
+    pairs: &[(NodeRef, NodeRef)],
+    targets: &[NodeRef],
+    count: &mut num_bigint::BigInt,
+    example: &mut Option<NodeRef>,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    let mut images = BTreeSet::new();
+    for (_, image) in pairs {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        images.insert(image.0);
+    }
+    for target in targets {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        if !images.contains(&target.0) {
+            *count += 1;
+            if example.is_none() {
+                *example = Some(*target);
+            }
+        }
+    }
+    Ok(())
 }
 fn mapped(
     g: &Graph,
@@ -314,6 +339,8 @@ pub(super) fn between(
     let mut contexts = vec![];
     let mut coordinates = vec![];
     let mut maps = vec![];
+    let mut outside_count = num_bigint::BigInt::from(0);
+    let mut outside_image = None;
     for x in &a {
         let Some(mut carrier) = array(member(record(g, x.context)?, "carrier")?)?
             .iter()
@@ -356,7 +383,7 @@ pub(super) fn between(
             let Some(p) = permutation(&x.slots, &y.slots, &rename, c)? else {
                 continue;
             };
-            let Some(map) = bijection(g, &x.values, &y.values, c, |a, b, c| {
+            let Some(map) = injection(g, &x.values, &y.values, c, |a, b, c| {
                 state_matches(a, b, &p, &rename, c)
             })?
             else {
@@ -423,7 +450,7 @@ pub(super) fn between(
     }
     let lm = elements(g, field(g, left, "matching")?)?;
     let rm = elements(g, field(g, right, "matching")?)?;
-    let Some(matching) = bijection(g, &lm, &rm, c, |x, y, c| {
+    let Some(matching) = injection(g, &lm, &rm, c, |x, y, c| {
         let (Scalar::Tuple(x), Scalar::Tuple(y)) = (x, y) else {
             return Ok(false);
         };
@@ -446,11 +473,18 @@ pub(super) fn between(
     };
     let globals = elements(g, field(g, field(g, left, "restriction")?, "source")?)?;
     let targets = elements(g, field(g, field(g, right, "restriction")?, "source")?)?;
-    let Some(global) = bijection(g, &globals, &targets, c, |x, y, c| {
+    let Some(global) = injection(g, &globals, &targets, c, |x, y, c| {
         state_matches(x, y, &coordinates[0], &rename, c)
     })?
     else {
         return Ok(None);
     };
-    Ok(Some(Maps { global, matching }))
+    record_outside(&matching, &rm, &mut outside_count, &mut outside_image, c)?;
+    record_outside(&global, &targets, &mut outside_count, &mut outside_image, c)?;
+    Ok(Some(Maps {
+        global,
+        matching,
+        outside_count,
+        outside_image,
+    }))
 }
