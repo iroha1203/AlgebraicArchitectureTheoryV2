@@ -575,7 +575,7 @@ fn affine_read_image(
         .filter(|f| free.contains(f))
         .cloned()
         .collect::<Vec<_>>();
-    let assignments = env.architecture_values();
+    let assignments = env.fixed_values();
     let mut arbitrary = Environment::with_primitive_valuation(env.inputs, &assignments, c)?;
     arbitrary.object = env.object_domain();
     for slot in free {
@@ -1002,7 +1002,7 @@ fn materialize_instance(
             out.positions.extend(dependencies);
             out.arguments.push(expression);
             if !free.is_empty() && absent.is_empty() {
-                let assignments = env.architecture_values();
+                let assignments = env.fixed_values();
                 let mut arbitrary =
                     Environment::with_primitive_valuation(env.inputs, &assignments, c)?;
                 arbitrary.object = env.object_domain();

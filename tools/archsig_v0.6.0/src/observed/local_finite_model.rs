@@ -187,8 +187,8 @@ pub(super) fn analyze(
         points = next;
         slot_types.push(ty);
     }
-    if integer_equations && (slot_types.iter().any(|ty| *ty != Type::Z) || explicit) {
-        return Err(unsupported("有限作用の整数方程式側に混合型または明示localがある"));
+    if integer_equations && slot_types.iter().any(|ty| *ty != Type::Z) {
+        return Err(unsupported("有限作用の整数方程式側に混合型がある"));
     }
     let bindings = request
         .arguments
