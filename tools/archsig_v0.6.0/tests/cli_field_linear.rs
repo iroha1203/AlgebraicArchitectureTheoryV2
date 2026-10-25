@@ -336,3 +336,78 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
         }
     }
 }
+
+#[test]
+fn rational_missing_law_guard_keeps_source_binding_and_needed_field() {
+    for guard in ["s.y=0", "s.y=0 and s.x=0"] {
+        let dir = input(
+            "rational-missing-law-guard",
+            &format!(
+                "change choose(s:State,a:Q)=s with{{x=a}}; law required pinned(s:State) when {guard}:s.x=0;"
+            ),
+        );
+        let path = dir.join("a.json");
+        let map = std::fs::read_to_string(&path).unwrap();
+        let missing=map.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");
+        assert_ne!(map, missing);
+        std::fs::write(path, missing).unwrap();
+        let asks = [
+            "r=repair(Pair.pinned,on=@v/s,using=Pair.choose)",
+            "n=needed($r)",
+        ];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answer = &arr(get(&j, "answers"))[0];
+        let reason = arr(get(answer, "reasons"))
+            .iter()
+            .find(|r| s(get(r, "code")) == "missing_observation")
+            .unwrap();
+        let expression = get(node(&j, &arr(get(reason, "dependencies"))[0]), "value");
+        let span = arr(get(get(expression, "location"), "span"));
+        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+        assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], guard);
+        let binding = arr(get(expression, "bindings"))
+            .iter()
+            .find(|b| s(get(b, "name")) == "s")
+            .unwrap();
+        assert_eq!(
+            arr(get(node(&j, get(binding, "value")), "value"))
+                .iter()
+                .map(s)
+                .collect::<Vec<_>>(),
+            ["v", "s"]
+        );
+        assert!(arr(get(expression, "parameters")).is_empty());
+        let plan = get(output(&j, 1, "plan"), "value");
+        assert!(
+            arr(get(plan, "requirements"))
+                .iter()
+                .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
+        );
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+            "--time-ms",
+            "120000",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let reused = run(&dir, &args);
+        assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&again, field).value);
+        }
+    }
+}

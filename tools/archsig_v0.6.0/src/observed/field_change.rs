@@ -331,6 +331,49 @@ pub(in crate::observed) fn compute(
         fiber,
     })
 }
+// 未確定guardの実評価で残った原始位置を、元のguard Sourceへ結び付ける。
+fn guard_missing(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    reading: &str,
+    missing: &mut Pending,
+) -> Result<(), ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        let v = env.scoped_ast(id, vars, &Scope::default(), reading)?;
+        if v.known_value.is_some() {
+            return Ok(());
+        }
+        if let Some(form) = &v.affine {
+            missing.facts.extend(form.missing_facts());
+        }
+        if let Some(comparison) = &v.comparison {
+            missing.facts.extend(comparison.left.missing_facts());
+            missing.facts.extend(comparison.right.missing_facts());
+        }
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(body) => guard_missing(env, *body, vars, reading, missing)?,
+            ExprKind::Let { name, value, body } => {
+                let mut vars = vars.clone();
+                vars.insert(
+                    name.name.clone(),
+                    env.scoped_ast(*value, &vars, &Scope::default(), reading)?,
+                );
+                guard_missing(env, *body, &vars, reading, missing)?;
+            }
+            ExprKind::Binary { lhs, rhs, .. } => {
+                guard_missing(env, *lhs, vars, reading, missing)?;
+                guard_missing(env, *rhs, vars, reading, missing)?;
+            }
+            ExprKind::Unary { operand, .. } => {
+                guard_missing(env, *operand, vars, reading, missing)?
+            }
+            _ => {}
+        }
+        Ok(())
+    })
+}
 fn requirement_equations(
     env: &Environment<'_>,
     axes: &[Parameter],
@@ -383,10 +426,14 @@ fn requirement_equations(
                 Some(Scalar::Bool(false)) => continue,
                 Some(Scalar::Bool(true)) => {}
                 _ => {
+                    missing.expression = Some(*guard);
+                    missing.bindings = bindings.clone();
+                    missing.parameters.clear();
+                    guard_missing(env, *guard, &vars, &law.reading, missing)?;
                     return Err(unsupported(
                         env,
                         *guard,
-                        "有理候補で変化するLaw guardの全解は未実装",
+                        "有理候補で未確定のLaw guardの全解は未実装",
                     ));
                 }
             }
