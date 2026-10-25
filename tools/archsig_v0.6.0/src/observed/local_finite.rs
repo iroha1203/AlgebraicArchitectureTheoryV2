@@ -474,7 +474,7 @@ pub(super) fn compute(
         system: Some(System {
             parameters: built.point,
             laws,
-            expression,
+            expression: Some(expression),
             semantic: built.semantic,
             equation: built.equation,
             domain: built.states,

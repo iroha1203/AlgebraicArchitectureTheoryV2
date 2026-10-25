@@ -1340,7 +1340,7 @@ fn emit_system(
     let saved = System {
         parameters: states[0].parameters,
         laws,
-        expression: *expressions.first().ok_or("整数局所Lawがない")?,
+        expression: Some(*expressions.first().ok_or("整数局所Lawがない")?),
         semantic: states[0].semantic,
         equation: states[0].equation,
         domain: states[0].semantic_domain,
