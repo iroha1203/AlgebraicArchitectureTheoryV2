@@ -714,6 +714,32 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
             if gamma==2 {
                 let directions = get(node(&j,get(representation,"directions")),"value");
                 assert_eq!(num(get(directions,"free_rank")),1);
+                let point=coordinates(&j,get(representation,"particular"));
+                assert_eq!(point.len(),3);
+                assert_eq!((point[1]-point[0],point[2]-point[0]),(1,2));
+                let kernel=integer_columns(&j,get(representation,"embedding"));
+                assert_eq!(kernel.len(),1);
+                assert_eq!(kernel[0].len(),3);
+                assert_eq!(kernel[0][0].abs(),1);
+                assert!(kernel[0].iter().all(|v|*v==kernel[0][0]));
+            } else {
+                let proof=get(get(node(&j,get(representation,"certificate")),"value"),"data");
+                let columns=integer_columns(&j,get(proof,"map"));
+                assert_eq!(columns,vec![vec![-1,0,-1],vec![1,-1,0],vec![0,1,1]]);
+                let left=integer_columns(&j,get(proof,"left"));
+                let transformed=coordinates(&j,get(proof,"transformed_rhs"));
+                let mut found=false;
+                for i in 0..3 {
+                    let lambda=(0..3).map(|k|left[k][i]).collect::<Vec<_>>();
+                    if columns.iter().all(|column|column.iter().zip(&lambda).map(|(a,b)|a*b).sum::<i64>()==0) {
+                        assert!(lambda==vec![1,1,-1] || lambda==vec![-1,-1,1]);
+                        let value=lambda[0]+lambda[1]+3*lambda[2];
+                        assert_ne!(value,0);
+                        assert_eq!(transformed[i],value);
+                        found=true;
+                    }
+                }
+                assert!(found,"published Smith transform must exhibit the integer obstruction");
             }
         } else {
             assert_eq!(s(get(answer,"status")),"undetermined");
