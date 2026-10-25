@@ -2,6 +2,8 @@
 use super::*;
 #[path = "local_finite_state.rs"]
 mod finite_state;
+#[path = "local_mixed_equation.rs"]
+mod mixed_equation;
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct Support {
     pub carrier: Vec<Json>,
@@ -125,7 +127,7 @@ pub(super) struct FiniteSide {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Finite {
     pub semantic: FiniteSide,
-    pub equation: FiniteSide,
+    pub equation: Option<FiniteSide>,
 }
 pub(super) struct Built {
     pub system: NodeRef,
@@ -136,8 +138,10 @@ pub(super) struct Built {
     pub states: NodeRef,
     pub patch_count: usize,
     pub finite: Option<Finite>,
+    pub integer: Option<integer::Diagram>,
 }
 struct State {
+    integer: Option<mixed_equation::State>,
     point: NodeRef,
     semantic: NodeRef,
     equations: NodeRef,
@@ -279,6 +283,7 @@ fn state(
     let pairs = elements.iter().map(|r| (*r, *r)).collect::<Vec<_>>();
     let identity = state_map(b, states, states, &pairs)?;
     Ok(State {
+        integer: None,
         point,
         semantic,
         equations,
@@ -319,6 +324,10 @@ pub(super) fn build(
     local_scope: &Scope,
     c: &mut Control,
 ) -> Result<Built, ValidationFailure> {
+    let integer_ring = if finite_model.is_some_and(|m| m.integer_equations) {
+        Some(b.push(NodeType::Construction(T::Ring), "ring",
+            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]), vec![], None, None)?)
+    } else { None };
     let mut supports = vec![global];
     let mut patch_indices = vec![];
     for patch in patches {
@@ -349,7 +358,7 @@ pub(super) fn build(
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
         let state = if let Some(model) = finite_model {
-            finite_state::build(env, b, target, &context_laws, &selected, support, model, c)?
+            finite_state::build(env, b, target, &context_laws, &selected, support, model, integer_ring, c)?
         } else {
             state(
                 env,
@@ -454,6 +463,10 @@ pub(super) fn build(
     let mut maps = vec![];
     let mut restrictions = vec![];
     let mut restriction_refs = vec![];
+    let mut coefficient_refs = vec![];
+    let mut coefficient_values = vec![];
+    let mut integer_coefficients = BTreeMap::new();
+    let mut integer_projections = BTreeMap::new();
     for (v, small) in supports.iter().enumerate() {
         for (w, big) in supports.iter().enumerate() {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
@@ -467,7 +480,13 @@ pub(super) fn build(
             } else {
                 state_map(b, states[w].states, states[v].states, &semantic_pairs)?
             };
-            let equation_restriction = if finite_model.is_some() {
+            let equation_restriction = if integer_ring.is_some() {
+                let (map, coefficient, matrix, projection) = mixed_equation::restriction(b, &states[w], &states[v], c)?;
+                coefficient_refs.push(coefficient);
+                integer_coefficients.insert((v,w),(matrix,vec![]));
+                integer_projections.insert((v,w),projection);
+                map
+            } else if finite_model.is_some() {
                 state_map(
                     b,
                     states[w].equation_domain,
@@ -510,6 +529,10 @@ pub(super) fn build(
             )?;
             arrows.insert((v, w), arrow);
             maps.push(arrow);
+            if integer_ring.is_some() {
+                let coefficient=*coefficient_refs.last().ok_or("整数係数の制限がない")?;
+                coefficient_values.push(Json::obj([("side",Json::str("equation")),("arrow",arrow.wire()),("map",coefficient.wire())]));
+            }
             restriction_refs.extend([restriction, equation_restriction]);
             for (side, restriction) in [
                 ("equation", equation_restriction),
@@ -592,52 +615,37 @@ pub(super) fn build(
         None,
     )?;
     let (topology, matching_checks) = topology(b, &supports, &contexts, &maps, cover, &arrows, &patch_indices)?;
+    let mut integer = if integer_ring.is_some() {
+        Some(mixed_equation::diagram(finite_model.ok_or("整数方程式のmodelがない")?, &states, &supports, &contexts,
+            &patch_indices,cover,laws,integer_coefficients,integer_projections,c)?)
+    } else {None};
     let mut checks = vec![];
     let mut summaries = vec![];
     for (side, equation_side) in [("semantic", false), ("equation", true)] {
-        let summary =
-            finite_state::summary(&states, &supports, &patch_indices, 0, equation_side, c)?;
-        let cover_holds = finite_state::bijective(&summary, c)?;
-        let mut topology_holds = true;
-        for (w, sources) in &matching_checks {
-            let test = finite_state::summary(&states, &supports, sources, *w, equation_side, c)?;
-            topology_holds &= finite_state::bijective(&test, c)?;
+        let summary = if equation_side && integer.is_some() {None} else {
+            Some(finite_state::summary(&states, &supports, &patch_indices, 0, equation_side, c)?)
+        };
+        let cover_holds = if let Some(summary)=&summary {finite_state::bijective(summary,c)?} else {
+            integer::linear::glues(integer.as_ref().ok_or("整数図式がない")?,&patch_indices,0,false,c)?
+        };
+        let mut topology_holds=true;
+        for (w,sources) in &matching_checks {
+            topology_holds &= if equation_side && integer.is_some() {
+                integer::linear::glues(integer.as_ref().ok_or("整数図式がない")?,sources,*w,false,c)?
+            } else {finite_state::bijective(&finite_state::summary(&states,&supports,sources,*w,equation_side,c)?,c)?};
         }
-        for (scope, object, holds) in [
-            ("cover", cover, cover_holds),
-            ("topology", topology, topology_holds),
-        ] {
-            let proposition = b.proposition(
-                "sheaf_condition",
-                std::iter::once(object)
-                    .chain(restriction_refs.iter().skip(usize::from(equation_side)).step_by(2).copied())
-                    .collect(),
-                vec![],
-                if holds {
-                    Decision::Established
-                } else {
-                    Decision::Refuted
-                },
-            )?;
-            checks.push((
-                proposition,
-                Json::obj([
-                    ("scope", Json::str(scope)),
-                    ("side", Json::str(side)),
-                    ("proposition", proposition.wire()),
-                ]),
-            ));
+        for (scope, object, holds) in [("cover",cover,cover_holds),("topology",topology,topology_holds)] {
+            let proposition=b.proposition("sheaf_condition",std::iter::once(object)
+                .chain(restriction_refs.iter().skip(usize::from(equation_side)).step_by(2).copied()).collect(),vec![],
+                if holds {Decision::Established}else{Decision::Refuted})?;
+            checks.push((proposition,Json::obj([("scope",Json::str(scope)),("side",Json::str(side)),("proposition",proposition.wire())])));
         }
         summaries.push(summary);
     }
-    let finite = if finite_model.is_some() {
-        Some(Finite {
-            semantic: summaries.remove(0),
-            equation: summaries.remove(0),
-        })
-    } else {
-        None
-    };
+    if let Some(diagram)=&mut integer {diagram.sheaf_conditions=checks.iter().map(|(r,_)|*r).collect();}
+    let finite=if finite_model.is_some(){Some(Finite {
+        semantic:summaries.remove(0).ok_or("有限意味状態がない")?,equation:summaries.remove(0),
+    })}else{None};
     let mut fields = BTreeMap::from([
         ("base".into(), target.wire()),
         ("laws".into(), refs(laws)),
@@ -711,6 +719,13 @@ pub(super) fn build(
     ] {
         fields.insert(name.into(), Json::Arr(vec![]));
     }
+    if integer.is_some() {
+        fields.insert("coefficients".into(),Json::Arr(contexts.iter().zip(&states).map(|(context,s)| {
+            let state=s.integer.as_ref().ok_or("整数係数がない")?;
+            Ok(Json::obj([("side",Json::str("equation")),("context",context.wire()),("module",state.coefficients.wire())]))
+        }).collect::<Result<Vec<_>,ValidationFailure>>()?));
+        fields.insert("coefficient_restrictions".into(),Json::Arr(coefficient_values));
+    }
     if let Some(model) = finite_model {
         fields.insert("change".into(), Json::str(&model.change));
     }
@@ -736,11 +751,14 @@ pub(super) fn build(
             }))
             .chain(checks.iter().map(|(r, _)| *r))
             .chain(restriction_refs)
+            .chain(coefficient_refs)
+            .chain(states.iter().filter_map(|s|s.integer.as_ref().map(|x|x.coefficients)))
             .collect(),
         None,
         None,
     )?;
     Ok(Built {
+        integer,
         finite,
         system,
         adequacy,

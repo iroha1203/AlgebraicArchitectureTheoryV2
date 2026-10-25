@@ -39,7 +39,7 @@ pub(super) fn position(
         r,
     ))
 }
-pub(super) fn affine_map(
+pub(in crate::observed::local_result) fn affine_map(
     b: &mut Builder<'_>,
     source: NodeRef,
     target: NodeRef,
@@ -67,7 +67,7 @@ pub(super) fn affine_map(
         None,
     )
 }
-fn solutions(
+pub(in crate::observed::local_result) fn solutions(
     b: &mut Builder<'_>,
     ring: NodeRef,
     ambient: NodeRef,

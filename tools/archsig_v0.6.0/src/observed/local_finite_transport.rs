@@ -290,7 +290,8 @@ pub(super) fn between(
     let (Some(l), Some(r)) = (&ld.source.system, &rd.source.system) else {
         return Ok(None);
     };
-    if l.integer.is_some() || r.integer.is_some() {
+    let equation_side=record(g,left)?.get("side")!=Some(&Json::str("semantic"));
+    if l.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side) || r.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side) {
         return Ok(None);
     }
     let (from, to, _, _) = public_compose::components(g, along)?;

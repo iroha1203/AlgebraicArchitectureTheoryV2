@@ -186,6 +186,7 @@ pub(super) fn build(
     selected: &[usize],
     support: &Support,
     model: &finite_model::Model,
+    integer_ring: Option<NodeRef>,
     c: &mut Control,
 ) -> Result<State, ValidationFailure> {
     let indexes = model
@@ -216,8 +217,9 @@ pub(super) fn build(
         }
         projected.push(value);
     }
-    let (equation_parameters, _) = scalar_domain(b, &ty, &projected, c)?;
-    let (equation_domain, equation_values) = scalar_domain(b, &ty, &equation_values, c)?;
+    let ambient = integer_ring.map(|ring| mixed_equation::ambient(b, ring, free.len())).transpose()?;
+    let equation_parameters = if let Some((_, domain)) = ambient { domain } else { scalar_domain(b, &ty, &projected, c)?.0 };
+    let finite_equation = if ambient.is_none() { Some(scalar_domain(b, &ty, &equation_values, c)?) } else { None };
     let mut all_parameters = vec![];
     let mut all_images = vec![];
     let mut solution_parameters = vec![];
@@ -460,6 +462,11 @@ pub(super) fn build(
         None,
         None,
     )?;
+    let (equation, equation_domain, equation_values, integer) = if let (Some(ring), Some((ambient, _))) = (integer_ring, ambient) {
+        let (solution, domain, state) = mixed_equation::solve(env, b, ring, ambient, equations, model, &indexes, selected, laws, c)?;
+        (solution, domain, vec![], Some(state))
+    } else {
+        let (equation_domain, equation_values) = finite_equation.ok_or("有限方程式の列挙がない")?;
     let equation = b.push(
         NodeType::Construction(T::EquationSolutionSet),
         "equation_solutions",
@@ -482,18 +489,18 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let comparison_pairs = semantic_values
-        .iter()
-        .map(|(v, r)| {
-            equation_values
-                .iter()
-                .find(|(w, _)| w == v)
-                .map(|(_, s)| (*r, *s))
-                .ok_or_else(|| ValidationFailure::from("許可作用の解が方程式解にない"))
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+        (equation, equation_domain, equation_values, None)
+    };
+    let comparison_pairs = semantic_values.iter().map(|(v, r)| {
+        let image = if let Some(state) = &integer { mixed_equation::vector(b, state, v, c)? } else {
+            equation_values.iter().find(|(w, _)| w == v).map(|(_, s)| *s)
+                .ok_or("許可作用の解が方程式解にない")?
+        };
+        Ok((*r, image))
+    }).collect::<Result<Vec<_>, ValidationFailure>>()?;
     let identity = state_map(b, states, equation_domain, &comparison_pairs)?;
     Ok(State {
+        integer,
         point,
         semantic,
         equations,

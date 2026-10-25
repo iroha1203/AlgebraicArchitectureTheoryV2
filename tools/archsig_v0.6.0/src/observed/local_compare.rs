@@ -175,8 +175,11 @@ pub(super) fn compute(
         .system
         .as_ref()
         .ok_or("比較先の局所系がない")?;
-    let equivalent_finite = system.integer.is_none()
-        && right_plan.integer.is_none()
+    let equation_side = integer::record(g,left)?.get("side") != Some(&Json::str("semantic"));
+    let integer_side = system.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side);
+    let right_integer_side = right_plan.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side);
+    let equivalent_finite = !integer_side
+        && !right_integer_side
         && field(g, right_system, "base")? == object
         && same_plan(&data.source.request, &right_data.source.request);
     let supported = (left_system == right_system || equivalent_finite)
@@ -185,10 +188,10 @@ pub(super) fn compute(
         && operation.source().reading() == witness.construction().reading()
         && operation.source().root() == witness.construction().root()
         && (object == from || object == to);
-    let transported = if !supported && system.integer.is_some() {
+    let transported = if !supported && integer_side {
         integer::between(env, g, left, right, along, c)?
     } else { None };
-    let finite_transported = if !supported && system.integer.is_none() {
+    let finite_transported = if !supported && !integer_side {
         finite_transport::between(env, g, left, right, along, c)?
     } else { None };
     let mut b = Builder {
@@ -232,7 +235,7 @@ pub(super) fn compute(
             reasons: vec![reason],
             scope,
         }
-    } else if system.integer.is_some() {
+    } else if integer_side {
         match integer::compare(&mut b, request, left, right, along, transported.as_ref(), c) {
             Ok(answer) => answer,
             Err(ValidationFailure::Stop(stop)) => {
