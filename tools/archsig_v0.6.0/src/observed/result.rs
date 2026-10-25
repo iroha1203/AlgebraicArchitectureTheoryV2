@@ -631,6 +631,10 @@ impl Scope {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ReasonKind {
     Missing,
+    VisibilityInsufficient {
+        locals: Vec<String>,
+        coordinates: Vec<NodeRef>,
+    },
     DependencyBlocked {
         request: String,
     },
@@ -676,6 +680,7 @@ impl Reason {
     pub(crate) fn code(&self) -> &str {
         match &self.kind {
             ReasonKind::Missing => "missing_observation",
+            ReasonKind::VisibilityInsufficient { .. } => "visibility_insufficient",
             ReasonKind::DependencyBlocked { .. } => "dependency_blocked",
             ReasonKind::ConditionFailed { .. } => "condition_failed",
             ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
@@ -686,6 +691,13 @@ impl Reason {
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
             ReasonKind::Missing => ("原始 slot の観測が必要", Json::obj([])),
+            ReasonKind::VisibilityInsufficient { locals, coordinates } => (
+                "局所の読取り権限が不足する",
+                Json::obj([
+                    ("locals", Json::Arr(locals.iter().map(Json::str).collect())),
+                    ("coordinates", refs(coordinates)),
+                ]),
+            ),
             ReasonKind::DependencyBlocked { request } => (
                 "選択した依存出力が通常値を提供しない",
                 Json::obj([("request", Json::str(request))]),

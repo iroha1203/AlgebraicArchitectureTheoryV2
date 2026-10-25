@@ -1191,3 +1191,185 @@ fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
         assert_eq!(get(&before, field).value, get(&after, field).value);
     }
 }
+
+fn explicit_local(dir: &std::path::Path, declaration: &str) {
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(
+        path,
+        law.replace("view current", &format!("{declaration} view current")),
+    )
+    .unwrap();
+}
+#[test]
+fn explicit_direct_read_local_keeps_both_diagnostic_sides_and_base() {
+    for value in [true, false] {
+        let dir = input(
+            if value {
+                "explicit-local-true"
+            } else {
+                "explicit-local-false"
+            },
+            Some(value),
+        );
+        explicit_local(&dir, "local here(t:State) reads t.flag;");
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "v=evaluate(Fixed.current,on=$l.system.base,s=@fixed/s)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if value { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let answers = arr(get(&j, "answers"));
+        for i in [2, 3] {
+            assert_eq!(
+                s(get(&answers[i], "status")),
+                if value { "established" } else { "refuted" }
+            );
+        }
+        assert_eq!(
+            get(output(&j, 4, "value"), "value").value,
+            archsig::json::JValue::Bool(value)
+        );
+        let system = get(output(&j, 1, "system"), "value");
+        let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
+        let locals = arr(get(context, "locals"));
+        assert_eq!(locals.len(), 1);
+        assert_eq!(s(get(&locals[0], "declaration")), "Fixed.here");
+        assert_eq!(s(get(&arr(get(&locals[0], "bindings"))[0], "name")), "t");
+        assert_eq!(arr(get(context, "readings")).len(), 1);
+    }
+}
+#[test]
+fn explicit_reference_read_and_false_guard_report_visibility_not_missing_observations() {
+    for (name, declaration) in [
+        ("explicit-local-hidden", "local here(t:State) reads t;"),
+        (
+            "explicit-local-guard-false",
+            "local here(t:State) when false reads t.flag;",
+        ),
+    ] {
+        let dir = input(name, Some(true));
+        explicit_local(&dir, declaration);
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "p=needed($l)",
+                "v=evaluate(Fixed.current,on=$a.object,s=@fixed/s)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let a = &arr(get(&j, "answers"))[1];
+        assert_eq!(s(get(a, "status")), "undetermined");
+        assert!(!has(get(a, "outputs"), "system"));
+        let reasons = arr(get(a, "reasons"));
+        assert!(reasons
+            .iter()
+            .any(|r| s(get(r, "code")) == "visibility_insufficient"));
+        assert!(reasons.iter().all(|r| arr(get(r, "missing")).is_empty()));
+        let plan = get(output(&j, 2, "plan"), "value");
+        assert!(arr(get(plan, "requirements")).is_empty());
+        assert!(!arr(get(plan, "blockers")).is_empty());
+        assert_eq!(s(get(&arr(get(&j, "answers"))[3], "status")), "established");
+    }
+}
+#[test]
+fn explicit_read_missing_observation_remains_needed() {
+    let dir = input("explicit-local-missing", None);
+    explicit_local(&dir, "local here(t:State) reads t.flag;");
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "p=needed($l)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    assert!(!has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
+    let plan = get(output(&j, 2, "plan"), "value");
+    let requirements = arr(get(plan, "requirements"));
+    assert_eq!(requirements.len(), 1);
+    assert_eq!(
+        s(get(get(&requirements[0], "field"), "field")),
+        "Fixed.State.flag"
+    );
+}
+
+#[test]
+fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_reuses() {
+    for flag in [None, Some(true)] {
+        let dir = input("explicit-local-guard", flag);
+        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+        std::fs::write(dir.join("l.law"), law.replace("s.flag=true", "true")).unwrap();
+        explicit_local(&dir, "local here(t:State) when t.flag reads t.flag;");
+        let asks = [
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "p=needed($l)",
+        ];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(
+            r.code,
+            if flag.is_some() { 0 } else { 2 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let plan = get(output(&j, 2, "plan"), "value");
+        if flag.is_none() {
+            assert_eq!(arr(get(plan, "requirements")).len(), 1);
+            assert_eq!(
+                s(get(
+                    get(&arr(get(plan, "requirements"))[0], "field"),
+                    "field"
+                )),
+                "Fixed.State.flag"
+            );
+            assert!(!has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
+        } else {
+            assert!(arr(get(plan, "requirements")).is_empty());
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ];
+            for ask in asks {
+                args.extend(["--ask", ask]);
+            }
+            let reused = run(&dir, &args);
+            assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
+            let again = result_json(&dir, &reused);
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&again, field).value);
+            }
+        }
+    }
+}
