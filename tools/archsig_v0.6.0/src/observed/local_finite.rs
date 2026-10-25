@@ -96,6 +96,19 @@ pub(super) fn compute(
     let mut reasons = vec![];
     let mut local_scope = Scope::default();
     let result = (|| -> Result<(Option<geometry::Built>, Vec<Fact>), ValidationFailure> {
+        if model.requirements.is_empty() {
+            let declaration = &env.inputs.law().declarations[&model.change];
+            let Signature::Change { params, body, .. } = &declaration.signature else {
+                return Err("局所changeの署名がない".into());
+            };
+            let expression = change_result::source_expression(
+                &mut b, env, *body, &[],
+                &params.iter().map(|p| (p.name.clone(), p.ty.clone())).collect::<Vec<_>>(),
+            )?;
+            b.parts[expression.0 - base].arguments.push(target);
+            b.parts[expression.0 - base].scope.merge(&g.get(target)?.scope);
+            expressions.push(expression);
+        }
         for (name, parameter, values) in &model.universal {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
@@ -446,18 +459,7 @@ pub(super) fn compute(
         reasons: vec![],
         scope: b.parts[proposition.0 - base].scope.clone(),
     };
-    let expression = if let Some(expression) = expressions.first() {
-        *expression
-    } else {
-        let declaration = &env.inputs.law().declarations[&model.change];
-        let Signature::Change { params, body, .. } = &declaration.signature else {
-            return Err("局所changeの署名がない".into());
-        };
-        change_result::source_expression(
-            &mut b, env, *body, &[],
-            &params.iter().map(|p| (p.name.clone(), p.ty.clone())).collect::<Vec<_>>(),
-        )?
-    };
+    let expression = *expressions.first().ok_or("有限局所構成の原式がない")?;
     let inhabited = built
         .finite
         .as_ref()

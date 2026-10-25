@@ -4222,3 +4222,48 @@ fn empty_local_law_family_keeps_change_expression_for_unsupported_followups() {
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
 }
+
+#[test]
+fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
+    #[path = "common/architecture_environment.rs"] mod fixture;
+    use archsig::canonical::Json;
+    for guard in [false, true] {
+        let dir = finite_diagnostic_input(&format!("empty-local-laws-missing-{guard}"), false);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap();
+        let change = if guard {
+            "change observed(s:State,b:Bool) when s.held=1=s with{free=b};"
+        } else { "change observed(s:State,b:Bool)=s with{free=s.held=0};" };
+        std::fs::write(&path, law.replace("law optional localValid", &format!("{change} law optional localValid"))).unwrap();
+        let path = dir.join("a.json");
+        let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+        let atoms = fixture::atoms(&mut map);
+        let before = atoms.len();
+        atoms.retain(|atom| !matches!(atom, Json::Obj(fields) if fields.get("id") == Some(&Json::str("p-held"))));
+        assert_eq!(before - atoms.len(), 1);
+        std::fs::write(&path, map.canonical()).unwrap();
+        let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,using=Reservations.observed)",
+            "d=diagnose($l.system)", "n=needed($l)", "k=needed($d)"];
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(result.code, 2, "{guard}: {} {}", result.stdout, result.stderr);
+        let j = result_json(&dir, &result);
+        let local = &arr(get(&j, "answers"))[1];
+        assert_eq!(s(get(local, "status")), "undetermined");
+        assert!(!has(get(local, "outputs"), "system"));
+        assert!(arr(get(local, "reasons")).iter().any(|r| s(get(r, "code")) == "missing_observation"));
+        for i in [3,4] {
+            let plan = get(output(&j, i, "plan"), "value");
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let field = get(r, "field");
+                s(get(field, "field")) == "Reservations.State.held" && s(get(field, "subject")) == "p"
+            }));
+        }
+        let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+        for ask in asks { args.extend(["--ask", ask]); }
+        let reused = run(&dir, &args);
+        assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
+    }
+}
