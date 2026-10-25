@@ -268,24 +268,15 @@ pub(super) fn between(
     if l.integer.is_some() || r.integer.is_some() {
         return Ok(None);
     }
-    let request_shape = |q: &Request| {
-        q.arguments
-            .iter()
-            .filter(|a| !a.name.starts_with("bind."))
-            .map(|a| (a.name.clone(), a.value.clone()))
-            .collect::<BTreeMap<_, _>>()
-    };
-    if ld.source.request.defaults != rd.source.request.defaults
-        || request_shape(&ld.source.request) != request_shape(&rd.source.request)
-    {
-        return Ok(None);
-    }
     let (from, to, _, _) = public_compose::components(g, along)?;
     let op = public_compose::op(g, along)?;
-    if field(g, ls, "base")? != from
-        || field(g, rs, "base")? != to
-        || op.source().reading() != op.target().reading()
-    {
+    let left_base = field(g, ls, "base")?;
+    let right_base = field(g, rs, "base")?;
+    let endpoints = left_base == from && right_base == to;
+    let same_object = op.source() == op.target()
+        && [from, to].contains(&left_base)
+        && [from, to].contains(&right_base);
+    if !(endpoints || same_object) || op.source().reading() != op.target().reading() {
         return Ok(None);
     }
     let Some(rename) = Renaming::operation(g, along, c)? else {
