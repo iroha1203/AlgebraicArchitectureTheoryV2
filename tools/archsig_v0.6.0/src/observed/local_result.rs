@@ -1103,6 +1103,11 @@ impl Environment<'_> {
                 &mut self.control.clone(),
             )
         })?;
+        if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
+            if let ReasonKind::Stop(stop) = &r.kind { Some(stop.clone()) } else { None }
+        }) {
+            return Err(ValidationFailure::Stop(stop));
+        }
         if d.source.answer.reasons.iter().any(|r|matches!(r.kind,ReasonKind::Stop(_))) {
             if rebuilt.scope_domains != d.source.scope_domains
                 || !rebuilt.parts.starts_with(&d.source.parts)

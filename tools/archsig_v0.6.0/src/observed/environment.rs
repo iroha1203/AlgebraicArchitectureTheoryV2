@@ -1027,7 +1027,8 @@ impl<'a> Environment<'a> {
             self.validation_depth.set(1);
             let result = self.validation_session(run);
             self.validation_depth.set(0);
-            if result.is_ok() {
+            // 停止後に返された完成済みの部分結果は保持し、cacheの追加計算は行わない。
+            if result.is_ok() && self.control.stop_reason().is_none() {
                 let saved = (|| {
                     let mut snapshot = self.validation_snapshot.borrow_mut();
                     if same {
