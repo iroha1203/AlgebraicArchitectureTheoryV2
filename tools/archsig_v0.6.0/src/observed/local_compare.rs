@@ -1,8 +1,10 @@
-//! 固定局所系の有限診断を、実際に恒等作用するOperationに沿って比較する。
+//! 局所診断を、指定されたOperationの実作用に沿って比較する。
 use super::*;
 use crate::observed::public_compose;
 #[path = "local_integer_compare.rs"]
 mod integer;
+#[path = "local_finite_transport.rs"]
+mod finite_transport;
 fn local(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     match &g.get(r)?.payload {
         Some(Payload::Construction(v)) => match &v.data {
@@ -186,12 +188,15 @@ pub(super) fn compute(
     let transported = if !supported && system.integer.is_some() {
         integer::between(env, g, left, right, along, c)?
     } else { None };
+    let finite_transported = if !supported && system.integer.is_none() {
+        finite_transport::between(env, g, left, right, along, c)?
+    } else { None };
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
-    let answer = if !supported && transported.is_none() {
+    let answer = if !supported && transported.is_none() && finite_transported.is_none() {
         let (dependencies, scope) = if let Some(expression) = system.expression {
             let original = &data.source.parts[expression.0 - data.source.base];
             let expression = b.push(
@@ -246,14 +251,14 @@ pub(super) fn compute(
     } else {
         let lm = field(g, left, "matching")?;
         let rm = field(g, right, "matching")?;
-        let correspondence = identity_pairs(g, lm, rm, c)?;
+        let correspondence = if let Some(maps) = &finite_transported { maps.matching.clone() } else { identity_pairs(g, lm, rm, c)? };
         let lr = field(g, left, "restriction")?;
         let rr = field(g, right, "restriction")?;
         let global_domain = field(g, lr, "source")?;
         let target_domain = field(g, rr, "source")?;
-        let global_pairs = identity_pairs(g, global_domain, target_domain, c)?;
+        let global_pairs = if let Some(maps) = &finite_transported { maps.global.clone() } else { identity_pairs(g, global_domain, target_domain, c)? };
         let global_map = state_map(&mut b, global_domain, target_domain, &global_pairs)?;
-        let global_inverse = if global_domain == target_domain {
+        let global_inverse = if global_domain == target_domain && finite_transported.is_none() {
             global_map
         } else {
             state_map(
@@ -288,11 +293,17 @@ pub(super) fn compute(
                 }
             }
             let transported = transported.ok_or("matchingの像がない")?;
+            let mut global_image = None;
+            for (a,z) in &global_pairs {
+                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                if g.scalar(*a)? == g.scalar(*x)? { global_image = Some(*z); }
+            }
+            let global_image = global_image.ok_or("大域状態の像がない")?;
             let mut commutes = false;
             for (a, z) in &rp {
                 c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
                 commutes |=
-                    g.scalar(*a)? == g.scalar(*x)? && g.scalar(*z)? == g.scalar(transported)?;
+                    g.scalar(*a)? == g.scalar(global_image)? && g.scalar(*z)? == g.scalar(transported)?;
             }
             if !commutes {
                 return Err("診断の制限写像が可換でない".into());
