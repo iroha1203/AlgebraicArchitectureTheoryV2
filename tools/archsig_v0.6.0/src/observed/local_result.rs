@@ -110,6 +110,7 @@ impl Data {
             NodeType::Construction(T::Module) => Some(ProjectionType::Module),
             NodeType::Construction(T::Ring) => Some(ProjectionType::Ring),
             NodeType::Vector(_) => Some(ProjectionType::Vector),
+            NodeType::ModuleMap(_, _) => Some(ProjectionType::ModuleMap),
             NodeType::Construction(T::Comparison) => Some(ProjectionType::Comparison),
             NodeType::Construction(T::Cover) => Some(ProjectionType::Cover),
             NodeType::Construction(T::Topology) => Some(ProjectionType::Topology),
@@ -172,7 +173,8 @@ impl Data {
             NodeType::Vector(_) => field == "module",
             NodeType::Construction(T::Cohomology) => field == "module",
             NodeType::Construction(T::Class) => matches!(field.as_str(), "cohomology" | "coordinates"),
-            NodeType::Construction(T::Comparison) => field == "finite_map",
+            NodeType::Construction(T::Comparison) => matches!(field.as_str(), "finite_map"|"cohomology_map"|"kernel"|"cokernel"|"class_transport"),
+            NodeType::ModuleMap(_, _) => matches!(field.as_str(), "source"|"target"),
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             _ => false,
         };
