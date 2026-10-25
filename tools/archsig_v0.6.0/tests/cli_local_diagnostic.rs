@@ -3955,25 +3955,52 @@ fn integer_diagnostic_inclusion_keeps_unavailable_classes_blocked() {
 }
 
 
+fn finite_diagnostic_input(name: &str, valid: bool) -> std::path::PathBuf {
+    let dir = diagnostic_compare_input(name, true, true);
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let definitions = old.replace(
+        r#""name": "free", "type": "Z""#,
+        r#""name": "free", "type": "Bool""#,
+    );
+    assert_ne!(old, definitions);
+    let checked = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Reservations"].digest;
+    let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
+        .unwrap()
+        .vocabularies["Reservations"]
+        .digest
+        .clone();
+    let raw = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(&old_digest, digest);
+    let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(fields) = atom else {
+            panic!("atom")
+        };
+        if fields.get("field") == Some(&Json::str("Reservations.State.free")) {
+            fields.insert("value".into(), Json::Bool(true));
+        }
+    }
+    let predicate = if valid {
+        "s.free=true"
+    } else {
+        "s.free=true and s.free=false"
+    };
+    let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=b}}; law optional localValid(s:State):{predicate}; }}");
+    std::fs::write(dir.join("d.json"), definitions).unwrap();
+    std::fs::write(dir.join("a.json"), map.canonical()).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+
 #[test]
 fn finite_change_diagnostics_compare_the_selected_global_states_and_reuse() {
     for valid in [false,true] { for side in ["equation","semantic"] { for degree in [0,1] {
-        let dir=diagnostic_compare_input(&format!("finite-change-compare-{valid}-{side}-{degree}"),true,true);
-        #[path = "common/architecture_environment.rs"] mod fixture;
-        use archsig::canonical::Json;
-        let old=std::fs::read_to_string(dir.join("d.json")).unwrap();
-        let definitions=old.replace(r#""name": "free", "type": "Z""#,r#""name": "free", "type": "Bool""#);
-        assert_ne!(old,definitions);
-        let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
-        let digest=&checked.vocabularies["Reservations"].digest;
-        let old_digest=definition::check_definitions(&[("d",old.as_bytes())]).unwrap().vocabularies["Reservations"].digest.clone();
-        let raw=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(&old_digest,digest);
-        let mut map=fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
-        for atom in fixture::atoms(&mut map) {let Json::Obj(fields)=atom else{panic!("atom")};
-            if fields.get("field")==Some(&Json::str("Reservations.State.free")) {fields.insert("value".into(),Json::Bool(true));}}
-        let predicate=if valid{"s.free=true"}else{"s.free=true and s.free=false"};
-        let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=b}}; law optional localValid(s:State):{predicate}; }}");
-        std::fs::write(dir.join("d.json"),definitions).unwrap();std::fs::write(dir.join("a.json"),map.canonical()).unwrap();std::fs::write(dir.join("l.law"),law).unwrap();
+        let dir=finite_diagnostic_input(&format!("finite-change-compare-{valid}-{side}-{degree}"),valid);
         let d1=format!("d1=diagnose($l.system,side={side},degree={degree})");
         let d2=format!("d2=diagnose($l.system,side={side},degree={degree})");
         let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
@@ -3995,4 +4022,107 @@ fn finite_change_diagnostics_compare_the_selected_global_states_and_reuse() {
         for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
         let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
+}
+
+#[test]
+fn repeated_finite_localization_uses_real_state_bijections() {
+    for valid in [false, true] {
+        for side in ["equation", "semantic"] {
+            for degree in [0, 1] {
+                let dir = finite_diagnostic_input(
+                    &format!("repeat-local-{valid}-{side}-{degree}"),
+                    valid,
+                );
+                let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
+                let d2 = format!("d2=diagnose($r.system,side={side},degree={degree})");
+                let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+            "r=localize($m.candidate.source,using=Reservations.choose,s=@v/p,law=Reservations.localValid)",&d1,&d2,
+            "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+                let r = execute(&dir, "out", &asks);
+                assert_eq!(
+                    r.code,
+                    if !valid && degree == 1 { 1 } else { 0 },
+                    "{} {}",
+                    r.stdout,
+                    r.stderr
+                );
+                let j = result_json(&dir, &r);
+                assert_eq!(s(get(&arr(get(&j, "answers"))[5], "status")), "established");
+                let cmp = get(output(&j, 5, "comparison"), "value");
+                let map = get(node(&j, get(cmp, "finite_map")), "value");
+                assert_ne!(get(map, "source").value, get(map, "target").value);
+                let pairs = arr(get(map, "pairs"));
+                assert_eq!(pairs.len(), if valid { 2 } else { 0 });
+                for pair in pairs {
+                    let pair = arr(pair);
+                    assert_ne!(pair[0].value, pair[1].value);
+                    assert_eq!(
+                        get(node(&j, &pair[0]), "value").value,
+                        get(node(&j, &pair[1]), "value").value
+                    );
+                }
+                for condition in arr(get(cmp, "conditions")) {
+                    assert_eq!(
+                        s(get(get(node(&j, condition), "judgment"), "status")),
+                        "established"
+                    );
+                }
+                assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--time-ms",
+                    "120000",
+                ];
+                for ask in asks {
+                    args.extend(["--ask", ask]);
+                }
+                let reused = run(&dir, &args);
+                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+                let again = result_json(&dir, &reused);
+                for field in ["answers", "nodes"] {
+                    assert_eq!(get(&j, field).value, get(&again, field).value);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn different_finite_localization_plans_are_not_equal_by_shared_position_names() {
+    let dir = finite_diagnostic_input("different-local-plans", true);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(
+        &path,
+        law.replace(
+            "law optional localValid",
+            "change constant(s:State,b:Bool)=s with{free=true}; law optional localValid",
+        ),
+    )
+    .unwrap();
+    let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+        "r=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.constant)",
+        "d1=diagnose($l.system,side=semantic,degree=0)","d2=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let answer = &arr(get(&j, "answers"))[5];
+    assert_eq!(s(get(answer, "status")), "undetermined");
+    assert!(!has(get(answer, "outputs"), "comparison"));
+    assert!(arr(get(answer, "reasons"))
+        .iter()
+        .any(|r| s(get(r, "code")) == "unsupported_algorithm"));
+    assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
 }
