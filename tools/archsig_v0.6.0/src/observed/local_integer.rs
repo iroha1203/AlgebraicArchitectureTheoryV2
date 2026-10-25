@@ -1269,8 +1269,8 @@ fn emit_system(
         ),
         ("sheaf_checks".into(), Json::Arr(sheaf_checks)),
     ]);
+    fields.insert("actions".into(), refs(&states.iter().flat_map(|s| s.actions.iter().copied()).collect::<Vec<_>>()));
     for name in [
-        "actions",
         "presentations",
         "polynomial_inclusions",
         "residual_restrictions",
@@ -1285,6 +1285,7 @@ fn emit_system(
         .chain(laws.iter().copied())
         .chain(restriction_refs)
         .chain(conditions)
+        .chain(states.iter().flat_map(|s| s.actions.iter().copied()))
         .chain(states.iter().flat_map(|s| {
             [
                 s.semantic,

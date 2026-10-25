@@ -3715,3 +3715,56 @@ fn integer_diagnostic_comparison_transports_a_nonzero_obstruction() {
     let comparison=get(output(&j,4,"comparison"),"value");
     assert_eq!(s(get(get(node(&j,get(comparison,"class_transport")),"judgment"),"status")),"established");
 }
+
+
+#[test]
+fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_distinct() {
+    let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Motion","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Motion.State","meaning":"整数状態。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"位置。"},{"name":"goal","type":"Z","meaning":"要求位置。"}],"alignments":[]}]}]}"#;
+    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
+    let digest=&checked.vocabularies["Motion"].digest;
+    let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Motion {{ use vocabulary Motion version \"1\" digest \"{digest}\"; law required reachesGoal(s:State):s.x=s.goal; local Read(s:State) reads (s.x,s.goal); change move(s:State,a:Z,b:Z)=s with{{x=2*a+2*b}}; }}");
+    for (goal, guarded) in [(Some(2),false),(Some(1),false),(None,false),(Some(4),true),(Some(2),true)] {
+        let law=if guarded {law.replace("b:Z)=s", "b:Z) when a=b=s")} else {law.clone()};
+        let mut atoms=vec![r#"{"id":"x","subject":"s","field":"Motion.State.x","value":"0","origin":"model"}"#.to_string()];
+        if let Some(goal)=goal {atoms.push(format!(r#"{{"id":"goal","subject":"s","field":"Motion.State.goal","value":"{goal}","origin":"model"}}"#));}
+        let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Motion","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"二つのparameterの同効果。","locations":[],"note":"偶数だけを移動先に持つ。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Motion.State","origin":"model"}}],"atoms":[{}]}}]}}"#,atoms.join(","));
+        let dir=workdir(&format!("integer-actions-{goal:?}-{guarded}"));
+        for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
+        let asks=["a=build(Motion,on=@v/s)","l=localize($a.object,using=Motion.move)","d=diagnose($l.system,side=semantic)"];
+        let r=execute(&dir,"out",&asks);assert!(matches!(r.code,0|2),"{goal:?}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let system=get(output(&j,1,"system"),"value");
+        let mut nontrivial_allowed=false;let mut lawful=false;
+        for action in arr(get(system,"actions")) {
+            let action=get(node(&j,action),"value");
+            let effective=get(node(&j,get(action,"effective")),"value");
+            let stabilizer=get(node(&j,get(action,"stabilizer")),"value");
+            let quotient=get(node(&j,get(action,"quotient")),"value");
+            let kernel=get(node(&j,get(quotient,"source")),"value");
+            let kr=num(get(kernel,"free_rank"));let er=num(get(effective,"free_rank"));let sr=num(get(stabilizer,"free_rank"));
+            assert_eq!(kr,er+sr);
+            assert_eq!(get(quotient,"target").value,get(action,"effective").value);
+            for condition in arr(get(action,"conditions")) {assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
+            if s(get(action,"stage"))=="allowed" {
+                assert!(!has(action,"parameter_kernel"));
+                if er==1 {
+                    assert_eq!((kr,sr),if guarded {(1,0)}else{(2,1)});nontrivial_allowed=true;
+                    let map=get(node(&j,get(action,"map")),"value");
+                    let linear=get(node(&j,get(map,"linear")),"value");
+                    for column in arr(get(linear,"columns")) {
+                        assert_eq!(arr(column).len(),1);
+                        assert_eq!(s(get(node(&j,&arr(column)[0]),"value")),"2");
+                    }
+                }
+            } else {
+                assert_eq!(get(action,"parameter_kernel").value,get(quotient,"source").value);
+                if er==0 && kr==u64::from(!guarded) {assert_eq!(sr,kr);lawful=true;}
+            }
+        }
+        assert!(nontrivial_allowed,"{goal:?}");
+        assert_eq!(lawful,goal==Some(if guarded {4}else{2}),"{goal:?}, guarded={guarded}");
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}
+        let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }
+}

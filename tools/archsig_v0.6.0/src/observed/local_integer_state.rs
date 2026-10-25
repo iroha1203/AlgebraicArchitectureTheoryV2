@@ -12,6 +12,7 @@ pub(super) struct State {
     pub action: NodeRef,
     pub comparison: NodeRef,
     pub coefficients: [NodeRef; 2],
+    pub actions: Vec<NodeRef>,
 }
 pub(super) fn position(
     env: &Environment<'_>,
@@ -77,7 +78,7 @@ fn solutions(
     laws: &[NodeRef],
     equation: bool,
     c: &mut Control,
-) -> Result<(NodeRef, NodeRef, NodeRef), ValidationFailure> {
+) -> Result<(NodeRef, NodeRef, NodeRef, linear::Fiber), ValidationFailure> {
     let known_rhs = rhs.iter().cloned().collect::<Option<Vec<_>>>();
     let homogeneous = vec![Z::zero(); matrix.len()];
     let fiber = integer_fiber::solve(
@@ -151,7 +152,11 @@ fn solutions(
         None,
         None,
     )?;
-    Ok((solution, values, directions))
+    let local_fiber = linear::Fiber {
+        origin: if known_rhs.is_some() { fiber.particular } else { None },
+        known: known_rhs.is_some(), basis: fiber.kernel, rank: cols - fiber.rank,
+    };
+    Ok((solution, values, directions, local_fiber))
 }
 pub(super) fn build(
     env: &Environment<'_>,
@@ -240,7 +245,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let (equation, mut equation_domain, mut eq_coeff) = solutions(
+    let (equation, mut equation_domain, mut eq_coeff, _) = solutions(
         b,
         ring,
         ambient,
@@ -370,7 +375,7 @@ pub(super) fn build(
         .map(|(x, y)| x.as_ref().map(|x| x - y))
         .collect::<Vec<_>>();
     parameter_guards(model, &mut da, &mut shifted);
-    let (sem, solution_domain, _) = solutions(
+    let (sem, solution_domain, parameter_kernel, parameter_fiber) = solutions(
         b,
         ring,
         parameters,
@@ -445,6 +450,40 @@ pub(super) fn build(
         None,
     )?;
     let sem_coeff = wire::module(b, ring, semantic.rank, "image", vec![restricted_action])?;
+    let mut actions = vec![];
+    if parameter_fiber.origin.is_some() {
+        actions.push(fiber_action(b, ring, "lawful_fiber", solution_domain,
+            semantic_domain, restricted_action, parameters, ambient,
+            parameter_kernel, &parameter_fiber, &read_action, sem_coeff,
+            semantic, sem, c)?);
+    }
+    let mut guard_matrix = vec![];
+    let mut guard_rhs = vec![];
+    parameter_guards(model, &mut guard_matrix, &mut guard_rhs);
+    let same_fiber = guard_matrix == da && guard_rhs == shifted;
+    let (allowed, allowed_domain, allowed_kernel, allowed_fiber) = if same_fiber {
+        (sem, solution_domain, parameter_kernel, parameter_fiber.clone())
+    } else {
+        solutions(b, ring, parameters, candidates, &guard_matrix,
+            model.action.parameter_count, &guard_rhs, &[], false, c)?
+    };
+    if allowed_fiber.origin.is_some() {
+        let (allowed_image, allowed_map, allowed_states, effective) = if same_fiber {
+            (semantic.clone(), restricted_action, semantic_domain, sem_coeff)
+        } else {
+            let image = linear::affine_image(&allowed_fiber, &read_action, &read_offset, c)?;
+            let map = affine_map(b, allowed_domain, read_domain, parameters, ambient,
+                &read_action, model.action.parameter_count, &read_offset, c)?;
+            let states = b.push(NodeType::Domain, "domain", Json::obj([
+                ("kind", Json::str("image")), ("map", map.wire()), ("source", allowed.wire()),
+            ]), vec![map, allowed], None, None)?;
+            let effective = wire::module(b, ring, image.rank, "image", vec![map])?;
+            (image, map, states, effective)
+        };
+        actions.push(fiber_action(b, ring, "allowed", allowed_domain,
+            allowed_states, allowed_map, parameters, ambient, allowed_kernel,
+            &allowed_fiber, &read_action, effective, &allowed_image, allowed, c)?);
+    }
     let comparison = affine_map(
         b,
         semantic_domain,
@@ -467,5 +506,49 @@ pub(super) fn build(
         action: restricted_action,
         comparison,
         coefficients: [eq_coeff, sem_coeff],
+        actions,
     })
+}
+
+// 候補parameterの差の作用。元のchange自体の反復が群作用になるとは仮定しない。
+fn fiber_action(
+    b: &mut Builder<'_>, ring: NodeRef, stage: &str,
+    parameters: NodeRef, states: NodeRef, map: NodeRef,
+    parameter_module: NodeRef, ambient: NodeRef, kernel: NodeRef,
+    fiber: &linear::Fiber, action: &Matrix, effective: NodeRef,
+    image: &linear::Fiber, solutions: NodeRef, c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    let differences = integer_fiber::multiply(action, &fiber.basis, fiber.rank, c)?;
+    let coordinates = linear::coordinates(&image.basis, image.rank, &differences, fiber.rank, c)?;
+    let quotient = wire::map(b, kernel, effective, &coordinates, fiber.rank, c)?;
+    let stabilizer_fiber = integer_fiber::solve(&coordinates, fiber.rank,
+        &vec![Z::zero(); image.rank], c)?;
+    let stabilizer = wire::module(b, ring, fiber.rank - stabilizer_fiber.rank,
+        "kernel", vec![quotient])?;
+    let stabilizer_inclusion = wire::map(b, stabilizer, kernel,
+        &stabilizer_fiber.kernel, fiber.rank - stabilizer_fiber.rank, c)?;
+    let parameter_inclusion = wire::map(b, kernel, parameter_module, &fiber.basis, fiber.rank, c)?;
+    let effective_inclusion = wire::map(b, effective, ambient, &image.basis, image.rank, c)?;
+    // image基底への座標射影が全射であることを、整数の各単位元の持上げで検査する。
+    for j in 0..image.rank {
+        let mut unit = vec![Z::zero(); image.rank]; unit[j] = Z::from(1);
+        if integer_fiber::solve(&coordinates, fiber.rank, &unit, c)?.particular.is_none() {
+            return Err("局所作用の有効像への商射影が全射でない".into());
+        }
+    }
+    let inhabited = b.proposition("inhabited", vec![solutions], vec![], Decision::Established)?;
+    let laws = b.proposition("action_laws", vec![map],
+        vec![parameter_inclusion, effective_inclusion, stabilizer_inclusion, quotient],
+        Decision::Established)?;
+    let mut fields = BTreeMap::from([
+        ("side".into(), Json::str("semantic")), ("stage".into(), Json::str(stage)),
+        ("parameters".into(), parameters.wire()), ("states".into(), states.wire()),
+        ("map".into(), map.wire()), ("stabilizer".into(), stabilizer.wire()),
+        ("effective".into(), effective.wire()), ("quotient".into(), quotient.wire()),
+        ("conditions".into(), refs(&[inhabited, laws])),
+    ]);
+    if stage == "lawful_fiber" { fields.insert("parameter_kernel".into(), kernel.wire()); }
+    b.push(NodeType::Construction(T::Action), "action", Json::Obj(fields),
+        vec![parameters, states, map, kernel, stabilizer, effective, quotient, inhabited, laws],
+        None, None)
 }
