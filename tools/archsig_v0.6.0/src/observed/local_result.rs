@@ -656,13 +656,12 @@ fn compute(
                 let Some(value) = read.value else {
                     return Err("確定した局所読取りの値がない".into());
                 };
-                let key = (
-                    read.expression,
-                    read.bindings
-                        .iter()
-                        .map(|(n, v)| (n.clone(), v.wire().canonical()))
-                        .collect::<Vec<_>>(),
-                );
+                let bs = read
+                    .bindings
+                    .iter()
+                    .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
+                    .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                let key = (read.expression, bs.iter().map(|(name, reference)| (name.clone(), reference.0)).collect::<Vec<_>>());
                 if !retained.insert(key) {
                     continue;
                 }
@@ -679,11 +678,6 @@ fn compute(
                     positions: read_positions.clone(),
                     visible: read_positions,
                 });
-                let bs = read
-                    .bindings
-                    .iter()
-                    .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
-                    .collect::<Result<Vec<_>, ValidationFailure>>()?;
                 let expr =
                     change_result::source_expression(&mut b, env, read.expression, &bs, &[])?;
                 let actual = change_result::value(&mut b, &value)?;
