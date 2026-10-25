@@ -4555,3 +4555,213 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
         let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
+
+#[test]
+fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    for linked in [true, false] {
+        for side in ["equation", "semantic"] {
+            for degree in [0, 1] {
+                let dir = finite_diagnostic_input_at(
+                    diagnostic_compare_input(
+                        &format!("finite-identify-{linked}-{side}-{degree}"),
+                        false,
+                        true,
+                    ),
+                    true,
+                );
+                let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+                let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
+                    .unwrap()
+                    .vocabularies["Reservations"]
+                    .digest
+                    .clone();
+                let mut definitions =
+                    fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
+                let Json::Arr(vocabs) = fixture::field(&mut definitions, "vocabularies") else {
+                    panic!("vocabularies")
+                };
+                let Json::Arr(declarations) = fixture::field(&mut vocabs[0], "declarations") else {
+                    panic!("declarations")
+                };
+                for declaration in declarations {
+                    if fixture::field(declaration, "name") == &Json::str("Reservations.System") {
+                        let Json::Arr(fields) = fixture::field(declaration, "fields") else {
+                            panic!("fields")
+                        };
+                        for name in ["left", "right"] {
+                            fields.push(Json::obj([
+                                ("name", Json::str(name)),
+                                (
+                                    "type",
+                                    Json::Arr(vec![
+                                        Json::str("Ref"),
+                                        Json::str("Reservations.State"),
+                                    ]),
+                                ),
+                                ("meaning", Json::str("比較する状態。")),
+                            ]));
+                        }
+                    }
+                }
+                let definitions = definitions.canonical();
+                let digest = definition::check_definitions(&[("d", definitions.as_bytes())])
+                    .unwrap()
+                    .vocabularies["Reservations"]
+                    .digest
+                    .clone();
+                let raw = std::fs::read_to_string(dir.join("a.json"))
+                    .unwrap()
+                    .replace(&old_digest, &digest);
+                let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
+                let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
+                    panic!("snapshots")
+                };
+                let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+                    panic!("subjects")
+                };
+                let removed = ["s", "n", "mm", "z"].map(Json::str);
+                subjects.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["id"])));
+                let atoms = fixture::atoms(&mut map);
+                atoms.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["subject"])));
+                for atom in atoms.iter_mut() {
+                    let Json::Obj(fields) = atom else {
+                        panic!("atom")
+                    };
+                    if fields["field"] == Json::str("Reservations.State.held") {
+                        fields.insert("value".into(), Json::str("0"));
+                    }
+                    if ["f-to", "l-from", "t-to"]
+                        .map(Json::str)
+                        .contains(&fields["id"])
+                    {
+                        fields.insert(
+                            "value".into(),
+                            Json::Arr(vec![Json::str("v"), Json::str("r")]),
+                        );
+                    }
+                    if fields["id"] == Json::str("m-states") {
+                        let Json::Arr(pairs) = fields.get_mut("value").unwrap() else {
+                            panic!("pairs")
+                        };
+                        let Json::Arr(pair) = &mut pairs[1] else {
+                            panic!("pair")
+                        };
+                        pair[1] = Json::Arr(vec![Json::str("v"), Json::str("r")]);
+                    }
+                }
+                for (owner, left, right) in [("A", "p", "q"), ("B", "r", "r")] {
+                    for (field, target) in [("left", left), ("right", right)] {
+                        atoms.push(Json::obj([
+                            ("id", Json::str(format!("{owner}-{field}"))),
+                            ("subject", Json::str(owner)),
+                            ("field", Json::str(format!("Reservations.System.{field}"))),
+                            ("value", Json::Arr(vec![Json::str("v"), Json::str(target)])),
+                            ("origin", Json::str("model")),
+                        ]));
+                    }
+                }
+                let predicate = if linked {
+                    "x.left.free=x.right.free"
+                } else {
+                    "x.left.free=x.left.free and x.right.free=x.right.free"
+                };
+                let law = format!(
+                    "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=b}}; law optional linked(x:System):{predicate}; }}"
+                );
+                std::fs::write(dir.join("d.json"), definitions).unwrap();
+                std::fs::write(dir.join("a.json"), map.canonical()).unwrap();
+                std::fs::write(dir.join("l.law"), law).unwrap();
+                let ld = format!("d=diagnose($l.system,side={side},degree={degree})");
+                let rd = format!("e=diagnose($r.system,side={side},degree={degree})");
+                let asks = [
+                    "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                    "l=localize($m.candidate.source,law=Reservations.linked,x=@v/A,using=Reservations.choose)",
+                    "r=localize($m.candidate.target,law=Reservations.linked,x=@v/B,using=Reservations.choose)",
+                    &ld,
+                    &rd,
+                    "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+                    "n=needed($c)",
+                ];
+                let r = execute(&dir, "out", &asks);
+                assert_eq!(
+                    r.code,
+                    if linked { 0 } else { 2 },
+                    "{linked}/{side}/{degree}: {} {}",
+                    r.stdout,
+                    r.stderr
+                );
+                let j = result_json(&dir, &r);
+                let answer = &arr(get(&j, "answers"))[5];
+                assert!(has(
+                    get(&arr(get(&j, "answers"))[0], "outputs"),
+                    "operation"
+                ));
+                if linked {
+                    assert_eq!(s(get(answer, "status")), "established");
+                    let cmp = get(output(&j, 5, "comparison"), "value");
+                    let map = get(node(&j, get(cmp, "finite_map")), "value");
+                    let pairs = arr(get(map, "pairs"));
+                    assert_eq!(pairs.len(), 2);
+                    let mut observed = vec![];
+                    for pair in pairs {
+                        let pair = arr(pair);
+                        let x = arr(get(node(&j, &pair[0]), "value"));
+                        let y = arr(get(node(&j, &pair[1]), "value"));
+                        assert_eq!(x.len(), 2);
+                        assert_eq!(y.len(), 1);
+                        assert_eq!(x[0].value, y[0].value);
+                        assert_eq!(x[1].value, y[0].value);
+                        observed.push(match y[0].value {
+                            archsig::json::JValue::Bool(v) => v,
+                            _ => panic!("Bool"),
+                        });
+                    }
+                    observed.sort();
+                    assert_eq!(observed, vec![false, true]);
+                    for condition in arr(get(cmp, "conditions")) {
+                        assert_eq!(
+                            s(get(get(node(&j, condition), "judgment"), "status")),
+                            "established"
+                        );
+                    }
+                } else {
+                    assert_eq!(s(get(answer, "status")), "undetermined");
+                    assert!(!has(get(answer, "outputs"), "comparison"));
+                    assert!(
+                        arr(get(answer, "reasons"))
+                            .iter()
+                            .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+                    );
+                }
+                assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--time-ms",
+                    "120000",
+                ];
+                for ask in asks {
+                    args.extend(["--ask", ask]);
+                }
+                let reused = run(&dir, &args);
+                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+                let again = result_json(&dir, &reused);
+                for field in ["answers", "nodes"] {
+                    assert_eq!(get(&j, field).value, get(&again, field).value);
+                }
+            }
+        }
+    }
+}
