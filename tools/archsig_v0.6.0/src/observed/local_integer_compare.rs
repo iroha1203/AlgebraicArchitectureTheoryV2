@@ -5,15 +5,15 @@ use num_bigint::BigInt as Z;
 use num_traits::Zero;
 #[path = "local_integer_transport.rs"]
 mod transport;
-pub(super) use transport::between;
+pub(super) use transport::{between, dependencies, Renaming};
 
-fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
+pub(super) fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = &local(g, r)?.part().wire else {
         return Err("整数診断のレコードがない".into());
     };
     Ok(fields)
 }
-fn reference_value(g: &Graph, owner: NodeRef, value: &Json) -> Result<NodeRef, ValidationFailure> {
+pub(super) fn reference_value(g: &Graph, owner: NodeRef, value: &Json) -> Result<NodeRef, ValidationFailure> {
     local(g, owner)?
         .part()
         .arguments
@@ -22,7 +22,7 @@ fn reference_value(g: &Graph, owner: NodeRef, value: &Json) -> Result<NodeRef, V
         .copied()
         .ok_or_else(|| "整数診断の参照が依存にない".into())
 }
-fn list(g: &Graph, r: NodeRef, name: &str) -> Result<Vec<NodeRef>, ValidationFailure> {
+pub(super) fn list(g: &Graph, r: NodeRef, name: &str) -> Result<Vec<NodeRef>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, r)?.get(name) else {
         return Err("整数診断の参照列がない".into());
     };

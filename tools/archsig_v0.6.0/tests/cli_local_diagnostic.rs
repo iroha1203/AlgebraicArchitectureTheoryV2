@@ -3968,6 +3968,9 @@ fn integer_diagnostic_inclusion_keeps_unavailable_classes_blocked() {
 
 fn finite_diagnostic_input(name: &str, valid: bool) -> std::path::PathBuf {
     let dir = diagnostic_compare_input(name, true, true);
+    finite_diagnostic_input_at(dir, valid)
+}
+fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path::PathBuf {
     #[path = "common/architecture_environment.rs"]
     mod fixture;
     use archsig::canonical::Json;
@@ -4439,4 +4442,47 @@ fn integer_projected_reference_keeps_the_missing_field_in_needed() {
     let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{
         let f=get(r,"field");s(get(f,"subject"))=="p"&&s(get(f,"field"))=="Reservations.State.held"
     }));
+}
+
+#[test]
+fn finite_diagnostics_transport_actual_states_between_architectures() {
+    for change in [false,true] {for side in ["equation","semantic"] {for degree in [0,1] {
+        let dir=finite_diagnostic_input_at(integer_transport_input(&format!("finite-transport-{change}-{side}-{degree}"),true),true);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.free; law optional localValid")).unwrap();
+        let using=if change{",using=Reservations.choose"}else{""};
+        let left=format!("l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p{using})");
+        let right=format!("r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z{using})");
+        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",&left,&right,&ld,&rd,
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{change}/{side}/{degree}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        let cmp=get(output(&j,5,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
+        let map=get(node(&j,get(cmp,"finite_map")),"value");assert_ne!(get(map,"source").value,get(map,"target").value);
+        let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),if change{2}else{1});
+        for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");
+            if change{let x=arr(x);let y=arr(y);assert_eq!(x.len(),2);assert_eq!(y.len(),2);assert_eq!(x[0].value,y[1].value);assert_eq!(x[1].value,y[0].value);} }
+        for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks{args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}}
+}
+
+#[test]
+fn finite_diagnostic_transport_rejects_unrelated_law_bindings() {
+    for change in [false,true] {
+        let dir=finite_diagnostic_input_at(integer_transport_input(&format!("finite-transport-binding-{change}"),true),true);
+        let using=if change{",using=Reservations.choose"}else{""};
+        let left=format!("l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p{using})");
+        let right=format!("r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_a{using})");
+        let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",&left,&right,
+            "d=diagnose($l.system)","e=diagnose($r.system)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        let answer=&arr(get(&j,"answers"))[5];assert_eq!(s(get(answer,"status")),"undetermined");
+        assert!(!has(get(answer,"outputs"),"comparison"));
+        assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+        assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
+    }
 }

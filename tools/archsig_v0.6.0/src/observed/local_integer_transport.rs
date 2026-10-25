@@ -9,11 +9,101 @@ pub(in crate::observed::local_result) struct Maps {
     pub forward: Vec<Matrix>,
     pub inverse: Option<Vec<Matrix>>,
 }
-struct Renaming {
+pub(in crate::observed::local_result) struct Renaming {
     fields: BTreeMap<(String, String, Option<String>), Fact>,
 }
 impl Renaming {
-    fn fact(&self, fact: &Fact) -> Option<Fact> {
+    pub(in crate::observed::local_result) fn operation(
+        g: &Graph,
+        along: NodeRef,
+        c: &mut Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        let op = public_compose::op(g, along)?;
+        let mut rename = Renaming {
+            fields: BTreeMap::new(),
+        };
+        for (source, image) in op
+            .map()
+            .candidate()
+            .universe()
+            .iter()
+            .zip(op.map().candidate().images())
+        {
+            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            if source.field != image.field {
+                continue;
+            }
+            let key = (
+                source.snapshot.clone(),
+                source.subject.clone(),
+                source.field.clone(),
+            );
+            let mut image = image.clone();
+            image.atom = None;
+            if rename
+                .fields
+                .insert(key, image.clone())
+                .is_some_and(|old| old != image)
+            {
+                return Ok(None);
+            }
+        }
+        Ok(Some(rename))
+    }
+    pub(in crate::observed::local_result) fn positions(
+        &self,
+        env: &Environment<'_>,
+        left: &[Fact],
+        right: &[Fact],
+        c: &mut Control,
+    ) -> Result<bool, ValidationFailure> {
+        let mut targets = BTreeSet::new();
+        let mut sources = BTreeSet::new();
+        for source in left {
+            let mut key = source.clone();
+            key.atom = None;
+            if !sources.insert(key) {
+                continue;
+            }
+            let Some(image) = self.fact(source) else {
+                return Ok(false);
+            };
+            if !targets.insert(image.clone()) {
+                return Ok(false);
+            }
+            if !right.iter().any(|p| {
+                p.snapshot == image.snapshot && p.subject == image.subject && p.field == image.field
+            }) {
+                return Ok(false);
+            }
+            if let Some(name) = &source.field {
+                let sf = env.field(&source.snapshot, &source.subject, name)?;
+                let tf = env.field(&image.snapshot, &image.subject, name)?;
+                let (Slot::Known { value: x, .. }, Slot::Known { value: y, .. }) =
+                    (&sf.slot, &tf.slot)
+                else {
+                    return Ok(false);
+                };
+                if sf.ty != tf.ty || !self.value(x, y, c)? {
+                    return Ok(false);
+                }
+            }
+        }
+        let target_positions = right
+            .iter()
+            .map(|p| {
+                let mut p = p.clone();
+                p.atom = None;
+                p
+            })
+            .collect::<BTreeSet<_>>();
+        if targets != target_positions {
+            return Ok(false);
+        }
+        Ok(true)
+    }
+
+    pub(in crate::observed::local_result) fn fact(&self, fact: &Fact) -> Option<Fact> {
         self.fields
             .get(&(
                 fact.snapshot.clone(),
@@ -30,7 +120,7 @@ impl Renaming {
             atom: None,
         })
     }
-    fn carrier(&self, value: &Json) -> Option<Json> {
+    pub(in crate::observed::local_result) fn carrier(&self, value: &Json) -> Option<Json> {
         let Json::Obj(fields) = value else {
             return None;
         };
@@ -128,7 +218,7 @@ impl Renaming {
             })
         })
     }
-    fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
+    pub(in crate::observed::local_result) fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             if a.ty() != b.ty() { return Ok(false); }
@@ -210,7 +300,7 @@ fn coordinates(
     }
     Ok(Some(result))
 }
-fn dependencies(g: &Graph, context: NodeRef) -> Result<Vec<Fact>, ValidationFailure> {
+pub(in crate::observed::local_result) fn dependencies(g: &Graph, context: NodeRef) -> Result<Vec<Fact>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, context)?.get("dependencies") else {
         return Err("contextの依存位置がない".into());
     };
@@ -355,76 +445,10 @@ pub(in crate::observed::local_result) fn between(
     {
         return Ok(None);
     }
-    let mut rename = Renaming {
-        fields: BTreeMap::new(),
+    let Some(rename) = Renaming::operation(g, along, c)? else {
+        return Ok(None);
     };
-    for (source, image) in op
-        .map()
-        .candidate()
-        .universe()
-        .iter()
-        .zip(op.map().candidate().images())
-    {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        if source.field != image.field {
-            continue;
-        }
-        let key = (
-            source.snapshot.clone(),
-            source.subject.clone(),
-            source.field.clone(),
-        );
-        let mut image = image.clone();
-        image.atom = None;
-        if rename
-            .fields
-            .insert(key, image.clone())
-            .is_some_and(|old| old != image)
-        {
-            return Ok(None);
-        }
-    }
-    let mut targets = BTreeSet::new();
-    let mut sources = BTreeSet::new();
-    for source in &l.fixed_positions {
-        let mut key = source.clone();
-        key.atom = None;
-        if !sources.insert(key) {
-            continue;
-        }
-        let Some(image) = rename.fact(source) else {
-            return Ok(None);
-        };
-        if !targets.insert(image.clone()) {
-            return Ok(None);
-        }
-        if !r.fixed_positions.iter().any(|p| {
-            p.snapshot == image.snapshot && p.subject == image.subject && p.field == image.field
-        }) {
-            return Ok(None);
-        }
-        if let Some(name) = &source.field {
-            let sf = env.field(&source.snapshot, &source.subject, name)?;
-            let tf = env.field(&image.snapshot, &image.subject, name)?;
-            let (Slot::Known { value: x, .. }, Slot::Known { value: y, .. }) = (&sf.slot, &tf.slot)
-            else {
-                return Ok(None);
-            };
-            if sf.ty != tf.ty || !rename.value(x, y, c)? {
-                return Ok(None);
-            }
-        }
-    }
-    let target_positions = r
-        .fixed_positions
-        .iter()
-        .map(|p| {
-            let mut p = p.clone();
-            p.atom = None;
-            p
-        })
-        .collect::<BTreeSet<_>>();
-    if targets != target_positions {
+    if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, c)? {
         return Ok(None);
     }
     if a.requirements.len() != b.requirements.len() {
