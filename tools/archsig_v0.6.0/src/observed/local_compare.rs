@@ -121,7 +121,8 @@ pub(super) fn compute(
         }
         identity &= found;
     }
-    let supported = left_system == right_system
+    let supported = system.finite.is_none()
+        && left_system == right_system
         && identity
         && operation.source() == operation.target()
         && operation.source().reading() == witness.construction().reading()

@@ -25,6 +25,10 @@ use crate::{
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "local_compare.rs"]
 mod comparison;
+#[path = "local_finite.rs"]
+mod finite;
+#[path = "local_finite_model.rs"]
+mod finite_model;
 #[path = "local_geometry.rs"]
 pub(super) mod geometry;
 #[derive(Debug)]
@@ -47,6 +51,7 @@ struct System {
     domain: NodeRef,
     inhabited: bool,
     patch_count: usize,
+    finite: Option<geometry::Finite>,
     fixed_positions: Vec<Fact>,
 }
 #[derive(Clone, Debug)]
@@ -237,10 +242,10 @@ fn compute(
             return comparison::compute(env,g,request,target,base,witness.clone(),c);
         }
         if request.kind == QuestionKind::Diagnose {
-            return diagnose(g, request, target, original, base, witness.clone());
+            return diagnose(g, request, target, original, base, witness.clone(), c);
         }
         if request.arguments.iter().any(|a| a.name == "using") {
-            return Err(unsupported("自由位置を持つ局所系の公開構成は未実装"));
+            return finite::compute(env, g, request, target, original, base, witness.clone(), c);
         }
         let reading = witness.construction().reading();
         let locals = env
@@ -775,6 +780,7 @@ fn compute(
             &reading_refs,
             &projections,
             &local_instances,
+            None,
             &local_scope,
             c,
         ) {
@@ -815,6 +821,7 @@ fn compute(
             Err(failure) => return Err(failure),
         };
         let geometry::Built {
+            finite,
             system,
             adequacy,
             point,
@@ -860,6 +867,7 @@ fn compute(
                 domain: states,
                 inhabited,
                 patch_count,
+                finite,
                 fixed_positions,
             }),
         })
@@ -872,6 +880,7 @@ fn diagnose(
     original: &ConstructionValue,
     base: usize,
     witness: Arc<ArchitectureWitness>,
+    c: &mut Control,
 ) -> Result<Source, ValidationFailure> {
     let D::Local(data) = &original.data else {
         return Err("診断対象がLocalSystemでない".into());
@@ -937,6 +946,9 @@ fn diagnose(
             witness,
             system: None,
         });
+    }
+    if let Some(finite) = &system.finite {
+        return finite::diagnose(g, request, target, base, witness, finite, &system.laws, degree, c);
     }
     let side = request
         .arguments
