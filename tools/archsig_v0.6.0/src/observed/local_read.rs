@@ -13,6 +13,7 @@ pub(in crate::observed) struct Context {
     pub visible: Vec<Fact>,
     pub read_supports: Vec<local_result::geometry::Support>,
     pub read_refs: Vec<NodeRef>,
+    pub projections: Vec<local_result::geometry::Projection>,
     pub readings: Vec<Json>,
     pub arguments: Vec<NodeRef>,
     pub reasons: Vec<Reason>,
@@ -142,6 +143,47 @@ pub(in crate::observed) fn implicit_support(
     dependencies.dedup();
     Ok((carrier, dependencies))
 }
+// Tuple全体を読めない交差でだけ使う成分。公開ノードは必要になるまで作らない。
+fn projections(
+    env: &Environment<'_>,
+    id: usize,
+    value: &Scalar,
+    path: &mut Vec<usize>,
+    read: usize,
+    bindings: &[(String, Scalar)],
+    reading: &str,
+    out: &mut Vec<local_result::geometry::Projection>,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    c.checkpoint(Checkpoint::Localize)?;
+    match (&env.inputs.law().exprs[id].kind, value) {
+        (ExprKind::Group(child), _) => {
+            projections(env, *child, value, path, read, bindings, reading, out, c)?
+        }
+        (ExprKind::Tuple(items), Scalar::Tuple(values)) => {
+            for (i, (child, value)) in items.iter().zip(values).enumerate() {
+                path.push(i);
+                projections(env, *child, value, path, read, bindings, reading, out, c)?;
+                path.pop();
+            }
+        }
+        _ if !path.is_empty() => {
+            let (carrier, positions) = implicit_support(env, id, bindings, reading, c)?;
+            out.push(local_result::geometry::Projection {
+                read,
+                path: path.clone(),
+                value: value.clone(),
+                support: local_result::geometry::Support {
+                    carrier,
+                    positions,
+                    visible: visible_slots(env, id, bindings)?,
+                },
+            });
+        }
+        _ => {}
+    }
+    Ok(())
+}
 fn bound_name<'a>(env: &'a Environment<'_>, id: usize) -> Option<&'a str> {
     match &env.inputs.law().exprs[id].kind {
         ExprKind::Group(child) => bound_name(env, *child),
@@ -256,6 +298,7 @@ pub(in crate::observed) fn materialize(
                 visible: vec![],
                 read_supports: vec![],
                 read_refs: vec![],
+                projections: vec![],
                 readings: vec![],
                 arguments: vec![],
                 reasons: vec![Reason {
@@ -312,6 +355,7 @@ fn materialize_instance(
         visible: vec![],
         read_supports: vec![],
         read_refs: vec![],
+        projections: vec![],
         readings: vec![],
         arguments: vec![],
         reasons: vec![],
@@ -435,6 +479,17 @@ fn materialize_instance(
         subject_carrier(&value, &mut out.carrier, c)?;
         let actual = change_result::value(b, &value)?;
         let image = local_result::domain(b, &value.ty(), &[actual])?;
+        projections(
+            env,
+            *id,
+            &value,
+            &mut vec![],
+            out.readings.len(),
+            bindings,
+            &declaration.reading,
+            &mut out.projections,
+            c,
+        )?;
         out.readings.push(Json::obj([
             ("expression", expression.wire()),
             ("type", value.ty().wire()),

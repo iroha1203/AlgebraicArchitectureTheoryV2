@@ -2279,3 +2279,110 @@ fn explicit_cover_does_not_turn_union_dependencies_into_a_visible_law() {
         assert!(arr(get(plan, "requirements")).is_empty());
     }
 }
+
+#[test]
+fn tuple_intersections_retain_typed_component_projections() {
+    for nested in [false, true] {
+        for flag in [true, false] {
+            let dir = implicit_multiple_input("tuple-intersection", flag, Some(true));
+            let original = std::fs::read_to_string(dir.join("d.json")).unwrap();
+            let definition = original.replace(
+                r#""meaning":"別の観測値。"}"#,
+                r#""meaning":"別の観測値。"},{"name":"third","type":"Bool","meaning":"第三の観測値。"}"#,
+            );
+            let old = definition::check_definitions(&[("d", original.as_bytes())]).unwrap();
+            let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            std::fs::write(dir.join("d.json"), &definition).unwrap();
+            for file in ["a.json", "l.law"] {
+                let text = std::fs::read_to_string(dir.join(file)).unwrap()
+                    .replace(&old.vocabularies["Fixed"].digest, &new.vocabularies["Fixed"].digest)
+                    .replace("law required second(s:State):s.other=true;", "")
+                    .replace(r#""atoms":["#, r#""atoms":[{"id":"third","subject":"s","field":"Fixed.State.third","value":true,"origin":"model"},"#);
+                std::fs::write(dir.join(file), text).unwrap();
+            }
+            explicit_local(
+                &dir,
+                if nested {
+                    "local left(t:State) reads ((t.flag,t.other),unit); local right(t:State) reads ((t.flag,t.third),unit);"
+                } else {
+                    "local left(t:State) reads (t.flag,t.other); local right(t:State) reads (t.flag,t.third);"
+                },
+            );
+            let asks = [
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+            ];
+            let r = execute(&dir, "out", &asks);
+            assert_eq!(
+                r.code,
+                if flag { 0 } else { 1 },
+                "{} {}",
+                r.stdout,
+                r.stderr
+            );
+            let j = result_json(&dir, &r);
+            let system = get(output(&j, 1, "system"), "value");
+            assert_eq!(arr(get(system, "contexts")).len(), 4);
+            let intersection = arr(get(system, "contexts"))
+                .iter()
+                .map(|r| get(node(&j, r), "value"))
+                .find(|v| arr(get(v, "dependencies")).len() == 1)
+                .unwrap();
+            assert_eq!(
+                s(get(&arr(get(intersection, "dependencies"))[0], "field")),
+                "Fixed.State.flag"
+            );
+            assert_eq!(arr(get(intersection, "law_coordinates")).len(), 1);
+            let readings = arr(get(intersection, "readings"));
+            assert_eq!(readings.len(), if nested { 2 } else { 1 });
+            let reading = readings
+                .iter()
+                .find(
+                    |v| matches!(&get(v,"type").value, archsig::json::JValue::Str(t) if t=="Bool"),
+                )
+                .unwrap();
+            let expression = get(node(&j, get(reading, "expression")), "value");
+            assert_eq!(s(get(expression, "operation")), "project");
+            let operand = get(node(&j, &arr(get(expression, "operands"))[0]), "value");
+            if nested {
+                assert_eq!(s(get(operand, "operation")), "project");
+            }
+            let image = get(node(&j, get(reading, "domain")), "value");
+            assert_eq!(arr(get(image, "elements")).len(), 1);
+            assert_eq!(
+                get(node(&j, &arr(get(image, "elements"))[0]), "value").value,
+                archsig::json::JValue::Bool(flag)
+            );
+            for i in [2, 3] {
+                assert_eq!(
+                    s(get(&arr(get(&j, "answers"))[i], "status")),
+                    if flag { "established" } else { "refuted" }
+                );
+            }
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ];
+            for ask in asks {
+                args.extend(["--ask", ask]);
+            }
+            let reused = run(&dir, &args);
+            assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+            let after = result_json(&dir, &reused);
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&after, field).value);
+            }
+        }
+    }
+}

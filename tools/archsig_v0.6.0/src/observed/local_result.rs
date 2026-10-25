@@ -417,6 +417,7 @@ fn compute(
         let mut common: Option<(Vec<Json>, Vec<Fact>)> = None;
         let mut readings = vec![];
         let mut reading_refs = vec![];
+        let mut projections = vec![];
         let mut patches = vec![];
         let mut read_supports = vec![];
         let mut truth = vec![];
@@ -676,6 +677,10 @@ fn compute(
                     carrier.extend(support.carrier.iter().cloned());
                     positions.extend(support.positions.iter().cloned());
                     visible.extend(support.visible.iter().cloned());
+                    projections.extend(explicit.projections.into_iter().map(|mut p| {
+                        p.read += readings.len();
+                        p
+                    }));
                     readings.extend(explicit.readings);
                     read_supports.extend(explicit.read_supports);
                     reading_refs.extend(explicit.read_refs);
@@ -768,6 +773,7 @@ fn compute(
             &readings,
             &read_supports,
             &reading_refs,
+            &projections,
             &local_instances,
             &local_scope,
             c,
