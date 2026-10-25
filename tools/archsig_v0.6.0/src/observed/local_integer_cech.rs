@@ -441,10 +441,12 @@ pub(in crate::observed::local_result) fn diagnose(
                     None,
                 )?);
             }
-            if let Some(correction) = &correction.particular {
+            if let Some(correction) = &correction.particular
+                && linear::glues(diagram, &diagram.patches, 0, semantic, c)?
+            {
                 evidence.push(gluing(
                     env, &mut b, ring, modules[0], correction, diagram, states, &levels[0],
-                    semantic, &witness, c,
+                    &witness, c,
                 )?);
             }
             let proposition = b.proposition("class_zero", vec![r], evidence.clone(), status)?;
@@ -455,7 +457,7 @@ pub(in crate::observed::local_result) fn diagnose(
                 .evidence = evidence.clone();
             claim = Some(proposition);
         }
-        let mut conditions = vec![];
+        let mut conditions = diagram.sheaf_conditions.clone();
         let mut reasons = if diagram.missing.is_empty() {
             vec![]
         } else {
@@ -563,13 +565,9 @@ fn gluing(
     diagram: &Diagram,
     states: &[linear::Fiber],
     level: &Level,
-    semantic: bool,
     witness: &ArchitectureWitness,
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    if !linear::glues(diagram, &diagram.patches, 0, semantic, c)? {
-        return Err(unsupported("零類からの大域証人に必要な貼り合わせが不成立"));
-    }
     let mut merged: BTreeMap<usize, Z> = BTreeMap::new();
     let mut local = vec![];
     for (j, i) in diagram.patches.iter().enumerate() {

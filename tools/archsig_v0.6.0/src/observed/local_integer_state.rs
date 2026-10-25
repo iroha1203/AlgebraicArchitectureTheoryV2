@@ -199,7 +199,17 @@ pub(super) fn build(
         {
             variables.push((
                 i,
-                Json::obj([("position", slot_value), ("type", Type::Z.wire())]),
+                Json::obj([
+                    (
+                        "position",
+                        Json::obj([
+                            ("kind", Json::str("observation")),
+                            ("field", slot.wire()),
+                            ("component", Json::Arr(vec![])),
+                        ]),
+                    ),
+                    ("type", Type::Z.wire()),
+                ]),
             ));
         } else {
             fixed.push(slot_value);
@@ -297,6 +307,27 @@ pub(super) fn build(
         .iter()
         .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
+    let declaration = &env.inputs.law().declarations[&model.change];
+    let Signature::Change { params, guard, .. } = &declaration.signature else {
+        return Err("change署名がない".into());
+    };
+    let mut guards = vec![];
+    if let Some(guard) = guard {
+        let residual = params
+            .iter()
+            .skip(1)
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect::<Vec<_>>();
+        for subject in &instance_subjects {
+            guards.push(change_result::source_expression(
+                b,
+                env,
+                *guard,
+                &[(params[0].name.clone(), *subject)],
+                &residual,
+            )?);
+        }
+    }
     let candidates = b.push(
         NodeType::Construction(T::CandidateSpace),
         "candidate_space",
@@ -317,25 +348,27 @@ pub(super) fn build(
             ("states", states.wire()),
             ("action", action_ref.wire()),
             ("instances", Json::Arr(instances)),
-            ("guards", Json::Arr(vec![])),
+            ("guards", refs(&guards)),
             ("requirements", refs(&requirements)),
         ]),
         [target, parameter_values, states, action_ref]
             .into_iter()
             .chain(instance_subjects)
+            .chain(guards)
             .chain(bindings.iter().map(|(_, r)| *r))
             .chain(requirements.iter().copied())
             .collect(),
         None,
         None,
     )?;
-    let da = integer_fiber::multiply(&d, &action, model.action.parameter_count, c)?;
+    let mut da = integer_fiber::multiply(&d, &action, model.action.parameter_count, c)?;
     let shift = linear::apply(&d, &offset, c)?;
-    let shifted = rhs
+    let mut shifted = rhs
         .iter()
         .zip(shift)
         .map(|(x, y)| x.as_ref().map(|x| x - y))
         .collect::<Vec<_>>();
+    parameter_guards(model, &mut da, &mut shifted);
     let (sem, solution_domain, _) = solutions(
         b,
         ring,

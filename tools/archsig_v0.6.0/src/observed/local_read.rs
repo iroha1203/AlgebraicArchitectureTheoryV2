@@ -302,6 +302,18 @@ pub(in crate::observed) fn fixed_chain_visibility(
     env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
+    state_visibility_inner(env, roots, bindings, reading, c, true)
+}
+pub(in crate::observed) fn state_visibility(
+    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
+    c: &mut Control,
+) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
+    state_visibility_inner(env, roots, bindings, reading, c, false)
+}
+fn state_visibility_inner(
+    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
+    c: &mut Control, require_chain: bool,
+) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     let mut pending = roots.to_vec();
     let mut carrier = vec![];
     for (_, value) in bindings { subject_carrier(value, &mut carrier, c)?; }
@@ -329,7 +341,7 @@ pub(in crate::observed) fn fixed_chain_visibility(
     }
     carrier.sort_by_key(Json::canonical); carrier.dedup();
     visible.sort(); visible.dedup();
-    Ok(chain.then_some((carrier,visible)))
+    Ok((chain || !require_chain).then_some((carrier,visible)))
 }
 fn reason(
     context: &mut Context,
@@ -356,12 +368,12 @@ pub(in crate::observed) fn materialize(
     states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
-    materialize_with_free(env, b, declaration, request, coordinates, states, &[], c)
+    materialize_with_free(env, b, declaration, request, coordinates, states, &[], None, c)
 }
 pub(in crate::observed) fn materialize_with_free(
     env: &Environment<'_>, b: &mut Builder<'_>, declaration: &Declaration,
     request: &Request, coordinates: &[NodeRef], states: &[Environment<'_>],
-    free: &[Fact], c: &mut Control,
+    free: &[Fact], target: Option<NodeRef>, c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
         return Err("local署名がない".into());
@@ -409,12 +421,112 @@ pub(in crate::observed) fn materialize_with_free(
     }
     let mut contexts = vec![];
     for bindings in &assignments {
-        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, free, c)?;
+        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, free, target, c)?;
         let stopped = context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
         contexts.push(context);
         if stopped { break; }
     }
     Ok(contexts)
+}
+// Tupleの像は同じ自由位置の重複と固定成分を含む実際のアフィン像にする。
+fn affine_read_image(
+    env:&Environment<'_>, b:&mut Builder<'_>, target:NodeRef, expression:NodeRef,
+    id:usize, bindings:&[(String,Scalar)], reading:&str, free:&[Fact], visible:&[Fact],
+    observed:&Scalar, c:&mut Control,
+) -> Result<NodeRef,ValidationFailure> {
+    use crate::observed::{change_result::linear_result as wire,construction_result::ConstructionType as CT};
+    use num_bigint::BigInt as Z;
+    let slots=visible.iter().filter(|f|free.contains(f)).cloned().collect::<Vec<_>>();
+    let mut pending=vec![(id,observed)];let mut matrix=vec![];let mut offset=vec![];
+    while let Some((id,value))=pending.pop() {
+        c.checkpoint(Checkpoint::Localize)?;
+        match (&env.inputs.law().exprs[id].kind,value) {
+            (ExprKind::Group(inner),_)=>pending.push((*inner,value)),
+            (ExprKind::Tuple(ids),Scalar::Tuple(values)) if ids.len()==values.len()=>pending.extend(ids.iter().zip(values).rev().map(|(i,v)|(*i,v))),
+            (_,Scalar::Z(value))=>{
+                let used=visible_slots(env,id,bindings,reading)?;
+                let mut row=vec![Z::from(0);slots.len()];let mut constant=value.clone();
+                if let Some(slot)=used.first().filter(|slot|free.contains(slot)) {
+                    if used.len()!=1 {return Err(unsupported(env.inputs.law().exprs[id].span,"整数読取りのscalar因子分解が未実装"));}
+                    let i=slots.iter().position(|f|f==slot).ok_or("自由読取りの位置がない")?;
+                    row[i]=Z::from(1);constant=Z::from(0);
+                }
+                matrix.push(row);offset.push(constant);
+            }
+            _=>return Err(unsupported(env.inputs.law().exprs[id].span,"整数読取り像の非Z成分は未実装")),
+        }
+    }
+    let ring=b.push(NodeType::Construction(CT::Ring),"ring",Json::obj([("kind",Json::str("scalar")),("scalar",Json::str("Z"))]),vec![],None,None)?;
+    let source_module=wire::module(b,ring,slots.len(),"free",vec![expression])?;
+    let parameters=wire::domain(b,source_module)?;
+    let variables=slots.iter().map(|f|Json::obj([
+        ("position",Json::obj([("kind",Json::str("observation")),("field",f.wire()),("component",Json::Arr(vec![]))])),("type",Type::Z.wire())
+    ])).collect();
+    let mut fixed=vec![];let mut fixed_refs=vec![];
+    for slot in visible.iter().filter(|f|!slots.contains(f)) {
+        let owner=env.subject(&slot.snapshot,&slot.subject)?;
+        let subject=change_result::value(b,&Scalar::Subject{snapshot:slot.snapshot.clone(),subject:slot.subject.clone(),entity:owner.ty.clone()})?;
+        fixed_refs.push(subject);fixed.push(Json::obj([("subject",subject.wire()),("field",Json::str(slot.field.as_ref().ok_or("読取り位置のfieldがない")?))]));
+    }
+    let space=b.push(NodeType::Construction(CT::EquationSpace),"equation_space",Json::obj([
+        ("base",target.wire()),("variables",Json::Arr(variables)),("fixed",Json::Arr(fixed)),("parameters",parameters.wire()),("requirements",Json::Arr(vec![]))
+    ]),[target,parameters,expression].into_iter().chain(fixed_refs).collect(),None,None)?;
+    let origin=wire::vector(b,source_module,&vec![Z::from(0);slots.len()],c)?;
+    let identity=(0..slots.len()).map(|i|(0..slots.len()).map(|j|Z::from(usize::from(i==j))).collect()).collect();
+    let embedding=wire::map(b,source_module,source_module,&identity,slots.len(),c)?;
+    let solutions=b.push(NodeType::Construction(CT::EquationSolutionSet),"equation_solutions",Json::obj([
+        ("domain",space.wire()),("representation",Json::obj([("kind",Json::str("affine")),("particular",origin.wire()),("directions",source_module.wire()),("embedding",embedding.wire())]))
+    ]),vec![space,origin,source_module,embedding],None,None)?;
+    let source=b.push(NodeType::Domain,"domain",Json::obj([("kind",Json::str("solutions")),("solutions",solutions.wire())]),vec![solutions],None,None)?;
+    let target_domain=b.push(NodeType::Domain,"domain",Json::obj([("kind",Json::str("type")),("type",observed.ty().wire())]),vec![],None,None)?;
+    let target_module=wire::module(b,ring,offset.len(),"free",vec![expression])?;
+    let linear=wire::map(b,source_module,target_module,&matrix,slots.len(),c)?;
+    let offset=wire::vector(b,target_module,&offset,c)?;
+    let map=b.push(NodeType::Construction(CT::StateMap),"state_map",Json::obj([
+        ("source",source.wire()),("target",target_domain.wire()),("kind",Json::str("affine")),("linear",linear.wire()),("offset",offset.wire())
+    ]),vec![source,target_domain,linear,offset],None,None)?;
+    b.push(NodeType::Domain,"domain",Json::obj([("kind",Json::str("image")),("map",map.wire()),("source",solutions.wire())]),vec![map,solutions],None,None)
+}
+
+/// local省略時は支持の各原始位置をそのまま読む。
+pub(in crate::observed) fn materialize_positions(
+    env:&Environment<'_>, b:&mut Builder<'_>, request:&Request,
+    support:&local_result::geometry::Support, free:&[Fact], reading:&str, c:&mut Control,
+) -> Result<Context,ValidationFailure> {
+    let mut out=Context { locals:vec![],carrier:support.carrier.clone(),positions:support.positions.clone(),
+        visible:support.positions.clone(),read_supports:vec![],read_refs:vec![],projections:vec![],
+        readings:vec![],arguments:vec![],reasons:vec![],scope:Scope::default() };
+    for slot in &support.positions {
+        c.checkpoint(Checkpoint::Localize)?;
+        let owner=env.subject(&slot.snapshot,&slot.subject)?;
+        let subject=Scalar::Subject{snapshot:slot.snapshot.clone(),subject:slot.subject.clone(),entity:owner.ty.clone()};
+        let name=slot.field.as_ref().ok_or("暗黙読取りのfieldがない")?;
+        let declaration=&env.inputs.definitions().declarations[&owner.ty];
+        let (params,fields)=declaration.signature.record_fields().ok_or("暗黙読取りのrecordがない")?;
+        let field=params.iter().chain(fields).find(|f|name==&format!("{}.{}",owner.ty,f.name)).ok_or("暗黙読取りのfield宣言がない")?;
+        let subject_ref=change_result::value(b,&subject)?;
+        let ty=env.field(&slot.snapshot,&slot.subject,name)?.ty.erase();
+        let expression=b.push(NodeType::Expression(ty.clone()),"expression",Json::obj([
+            ("kind",Json::str("source")),("location",crate::result::location_wire(&field.location)),
+            ("parameters",Json::Arr(vec![])),("bindings",Json::Arr(vec![Json::obj([("name",Json::str("subject")),("value",subject_ref.wire())])]))
+        ]),vec![subject_ref],None,None)?;
+        out.arguments.push(expression);
+        let read=env.scoped_field(known(subject.clone()),&field.name,&Scope::default(),reading,(0,0))?;
+        out.scope.merge(&read.scope);b.parts[expression.0-b.base].scope.merge(&read.scope);
+        let image=if free.contains(slot) {
+            b.push(NodeType::Domain,"domain",Json::obj([("kind",Json::str("type")),("type",ty.wire())]),vec![],None,None)?
+        } else if let Some(value)=read.known_value {
+            let value=change_result::value(b,&value)?;local_result::domain(b,&ty,&[value])?
+        } else {
+            out.reasons.push(Reason{kind:ReasonKind::Missing,request:request.id.clone(),dependencies:vec![expression],missing:vec![slot.clone()],location:Some(field.location.clone())});
+            continue;
+        };
+        out.arguments.push(image);out.read_refs.extend([expression,image]);
+        out.readings.push(Json::obj([("expression",expression.wire()),("type",ty.wire()),("domain",image.wire())]));
+        let carrier=vec![Json::obj([("type",subject.ty().wire()),("value",subject.wire())])];
+        out.read_supports.push(local_result::geometry::Support{carrier,positions:vec![slot.clone()],visible:vec![slot.clone()]});
+    }
+    Ok(out)
 }
 fn materialize_instance(
     env: &Environment<'_>,
@@ -425,6 +537,7 @@ fn materialize_instance(
     coordinates: &[NodeRef],
     states: &[Environment<'_>],
     free: &[Fact],
+    target: Option<NodeRef>,
     c: &mut Control,
 ) -> Result<Context, ValidationFailure> {
     let Signature::Local {
@@ -520,6 +633,16 @@ fn materialize_instance(
         out.scope.merge(&value.scope);
         out.positions.extend(dependencies);
         out.arguments.push(expression);
+        if !free.is_empty() && absent.is_empty() {
+            let assignments=env.architecture_values();
+            let mut arbitrary=Environment::with_primitive_valuation(env.inputs,&assignments,c)?;
+            arbitrary.object=env.object_domain();
+            for slot in free { arbitrary.affine_valuation.insert(slot.clone(),crate::observed::affine::Form::state(slot,c)?); }
+            let (all,_,_)=evaluate_read(&arbitrary,*id,&variables,&scope,&declaration.reading)?;
+            if all.known_value != value.known_value || all.known_value.is_none() {
+                return Err(unsupported(declaration.span,"自由状態でlocal guardの適用が変わる"));
+            }
+        }
         let mut guard_missing = absent.clone();
         let consistent = (|| -> Result<(), ValidationFailure> {
             for state in states {
@@ -625,12 +748,11 @@ fn materialize_instance(
         if missing_reason.is_some() { continue; }
         let ty = values.first().ok_or("localの読取り像が空")?.ty();
         let image = if visible.iter().any(|slot| free.contains(slot)) {
-            if ty != Type::Z || visible.len() != 1 {
-                return Err(unsupported(declaration.span, "整数局所読取りの積の像は未実装"));
+            if ty == Type::Z && visible.len() == 1 {
+                b.push(NodeType::Domain, "domain", Json::obj([("kind", Json::str("type")), ("type", Type::Z.wire())]), vec![], None, None)?
+            } else {
+                affine_read_image(env,b,target.ok_or("整数読取りの基底がない")?,expression,*id,bindings,&declaration.reading,free,&visible,&values[0],c)?
             }
-            b.push(NodeType::Domain, "domain", Json::obj([
-                ("kind", Json::str("type")), ("type", Type::Z.wire())
-            ]), vec![], None, None)?
         } else {
             let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
             local_result::domain(b, &ty, &actual)?
@@ -751,7 +873,7 @@ mod tests {
                     _ => Usage { signal:Some(crate::result::Signal::Term), ..Usage::default() },
                 }
             });
-            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &[], &mut c).unwrap();
+            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &[], None, &mut c).unwrap();
             assert!(context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_))));
             assert!(context.reasons.iter().any(|r| r.missing.iter().any(|f| f.subject=="p" && f.field.as_deref()==Some("Reservations.State.owner"))));
         }

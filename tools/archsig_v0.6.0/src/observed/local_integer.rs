@@ -28,6 +28,7 @@ pub(super) struct Diagram {
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
     pub law_refs: Vec<NodeRef>,
     pub assignments: Vec<(Fact, Scalar)>,
+    pub sheaf_conditions: Vec<NodeRef>,
 }
 struct Model {
     change: String,
@@ -57,12 +58,9 @@ fn analyze(
         })
         .ok_or("整数局所changeがない")?;
     let change = &env.inputs.law().declarations[name];
-    let Signature::Change { params, guard, .. } = &change.signature else {
+    let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数局所changeの署名がない".into());
     };
-    if guard.is_some() {
-        return Err(unsupported("整数局所系のguard付き作用は未実装"));
-    }
     let reading = witness.construction().reading();
     if change.reading != reading {
         return Err(unsupported("整数局所changeのreadingが異なる"));
@@ -70,7 +68,15 @@ fn analyze(
     let first = params.first().ok_or("整数changeの対象引数がない")?;
     let mut missing = vec![];
     let mut subjects = change_search::domain(env, &first.ty, first.span, &mut missing)?
-        .ok_or_else(|| unsupported("整数局所changeの対象域が未確定"))?;
+        .ok_or_else(|| {
+            pending.facts.extend(missing.iter().cloned());
+            pending.expression = Some(*body);
+            pending.parameters = params
+                .iter()
+                .map(|p| (p.name.clone(), p.ty.clone()))
+                .collect();
+            unsupported("整数局所changeの対象域が未確定")
+        })?;
     let construction = witness.construction();
     subjects.retain(|v| match v {
         Scalar::Subject {
@@ -95,7 +101,7 @@ fn analyze(
                 |name| d.name == name,
             )
     }) {
-        let Signature::Law { params, .. } = &law.signature else {
+        let Signature::Law { params, body, .. } = &law.signature else {
             return Err("整数局所Lawの署名がない".into());
         };
         let mut rows = vec![vec![]];
@@ -107,8 +113,16 @@ fn analyze(
             {
                 vec![change_search::selector(env, g, &a.value)?]
             } else {
-                change_search::domain(env, &p.ty, p.span, &mut missing)?
-                    .ok_or_else(|| unsupported("整数局所Lawの対象域が未確定"))?
+                change_search::domain(env, &p.ty, p.span, &mut missing)?.ok_or_else(|| {
+                    pending.facts.extend(missing.iter().cloned());
+                    pending.expression = Some(*body);
+                    pending.parameters = params
+                        .iter()
+                        .map(|p| (p.name.clone(), p.ty.clone()))
+                        .collect();
+                    pending.bindings.clear();
+                    unsupported("整数局所Lawの対象域が未確定")
+                })?
             };
             let mut next = vec![];
             for row in rows {
@@ -131,6 +145,9 @@ fn analyze(
         let Signature::Law { body, guard, .. } = &declaration.signature else {
             return Err("整数局所Lawでない".into());
         };
+        pending.expression = Some(*body);
+        pending.bindings = bindings.clone();
+        pending.parameters.clear();
         let (row, absent, _) = env.local_point(declaration, bindings)?;
         missing.extend(absent);
         pending.facts.extend(missing.iter().cloned());
@@ -139,7 +156,7 @@ fn analyze(
             .chain(guard.iter().copied())
             .collect::<Vec<_>>();
         let (carrier, visible) =
-            local_read::fixed_chain_visibility(env, &roots, bindings, reading, c)?
+            local_read::state_visibility(env, &roots, bindings, reading, c)?
                 .ok_or_else(|| unsupported("整数局所Lawの読取り座標の因子分解は未実装"))?;
         let mut positions = row
             .support
@@ -167,9 +184,6 @@ fn analyze(
     missing.extend(pending.facts.iter().cloned());
     missing.sort();
     missing.dedup();
-    if requirements.is_empty() {
-        return Err(unsupported("空の整数局所Law族は未実装"));
-    }
     let instances = subjects
         .into_iter()
         .enumerate()
@@ -242,13 +256,14 @@ fn fibers(
             .iter()
             .map(|i| model.action.offset[*i].clone())
             .collect::<Vec<_>>();
-        let da = integer_fiber::multiply(&d, &action, model.action.parameter_count, c)?;
+        let mut da = integer_fiber::multiply(&d, &action, model.action.parameter_count, c)?;
         let shift = linear::apply(&d, &offset, c)?;
-        let shifted = rhs
+        let mut shifted = rhs
             .iter()
             .zip(shift)
             .map(|(x, y)| x.as_ref().map(|x| x - y))
             .collect::<Vec<_>>();
+        parameter_guards(model, &mut da, &mut shifted);
         let parameters = linear::solve_partial(&da, model.action.parameter_count, &shifted, c)?;
         let sem = linear::affine_image(&parameters, &action, &offset, c)?;
         free.push(positions);
@@ -256,6 +271,16 @@ fn fibers(
         semantic.push(sem);
     }
     Ok((free, equation, semantic))
+}
+
+fn parameter_guards(model: &Model, matrix: &mut Matrix, rhs: &mut Vec<Option<Z>>) {
+    if let Some(guard) = &model.action.guard {
+        matrix.extend(guard.equations.iter().cloned());
+        rhs.extend(guard.rhs.iter().cloned().map(Some));
+    } else if model.action.candidates_empty {
+        matrix.extend(model.action.equations.iter().cloned());
+        rhs.extend(model.action.rhs.iter().cloned().map(Some));
+    }
 }
 
 pub(super) fn compute(
@@ -286,7 +311,7 @@ pub(super) fn compute(
         base,
         parts: vec![],
     };
-    let model = match result {
+    let mut model = match result {
         Ok(model) => model,
         Err(ValidationFailure::UnsupportedExpression { location, .. })
             if !pending.facts.is_empty() =>
@@ -331,6 +356,7 @@ pub(super) fn compute(
         }
         Err(error) => return Err(error),
     };
+    model.scope.merge(&g.get(target)?.scope);
     let saved_witness = witness.clone();
     let result = (|| -> Result<Source, ValidationFailure> {
         let mut laws = vec![];
@@ -397,6 +423,22 @@ pub(super) fn compute(
                 )?,
             );
         }
+        if expressions.is_empty() {
+            let declaration = &env.inputs.law().declarations[&model.change];
+            let Signature::Change { body, params, .. } = &declaration.signature else {
+                return Err("change署名がない".into());
+            };
+            expressions.push(change_result::source_expression(
+                &mut b,
+                env,
+                *body,
+                &[],
+                &params
+                    .iter()
+                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .collect::<Vec<_>>(),
+            )?);
+        }
         let locals = env
             .inputs
             .law()
@@ -407,17 +449,60 @@ pub(super) fn compute(
                     && matches!(d.signature, Signature::Local { .. })
             })
             .collect::<Vec<_>>();
-        if locals.is_empty() {
-            return Err(unsupported("整数局所系の暗黙読取りは未実装"));
-        }
+        let implicit = locals.is_empty();
+        let local_names = locals.iter().map(|d| d.name.clone()).collect::<Vec<_>>();
         let mut explicit = vec![];
-        for declaration in locals {
-            if matches!(
-                declaration.signature,
-                Signature::Local { guard: Some(_), .. }
-            ) {
-                return Err(unsupported("整数自由状態上のlocal guardは未実装"));
+        if implicit {
+            let mut supports = model.supports.clone();
+            for support in &mut supports {
+                support.visible = support.positions.clone();
+                for slot in &support.positions {
+                    let subject = fixed.subject(&slot.snapshot, &slot.subject)?;
+                    let value = Scalar::Subject {
+                        snapshot: slot.snapshot.clone(),
+                        subject: slot.subject.clone(),
+                        entity: subject.ty.clone(),
+                    };
+                    support.carrier.push(Json::obj([
+                        ("type", value.ty().wire()),
+                        ("value", value.wire()),
+                    ]));
+                }
+                support.carrier.sort_by_key(Json::canonical);
+                support.carrier.dedup();
             }
+            for slot in &model.action.slots {
+                if supports.iter().any(|s| s.positions.contains(slot)) {
+                    continue;
+                }
+                let subject = fixed.subject(&slot.snapshot, &slot.subject)?;
+                let value = Scalar::Subject {
+                    snapshot: slot.snapshot.clone(),
+                    subject: slot.subject.clone(),
+                    entity: subject.ty.clone(),
+                };
+                supports.push(geometry::Support {
+                    carrier: vec![Json::obj([
+                        ("type", value.ty().wire()),
+                        ("value", value.wire()),
+                    ])],
+                    positions: vec![slot.clone()],
+                    visible: vec![slot.clone()],
+                });
+            }
+            for support in supports {
+                explicit.push(local_read::materialize_positions(
+                    &fixed,
+                    &mut b,
+                    request,
+                    &support,
+                    &model.action.slots,
+                    witness.construction().reading(),
+                    c,
+                )?);
+            }
+        }
+        for declaration in locals {
             explicit.extend(local_read::materialize_with_free(
                 &fixed,
                 &mut b,
@@ -426,6 +511,7 @@ pub(super) fn compute(
                 &expressions,
                 &[],
                 &model.action.slots,
+                Some(target),
                 c,
             )?);
         }
@@ -462,7 +548,7 @@ pub(super) fn compute(
         };
         let patches = explicit
             .iter()
-            .filter(|x| !x.locals.is_empty())
+            .filter(|x| implicit || !x.locals.is_empty())
             .map(|x| geometry::Support {
                 carrier: x.carrier.clone(),
                 positions: x.positions.clone(),
@@ -479,9 +565,36 @@ pub(super) fn compute(
                 .iter()
                 .any(|s| !patches.iter().any(|p| p.visible.contains(s)))
         {
-            return Err(unsupported(
-                "整数局所系の可視座標がLawまたは更新位置を被覆しない",
-            ));
+            let reason = Reason {
+                kind: ReasonKind::VisibilityInsufficient {
+                    locals: local_names,
+                    coordinates: expressions.clone(),
+                },
+                request: request.id.clone(),
+                dependencies: expressions.clone(),
+                missing: vec![],
+                location: None,
+            };
+            for expression in &expressions {
+                b.parts[expression.0 - base].reasons.push(reason.clone());
+            }
+            return Ok(Source {
+                base,
+                parts: std::mem::take(&mut b.parts),
+                scope_domains: vec![],
+                request: request.clone(),
+                witness,
+                system: None,
+                answer: Answer {
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs: BTreeMap::new(),
+                    claim: None,
+                    evidence: vec![],
+                    reasons: vec![reason],
+                    scope: model.scope,
+                },
+            });
         }
         for p in &patches {
             global.carrier.extend(p.carrier.iter().cloned());
@@ -796,6 +909,7 @@ pub(super) fn compute(
             requirements: model.requirements.clone(),
             law_refs: laws.clone(),
             assignments: assignments.clone(),
+            sheaf_conditions: vec![],
             solutions,
             slots: model.action.slots.clone(),
             free,
@@ -851,7 +965,7 @@ fn emit_system(
     coefficient_restrictions: Vec<Json>,
     restriction_refs: Vec<NodeRef>,
     adequacy: NodeRef,
-    diagram: Diagram,
+    mut diagram: Diagram,
     c: &mut Control,
 ) -> Result<Source, ValidationFailure> {
     let contexts = &diagram.contexts;
@@ -896,6 +1010,7 @@ fn emit_system(
             ]));
         }
     }
+    diagram.sheaf_conditions = conditions.clone();
     let mut fields = BTreeMap::from([
         ("base".into(), target.wire()),
         ("change".into(), Json::str(&model.change)),
