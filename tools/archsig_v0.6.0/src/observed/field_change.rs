@@ -109,6 +109,7 @@ fn equations(
                     .comparison
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
                 else {
+                    guard_missing(env, id, vars, reading, missing)?;
                     return Err(unsupported(
                         env,
                         id,

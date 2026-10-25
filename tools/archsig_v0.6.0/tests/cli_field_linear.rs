@@ -355,6 +355,11 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             "change choose(s:State,a:Q)=if s.y=0 then s with{x=a} else s with{x=a};law required pinned(s:State):s.x=0;",
             1,
         ),
+        (
+            "s.y>0",
+            "change choose(s:State,a:Q) when s.y>0=s with{x=a};law required pinned(s:State):s.x=0;",
+            1,
+        ),
     ] {
         let dir = input("rational-missing-conditions", body);
         let path = dir.join("a.json");
