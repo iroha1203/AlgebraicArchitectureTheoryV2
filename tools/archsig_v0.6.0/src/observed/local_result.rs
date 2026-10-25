@@ -713,7 +713,7 @@ fn compute(
             }];
             read_supports = vec![patches[0].clone(); readings.len()];
         }
-        let built = geometry::build(
+        let built = match geometry::build(
             env,
             &mut b,
             target,
@@ -727,7 +727,25 @@ fn compute(
             &local_instances,
             &local_scope,
             c,
-        )?;
+        ) {
+            Ok(built) => built,
+            Err(ValidationFailure::Stop(stop)) => {
+                // 完成済みの型付き断片だけを転送し、未完成のLocalSystemを公開しない。
+                let mut reason = Reason::stopped(&request.id, stop);
+                let mut scope = Scope::default();
+                for (index, part) in b.parts.iter().enumerate() {
+                    scope.merge(&part.scope);
+                    if matches!(part.ty, NodeType::Construction(T::Context | T::ContextMap | T::Overlap | T::Cover | T::Topology)) {
+                        reason.dependencies.push(NodeRef(base + index));
+                    }
+                }
+                return Ok(Source {base,parts:b.parts,scope_domains,
+                    answer:Answer {id:request.id.clone(),status:Decision::Undetermined,
+                        outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons:vec![reason],scope},
+                    request:request.clone(),witness:witness.clone(),system:None});
+            }
+            Err(failure) => return Err(failure),
+        };
         let geometry::Built {
             system,
             adequacy,
@@ -1085,6 +1103,17 @@ impl Environment<'_> {
                 &mut self.control.clone(),
             )
         })?;
+        if d.source.answer.reasons.iter().any(|r|matches!(r.kind,ReasonKind::Stop(_))) {
+            if rebuilt.scope_domains != d.source.scope_domains
+                || !rebuilt.parts.starts_with(&d.source.parts)
+                || d.source.system.is_some()
+                || d.source.answer.status != Decision::Undetermined
+                || !d.source.answer.outputs.is_empty()
+                || d.source.answer.claim.is_some()
+            { return Err("局所系の停止断片の再構成が違う".into()); }
+            self.remember_local_source(d.source.clone());
+            return Ok(());
+        }
         if rebuilt.scope_domains != d.source.scope_domains
             || rebuilt.parts != d.source.parts
             || rebuilt.answer != d.source.answer
@@ -1121,7 +1150,7 @@ pub(super) fn validate_answer(
                 .find(|r| {
                     matches!(
                         r.kind,
-                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. }
+                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. } | ReasonKind::Stop(_)
                     )
                 })
                 .and_then(|r| r.dependencies.first())

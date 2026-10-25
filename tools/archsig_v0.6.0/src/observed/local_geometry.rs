@@ -205,23 +205,13 @@ pub(super) fn build(
             patch_indices.push(i);
         }
     }
-    // 引戻し閉包。新しいcontextも既存patchの交わりなので、必ず少なくとも一つのpatchに含まれる。
-    let mut i = 0;
-    while i < supports.len() {
-        for j in 0..i {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
-            let intersection = supports[i].intersect(&supports[j]);
-            if !supports.contains(&intersection) {
-                supports.push(intersection);
-            }
-        }
-        i += 1;
-    }
     let unit = change_result::value(b, &Scalar::Unit)?;
     let mut contexts = vec![];
     let mut states = vec![];
     let mut inhabited = vec![];
-    for support in &supports {
+    let mut context_index = 0;
+    while context_index < supports.len() {
+        let support = &supports[context_index];
         c.checkpoint(super::super::control::Checkpoint::Localize)?;
         let selected = if locals.is_empty() {
             patches
@@ -286,6 +276,15 @@ pub(super) fn build(
         contexts.push(context);
         states.push(state);
         inhabited.push(holds);
+        // 完成したcontextを先に保持し、引戻し閉包を一つずつ拡張する。
+        for j in 0..context_index {
+            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            let intersection = supports[context_index].intersect(&supports[j]);
+            if !supports.contains(&intersection) {
+                supports.push(intersection);
+            }
+        }
+        context_index += 1;
     }
     let mut arrows = BTreeMap::new();
     let mut maps = vec![];

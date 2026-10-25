@@ -2043,3 +2043,47 @@ fn implicit_support_cover_preserves_missing_and_saved_reuse() {
         }
     }
 }
+
+#[test]
+fn support_closure_stop_retains_completed_contexts_without_claiming_a_system() {
+    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},evaluate::evaluate_observed_bytes,input::InputSources};
+    use std::{cell::Cell,rc::Rc};
+    let dir=implicit_multiple_input("implicit-closure-stop",true,Some(true));
+    let sources=||InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+    let asks=["a=build(Fixed,on=@fixed/s)","l=localize($a.object)"];
+    let seen=Rc::new(Cell::new(0usize)); let count=seen.clone();
+    let mut control=Control::new(Limits::default(),move |point| {if point==Checkpoint::Localize {count.set(count.get()+1);} Usage::default()});
+    let normal=evaluate_observed_bytes(sources(),&asks,&mut control).unwrap();
+    assert_eq!(normal.status(),"complete");
+    let total=seen.get();
+    for mode in 0..3 {
+        let mut retained=false;
+        // 実際の実行長から途中位置を選ぶ。特定のcheckpoint件数を契約にしない。
+        for stop in [total/4,total/2,total*3/4] {
+            let mut count=0;
+            let mut control=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move |point| {
+                if point==Checkpoint::Localize {count+=1;}
+                if count>=stop {match mode {
+                    0=>Usage {elapsed_ms:2,..Usage::default()},
+                    1=>Usage {memory_mib:2,..Usage::default()},
+                    _=>Usage {signal:Some(archsig::result::Signal::Term),..Usage::default()},
+                }}else{Usage::default()}
+            });
+            let partial=evaluate_observed_bytes(sources(),&asks,&mut control).unwrap();
+            let j=archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
+            let answer=&arr(get(&j,"answers"))[1];
+            let contexts=arr(get(&j,"nodes")).iter().filter(|n|s(get(get(n,"rule"),"name"))=="context").count();
+            if !has(get(answer,"outputs"),"system") && contexts>0 {
+                retained=true;
+                assert_eq!(s(get(answer,"status")),"undetermined");
+                assert!(!has(answer,"claim"));
+                let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}).unwrap();
+                assert!(!arr(get(reason,"dependencies")).is_empty());
+                for r in arr(get(reason,"dependencies")) {node(&j,r);}
+                assert!(arr(get(&j,"nodes")).iter().all(|n|s(get(get(n,"rule"),"name"))!="local_system"));
+                break;
+            }
+        }
+        assert!(retained,"mode {mode}, checkpoints {total}: closure fragments were lost");
+    }
+}
