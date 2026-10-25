@@ -2880,3 +2880,71 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
         for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&after,field).value); }
     }
 }
+
+#[test]
+fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
+        let dir = input("finite-read-bindings", Some(true));
+        let mut entities = String::new();
+        for entity in ["Left", "Right"] {
+            entities.push_str(&format!(r#"{{"kind":"entity","name":"Fixed.{entity}","meaning":"補助対象。","parameters":[{{"name":"owner","type":["Ref","Fixed.State"],"meaning":"所属。"}}],"fields":[{{"name":"flag","type":"Bool","meaning":"補助値。"}}],"alignments":[]}},"#));
+        }
+        let definition = D.replace(
+            r#""declarations":["#,
+            &format!(r#""declarations":[{entities}"#),
+        );
+        let old = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
+        let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        for file in ["a.json", "l.law"] {
+            let mut text = std::fs::read_to_string(dir.join(file)).unwrap().replace(
+                &old.vocabularies["Fixed"].digest,
+                &new.vocabularies["Fixed"].digest,
+            );
+            if file == "a.json" {
+                for (subject, ty) in [("u", "Left"), ("v", "Right")] {
+                    text = text.replace(
+                    r#""subjects":["#,
+                    &format!(
+                        r#""subjects":[{{"id":"{subject}","type":"Fixed.{ty}","origin":"model"}},"#
+                    ),
+                );
+                    text = text.replace(r#""atoms":["#,&format!(r#""atoms":[{{"id":"{subject}-owner","subject":"{subject}","field":"Fixed.{ty}.owner","value":["fixed","s"],"origin":"model"}},{{"id":"{subject}-flag","subject":"{subject}","field":"Fixed.{ty}.flag","value":true,"origin":"model"}},"#));
+                }
+            }
+            std::fs::write(dir.join(file), text).unwrap();
+        }
+
+    let path=dir.join("l.law");
+    let law=std::fs::read_to_string(&path).unwrap().replace("law required valid(s:State):s.flag=true;", "");
+    std::fs::write(path,law).unwrap();
+    explicit_local(&dir,"law required left(t:State,u:Left[t]):t.flag=u.flag; law required right(t:State,v:Right[t]):t.flag=v.flag; change choose(t:State,b:Bool)=t with {flag=b};");
+    let asks=["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let system=get(output(&j,1,"system"),"value");
+    let intersection=arr(get(system,"contexts")).iter().map(|r|get(node(&j,r),"value")).find(|v|arr(get(v,"carrier")).len()==1).unwrap();
+    let readings=arr(get(intersection,"readings"));
+    assert_eq!(readings.len(),2);
+    for reading in readings {
+        assert_eq!(s(get(reading,"type")),"Bool");
+        let expression=get(node(&j,get(reading,"expression")),"value");
+        let bindings=arr(get(expression,"bindings"));
+        assert_eq!(bindings.len(),1);
+        assert_eq!(s(get(&bindings[0],"name")),"t");
+        let subject=get(node(&j,get(&bindings[0],"value")),"value");
+        assert_eq!(s(&arr(subject)[1]),"s");
+        let image=get(node(&j,get(reading,"domain")),"value");
+        let values=arr(get(image,"elements"));
+        assert_eq!(values.len(),2);
+        for expected in [false,true] {
+            assert!(values.iter().any(|r|matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
+        }
+    }
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in &asks {args.extend(["--ask",*ask]);}
+    let r=run(&dir,&args);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let after=result_json(&dir,&r);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
+}

@@ -143,7 +143,7 @@ pub(in crate::observed) fn implicit_support(
     dependencies.dedup();
     Ok((carrier, dependencies))
 }
-fn read_bindings(
+pub(in crate::observed) fn read_bindings(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
@@ -154,14 +154,21 @@ fn read_bindings(
     while let Some(id) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
         match &env.inputs.law().exprs[id].kind {
-            ExprKind::Group(child) | ExprKind::Field { base: child, .. } => pending.push(*child),
+            ExprKind::Group(child)
+            | ExprKind::Field { base: child, .. }
+            | ExprKind::Unary { operand: child, .. } => pending.push(*child),
+            ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs, *rhs]),
+            ExprKind::If { cond, then_branch, else_branch } => {
+                pending.extend([*cond, *then_branch, *else_branch]);
+            }
             ExprKind::Tuple(items) => pending.extend(items),
             ExprKind::Dotted(parts) => {
                 if let Some(first) = parts.first() {
                     names.insert(first.name.as_str());
                 }
             }
-            _ => {}
+            ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {}
+            _ => return Ok(bindings.to_vec()),
         }
     }
     Ok(bindings

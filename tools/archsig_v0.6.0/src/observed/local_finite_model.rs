@@ -365,22 +365,25 @@ pub(super) fn analyze(
                     }
             }) {
                 let Some(value) = read.value else { continue };
+                let bindings = super::super::environment::local_read::read_bindings(
+                    &state, read.expression, &read.bindings, c,
+                )?;
                 let (carrier, positions) = super::super::environment::local_read::implicit_support(
                     &state,
                     read.expression,
-                    &read.bindings,
+                    &bindings,
                     reading,
                     c,
                 )?;
                 let at = readings
                     .iter()
-                    .position(|r| r.expression == read.expression && r.bindings == read.bindings);
+                    .position(|r| r.expression == read.expression && r.bindings == bindings);
                 let r = if let Some(at) = at {
                     &mut readings[at]
                 } else {
                     readings.push(Reading {
                         expression: read.expression,
-                        bindings: read.bindings,
+                        bindings,
                         support: empty_support(),
                         values: vec![],
                     });
