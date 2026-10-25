@@ -4521,3 +4521,33 @@ fn finite_diagnostics_compare_different_changes_by_their_actual_states() {
         let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
+
+#[test]
+fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
+    for side in ["equation","semantic"] {for degree in [0,1] {
+        let dir=finite_diagnostic_input(&format!("finite-diagnostic-inclusion-{side}-{degree}"),true);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(path,law.replace("law optional localValid","change constant(s:State,b:Bool)=s with{free=true}; law optional localValid")).unwrap();
+        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.constant)",
+            "r=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+            &ld,&rd,"c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+        let proper=side=="semantic";let r=execute(&dir,"out",&asks);
+        assert_eq!(r.code,if proper{1}else{0},"{side}/{degree}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),if proper{"refuted"}else{"established"});
+        let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
+        assert_eq!(arr(get(get(node(&j,get(map,"source")),"value"),"elements")).len(),if proper{1}else{2});
+        assert_eq!(arr(get(get(node(&j,get(map,"target")),"value"),"elements")).len(),2);
+        let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),if proper{1}else{2});
+        for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");assert_eq!(x.value,y.value);
+            if proper {assert!(arr(x).iter().all(|v|matches!(v.value,archsig::json::JValue::Bool(true))));}}
+        let conditions=arr(get(cmp,"conditions"));
+        assert_eq!(conditions.iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"),proper);
+        if proper {assert!(conditions.iter().all(|r|s(get(get(node(&j,r),"value"),"predicate"))!="inverse_maps"));}
+        assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks{args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}
+}
