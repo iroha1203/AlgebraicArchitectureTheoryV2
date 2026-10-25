@@ -243,8 +243,32 @@ fn compute_inner(
             feature: "未完成Architecture上のchange候補の公開配送は未実装".into(),
         });
     }
-    let search = change_search::search(env, g, &architecture.witness, request, c)
-        .map_err(|failure| failure.cause)?;
+    let search = match change_search::search(env, g, &architecture.witness, request, c) {
+        Ok(search) => search,
+        Err(failure) => {
+            if let Some(pending) = &failure.partial.pending_integer {
+                if let ValidationFailure::UnsupportedExpression { location, .. } = failure.cause {
+                    let mut b = Builder { g, base, parts: vec![] };
+                    let bindings = pending.bindings.iter()
+                        .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
+                        .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                    let expression = source_expression(&mut b, env,
+                        pending.expression.ok_or("整数欠測の元式がない")?,
+                        &bindings, &pending.parameters)?;
+                    let part = &mut b.parts[expression.0 - base];
+                    part.arguments.push(architecture.reference);
+                    part.scope.merge(&g.get(architecture.reference)?.scope);
+                    let scope = part.scope.clone();
+                    let reasons = vec![
+                        Reason {kind:ReasonKind::Missing,request:request.id.clone(),dependencies:vec![expression],missing:failure.partial.missing,location:Some(location.clone())},
+                        Reason {kind:ReasonKind::UnsupportedAlgorithm {question:request.kind,operand_types:vec![Type::Z],method:"integer_change".into()},request:request.id.clone(),dependencies:vec![expression],missing:vec![],location:Some(location)},
+                    ];
+                    return Ok((b.parts,Answer {id:request.id.clone(),status:Decision::Undetermined,outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons,scope},None));
+                }
+            }
+            return Err(failure.cause);
+        }
+    };
     let unsupported = || ValidationFailure::UnsupportedExpression {
         location: Location::Law { span: (0, 0) },
         feature: "有限changeの未確定候補・解の公開配送は未実装".into(),
@@ -965,7 +989,7 @@ pub(super) fn evaluate(
     }
     let existence = source.answer.outputs.get("existence")
         .or_else(|| source.answer.outputs.get("proposition"))
-        .copied().ok_or("changeの存在命題がない")?;
+        .copied().or_else(|| source.answer.reasons.iter().find_map(|r|r.dependencies.first().copied())).ok_or("changeの存在命題・未決の元式がない")?;
     for index in 0..source.parts.len() {
         // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
 
@@ -1087,7 +1111,7 @@ pub(super) fn validate_answer(
             Err("change依存停止が違う".into())
         };
     }
-    let r = answer.claim.ok_or("solveの存在命題がない")?;
+    let r = answer.claim.or_else(|| answer.reasons.iter().find_map(|r|r.dependencies.first().copied())).ok_or("solveの存在命題・未決の元式がない")?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
         return Err("solveの存在命題がnativeでない".into());
     };
