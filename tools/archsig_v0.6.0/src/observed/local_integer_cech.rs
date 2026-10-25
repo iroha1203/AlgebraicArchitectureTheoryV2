@@ -85,9 +85,6 @@ pub(in crate::observed::local_result) fn diagnose(
     } else {
         &diagram.equation
     };
-    if diagram.patches.is_empty() {
-        return Err(unsupported("空coverの整数診断は未実装"));
-    }
     let mut levels = vec![level(
         diagram,
         states,

@@ -48,6 +48,7 @@ fn analyze(
     request: &Request,
     c: &mut Control,
     pending: &mut change_affine::Pending,
+    missing_domain: &mut bool,
 ) -> Result<Model, ValidationFailure> {
     let name = request
         .arguments
@@ -69,6 +70,7 @@ fn analyze(
     let mut missing = vec![];
     let mut subjects = change_search::domain(env, &first.ty, first.span, &mut missing)?
         .ok_or_else(|| {
+            *missing_domain = true;
             pending.facts.extend(missing.iter().cloned());
             pending.expression = Some(*body);
             pending.parameters = params
@@ -86,7 +88,11 @@ fn analyze(
             .any(|f| f.snapshot == *snapshot && f.subject == *subject),
         _ => false,
     });
-    let action = change_affine::compute(env, change, &subjects, &[], pending)?;
+    let action = change_affine::compute(env, change, &subjects, &[], pending).map_err(|error| {
+        // 作用の係数が欠測して計算できない場合。後続Lawの欠測とは分ける。
+        *missing_domain = !pending.facts.is_empty();
+        error
+    })?;
     let mut requirements = vec![];
     for law in env.inputs.law().declarations.values().filter(|d| {
         d.reading == reading
@@ -114,6 +120,7 @@ fn analyze(
                 vec![change_search::selector(env, g, &a.value)?]
             } else {
                 change_search::domain(env, &p.ty, p.span, &mut missing)?.ok_or_else(|| {
+                    *missing_domain = true;
                     pending.facts.extend(missing.iter().cloned());
                     pending.expression = Some(*body);
                     pending.parameters = params
@@ -305,7 +312,8 @@ pub(super) fn compute(
         .ok_or("整数局所系の元代入が不適合")?;
     fixed.select_local_object(&witness, c)?;
     let mut pending = change_affine::Pending::default();
-    let result = analyze(&fixed, g, &witness, request, c, &mut pending);
+    let mut missing_domain = false;
+    let result = analyze(&fixed, g, &witness, request, c, &mut pending, &mut missing_domain);
     let mut b = Builder {
         g,
         base,
@@ -332,9 +340,23 @@ pub(super) fn compute(
                 request: request.id.clone(),
                 dependencies: vec![expression],
                 missing: pending.facts,
-                location: Some(location),
+                location: Some(location.clone()),
             };
-            b.parts[expression.0 - base].reasons.push(reason.clone());
+            let mut reasons = vec![reason];
+            if !missing_domain {
+                reasons.push(Reason {
+                    kind: ReasonKind::UnsupportedAlgorithm {
+                        question: QuestionKind::Localize,
+                        operand_types: vec![Type::Z],
+                        method: "integer_local_state".into(),
+                    },
+                    request: request.id.clone(),
+                    dependencies: vec![expression],
+                    missing: vec![],
+                    location: Some(location),
+                });
+            }
+            b.parts[expression.0 - base].reasons.extend(reasons.iter().cloned());
             let scope = b.parts[expression.0 - base].scope.clone();
             return Ok(Source {
                 base,
@@ -349,7 +371,7 @@ pub(super) fn compute(
                     outputs: BTreeMap::new(),
                     claim: None,
                     evidence: vec![],
-                    reasons: vec![reason],
+                    reasons,
                     scope,
                 },
             });

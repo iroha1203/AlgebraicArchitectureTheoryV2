@@ -3385,9 +3385,12 @@ fn integer_local_variant(name:&str, edit:impl FnOnce(String)->String, remove:Opt
 #[test]
 fn integer_local_input_forms_keep_direct_implicit_guarded_and_tuple_readings() {
     let local="local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;";
-    for mode in ["implicit","direct","true-guard","tuple","empty-laws"] {
+    for mode in ["implicit","direct","true-guard","tuple","empty-laws","let-law","let-subject","affine-read"] {
         let dir=integer_local_variant(&format!("integer-forms-{mode}"),|s|match mode {
             "implicit"=>s.replace(local,""),
+            "affine-read"=>s.replace("reads e.shift,e.from.coordinate,e.to.coordinate","reads e.shift,2*e.from.coordinate,e.to.coordinate"),
+            "let-law"=>s.replace("e.to.coordinate-e.from.coordinate=e.shift;","let delta=e.to.coordinate-e.from.coordinate in delta=e.shift;"),
+            "let-subject"=>s.replace("e.to.coordinate-e.from.coordinate=e.shift;","let endpoint=e.to in endpoint.coordinate-e.from.coordinate=e.shift;"),
             "direct"=>s.replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","law required zero(p:Point):p.coordinate=0;").replace(local,"local PointRead(p:Point) reads p.coordinate;"),
             "true-guard"=>s.replace("local Edge(e:Shift)","local Edge(e:Shift) when true").replace("change move(p:Point,d:Z)=","change move(p:Point,d:Z) when true="),
             "tuple"=>s.replace("reads e.shift,e.from.coordinate,e.to.coordinate","reads e.shift,(e.from.coordinate,e.from.coordinate,e.to.coordinate)"),
@@ -3403,6 +3406,23 @@ fn integer_local_input_forms_keep_direct_implicit_guarded_and_tuple_readings() {
                 let p=get(variable,"position");assert_eq!(s(get(p,"kind")),"observation");
                 assert!(arr(get(p,"component")).is_empty());assert_eq!(s(get(get(p,"field"),"snapshot")),"triangle");
             }
+        }
+        if mode=="affine-read" {
+            let mut scaled = false;
+            for context in arr(get(system,"contexts")) {
+                for read in arr(get(get(node(&j,context),"value"),"readings")) {
+                    let domain = get(node(&j,get(read,"domain")),"value");
+                    if s(get(domain,"kind")) != "image" { continue; }
+                    let map = get(node(&j,get(domain,"map")),"value");
+                    let linear = get(node(&j,get(map,"linear")),"value");
+                    let columns = arr(get(linear,"columns"));
+                    if columns.len()==1 && arr(&columns[0]).len()==1 {
+                        assert_eq!(s(get(node(&j,&arr(&columns[0])[0]),"value")),"2");
+                        scaled = true;
+                    }
+                }
+            }
+            assert!(scaled,"2Zを表す読取り像がない");
         }
         if mode=="tuple" {
             let mut checked=false;
@@ -3462,4 +3482,66 @@ fn integer_local_zero_class_survives_a_refuted_gluing_condition() {
     let space=get(output(&j,2,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),0);
     assert!(arr(get(answer,"evidence")).iter().all(|r|s(get(get(node(&j,r),"value"),"kind"))!="gluing"));
     let diagnostic=get(output(&j,2,"diagnostic"),"value");assert!(arr(get(diagnostic,"conditions")).iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"));
+}
+
+#[test]
+fn integer_local_missing_does_not_hide_a_nonlinear_law() {
+    #[path = "common/three_edge.rs"] mod triangle;
+    let input = triangle::input(None);
+    let dir = workdir("integer-missing-nonlinear");
+    std::fs::write(dir.join("d.json"),input.definitions()[0].bytes()).unwrap();
+    std::fs::write(dir.join("a.json"),input.archmap().bytes()).unwrap();
+    let law = String::from_utf8(input.law().bytes().to_vec()).unwrap().replace(
+        "local Edge", "law required zz(p:Point):p.coordinate*p.coordinate=0; local Edge");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let r = execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)",
+        "l=localize($a.object,using=Coordinates.move)","n=needed($l)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j = result_json(&dir,&r);
+    let reasons = arr(get(&arr(get(&j,"answers"))[1],"reasons"));
+    for code in ["missing_observation","unsupported_algorithm"] {
+        assert!(reasons.iter().any(|r|s(get(r,"code"))==code),"{code}: {reasons:?}");
+    }
+    let plan = get(output(&j,2,"plan"),"value");
+    assert!(!arr(get(plan,"blockers")).is_empty());
+}
+
+#[test]
+fn integer_local_empty_cover_has_zero_cohomology() {
+    let dir = integer_local_variant("integer-empty-cover",|s|s
+        .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","")
+        .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;",""),None);
+    let map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+    let prefix = map.split_once("\"subjects\":[").unwrap().0;
+    std::fs::write(dir.join("a.json"),format!(r#"{prefix}"subjects":[{{"id":"root","type":"Coordinates.System","origin":"model"}}],"atoms":[]}}]}}"#)).unwrap();
+    let r = execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)",
+        "l=localize($a.object,using=Coordinates.move)","z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j = result_json(&dir,&r);
+    for i in [2,3] {
+        let space = get(output(&j,i,"space"),"value");
+        let module = get(node(&j,get(space,"module")),"value");
+        assert_eq!(num(get(module,"free_rank")),0);
+        assert!(arr(get(module,"torsion")).is_empty());
+    }
+    assert!(has(get(&arr(get(&j,"answers"))[3],"outputs"),"class"));
+}
+
+#[test]
+fn integer_local_vectors_compare_only_in_the_same_module() {
+    let dir = integer_local_variant("integer-vector-comparison",|s|s
+        .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","law required zero(p:Point):p.coordinate=0;")
+        .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;","local PointRead(p:Point) reads p.coordinate;"),None);
+    let r = execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)",
+        "l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)",
+        "e=diagnose($l.system,side=semantic)",
+        "same=compare($d.class.coordinates,to=$d.class.coordinates,kind=value)",
+        "different=compare($d.class.coordinates,to=$e.class.coordinates,kind=value)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j = result_json(&dir,&r);
+    let answers = arr(get(&j,"answers"));
+    assert_eq!(s(get(&answers[4],"status")),"established");
+    assert!(has(get(&answers[4],"outputs"),"comparison"));
+    assert!(arr(get(&answers[5],"reasons")).iter().any(|r|s(get(r,"code"))=="condition_failed"));
+    assert!(!has(get(&answers[5],"outputs"),"comparison"));
 }

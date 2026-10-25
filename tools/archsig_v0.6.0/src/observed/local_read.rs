@@ -314,24 +314,41 @@ fn state_visibility_inner(
     env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
     c: &mut Control, require_chain: bool,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
-    let mut pending = roots.to_vec();
     let mut carrier = vec![];
     for (_, value) in bindings { subject_carrier(value, &mut carrier, c)?; }
-    let variables = bindings.iter().map(|(n,v)|(n.clone(),known(v.clone()))).collect();
+    let variables: BTreeMap<String, SourceValue> = bindings.iter()
+        .map(|(n,v)|(n.clone(),known(v.clone()))).collect();
+    let mut pending = roots.iter().map(|id| (*id, variables.clone())).collect::<Vec<_>>();
     let mut visible = vec![];
     let mut chain = false;
-    while let Some(id) = pending.pop() {
+    while let Some((id, variables)) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
         match &env.inputs.law().exprs[id].kind {
-            ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push(*child),
-            ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs,*rhs]),
-            ExprKind::Tuple(items) => pending.extend(items),
+            ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push((*child, variables)),
+            ExprKind::Binary { lhs, rhs, .. } => {
+                pending.push((*lhs, variables.clone())); pending.push((*rhs, variables));
+            }
+            ExprKind::Tuple(items) => pending.extend(items.iter().map(|id| (*id,variables.clone()))),
+            ExprKind::Let { name, value, body } if !require_chain => {
+                let value_result = env.scoped_ast(*value,&variables,&Scope::default(),reading)?;
+                if value_result.condition_failed || value_result.condition_pending { return Ok(None); }
+                let reference_alias = matches!(value_result.known_value,Some(Scalar::Subject { .. }));
+                let mut inner = variables.clone();
+                inner.insert(name.name.clone(),value_result);
+                // 中間参照の別名は公開値座標にしない。利用先の末端fieldを読む。
+                if !reference_alias { pending.push((*value,variables)); }
+                pending.push((*body,inner));
+            }
             ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {},
             ExprKind::Dotted(_) | ExprKind::Field { .. } => {
                 let Some((name, fields)) = field_path(env,id)? else { return Ok(None); };
-                if !bindings.iter().any(|(n,_)|n==name) { return Ok(None); }
+                if !variables.contains_key(name) { return Ok(None); }
                 chain |= fields.len()>1;
-                visible.extend(visible_slots(env,id,bindings,reading)?);
+                if !fields.is_empty() {
+                    let bound = variables.iter().filter_map(|(n,v)|
+                        v.known_value.clone().map(|v|(n.clone(),v))).collect::<Vec<_>>();
+                    visible.extend(visible_slots(env,id,&bound,reading)?);
+                }
                 let value = env.scoped_ast(id,&variables,&Scope::default(),reading)?;
                 if value.condition_failed || value.condition_pending { return Ok(None); }
                 if let Some(value)=value.known_value { subject_carrier(&value,&mut carrier,c)?; }
@@ -428,7 +445,7 @@ pub(in crate::observed) fn materialize_with_free(
     }
     Ok(contexts)
 }
-// Tupleの像は同じ自由位置の重複と固定成分を含む実際のアフィン像にする。
+// 元の式を自由状態上で評価し、重複・倍率・定数部を含む整数像を保持する。
 fn affine_read_image(
     env:&Environment<'_>, b:&mut Builder<'_>, target:NodeRef, expression:NodeRef,
     id:usize, bindings:&[(String,Scalar)], reading:&str, free:&[Fact], visible:&[Fact],
@@ -437,24 +454,32 @@ fn affine_read_image(
     use crate::observed::{change_result::linear_result as wire,construction_result::ConstructionType as CT};
     use num_bigint::BigInt as Z;
     let slots=visible.iter().filter(|f|free.contains(f)).cloned().collect::<Vec<_>>();
+    let assignments = env.architecture_values();
+    let mut arbitrary = Environment::with_primitive_valuation(env.inputs,&assignments,c)?;
+    arbitrary.object = env.object_domain();
+    for slot in free {
+        arbitrary.affine_valuation.insert(slot.clone(),crate::observed::affine::Form::state(slot,c)?);
+    }
+    let variables = bindings.iter().map(|(n,v)|(n.clone(),known(v.clone()))).collect();
     let mut pending=vec![(id,observed)];let mut matrix=vec![];let mut offset=vec![];
     while let Some((id,value))=pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
         match (&env.inputs.law().exprs[id].kind,value) {
             (ExprKind::Group(inner),_)=>pending.push((*inner,value)),
             (ExprKind::Tuple(ids),Scalar::Tuple(values)) if ids.len()==values.len()=>pending.extend(ids.iter().zip(values).rev().map(|(i,v)|(*i,v))),
-            (_,Scalar::Z(value))=>{
-                let used=visible_slots(env,id,bindings,reading)?;
-                let mut row=vec![Z::from(0);slots.len()];let mut constant=value.clone();
-                if let Some(slot)=used.first().filter(|slot|free.contains(slot)) {
-                    if used.len()!=1 {return Err(unsupported(env.inputs.law().exprs[id].span,"整数読取りのscalar因子分解が未実装"));}
-                    let i=slots.iter().position(|f|f==slot).ok_or("自由読取りの位置がない")?;
-                    row[i]=Z::from(1);constant=Z::from(0);
-                }
-                matrix.push(row);offset.push(constant);
+            (_,Scalar::Z(_))=>{
+                let evaluated = arbitrary.scoped_ast(id,&variables,&Scope::default(),reading)?;
+                let form = evaluated.affine.ok_or_else(||unsupported(env.inputs.law().exprs[id].span,"局所読取りが整数アフィンでない"))?;
+                let (constant,row) = form.state_coordinates(&slots,c)?.ok_or_else(||unsupported(env.inputs.law().exprs[id].span,"局所読取りの整数係数が未確定"))?;
+                matrix.push(row);
+                offset.push(constant.ok_or_else(||unsupported(env.inputs.law().exprs[id].span,"局所読取りの定数部が欠測"))?);
             }
             _=>return Err(unsupported(env.inputs.law().exprs[id].span,"整数読取り像の非Z成分は未実装")),
         }
+    }
+    let kernel = crate::observed::integer_fiber::solve(&matrix,slots.len(),&vec![Z::from(0);matrix.len()],c)?;
+    if kernel.rank != slots.len() {
+        return Err(unsupported(env.inputs.law().exprs[id].span,"非単射アフィン読取りの局所状態商は未実装"));
     }
     let ring=b.push(NodeType::Construction(CT::Ring),"ring",Json::obj([("kind",Json::str("scalar")),("scalar",Json::str("Z"))]),vec![],None,None)?;
     let source_module=wire::module(b,ring,slots.len(),"free",vec![expression])?;
@@ -734,7 +759,10 @@ fn materialize_instance(
                 }
                 continue;
             }
-            let state_visible = visible_slots(state, *id, bindings, &declaration.reading)?;
+            let state_visible = if !free.is_empty() {
+                state_visibility(state,&[*id],bindings,&declaration.reading,c)?
+                    .ok_or_else(||unsupported(declaration.span,"整数読取りの支持を構成できない"))?.1
+            } else { visible_slots(state, *id, bindings, &declaration.reading)? };
             // changeは参照fieldを更新しない。fieldだけの経路の末端位置は各状態で同じ。
             visible = state_visible;
             let value = read.known_value.ok_or("localの確定値がない")?;
@@ -748,7 +776,7 @@ fn materialize_instance(
         if missing_reason.is_some() { continue; }
         let ty = values.first().ok_or("localの読取り像が空")?.ty();
         let image = if visible.iter().any(|slot| free.contains(slot)) {
-            if ty == Type::Z && visible.len() == 1 {
+            if ty == Type::Z && visible.len() == 1 && field_path(env,*id)?.is_some() {
                 b.push(NodeType::Domain, "domain", Json::obj([("kind", Json::str("type")), ("type", Type::Z.wire())]), vec![], None, None)?
             } else {
                 affine_read_image(env,b,target.ok_or("整数読取りの基底がない")?,expression,*id,bindings,&declaration.reading,free,&visible,&values[0],c)?
