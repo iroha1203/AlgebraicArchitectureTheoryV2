@@ -254,6 +254,57 @@ fn compute_inner(
     if let Some(layout) = &plan.polynomial {
         reasons.extend(layout.data.reasons.iter().cloned());
     }
+    // 多項式表示が明示的に算法非対応で、有限表示も得られない場合を配送する。
+    // 未完成の全般を非対応へ置き換えず、元の出現と型を保持する。
+    if plan.equations.is_none() && plan.finite.is_none() {
+        if let Some(table) = &plan.laws {
+            for diagram in table.diagrams()? {
+                for coordinate in &diagram.coordinates {
+                    tick(c)?;
+                    if coordinate.status != super::object_equation_presentation::EquationPresentationStatus::UnsupportedAlgorithm {
+                        continue;
+                    }
+                    let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance)
+                        .ok_or("非対応方程式の元Lawがない")?;
+                    let origin = super::law_evaluation::origin(g, original.reference)?
+                        .ok_or("非対応方程式の宣言がない")?;
+                    let declaration = env.inputs.law().declarations.get(&origin.declaration)
+                        .ok_or("非対応方程式の宣言が現在の入力にない")?;
+                    let crate::law::model::Signature::Law { body, .. } = declaration.signature else {
+                        return Err("非対応方程式の元宣言がLawでない".into());
+                    };
+                    let mut body = body;
+                    while let crate::law::ast::ExprKind::Group(inner) = env.inputs.law().exprs[body].kind {
+                        tick(c)?;
+                        body = inner;
+                    }
+                    let crate::law::ast::ExprKind::Binary {
+                        op: crate::law::ast::BinOp::Lt | crate::law::ast::BinOp::Le
+                            | crate::law::ast::BinOp::Gt | crate::law::ast::BinOp::Ge,
+                        lhs, rhs,
+                    } = env.inputs.law().exprs[body].kind else { continue; };
+                    // Z上の順序述語は多項式等式でも全operand有限域でもない。
+                    // 有限Bool域の欠測などを算法非対応へ変換しない。
+                    if env.inputs.law().expr_types[lhs].as_ref() != Some(&Type::Z)
+                        || env.inputs.law().expr_types[rhs].as_ref() != Some(&Type::Z) {
+                        continue;
+                    }
+                    let mut dependencies = vec![original.body];
+                    dependencies.extend(original.guard);
+                    dependencies.sort_by_key(|r| r.0);
+                    dependencies.dedup();
+                    reasons.push(Reason {
+                        kind: ReasonKind::UnsupportedAlgorithm {
+                            question: super::request::QuestionKind::Build,
+                            operand_types: vec![Type::Z, Type::Z],
+                            method: "integer_order_equation_presentation".into(),
+                        },
+                        request: request.id.clone(), dependencies, missing: vec![], location: None,
+                    });
+                }
+            }
+        }
+    }
     let mut compatibility = vec![];
     let mut evidence = vec![];
     let mut failed_conditions = vec![];

@@ -229,6 +229,8 @@ fn unknown_fixed_value_is_not_a_free_coordinate_or_empty_solution() {
     assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
     let json = result_json(&dir, &r);
     let answers = arr(get(&json, "answers"));
+    assert!(arr(get(&answers[0], "reasons")).iter().all(|r|
+        s(get(r, "code")) != "unsupported_algorithm"));
     assert_eq!(s(get(&answers[1], "status")), "undetermined");
     assert!(!has(get(&answers[1], "outputs"), "system"));
     assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
