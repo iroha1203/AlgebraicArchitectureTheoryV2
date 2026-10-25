@@ -10,6 +10,8 @@ pub(super) struct Reading {
 }
 pub(super) struct Model {
     pub change: String,
+    pub integer_equations: bool,
+    pub assignments: Vec<(Fact, Scalar)>,
     pub candidates: Candidates,
     pub bindings: Vec<(String, Scalar)>,
     pub slots: Vec<Fact>,
@@ -84,7 +86,7 @@ pub(super) fn analyze(
         return Err(unsupported("局所changeと対象readingが異なる"));
     }
     let mut fixed =
-        Environment::try_primitive_valuation(env.inputs, &env.architecture_values(), c)?
+        Environment::try_primitive_valuation(env.inputs, &env.fixed_values(), c)?
             .ok_or("局所対象の値が不適合")?;
     fixed.select_local_object(witness, c)?;
     let mut missing = vec![];
@@ -131,6 +133,7 @@ pub(super) fn analyze(
     slots.sort();
     slots.dedup();
     let mut slot_types = vec![];
+    let mut integer_equations = false;
     let mut points = vec![vec![]];
     for slot in &slots {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
@@ -142,11 +145,36 @@ pub(super) fn analyze(
             )?
             .ty
             .erase();
-        let values = change_search::domain(&fixed, &ty, change.span, &mut missing)?;
-        if !missing.is_empty() {
-            return Ok((None, missing));
-        }
-        let values = values.ok_or_else(|| unsupported("自由状態の有限域が未確定"))?;
+        let values = if ty == Type::Z {
+            integer_equations = true;
+            // 整数域の列挙ではなく、有限作用を評価するための値だけを集める。
+            // 方程式側は別途、整数fiberを全域で解く。
+            let mut values = vec![];
+            for row in &candidates.rows {
+                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                if row.update.state == State::Ready {
+                    for (field, value) in &row.update.values {
+                        if field == slot && !values.contains(value) { values.push(value.clone()); }
+                    }
+                }
+                missing.extend(row.update.missing.iter().cloned());
+            }
+            if values.is_empty() {
+                if let Some((_, value)) = fixed.architecture_value(slot) {
+                    values.push(value.clone());
+                } else {
+                    let field = fixed.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("fieldがない")?)?;
+                    if let crate::archmap::Slot::Known { value, .. } = &field.slot {
+                        values.push(crate::observed::environment::scalar_from(value, &ty, env.inputs.law(), c)?.ok_or("整数観測値がない")?);
+                    } else { missing.push(slot.clone()); }
+                }
+            }
+            values
+        } else {
+            change_search::domain(&fixed, &ty, change.span, &mut missing)?
+                .ok_or_else(|| unsupported("自由状態の有限域が未確定"))?
+        };
+        if !missing.is_empty() { return Ok((None, missing)); }
         let mut next = vec![];
         for prefix in points {
             for value in &values {
@@ -158,6 +186,9 @@ pub(super) fn analyze(
         }
         points = next;
         slot_types.push(ty);
+    }
+    if integer_equations && (slot_types.iter().any(|ty| *ty != Type::Z) || explicit) {
+        return Err(unsupported("有限作用の整数方程式側に混合型または明示localがある"));
     }
     let bindings = request
         .arguments
@@ -214,6 +245,12 @@ pub(super) fn analyze(
         }
         requirements.extend(rows.into_iter().map(|row| (law.name.clone(), row)));
     }
+    if integer_equations {
+        let mut pending = crate::observed::environment::change_affine::Pending::default();
+        crate::observed::environment::change_affine::state_equations(&fixed, &slots, &requirements, &mut pending)?;
+        missing.extend(pending.facts);
+        if !missing.is_empty() { return Ok((None, missing)); }
+    }
     let mut candidate_points = vec![];
     for candidate in &candidates.rows {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
@@ -266,7 +303,7 @@ pub(super) fn analyze(
     for point in &points {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         let mut assignments = env
-            .architecture_values()
+            .fixed_values()
             .into_iter()
             .collect::<BTreeMap<_, _>>();
         assignments.extend(slots.iter().cloned().zip(point.iter().cloned()));
@@ -399,6 +436,8 @@ pub(super) fn analyze(
     missing.dedup();
     Ok((
         Some(Model {
+            assignments: env.fixed_values(),
+            integer_equations,
             bindings,
             change: change_name.clone(),
             candidates,

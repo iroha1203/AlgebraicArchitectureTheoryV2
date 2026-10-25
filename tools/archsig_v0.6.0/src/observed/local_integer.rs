@@ -9,11 +9,12 @@ mod cech;
 #[path = "local_integer_linear.rs"]
 pub(super) mod linear;
 #[path = "local_integer_state.rs"]
-mod state;
+pub(super) mod state;
 pub(super) use cech::diagnose;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
+    pub equation_only: bool,
     pub slots: Vec<Fact>,
     pub free: Vec<Vec<usize>>,
     pub readings: Vec<linear::Reading>,
@@ -1079,6 +1080,7 @@ pub(super) fn compute(
         )?;
         let solutions = states.iter().map(|s| [s.equation, s.semantic]).collect();
         let diagram = Diagram {
+            equation_only: false,
             missing: model.missing.clone(),
             requirements: model.requirements.clone(),
             law_refs: laws.clone(),

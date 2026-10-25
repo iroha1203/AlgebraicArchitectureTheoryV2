@@ -200,7 +200,24 @@ pub(super) fn compute(
         let mut patches = vec![];
         let mut local_instances = vec![];
         let mut projections = vec![];
-        if locals.is_empty() {
+        if locals.is_empty() && model.integer_equations {
+            patches=model.law_supports.clone();
+            for slot in &model.slots {
+                if patches.iter().any(|p|p.positions.contains(slot)){continue;}
+                let subject=fixed.subject(&slot.snapshot,&slot.subject)?;
+                let value=Scalar::Subject{snapshot:slot.snapshot.clone(),subject:slot.subject.clone(),entity:subject.ty.clone()};
+                patches.push(geometry::Support{carrier:vec![Json::obj([("type",value.ty().wire()),("value",value.wire())])],positions:vec![slot.clone()],visible:vec![slot.clone()]});
+            }
+            for support in &patches {
+                let read=super::super::environment::local_read::materialize_positions(&fixed,&mut b,request,support,&model.slots,witness.construction().reading(),c)?;
+                local_scope.merge(&read.scope);
+                reasons.extend(read.reasons);
+                readings.extend(read.readings);
+                read_refs.extend(read.read_refs);
+                read_supports.extend(read.read_supports);
+            }
+            if !reasons.is_empty(){return Ok((None,vec![]));}
+        } else if locals.is_empty() {
         for read in &model.readings {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let bindings = read
@@ -337,7 +354,7 @@ pub(super) fn compute(
         global.visible.dedup();
         let positions = global.positions.clone();
         let built = geometry::build(
-            env,
+            &fixed,
             &mut b,
             target,
             &laws,
@@ -481,7 +498,7 @@ pub(super) fn compute(
             inhabited,
             patch_count: built.patch_count,
             finite: built.finite,
-            integer: None,
+            integer: built.integer,
             fixed_positions,
         }),
     })
@@ -507,7 +524,7 @@ pub(super) fn diagnose(
         })
         .ok_or("有限診断のsideがない")?;
     let selected = if side == "equation" {
-        &finite.equation
+        finite.equation.as_ref().ok_or("有限の方程式状態がない")?
     } else {
         &finite.semantic
     };

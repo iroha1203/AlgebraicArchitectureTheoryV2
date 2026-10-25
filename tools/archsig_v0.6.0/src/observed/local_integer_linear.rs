@@ -167,7 +167,7 @@ pub(in crate::observed::local_result) fn cohomology(
     })
 }
 
-pub(super) fn glues(
+pub(in crate::observed::local_result) fn glues(
     diagram: &Diagram,
     sources: &[usize],
     target: usize,

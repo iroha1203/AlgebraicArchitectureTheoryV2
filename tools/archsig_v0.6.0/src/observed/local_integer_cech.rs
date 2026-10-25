@@ -80,6 +80,9 @@ pub(in crate::observed::local_result) fn diagnose(
     let semantic = request.arguments.iter().any(|a| {
         a.name == "side" && matches!(&a.value,Selector::Enum { value } if value == "semantic")
     });
+    if semantic && diagram.equation_only {
+        return Err("有限意味状態を整数係数の診断へ渡せない".into());
+    }
     let states = if semantic {
         &diagram.semantic
     } else {

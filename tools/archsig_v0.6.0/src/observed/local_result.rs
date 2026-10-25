@@ -867,6 +867,7 @@ fn compute(
             Err(failure) => return Err(failure),
         };
         let geometry::Built {
+            integer,
             finite,
             system,
             adequacy,
@@ -914,7 +915,7 @@ fn compute(
                 inhabited,
                 patch_count,
                 finite,
-                integer: None,
+                integer,
                 fixed_positions,
             }),
         })
@@ -950,7 +951,8 @@ fn diagnose(
         })
         .ok_or("診断次数がない")?;
     if let Some(diagram) = &system.integer {
-        return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c);
+        let semantic=request.arguments.iter().any(|a|a.name=="side"&&matches!(&a.value,Selector::Enum{value} if value=="semantic"));
+        if !diagram.equation_only || !semantic { return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
     }
     if degree > 1 {
         let mut b = Builder {
