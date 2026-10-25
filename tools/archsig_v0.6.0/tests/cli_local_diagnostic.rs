@@ -3887,3 +3887,69 @@ fn integer_diagnostic_transport_does_not_use_equal_ranks_as_a_state_map() {
         assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
     }
 }
+
+#[test]
+fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
+    for step in [0,2,3] { for degree in [0,1] {
+        let dir=integer_transport_input(&format!("integer-inclusion-{step}-{degree}"),true);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(&path,law.replace("law optional localValid",&format!("change stride(s:State,d:Z)=s with{{free=s.free+{step}*d}}; law optional localValid"))).unwrap();
+        let ld=format!("d=diagnose($l.system,side=semantic,degree={degree})");
+        let rd=format!("e=diagnose($r.system,side=semantic,degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
+            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",&ld,&rd,
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,if degree==0{1}else{0},"{step}/{degree}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
+        assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),if degree==0{"refuted"}else{"established"});
+        let group=arr(get(cmp,"conditions")).iter().map(|r|node(&j,r)).find(|n| {
+            let v=get(n,"value");
+            s(get(v,"predicate"))=="equal" && matches!(&get(node(&j,&arr(get(v,"operands"))[0]),"value").value,archsig::json::JValue::Str(_))
+        }).expect("整数値の等値として群の零条件を保持する");
+        let operands=arr(get(get(group,"value"),"operands"));assert_eq!(operands.len(),2);
+        assert_eq!(s(get(node(&j,&operands[0]),"value")),if degree==0{"1"}else{"0"});
+        assert_eq!(s(get(node(&j,&operands[1]),"value")),"0");
+        assert_eq!(s(get(get(group,"judgment"),"status")),if degree==0{"refuted"}else{"established"});
+        let kernel=get(node(&j,get(cmp,"kernel")),"value");let cokernel=get(node(&j,get(cmp,"cokernel")),"value");
+        assert_eq!(num(get(kernel,"free_rank")),0);assert!(arr(get(kernel,"torsion")).is_empty());
+        assert_eq!(num(get(cokernel,"free_rank")),if step==0 && degree==0 {1}else{0});
+        let torsion=arr(get(cokernel,"torsion")).iter().map(s).collect::<Vec<_>>();
+        assert_eq!(torsion,if degree==0 && step!=0 {vec![step.to_string()]}else{vec![]});
+        let hm=get(node(&j,get(cmp,"cohomology_map")),"value");
+        if degree==0 && step!=0 { let columns=arr(get(hm,"columns"));assert_eq!(columns.len(),1);
+            let coefficient=s(get(node(&j,&arr(&columns[0])[0]),"value")).parse::<i64>().unwrap();assert_eq!(coefficient.abs(),step);
+            let relations=arr(get(cokernel,"relations"));assert_eq!(relations.len(),1);
+            assert_eq!(s(get(node(&j,&arr(&relations[0])[0]),"value")),step.to_string());
+        } else {assert!(arr(get(hm,"columns")).is_empty());
+            if degree==1 {assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established");}}
+        assert_eq!(s(get(output(&j,6,"value"),"value")),if step==0 && degree==0 {"1"}else{"0"});
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}
+        let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}
+}
+
+#[test]
+fn integer_diagnostic_inclusion_keeps_unavailable_classes_blocked() {
+    let dir=integer_transport_input("integer-inclusion-missing-class",false);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "change four(s:State,d:Z)=s with{free=s.free+4*d}; change two(s:State,d:Z)=s with{free=s.free+2*d}; law optional loopShift(e:Reserve):e.to.free-e.from.free=0; local Edge(e:Reserve) reads e.from.free,e.to.free; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.loopShift,using=Reservations.four)",
+        "r=localize($m.candidate.target,law=Reservations.loopShift,using=Reservations.two)",
+        "d=diagnose($l.system,side=semantic)","e=diagnose($r.system,side=semantic)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    for i in [3,4] {assert!(!has(get(&arr(get(&j,"answers"))[i],"outputs"),"class"));}
+    let answer=&arr(get(&j,"answers"))[5];
+    assert_eq!(s(get(answer,"status")),"undetermined");
+    assert!(!has(get(answer,"outputs"),"comparison"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="dependency_blocked"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="condition_failed"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
+}

@@ -191,6 +191,147 @@ fn check_inverse(
     }
     Ok(())
 }
+// H写像の核は、target関係の逆像をsource関係で割ったもの。
+// 余核はtargetの生成元をtarget関係と写像の像で割る。
+fn quotient_module(
+    b: &mut Builder<'_>,
+    ring: NodeRef,
+    relation: &integer_fiber::Matrix,
+    relation_count: usize,
+    generators: usize,
+    name: &str,
+    hmap: NodeRef,
+    c: &mut Control,
+) -> Result<
+    (
+        NodeRef,
+        crate::observed::local_result::integer::linear::Cohomology,
+    ),
+    ValidationFailure,
+> {
+    let q = crate::observed::local_result::integer::linear::cohomology(
+        relation,
+        relation_count,
+        &vec![],
+        generators,
+        c,
+    )?;
+    let rank = q.torsion.len() + q.free_rank;
+    let mut relations = vec![];
+    let mut arguments = vec![ring, hmap];
+    for (i, divisor) in q.torsion.iter().enumerate() {
+        let mut column = vec![];
+        for j in 0..rank {
+            column.push(change_result::value(
+                b,
+                &Scalar::Z(if i == j { divisor.clone() } else { Z::zero() }),
+            )?);
+        }
+        relations.push(refs(&column));
+        arguments.extend(column);
+    }
+    let module = b.push(
+        NodeType::Construction(T::Module),
+        "module",
+        Json::obj([
+            ("ring", ring.wire()),
+            (
+                "generators",
+                Json::Arr(
+                    (0..rank)
+                        .map(|i| {
+                            Json::obj([
+                                ("type", Type::Text.wire()),
+                                ("value", Json::str(format!("e{i}"))),
+                            ])
+                        })
+                        .collect(),
+                ),
+            ),
+            ("relations", Json::Arr(relations)),
+            ("free_rank", Json::Nat(q.free_rank as u64)),
+            (
+                "torsion",
+                Json::Arr(q.torsion.iter().map(|x| Json::str(x.to_string())).collect()),
+            ),
+            (
+                "construction",
+                Json::obj([("name", Json::str(name)), ("arguments", refs(&[hmap]))]),
+            ),
+        ]),
+        arguments,
+        None,
+        None,
+    )?;
+    Ok((module, q))
+}
+fn kernel_cokernel(
+    b: &mut Builder<'_>,
+    source: NodeRef,
+    target: NodeRef,
+    hmap: NodeRef,
+    map: &integer_fiber::Matrix,
+    c: &mut Control,
+) -> Result<(NodeRef, NodeRef, NodeRef, Decision), ValidationFailure> {
+    use crate::observed::local_result::integer::linear;
+    let n = size(b.g, source)?;
+    let m = size(b.g, target)?;
+    let ring = field(b.g, source, "ring")?;
+    let sr = rows(b.g, source, "relations")?;
+    let tr = rows(b.g, target, "relations")?;
+    let target_relations = from_columns(&tr, m)?;
+    let equations = map
+        .iter()
+        .zip(&target_relations)
+        .map(|(a, r)| a.iter().cloned().chain(r.iter().map(|x| -x)).collect())
+        .collect();
+    let fiber = integer_fiber::solve(&equations, n + tr.len(), &vec![Z::zero(); m], c)?;
+    let preimage = fiber.kernel[..n].to_vec();
+    let (basis, k) = linear::image(&preimage, n + tr.len() - fiber.rank, c)?;
+    let relations = linear::coordinates(&basis, k, &from_columns(&sr, n)?, sr.len(), c)?;
+    let (kernel, kq) = quotient_module(b, ring, &relations, sr.len(), k, "kernel", hmap, c)?;
+    let kr = kq.free_rank + kq.torsion.len();
+    let mut lift = vec![vec![Z::zero(); kr]; k];
+    for j in 0..kr {
+        let mut unit = vec![Z::zero(); kr];
+        unit[j] = Z::from(1);
+        let x = integer_fiber::solve(&kq.projection, k, &unit, c)?
+            .particular
+            .ok_or("核の商射影が全射でない")?;
+        for i in 0..k {
+            lift[i][j] = x[i].clone();
+        }
+    }
+    let inclusion = integer_fiber::multiply(&basis, &lift, kr, c)?;
+    let kernel_inclusion = wire::map(b, kernel, source, &inclusion, kr, c)?;
+    let relations = target_relations
+        .iter()
+        .zip(map)
+        .map(|(r, a)| r.iter().chain(a).cloned().collect())
+        .collect();
+    let (cokernel, cq) =
+        quotient_module(b, ring, &relations, tr.len() + n, m, "quotient", hmap, c)?;
+    let projection = wire::map(b, target, cokernel, &cq.projection, m, c)?;
+    let status =
+        if kq.free_rank == 0 && kq.torsion.is_empty() && cq.free_rank == 0 && cq.torsion.is_empty()
+        {
+            Decision::Established
+        } else {
+            Decision::Refuted
+        };
+    // Smith表示には自明なtorsion因子がないため、生成元総数が零 iff 核・余核が零。
+    let generators = Z::from(kq.free_rank) + Z::from(kq.torsion.len())
+        + Z::from(cq.free_rank) + Z::from(cq.torsion.len());
+    let count = change_result::value(b, &Scalar::Z(generators))?;
+    let zero = change_result::value(b, &Scalar::Z(Z::zero()))?;
+    let condition = b.proposition(
+        "equal",
+        vec![count, zero],
+        vec![hmap, kernel, cokernel, kernel_inclusion, projection],
+        status,
+    )?;
+    Ok((kernel, cokernel, condition, status))
+}
 pub(super) fn compare(
     b: &mut Builder<'_>,
     request: &Request,
@@ -224,9 +365,9 @@ pub(super) fn compare(
             }
             maps.push(identity(size(g, *a)?));
         }
-        (maps.clone(), maps)
+        (maps.clone(), Some(maps))
     };
-    if forward.len() != lm.len() || backward.len() != lm.len() {
+    if forward.len() != lm.len() || backward.as_ref().is_some_and(|maps| maps.len() != lm.len()) {
         return Err("cochain写像の次数が違う".into());
     }
     let mut components = vec![];
@@ -234,14 +375,17 @@ pub(super) fn compare(
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         let ns = size(g, lm[i])?;
         let nt = size(g, rm[i])?;
-        if forward[i].len() != nt
-            || forward[i].iter().any(|r| r.len() != ns)
-            || backward[i].len() != ns
-            || backward[i].iter().any(|r| r.len() != nt)
-            || integer_fiber::multiply(&backward[i], &forward[i], ns, c)? != identity(ns)
-            || integer_fiber::multiply(&forward[i], &backward[i], nt, c)? != identity(nt)
-        {
+        if forward[i].len() != nt || forward[i].iter().any(|r| r.len() != ns) {
             return Err("cochain写像の順逆が一致しない".into());
+        }
+        if let Some(backward) = &backward {
+            if backward[i].len() != ns
+                || backward[i].iter().any(|r| r.len() != nt)
+                || integer_fiber::multiply(&backward[i], &forward[i], ns, c)? != identity(ns)
+                || integer_fiber::multiply(&forward[i], &backward[i], nt, c)? != identity(nt)
+            {
+                return Err("cochain写像の順逆が一致しない".into());
+            }
         }
         components.push(wire::map(b, lm[i], rm[i], &forward[i], ns, c)?);
     }
@@ -288,15 +432,20 @@ pub(super) fn compare(
             forward.get(degree).ok_or("次数のcochain写像がない")?,
             c,
         )?;
-        let v = induced(
-            g,
-            rs,
-            ls,
-            backward.get(degree).ok_or("次数の逆cochain写像がない")?,
-            c,
-        )?;
-        check_inverse(g, lh, &v, &f, c)?;
-        check_inverse(g, rh, &f, &v, c)?;
+        let v = if let Some(backward) = &backward {
+            let v = induced(
+                g,
+                rs,
+                ls,
+                backward.get(degree).ok_or("次数の逆cochain写像がない")?,
+                c,
+            )?;
+            check_inverse(g, lh, &v, &f, c)?;
+            check_inverse(g, rh, &f, &v, c)?;
+            Some(v)
+        } else {
+            None
+        };
         (f, v)
     } else {
         if !same_module(g, lh, rh)?
@@ -305,14 +454,24 @@ pub(super) fn compare(
         {
             return Err("同じ複体からのコホモロジー表示が一致しない".into());
         }
-        (identity(n), identity(n))
+        (identity(n), Some(identity(n)))
     };
     let hmap = wire::map(b, lh, rh, &hforward, n, c)?;
-    let inverse = wire::map(b, rh, lh, &hbackward, target_n, c)?;
-    // 関係で割った後にも順逆を検査した同型なのでkernel/cokernelは零。
     let ring = field(g, lh, "ring")?;
-    let kernel = wire::module(b, ring, 0, "kernel", vec![hmap])?;
-    let cokernel = wire::module(b, ring, 0, "quotient", vec![hmap])?;
+    let (kernel, cokernel, group_condition, group_status) = if let Some(backward) = &hbackward {
+        let inverse = wire::map(b, rh, lh, backward, target_n, c)?;
+        let kernel = wire::module(b, ring, 0, "kernel", vec![hmap])?;
+        let cokernel = wire::module(b, ring, 0, "quotient", vec![hmap])?;
+        let condition = b.proposition(
+            "inverse_maps",
+            vec![hmap, inverse],
+            vec![cochain],
+            Decision::Established,
+        )?;
+        (kernel, cokernel, condition, Decision::Established)
+    } else {
+        kernel_cokernel(b, lh, rh, hmap, &hforward, c)?
+    };
     let mut conditions = vec![
         b.proposition(
             "naturality",
@@ -326,14 +485,9 @@ pub(super) fn compare(
             vec![ls, rs],
             Decision::Established,
         )?,
-        b.proposition(
-            "inverse_maps",
-            vec![hmap, inverse],
-            vec![cochain],
-            Decision::Established,
-        )?,
+        group_condition,
     ];
-    let mut status = Decision::Established;
+    let mut status = group_status;
     let mut reasons = vec![];
     let mut class_transport = None;
     if record(g, left)?.get("degree") == Some(&Json::Nat(1)) {
@@ -362,13 +516,23 @@ pub(super) fn compare(
             let equal = integer_fiber::solve(&matrix, relations.len(), &delta, c)?
                 .particular
                 .is_some();
-            status = if equal {
+            let class_status = if equal {
                 Decision::Established
             } else {
                 Decision::Refuted
             };
+            status = if group_status == Decision::Refuted || !equal {
+                Decision::Refuted
+            } else {
+                Decision::Established
+            };
             let transported = wire::vector(b, rh, &x, c)?;
-            b.proposition("equal", vec![transported, zv], vec![a, z, hmap], status)?
+            b.proposition(
+                "equal",
+                vec![transported, zv],
+                vec![a, z, hmap],
+                class_status,
+            )?
         } else {
             status = Decision::Undetermined;
             let condition = b.proposition(
