@@ -214,17 +214,17 @@ fn value_constraints(
         .find(|a| a.name == "to")
         .ok_or_else(|| error(&request.id, "to", "toがない"))?
         .value;
+    let mut plans = vec![];
+    for (key,selector) in [("head",&request.head),("to",to)] {
+        let (plan,owners) = selector_type(law,map,requests,names,selector,control,(&request.id,key))?;
+        plans.push((key,selector,plan,owners));
+    }
+    if plans.iter().all(|(_,_,plan,_)|plan.ty==ProjectionType::Vector) {
+        // Moduleの同一性は実際の型付き出力で構成条件として検査する。
+        return Ok(vec![]);
+    }
     let mut selections = vec![];
-    for (key, selector) in [("head", &request.head), ("to", to)] {
-        let (plan, owners) = selector_type(
-            law,
-            map,
-            requests,
-            names,
-            selector,
-            control,
-            (&request.id, key),
-        )?;
+    for (key,selector,plan,owners) in plans {
         let mut types = vec![];
         value_types(&plan.ty, control, &mut types)?;
         if types.is_empty() {

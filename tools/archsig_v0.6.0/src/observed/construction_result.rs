@@ -65,6 +65,9 @@ pub(crate) enum ConstructionType {
     Quotient,
     LocalSystem,
     Diagnostic,
+    Complex,
+    Cohomology,
+    Class,
     Cover,
     Topology,
     ContextMap,
@@ -116,6 +119,9 @@ impl ConstructionType {
             Self::Quotient => "Quotient",
             Self::LocalSystem => "LocalSystem",
             Self::Diagnostic => "Diagnostic",
+            Self::Complex => "Complex",
+            Self::Cohomology => "Cohomology",
+            Self::Class => "Class",
             Self::Cover => "Cover",
             Self::Topology => "Topology",
             Self::ContextMap => "ContextMap",
@@ -627,6 +633,9 @@ impl ConstructionValue {
                 ConstructionType::Quotient => "quotient",
                 ConstructionType::LocalSystem => "local_system",
                 ConstructionType::Diagnostic => "diagnostic",
+                ConstructionType::Complex => "complex",
+                ConstructionType::Cohomology => "cohomology",
+                ConstructionType::Class => "class",
                 ConstructionType::Cover => "cover",
                 ConstructionType::Topology => "topology",
                 ConstructionType::ContextMap => "context_map",
@@ -719,6 +728,9 @@ impl ConstructionValue {
             (D::AtomMap { .. }, _) => Some(ProjectionType::AtomMap),
             _ => None,
         }
+    }
+    pub(super) fn scalar_projection(&self, path: &[ProjectionStep]) -> Option<Scalar> {
+        match &self.data { ConstructionData::Local(data) => data.scalar_projection(path), _ => None }
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;

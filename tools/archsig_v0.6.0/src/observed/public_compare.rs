@@ -732,6 +732,37 @@ fn completed_operation<T>(
         ))),
     }
 }
+// 同じModuleの表示ベクトルの差が、関係の生成する部分加群に入るかを解く。
+fn vector_equal(graph:&Graph,left:NodeRef,right:NodeRef,c:&Control) -> Result<bool,ValidationFailure> {
+    use num_bigint::BigInt as Z;
+    let NodeType::Vector(module) = graph.get(left)?.ty else { return Err("比較のVector型がない".into()); };
+    if graph.get(right)?.ty != NodeType::Vector(module) { return Err("比較のModuleが違う".into()); }
+    let scalar = |owner:NodeRef,wire:&Json| -> Result<Z,ValidationFailure> {
+        let r = graph.get(owner)?.arguments.iter().find(|r|r.wire()==*wire)
+            .ok_or("Vector比較の座標参照がない")?;
+        let Scalar::Z(z) = graph.scalar(*r)? else { return Err("整数Moduleの座標がZでない".into()); };
+        Ok(z.clone())
+    };
+    let coordinates = |r| -> Result<Vec<Z>,ValidationFailure> {
+        let Json::Obj(ref wire) = value(graph,r)?.wire() else { return Err("Vector表示がない".into()); };
+        let Some(Json::Arr(xs)) = wire.get("coordinates") else { return Err("Vector座標がない".into()); };
+        xs.iter().map(|x|scalar(r,x)).collect()
+    };
+    let a = coordinates(left)?;
+    let b = coordinates(right)?;
+    if a.len()!=b.len() { return Err("同じModuleの座標数が違う".into()); }
+    let Json::Obj(ref wire) = value(graph,module)?.wire() else { return Err("Module表示がない".into()); };
+    let Some(Json::Arr(relations)) = wire.get("relations") else { return Err("Module関係がない".into()); };
+    let mut matrix = vec![vec![];a.len()];
+    for relation in relations {
+        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        let Json::Arr(row) = relation else { return Err("Module関係が座標列でない".into()); };
+        if row.len()!=a.len() { return Err("Module関係の座標数が違う".into()); }
+        for (i,x) in row.iter().enumerate() { matrix[i].push(scalar(module,x)?); }
+    }
+    let difference = a.iter().zip(&b).map(|(a,b)|a-b).collect::<Vec<_>>();
+    Ok(super::integer_fiber::solve(&matrix,relations.len(),&difference,c)?.particular.is_some())
+}
 pub(super) fn evaluate(
     prepared: &PreparedObserved,
     env: &Environment<'_>,
@@ -769,7 +800,9 @@ pub(super) fn evaluate(
     let mut facts = vec![];
     let mut stopped = None;
     let mut value_plan = None;
-    let equal = if kind == "value"
+    let equal = if kind == "value" && matches!(graph.get(left)?.ty,NodeType::Vector(_)) {
+        Some(vector_equal(graph,left,right,control)?)
+    } else if kind == "value"
         && super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)?
     {
         let plan = values::evaluate(

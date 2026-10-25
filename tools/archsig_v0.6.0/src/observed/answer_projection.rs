@@ -54,10 +54,26 @@ impl Environment<'_> {
         if let Some(Payload::Construction(v)) = &original.payload
             && v.projection_type().is_some()
         {
+            if let Some(scalar) = v.scalar_projection(path) {
+                data::check(&scalar, self.inputs.law(), &self.control)?;
+                return Ok(AnswerBinding::Projection(Node {
+                    ty: NodeType::Value(scalar.ty()), payload: Some(Payload::Scalar(scalar)),
+                    rule: Rule::Projection(path.to_vec()), arguments: vec![root],
+                    support: original.support.clone(), scope: original.scope.clone(),
+                    evidence: vec![], judgment: None, reasons: vec![],
+                }));
+            }
             let Some((selected, used)) = v.project(path) else {
                 return Ok(AnswerBinding::Inapplicable(root));
             };
-            return self.answer_projection(graph, selected, &path[used..], span);
+            let mut binding = self.answer_projection(graph, selected, &path[used..], span)?;
+            if let AnswerBinding::Projection(node) = &mut binding {
+                node.rule = Rule::Projection(path.to_vec());
+                node.arguments = vec![root];
+                node.support = original.support.clone();
+                node.scope = original.scope.clone();
+            }
+            return Ok(binding);
         }
         let (value, steps) = if matches!(original.ty, NodeType::Evaluation(_)) {
             let Some((ProjectionStep::Field(field), rest)) = path.split_first() else {

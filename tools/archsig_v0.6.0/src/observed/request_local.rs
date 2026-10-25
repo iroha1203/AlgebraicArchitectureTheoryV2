@@ -177,6 +177,8 @@ pub(super) fn output_type(r: &Request, field: &str) -> Result<ProjectionType, Re
     match (r.kind, field) {
         (QuestionKind::Localize, "system") => Ok(ProjectionType::LocalSystem),
         (QuestionKind::Diagnose, "diagnostic") => Ok(ProjectionType::Diagnostic),
+        (QuestionKind::Diagnose, "space") => Ok(ProjectionType::Cohomology),
+        (QuestionKind::Diagnose, "class") if r.arguments.iter().any(|a| a.name == "degree" && a.value == Selector::Degree { value: 1 }) => Ok(ProjectionType::Class),
         (QuestionKind::Localize, "proposition") => Ok(ProjectionType::Proposition),
         (QuestionKind::Diagnose, "proposition")
             if r.arguments
