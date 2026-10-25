@@ -1373,3 +1373,130 @@ fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_reu
         }
     }
 }
+
+fn multiple_read_input(
+    name: &str,
+    left: bool,
+    right: Option<bool>,
+    reads: &str,
+) -> std::path::PathBuf {
+    let definition = D.replace(
+        r#""meaning":"観測値。"}"#,
+        r#""meaning":"観測値。"},{"name":"other","type":"Bool","meaning":"別の観測値。"}"#,
+    );
+    let definitions = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let digest = &definitions.vocabularies["Fixed"].digest;
+    let dir = input(name, Some(left));
+    std::fs::write(dir.join("d.json"), &definition).unwrap();
+    let old = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
+    let old_digest = &old.vocabularies["Fixed"].digest;
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(old_digest, digest);
+    let map = if let Some(v) = right {
+        map.replace(r#""atoms":["#,&format!(r#""atoms":[{{"id":"other","subject":"s","field":"Fixed.State.other","value":{v},"origin":"model"}},"#))
+    } else {
+        map
+    };
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace(old_digest, digest)
+        .replace(
+            "view current",
+            "law required second(s:State):s.other=true; view current",
+        );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    explicit_local(&dir, &format!("local here(t:State) reads {reads};"));
+    dir
+}
+#[test]
+fn explicit_multiple_reads_cover_distinct_law_supports_without_an_extra_patch() {
+    for (left, right) in [(true, true), (true, false), (false, true)] {
+        let dir = multiple_read_input("local-multiple-reads", left, Some(right), "t.flag,t.other");
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if left && right { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        for i in [2, 3] {
+            assert_eq!(
+                s(get(&arr(get(&j, "answers"))[i], "status")),
+                if left && right {
+                    "established"
+                } else {
+                    "refuted"
+                }
+            );
+        }
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(arr(get(system, "laws")).len(), 2);
+        assert_eq!(arr(get(system, "contexts")).len(), 1);
+        let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
+        assert_eq!(arr(get(context, "locals")).len(), 1);
+        assert_eq!(arr(get(context, "readings")).len(), 2);
+        assert_eq!(arr(get(context, "dependencies")).len(), 2);
+        assert_eq!(arr(get(context, "law_coordinates")).len(), 2);
+        let cover = get(node(&j, get(system, "cover")), "value");
+        assert_eq!(arr(get(cover, "patches")).len(), 1);
+    }
+}
+#[test]
+fn multiple_read_local_keeps_hidden_and_unobserved_fields_distinct() {
+    for missing in [false, true] {
+        let dir = multiple_read_input(
+            "local-multiple-read-needed",
+            true,
+            if missing { None } else { Some(true) },
+            if missing { "t.flag,t.other" } else { "t.flag" },
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "p=needed($l)",
+                "v=evaluate(Fixed.current,on=$a.object,s=@fixed/s)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answer = &arr(get(&j, "answers"))[1];
+        assert!(!has(get(answer, "outputs"), "system"));
+        let plan = get(output(&j, 2, "plan"), "value");
+        if missing {
+            let requirements = arr(get(plan, "requirements"));
+            assert_eq!(requirements.len(), 1);
+            assert_eq!(
+                s(get(get(&requirements[0], "field"), "field")),
+                "Fixed.State.other"
+            );
+            assert!(arr(get(answer, "reasons"))
+                .iter()
+                .all(|r| s(get(r, "code")) != "visibility_insufficient"));
+        } else {
+            assert!(arr(get(plan, "requirements")).is_empty());
+            assert!(arr(get(answer, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "visibility_insufficient"));
+        }
+        assert_eq!(
+            get(output(&j, 3, "value"), "value").value,
+            archsig::json::JValue::Bool(true)
+        );
+    }
+}
