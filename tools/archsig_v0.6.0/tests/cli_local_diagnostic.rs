@@ -1500,3 +1500,131 @@ fn multiple_read_local_keeps_hidden_and_unobserved_fields_distinct() {
         );
     }
 }
+
+#[test]
+fn product_reads_preserve_the_typed_coordinate_and_each_component() {
+    for reads in ["(t.flag,t.other)", "((t.flag,unit),(t,t.other))"] {
+        for (left, right) in [(true, true), (true, false), (false, true)] {
+            let dir = multiple_read_input("local-product", left, Some(right), reads);
+            let r = execute(
+                &dir,
+                "out",
+                &[
+                    "a=build(Fixed,on=@fixed/s)",
+                    "l=localize($a.object)",
+                    "e=diagnose($l.system)",
+                    "s=diagnose($l.system,side=semantic)",
+                ],
+            );
+            assert_eq!(
+                r.code,
+                if left && right { 0 } else { 1 },
+                "{} {}",
+                r.stdout,
+                r.stderr
+            );
+            let j = result_json(&dir, &r);
+            for i in [2, 3] {
+                assert_eq!(
+                    s(get(&arr(get(&j, "answers"))[i], "status")),
+                    if left && right {
+                        "established"
+                    } else {
+                        "refuted"
+                    }
+                );
+            }
+            if left && right {
+                let reused = run(
+                    &dir,
+                    &[
+                        "run",
+                        "--atom-definition",
+                        "d.json",
+                        "--archmap",
+                        "a.json",
+                        "--law",
+                        "l.law",
+                        "--out",
+                        "again",
+                        "--reuse",
+                        "out",
+                        "--ask",
+                        "a=build(Fixed,on=@fixed/s)",
+                        "--ask",
+                        "l=localize($a.object)",
+                        "--ask",
+                        "e=diagnose($l.system)",
+                        "--ask",
+                        "s=diagnose($l.system,side=semantic)",
+                    ],
+                );
+                assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
+                let again = result_json(&dir, &reused);
+                for field in ["answers", "nodes"] {
+                    assert_eq!(get(&j, field).value, get(&again, field).value);
+                }
+            }
+            let system = get(output(&j, 1, "system"), "value");
+            let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
+            let readings = arr(get(context, "readings"));
+            assert_eq!(readings.len(), 1);
+            assert_eq!(s(&arr(get(&readings[0], "type"))[0]), "Tuple");
+            assert_eq!(arr(get(context, "dependencies")).len(), 2);
+            assert_eq!(arr(get(context, "carrier")).len(), 1);
+            let image = get(node(&j, get(&readings[0], "domain")), "value");
+            assert_eq!(arr(get(image, "elements")).len(), 1);
+            let value = get(node(&j, &arr(get(image, "elements"))[0]), "value");
+            let tuple = arr(value);
+            if reads == "(t.flag,t.other)" {
+                assert_eq!(tuple[0].value, archsig::json::JValue::Bool(left));
+                assert_eq!(tuple[1].value, archsig::json::JValue::Bool(right));
+            } else {
+                assert_eq!(arr(&tuple[0])[0].value, archsig::json::JValue::Bool(left));
+                assert_eq!(arr(&tuple[1])[1].value, archsig::json::JValue::Bool(right));
+            }
+        }
+    }
+}
+#[test]
+fn product_read_does_not_publish_a_references_fields_or_fill_a_missing_component() {
+    for missing in [false, true] {
+        let dir = multiple_read_input(
+            "local-product-needed",
+            true,
+            if missing { None } else { Some(true) },
+            if missing {
+                "(t.flag,t.other)"
+            } else {
+                "(t.flag,t)"
+            },
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "p=needed($l)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answer = &arr(get(&j, "answers"))[1];
+        assert!(!has(get(answer, "outputs"), "system"));
+        let plan = get(output(&j, 2, "plan"), "value");
+        if missing {
+            let requirements = arr(get(plan, "requirements"));
+            assert_eq!(requirements.len(), 1);
+            assert_eq!(
+                s(get(get(&requirements[0], "field"), "field")),
+                "Fixed.State.other"
+            );
+        } else {
+            assert!(arr(get(plan, "requirements")).is_empty());
+            assert!(arr(get(answer, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "visibility_insufficient"));
+        }
+    }
+}
