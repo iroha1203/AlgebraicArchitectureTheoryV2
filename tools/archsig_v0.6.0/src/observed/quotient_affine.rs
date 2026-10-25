@@ -202,17 +202,15 @@ pub(in crate::observed) fn compute(
         c,
     )?));
     env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    for ((slot, row), offset) in linear.slots.iter().zip(&linear.action).zip(&linear.offset) {
-        let mut form = affine::constant(offset, c)?.ok_or("アフィン商の定数がない")?;
-        for (axis, coefficient) in linear.axes.iter().zip(row) {
-            let parameter = affine::parameter(ty, axis, c)?;
-            let coefficient = affine::constant(coefficient, c)?;
-            let term = affine::binary(BinOp::Mul, parameter.as_ref(), coefficient.as_ref(), c)?;
-            form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), c)?
-                .ok_or("アフィン商の更新式がない")?;
-        }
-        env.affine_valuation.insert(slot.clone(), form);
-    }
+    set_action(
+        &mut env,
+        &linear.slots,
+        &linear.action,
+        &linear.offset,
+        &linear.axes,
+        ty,
+        c,
+    )?;
     let mut vars = BTreeMap::new();
     let mut checked = BTreeMap::new();
     let mut checks = owned_call::Checks::default();
@@ -320,6 +318,32 @@ pub(in crate::observed) fn compute(
             }
             instances = next;
         }
+        // guard は選択した全アフィン域上で通常評価する。元parameterの一点には代入しない。
+        let selected = if guard.is_some() {
+            let mut selected =
+                Environment::with_primitive_valuation(original.inputs, &input.assignments, c)?;
+            selected.object = env.object.clone();
+            let matrix =
+                coefficients::multiply(ty, &linear.action, &result.embedding, dimensions, c)?;
+            let mut offset = linear.offset.clone();
+            for (value, row) in offset.iter_mut().zip(&linear.action) {
+                for (a, x) in row.iter().zip(&result.origin) {
+                    *value = coefficients::add_product(value, a, x, c)?;
+                }
+            }
+            set_action(
+                &mut selected,
+                &linear.slots,
+                &matrix,
+                &offset,
+                &linear.axes[..dimensions],
+                ty,
+                c,
+            )?;
+            Some(selected)
+        } else {
+            None
+        };
         result.scope.readings.insert(declaration.reading.clone());
         for bindings in instances {
             let mut vars = BTreeMap::new();
@@ -362,20 +386,20 @@ pub(in crate::observed) fn compute(
                 return Err(unsupported(request, "商のLaw適用条件が未確定"));
             }
             let applies = if let Some(guard) = guard {
-                env.missing_slot_reads.replace(Some(BTreeSet::new()));
+                let selected = selected.as_ref().ok_or("商のguard評価域がない")?;
+                selected.missing_slot_reads.replace(Some(BTreeSet::new()));
                 let value =
-                    env.scoped_ast(*guard, &vars, &Scope::default(), &declaration.reading)?;
+                    selected.scoped_ast(*guard, &vars, &Scope::default(), &declaration.reading)?;
                 result.scope.merge(&value.scope);
-                let resolved = guard_value(
-                    &value,
-                    &linear.axes,
-                    ty,
-                    &result.origin,
-                    &result.embedding,
-                    dimensions,
-                    c,
-                )?;
-                let missing = env
+                let resolved = if value.condition_failed || value.condition_pending {
+                    None
+                } else {
+                    match value.known_value {
+                        Some(Scalar::Bool(v)) => Some(v),
+                        _ => None,
+                    }
+                };
+                let missing = selected
                     .missing_slot_reads
                     .take()
                     .ok_or("商のguard不足収集がない")?;
@@ -617,43 +641,31 @@ pub(in crate::observed) fn point(
     })
 }
 
-fn guard_value(
-    value: &SourceValue,
+fn set_action(
+    env: &mut Environment<'_>,
+    slots: &[Fact],
+    matrix: &Matrix,
+    offset: &[Scalar],
     axes: &[affine::Parameter],
     ty: &Type,
-    origin: &[Scalar],
-    embedding: &Matrix,
-    dimensions: usize,
     c: &Control,
-) -> Result<Option<bool>, ValidationFailure> {
-    if value.condition_failed || value.condition_pending {
-        return Ok(None);
+) -> Result<(), ValidationFailure> {
+    if slots.len() != matrix.len() || slots.len() != offset.len() {
+        return Err("商の作用の行数が違う".into());
     }
-    if let Some(Scalar::Bool(b)) = value.known_value {
-        return Ok(Some(b));
+    for ((slot, row), offset) in slots.iter().zip(matrix).zip(offset) {
+        if row.len() != axes.len() {
+            return Err("商の作用の列数が違う".into());
+        }
+        let mut form = affine::constant(offset, c)?.ok_or("アフィン商の定数がない")?;
+        for (axis, coefficient) in axes.iter().zip(row) {
+            let parameter = affine::parameter(ty, axis, c)?;
+            let coefficient = affine::constant(coefficient, c)?;
+            let term = affine::binary(BinOp::Mul, parameter.as_ref(), coefficient.as_ref(), c)?;
+            form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), c)?
+                .ok_or("アフィン商の更新式がない")?;
+        }
+        env.affine_valuation.insert(slot.clone(), form);
     }
-    let Some(p) = &value.comparison else {
-        return Ok(None);
-    };
-    if !p.bound_axes.is_empty() {
-        return Ok(None);
-    }
-    let Some(form) = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), c)? else {
-        return Ok(None);
-    };
-    let Some((mut constant, row)) = coefficients::coordinates(&form, axes, ty, c)? else {
-        return Ok(None);
-    };
-    for (a, x) in row.iter().zip(origin) {
-        constant = coefficients::add_product(&constant, a, x, c)?;
-    }
-    let zero = numeric::zero(ty, c)?;
-    let matrix = coefficients::multiply(ty, &vec![row], embedding, dimensions, c)?;
-    if matrix.iter().flatten().any(|x| *x != zero) {
-        return Ok(None);
-    }
-    let Scalar::Bool(value) = numeric::binary(p.op, &constant, &zero, c)? else {
-        return Err("商のguard比較がBoolでない".into());
-    };
-    Ok(Some(value))
+    Ok(())
 }
