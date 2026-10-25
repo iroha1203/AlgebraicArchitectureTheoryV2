@@ -1,7 +1,7 @@
 use super::*;
 use crate::observed::change_result::field_linear_result as field;
-pub(super) use crate::observed::change_result::linear_result::{domain, module};
-pub(super) fn map(
+pub(in crate::observed::local_result) use crate::observed::change_result::linear_result::{domain, module};
+pub(in crate::observed::local_result) fn map(
     b: &mut Builder<'_>,
     source: NodeRef,
     target: NodeRef,
@@ -11,7 +11,7 @@ pub(super) fn map(
 ) -> Result<NodeRef, ValidationFailure> {
     field::map(b, source, target, &integer_fiber::scalars(a), n, c)
 }
-pub(super) fn vector(
+pub(in crate::observed::local_result) fn vector(
     b: &mut Builder<'_>,
     module: NodeRef,
     values: &[Z],
@@ -25,7 +25,7 @@ pub(super) fn vector(
     )
 }
 // 共通呼出し口。QではSmith証明でなく元の線形系の解または左零化子を返す。
-pub(super) fn certificate(
+pub(in crate::observed::local_result) fn certificate(
     b: &mut Builder<'_>,
     ring: NodeRef,
     parameters: NodeRef,

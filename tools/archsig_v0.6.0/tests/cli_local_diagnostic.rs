@@ -5069,3 +5069,249 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
     let again=result_json(&dir,&reused);
     for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
+fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    let dir = if identity {
+        diagnostic_compare_input(name, true, true)
+    } else {
+        integer_transport_input(name, true)
+    };
+    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let d = old.replace("\"type\": \"Z\"", "\"type\": \"Q\"");
+    let before = definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let after = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
+    let digest = &before.vocabularies["Reservations"].digest;
+    let updated = &after.vocabularies["Reservations"].digest;
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace(digest, updated)
+        .replace("(Z, Z)", "(Q, Q)")
+        .replace("d:Z", "d:Q");
+    let law = if identity {
+        law.replace(
+            "law optional localValid",
+            "change move(s:State,d:Q)=s with{free=s.free+d}; law optional localValid",
+        )
+    } else {
+        law
+    };
+    let text = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(digest, updated);
+    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(a) = atom else { panic!("atom") };
+        if matches!(a.get("field"),Some(Json::Str(f)) if f=="Reservations.State.free"||f=="Reservations.State.held")
+        {
+            let v = a["value"].clone();
+            a.insert("value".into(), Json::Arr(vec![v, Json::str("1")]));
+        }
+    }
+    for (file, text) in [("d.json", d), ("l.law", law), ("a.json", map.canonical())] {
+        std::fs::write(dir.join(file), text).unwrap();
+    }
+    dir
+}
+#[test]
+fn rational_diagnostics_compare_actual_identity_maps_and_reuse() {
+    for (side, degree) in [("equation", 0), ("equation", 1), ("semantic", 1)] {
+        let dir = rational_compare_input(&format!("rational-compare-{side}-{degree}"), true);
+        let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
+        let d2 = format!("d2=diagnose($l.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)","l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.move)",&d1,&d2,"c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)"];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(r.code, 0, "{side}/{degree}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let comparison = get(output(&j, 4, "comparison"), "value");
+        let cochain = get(node(&j, get(comparison, "cochain_map")), "value");
+        assert_eq!(arr(get(cochain, "components")).len(), degree as usize + 2);
+        for map in arr(get(cochain, "components"))
+            .iter()
+            .chain(std::iter::once(get(comparison, "cohomology_map")))
+        {
+            let map = get(node(&j, map), "value");
+            for (col, values) in arr(get(map, "columns")).iter().enumerate() {
+                for (row, value) in arr(values).iter().enumerate() {
+                    let value = arr(get(node(&j, value), "value"));
+                    assert_eq!(s(&value[0]), if row == col { "1" } else { "0" });
+                    assert_eq!(s(&value[1]), "1");
+                }
+            }
+        }
+        for key in ["kernel", "cokernel"] {
+            let module = get(node(&j, get(comparison, key)), "value");
+            assert_eq!(num(get(module, "free_rank")), 0);
+            assert!(arr(get(module, "torsion")).is_empty());
+            assert_eq!(
+                s(get(get(node(&j, get(module, "ring")), "value"), "scalar")),
+                "Q"
+            );
+        }
+        assert_eq!(has(comparison, "class_transport"), degree == 1);
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+            "--time-ms",
+            "120000",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let repeat = run(&dir, &args);
+        assert_eq!(repeat.code, 0, "{} {}", repeat.stdout, repeat.stderr);
+        let again = result_json(&dir, &repeat);
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&j, key).value, get(&again, key).value);
+        }
+    }
+}
+
+#[test]
+fn rational_diagnostic_inclusion_has_field_cokernel_and_reuses_results() {
+    for step in [0, 2, 3] {
+        let dir = rational_compare_input(&format!("rational-inclusion-{step}"), false);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap();
+        std::fs::write(&path,law.replace("law optional localValid",&format!("change stride(s:State,d:Q)=s with{{free=s.free+{step}*d}}; law optional localValid"))).unwrap();
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
+            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",
+            "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(
+            r.code,
+            i32::from(step == 0),
+            "{step}: {} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let cmp = get(output(&j, 5, "comparison"), "value");
+        assert_eq!(
+            s(get(&arr(get(&j, "answers"))[5], "status")),
+            if step == 0 { "refuted" } else { "established" }
+        );
+        for field in ["kernel", "cokernel"] {
+            let module = get(node(&j, get(cmp, field)), "value");
+            assert_eq!(
+                num(get(module, "free_rank")),
+                u64::from(step == 0 && field == "cokernel")
+            );
+            assert!(arr(get(module, "torsion")).is_empty());
+            assert_eq!(
+                s(get(get(node(&j, get(module, "ring")), "value"), "scalar")),
+                "Q"
+            );
+        }
+        assert_eq!(
+            s(get(output(&j, 6, "value"), "value")),
+            if step == 0 { "1" } else { "0" }
+        );
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+            "--time-ms",
+            "120000",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let reused = run(&dir, &args);
+        assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&again, field).value);
+        }
+    }
+}
+
+#[test]
+fn rational_diagnostic_transport_moves_fractional_classes_with_its_actual_matrix() {
+    let dir = rational_compare_input("rational-transport-nonzero", false);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "law optional loopShift(e:Reserve):e.to.free-e.from.free=rat(1,2); local Edge(e:Reserve) reads e.from.free,e.to.free; law optional localValid")).unwrap();
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.loopShift,using=Reservations.move)",
+            "r=localize($m.candidate.target,law=Reservations.loopShift,using=Reservations.move)",
+            "d=diagnose($l.system)",
+            "e=diagnose($r.system)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let twice = |v: &archsig::json::JNode| {
+        let q = arr(v);
+        let n = s(&q[0]).parse::<i64>().unwrap();
+        let d = s(&q[1]).parse::<i64>().unwrap();
+        assert_eq!(2 * n % d, 0);
+        2 * n / d
+    };
+    let coordinates = |i| {
+        let class = get(output(&j, i, "class"), "value");
+        let vector = get(node(&j, get(class, "coordinates")), "value");
+        arr(get(vector, "coordinates"))
+            .iter()
+            .map(|r| twice(get(node(&j, r), "value")))
+            .collect::<Vec<_>>()
+    };
+    let x = coordinates(3);
+    let y = coordinates(4);
+    assert!(x.iter().any(|v| *v != 0));
+    assert!(y.iter().any(|v| *v != 0));
+    let cmp = get(output(&j, 5, "comparison"), "value");
+    assert_eq!(s(get(&arr(get(&j, "answers"))[5], "status")), "established");
+    let map = get(node(&j, get(cmp, "cohomology_map")), "value");
+    let columns = arr(get(map, "columns"));
+    assert_eq!(columns.len(), x.len());
+    let image = (0..y.len())
+        .map(|i| {
+            columns
+                .iter()
+                .zip(&x)
+                .map(|(column, x)| twice(get(node(&j, &arr(column)[i]), "value")) * x / 2)
+                .sum::<i64>()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(image, y);
+    let chain = get(node(&j, get(cmp, "cochain_map")), "value");
+    let mut changed = false;
+    for component in arr(get(chain, "components")) {
+        let map = get(node(&j, component), "value");
+        for (col, column) in arr(get(map, "columns")).iter().enumerate() {
+            for (row, x) in arr(column).iter().enumerate() {
+                let x = twice(get(node(&j, x), "value"));
+                changed |= x != 2 * i64::from(row == col);
+            }
+        }
+    }
+    assert!(changed, "patchの並び替えを反映するcochain成分がない");
+}

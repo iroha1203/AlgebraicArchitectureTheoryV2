@@ -12,7 +12,7 @@ fn coefficient_name() -> &'static str {
 fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     crate::observed::result::Scalar::Z(v)
 }
-fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
+pub(in crate::observed::local_result) fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
     match v {crate::observed::result::Scalar::Z(v)=>Ok(v.clone()),_=>Err("整数読取りの係数がZでない".into())}
 }
 fn reduce_torsion(v: &mut Z, m: &Z) {

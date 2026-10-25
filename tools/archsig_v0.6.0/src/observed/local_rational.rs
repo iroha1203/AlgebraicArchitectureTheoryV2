@@ -2,14 +2,14 @@
 #[path = "local_rational_number.rs"]
 mod number;
 use crate::observed::environment::local_read;
-use number::Q as Z;
+pub(super) use number::Q as Z;
 #[path = "local_rational_fiber.rs"]
-mod integer_fiber;
+pub(super) mod integer_fiber;
 use integer_fiber::Matrix;
 #[path = "local_rational_action.rs"]
 mod change_affine;
 #[path = "local_rational_wire.rs"]
-mod wire;
+pub(super) mod wire;
 fn coefficient_type() -> crate::types::Type {
     crate::types::Type::Q
 }
@@ -19,7 +19,7 @@ fn coefficient_name() -> &'static str {
 fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     v.scalar()
 }
-fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
+pub(in crate::observed::local_result) fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
     Z::from_scalar(v)
 }
 fn reduce_torsion(_: &mut Z, _: &Z) {

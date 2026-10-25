@@ -1,7 +1,6 @@
 //! 観測位置の全単射から局所状態とordered Čech座標の実写像を作る。
 use super::*;
 use crate::archmap::{Slot, Value};
-use crate::observed::local_result::integer::{Diagram, linear};
 use integer_fiber::Matrix;
 use std::collections::BTreeSet;
 
@@ -431,7 +430,7 @@ pub(in crate::observed::local_result) fn between(
     let Some(r) = &local(g, rs)?.source.system else {
         return Ok(None);
     };
-    let (Some(a), Some(b)) = (&l.integer, &r.integer) else {
+    let (Some(a), Some(b)) = (diagram(l), diagram(r)) else {
         return Ok(None);
     };
     let (from, to, _, _) = public_compose::components(g, along)?;
@@ -487,7 +486,7 @@ pub(in crate::observed::local_result) fn between(
         if !seen.insert(j) {
             return Ok(None);
         }
-        permutation[j][i] = Z::from(1);
+        permutation[j][i] = Z::from(1usize);
     }
     let semantic = record(g, left)?.get("side") == Some(&Json::str("semantic"));
     let sa = if semantic { &a.semantic } else { &a.equation };
