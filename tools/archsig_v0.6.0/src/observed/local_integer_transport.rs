@@ -128,36 +128,63 @@ impl Renaming {
             })
         })
     }
-    fn binding(&self, a: &Scalar, b: &Scalar) -> bool {
-        match (a, b) {
-            (
-                Scalar::Subject {
-                    snapshot,
-                    subject,
-                    entity,
+    fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            if a.ty() != b.ty() { return Ok(false); }
+            Ok(match (a, b) {
+                (Scalar::Subject { snapshot, subject, .. }, Scalar::Subject { snapshot: bs, subject: bu, .. }) =>
+                    self.subject(snapshot, subject).is_some_and(|f| f.snapshot == *bs && f.subject == *bu),
+                (Scalar::Tuple(a), Scalar::Tuple(b))
+                | (Scalar::List { items: a, .. }, Scalar::List { items: b, .. }) => {
+                    if a.len() != b.len() { return Ok(false); }
+                    for (x,y) in a.iter().zip(b) { if !self.binding(x,y,c)? { return Ok(false); } }
+                    true
+                }
+                (Scalar::Set { items: a, .. }, Scalar::Set { items: b, .. }) => {
+                    if a.len() != b.len() { return Ok(false); }
+                    let mut used = BTreeSet::new();
+                    for x in a {
+                        let mut image = None;
+                        for (i,y) in b.iter().enumerate() {
+                            if self.binding(x,y,c)? {
+                                if image.replace(i).is_some() { return Ok(false); }
+                            }
+                        }
+                        let Some(i) = image else { return Ok(false); };
+                        if !used.insert(i) { return Ok(false); }
+                    }
+                    true
+                }
+                (Scalar::Map { pairs: a, .. }, Scalar::Map { pairs: b, .. }) => {
+                    if a.len() != b.len() { return Ok(false); }
+                    let mut used = BTreeSet::new();
+                    for (ak,av) in a {
+                        let mut image = None;
+                        for (i,(bk,bv)) in b.iter().enumerate() {
+                            if self.binding(ak,bk,c)? && self.binding(av,bv,c)? {
+                                if image.replace(i).is_some() { return Ok(false); }
+                            }
+                        }
+                        let Some(i) = image else { return Ok(false); };
+                        if !used.insert(i) { return Ok(false); }
+                    }
+                    true
+                }
+                (Scalar::Option { value: a, .. }, Scalar::Option { value: b, .. }) => match (a,b) {
+                    (Some(x),Some(y)) => self.binding(x,y,c)?,
+                    (None,None) => true,
+                    _ => false,
                 },
-                Scalar::Subject {
-                    snapshot: bs,
-                    subject: bu,
-                    entity: be,
-                },
-            ) => {
-                entity == be
-                    && self
-                        .subject(snapshot, subject)
-                        .is_some_and(|f| f.snapshot == *bs && f.subject == *bu)
-            }
-            (
-                Scalar::Unit
-                | Scalar::Bool(_)
-                | Scalar::Z(_)
-                | Scalar::Q(_, _)
-                | Scalar::Fp { .. }
-                | Scalar::Text(_),
-                _,
-            ) => a == b,
-            _ => false,
-        }
+                (Scalar::Data { constructor: a, args: x, .. }, Scalar::Data { constructor: b, args: y, .. }) => {
+                    if a != b || x.len() != y.len() { return Ok(false); }
+                    for (x,y) in x.iter().zip(y) { if !self.binding(x,y,c)? { return Ok(false); } }
+                    true
+                }
+                (Scalar::Path(_) | Scalar::Term(_), _) | (_, Scalar::Path(_) | Scalar::Term(_)) => false,
+                _ => a == b,
+            })
+        })
     }
 }
 fn coordinates(
@@ -405,20 +432,16 @@ pub(in crate::observed::local_result) fn between(
     }
     let mut laws = vec![];
     for (name, bindings) in &a.requirements {
-        let matches = b
-            .requirements
-            .iter()
-            .enumerate()
-            .filter(|(_, (n, bs))| {
-                n == name
-                    && bs.len() == bindings.len()
-                    && bindings
-                        .iter()
-                        .zip(bs)
-                        .all(|((n, x), (m, y))| n == m && rename.binding(x, y))
-            })
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
+        let mut matches = vec![];
+        for (i,(n,bs)) in b.requirements.iter().enumerate() {
+            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            if n != name || bs.len() != bindings.len() { continue; }
+            let mut equal = true;
+            for ((n,x),(m,y)) in bindings.iter().zip(bs) {
+                if n != m || !rename.binding(x,y,c)? { equal = false; break; }
+            }
+            if equal { matches.push(i); }
+        }
         if matches.len() != 1 || laws.contains(&matches[0]) {
             return Ok(None);
         }
@@ -609,4 +632,38 @@ pub(in crate::observed::local_result) fn between(
             None
         },
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::observed::control::{Limits, Usage};
+    #[test]
+    fn compound_bindings_preserve_structure_and_actual_images() {
+        let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
+        let rename=Renaming {fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
+            (("v".into(),a.into(),None),Fact{snapshot:"v".into(),subject:b.into(),field:None,atom:None})).collect()};
+        let ty=Type::Ref("R.Item".into());
+        let set=|items|Scalar::Set{element:ty.clone(),items};
+        let list=|items|Scalar::List{element:ty.clone(),items};
+        let map=|pairs|Scalar::Map{domain:ty.clone(),codomain:ty.clone(),pairs};
+        let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
+        let mut c=Control::new(Limits::default(), |_|Usage::default());
+        for (a,b) in [
+            (set(vec![subject("a"),subject("b")]),set(vec![subject("y"),subject("z")])),
+            (map(vec![(subject("a"),subject("b")),(subject("b"),subject("a"))]),map(vec![(subject("y"),subject("z")),(subject("z"),subject("y"))])),
+            (data("Wrap",vec![list(vec![subject("a"),subject("b"),subject("a")])]),data("Wrap",vec![list(vec![subject("z"),subject("y"),subject("z")])])),
+            (Scalar::Option{element:ty.clone(),value:None},Scalar::Option{element:ty.clone(),value:None}),
+        ] { assert!(rename.binding(&a,&b,&mut c).unwrap()); }
+        for (a,b) in [
+            (list(vec![subject("a"),subject("b")]),list(vec![subject("y"),subject("z")])),
+            (set(vec![subject("a"),subject("b")]),set(vec![subject("z")])),
+            (map(vec![(subject("a"),subject("b"))]),map(vec![(subject("z"),subject("z"))])),
+            (data("Wrap",vec![subject("a")]),data("Other",vec![subject("z")])),
+            (Scalar::Option{element:ty.clone(),value:None},Scalar::Option{element:ty.clone(),value:Some(Box::new(subject("z")))}),
+            (Scalar::Tuple(vec![subject("a"),Scalar::Z(2.into())]),Scalar::Tuple(vec![subject("z"),Scalar::Z(3.into())])),
+        ] { assert!(!rename.binding(&a,&b,&mut c).unwrap()); }
+        let mut stopped=Control::new(Limits{time_ms:Some(0),memory_mib:None},|_|Usage{elapsed_ms:1,..Usage::default()});
+        assert!(matches!(rename.binding(&subject("a"),&subject("z"),&mut stopped),Err(ValidationFailure::Stop(_))));
+    }
 }

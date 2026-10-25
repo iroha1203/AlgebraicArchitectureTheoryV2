@@ -4340,3 +4340,56 @@ fn fixed_empty_law_local_reads_keep_missing_observations() {
     for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
     let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
+
+#[test]
+fn integer_diagnostic_transport_follows_compound_law_bindings() {
+    for nested in [false,true] { for (side,degree) in [("equation",0),("semantic",1)] {
+        let dir=integer_transport_input(&format!("integer-compound-{nested}-{side}-{degree}"),true);
+        let (ty,body)=if nested {
+            ("(Option<List<Set<State>>>,Z)","(some(list<Set<State>>[set<State>{s,t},set<State>{s}]),2)")
+        } else { ("(State,Z)","(s,2)") };
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(&path,law.replace("law optional localValid",&format!(
+            "view packed(s:State,t:State):{ty}={body}; law optional packedLaw(s:State,b:{ty}):s.free=b.1; law optional localValid"))).unwrap();
+        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");
+        let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "x=evaluate(Reservations.packed,on=$m.candidate.source,s=@v/p,t=@v/q)",
+            "y=evaluate(Reservations.packed,on=$m.candidate.target,s=@v/transport_z,t=@v/transport_a)",
+            "l=localize($m.candidate.source,law=Reservations.packedLaw,s=@v/p,b=$x.value,using=Reservations.move)",
+            "r=localize($m.candidate.target,law=Reservations.packedLaw,s=@v/transport_z,b=$y.value,using=Reservations.move)",
+            &ld,&rd,"c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{nested}/{side}/{degree}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let cmp=get(output(&j,7,"comparison"),"value");
+        assert_eq!(s(get(&arr(get(&j,"answers"))[7],"status")),"established");
+        for field in ["kernel","cokernel"] {let group=get(node(&j,get(cmp,field)),"value");assert_eq!(num(get(group,"free_rank")),0);assert!(arr(get(group,"torsion")).is_empty());}
+        assert_eq!(has(cmp,"class_transport"),degree==1);
+        if degree==1 { assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established"); }
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks { args.extend(["--ask",ask]); }
+        let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}
+}
+
+#[test]
+fn integer_diagnostic_transport_rejects_a_different_compound_binding() {
+    for wrong_value in [false,true] {
+        let dir=integer_transport_input(&format!("integer-compound-mismatch-{wrong_value}"),true);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(&path,law.replace("law optional localValid",
+            "view packed(s:State):(State,Z)=(s,2); view other(s:State):(State,Z)=(s,3); law optional packedLaw(s:State,b:(State,Z)):s.free=b.1; law optional localValid")).unwrap();
+        let target=if wrong_value {"y=evaluate(Reservations.other,on=$m.candidate.target,s=@v/transport_z)"} else {"y=evaluate(Reservations.packed,on=$m.candidate.target,s=@v/transport_a)"};
+        let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "x=evaluate(Reservations.packed,on=$m.candidate.source,s=@v/p)",target,
+            "l=localize($m.candidate.source,law=Reservations.packedLaw,s=@v/p,b=$x.value,using=Reservations.move)",
+            "r=localize($m.candidate.target,law=Reservations.packedLaw,s=@v/transport_z,b=$y.value,using=Reservations.move)",
+            "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        let answer=&arr(get(&j,"answers"))[7];assert_eq!(s(get(answer,"status")),"undetermined");
+        assert!(!has(get(answer,"outputs"),"comparison"));
+        assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+        assert_eq!(s(get(&arr(get(&j,"answers"))[8],"status")),"established");
+    }
+}

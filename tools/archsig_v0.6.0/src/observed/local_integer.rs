@@ -43,7 +43,9 @@ struct Model {
     scope: Scope,
     missing: Vec<Fact>,
 }
+#[allow(clippy::too_many_arguments)]
 fn analyze(
+    original: &Environment<'_>,
     env: &Environment<'_>,
     g: &Graph,
     witness: &ArchitectureWitness,
@@ -119,7 +121,7 @@ fn analyze(
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
             {
-                vec![change_search::selector(env, g, &a.value)?]
+                vec![change_search::selector(original, g, &a.value)?]
             } else {
                 change_search::domain(env, &p.ty, p.span, &mut missing)?.ok_or_else(|| {
                     *missing_domain = true;
@@ -208,7 +210,7 @@ fn analyze(
         .arguments
         .iter()
         .filter_map(|a| a.name.strip_prefix("bind.").map(|n| (n, a)))
-        .map(|(n, a)| Ok((n.to_owned(), change_search::selector(env, g, &a.value)?)))
+        .map(|(n, a)| Ok((n.to_owned(), change_search::selector(original, g, &a.value)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
     Ok(Model {
         change: change.name.clone(),
@@ -387,6 +389,7 @@ pub(super) fn compute(
     let mut pending = change_affine::Pending::default();
     let mut missing_domain = false;
     let result = analyze(
+        env,
         &fixed,
         g,
         &witness,
