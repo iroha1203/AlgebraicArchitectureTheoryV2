@@ -18,7 +18,7 @@ use std::{collections::BTreeMap, sync::Arc};
 #[path = "change_linear_result.rs"]
 pub(super) mod linear_result;
 #[path = "field_linear_result.rs"]
-mod field_linear_result;
+pub(super) mod field_linear_result;
 
 #[derive(Debug)]
 pub(super) struct Source {

@@ -10,6 +10,8 @@ use crate::observed::{
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct Linear {
     pub parameter_count: usize,
+    pub axes: Vec<Parameter>,
+    pub guard_fiber: Fiber,
     pub particular: Option<Vec<Scalar>>,
     pub kernel: Matrix,
     pub slots: Vec<Fact>,
@@ -331,6 +333,8 @@ fn compute_inner(
     )?;
     Ok(Linear {
         parameter_count: axes.len(),
+        axes,
+        guard_fiber,
         particular: fiber.particular.clone(),
         kernel: fiber.kernel.clone(),
         slots,
