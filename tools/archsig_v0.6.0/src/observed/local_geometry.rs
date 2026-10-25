@@ -4,6 +4,9 @@ use super::*;
 mod finite_state;
 #[path = "local_mixed_equation.rs"]
 mod mixed_equation;
+#[path = "local_mixed_read.rs"]
+mod mixed_read;
+pub(super) use mixed_read::Information;
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct Support {
     pub carrier: Vec<Json>,
@@ -141,6 +144,7 @@ pub(super) struct Built {
     pub integer: Option<integer::Diagram>,
 }
 struct State {
+    reading: Option<integer::linear::Reading>,
     integer: Option<mixed_equation::State>,
     point: NodeRef,
     semantic: NodeRef,
@@ -283,6 +287,7 @@ fn state(
     let pairs = elements.iter().map(|r| (*r, *r)).collect::<Vec<_>>();
     let identity = state_map(b, states, states, &pairs)?;
     Ok(State {
+        reading: None,
         integer: None,
         point,
         semantic,
@@ -321,6 +326,7 @@ pub(super) fn build(
     projections: &[Projection],
     locals: &[Local],
     finite_model: Option<&finite_model::Model>,
+    information: Option<&Information>,
     local_scope: &Scope,
     c: &mut Control,
 ) -> Result<Built, ValidationFailure> {
@@ -329,12 +335,15 @@ pub(super) fn build(
             Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]), vec![], None, None)?)
     } else { None };
     let mut supports = vec![global];
+    let mut linear_reads = vec![information.map(|i| i.identity(c)).transpose()?];
     let mut patch_indices = vec![];
-    for patch in patches {
-        let i = if let Some(i) = supports.iter().position(|v| v == patch) {
+    for (p, patch) in patches.iter().enumerate() {
+        let read = information.map(|i| i.patches[p].clone());
+        let i = if let Some(i) = mixed_read::find(&supports, &linear_reads, patch, &read, c)? {
             i
         } else {
             supports.push(patch.clone());
+            linear_reads.push(read);
             supports.len() - 1
         };
         if !patch_indices.contains(&i) {
@@ -349,16 +358,16 @@ pub(super) fn build(
     while context_index < supports.len() {
         let support = &supports[context_index];
         c.checkpoint(super::super::control::Checkpoint::Localize)?;
-        let selected = law_supports
-            .iter()
-            .enumerate()
-            .filter(|(_, p)| support.contains(p))
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
+        let mut selected = vec![];
+        for (i, required) in law_supports.iter().enumerate() {
+            if if let Some(info) = information {
+                info.visible_law(support, linear_reads[context_index].as_ref().ok_or("整数読取りがない")?, required, i, c)?
+            } else { support.contains(required) } { selected.push(i); }
+        }
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
         let state = if let Some(model) = finite_model {
-            finite_state::build(env, b, target, &context_laws, &selected, support, model, integer_ring, c)?
+            finite_state::build(env, b, target, &context_laws, &selected, support, model, integer_ring, linear_reads[context_index].as_ref(), c)?
         } else {
             state(
                 env,
@@ -371,17 +380,14 @@ pub(super) fn build(
                 c,
             )?
         };
-        let visible = readings
-            .iter()
-            .zip(read_supports)
-            .enumerate()
-            .filter(|(_, (_, s))| support.contains(s))
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
-        let selected_locals = locals
-            .iter()
-            .filter(|local| support.contains(&local.support))
-            .collect::<Vec<_>>();
+        let mut visible = vec![];
+        for (i, rs) in read_supports.iter().enumerate() {
+            if support.contains(rs) && mixed_read::contains(&linear_reads[context_index], &information.map(|x| x.reads[i].clone()), c)? { visible.push(i); }
+        }
+        let mut selected_locals = vec![];
+        for (i, local) in locals.iter().enumerate() {
+            if support.contains(&local.support) && mixed_read::contains(&linear_reads[context_index], &information.map(|x| x.patches[i].clone()), c)? { selected_locals.push(local); }
+        }
         let mut dependencies = visible
             .iter()
             .flat_map(|i| reading_refs[2 * i..2 * i + 2].iter().copied())
@@ -399,6 +405,7 @@ pub(super) fn build(
         for (i, p) in projections.iter().enumerate() {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             if !support.contains(&p.support)
+                || !mixed_read::contains(&linear_reads[context_index], &information.map(|x| x.reading(None, &p.support.visible, c)).transpose()?, c)?
                 || visible
                     .iter()
                     .any(|j| read_supports[*j].contains(&p.support))
@@ -411,7 +418,7 @@ pub(super) fn build(
             let (expression, image) = if let Some(pair) = projected.get(&i) {
                 *pair
             } else {
-                let pair = project(b, reading_refs[2 * p.read], p, &[])?;
+                let pair = project(b, reading_refs[2 * p.read], p, information.map(|i| i.slots()).unwrap_or(&[]))?;
                 projected.insert(i, pair);
                 pair
             };
@@ -453,8 +460,10 @@ pub(super) fn build(
         for j in 0..context_index {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let intersection = supports[context_index].intersect(&supports[j]);
-            if !supports.contains(&intersection) {
+            let read = mixed_read::intersect(&linear_reads[context_index], &linear_reads[j], c)?;
+            if mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.is_none() {
                 supports.push(intersection);
+                linear_reads.push(read);
             }
         }
         context_index += 1;
@@ -470,7 +479,7 @@ pub(super) fn build(
     for (v, small) in supports.iter().enumerate() {
         for (w, big) in supports.iter().enumerate() {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
-            if !big.contains(small) {
+            if !big.contains(small) || !mixed_read::contains(&linear_reads[w], &linear_reads[v], c)? {
                 continue;
             }
             let semantic_pairs = finite_state::restriction(&states[w], &states[v], false, c)?;
@@ -551,10 +560,8 @@ pub(super) fn build(
         for &right in &patch_indices {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let intersection = supports[left].intersect(&supports[right]);
-            let i = supports
-                .iter()
-                .position(|s| *s == intersection)
-                .ok_or("交わりcontextがない")?;
+            let read = mixed_read::intersect(&linear_reads[left], &linear_reads[right], c)?;
+            let i = mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.ok_or("交わりcontextがない")?;
             let lp = arrows[&(i, left)];
             let rp = arrows[&(i, right)];
             overlaps.push(b.push(
@@ -581,9 +588,7 @@ pub(super) fn build(
         patch_indices
             .iter()
             .any(|i| supports[*i].positions.contains(x))
-    }) && law_supports
-        .iter()
-        .all(|law| patches.iter().any(|patch| patch.contains(law)));
+    }) && if let Some(info) = information { info.adequate(patches, law_supports, c)? } else { law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law))) };
     if !adequate {
         return Err("暗黙支持coverが全体を被覆しない".into());
     }
@@ -615,15 +620,24 @@ pub(super) fn build(
         None,
     )?;
     let (topology, matching_checks) = topology(b, &supports, &contexts, &maps, cover, &arrows, &patch_indices)?;
+    let mut intersections = vec![];
+    for (i, a) in supports.iter().enumerate() {
+        let mut row = vec![];
+        for (j, z) in supports.iter().enumerate() {
+            let read = mixed_read::intersect(&linear_reads[i], &linear_reads[j], c)?;
+            row.push(mixed_read::find(&supports, &linear_reads, &a.intersect(z), &read, c)?.ok_or("交わりcontextがない")?);
+        }
+        intersections.push(row);
+    }
     let mut integer = if integer_ring.is_some() {
-        Some(mixed_equation::diagram(finite_model.ok_or("整数方程式のmodelがない")?, &states, &supports, &contexts,
+        Some(mixed_equation::diagram(finite_model.ok_or("整数方程式のmodelがない")?, &states, &intersections, &contexts,
             &patch_indices,cover,laws,integer_coefficients,integer_projections,c)?)
     } else {None};
     let mut checks = vec![];
     let mut summaries = vec![];
     for (side, equation_side) in [("semantic", false), ("equation", true)] {
         let summary = if equation_side && integer.is_some() {None} else {
-            Some(finite_state::summary(&states, &supports, &patch_indices, 0, equation_side, c)?)
+            Some(finite_state::summary(&states, &intersections, &patch_indices, 0, equation_side, c)?)
         };
         let cover_holds = if let Some(summary)=&summary {finite_state::bijective(summary,c)?} else {
             integer::linear::glues(integer.as_ref().ok_or("整数図式がない")?,&patch_indices,0,false,c)?
@@ -632,7 +646,7 @@ pub(super) fn build(
         for (w,sources) in &matching_checks {
             topology_holds &= if equation_side && integer.is_some() {
                 integer::linear::glues(integer.as_ref().ok_or("整数図式がない")?,sources,*w,false,c)?
-            } else {finite_state::bijective(&finite_state::summary(&states,&supports,sources,*w,equation_side,c)?,c)?};
+            } else {finite_state::bijective(&finite_state::summary(&states,&intersections,sources,*w,equation_side,c)?,c)?};
         }
         for (scope, object, holds) in [("cover",cover,cover_holds),("topology",topology,topology_holds)] {
             let proposition=b.proposition("sheaf_condition",std::iter::once(object)

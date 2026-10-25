@@ -28,6 +28,7 @@ pub(super) fn solve(
     indexes: &[usize],
     selected: &[usize],
     laws: &[NodeRef],
+    reading: Option<&integer::linear::Reading>,
     c: &mut Control,
 ) -> Result<(NodeRef, NodeRef, State), ValidationFailure> {
     let requirements = selected
@@ -51,7 +52,7 @@ pub(super) fn solve(
         .iter()
         .map(|row| indexes.iter().map(|i| row[*i].clone()).collect())
         .collect();
-    let (solution, domain, coefficients, fiber) = integer::state::solutions(
+    let (solution, mut domain, mut coefficients, mut fiber) = integer::state::solutions(
         b,
         ring,
         ambient,
@@ -63,6 +64,23 @@ pub(super) fn solve(
         true,
         c,
     )?;
+    let mut ambient = ambient;
+    if let Some(reading) = reading {
+        let projection: Matrix = reading.map.iter().map(|row| indexes.iter().map(|i| row[*i].clone()).collect()).collect();
+        if reading.map.iter().any(|row| row.iter().enumerate().any(|(i,x)| !x.is_zero() && !indexes.contains(&i))) {
+            return Err("整数読取りにcontext外の座標がある".into());
+        }
+        let read_module = wire::module(b, ring, reading.map.len(), "image", vec![solution])?;
+        let read_domain = wire::domain(b, read_module)?;
+        let quotient = integer::state::affine_map(b, domain, read_domain, ambient, read_module,
+            &projection, indexes.len(), &vec![Z::zero(); reading.map.len()], c)?;
+        domain = b.push(NodeType::Domain, "domain", Json::obj([
+            ("kind", Json::str("image")), ("map", quotient.wire()), ("source", solution.wire()),
+        ]), vec![quotient,solution], None, None)?;
+        fiber = integer::linear::affine_image(&fiber, &projection, &vec![Z::zero(); reading.map.len()], c)?;
+        coefficients = wire::module(b, ring, fiber.rank, "image", vec![quotient])?;
+        ambient = read_module;
+    }
     Ok((
         solution,
         domain,
@@ -97,6 +115,7 @@ pub(super) fn vector(
         .origin
         .as_ref()
         .ok_or("有限作用の像を含む整数fiberが空か未確定")?;
+    if values.len() != origin.len() { return Err("整数状態の座標数が違う".into()); }
     let delta = values
         .iter()
         .zip(origin)
@@ -118,7 +137,7 @@ pub(super) fn restriction(
 ) -> Result<(NodeRef, NodeRef, Matrix, Matrix), ValidationFailure> {
     let a = from.integer.as_ref().ok_or("整数制限元がない")?;
     let z = to.integer.as_ref().ok_or("整数制限先がない")?;
-    let projection: Matrix = to
+    let projection: Matrix = if let (Some(a), Some(z)) = (&from.reading, &to.reading) { a.restriction(z,c)? } else { to
         .free
         .iter()
         .map(|f| {
@@ -131,7 +150,9 @@ pub(super) fn restriction(
                 .map(|j| Z::from(u8::from(i == j)))
                 .collect())
         })
-        .collect::<Result<_, ValidationFailure>>()?;
+        .collect::<Result<_, ValidationFailure>>()? };
+    let from_rank = from.reading.as_ref().map_or(from.free.len(), |r|r.map.len());
+    let to_rank = to.reading.as_ref().map_or(to.free.len(), |r|r.map.len());
     let image =
         crate::observed::integer_fiber::multiply(&projection, &a.fiber.basis, a.fiber.rank, c)?;
     let coefficients =
@@ -143,8 +164,8 @@ pub(super) fn restriction(
         a.ambient,
         z.ambient,
         &projection,
-        from.free.len(),
-        &vec![Z::zero(); to.free.len()],
+        from_rank,
+        &vec![Z::zero(); to_rank],
         c,
     )?;
     let coefficient_map = wire::map(
@@ -160,7 +181,7 @@ pub(super) fn restriction(
 pub(super) fn diagram(
     model: &finite_model::Model,
     states: &[super::State],
-    supports: &[Support],
+    intersections: &[Vec<usize>],
     contexts: &[NodeRef],
     patches: &[usize],
     cover: NodeRef,
@@ -186,7 +207,9 @@ pub(super) fn diagram(
         .collect::<Result<Vec<_>, _>>()?;
     let readings = free
         .iter()
-        .map(|positions| {
+        .enumerate()
+        .map(|(i,positions)| {
+            if let Some(reading) = &states[i].reading { return Ok(reading.clone()); }
             let matrix: Matrix = positions
                 .iter()
                 .map(|i| {
@@ -198,20 +221,6 @@ pub(super) fn diagram(
             integer::linear::Reading::new(&matrix, model.slots.len(), c)
         })
         .collect::<Result<Vec<_>, _>>()?;
-    let intersections = supports
-        .iter()
-        .map(|a| {
-            supports
-                .iter()
-                .map(|b| {
-                    supports
-                        .iter()
-                        .position(|x| *x == a.intersect(b))
-                        .ok_or("整数contextの交わりがない")
-                })
-                .collect::<Result<Vec<_>, _>>()
-        })
-        .collect::<Result<Vec<_>, _>>()?;
     Ok(integer::Diagram {
         equation_only: true,
         slots: model.slots.clone(),
@@ -219,7 +228,7 @@ pub(super) fn diagram(
         readings,
         state_restrictions: projections,
         patches: patches.to_vec(),
-        intersections,
+        intersections: intersections.to_vec(),
         equation: states
             .iter()
             .map(|s| {

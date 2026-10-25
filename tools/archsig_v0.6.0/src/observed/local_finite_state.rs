@@ -1,25 +1,16 @@
 //! 有限状態の射影、matching family、各側の完全な局所fiber。
 use super::*;
-fn project(value: &Scalar, from: &[Fact], to: &[Fact]) -> Result<Scalar, ValidationFailure> {
-    if matches!(value, Scalar::Unit) && from.is_empty() && to.is_empty() {
-        return Ok(Scalar::Unit);
+fn project(value: &Scalar, from: &State, to: &State, c: &Control) -> Result<Scalar, ValidationFailure> {
+    if let (Some(a), Some(z)) = (&from.reading, &to.reading) {
+        let Scalar::Tuple(values) = value else { return Err("整数読取り状態がTupleでない".into()); };
+        if values.len() != a.map.len() { return Err("整数読取り状態の次元が違う".into()); }
+        let values = values.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+        return Ok(Scalar::Tuple(integer::linear::apply(&a.restriction(z,c)?, &values,c)?.into_iter().map(Scalar::Z).collect()));
     }
-    let Scalar::Tuple(values) = value else {
-        return Err("有限状態がTupleでない".into());
-    };
-    if values.len() != from.len() {
-        return Err("有限状態の座標数が違う".into());
-    }
-    Ok(Scalar::Tuple(
-        to.iter()
-            .map(|f| {
-                from.iter()
-                    .position(|x| x == f)
-                    .map(|i| values[i].clone())
-                    .ok_or_else(|| ValidationFailure::from("制限先の自由位置がない"))
-            })
-            .collect::<Result<Vec<_>, _>>()?,
-    ))
+    if matches!(value, Scalar::Unit) && from.free.is_empty() && to.free.is_empty() { return Ok(Scalar::Unit); }
+    let Scalar::Tuple(values) = value else { return Err("有限状態がTupleでない".into()); };
+    if values.len() != from.free.len() { return Err("有限状態の座標数が違う".into()); }
+    Ok(Scalar::Tuple(to.free.iter().map(|f| from.free.iter().position(|x|x==f).map(|i|values[i].clone()).ok_or_else(||ValidationFailure::from("制限先の自由位置がない"))).collect::<Result<Vec<_>,_>>()?))
 }
 fn values(state: &State, equation: bool) -> &[(Scalar, NodeRef)] {
     if equation {
@@ -37,7 +28,7 @@ pub(super) fn restriction(
     let mut pairs = vec![];
     for (value, r) in values(from, equation) {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        let image = project(value, &from.free, &to.free)?;
+        let image = project(value, from, to, c)?;
         let target = values(to, equation)
             .iter()
             .find(|(v, _)| *v == image)
@@ -49,7 +40,7 @@ pub(super) fn restriction(
 }
 pub(super) fn summary(
     states: &[State],
-    supports: &[Support],
+    intersections: &[Vec<usize>],
     patches: &[usize],
     base: usize,
     equation: bool,
@@ -63,13 +54,9 @@ pub(super) fn summary(
                 c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
                 let mut compatible = true;
                 for (j, previous) in row.iter().enumerate() {
-                    let intersection = supports[patch].intersect(&supports[patches[j]]);
-                    let overlap = supports
-                        .iter()
-                        .position(|s| *s == intersection)
-                        .ok_or("matchingの重なりがない")?;
-                    compatible &= project(value, &states[patch].free, &states[overlap].free)?
-                        == project(previous, &states[patches[j]].free, &states[overlap].free)?;
+                    let overlap = intersections[patch][patches[j]];
+                    compatible &= project(value, &states[patch], &states[overlap], c)?
+                        == project(previous, &states[patches[j]], &states[overlap], c)?;
                 }
                 if compatible {
                     let mut extended = row.clone();
@@ -87,7 +74,7 @@ pub(super) fn summary(
         let image = Scalar::Tuple(
             patches
                 .iter()
-                .map(|p| project(value, &states[base].free, &states[*p].free))
+                .map(|p| project(value, &states[base], &states[*p], c))
                 .collect::<Result<Vec<_>, _>>()?,
         );
         if !matching.contains(&image) {
@@ -187,31 +174,32 @@ pub(super) fn build(
     support: &Support,
     model: &finite_model::Model,
     integer_ring: Option<NodeRef>,
+    reading: Option<&integer::linear::Reading>,
     c: &mut Control,
 ) -> Result<State, ValidationFailure> {
     let indexes = model
         .slots
         .iter()
         .enumerate()
-        .filter(|(_, s)| support.visible.contains(s))
+        .filter(|(_, s)| if reading.is_some() {support.positions.contains(s)} else {support.visible.contains(s)})
         .map(|(i, _)| i)
         .collect::<Vec<_>>();
     let free = indexes
         .iter()
         .map(|i| model.slots[*i].clone())
         .collect::<Vec<_>>();
-    let ty = Type::Tuple(
-        indexes
-            .iter()
-            .map(|i| model.slot_types[*i].clone())
-            .collect(),
-    );
+    let ty = if let Some(reading) = reading { Type::Tuple(vec![Type::Z; reading.map.len()]) } else {
+        Type::Tuple(indexes.iter().map(|i| model.slot_types[*i].clone()).collect())
+    };
     let mut projected = vec![];
     let mut equation_values = vec![];
     let holds = |i: usize| selected.iter().all(|law| model.truth[i][*law]);
     for (i, point) in model.points.iter().enumerate() {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        let value = Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect());
+        let value = if let Some(reading) = reading {
+            let values = point.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+            Scalar::Tuple(integer::linear::apply(&reading.map, &values,c)?.into_iter().map(Scalar::Z).collect())
+        } else { Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect()) };
         if holds(i) {
             equation_values.push(value.clone());
         }
@@ -281,7 +269,7 @@ pub(super) fn build(
         ]);
         slot_values.push(wire.clone());
         if let Some(i) = model.slots.iter().position(|f| f == slot) {
-            if !support.visible.contains(slot) { continue; }
+            if !free.contains(slot) { continue; }
             variables.push(Json::obj([
                 (
                     "position",
@@ -463,7 +451,7 @@ pub(super) fn build(
         None,
     )?;
     let (equation, equation_domain, equation_values, integer) = if let (Some(ring), Some((ambient, _))) = (integer_ring, ambient) {
-        let (solution, domain, state) = mixed_equation::solve(env, b, ring, ambient, equations, model, &indexes, selected, laws, c)?;
+        let (solution, domain, state) = mixed_equation::solve(env, b, ring, ambient, equations, model, &indexes, selected, laws, reading, c)?;
         (solution, domain, vec![], Some(state))
     } else {
         let (equation_domain, equation_values) = finite_equation.ok_or("有限方程式の列挙がない")?;
@@ -500,6 +488,7 @@ pub(super) fn build(
     }).collect::<Result<Vec<_>, ValidationFailure>>()?;
     let identity = state_map(b, states, equation_domain, &comparison_pairs)?;
     Ok(State {
+        reading: reading.cloned(),
         integer,
         point,
         semantic,

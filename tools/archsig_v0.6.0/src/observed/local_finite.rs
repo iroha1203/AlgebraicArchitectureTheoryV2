@@ -197,6 +197,7 @@ pub(super) fn compute(
         let locals = env.inputs.law().declarations.values().filter(|d|
             d.reading == witness.construction().reading() && matches!(d.signature, Signature::Local { .. })
         ).collect::<Vec<_>>();
+        let mut information = if model.integer_equations && !locals.is_empty() { Some(geometry::Information::new(&fixed, &model)?) } else { None };
         let mut patches = vec![];
         let mut local_instances = vec![];
         let mut projections = vec![];
@@ -326,18 +327,13 @@ pub(super) fn compute(
                     let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
                     reasons.extend(explicit.reasons);
                     if stopped { return Ok((None, vec![])); }
-                    if model.integer_equations {
-                        for information in explicit.read_information.iter().flatten() {
-                            let (slots, matrix) = information;
-                            let kernel = super::super::environment::local_read::read_kernel(&Type::Z,
-                                matrix, slots.len(), c,
-                            )?;
-                            if kernel.iter().flatten().any(|value|value!=&Scalar::Z(0.into())) {
-                                return Err(unsupported("有限作用と整数方程式を持つ非単射local readは未実装"));
-                            }
+                    if explicit.locals.is_empty() { continue; }
+                    if let Some(info) = &mut information {
+                        info.patches.push(info.reading(explicit.information.as_ref(), &explicit.visible, c)?);
+                        for (j, support) in explicit.read_supports.iter().enumerate() {
+                            info.reads.push(info.reading(explicit.read_information.get(j).and_then(Option::as_ref), &support.visible, c)?);
                         }
                     }
-                    if explicit.locals.is_empty() { continue; }
                     let support = geometry::Support { carrier: explicit.carrier, positions: explicit.positions, visible: explicit.visible };
                     projections.extend(explicit.projections.into_iter().map(|mut p| { p.read += readings.len(); p }));
                     readings.extend(explicit.readings);
@@ -347,8 +343,11 @@ pub(super) fn compute(
                     local_instances.push(geometry::Local { support, instances: explicit.locals, arguments: explicit.arguments });
                 }
             }
-            if reasons.is_empty() && (model.law_supports.iter().any(|law| !patches.iter().any(|patch| patch.contains(law)))
-                || model.slots.iter().any(|slot| !patches.iter().any(|patch| patch.visible.contains(slot)))) {
+            let adequate = if let Some(info) = &information { info.adequate(&patches, &model.law_supports, c)? } else {
+                model.law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law)))
+                    && model.slots.iter().all(|slot| patches.iter().any(|patch| patch.visible.contains(slot)))
+            };
+            if reasons.is_empty() && !adequate {
                 reasons.push(Reason { kind: ReasonKind::VisibilityInsufficient {
                     locals: locals.iter().map(|d| d.name.clone()).collect(), coordinates: expressions.clone(),
                 }, request: request.id.clone(), dependencies: expressions.clone(), missing: vec![], location: None });
@@ -387,6 +386,7 @@ pub(super) fn compute(
             &projections,
             &local_instances,
             Some(&model),
+            information.as_ref(),
             &{ let mut scope = model.scope.clone(); scope.merge(&local_scope); scope },
             c,
         )?;
