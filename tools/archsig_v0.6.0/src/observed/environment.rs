@@ -68,6 +68,8 @@ pub(super) mod change_affine;
 pub(super) mod quotient_affine;
 #[path = "quotient_evaluation.rs"]
 pub(super) mod quotient_evaluation;
+#[path = "local_read.rs"]
+pub(super) mod local_read;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
 #[path = "relation_instances.rs"]

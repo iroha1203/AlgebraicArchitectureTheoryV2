@@ -150,7 +150,11 @@ fn unsupported(feature: &str) -> ValidationFailure {
         feature: feature.into(),
     }
 }
-fn domain(b: &mut Builder<'_>, ty: &Type, items: &[NodeRef]) -> Result<NodeRef, ValidationFailure> {
+pub(super) fn domain(
+    b: &mut Builder<'_>,
+    ty: &Type,
+    items: &[NodeRef],
+) -> Result<NodeRef, ValidationFailure> {
     b.push(
         NodeType::Domain,
         "domain",
@@ -228,14 +232,15 @@ fn compute(
             return Err(unsupported("自由位置を持つ局所系の公開構成は未実装"));
         }
         let reading = witness.construction().reading();
-        if env
+        let locals = env
             .inputs
             .law()
             .declarations
             .values()
-            .any(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }))
-        {
-            return Err(unsupported("明示local宣言の局所系は未実装"));
+            .filter(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }))
+            .collect::<Vec<_>>();
+        if locals.len() > 1 {
+            return Err(unsupported("明示localの複数patchのcoverは未実装"));
         }
         let selected = request
             .arguments
@@ -558,17 +563,21 @@ fn compute(
             }
             laws.push(law);
             expressions.push(expression);
-            for read in evaluated.into_iter().filter(|n| {
-                reading_roots.contains(&n.expression)
-                    || match &env.inputs.law().exprs[n.expression].kind {
-                        ExprKind::Field { .. } => true,
-                        ExprKind::Dotted(parts) => {
-                            parts.len() > 1
-                                && n.bindings.iter().any(|(name, _)| *name == parts[0].name)
+            for read in evaluated
+                .into_iter()
+                .filter(|_| locals.is_empty())
+                .filter(|n| {
+                    reading_roots.contains(&n.expression)
+                        || match &env.inputs.law().exprs[n.expression].kind {
+                            ExprKind::Field { .. } => true,
+                            ExprKind::Dotted(parts) => {
+                                parts.len() > 1
+                                    && n.bindings.iter().any(|(name, _)| *name == parts[0].name)
+                            }
+                            _ => false,
                         }
-                        _ => false,
-                    }
-            }) {
+                })
+            {
                 let Some(value) = read.value else {
                     return Err("確定した局所読取りの値がない".into());
                 };
@@ -599,8 +608,30 @@ fn compute(
                 reading_refs.extend([expr, image]);
             }
         }
+        let (mut carrier, mut positions) = common.ok_or("局所系の支持がない")?;
+        let mut local_instances = vec![];
+        let mut local_scope = Scope::default();
+        if let Some(declaration) = locals.first() {
+            let explicit = super::environment::local_read::materialize(
+                &fixed,
+                &mut b,
+                declaration,
+                request,
+                &carrier,
+                &positions,
+                &expressions,
+                c,
+            )?;
+            carrier = explicit.carrier;
+            positions = explicit.positions;
+            readings = explicit.readings;
+            reading_refs.extend(explicit.arguments);
+            local_instances = explicit.locals;
+            local_scope = explicit.scope;
+            reasons.extend(explicit.reasons);
+        }
         if !reasons.is_empty() {
-            let mut scope = Scope::default();
+            let mut scope = local_scope;
             for expression in &expressions {
                 scope.merge(&b.parts[expression.0 - base].scope);
             }
@@ -622,7 +653,6 @@ fn compute(
                 system: None,
             });
         }
-        let (carrier, positions) = common.ok_or("局所系の支持がない")?;
         let carrier_size = carrier.len();
         let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
         let mut slot_values = vec![];
@@ -737,7 +767,7 @@ fn compute(
             "context",
             Json::obj([
                 ("base", target.wire()),
-                ("locals", Json::Arr(vec![])),
+                ("locals", Json::Arr(local_instances)),
                 ("carrier", Json::Arr(carrier)),
                 ("dependencies", slots),
                 ("readings", Json::Arr(readings)),
@@ -751,6 +781,7 @@ fn compute(
             None,
             None,
         )?;
+        b.parts[context.0 - base].scope.merge(&local_scope);
         let pairs = elements.iter().map(|r| (*r, *r)).collect::<Vec<_>>();
         let identity = state_map(&mut b, states, states, &pairs)?;
         let arrow = b.push(
@@ -1292,7 +1323,7 @@ pub(super) fn validate_answer(
                 .find(|r| {
                     matches!(
                         r.kind,
-                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. }
+                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. }
                     )
                 })
                 .and_then(|r| r.dependencies.first())
