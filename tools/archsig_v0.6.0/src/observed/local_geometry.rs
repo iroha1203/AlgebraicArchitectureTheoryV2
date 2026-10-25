@@ -40,7 +40,7 @@ impl Support {
 pub(in crate::observed) struct Projection {
     pub read: usize,
     pub path: Vec<usize>,
-    pub value: Scalar,
+    pub values: Vec<Scalar>,
     pub support: Support,
 }
 fn project(
@@ -72,8 +72,9 @@ fn project(
             None,
         )?;
     }
-    let actual = change_result::value(b, &p.value)?;
-    let image = domain(b, &p.value.ty(), &[actual])?;
+    let ty = p.values.first().ok_or("Tuple射影の像が空")?.ty();
+    let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
+    let image = domain(b, &ty, &actual)?;
     Ok((expression, image))
 }
 pub(super) struct Local {
@@ -367,7 +368,7 @@ pub(super) fn build(
                     .any(|j| read_supports[*j].contains(&p.support))
                 || selected_projections
                     .iter()
-                    .any(|q| q.support == p.support && q.value == p.value)
+                    .any(|q| q.support == p.support && q.values == p.values)
             {
                 continue;
             }
@@ -380,7 +381,7 @@ pub(super) fn build(
             };
             context_readings.push(Json::obj([
                 ("expression", expression.wire()),
-                ("type", p.value.ty().wire()),
+                ("type", p.values.first().ok_or("Tuple射影の像が空")?.ty().wire()),
                 ("domain", image.wire()),
             ]));
             dependencies.extend([expression, image]);

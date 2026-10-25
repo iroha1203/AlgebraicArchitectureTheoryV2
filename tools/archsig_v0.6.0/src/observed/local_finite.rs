@@ -19,8 +19,9 @@ pub(super) fn compute(
     .into_iter()
     .map(|(f, _, v)| (f, v))
     .collect::<Vec<_>>();
-    let fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
+    let mut fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
         .ok_or("有限局所系の元Architectureが不適合")?;
+    fixed.select_local_object(&witness, c)?;
     let (model, missing) = finite_model::analyze(env, &fixed, g, &witness, request, c)?;
     let Some(model) = model else {
         let using = request
@@ -92,7 +93,9 @@ pub(super) fn compute(
     let mut expressions = vec![];
     let mut scope_domains = vec![];
     let mut quantifiers = vec![];
-    let result = (|| -> Result<(geometry::Built, Vec<Fact>), ValidationFailure> {
+    let mut reasons = vec![];
+    let mut local_scope = Scope::default();
+    let result = (|| -> Result<(Option<geometry::Built>, Vec<Fact>), ValidationFailure> {
         for (name, parameter, values) in &model.universal {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
@@ -178,6 +181,13 @@ pub(super) fn compute(
         let mut readings = vec![];
         let mut read_refs = vec![];
         let mut read_supports = vec![];
+        let locals = env.inputs.law().declarations.values().filter(|d|
+            d.reading == witness.construction().reading() && matches!(d.signature, Signature::Local { .. })
+        ).collect::<Vec<_>>();
+        let mut patches = vec![];
+        let mut local_instances = vec![];
+        let mut projections = vec![];
+        if locals.is_empty() {
         for read in &model.readings {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
             let bindings = read
@@ -202,7 +212,7 @@ pub(super) fn compute(
             read_refs.extend([expression, image]);
             read_supports.push(read.support.clone());
         }
-        let mut patches = model.law_supports.clone();
+        patches = model.law_supports.clone();
         for (position, slot) in model.slots.iter().enumerate() {
             if patches.iter().any(|p| p.positions.contains(slot)) {
                 continue;
@@ -259,6 +269,43 @@ pub(super) fn compute(
             read_supports.push(support.clone());
             patches.push(support);
         }
+        } else {
+            let mut states = vec![];
+            for point in &model.points {
+                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                let mut assignments = fixed.architecture_values().into_iter().collect::<BTreeMap<_, _>>();
+                assignments.extend(model.slots.iter().cloned().zip(point.iter().cloned()));
+                let mut state = Environment::try_primitive_valuation(env.inputs, &assignments.into_iter().collect::<Vec<_>>(), c)?
+                    .ok_or_else(|| unsupported("明示localの自由状態が不適合"))?;
+                state.select_local_object(&witness, c)?;
+                states.push(state);
+            }
+            for declaration in &locals {
+                for explicit in super::super::environment::local_read::materialize(
+                    &fixed, &mut b, declaration, request, &expressions, &states, c,
+                )? {
+                    local_scope.merge(&explicit.scope);
+                    let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
+                    reasons.extend(explicit.reasons);
+                    if stopped { return Ok((None, vec![])); }
+                    if explicit.locals.is_empty() { continue; }
+                    let support = geometry::Support { carrier: explicit.carrier, positions: explicit.positions, visible: explicit.visible };
+                    projections.extend(explicit.projections.into_iter().map(|mut p| { p.read += readings.len(); p }));
+                    readings.extend(explicit.readings);
+                    read_supports.extend(explicit.read_supports);
+                    read_refs.extend(explicit.read_refs);
+                    patches.push(support.clone());
+                    local_instances.push(geometry::Local { support, instances: explicit.locals, arguments: explicit.arguments });
+                }
+            }
+            if reasons.is_empty() && (model.law_supports.iter().any(|law| !patches.iter().any(|patch| patch.contains(law)))
+                || model.slots.iter().any(|slot| !patches.iter().any(|patch| patch.visible.contains(slot)))) {
+                reasons.push(Reason { kind: ReasonKind::VisibilityInsufficient {
+                    locals: locals.iter().map(|d| d.name.clone()).collect(), coordinates: expressions.clone(),
+                }, request: request.id.clone(), dependencies: expressions.clone(), missing: vec![], location: None });
+            }
+            if !reasons.is_empty() { return Ok((None, vec![])); }
+        }
         let mut global = geometry::Support {
             carrier: vec![],
             positions: vec![],
@@ -267,12 +314,14 @@ pub(super) fn compute(
         for support in &patches {
             global.carrier.extend(support.carrier.iter().cloned());
             global.positions.extend(support.positions.iter().cloned());
+            global.visible.extend(support.visible.iter().cloned());
         }
         global.carrier.sort_by_key(Json::canonical);
         global.carrier.dedup();
         global.positions.sort();
         global.positions.dedup();
-        global.visible = global.positions.clone();
+        global.visible.sort();
+        global.visible.dedup();
         let positions = global.positions.clone();
         let built = geometry::build(
             env,
@@ -286,26 +335,39 @@ pub(super) fn compute(
             &readings,
             &read_supports,
             &read_refs,
-            &[],
-            &[],
+            &projections,
+            &local_instances,
             Some(&model),
-            &model.scope,
+            &{ let mut scope = model.scope.clone(); scope.merge(&local_scope); scope },
             c,
         )?;
-        Ok((built, positions))
+        Ok((Some(built), positions))
     })();
     let (built, fixed_positions) = match result {
-        Ok(v) => v,
+        Ok((Some(built), positions)) => (built, positions),
+        Ok((None, _)) => {
+            let scope = b.parts.iter().fold(local_scope, |mut scope, part| { scope.merge(&part.scope); scope });
+            return Ok(Source { base, parts: b.parts, scope_domains, request: request.clone(), witness, system: None,
+                answer: Answer { id: request.id.clone(), status: Decision::Undetermined, outputs: BTreeMap::new(), claim: None,
+                    evidence: vec![], reasons, scope } });
+        }
         Err(error) => {
             if b.parts.is_empty() {
                 return Err(error);
             }
-            let kind = if let ValidationFailure::Stop(stop) = error {
-                ReasonKind::Stop(stop)
-            } else if !model.missing.is_empty() {
-                ReasonKind::Missing
-            } else {
-                return Err(error);
+            let (kind, location) = match error {
+                ValidationFailure::Stop(stop) => (ReasonKind::Stop(stop), None),
+                _ if !model.missing.is_empty() => (ReasonKind::Missing, None),
+                ValidationFailure::UnsupportedExpression { location, .. } => (
+                    ReasonKind::UnsupportedAlgorithm {
+                        question: QuestionKind::Localize,
+                        operand_types: b.parts.iter().filter_map(|p| match &p.ty {
+                            NodeType::Expression(ty) => Some(ty.clone()), _ => None,
+                        }).collect(),
+                        method: "finite_local_system".into(),
+                    }, Some(location),
+                ),
+                other => return Err(other),
             };
             let reason = Reason {
                 kind,
@@ -335,9 +397,12 @@ pub(super) fn compute(
                     )
                     .collect(),
                 missing: model.missing.clone(),
-                location: None,
+                location,
             };
-            let scope = b.parts.iter().fold(model.scope.clone(), |mut scope, part| {
+            reasons.push(reason);
+            let mut scope = model.scope.clone();
+            scope.merge(&local_scope);
+            let scope = b.parts.iter().fold(scope, |mut scope, part| {
                 scope.merge(&part.scope);
                 scope
             });
@@ -351,7 +416,7 @@ pub(super) fn compute(
                     outputs: BTreeMap::new(),
                     claim: None,
                     evidence: vec![],
-                    reasons: vec![reason],
+                    reasons,
                     scope,
                 },
                 request: request.clone(),

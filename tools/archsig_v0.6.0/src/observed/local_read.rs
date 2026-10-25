@@ -207,7 +207,7 @@ fn projections(
                 out.push(local_result::geometry::Projection {
                     read,
                     path,
-                    value: value.clone(),
+                    values: vec![value.clone()],
                     support: local_result::geometry::Support {
                         carrier,
                         positions,
@@ -314,6 +314,7 @@ pub(in crate::observed) fn materialize(
     declaration: &Declaration,
     request: &Request,
     coordinates: &[NodeRef],
+    states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
@@ -360,12 +361,14 @@ pub(in crate::observed) fn materialize(
         }
         assignments = next;
     }
-    assignments
-        .iter()
-        .map(|bindings| {
-            materialize_instance(env, b, declaration, request, bindings, coordinates, c)
-        })
-        .collect()
+    let mut contexts = vec![];
+    for bindings in &assignments {
+        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, c)?;
+        let stopped = context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
+        contexts.push(context);
+        if stopped { break; }
+    }
+    Ok(contexts)
 }
 fn materialize_instance(
     env: &Environment<'_>,
@@ -374,6 +377,7 @@ fn materialize_instance(
     request: &Request,
     bindings: &[(String, Scalar)],
     coordinates: &[NodeRef],
+    states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Context, ValidationFailure> {
     let Signature::Local {
@@ -397,8 +401,9 @@ fn materialize_instance(
         reasons: vec![],
         scope: Scope::default(),
     };
-    let mut absent = vec![];
     let mut checks = owned_call::Checks::default();
+    let result = (|| -> Result<(), ValidationFailure> {
+    let mut absent = vec![];
     let mut owner_values = BTreeMap::new();
     for (p, (_, v)) in params.iter().zip(bindings) {
         env.owned_call_value_check(
@@ -411,12 +416,27 @@ fn materialize_instance(
         )?;
         owner_values.insert(p.name.as_str(), Some(v));
     }
+    for state in states {
+        c.checkpoint(Checkpoint::Localize)?;
+        let mut varying = owned_call::Checks::default();
+        let mut owners = BTreeMap::new();
+        for (p, (_, v)) in params.iter().zip(bindings) {
+            state.owned_call_value_check(&p.ty, &super::super::term::affine::Value::Known(v.clone()),
+                &owners, &declaration.reading, declaration.span, &mut varying)?;
+            owners.insert(p.name.as_str(), Some(v));
+        }
+        if varying.failure.is_some() != checks.failure.is_some()
+            || varying.blocked != checks.blocked || varying.missing != checks.missing {
+            return Err(unsupported(declaration.span, "自由状態で所属が変わるlocalは未実装"));
+        }
+        out.scope.merge(&varying.scope);
+    }
     out.scope.merge(&checks.scope);
     out.positions.extend(positions(&checks.support));
     if checks.failure.is_some() {
-        return Ok(out);
+        return Ok(());
     }
-    absent.extend(checks.missing);
+    absent.extend(checks.missing.iter().cloned());
     if checks.blocked || !absent.is_empty() {
         if absent.is_empty() {
             return Err(unsupported(declaration.span, "localの所属条件が未確定"));
@@ -429,7 +449,7 @@ fn materialize_instance(
             declaration.span,
             coordinates.to_vec(),
         );
-        return Ok(out);
+        return Ok(());
     }
     let variables = bindings
         .iter()
@@ -453,6 +473,28 @@ fn materialize_instance(
         out.scope.merge(&value.scope);
         out.positions.extend(dependencies);
         out.arguments.push(expression);
+        let mut guard_missing = absent.clone();
+        let consistent = (|| -> Result<(), ValidationFailure> {
+            for state in states {
+                c.checkpoint(Checkpoint::Localize)?;
+                let (other, _, other_absent) = evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
+                guard_missing.extend(other_absent.iter().cloned());
+                if other.known_value != value.known_value || other.condition_failed != value.condition_failed
+                    || other.condition_pending != value.condition_pending || other_absent != absent {
+                    return Err(unsupported(declaration.span, "自由状態で適用条件が変わるlocalは未実装"));
+                }
+            }
+            Ok(())
+        })();
+        if let Err(error) = consistent {
+            if !guard_missing.is_empty() {
+                guard_missing.sort();
+                guard_missing.dedup();
+                reason(&mut out, request, ReasonKind::Missing, guard_missing,
+                    declaration.span, vec![expression]);
+            }
+            return Err(error);
+        }
         if value.condition_failed {
             return Err(unsupported(
                 declaration.span,
@@ -471,82 +513,96 @@ fn materialize_instance(
                 declaration.span,
                 vec![expression],
             );
-            return Ok(out);
+            return Ok(());
         }
         if value.known_value == Some(Scalar::Bool(false)) {
-            return Ok(out);
+            return Ok(());
         }
         if value.known_value != Some(Scalar::Bool(true)) {
             return Err("local guardがBoolでない".into());
         }
     }
+    let states = if states.is_empty() { vec![env] } else { states.iter().collect() };
     for id in reads {
         c.checkpoint(Checkpoint::Localize)?;
-        let visible = visible_slots(env, *id, bindings)?;
-        out.visible.extend(visible.iter().cloned());
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
-        let (read, dependencies, absent) =
-            evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
-        b.parts[expression.0 - b.base].scope.merge(&read.scope);
-        out.scope.merge(&read.scope);
-        out.positions.extend(dependencies.iter().cloned());
         out.arguments.push(expression);
-        if read.condition_failed {
-            return Err(unsupported(
-                declaration.span,
-                "local読取りの式の適用条件が不成立",
-            ));
-        }
-        if read.condition_pending || read.known_value.is_none() {
-            if absent.is_empty() {
-                return Err(unsupported(declaration.span, "localの読取り値が未確定"));
+        let mut values = vec![];
+        let mut carrier = vec![];
+        let mut dependencies = vec![];
+        let mut visible = vec![];
+        let mut missing_reason: Option<usize> = None;
+        let mut projected = vec![];
+        for state in &states {
+            c.checkpoint(Checkpoint::Localize)?;
+            visible.extend(visible_slots(state, *id, bindings)?);
+            let (read, positions, missing) =
+                evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
+            b.parts[expression.0 - b.base].scope.merge(&read.scope);
+            out.scope.merge(&read.scope);
+            dependencies.extend(positions);
+            if !missing.is_empty() {
+                let index = if let Some(index) = missing_reason { index } else {
+                    let index = out.reasons.len();
+                    reason(&mut out, request, ReasonKind::Missing, vec![],
+                        declaration.span, vec![expression]);
+                    missing_reason = Some(index);
+                    index
+                };
+                out.reasons[index].missing.extend(missing);
+                out.reasons[index].missing.sort();
+                out.reasons[index].missing.dedup();
             }
-            reason(
-                &mut out,
-                request,
-                ReasonKind::Missing,
-                absent,
-                declaration.span,
-                vec![expression],
-            );
-            continue;
+            if read.condition_failed {
+                return Err(unsupported(declaration.span, "local読取りの式の適用条件が不成立"));
+            }
+            if read.condition_pending || read.known_value.is_none() {
+                if missing_reason.is_none() {
+                    return Err(unsupported(declaration.span, "localの読取り値が未確定"));
+                }
+                continue;
+            }
+            let value = read.known_value.ok_or("localの確定値がない")?;
+            subject_carrier(&value, &mut carrier, c)?;
+            projections(state, *id, &value, out.readings.len(), bindings,
+                &declaration.reading, &mut projected, c)?;
+            if !values.contains(&value) { values.push(value); }
         }
-        let value = read.known_value.ok_or("localの確定値がない")?;
-        subject_carrier(&value, &mut out.carrier, c)?;
-        let actual = change_result::value(b, &value)?;
-        let image = local_result::domain(b, &value.ty(), &[actual])?;
-        projections(
-            env,
-            *id,
-            &value,
-            out.readings.len(),
-            bindings,
-            &declaration.reading,
-            &mut out.projections,
-            c,
-        )?;
+        out.positions.extend(dependencies.iter().cloned());
+        out.visible.extend(visible.iter().cloned());
+        if missing_reason.is_some() { continue; }
+        let ty = values.first().ok_or("localの読取り像が空")?.ty();
+        let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
+        let image = local_result::domain(b, &ty, &actual)?;
+        for projection in projected {
+            if let Some(existing) = out.projections.iter_mut().find(|p| p.read == projection.read && p.path == projection.path) {
+                existing.support.carrier.extend(projection.support.carrier);
+                existing.support.positions.extend(projection.support.positions);
+                existing.support.visible.extend(projection.support.visible);
+                for value in projection.values {
+                    if !existing.values.contains(&value) { existing.values.push(value); }
+                }
+            } else { out.projections.push(projection); }
+        }
         out.readings.push(Json::obj([
-            ("expression", expression.wire()),
-            ("type", value.ty().wire()),
-            ("domain", image.wire()),
+            ("expression", expression.wire()), ("type", ty.wire()), ("domain", image.wire()),
         ]));
         out.arguments.push(image);
         out.read_refs.extend([expression, image]);
-        let mut carrier = vec![];
+        out.carrier.extend(carrier.iter().cloned());
         for (_, v) in &read_bindings(env, *id, bindings, c)? {
             subject_carrier(v, &mut carrier, c)?;
         }
-        subject_carrier(&value, &mut carrier, c)?;
-        carrier.sort_by_key(Json::canonical);
-        carrier.dedup();
+        carrier.sort_by_key(Json::canonical); carrier.dedup();
         let mut dependencies = positions(&dependencies).collect::<Vec<_>>();
-        dependencies.sort();
-        dependencies.dedup();
-        out.read_supports.push(local_result::geometry::Support {
-            carrier,
-            positions: dependencies,
-            visible,
-        });
+        dependencies.sort(); dependencies.dedup();
+        visible.sort(); visible.dedup();
+        out.read_supports.push(local_result::geometry::Support { carrier, positions: dependencies, visible });
+    }
+    for projection in &mut out.projections {
+        projection.support.carrier.sort_by_key(Json::canonical); projection.support.carrier.dedup();
+        projection.support.positions.sort(); projection.support.positions.dedup();
+        projection.support.visible.sort(); projection.support.visible.dedup();
     }
     out.carrier.sort_by_key(Json::canonical);
     out.carrier.dedup();
@@ -569,5 +625,74 @@ fn materialize_instance(
             ),
         ),
     ]));
+    Ok(())
+    })();
+    if let Err(error) = result {
+        out.scope.merge(&checks.scope);
+        out.positions.extend(positions(&checks.support));
+        if checks.failure.is_none() && !checks.missing.is_empty() {
+            reason(&mut out, request, ReasonKind::Missing, checks.missing,
+                declaration.span, coordinates.to_vec());
+        }
+        let (kind, location) = match error {
+            ValidationFailure::Stop(stop) => (ReasonKind::Stop(stop), None),
+            ValidationFailure::UnsupportedExpression { location, .. } => {
+                let mut types = vec![];
+                for r in &out.arguments {
+                    if let Some(part) = r.0.checked_sub(b.base).and_then(|i| b.parts.get(i)) {
+                        if let NodeType::Expression(ty) = &part.ty {
+                            if !types.contains(ty) { types.push(ty.clone()); }
+                        }
+                    }
+                }
+                (ReasonKind::UnsupportedAlgorithm { question: QuestionKind::Localize,
+                    operand_types: types, method: "local_reading".into() }, Some(location))
+            }
+            other => return Err(other),
+        };
+        out.reasons.push(Reason { kind, request: request.id.clone(),
+            dependencies: coordinates.iter().chain(&out.arguments).copied().collect(),
+            missing: vec![], location });
+    }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::observed::{control::{Limits, Usage}, input::check_inputs, request::resolve_native_for_test};
+    #[allow(dead_code)]
+    mod fixture {
+        use crate as archsig;
+        include!("../../tests/common/architecture_environment.rs");
+    }
+    fn quiet() -> Control { Control::new(Limits::default(), |_| Usage::default()) }
+    #[test]
+    fn local_owner_missing_survives_the_first_free_state_stop() {
+        let map = fixture::remove_atom("p-owner");
+        let inputs = check_inputs(fixture::input("local here(a:System,s:State[a]) reads s.free;", Some(&map)), &mut quiet()).unwrap();
+        let requests = resolve_native_for_test(inputs.law(), inputs.archmap(), &["c=check(Reservations.roots,x=@v/A)"], &mut quiet()).unwrap();
+        let env = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+        let declaration = &inputs.law().declarations["Reservations.here"];
+        let bindings = vec![
+            ("a".into(), Scalar::Subject { snapshot:"v".into(), subject:"A".into(), entity:"Reservations.System".into() }),
+            ("s".into(), Scalar::Subject { snapshot:"v".into(), subject:"p".into(), entity:"Reservations.State".into() }),
+        ];
+        for mode in 0..3 {
+            let state = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+            let graph = Graph::new(&quiet());
+            let mut b = Builder { g:&graph, base:0, parts:vec![] };
+            let mut c = Control::new(Limits { time_ms:Some(1), memory_mib:Some(1) }, move |point| {
+                if point != Checkpoint::Localize { return Usage::default(); }
+                match mode {
+                    0 => Usage { elapsed_ms:2, ..Usage::default() },
+                    1 => Usage { memory_mib:2, ..Usage::default() },
+                    _ => Usage { signal:Some(crate::result::Signal::Term), ..Usage::default() },
+                }
+            });
+            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &mut c).unwrap();
+            assert!(context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_))));
+            assert!(context.reasons.iter().any(|r| r.missing.iter().any(|f| f.subject=="p" && f.field.as_deref()==Some("Reservations.State.owner"))));
+        }
+    }
 }

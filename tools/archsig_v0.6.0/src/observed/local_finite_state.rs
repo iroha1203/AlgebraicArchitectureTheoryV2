@@ -192,7 +192,7 @@ pub(super) fn build(
         .slots
         .iter()
         .enumerate()
-        .filter(|(_, s)| support.positions.contains(s))
+        .filter(|(_, s)| support.visible.contains(s))
         .map(|(i, _)| i)
         .collect::<Vec<_>>();
     let free = indexes
@@ -279,6 +279,7 @@ pub(super) fn build(
         ]);
         slot_values.push(wire.clone());
         if let Some(i) = model.slots.iter().position(|f| f == slot) {
+            if !support.visible.contains(slot) { continue; }
             variables.push(Json::obj([
                 (
                     "position",

@@ -660,17 +660,20 @@ fn compute(
             readings.clear();
             read_supports.clear();
             reading_refs.clear();
-            for declaration in &locals {
+            'local_instances: for declaration in &locals {
                 for explicit in super::environment::local_read::materialize(
                     &fixed,
                     &mut b,
                     declaration,
                     request,
                     &expressions,
+                    &[],
                     c,
                 )? {
                     local_scope.merge(&explicit.scope);
+                    let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
                     reasons.extend(explicit.reasons);
+                    if stopped { break 'local_instances; }
                     if explicit.locals.is_empty() {
                         continue;
                     }
