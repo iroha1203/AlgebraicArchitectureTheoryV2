@@ -445,11 +445,19 @@ fn compute(
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
-            patches.push(geometry::Support {
-                carrier: carrier.clone(),
-                positions: positions.clone(),
-                visible: positions.clone(),
-            });
+            let mut law_support = geometry::Support {
+                carrier: carrier.clone(), positions: positions.clone(), visible: positions.clone(),
+            };
+            if !locals.is_empty() && missing.is_empty() {
+                let roots = std::iter::once(*body).chain(guard.iter().copied()).collect::<Vec<_>>();
+                if let Some((carrier, visible)) = super::environment::local_read::fixed_chain_visibility(
+                    &fixed, &roots, &bindings, reading, c,
+                )? {
+                    law_support.carrier = carrier;
+                    law_support.visible = visible;
+                }
+            }
+            patches.push(law_support);
             if let Some((prior_carrier, prior_positions)) = &mut common {
                 prior_carrier.extend(carrier);
                 prior_carrier.sort_by_key(Json::canonical);
