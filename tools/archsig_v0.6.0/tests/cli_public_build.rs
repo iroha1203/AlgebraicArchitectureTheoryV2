@@ -799,3 +799,42 @@ fn explicit_local_instances_cover_each_owned_subject_and_keep_missing_values() {
         }
     }
 }
+
+#[test]
+fn missing_owner_keeps_build_partial_and_needed_reusable() {
+    for missing in [true, false] {
+        let dir = files("public-build-owner", BODY, false);
+        if missing {
+            let path = dir.join("a.json");
+            let map = std::fs::read_to_string(&path).unwrap();
+            let atom = r#"{"id":"op","subject":"p","field":"Build.Part.owner","value":["v","root"],"origin":"model"},"#;
+            assert!(map.contains(atom));
+            std::fs::write(path, map.replace(atom, "")).unwrap();
+        }
+        let requests = ["b=build(R,on=@v/root)", "n=needed($b)"];
+        let result_run = asks(&dir, &requests);
+        let result = saved(&dir, &result_run, if missing { "partial" } else { "complete" }, if missing { 2 } else { 0 });
+        let b = answer(&result, "b");
+        assert_eq!(s(get(b, "status")), if missing { "undetermined" } else { "established" });
+        assert_eq!(has(get(b, "outputs"), "object"), !missing);
+        assert_eq!(has(get(b, "outputs"), "algebra"), !missing);
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        let requirements = arr(get(plan, "requirements"));
+        if missing {
+            assert!(requirements.iter().any(|r| {
+                let field = get(r, "field");
+                s(get(field, "subject")) == "p" && s(get(field, "field")) == "Build.Part.owner"
+            }));
+        } else {
+            assert!(requirements.is_empty());
+        }
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+        for request in requests { args.extend(["--ask", request]); }
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, result_run.code, "{} {}", reused.stdout, reused.stderr);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&again, field).value, get(&result, field).value);
+        }
+    }
+}

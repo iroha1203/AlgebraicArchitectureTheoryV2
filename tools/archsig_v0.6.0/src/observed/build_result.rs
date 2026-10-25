@@ -743,12 +743,33 @@ pub(super) fn validate_node(
     let Witness::Architecture(a) = &v.witness else {
         return Err("buildの元Architectureがない".into());
     };
+    let architecture = &d.source.plan.architecture;
+    let origin = if architecture.complete {
+        native::architecture_origin(g, architecture.reference, 0)?
+    } else {
+        let Some(Payload::Construction(value)) = &g.get(architecture.reference)?.payload else {
+            return Err("未完成buildの元Architectureがnative構成でない".into());
+        };
+        let ConstructionValue {
+            witness: Witness::Architecture(origin),
+            data: D::Pending { ty: T::Architecture, .. },
+        } = value.as_ref() else {
+            return Err("未完成buildの元Architectureが部分構成でない".into());
+        };
+        let context = g.context_at(architecture.reference.0);
+        if context.frame.is_some()
+            || context.iteration.is_some()
+            || context.instance.is_some()
+            || context.case.is_some()
+            || g.requests.get(context.request) != Some(v.witness.request())
+        {
+            return Err("未完成buildの元Architectureがroot Requestでない".into());
+        }
+        origin
+    };
     let p = d.part();
     if !Arc::ptr_eq(a, &d.source.plan.architecture.witness)
-        || !Arc::ptr_eq(
-            a,
-            native::architecture_origin(g, d.source.plan.architecture.reference, 0)?,
-        )
+        || !Arc::ptr_eq(a, origin)
         || n.ty != p.ty
         || n.rule != Rule::Construction(p.construction)
         || n.arguments != p.arguments
