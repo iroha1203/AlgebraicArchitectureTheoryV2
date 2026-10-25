@@ -23,6 +23,8 @@ use crate::{
     types::Type,
 };
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "local_compare.rs"]
+mod comparison;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -42,6 +44,7 @@ struct System {
     equation: NodeRef,
     domain: NodeRef,
     inhabited: bool,
+    fixed_positions: Vec<Fact>,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -91,6 +94,7 @@ impl Data {
         match self.ty() {
             NodeType::Construction(T::LocalSystem) => Some(ProjectionType::LocalSystem),
             NodeType::Construction(T::Diagnostic) => Some(ProjectionType::Diagnostic),
+            NodeType::Construction(T::Comparison) => Some(ProjectionType::Comparison),
             NodeType::Construction(T::Cover) => Some(ProjectionType::Cover),
             NodeType::Construction(T::Topology) => Some(ProjectionType::Topology),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
@@ -125,6 +129,7 @@ impl Data {
                 field.as_str(),
                 "system" | "matching" | "global" | "restriction"
             ),
+            NodeType::Construction(T::Comparison) => field == "finite_map",
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             _ => false,
         };
@@ -225,6 +230,9 @@ fn compute(
         let Witness::Architecture(witness) = &original.witness else {
             return Err("局所系の元Architectureがない".into());
         };
+        if request.kind == QuestionKind::Compare {
+            return comparison::compute(env,g,request,target,base,witness.clone(),c);
+        }
         if request.kind == QuestionKind::Diagnose {
             return diagnose(g, request, target, original, base, witness.clone());
         }
@@ -663,6 +671,13 @@ fn compute(
                 system: None,
             });
         }
+        let mut fixed_positions = positions.clone();
+        for reference in &carrier {
+            let Json::Obj(reference) = reference else { return Err("局所carrierが参照でない".into()); };
+            let Some(Json::Arr(value)) = reference.get("value") else { return Err("局所carrierの値がない".into()); };
+            let [Json::Str(snapshot), Json::Str(subject)] = value.as_slice() else { return Err("局所carrierが原始参照でない".into()); };
+            fixed_positions.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: None, atom: None });
+        }
         let carrier_size = carrier.len();
         let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
         let mut slot_values = vec![];
@@ -988,6 +1003,7 @@ fn compute(
                 equation,
                 domain: states,
                 inhabited,
+                fixed_positions,
             }),
         })
     })
@@ -1326,6 +1342,7 @@ pub(super) fn validate_answer(
         .outputs
         .get("system")
         .or_else(|| answer.outputs.get("diagnostic"))
+        .or_else(|| answer.outputs.get("comparison"))
         .or_else(|| {
             answer
                 .reasons

@@ -594,6 +594,9 @@ pub(super) fn validate_answer(
     r: &Request,
     a: &Answer,
 ) -> Result<(), ValidationFailure> {
+    if super::request::comparison::kind(r).is_ok_and(|k|k=="diagnostics") {
+        return super::local_result::validate_answer(env,graph,r,a);
+    }
     if let Some(expected) = super::public_map::unavailable(env, graph, r)? {
         if a != &expected {
             return Err("比較の依存停止回答が違う".into());
@@ -736,6 +739,9 @@ pub(super) fn evaluate(
     r: &Request,
     control: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
+    if super::request::comparison::kind(r).is_ok_and(|k|k=="diagnostics") {
+        return super::local_result::evaluate(prepared,env,graph,r,control);
+    }
     control.checkpoint(Checkpoint::FiniteIteration)?;
     env.commit_projection_conditions(graph, r)?;
     if let Some(a) = super::public_map::unavailable(env, graph, r)? {
