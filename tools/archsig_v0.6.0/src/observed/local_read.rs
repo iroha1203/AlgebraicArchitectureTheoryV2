@@ -383,6 +383,16 @@ fn state_visibility_inner(
                 pending.push((*body, inner));
             }
             ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {}
+            ExprKind::Index { .. } if !require_chain => {
+                // 束縛済み値の射影は固定係数。観測fieldの射影を自由座標から消さない。
+                let value = env.scoped_ast(id, &variables, &Scope::default(), reading)?;
+                if value.condition_failed || value.condition_pending
+                    || value.support.iter().any(|f| f.field.is_some()) {
+                    return Ok(None);
+                }
+                let Some(value) = value.known_value else { return Ok(None); };
+                subject_carrier(&value, &mut carrier, c)?;
+            }
             ExprKind::Dotted(_) | ExprKind::Field { .. } => {
                 let Some((name, fields)) = field_path(env, id)? else {
                     return Ok(None);
