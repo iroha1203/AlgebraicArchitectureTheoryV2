@@ -123,8 +123,7 @@ pub(super) fn compute(
         }
         identity &= found;
     }
-    let supported = system.finite.is_none()
-        && left_system == right_system
+    let supported = left_system == right_system
         && identity
         && operation.source() == operation.target()
         && operation.source().reading() == witness.construction().reading()
@@ -213,11 +212,17 @@ pub(super) fn compute(
         if le.len() != re.len() {
             return Err("固定局所系のmatching対応が全射でない".into());
         }
-        let global = elements(g, system.domain)?;
+        let lr = field(g, left, "restriction")?;
+        let rr = field(g, right, "restriction")?;
+        let global_domain = field(g, lr, "source")?;
+        if global_domain != field(g, rr, "source")? {
+            return Err("固定局所系の診断の大域状態が一致しない".into());
+        }
+        let global = elements(g, global_domain)?;
         let global_map = state_map(
             &mut b,
-            system.domain,
-            system.domain,
+            global_domain,
+            global_domain,
             &global.iter().map(|r| (*r, *r)).collect::<Vec<_>>(),
         )?;
         let matching_map = state_map(&mut b, lm, rm, &correspondence)?;
@@ -230,8 +235,6 @@ pub(super) fn compute(
                 .map(|(a, z)| (*z, *a))
                 .collect::<Vec<_>>(),
         )?;
-        let lr = field(g, left, "restriction")?;
-        let rr = field(g, right, "restriction")?;
         let lp = pairs(g, lr)?;
         let rp = pairs(g, rr)?;
         for (x, y) in &lp {
