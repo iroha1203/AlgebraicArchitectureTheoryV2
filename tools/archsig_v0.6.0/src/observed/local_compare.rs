@@ -192,20 +192,20 @@ pub(super) fn compute(
         parts: vec![],
     };
     let answer = if !supported && transported.is_none() {
-        let original = &data.source.parts[system.expression.0 - data.source.base];
-        let expression = b.push(
-            original.ty.clone(),
-            original.construction,
-            original.wire.clone(),
-            original
-                .arguments
-                .iter()
-                .copied()
-                .chain([left, right, along])
-                .collect(),
-            None,
-            None,
-        )?;
+        let (dependencies, scope) = if let Some(expression) = system.expression {
+            let original = &data.source.parts[expression.0 - data.source.base];
+            let expression = b.push(
+                original.ty.clone(), original.construction, original.wire.clone(),
+                original.arguments.iter().copied().chain([left, right, along]).collect(),
+                None, None,
+            )?;
+            (vec![expression], b.parts[0].scope.clone())
+        } else {
+            let mut scope = g.get(left)?.scope.clone();
+            scope.merge(&g.get(right)?.scope);
+            scope.merge(&g.get(along)?.scope);
+            (vec![left, right, along], scope)
+        };
         let reason = Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: QuestionKind::Compare,
@@ -213,11 +213,11 @@ pub(super) fn compute(
                 method: "diagnostic_transport".into(),
             },
             request: request.id.clone(),
-            dependencies: vec![expression],
+            dependencies,
             missing: vec![],
             location: None,
         };
-        b.parts[0].reasons.push(reason.clone());
+        if let Some(part) = b.parts.first_mut() { part.reasons.push(reason.clone()); }
         Answer {
             id: request.id.clone(),
             status: Decision::Undetermined,
@@ -225,7 +225,7 @@ pub(super) fn compute(
             claim: None,
             evidence: vec![],
             reasons: vec![reason],
-            scope: b.parts[0].scope.clone(),
+            scope,
         }
     } else if system.integer.is_some() {
         match integer::compare(&mut b, request, left, right, along, transported.as_ref(), c) {

@@ -47,7 +47,7 @@ pub(super) struct Source {
 struct System {
     parameters: NodeRef,
     laws: Vec<NodeRef>,
-    expression: NodeRef,
+    expression: Option<NodeRef>,
     semantic: NodeRef,
     equation: NodeRef,
     domain: NodeRef,
@@ -326,9 +326,6 @@ fn compute(
                 .map(|d| d.name.clone())
                 .collect()
         };
-        if names.is_empty() {
-            return Err(unsupported("空のLaw族の局所系は未実装"));
-        }
         let assignments = match &original.data {
             D::Change(d) => d.overrides(g)?,
             D::Quotient(d) => d.overrides(g)?,
@@ -461,7 +458,7 @@ fn compute(
         let mut expressions = vec![];
         let mut reasons = vec![];
         let mut inhabited = true;
-        let mut common: Option<(Vec<Json>, Vec<Fact>)> = None;
+        let mut common: (Vec<Json>, Vec<Fact>) = (vec![], vec![]);
         let mut readings = vec![];
         let mut reading_refs = vec![];
         let mut projections = vec![];
@@ -500,16 +497,12 @@ fn compute(
                 }
             }
             patches.push(law_support);
-            if let Some((prior_carrier, prior_positions)) = &mut common {
-                prior_carrier.extend(carrier);
-                prior_carrier.sort_by_key(Json::canonical);
-                prior_carrier.dedup();
-                prior_positions.extend(positions);
-                prior_positions.sort();
-                prior_positions.dedup();
-            } else {
-                common = Some((carrier, positions));
-            }
+            common.0.extend(carrier);
+            common.0.sort_by_key(Json::canonical);
+            common.0.dedup();
+            common.1.extend(positions);
+            common.1.sort();
+            common.1.dedup();
             let bindings = bindings
                 .iter()
                 .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
@@ -697,7 +690,7 @@ fn compute(
                 reading_refs.extend([expr, image]);
             }
         }
-        let (mut carrier, mut positions) = common.ok_or("局所系の支持がない")?;
+        let (mut carrier, mut positions) = common;
         let law_supports = patches.clone();
         let mut visible = positions.clone();
         let mut local_instances = vec![];
@@ -814,7 +807,7 @@ fn compute(
                 atom: None,
             });
         }
-        let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
+        let expression = expressions.first().copied();
         let built = match geometry::build(
             env,
             &mut b,
@@ -960,20 +953,21 @@ fn diagnose(
         return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c);
     }
     if degree > 1 {
-        let original = &data.source.parts[system.expression.0 - data.source.base];
         let mut b = Builder {
             g,
             base,
             parts: vec![],
         };
-        let expression = b.push(
-            original.ty.clone(),
-            original.construction,
-            original.wire.clone(),
-            original.arguments.iter().copied().chain([target]).collect(),
-            None,
-            None,
-        )?;
+        let (dependencies, scope) = if let Some(expression) = system.expression {
+            let original = &data.source.parts[expression.0 - data.source.base];
+            let expression = b.push(
+                original.ty.clone(), original.construction, original.wire.clone(),
+                original.arguments.iter().copied().chain([target]).collect(), None, None,
+            )?;
+            (vec![expression], b.parts[0].scope.clone())
+        } else {
+            (vec![target], g.get(target)?.scope.clone())
+        };
         let reason = Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: QuestionKind::Diagnose,
@@ -981,11 +975,11 @@ fn diagnose(
                 method: "finite_matching_degree".into(),
             },
             request: request.id.clone(),
-            dependencies: vec![expression],
+            dependencies,
             missing: vec![],
             location: None,
         };
-        b.parts[0].reasons.push(reason.clone());
+        if let Some(part) = b.parts.first_mut() { part.reasons.push(reason.clone()); }
         let answer = Answer {
             id: request.id.clone(),
             status: Decision::Undetermined,
@@ -993,7 +987,7 @@ fn diagnose(
             claim: None,
             evidence: vec![],
             reasons: vec![reason],
-            scope: b.parts[0].scope.clone(),
+            scope,
         };
         return Ok(Source {
             base,
@@ -1305,7 +1299,20 @@ pub(super) fn validate_answer(
     let D::Local(d) = &v.data else {
         return Err("局所系が別構成".into());
     };
-    if &d.source.request != request || &d.source.answer != answer {
+    if &d.source.request != request {
+        let rebuilt = env.with_request_context(g, request, || {
+            compute(env, g, request, g.nodes.len(), &mut env.control.clone())
+        })?;
+        if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
+            if let ReasonKind::Stop(stop) = &r.kind { Some(stop.clone()) } else { None }
+        }) { return Err(ValidationFailure::Stop(stop)); }
+        return if rebuilt.parts.is_empty() && rebuilt.answer == *answer {
+            Ok(())
+        } else {
+            Err("局所系のノードを生成しない回答の再計算が違う".into())
+        };
+    }
+    if &d.source.answer != answer {
         return Err("局所系の元Request・回答が違う".into());
     }
     env.recheck_local(g, v, r.0)

@@ -4267,3 +4267,76 @@ fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
         for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
     }
 }
+
+#[test]
+fn fixed_localization_without_laws_keeps_one_state_and_reuses_comparisons() {
+    for explicit in [false,true] { for side in ["equation","semantic"] { for degree in [0,1] {
+        let dir = finite_diagnostic_input(&format!("empty-fixed-{explicit}-{side}-{degree}"), false);
+        if explicit {
+            let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+            std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.free; law optional localValid")).unwrap();
+        }
+        let d=format!("d=diagnose($l.system,side={side},degree={degree})");
+        let e=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source)","r=localize($m.candidate.source)",&d,&e,
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+        let result=execute(&dir,"out",&asks);assert_eq!(result.code,0,"{explicit}/{side}/{degree}: {} {}",result.stdout,result.stderr);
+        let j=result_json(&dir,&result);
+        for answer in arr(get(&j,"answers")) {assert_eq!(s(get(answer,"status")),"established");}
+        let diagnostic=get(output(&j,3,"diagnostic"),"value");
+        let matching=get(node(&j,get(diagnostic,"matching")),"value");assert_eq!(arr(get(matching,"elements")).len(),1);
+        let restriction=get(node(&j,get(diagnostic,"restriction")),"value");assert_eq!(arr(get(restriction,"pairs")).len(),1);
+        let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
+        assert_eq!(arr(get(map,"pairs")).len(),1);
+        for condition in arr(get(cmp,"conditions")) {assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}}
+}
+
+#[test]
+fn fixed_empty_law_diagnostics_keep_unsupported_dependencies_without_inventing_an_expression() {
+    let dir=finite_diagnostic_input("empty-fixed-followups",false);
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)","l=localize($m.candidate.source)",
+        "r=localize($m.candidate.source,using=Reservations.choose)",
+        "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)","h=diagnose($l.system,degree=2)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($h)","k=needed($c)"];
+    let result=execute(&dir,"out",&asks);assert_eq!(result.code,2,"{} {}",result.stdout,result.stderr);
+    let j=result_json(&dir,&result);let answers=arr(get(&j,"answers"));
+    for i in [1,2,3,4,7,8] {assert_eq!(s(get(&answers[i],"status")),"established");}
+    for i in [5,6] {
+        assert_eq!(s(get(&answers[i],"status")),"undetermined");
+        let reason=arr(get(&answers[i],"reasons")).iter().find(|r|s(get(r,"code"))=="unsupported_algorithm").unwrap();
+        let deps=arr(get(reason,"dependencies"));assert!(!deps.is_empty());
+        for dep in deps {let value=get(node(&j,dep),"value");assert!(!has(value,"kind") || s(get(value,"kind"))!="source");}
+    }
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
+    let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+}
+
+#[test]
+fn fixed_empty_law_local_reads_keep_missing_observations() {
+    #[path = "common/architecture_environment.rs"] mod fixture;
+    use archsig::canonical::Json;
+    let dir=finite_diagnostic_input("empty-fixed-missing",false);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.held; law optional localValid")).unwrap();
+    let path=dir.join("a.json");let mut map=fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+    let atoms=fixture::atoms(&mut map);let before=atoms.len();
+    atoms.retain(|atom|!matches!(atom,Json::Obj(fields) if fields.get("id")==Some(&Json::str("p-held"))));assert_eq!(before-atoms.len(),1);
+    std::fs::write(path,map.canonical()).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)","l=localize($m.candidate.source)","d=diagnose($l.system)","n=needed($l)","k=needed($d)"];
+    let result=execute(&dir,"out",&asks);assert_eq!(result.code,2,"{} {}",result.stdout,result.stderr);
+    let j=result_json(&dir,&result);let local=&arr(get(&j,"answers"))[1];
+    assert_eq!(s(get(local,"status")),"undetermined");assert!(!has(get(local,"outputs"),"system"));
+    assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+    for i in [3,4] {let plan=get(output(&j,i,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r| {
+        let field=get(r,"field");s(get(field,"field"))=="Reservations.State.held" && s(get(field,"subject"))=="p"
+    }));}
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
+    let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+}
