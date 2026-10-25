@@ -88,7 +88,7 @@ pub(in crate::observed::local_result) fn coordinates(
 pub(super) fn project(a: &Matrix, positions: &[usize]) -> Matrix {
     positions.iter().map(|i| a[*i].clone()).collect()
 }
-pub(super) fn affine_image(
+pub(in crate::observed::local_result) fn affine_image(
     fiber: &Fiber,
     action: &Matrix,
     offset: &[Z],

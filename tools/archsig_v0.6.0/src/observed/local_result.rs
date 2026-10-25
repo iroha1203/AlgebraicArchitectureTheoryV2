@@ -827,6 +827,7 @@ fn compute(
             &projections,
             &local_instances,
             None,
+            None,
             &local_scope,
             c,
         ) {

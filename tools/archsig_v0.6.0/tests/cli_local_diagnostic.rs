@@ -5038,15 +5038,22 @@ fn finite_integer_declared_read_keeps_repaired_guard_and_affine_offset() {
     finite_integer_repaired_fixed_values(true);
 }
 
-#[test]
-fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
+fn finite_integer_read_input(name: &str, known: bool, joint: bool) -> std::path::PathBuf {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの自由整数と固定値。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"},{"name":"z","type":"Z","meaning":"固定値。"}],"alignments":[]}]}]}"#;
     let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
     let digest=&checked.vocabularies["Pair"].digest;
     let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; local Sum(s:State) reads s.x+s.y,s.z; change choose(s:State,b:Bool)=s with{{x=if b then 0 else 1,y=if b then 1 else 0}}; }}");
     let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"非単射readと欠測の独立試験。","locations":[],"note":"固定値zは未観測。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
-    let dir=workdir("finite-integer-noninjective-missing");
+    let law=if joint {law.replace("local Sum", "local Left(s:State) reads s.x; local Sum")} else {law};
+    let map=if known {map.replace(r#""atoms":["#,r#""atoms":[{"id":"z","subject":"s","field":"Pair.State.z","value":"0","origin":"model"},"#)} else {map};
+    let dir=workdir(name);
     for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
+    dir
+}
+
+#[test]
+fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
+    let dir=finite_integer_read_input("finite-integer-noninjective-missing",false,false);
     let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","n=needed($l)"];
     let r=execute(&dir,"out",&asks);
     assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
@@ -5054,9 +5061,10 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
     let answer=&arr(get(&j,"answers"))[1];
     assert!(!has(get(answer,"outputs"),"system"));
     let reasons=arr(get(answer,"reasons"));
-    for code in ["missing_observation","unsupported_algorithm"] {
+    for code in ["missing_observation"] {
         assert!(reasons.iter().any(|r|s(get(r,"code"))==code),"{code}: {reasons:?}");
     }
+    assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));
     let plan=get(output(&j,2,"plan"),"value");
     assert!(arr(get(plan,"requirements")).iter().any(|r| {
         let field=get(r,"field");
@@ -5559,4 +5567,70 @@ fn diagnostic_transport_compares_term_bindings_by_their_values() {
             for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
         }
     }
+}
+
+#[test]
+fn finite_integer_noninjective_reads_use_their_images_and_joint_cover() {
+    for mode in ["plain", "constrained", "tuple", "parallel"] {
+    let dir=finite_integer_read_input(&format!("finite-integer-joint-images-{mode}"),true,true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    let law=match mode {
+        "constrained" => law.replace("local Left", "law required total(s:State):s.x+s.y=1; local Left"),
+        "parallel" => law.replace("local Left(s:State) reads s.x;", "local Delta(s:State) reads s.x-s.y,s.z; local Both(s:State) reads (s.x,s.y),s.z;"),
+        "tuple" => law.replace("reads s.x+s.y,s.z", "reads (s.x+s.y+3,s.z)"),
+        _ => law,
+    };std::fs::write(path,law).unwrap();
+    let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)",
+        "e=diagnose($l.system,side=equation,degree=0)","d=diagnose($l.system,side=equation,degree=1)",
+        "s=diagnose($l.system,side=semantic,degree=0)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let system=get(output(&j,1,"system"),"value");
+    let sum=arr(get(system,"contexts")).iter().find(|r|{
+        let locals=arr(get(get(node(&j,r),"value"),"locals"));
+        locals.len()==1 && s(get(&locals[0],"declaration"))=="Pair.Sum"
+    }).expect("Sumだけの局所がない");
+    let mut count=0;
+    for coefficient in arr(get(system,"coefficients")).iter().filter(|v|get(v,"context").value==sum.value) {
+        count+=1;
+        assert_eq!(num(get(get(node(&j,get(coefficient,"module")),"value"),"free_rank")),if mode=="constrained" {0} else {1});
+    }
+    assert!(count>0);
+    if mode=="parallel" {
+        let delta=arr(get(system,"contexts")).iter().find(|r| {
+            let locals=arr(get(get(node(&j,r),"value"),"locals"));
+            locals.len()==1 && s(get(&locals[0],"declaration"))=="Pair.Delta"
+        }).expect("同じ支持で異なるreadが失われた");
+        assert_ne!(sum.value,delta.value);
+        let state=arr(get(system,"semantic_states")).iter().find(|x|get(x,"context").value==delta.value).unwrap();
+        assert_eq!(arr(get(get(node(&j,get(state,"state_image")),"value"),"elements")).len(),2);
+    }
+    let sem=arr(get(system,"semantic_states")).iter().find(|x|get(x,"context").value==sum.value).unwrap();
+    let image=get(node(&j,get(sem,"state_image")),"value");assert_eq!(arr(get(image,"elements")).len(),1);
+    let parameters=get(node(&j,get(sem,"parameters")),"value");assert_eq!(arr(get(get(parameters,"representation"),"values")).len(),2);
+    for (i,rank) in [(2,if mode=="constrained" {1} else {2}),(3,0)] {
+        let space=get(output(&j,i,"space"),"value");
+        assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
+    }
+    assert_eq!(s(get(&arr(get(&j,"answers"))[4],"status")),"established");
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}
+    let repeat=run(&dir,&args);assert_eq!(repeat.code,r.code,"{} {}",repeat.stdout,repeat.stderr);
+    let again=result_json(&dir,&repeat);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }
+}
+
+#[test]
+fn finite_integer_noninjective_read_requires_joint_visibility() {
+    let dir=finite_integer_read_input("finite-integer-sum-only",true,false);
+    let r=execute(&dir,"out",&["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","n=needed($l)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let answer=&arr(get(&j,"answers"))[1];assert!(!has(get(answer,"outputs"),"system"));
+    let reasons=arr(get(answer,"reasons"));
+    assert!(reasons.iter().any(|r|s(get(r,"code"))=="visibility_insufficient"));
+    assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"established");
 }
