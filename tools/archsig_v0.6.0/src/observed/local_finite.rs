@@ -329,10 +329,10 @@ pub(super) fn compute(
                     if model.integer_equations {
                         for information in explicit.read_information.iter().flatten() {
                             let (slots, matrix) = information;
-                            let fiber = super::super::integer_fiber::solve(
-                                matrix, slots.len(), &vec![0.into(); matrix.len()], c,
+                            let kernel = super::super::environment::local_read::read_kernel(&Type::Z,
+                                matrix, slots.len(), c,
                             )?;
-                            if fiber.rank != slots.len() {
+                            if kernel.iter().flatten().any(|value|value!=&Scalar::Z(0.into())) {
                                 return Err(unsupported("有限作用と整数方程式を持つ非単射local readは未実装"));
                             }
                         }

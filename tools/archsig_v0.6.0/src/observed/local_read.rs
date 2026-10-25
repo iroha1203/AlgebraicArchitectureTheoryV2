@@ -18,8 +18,8 @@ pub(in crate::observed) struct Context {
     pub arguments: Vec<NodeRef>,
     pub reasons: Vec<Reason>,
     pub scope: Scope,
-    pub information: Option<(Vec<Fact>, crate::observed::integer_fiber::Matrix)>,
-    pub read_information: Vec<Option<(Vec<Fact>, crate::observed::integer_fiber::Matrix)>>,
+    pub information: Option<(Vec<Fact>, crate::observed::field_fiber::Matrix)>,
+    pub read_information: Vec<Option<(Vec<Fact>, crate::observed::field_fiber::Matrix)>>,
 }
 fn unsupported(span: (usize, usize), feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
@@ -382,6 +382,9 @@ fn state_visibility_inner(
                 }
                 pending.push((*body, inner));
             }
+            ExprKind::Call { args, .. } if !require_chain && env.builtin(id)? == Some("rat") => {
+                pending.extend(args.iter().map(|id| (*id, variables.clone())));
+            }
             ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {}
             ExprKind::Index { .. } if !require_chain => {
                 // 束縛済み値の射影は固定係数。観測fieldの射影を自由座標から消さない。
@@ -552,7 +555,69 @@ pub(in crate::observed) fn materialize_with_free(
     }
     Ok(contexts)
 }
-// 元の式を自由状態上で評価し、重複・倍率・定数部を含む整数像を保持する。
+// 読取りの係数型を入力定義から得る。異なる型の自由座標を同じ加群へ混ぜない。
+fn free_coefficient(env: &Environment<'_>, slots: &[Fact]) -> Result<Type, ValidationFailure> {
+    let mut coefficient = None;
+    for slot in slots {
+        env.tick()?;
+        let ty = env
+            .field(
+                &slot.snapshot,
+                &slot.subject,
+                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+            )?
+            .ty
+            .erase();
+        if !matches!(ty, Type::Z | Type::Q)
+            || coefficient.as_ref().is_some_and(|prior| prior != &ty)
+        {
+            return Err("局所読取りの自由座標の係数型が混在する".into());
+        }
+        coefficient = Some(ty);
+    }
+    coefficient.ok_or_else(|| "局所読取りの自由座標がない".into())
+}
+pub(in crate::observed) fn read_kernel(
+    ty: &Type,
+    matrix: &crate::observed::field_fiber::Matrix,
+    cols: usize,
+    c: &Control,
+) -> Result<crate::observed::field_fiber::Matrix, ValidationFailure> {
+    if *ty == Type::Z {
+        let integer = matrix
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|v| match v {
+                        Scalar::Z(v) => Ok(v.clone()),
+                        _ => Err(ValidationFailure::from("整数読取りの係数がZでない")),
+                    })
+                    .collect()
+            })
+            .collect::<Result<crate::observed::integer_fiber::Matrix, _>>()?;
+        let result = crate::observed::integer_fiber::solve(
+            &integer,
+            cols,
+            &vec![0.into(); matrix.len()],
+            c,
+        )?;
+        Ok(result
+            .kernel
+            .into_iter()
+            .map(|row| row.into_iter().map(Scalar::Z).collect())
+            .collect())
+    } else {
+        Ok(crate::observed::field_fiber::solve(
+            ty,
+            matrix,
+            cols,
+            &vec![crate::observed::numeric::zero(ty, c)?; matrix.len()],
+            c,
+        )?
+        .kernel)
+    }
+}
+// 元の式を自由状態上で評価し、重複・倍率・定数部を含む係数型上の像を保持する。
 fn affine_read_image(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
@@ -565,16 +630,17 @@ fn affine_read_image(
     visible: &[Fact],
     read_type: &Type,
     c: &mut Control,
-) -> Result<(NodeRef, Vec<Fact>, crate::observed::integer_fiber::Matrix), ValidationFailure> {
+) -> Result<(NodeRef, Vec<Fact>, crate::observed::field_fiber::Matrix), ValidationFailure> {
     use crate::observed::{
         change_result::linear_result as wire, construction_result::ConstructionType as CT,
     };
-    use num_bigint::BigInt as Z;
+    use crate::observed::{numeric, change_result::field_linear_result as scalar_wire};
     let slots = visible
         .iter()
         .filter(|f| free.contains(f))
         .cloned()
         .collect::<Vec<_>>();
+    let coefficient = free_coefficient(env, &slots)?;
     let assignments = env.fixed_values();
     let mut arbitrary = Environment::with_primitive_valuation(env.inputs, &assignments, c)?;
     arbitrary.object = env.object_domain();
@@ -597,18 +663,23 @@ fn affine_read_image(
             (ExprKind::Tuple(ids), Type::Tuple(values)) if ids.len() == values.len() => {
                 pending.extend(ids.iter().zip(values).rev().map(|(i, v)| (*i, v)))
             }
-            (_, Type::Z) => {
+            (_, Type::Z | Type::Q) if value == &coefficient => {
                 let evaluated = arbitrary.scoped_ast(id, &variables, &Scope::default(), reading)?;
                 let form = evaluated.affine.ok_or_else(|| {
                     unsupported(
                         env.inputs.law().exprs[id].span,
-                        "局所読取りが整数アフィンでない",
+                        "局所読取りが係数型上のアフィン式でない",
                     )
                 })?;
-                let (constant, row) = form.state_coordinates(&slots, c)?.ok_or_else(|| {
+                let coordinates = if coefficient == Type::Z {
+                    form.state_coordinates(&slots, c)?.map(|(v,row)| (v.map(Scalar::Z),row.into_iter().map(Scalar::Z).collect()))
+                } else {
+                    form.rational_state_coordinates(&slots,c)?
+                };
+                let (constant, row) = coordinates.ok_or_else(|| {
                     unsupported(
                         env.inputs.law().exprs[id].span,
-                        "局所読取りの整数係数が未確定",
+                        "局所読取りの係数が未確定",
                     )
                 })?;
                 matrix.push(row);
@@ -619,7 +690,7 @@ fn affine_read_image(
             _ => {
                 return Err(unsupported(
                     env.inputs.law().exprs[id].span,
-                    "整数読取り像の非Z成分は未実装",
+                    "局所読取り像の係数型が混在する",
                 ));
             }
         }
@@ -627,7 +698,7 @@ fn affine_read_image(
     let ring = b.push(
         NodeType::Construction(CT::Ring),
         "ring",
-        Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
+        Json::obj([("kind", Json::str("scalar")), ("scalar", coefficient.wire())]),
         vec![],
         None,
         None,
@@ -646,7 +717,7 @@ fn affine_read_image(
                         ("component", Json::Arr(vec![])),
                     ]),
                 ),
-                ("type", Type::Z.wire()),
+                ("type", coefficient.wire()),
             ])
         })
         .collect();
@@ -688,15 +759,17 @@ fn affine_read_image(
         None,
         None,
     )?;
-    let origin = wire::vector(b, source_module, &vec![Z::from(0); slots.len()], c)?;
+    let origin = scalar_wire::vector(b, source_module, &vec![numeric::zero(&coefficient,c)?; slots.len()], c)?;
+    let zero=numeric::zero(&coefficient,c)?;
+    let one=numeric::literal("1",&coefficient,c)?;
     let identity = (0..slots.len())
         .map(|i| {
             (0..slots.len())
-                .map(|j| Z::from(usize::from(i == j)))
+                .map(|j| if i==j {one.clone()} else {zero.clone()})
                 .collect()
         })
         .collect();
-    let embedding = wire::map(b, source_module, source_module, &identity, slots.len(), c)?;
+    let embedding = scalar_wire::map(b, source_module, source_module, &identity, slots.len(), c)?;
     let solutions = b.push(
         NodeType::Construction(CT::EquationSolutionSet),
         "equation_solutions",
@@ -736,8 +809,8 @@ fn affine_read_image(
         None,
     )?;
     let target_module = wire::module(b, ring, offset.len(), "free", vec![expression])?;
-    let linear = wire::map(b, source_module, target_module, &matrix, slots.len(), c)?;
-    let offset = wire::vector(b, target_module, &offset, c)?;
+    let linear = scalar_wire::map(b, source_module, target_module, &matrix, slots.len(), c)?;
+    let offset = scalar_wire::vector(b, target_module, &offset, c)?;
     let map = b.push(
         NodeType::Construction(CT::StateMap),
         "state_map",
@@ -1087,7 +1160,7 @@ fn materialize_instance(
         } else {
             states.iter().collect()
         };
-        let mut information: Vec<(Vec<Fact>, crate::observed::integer_fiber::Matrix)> = vec![];
+        let mut information: Vec<(Vec<Fact>, crate::observed::field_fiber::Matrix)> = vec![];
         for id in reads {
             c.checkpoint(Checkpoint::Localize)?;
             let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
@@ -1179,7 +1252,7 @@ fn materialize_instance(
             let information_before = information.len();
             let image = if visible.iter().any(|slot| free.contains(slot)) {
                 if matches!(ty, Type::Z | Type::Q) && visible.len() == 1 && field_path(env, *id)?.is_some() {
-                    information.push((visible.clone(), vec![vec![1.into()]]));
+                    information.push((visible.clone(), vec![vec![crate::observed::numeric::literal("1", &ty, c)?]]));
                     b.push(
                         NodeType::Domain,
                         "domain",
@@ -1264,18 +1337,19 @@ fn materialize_instance(
             });
         }
         if !information.is_empty() {
-            use num_bigint::BigInt as Z;
             let mut slots = information
                 .iter()
                 .flat_map(|(slots, _)| slots.iter().cloned())
                 .collect::<Vec<_>>();
             slots.sort();
             slots.dedup();
+            let coefficient = free_coefficient(env, &slots)?;
+            let zero = crate::observed::numeric::zero(&coefficient,c)?;
             let mut matrix = vec![];
             for (local, rows) in &information {
                 for row in rows {
                     c.checkpoint(Checkpoint::Localize)?;
-                    let mut expanded = vec![Z::from(0); slots.len()];
+                    let mut expanded = vec![zero.clone(); slots.len()];
                     for (slot, value) in local.iter().zip(row) {
                         expanded[slots
                             .iter()
@@ -1285,16 +1359,11 @@ fn materialize_instance(
                     matrix.push(expanded);
                 }
             }
-            let kernel = crate::observed::integer_fiber::solve(
-                &matrix,
-                slots.len(),
-                &vec![Z::from(0); matrix.len()],
-                c,
-            )?;
+            let kernel = read_kernel(&coefficient, &matrix, slots.len(), c)?;
             out.information = Some((slots.clone(), matrix));
             // 全readから復元できた原始座標を、重なりの読取りとして保持する。
             for (i, slot) in slots.iter().enumerate() {
-                if kernel.kernel[i].iter().any(|x| x != &Z::from(0)) {
+                if kernel[i].iter().any(|x| x != &zero) {
                     continue;
                 }
                 if out
