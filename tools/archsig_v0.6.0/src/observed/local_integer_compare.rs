@@ -319,10 +319,15 @@ fn kernel_cokernel(
         } else {
             Decision::Refuted
         };
+    // Smith表示には自明なtorsion因子がないため、生成元総数が零 iff 核・余核が零。
+    let generators = Z::from(kq.free_rank) + Z::from(kq.torsion.len())
+        + Z::from(cq.free_rank) + Z::from(cq.torsion.len());
+    let count = change_result::value(b, &Scalar::Z(generators))?;
+    let zero = change_result::value(b, &Scalar::Z(Z::zero()))?;
     let condition = b.proposition(
-        "isomorphism",
-        vec![hmap],
-        vec![kernel, cokernel, kernel_inclusion, projection],
+        "equal",
+        vec![count, zero],
+        vec![hmap, kernel, cokernel, kernel_inclusion, projection],
         status,
     )?;
     Ok((kernel, cokernel, condition, status))

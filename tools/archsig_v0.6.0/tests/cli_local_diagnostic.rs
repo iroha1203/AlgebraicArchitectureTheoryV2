@@ -3904,6 +3904,14 @@ fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
         let r=execute(&dir,"out",&asks);assert_eq!(r.code,if degree==0{1}else{0},"{step}/{degree}: {} {}",r.stdout,r.stderr);
         let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
         assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),if degree==0{"refuted"}else{"established"});
+        let group=arr(get(cmp,"conditions")).iter().map(|r|node(&j,r)).find(|n| {
+            let v=get(n,"value");
+            s(get(v,"predicate"))=="equal" && matches!(&get(node(&j,&arr(get(v,"operands"))[0]),"value").value,archsig::json::JValue::Str(_))
+        }).expect("整数値の等値として群の零条件を保持する");
+        let operands=arr(get(get(group,"value"),"operands"));assert_eq!(operands.len(),2);
+        assert_eq!(s(get(node(&j,&operands[0]),"value")),if degree==0{"1"}else{"0"});
+        assert_eq!(s(get(node(&j,&operands[1]),"value")),"0");
+        assert_eq!(s(get(get(group,"judgment"),"status")),if degree==0{"refuted"}else{"established"});
         let kernel=get(node(&j,get(cmp,"kernel")),"value");let cokernel=get(node(&j,get(cmp,"cokernel")),"value");
         assert_eq!(num(get(kernel,"free_rank")),0);assert!(arr(get(kernel,"torsion")).is_empty());
         assert_eq!(num(get(cokernel,"free_rank")),if step==0 && degree==0 {1}else{0});
