@@ -53,6 +53,7 @@ pub enum ProjectionType {
     Cohomology,
     Class,
     Module,
+    ModuleMap,
     Ring,
     Vector,
     Cover,
@@ -205,6 +206,10 @@ fn project_inner(
             "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystemの非公開射影".into()),
         },
         (ProjectionType::Comparison,Field(f)) if f=="finite_map" => conditional(ProjectionType::StateMap),
+        (ProjectionType::Comparison,Field(f)) if f=="cohomology_map" => conditional(ProjectionType::ModuleMap),
+        (ProjectionType::Comparison,Field(f)) if matches!(f.as_str(),"kernel"|"cokernel") => conditional(ProjectionType::Module),
+        (ProjectionType::Comparison,Field(f)) if f=="class_transport" => conditional(ProjectionType::Proposition),
+        (ProjectionType::ModuleMap,Field(f)) if matches!(f.as_str(),"source"|"target") => exact(ProjectionType::Module),
         (ProjectionType::Module,Field(f)) => match f.as_str() {
             "ring"=>exact(ProjectionType::Ring), "free_rank"=>exact(ProjectionType::Law(Type::Z)),
             "torsion"=>exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))), _=>Err("Moduleの非公開射影".into()),

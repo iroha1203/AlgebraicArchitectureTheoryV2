@@ -1,6 +1,8 @@
 //! 固定局所系の有限診断を、実際に恒等作用するOperationに沿って比較する。
 use super::*;
 use crate::observed::public_compose;
+#[path = "local_integer_compare.rs"]
+mod integer;
 fn local(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     match &g.get(r)?.payload {
         Some(Payload::Construction(v)) => match &v.data {
@@ -121,7 +123,7 @@ pub(super) fn compute(
         }
         identity &= found;
     }
-    let supported = system.integer.is_none() && system.finite.is_none()
+    let supported = system.finite.is_none()
         && left_system == right_system
         && identity
         && operation.source() == operation.target()
@@ -168,6 +170,22 @@ pub(super) fn compute(
             evidence: vec![],
             reasons: vec![reason],
             scope: b.parts[0].scope.clone(),
+        }
+    } else if system.integer.is_some() {
+        match integer::compare(&mut b, request, left, right, along, c) {
+            Ok(answer) => answer,
+            Err(ValidationFailure::Stop(stop)) => {
+                let mut scope = g.get(left)?.scope.clone();
+                scope.merge(&g.get(right)?.scope);
+                scope.merge(&g.get(along)?.scope);
+                Answer {
+                    id: request.id.clone(), status: Decision::Undetermined,
+                    outputs: BTreeMap::new(), claim: None, evidence: vec![],
+                    reasons: vec![Reason {kind: ReasonKind::Stop(stop),request:request.id.clone(),
+                        dependencies:vec![left,right,along],missing:vec![],location:None}], scope,
+                }
+            }
+            Err(error) => return Err(error),
         }
     } else {
         let lm = field(g, left, "matching")?;
