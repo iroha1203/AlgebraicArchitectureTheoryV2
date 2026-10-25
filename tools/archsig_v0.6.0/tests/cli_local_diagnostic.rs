@@ -5634,3 +5634,35 @@ fn finite_integer_noninjective_read_requires_joint_visibility() {
     assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));
     assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"established");
 }
+
+#[test]
+fn finite_integer_diagnostics_transport_noninjective_read_images() {
+    for mode in ["plain","parallel","collapsed"] { for degree in [0,1] {
+        let dir=workdir(&format!("finite-integer-read-transport-{mode}-{degree}"));
+        std::fs::write(dir.join("d.json"),include_str!("fixtures/reservations.atoms.json")).unwrap();
+        let map=include_str!("fixtures/configuration-operation.archmap.json")
+            .replace("\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"4\"", "\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"2\"")
+            .replace("\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"3\"", "\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"1\"");
+        std::fs::write(dir.join("a.json"),map).unwrap();
+        let extra=if mode!="plain" { "local Delta(s:State) reads s.free-s.held;" } else { "" };
+        let mut law=include_str!("fixtures/public-compose.law").replace("view holdings", &format!(
+            "law optional localValid(s:State):s.free=2; local Sum(s:State) reads s.free+s.held; local Left(s:State) reads s.free; {extra} change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3,held=if b then 0 else -1}}; view holdings"));
+        if mode=="collapsed" {law=law.replace("free=if b then 2 else 3,held=if b then 0 else -1","free=2,held=0");}
+        std::fs::write(dir.join("l.law"),law).unwrap();
+        let ld=format!("d=diagnose($l.system,side=semantic,degree={degree})");
+        let rd=format!("e=diagnose($r.system,side=semantic,degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/r,using=Reservations.choose)",
+            &ld,&rd,"c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"];
+        let r=execute(&dir,"out",&asks); assert_eq!(r.code,0,"{mode}/{degree}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
+        let map=get(node(&j,get(cmp,"finite_map")),"value");
+        let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),if mode=="collapsed"{1}else{2});
+        for pair in pairs {let pair=arr(pair);assert_eq!(get(node(&j,&pair[0]),"value").value,get(node(&j,&pair[1]),"value").value);}
+        for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}
+}
