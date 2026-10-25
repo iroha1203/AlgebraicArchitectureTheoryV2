@@ -214,9 +214,6 @@ pub(super) fn analyze(
         }
         requirements.extend(rows.into_iter().map(|row| (law.name.clone(), row)));
     }
-    if requirements.is_empty() {
-        return Err(unsupported("空のLaw族の有限change局所系は未実装"));
-    }
     let mut candidate_points = vec![];
     for candidate in &candidates.rows {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
