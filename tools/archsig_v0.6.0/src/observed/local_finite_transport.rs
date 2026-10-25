@@ -2,6 +2,9 @@
 use super::integer::{Renaming, dependencies, list, record, reference_value};
 use super::*;
 use std::collections::BTreeSet;
+use crate::observed::integer_fiber::{self, Matrix};
+use num_traits::Zero;
+use crate::observed::local_result::integer as affine;
 pub(super) struct Maps {
     pub global: Vec<(NodeRef, NodeRef)>,
     pub matching: Vec<(NodeRef, NodeRef)>,
@@ -155,13 +158,49 @@ fn position_map(
     }
     Ok(Some(result))
 }
+enum Coordinates {
+    Fields(Vec<usize>),
+    Read(Matrix, usize),
+}
+fn read_coordinates(
+    a: &affine::Diagram,
+    b: &affine::Diagram,
+    i: usize,
+    j: usize,
+    rename: &Renaming,
+    c: &mut Control,
+) -> Result<Option<Coordinates>, ValidationFailure> {
+    let Some(positions) = position_map(&a.slots, &b.slots, rename, c)? else { return Ok(None); };
+    if a.slots.len() != b.slots.len() { return Ok(None); }
+    let n = a.slots.len();
+    let mut permutation = vec![vec![num_bigint::BigInt::zero(); n]; n];
+    for (i,j) in positions.iter().enumerate() { permutation[*j][i] = 1.into(); }
+    let source = &a.readings[i];
+    let target = &b.readings[j];
+    let transported = integer_fiber::multiply(&target.map, &permutation, n, c)?;
+    let reading = affine::linear::Reading::new(&transported, n, c)?;
+    // 有限の試料が偶然一致するだけでは、異なる read の context を同一視しない。
+    if !source.contains(&reading,c)? || !reading.contains(source,c)? { return Ok(None); }
+    let map = integer_fiber::multiply(&transported, &source.lift, source.map.len(), c)?;
+    Ok(Some(Coordinates::Read(map,source.map.len())))
+}
 fn state_matches(
     a: &Scalar,
     b: &Scalar,
-    positions: &[usize],
+    coordinates: &Coordinates,
     rename: &Renaming,
     c: &mut Control,
 ) -> Result<bool, ValidationFailure> {
+    let positions = match coordinates {
+        Coordinates::Fields(p) => p,
+        Coordinates::Read(map, width) => {
+            let (Scalar::Tuple(a),Scalar::Tuple(b)) = (a,b) else { return Ok(false); };
+            if a.len()!=*width || b.len()!=map.len() { return Ok(false); }
+            let a = a.iter().map(affine::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+            let b = b.iter().map(affine::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+            return Ok(affine::linear::apply(map,&a,c)? == b);
+        }
+    };
     if matches!((a, b), (Scalar::Unit, Scalar::Unit)) {
         return Ok(positions.is_empty());
     }
@@ -342,7 +381,7 @@ pub(super) fn between(
     let mut maps = vec![];
     let mut outside_count = num_bigint::BigInt::from(0);
     let mut outside_image = None;
-    for x in &a {
+    for (i,x) in a.iter().enumerate() {
         let Some(mut carrier) = array(member(record(g, x.context)?, "carrier")?)?
             .iter()
             .map(|v| rename.carrier(v))
@@ -383,9 +422,12 @@ pub(super) fn between(
             {
                 continue;
             }
-            let Some(p) = position_map(&x.slots, &y.slots, &rename, c)? else {
-                continue;
+            let p = match (&l.integer,&r.integer) {
+                (Some(a),Some(b)) => read_coordinates(a,b,i,j,&rename,c)?,
+                (None,None) => position_map(&x.slots,&y.slots,&rename,c)?.map(Coordinates::Fields),
+                _ => None,
             };
+            let Some(p) = p else { continue; };
             let Some(map) = injection(g, &x.values, &y.values, c, |a, b, c| {
                 state_matches(a, b, &p, &rename, c)
             })?
