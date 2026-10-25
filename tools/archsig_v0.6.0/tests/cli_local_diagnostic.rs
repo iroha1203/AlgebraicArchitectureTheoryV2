@@ -2812,3 +2812,56 @@ fn finite_change_preserves_unbound_law_domains_and_bound_selection_in_scope() {
     let after = result_json(&dir, &r);
     for field in ["answers", "nodes"] { assert_eq!(get(&result,field).value,get(&after,field).value); }
 }
+
+#[test]
+fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
+    for constant in [false, true] {
+        let dir = implicit_multiple_input("finite-unused-slot", true, Some(false));
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
+        std::fs::write(path,law).unwrap();
+        explicit_local(&dir, if constant {
+            "change choose(t:State,b:Bool)=t with {flag=b,other=false};"
+        } else {
+            "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};"
+        });
+        let asks = ["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
+        let r = execute(&dir,"out",&asks);
+        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+        let j = result_json(&dir,&r);
+        let system = get(output(&j,1,"system"),"value");
+        let cover = get(node(&j,get(system,"cover")),"value");
+        let context = arr(get(cover,"patches")).iter().map(|r| get(node(&j,r),"value")).find(|v| {
+            let deps = arr(get(v,"dependencies"));
+            deps.len()==1 && s(get(&deps[0],"field"))=="Fixed.State.other"
+        }).unwrap();
+        let reading = arr(get(context,"readings")).iter().find(|r| {
+            let e = get(node(&j,get(r,"expression")),"value");
+            s(get(e,"kind"))=="source" && s(get(get(e,"location"),"input"))=="definition0"
+        }).unwrap();
+        assert_eq!(s(get(reading,"type")),"Bool");
+        let expr = get(node(&j,get(reading,"expression")),"value");
+        assert_eq!(s(get(get(expr,"location"),"pointer")),"/vocabularies/0/declarations/0/fields/1");
+        let bindings = arr(get(expr,"bindings"));
+        assert_eq!(bindings.len(),1);
+        let subject = get(node(&j,get(&bindings[0],"value")),"value");
+        assert_eq!(s(&arr(subject)[1]),"s");
+        let image = get(node(&j,get(reading,"domain")),"value");
+        let elements = arr(get(image,"elements"));
+        assert_eq!(elements.len(),2);
+        for expected in [false,true] {
+            assert!(elements.iter().any(|r| matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
+        }
+        for (i,count) in [(2,2),(3,if constant {1} else {2})] {
+            let d = get(output(&j,i,"diagnostic"),"value");
+            let global = get(node(&j,get(d,"global")),"value");
+            assert_eq!(arr(get(get(global,"representation"),"values")).len(),count);
+        }
+        let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+        for ask in &asks { args.extend(["--ask",*ask]); }
+        let r = run(&dir,&args);
+        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+        let after = result_json(&dir,&r);
+        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&after,field).value); }
+    }
+}

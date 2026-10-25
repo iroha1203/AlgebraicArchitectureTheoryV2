@@ -203,7 +203,7 @@ pub(super) fn compute(
             read_supports.push(read.support.clone());
         }
         let mut patches = model.law_supports.clone();
-        for slot in &model.slots {
+        for (position, slot) in model.slots.iter().enumerate() {
             if patches.iter().any(|p| p.positions.contains(slot)) {
                 continue;
             }
@@ -213,14 +213,51 @@ pub(super) fn compute(
                 subject: slot.subject.clone(),
                 entity: subject.ty.clone(),
             };
-            patches.push(geometry::Support {
+            let support = geometry::Support {
                 carrier: vec![Json::obj([
                     ("type", value.ty().wire()),
                     ("value", value.wire()),
                 ])],
                 positions: vec![slot.clone()],
                 visible: vec![slot.clone()],
-            });
+            };
+            let subject_ref = change_result::value(&mut b, &value)?;
+            let declaration = &env.inputs.definitions().declarations[&subject.ty];
+            let (parameters, fields) = declaration.signature.record_fields().ok_or("singletonの原始recordがない")?;
+            let field_name = slot.field.as_ref().ok_or("singletonのfieldがない")?;
+            let field = parameters.iter().chain(fields).find(|field| {
+                format!("{}.{}", subject.ty, field.name) == *field_name
+            }).ok_or("singletonの原始field宣言がない")?;
+            let ty = model.slot_types[position].clone();
+            // 未出現の候補位置は、原始field宣言の読取りをsingleton座標とする。
+            let expression = b.push(
+                NodeType::Expression(ty.clone()),
+                "expression",
+                Json::obj([
+                    ("kind", Json::str("source")),
+                    ("location", crate::result::location_wire(&field.location)),
+                    ("parameters", Json::Arr(vec![])),
+                    ("bindings", Json::Arr(vec![Json::obj([
+                        ("name", Json::str("subject")), ("value", subject_ref.wire())
+                    ])])),
+                ]),
+                vec![subject_ref], None, None,
+            )?;
+            let mut image_values = vec![];
+            for point in &model.points {
+                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                if !image_values.contains(&point[position]) {
+                    image_values.push(point[position].clone());
+                }
+            }
+            let items = image_values.iter().map(|v| change_result::value(&mut b,v)).collect::<Result<Vec<_>,_>>()?;
+            let image = domain(&mut b, &ty, &items)?;
+            readings.push(Json::obj([
+                ("expression", expression.wire()), ("type", ty.wire()), ("domain", image.wire())
+            ]));
+            read_refs.extend([expression, image]);
+            read_supports.push(support.clone());
+            patches.push(support);
         }
         let mut global = geometry::Support {
             carrier: vec![],
