@@ -130,12 +130,15 @@ pub(super) fn compute(
         && operation.source().reading() == witness.construction().reading()
         && operation.source().root() == witness.construction().root()
         && (object == from || object == to);
+    let transported = if !supported && system.integer.is_some() {
+        integer::between(env, g, left, right, along, c)?
+    } else { None };
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
-    let answer = if !supported {
+    let answer = if !supported && transported.is_none() {
         let original = &data.source.parts[system.expression.0 - data.source.base];
         let expression = b.push(
             original.ty.clone(),
@@ -154,7 +157,7 @@ pub(super) fn compute(
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: QuestionKind::Compare,
                 operand_types: vec![Type::Bool],
-                method: "finite_diagnostic_transport".into(),
+                method: "diagnostic_transport".into(),
             },
             request: request.id.clone(),
             dependencies: vec![expression],
@@ -172,7 +175,7 @@ pub(super) fn compute(
             scope: b.parts[0].scope.clone(),
         }
     } else if system.integer.is_some() {
-        match integer::compare(&mut b, request, left, right, along, c) {
+        match integer::compare(&mut b, request, left, right, along, transported.as_ref(), c) {
             Ok(answer) => answer,
             Err(ValidationFailure::Stop(stop)) => {
                 let mut scope = g.get(left)?.scope.clone();

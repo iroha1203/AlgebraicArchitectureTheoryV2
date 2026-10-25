@@ -3768,3 +3768,122 @@ fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_di
         let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
+
+
+fn integer_transport_input(name: &str, reorder: bool) -> std::path::PathBuf {
+    #[path = "common/architecture_environment.rs"] mod fixture;
+    use archsig::canonical::Json;
+    let dir=diagnostic_compare_input(name,false,true);
+    let mut map=fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(fields)=atom else{panic!("atom")};
+        match fields.get("id") {
+            Some(Json::Str(id)) if id=="r-free"=>{fields.insert("value".into(),Json::str("2"));},
+            Some(Json::Str(id)) if id=="s-free"=>{fields.insert("value".into(),Json::str("1"));},
+            _=>{},
+        }
+    }
+    fn rename(j:&mut Json) {
+        match j {
+            Json::Str(s)=>{*s=match s.as_str(){"r"=>"transport_z","s"=>"transport_a","f"=>"transport_zz","l"=>"transport_ll","t"=>"transport_aa",_=>return}.into();},
+            Json::Arr(xs)=>for x in xs{rename(x)},
+            Json::Obj(xs)=>for x in xs.values_mut(){rename(x)}, _=>{},
+        }
+    }
+    if reorder {rename(&mut map);}
+    std::fs::write(dir.join("a.json"),map.canonical()).unwrap();
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "view rank(n:Z):Z=n; change move(s:State,d:Z)=s with{free=s.free+d}; law optional localValid")).unwrap();
+    dir
+}
+
+#[test]
+fn integer_diagnostics_transport_between_architectures_and_reordered_contexts() {
+    for reorder in [false,true] {for (side,degree) in [("equation",0),("equation",1),("semantic",0),("semantic",1)] {
+        let dir=integer_transport_input(&format!("integer-transport-{reorder}-{side}-{degree}"),reorder);
+        let target=format!("r=localize($m.candidate.target,law=Reservations.localValid,s=@v/{},using=Reservations.move)",if reorder{"transport_z"}else{"r"});
+        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.move)",&target,&ld,&rd,
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cohomology_map.target.free_rank)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{reorder}/{side}/{degree}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
+        assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
+        assert_eq!(s(get(output(&j,6,"value"),"value")),if degree==0{"1"}else{"0"});
+        let chain=get(node(&j,get(cmp,"cochain_map")),"value");
+        assert_ne!(get(chain,"source").value,get(chain,"target").value);
+        for field in ["kernel","cokernel"] {assert_eq!(num(get(get(node(&j,get(cmp,field)),"value"),"free_rank")),0);}
+        assert_eq!(has(cmp,"class_transport"),degree==1);
+        if degree==1{assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established");}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}
+        let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}
+}
+
+
+#[test]
+fn integer_diagnostic_transport_moves_nonzero_classes_with_its_actual_matrix() {
+    let dir=integer_transport_input("integer-transport-nonzero",true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "law optional loopShift(e:Reserve):e.to.free-e.from.free=1; local Edge(e:Reserve) reads e.from.free,e.to.free; law optional localValid")).unwrap();
+    let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.loopShift,using=Reservations.move)",
+        "r=localize($m.candidate.target,law=Reservations.loopShift,using=Reservations.move)",
+        "d=diagnose($l.system)","e=diagnose($r.system)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"]);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let coordinates=|i| {
+        let class=get(output(&j,i,"class"),"value");let vector=get(node(&j,get(class,"coordinates")),"value");
+        arr(get(vector,"coordinates")).iter().map(|r|s(get(node(&j,r),"value")).parse::<i64>().unwrap()).collect::<Vec<_>>()
+    };
+    let x=coordinates(3);let y=coordinates(4);assert!(x.iter().any(|v|*v!=0));assert!(y.iter().any(|v|*v!=0));
+    let cmp=get(output(&j,5,"comparison"),"value");
+    assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
+    let map=get(node(&j,get(cmp,"cohomology_map")),"value");let columns=arr(get(map,"columns"));
+    assert_eq!(columns.len(),x.len());
+    let image=(0..y.len()).map(|i|columns.iter().zip(&x).map(|(column,x)|s(get(node(&j,&arr(column)[i]),"value")).parse::<i64>().unwrap()*x).sum::<i64>()).collect::<Vec<_>>();
+    assert_eq!(image,y);
+    let chain=get(node(&j,get(cmp,"cochain_map")),"value");let mut changed=false;
+    for component in arr(get(chain,"components")) {
+        let map=get(node(&j,component),"value");
+        for (col,column) in arr(get(map,"columns")).iter().enumerate(){for (row,x) in arr(column).iter().enumerate(){
+            let x=s(get(node(&j,x),"value")).parse::<i64>().unwrap();changed|=x!=i64::from(row==col);
+        }}
+    }
+    assert!(changed,"patchの並び替えを反映するcochain成分がない");
+}
+
+
+#[test]
+fn integer_diagnostic_transport_does_not_use_equal_ranks_as_a_state_map() {
+    #[path = "common/architecture_environment.rs"] mod fixture;
+    use archsig::canonical::Json;
+    for image in [false,true] {
+        let dir=integer_transport_input(&format!("integer-transport-mismatch-{image}"),false);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(&path,law.replace("law optional localValid", "change even(s:State,d:Z)=s with{free=s.free+2*d}; law optional localValid")).unwrap();
+        if !image {
+            let mut map=fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
+            for atom in fixture::atoms(&mut map){let Json::Obj(fields)=atom else{panic!("atom")};
+                if fields.get("id")==Some(&Json::str("r-free")){fields.insert("value".into(),Json::str("3"));}
+            }
+            std::fs::write(dir.join("a.json"),map.canonical()).unwrap();
+        }
+        let target=format!("r=localize($m.candidate.target,law=Reservations.localValid,s=@v/r,using=Reservations.{})",if image{"even"}else{"move"});
+        let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.move)",&target,
+            "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        for i in [3,4] {let space=get(output(&j,i,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),1);}
+        let answer=&arr(get(&j,"answers"))[5];assert_eq!(s(get(answer,"status")),"undetermined");
+        assert!(!has(get(answer,"outputs"),"comparison"));
+        assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+        assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
+    }
+}
