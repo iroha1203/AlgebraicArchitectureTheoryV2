@@ -24,6 +24,10 @@ pub(super) struct Diagram {
     pub contexts: Vec<NodeRef>,
     pub cover: NodeRef,
     pub solutions: Vec<[NodeRef; 2]>,
+    pub missing: Vec<Fact>,
+    pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
+    pub law_refs: Vec<NodeRef>,
+    pub assignments: Vec<(Fact, Scalar)>,
 }
 struct Model {
     change: String,
@@ -31,9 +35,10 @@ struct Model {
     instances: Vec<(Scalar, Vec<usize>)>,
     action: change_affine::Linear,
     requirements: Vec<(String, Vec<(String, Scalar)>)>,
-    laws: Vec<(Matrix, Vec<Z>)>,
+    laws: Vec<(Matrix, Vec<Option<Z>>)>,
     supports: Vec<geometry::Support>,
     scope: Scope,
+    missing: Vec<Fact>,
 }
 fn analyze(
     env: &Environment<'_>,
@@ -159,8 +164,11 @@ fn analyze(
             pending,
         )?);
     }
-    if !missing.is_empty() {
-        return Err(unsupported("整数局所系の固定観測に欠測がある"));
+    missing.extend(pending.facts.iter().cloned());
+    missing.sort();
+    missing.dedup();
+    if requirements.is_empty() {
+        return Err(unsupported("空の整数局所Law族は未実装"));
     }
     let instances = subjects
         .into_iter()
@@ -187,6 +195,7 @@ fn analyze(
         laws,
         supports,
         scope,
+        missing,
     })
 }
 
@@ -227,7 +236,7 @@ fn fibers(
             }
             rhs.extend(model.laws[i].1.iter().cloned());
         }
-        let eq = linear::solve(&d, positions.len(), &rhs, c)?;
+        let eq = linear::solve_partial(&d, positions.len(), &rhs, c)?;
         let action = linear::project(&model.action.action, &positions);
         let offset = positions
             .iter()
@@ -238,9 +247,9 @@ fn fibers(
         let shifted = rhs
             .iter()
             .zip(shift)
-            .map(|(x, y)| x - y)
+            .map(|(x, y)| x.as_ref().map(|x| x - y))
             .collect::<Vec<_>>();
-        let parameters = linear::solve(&da, model.action.parameter_count, &shifted, c)?;
+        let parameters = linear::solve_partial(&da, model.action.parameter_count, &shifted, c)?;
         let sem = linear::affine_image(&parameters, &action, &offset, c)?;
         free.push(positions);
         equation.push(eq);
@@ -424,7 +433,10 @@ pub(super) fn compute(
             .iter()
             .flat_map(|x| x.reasons.iter().cloned())
             .collect::<Vec<_>>();
-        if !reasons.is_empty() {
+        if reasons.iter().any(|r| {
+            !matches!(r.kind, ReasonKind::Missing)
+                || r.missing.iter().any(|f| !model.missing.contains(f))
+        }) {
             return Ok(Source {
                 base,
                 parts: std::mem::take(&mut b.parts),
@@ -780,6 +792,10 @@ pub(super) fn compute(
         )?;
         let solutions = states.iter().map(|s| [s.equation, s.semantic]).collect();
         let diagram = Diagram {
+            missing: model.missing.clone(),
+            requirements: model.requirements.clone(),
+            law_refs: laws.clone(),
+            assignments: assignments.clone(),
             solutions,
             slots: model.action.slots.clone(),
             free,
@@ -842,10 +858,17 @@ fn emit_system(
     let mut conditions = vec![];
     let mut sheaf_checks = vec![];
     for (side, semantic) in [("equation", false), ("semantic", true)] {
-        let cover_holds = linear::glues(&diagram, &diagram.patches, 0, semantic, c)?;
-        let mut topology_holds = true;
-        for (target, sources) in &checks {
-            topology_holds &= linear::glues(&diagram, sources, *target, semantic, c)?;
+        let known = model.missing.is_empty();
+        let cover_holds = if known {
+            linear::glues(&diagram, &diagram.patches, 0, semantic, c)?
+        } else {
+            false
+        };
+        let mut topology_holds = known;
+        if known {
+            for (target, sources) in &checks {
+                topology_holds &= linear::glues(&diagram, sources, *target, semantic, c)?;
+            }
         }
         for (scope, object, holds) in [
             ("cover", diagram.cover, cover_holds),
@@ -857,7 +880,9 @@ fn emit_system(
                     .chain(restriction_refs.iter().copied())
                     .collect(),
                 vec![],
-                if holds {
+                if !known {
+                    Decision::Undetermined
+                } else if holds {
                     Decision::Established
                 } else {
                     Decision::Refuted
@@ -1009,9 +1034,20 @@ fn emit_system(
         ]),
         claim: Some(proposition),
         evidence: vec![],
-        reasons: vec![],
+        reasons: if model.missing.is_empty() {
+            vec![]
+        } else {
+            vec![Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: expressions.clone(),
+                missing: model.missing.clone(),
+                location: None,
+            }]
+        },
         scope: model.scope,
     };
+    b.parts[system.0 - base].reasons = answer.reasons.clone();
     let saved = System {
         parameters: states[0].parameters,
         laws,

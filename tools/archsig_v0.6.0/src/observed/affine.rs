@@ -192,12 +192,17 @@ impl Form {
         Ok(Self { ty: Type::Z, constant: Scalar::Z(BigInt::zero()),
             coefficients: BTreeMap::from([(Symbol::State(position.clone()), Scalar::Z(BigInt::one()))]) })
     }
-    pub(in crate::observed) fn state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(BigInt, Vec<BigInt>)>, ValidationFailure> {
+    pub(in crate::observed) fn state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(Option<BigInt>, Vec<BigInt>)>, ValidationFailure> {
         self.check(c)?;
         let Scalar::Z(constant) = &self.constant else { return Ok(None); };
+        let mut known = true;
         for key in self.coefficients.keys() {
             tick(c)?;
-            if !matches!(key, Symbol::State(position) if positions.contains(position)) { return Ok(None); }
+            match key {
+                Symbol::State(position) if positions.contains(position) => {},
+                Symbol::Missing(_) => known = false,
+                _ => return Ok(None),
+            }
         }
         let mut row = vec![];
         for position in positions {
@@ -207,7 +212,7 @@ impl Form {
                 _ => return Err("整数自由状態の係数がZでない".into()),
             });
         }
-        Ok(Some((constant.clone(),row)))
+        Ok(Some((known.then(||constant.clone()), row)))
     }
     pub(in crate::observed) fn missing_facts(&self) -> Vec<Fact> {
         self.coefficients.keys().filter_map(|key| match key {

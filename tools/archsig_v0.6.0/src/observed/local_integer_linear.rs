@@ -7,6 +7,7 @@ use num_traits::{One, Zero};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Fiber {
     pub origin: Option<Vec<Z>>,
+    pub known: bool,
     pub basis: Matrix,
     pub rank: usize,
 }
@@ -28,9 +29,25 @@ pub(super) fn solve(
     let result = integer_fiber::solve(a, cols, rhs, c)?;
     Ok(Fiber {
         origin: result.particular,
+        known: true,
         basis: result.kernel,
         rank: cols - result.rank,
     })
+}
+pub(super) fn solve_partial(
+    a: &Matrix,
+    cols: usize,
+    rhs: &[Option<Z>],
+    c: &Control,
+) -> Result<Fiber, ValidationFailure> {
+    if let Some(values) = rhs.iter().cloned().collect::<Option<Vec<_>>>() {
+        return solve(a, cols, &values, c);
+    }
+    // 同次核だけを計算する。零右辺を欠測した対象の値には使わない。
+    let mut fiber = solve(a, cols, &vec![Z::zero(); a.len()], c)?;
+    fiber.origin = None;
+    fiber.known = false;
+    Ok(fiber)
 }
 pub(super) fn image(
     a: &Matrix,
@@ -108,6 +125,7 @@ pub(super) fn affine_image(
         .transpose()?;
     Ok(Fiber {
         origin,
+        known: fiber.known,
         basis,
         rank,
     })

@@ -209,6 +209,7 @@ fn project_inner(
             "ring"=>exact(ProjectionType::Ring), "free_rank"=>exact(ProjectionType::Law(Type::Z)),
             "torsion"=>exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))), _=>Err("Moduleの非公開射影".into()),
         },
+        (ProjectionType::Vector,Field(f)) if f=="module"=>exact(ProjectionType::Module),
         (ProjectionType::Cohomology,Field(f)) if f=="module"=>exact(ProjectionType::Module),
         (ProjectionType::Class,Field(f)) if f=="cohomology"=>exact(ProjectionType::Cohomology),
         (ProjectionType::Class,Field(f)) if f=="coordinates"=>exact(ProjectionType::Vector),

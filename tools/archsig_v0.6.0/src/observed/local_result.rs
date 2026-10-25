@@ -169,6 +169,7 @@ impl Data {
                 "system" | "matching" | "global" | "restriction" | "space" | "class"
             ),
             NodeType::Construction(T::Module) => field == "ring",
+            NodeType::Vector(_) => field == "module",
             NodeType::Construction(T::Cohomology) => field == "module",
             NodeType::Construction(T::Class) => matches!(field.as_str(), "cohomology" | "coordinates"),
             NodeType::Construction(T::Comparison) => field == "finite_map",
@@ -276,7 +277,7 @@ fn compute(
             return comparison::compute(env,g,request,target,base,witness.clone(),c);
         }
         if request.kind == QuestionKind::Diagnose {
-            return diagnose(g, request, target, original, base, witness.clone(), c);
+            return diagnose(env, g, request, target, original, base, witness.clone(), c);
         }
         if let Some(name) = request.arguments.iter().find_map(|a| match (&*a.name, &a.value) {
             ("using", Selector::Declaration { name }) => Some(name), _ => None,
@@ -925,6 +926,7 @@ fn compute(
     })
 }
 fn diagnose(
+    env: &Environment<'_>,
     g: &Graph,
     request: &Request,
     target: NodeRef,
@@ -953,7 +955,7 @@ fn diagnose(
         })
         .ok_or("診断次数がない")?;
     if let Some(diagram) = &system.integer {
-        return integer::diagnose(g, request, target, base, witness, diagram, degree, c);
+        return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c);
     }
     if degree > 1 {
         let original = &data.source.parts[system.expression.0 - data.source.base];

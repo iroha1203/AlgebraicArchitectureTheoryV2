@@ -73,32 +73,49 @@ fn solutions(
     domain: NodeRef,
     matrix: &Matrix,
     cols: usize,
-    rhs: &[Z],
+    rhs: &[Option<Z>],
     laws: &[NodeRef],
     equation: bool,
     c: &mut Control,
 ) -> Result<(NodeRef, NodeRef, NodeRef), ValidationFailure> {
-    let fiber = integer_fiber::solve(matrix, cols, rhs, c)?;
-    let (equations, certificate) = wire::smith(b, ring, ambient, matrix, rhs, &fiber, laws, c)?;
-    let directions = wire::module(b, ring, cols - fiber.rank, "kernel", vec![equations])?;
-    let mut args = vec![domain];
-    args.extend_from_slice(laws);
-    let representation = if let Some(p) = &fiber.particular {
-        let particular = wire::vector(b, ambient, p, c)?;
-        let embedding = wire::map(b, directions, ambient, &fiber.kernel, cols - fiber.rank, c)?;
-        args.extend([particular, directions, embedding, certificate]);
-        Json::obj([
-            ("kind", Json::str("affine")),
-            ("particular", particular.wire()),
-            ("directions", directions.wire()),
-            ("embedding", embedding.wire()),
-        ])
+    let known_rhs = rhs.iter().cloned().collect::<Option<Vec<_>>>();
+    let homogeneous = vec![Z::zero(); matrix.len()];
+    let fiber = integer_fiber::solve(
+        matrix,
+        cols,
+        known_rhs.as_deref().unwrap_or(&homogeneous),
+        c,
+    )?;
+    let (equations, certificate) = if let Some(rhs) = &known_rhs {
+        let (map, proof) = wire::smith(b, ring, ambient, matrix, rhs, &fiber, laws, c)?;
+        (map, Some(proof))
     } else {
+        let target = wire::module(b, ring, matrix.len(), "free", laws.to_vec())?;
+        (wire::map(b, ambient, target, matrix, cols, c)?, None)
+    };
+    let directions = wire::module(b, ring, cols - fiber.rank, "kernel", vec![equations])?;
+    let mut args = vec![domain, equations, directions];
+    args.extend_from_slice(laws);
+    let representation = if let Some(certificate) = certificate {
         args.push(certificate);
-        Json::obj([
-            ("kind", Json::str("empty")),
-            ("certificate", certificate.wire()),
-        ])
+        if let Some(p) = &fiber.particular {
+            let particular = wire::vector(b, ambient, p, c)?;
+            let embedding = wire::map(b, directions, ambient, &fiber.kernel, cols - fiber.rank, c)?;
+            args.extend([particular, embedding]);
+            Json::obj([
+                ("kind", Json::str("affine")),
+                ("particular", particular.wire()),
+                ("directions", directions.wire()),
+                ("embedding", embedding.wire()),
+            ])
+        } else {
+            Json::obj([
+                ("kind", Json::str("empty")),
+                ("certificate", certificate.wire()),
+            ])
+        }
+    } else {
+        Json::obj([("kind", Json::str("symbolic"))])
     };
     let mut fields = BTreeMap::from([
         ("domain".into(), domain.wire()),
@@ -317,7 +334,7 @@ pub(super) fn build(
     let shifted = rhs
         .iter()
         .zip(shift)
-        .map(|(x, y)| x - y)
+        .map(|(x, y)| x.as_ref().map(|x| x - y))
         .collect::<Vec<_>>();
     let (sem, solution_domain, _) = solutions(
         b,

@@ -603,6 +603,9 @@ fn materialize_instance(
                 return Err(unsupported(declaration.span, "local読取りの式の適用条件が不成立"));
             }
             if read.condition_pending || read.known_value.is_none() {
+                if !free.is_empty() {
+                    visible = visible_slots(state, *id, bindings, &declaration.reading)?;
+                }
                 if missing_reason.is_none() {
                     return Err(unsupported(declaration.span, "localの読取り値が未確定"));
                 }
@@ -748,7 +751,7 @@ mod tests {
                     _ => Usage { signal:Some(crate::result::Signal::Term), ..Usage::default() },
                 }
             });
-            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &mut c).unwrap();
+            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &[], &mut c).unwrap();
             assert!(context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_))));
             assert!(context.reasons.iter().any(|r| r.missing.iter().any(|f| f.subject=="p" && f.field.as_deref()==Some("Reservations.State.owner"))));
         }

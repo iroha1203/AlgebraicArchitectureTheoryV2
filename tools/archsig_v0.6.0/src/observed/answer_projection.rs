@@ -66,7 +66,14 @@ impl Environment<'_> {
             let Some((selected, used)) = v.project(path) else {
                 return Ok(AnswerBinding::Inapplicable(root));
             };
-            return self.answer_projection(graph, selected, &path[used..], span);
+            let mut binding = self.answer_projection(graph, selected, &path[used..], span)?;
+            if let AnswerBinding::Projection(node) = &mut binding {
+                node.rule = Rule::Projection(path.to_vec());
+                node.arguments = vec![root];
+                node.support = original.support.clone();
+                node.scope = original.scope.clone();
+            }
+            return Ok(binding);
         }
         let (value, steps) = if matches!(original.ty, NodeType::Evaluation(_)) {
             let Some((ProjectionStep::Field(field), rest)) = path.split_first() else {

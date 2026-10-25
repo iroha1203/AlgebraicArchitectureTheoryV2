@@ -67,6 +67,7 @@ fn differential(
     Ok(d)
 }
 pub(in crate::observed::local_result) fn diagnose(
+    env: &Environment<'_>,
     g: &Graph,
     request: &Request,
     target: NodeRef,
@@ -303,7 +304,11 @@ pub(in crate::observed::local_result) fn diagnose(
         let mut class = None;
         let mut claim = None;
         let mut evidence = vec![];
-        let mut status = Decision::Established;
+        let mut status = if degree == 1 {
+            Decision::Undetermined
+        } else {
+            Decision::Established
+        };
         if degree == 1 && diagram.patches.iter().all(|i| states[*i].origin.is_some()) {
             for i in &diagram.patches {
                 let ambient = wire::module(
@@ -436,6 +441,12 @@ pub(in crate::observed::local_result) fn diagnose(
                     None,
                 )?);
             }
+            if let Some(correction) = &correction.particular {
+                evidence.push(gluing(
+                    env, &mut b, ring, modules[0], correction, diagram, states, &levels[0],
+                    semantic, &witness, c,
+                )?);
+            }
             let proposition = b.proposition("class_zero", vec![r], evidence.clone(), status)?;
             b.parts[proposition.0 - base]
                 .judgment
@@ -445,17 +456,43 @@ pub(in crate::observed::local_result) fn diagnose(
             claim = Some(proposition);
         }
         let mut conditions = vec![];
+        let mut reasons = if diagram.missing.is_empty() {
+            vec![]
+        } else {
+            vec![Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![target],
+                missing: diagram.missing.clone(),
+                location: None,
+            }]
+        };
         for i in &diagram.patches {
-            conditions.push(b.proposition(
+            let condition = b.proposition(
                 "inhabited",
                 vec![diagram.solutions[*i][usize::from(semantic)]],
                 vec![],
-                if states[*i].origin.is_some() {
+                if !states[*i].known {
+                    Decision::Undetermined
+                } else if states[*i].origin.is_some() {
                     Decision::Established
                 } else {
                     Decision::Refuted
                 },
-            )?);
+            )?;
+            if degree == 1 && states[*i].known && states[*i].origin.is_none() {
+                reasons.push(Reason {
+                    kind: ReasonKind::ConditionFailed {
+                        condition,
+                        construction: "diagnostic",
+                    },
+                    request: request.id.clone(),
+                    dependencies: vec![condition],
+                    missing: vec![],
+                    location: None,
+                });
+            }
+            conditions.push(condition);
         }
         let mut fields = BTreeMap::from([
             ("kind".into(), Json::str("affine_cech")),
@@ -486,6 +523,7 @@ pub(in crate::observed::local_result) fn diagnose(
             None,
             None,
         )?;
+        b.parts[diagnostic.0 - base].reasons = reasons.clone();
         let mut outputs =
             BTreeMap::from([("diagnostic".into(), diagnostic), ("space".into(), space)]);
         if let Some(r) = class {
@@ -500,7 +538,7 @@ pub(in crate::observed::local_result) fn diagnose(
             outputs,
             claim,
             evidence,
-            reasons: vec![],
+            reasons,
             scope: b.parts[diagnostic.0 - base].scope.clone(),
         };
         Ok(Source {
@@ -514,4 +552,131 @@ pub(in crate::observed::local_result) fn diagnose(
         })
     })();
     retain_partial(result, b, request, saved_witness)
+}
+
+fn gluing(
+    env: &Environment<'_>,
+    b: &mut Builder<'_>,
+    ring: NodeRef,
+    correction_module: NodeRef,
+    correction: &[Z],
+    diagram: &Diagram,
+    states: &[linear::Fiber],
+    level: &Level,
+    semantic: bool,
+    witness: &ArchitectureWitness,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    if !linear::glues(diagram, &diagram.patches, 0, semantic, c)? {
+        return Err(unsupported("零類からの大域証人に必要な貼り合わせが不成立"));
+    }
+    let mut merged: BTreeMap<usize, Z> = BTreeMap::new();
+    let mut local = vec![];
+    for (j, i) in diagram.patches.iter().enumerate() {
+        let adjustment = linear::apply(
+            &states[*i].basis,
+            &correction[level.offsets[j]..level.offsets[j] + states[*i].rank],
+            c,
+        )?;
+        let values = states[*i]
+            .origin
+            .as_ref()
+            .ok_or("補正の局所特解がない")?
+            .iter()
+            .zip(adjustment)
+            .map(|(x, y)| x - y)
+            .collect::<Vec<_>>();
+        for (slot, value) in diagram.free[*i].iter().zip(&values) {
+            if let Some(prior) = merged.insert(*slot, value.clone()) {
+                if prior != *value {
+                    return Err("補正した局所解がmatchingでない".into());
+                }
+            }
+        }
+        let ambient = wire::module(b, ring, values.len(), "free", vec![diagram.contexts[*i]])?;
+        local.push(wire::vector(b, ambient, &values, c)?);
+    }
+    let global_values = diagram.free[0]
+        .iter()
+        .map(|i| {
+            merged
+                .get(i)
+                .cloned()
+                .ok_or("大域証人の位置が被覆されない".into())
+        })
+        .collect::<Result<Vec<_>, ValidationFailure>>()?;
+    let origin = states[0]
+        .origin
+        .as_ref()
+        .ok_or("貼り合わせ先の大域fiberが空")?;
+    let delta = global_values
+        .iter()
+        .zip(origin)
+        .map(|(x, y)| vec![x - y])
+        .collect();
+    linear::coordinates(&states[0].basis, states[0].rank, &delta, 1, c)?;
+    let ambient = wire::module(
+        b,
+        ring,
+        global_values.len(),
+        "free",
+        vec![diagram.contexts[0]],
+    )?;
+    let global = wire::vector(b, ambient, &global_values, c)?;
+    let mut assignments = diagram
+        .assignments
+        .iter()
+        .cloned()
+        .collect::<BTreeMap<_, _>>();
+    for (i, v) in diagram.free[0].iter().zip(&global_values) {
+        assignments.insert(diagram.slots[*i].clone(), Scalar::Z(v.clone()));
+    }
+    let mut evaluated = Environment::try_primitive_valuation(
+        env.inputs,
+        &assignments.into_iter().collect::<Vec<_>>(),
+        c,
+    )?
+    .ok_or("貼り合わせ証人の元代入が不適合")?;
+    evaluated.select_local_object(witness, c)?;
+    let mut rechecks = vec![];
+    for ((name, bindings), law) in diagram.requirements.iter().zip(&diagram.law_refs) {
+        let (row, missing, _) =
+            evaluated.local_point(&env.inputs.law().declarations[name], bindings)?;
+        let holds = row.application == Some(false)
+            || (row.application == Some(true)
+                && !row.condition_pending
+                && !row.condition_failed
+                && (row.guard == Some(false)
+                    || (row.guard == Some(true) && row.predicate == Some(true))));
+        if !missing.is_empty() || !row.application_missing.is_empty() || !holds {
+            return Err("貼り合わせ証人が元Lawの再検査を満たさない".into());
+        }
+        let check = b.proposition("law_holds", vec![*law], vec![], Decision::Established)?;
+        b.parts[check.0 - b.base].arguments.push(global);
+        rechecks.push(check);
+    }
+    let correction = wire::vector(b, correction_module, correction, c)?;
+    b.push(
+        NodeType::Evidence,
+        "evidence",
+        Json::obj([
+            ("kind", Json::str("gluing")),
+            (
+                "data",
+                Json::obj([
+                    ("local", refs(&local)),
+                    ("correction", correction.wire()),
+                    ("global", global.wire()),
+                    ("rechecks", refs(&rechecks)),
+                ]),
+            ),
+        ]),
+        local
+            .into_iter()
+            .chain([correction, global])
+            .chain(rechecks)
+            .collect(),
+        None,
+        None,
+    )
 }

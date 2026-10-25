@@ -3199,7 +3199,7 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
             std::fs::write(dir.join(name),text).unwrap();
         }
         let asks = ["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)",
-            "d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","z=diagnose($l.system,degree=0)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)"];
+            "d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","z=diagnose($l.system,degree=0)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
         let r = execute(&dir,"out",&asks);
         assert_eq!(r.code,if gamma==2 {0}else{1},"{} {}",r.stdout,r.stderr);
         let j = result_json(&dir,&r);
@@ -3227,6 +3227,15 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
             for column in &d0 { assert!(apply(&d1,column,last_rank).iter().all(|x|*x==0)); }
             let representative=vector(&j,get(class,"representative"));
             assert!(apply(&d1,&representative,last_rank).iter().all(|x|*x==0));
+            if gamma==2 {
+                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value"))
+                    .find(|e|s(get(e,"kind"))=="gluing").unwrap();
+                let proof=get(proof,"data");let global=vector(&j,get(proof,"global"));
+                assert_eq!(global.len(),3);assert_eq!(global[1]-global[0],1);assert_eq!(global[2]-global[1],1);
+                assert_eq!(arr(get(proof,"local")).len(),3);
+                assert_eq!(arr(get(proof,"rechecks")).len(),3);
+                for check in arr(get(proof,"rechecks")) { assert_eq!(s(get(get(node(&j,check),"judgment"),"status")),"established"); }
+            }
             if gamma==3 {
                 let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value"))
                     .find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
@@ -3258,6 +3267,14 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
         }
         assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
         assert_eq!(s(get(output(&j,6,"value"),"value")),"1");
+        assert_eq!(s(get(output(&j,7,"value"),"value")),"1");
+        for (index,root,path) in [(6,"space",vec!["module","free_rank"]),(7,"class",vec!["coordinates","module","free_rank"])] {
+            let evaluation=get(output(&j,index,"evaluation"),"value");
+            let projected=node(&j,get(&arr(get(evaluation,"bindings"))[0],"value"));
+            assert_eq!(arr(get(projected,"arguments")).len(),1);
+            assert_eq!(arr(get(projected,"arguments"))[0].value,get(get(&arr(get(&j,"answers"))[2],"outputs"),root).value);
+            assert_eq!(arr(get(get(projected,"rule"),"path")).iter().map(s).collect::<Vec<_>>(),path);
+        }
         let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
         assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
         let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
@@ -3274,12 +3291,21 @@ fn integer_local_missing_offset_keeps_its_original_field_for_needed() {
     mod triangle;
     let input=triangle::input(None); let dir=workdir("integer-local-missing");
     for (name,bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {std::fs::write(dir.join(name),bytes).unwrap();}
-    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","n=needed($l)"];
+    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
     let r=execute(&dir,"out",&asks); assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r); let answer=&arr(get(&j,"answers"))[1];
-    assert!(!has(get(answer,"outputs"),"system"));
+    assert!(has(get(answer,"outputs"),"system"));
+    for index in [2,3] {
+        let diagnostic=&arr(get(&j,"answers"))[index];assert_eq!(s(get(diagnostic,"status")),"undetermined");
+        assert!(!has(get(diagnostic,"outputs"),"class"));
+        let space=get(output(&j,index,"space"),"value");let group=get(node(&j,get(space,"module")),"value");
+        assert_eq!(num(get(group,"free_rank")),1);
+    }
+    let system=get(output(&j,1,"system"),"value");assert!(!arr(get(system,"contexts")).is_empty());
+    assert!(!arr(get(system,"coefficient_restrictions")).is_empty());
+    assert!(arr(get(system,"equation_states")).iter().any(|state|s(get(get(get(node(&j,get(state,"solutions")),"value"),"representation"),"kind"))=="symbolic"));
     assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
-    let plan=get(output(&j,2,"plan"),"value");
+    let plan=get(output(&j,4,"plan"),"value");
     assert!(arr(get(plan,"requirements")).iter().any(|r| {
         let f=get(r,"field"); s(get(f,"field"))=="Coordinates.Shift.shift" && s(get(f,"subject"))=="c"
     }));
@@ -3298,11 +3324,13 @@ fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_imag
         let mut text=String::from_utf8(bytes.to_vec()).unwrap();if name=="l.law" {text=text.replace("coordinate=p.coordinate+d","coordinate=p.coordinate+2*d");}
         std::fs::write(dir.join(name),text).unwrap();
     }
-    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"]);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($s)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
     assert!(has(get(&arr(get(&j,"answers"))[2],"outputs"),"class"));
-    let semantic=&arr(get(&j,"answers"))[3];assert!(!has(get(semantic,"outputs"),"class"));assert!(!has(semantic,"claim"));
+    let semantic=&arr(get(&j,"answers"))[3];assert_eq!(s(get(semantic,"status")),"undetermined");assert!(!has(get(semantic,"outputs"),"class"));assert!(!has(semantic,"claim"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[4],"status")),"established");
+    assert!(has(get(&arr(get(&j,"answers"))[4],"outputs"),"plan"));
     let diagnostic=get(output(&j,3,"diagnostic"),"value");
     assert!(arr(get(diagnostic,"conditions")).iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"));
     let system=get(output(&j,1,"system"),"value");

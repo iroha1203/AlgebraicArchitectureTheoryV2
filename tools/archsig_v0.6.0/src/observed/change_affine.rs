@@ -74,10 +74,10 @@ fn coordinates(
     form: &Form,
     axes: Axes<'_>,
     missing: &mut Pending,
-) -> Result<(Z, Vec<Z>), ValidationFailure> {
+) -> Result<(Option<Z>, Vec<Z>), ValidationFailure> {
     (match axes {
-        Axes::Parameters(xs) => form.integer_coordinates(xs, &env.control)?,
-        Axes::State(xs) => form.state_coordinates(xs, &env.control)?,
+        Axes::Parameters(xs) => form.integer_coordinates(xs, &env.control)?.map(|(v,row)|(Some(v),row)),
+        Axes::State(xs) => { missing.facts.extend(form.missing_facts()); form.state_coordinates(xs, &env.control)? },
     }).ok_or_else(|| {
             missing.facts.extend(form.missing_facts());
             unsupported(
@@ -94,7 +94,7 @@ fn equations(
     reading: &str,
     axes: Axes<'_>,
     matrix: &mut Matrix,
-    rhs: &mut Vec<Z>,
+    rhs: &mut Vec<Option<Z>>,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -105,7 +105,7 @@ fn equations(
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
                 matrix.push(vec![Z::zero(); axes.len()]);
-                rhs.push(Z::one());
+                rhs.push(Some(Z::one()));
             }
             return Ok(());
         }
@@ -141,7 +141,7 @@ fn equations(
                     .ok_or("整数等式の差がない")?;
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 matrix.push(coefficients);
-                rhs.push(-constant);
+                rhs.push(constant.map(|v|-v));
                 Ok(())
             }
         }
@@ -300,8 +300,9 @@ pub(in crate::observed) fn compute(
         let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
         slots.push(slot.clone());
         action.push(row);
-        offset.push(constant);
+        offset.push(constant.ok_or("作用の固定項が未確定")?);
     }
+    let guard_rhs = guard_rhs.into_iter().collect::<Option<Vec<_>>>().ok_or("guardの固定項が未確定")?;
     let guard = if !guard_matrix.is_empty() {
         let fiber = integer_fiber::solve(&guard_matrix, axes.len(), &guard_rhs, &env.control)?;
         if fiber.particular.is_none() {
@@ -341,7 +342,8 @@ pub(in crate::observed) fn compute(
         Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
     updated.object = env.object_domain();
     updated.affine_valuation = updates;
-    let (mut matrix, mut rhs) = requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
+    let (mut matrix, rhs) = requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
+    let mut rhs = rhs.into_iter().collect::<Option<Vec<_>>>().ok_or("parameter方程式の固定項が未確定")?;
     let free_count = guard
         .as_ref()
         .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
@@ -443,7 +445,7 @@ pub(in crate::observed) fn state_equations(
     slots: &[Fact],
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
-) -> Result<(Matrix, Vec<Z>), ValidationFailure> {
+) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let assignments = env.architecture_values();
     let mut state = Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
     state.object = env.object_domain();
@@ -459,7 +461,7 @@ pub(in crate::observed) fn state_equations(
 fn requirement_equations(
     env: &Environment<'_>, axes: Axes<'_>,
     requirements: &[(String, Vec<(String, Scalar)>)], missing: &mut Pending,
-) -> Result<(Matrix, Vec<Z>), ValidationFailure> {
+) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
