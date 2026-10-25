@@ -2492,7 +2492,7 @@ fn tuple_component_support_excludes_other_bound_subjects() {
 
 #[test]
 fn finite_change_local_states_distinguish_the_action_image_from_free_equations() {
-    for explicit in [false, true] {
+    for explicit in 0..3 {
     for correlated in [false, true] {
         let dir = implicit_multiple_input("finite-change-local", false, Some(false));
         explicit_local(
@@ -2503,7 +2503,7 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
                 "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};"
             },
         );
-        if explicit { explicit_local(&dir, "local Flag(t:State) reads t.flag; local Other(t:State) reads t.other;"); }
+        if explicit != 0 { explicit_local(&dir, if explicit == 1 { "local Flag(t:State) reads t.flag; local Other(t:State) reads t.other;" } else { "local Flag(t:State) reads t.flag; local Other(t:State) when (t.flag or not t.flag) reads t.other;" }); }
         let r = execute(
             &dir,
             "out",
@@ -2978,14 +2978,21 @@ fn finite_explicit_local_keeps_visibility_and_variable_guard_limits() {
 
 #[test]
 fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
+    for late_guard in [false, true] {
     let dir = multiple_read_input("finite-explicit-missing", true, None, "t.flag,t.other");
+    let path=dir.join("l.law");
+    let law=std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
+    std::fs::write(path,law).unwrap();
     explicit_local(&dir,"change choose(t:State,b:Bool)=t with {flag=b};");
+    if late_guard { explicit_local(&dir,"local zzz(t:State) when t.flag reads t.flag;"); }
     let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)", "n=needed($l)"];
     let r=execute(&dir,"out",&asks);
     assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
     let local=&arr(get(&j,"answers"))[1];
     assert!(!has(get(local,"outputs"),"system"));
+    assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+    if late_guard { assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm")); }
     let plan=get(output(&j,2,"plan"),"value");
     assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Fixed.State.other"));
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
@@ -2994,4 +3001,5 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let after=result_json(&dir,&r);
     for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
+}
 }

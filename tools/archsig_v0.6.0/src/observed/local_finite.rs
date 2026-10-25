@@ -397,7 +397,10 @@ pub(super) fn compute(
                 missing: model.missing.clone(),
                 location,
             };
-            let scope = b.parts.iter().fold(model.scope.clone(), |mut scope, part| {
+            reasons.push(reason);
+            let mut scope = model.scope.clone();
+            scope.merge(&local_scope);
+            let scope = b.parts.iter().fold(scope, |mut scope, part| {
                 scope.merge(&part.scope);
                 scope
             });
@@ -411,7 +414,7 @@ pub(super) fn compute(
                     outputs: BTreeMap::new(),
                     claim: None,
                     evidence: vec![],
-                    reasons: vec![reason],
+                    reasons,
                     scope,
                 },
                 request: request.clone(),
