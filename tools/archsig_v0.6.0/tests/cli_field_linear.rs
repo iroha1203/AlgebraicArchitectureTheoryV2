@@ -548,3 +548,30 @@ fn rational_quotient_empty_and_missing_do_not_become_a_constant_class() {
         let r=execute(&dir,label,&["s=solve(Pair.first,on=@v/s,using=Pair.choose)",ask]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert_eq!(s(get(answer,"status")),"undetermined");assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
     }
 }
+
+#[test]
+fn rational_tuple_quotient_retains_nested_image_and_law_family() {
+    let dir=input("rational-tuple-quotient","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional same(s:State):s.x=s.x;view pair(s:State):(Q,(Q,Q))=(s.x,(s.y,rat(1,3)));view combined(s:State):(Q,Q)=(s.x+s.y,2*(s.x+s.y));");
+    let asks=["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.domain,s=@v/s,law=Pair.same)","bad=quotient(Pair.combined,on=$s.domain,s=@v/s,law=Pair.same)","solutions=quotient(Pair.pair,on=$s.solutions,s=@v/s,law=Pair.total)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    for (i,status) in [(1,"established"),(2,"refuted"),(3,"established")] {assert_eq!(s(get(&arr(get(&j,"answers"))[i],"status")),status);}
+    let q=get(output(&j,1,"quotient"),"value");let rep=get(q,"representation");let image=get(node(&j,get(rep,"image")),"value");assert_eq!(num(get(image,"free_rank")),2);
+    let generator=get(&arr(get(image,"generators"))[0],"value");assert_eq!(arr(generator).len(),2);assert_eq!(arr(&arr(generator)[1]).len(),2);
+    assert_eq!(qcoordinates(&j,get(rep,"offset")),vec![vec!["0".to_owned(),"1".to_owned()],vec!["0".to_owned(),"1".to_owned()],vec!["1".to_owned(),"3".to_owned()]]);
+    let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"evidence"))[0]),"value");
+    let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));
+    assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);
+    assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
+    assert_eq!(arr(get(node(&j,&views[0]),"value")).len(),2);
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);let again=result_json(&dir,&reused);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
+
+}
+
+#[test]
+fn rational_tuple_quotient_missing_component_is_not_dropped() {
+    let dir=input("rational-tuple-missing","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;view pair(s:State):(Q,(Q,Q))=(s.x,(s.y,rat(1,3)));");
+    let path=dir.join("a.json");let old=std::fs::read_to_string(&path).unwrap();let new=old.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");assert_ne!(new,old);std::fs::write(path,new).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.pair,on=$s.domain,s=@v/s)"]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert_eq!(s(get(answer,"status")),"undetermined");assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+}

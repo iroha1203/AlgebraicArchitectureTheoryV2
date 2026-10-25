@@ -22,6 +22,7 @@ pub(in crate::observed) struct Law {
 }
 pub(in crate::observed) struct Image {
     pub ty: Type,
+    pub view_type: Type,
     pub parameter_count: usize,
     pub law: Option<Law>,
     pub bindings: Vec<(String, Scalar)>,
@@ -63,7 +64,7 @@ pub(in crate::observed) fn compute(
     else {
         return Err("アフィン商のheadがViewでない".into());
     };
-    if returns != ty {
+    if !coefficients::view_type(returns,ty,c)? {
         return Err(unsupported(request, "アフィン商のこのView値型は未実装"));
     }
     let bindings = params
@@ -148,6 +149,7 @@ pub(in crate::observed) fn compute(
     };
     let mut result = Image {
         ty: ty.clone(),
+        view_type: returns.clone(),
         parameter_count: n,
         law,
         bindings,
@@ -243,29 +245,18 @@ pub(in crate::observed) fn compute(
         }
         return Err(unsupported(request, "アフィン商のView構成条件が未成立"));
     }
-    let coordinates = value
-        .affine
-        .as_ref()
-        .map(|form| coefficients::coordinates(form, &linear.axes, ty, c))
-        .transpose()?
-        .flatten();
-    let Some((constant, row)) = coordinates else {
-        if !result.missing.is_empty() {
-            return Ok(result);
-        }
-        return Err(unsupported(
-            request,
-            "アフィン商のViewが候補parameterの指定係数のアフィン式でない",
-        ));
+    let symbolic=env.symbolic_source(*body,&vars,&Scope::default(),&decl.reading)?;
+    let coordinates=coefficients::view_coordinates(&symbolic,&linear.axes,ty,c)?;
+    let Some((mut constants, rows))=coordinates else {
+        if !result.missing.is_empty(){return Ok(result)}
+        return Err(unsupported(request,"商のViewが指定係数のアフィン式でない"));
     };
     result.missing.clear();
-    let mut offset = constant;
-    for (a, x) in row.iter().zip(&result.origin) {
-        c.checkpoint(Checkpoint::Quotient)?;
-        offset = coefficients::add_product(&offset,a,x,c)?;
+    for (constant,row) in constants.iter_mut().zip(&rows) {
+        for (a,x) in row.iter().zip(&result.origin) {*constant=coefficients::add_product(constant,a,x,c)?;}
     }
-    result.matrix = coefficients::multiply(ty, &vec![row], &result.embedding, dimensions, c)?;
-    result.offset = vec![offset];
+    result.matrix=coefficients::multiply(ty,&rows,&result.embedding,dimensions,c)?;
+    result.offset=constants;
     if let Some(law) = &mut result.law {
         let declaration = &original.inputs.law().declarations[&law.name];
         let Signature::Law { params, .. } = &declaration.signature else {
@@ -466,7 +457,7 @@ pub(in crate::observed) fn point(
     let view = env.scoped_ast(*view_body, &vars, &Scope::default(), &declaration.reading)?;
     let expected = apply(&image.matrix, &image.offset, coordinates)?;
     let view = view.known_value.ok_or("アフィン商の反例のView値がない")?;
-    if expected.len() != 1 || view != expected[0] {
+    if view != coefficients::view_value(&image.view_type,&expected,c)? {
         return Err("アフィン商の正規形と通常View評価が違う".into());
     }
     let body_evaluation = capture
