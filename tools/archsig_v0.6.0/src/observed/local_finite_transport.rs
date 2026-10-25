@@ -400,13 +400,6 @@ pub(super) fn between(
         }
         contexts.push(j);
         coordinates.push(p);
-        record_outside(
-            &map,
-            &b[j].values,
-            &mut outside_count,
-            &mut outside_image,
-            c,
-        )?;
         maps.push(map);
     }
     if contexts.first() != Some(&0) {
