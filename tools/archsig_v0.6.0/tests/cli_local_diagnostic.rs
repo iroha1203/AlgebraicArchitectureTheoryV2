@@ -939,10 +939,14 @@ fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
             "l=localize($a.object)",
         ],
     );
-    assert_ne!(r.code, 0);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
-    assert!(!has(get(&answers[2], "outputs"), "system"));
+    assert!(has(get(&answers[2], "outputs"), "system"));
+    let system = get(output(&result, 2, "system"), "value");
+    assert_eq!(arr(get(system,"contexts")).len(),2);
+    let cover=get(node(&result,get(system,"cover")),"value");
+    assert_eq!(arr(get(cover,"patches")).len(),2);
     assert_eq!(
         get(output(&result, 1, "value"), "value").value,
         archsig::json::JValue::Bool(true)
@@ -1885,4 +1889,157 @@ fn matching_display_values_do_not_replace_the_operation_action_or_system_identit
     let answer = &arr(get(&result, "answers"))[5];
     assert_eq!(s(get(answer, "status")), "undetermined");
     assert!(format!("{:?}", get(answer, "reasons")).contains("unsupported_algorithm"));
+}
+
+fn implicit_multiple_input(name: &str, left: bool, right: Option<bool>) -> std::path::PathBuf {
+    let dir = multiple_read_input(name, left, right, "t.flag,t.other");
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(
+        path,
+        law.replace("local here(t:State) reads t.flag,t.other;", ""),
+    )
+    .unwrap();
+    dir
+}
+
+#[test]
+fn implicit_support_cover_has_actual_intersections_and_matching_families() {
+    for (left, right) in [(true, true), (false, true), (true, false)] {
+        let dir = implicit_multiple_input("implicit-cover", left, Some(right));
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "v=evaluate(Fixed.current,on=$e.diagnostic.global.domain.base,s=@fixed/s)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if left && right { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(arr(get(system, "contexts")).len(), 4);
+        assert_eq!(arr(get(system, "maps")).len(), 9);
+        let cover = get(node(&j, get(system, "cover")), "value");
+        let patches = arr(get(cover, "patches"));
+        assert_eq!(patches.len(), 2);
+        assert!(patches.iter().all(|p| p.value != get(cover, "base").value));
+        assert_eq!(arr(get(cover, "overlaps")).len(), 4);
+        let topology = get(node(&j, get(system, "topology")), "value");
+        assert_eq!(arr(get(topology, "covering_sieves")).len(), 5);
+        let bottom = arr(get(system, "contexts"))
+            .iter()
+            .map(|r| get(node(&j, r), "value"))
+            .find(|v| arr(get(v, "dependencies")).is_empty())
+            .unwrap();
+        assert_eq!(arr(get(bottom, "carrier")).len(), 1);
+        assert!(arr(get(bottom, "law_coordinates")).is_empty());
+        for patch in patches {
+            let p = get(node(&j, patch), "value");
+            assert_eq!(arr(get(p, "dependencies")).len(), 1);
+            assert_eq!(arr(get(p, "law_coordinates")).len(), 1);
+        }
+        for check in arr(get(system, "sheaf_checks")) {
+            assert_eq!(
+                s(get(
+                    get(node(&j, get(check, "proposition")), "judgment"),
+                    "status"
+                )),
+                "established"
+            );
+        }
+        for i in [2, 3] {
+            assert_eq!(
+                s(get(&arr(get(&j, "answers"))[i], "status")),
+                if left && right {
+                    "established"
+                } else {
+                    "refuted"
+                }
+            );
+            let diagnostic = get(output(&j, i, "diagnostic"), "value");
+            let matching = get(node(&j, get(diagnostic, "matching")), "value");
+            assert_eq!(
+                arr(get(matching, "elements")).len(),
+                usize::from(left && right)
+            );
+            if left && right {
+                let tuple = node(&j, &arr(get(matching, "elements"))[0]);
+                assert_eq!(arr(get(tuple, "value")).len(), 2);
+            }
+        }
+        assert_eq!(
+            get(output(&j, 4, "value"), "value").value,
+            archsig::json::JValue::Bool(left)
+        );
+    }
+}
+
+#[test]
+fn implicit_support_cover_preserves_missing_and_saved_reuse() {
+    for right in [Some(true), None] {
+        let dir = implicit_multiple_input("implicit-cover-reuse", true, right);
+        let asks = [
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "d=diagnose($l.system)",
+            "n=needed($l)",
+        ];
+        let first = execute(&dir, "out", &asks);
+        assert_eq!(
+            first.code,
+            if right.is_some() { 0 } else { 2 },
+            "{} {}",
+            first.stdout,
+            first.stderr
+        );
+        let before = result_json(&dir, &first);
+        if right.is_none() {
+            assert!(!has(
+                get(&arr(get(&before, "answers"))[1], "outputs"),
+                "system"
+            ));
+            let plan = get(output(&before, 3, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.other")
+            );
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let second = run(&dir, &args);
+        assert_eq!(
+            second.code, first.code,
+            "{} {}",
+            second.stdout, second.stderr
+        );
+        let after = result_json(&dir, &second);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&before, field).value, get(&after, field).value);
+        }
+    }
 }

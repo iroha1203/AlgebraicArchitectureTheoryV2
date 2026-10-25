@@ -97,6 +97,48 @@ fn evaluate_read(
             .collect(),
     ))
 }
+/// 暗黙contextの公開読取りを、その式が実際に参照する位置へ制限する。
+pub(in crate::observed) fn implicit_support(
+    env: &Environment<'_>,
+    id: usize,
+    bindings: &[(String, Scalar)],
+    reading: &str,
+    c: &mut Control,
+) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
+    let variables = bindings
+        .iter()
+        .map(|(n, v)| (n.clone(), known(v.clone())))
+        .collect();
+    let (value, reads, missing) = evaluate_read(env, id, &variables, &Scope::default(), reading)?;
+    if !missing.is_empty() {
+        return Err("確定した暗黙読取りに欠測がある".into());
+    }
+    let mut carrier = vec![];
+    for (_, value) in bindings {
+        subject_carrier(value, &mut carrier, c)?;
+    }
+    if let Some(value) = value.known_value {
+        subject_carrier(&value, &mut carrier, c)?;
+    }
+    for fact in &reads {
+        let subject = env.subject(&fact.snapshot, &fact.subject)?;
+        subject_carrier(
+            &Scalar::Subject {
+                snapshot: fact.snapshot.clone(),
+                subject: fact.subject.clone(),
+                entity: subject.ty.clone(),
+            },
+            &mut carrier,
+            c,
+        )?;
+    }
+    carrier.sort_by_key(Json::canonical);
+    carrier.dedup();
+    let mut dependencies = positions(&reads).collect::<Vec<_>>();
+    dependencies.sort();
+    dependencies.dedup();
+    Ok((carrier, dependencies))
+}
 fn bound_name<'a>(env: &'a Environment<'_>, id: usize) -> Option<&'a str> {
     match &env.inputs.law().exprs[id].kind {
         ExprKind::Group(child) => bound_name(env, *child),
