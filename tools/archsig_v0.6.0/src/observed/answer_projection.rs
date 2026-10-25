@@ -54,6 +54,15 @@ impl Environment<'_> {
         if let Some(Payload::Construction(v)) = &original.payload
             && v.projection_type().is_some()
         {
+            if let Some(scalar) = v.scalar_projection(path) {
+                data::check(&scalar, self.inputs.law(), &self.control)?;
+                return Ok(AnswerBinding::Projection(Node {
+                    ty: NodeType::Value(scalar.ty()), payload: Some(Payload::Scalar(scalar)),
+                    rule: Rule::Projection(path.to_vec()), arguments: vec![root],
+                    support: original.support.clone(), scope: original.scope.clone(),
+                    evidence: vec![], judgment: None, reasons: vec![],
+                }));
+            }
             let Some((selected, used)) = v.project(path) else {
                 return Ok(AnswerBinding::Inapplicable(root));
             };

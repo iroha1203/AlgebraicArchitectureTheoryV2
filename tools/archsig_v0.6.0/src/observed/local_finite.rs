@@ -468,6 +468,7 @@ pub(super) fn compute(
             inhabited,
             patch_count: built.patch_count,
             finite: built.finite,
+            integer: None,
             fixed_positions,
         }),
     })

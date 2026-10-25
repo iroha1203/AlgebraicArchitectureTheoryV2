@@ -63,15 +63,22 @@ fn usable(env: &Environment<'_>, id: usize, v: &SourceValue) -> Result<(), Valid
     }
     Ok(())
 }
+#[derive(Clone, Copy)]
+enum Axes<'a> { Parameters(&'a [Parameter]), State(&'a [Fact]) }
+impl Axes<'_> {
+    fn len(self) -> usize { match self { Self::Parameters(xs) => xs.len(), Self::State(xs) => xs.len() } }
+}
 fn coordinates(
     env: &Environment<'_>,
     id: usize,
     form: &Form,
-    axes: &[Parameter],
+    axes: Axes<'_>,
     missing: &mut Pending,
 ) -> Result<(Z, Vec<Z>), ValidationFailure> {
-    form.integer_coordinates(axes, &env.control)?
-        .ok_or_else(|| {
+    (match axes {
+        Axes::Parameters(xs) => form.integer_coordinates(xs, &env.control)?,
+        Axes::State(xs) => form.state_coordinates(xs, &env.control)?,
+    }).ok_or_else(|| {
             missing.facts.extend(form.missing_facts());
             unsupported(
                 env,
@@ -85,7 +92,7 @@ fn equations(
     id: usize,
     vars: &BTreeMap<String, SourceValue>,
     reading: &str,
-    axes: &[Parameter],
+    axes: Axes<'_>,
     matrix: &mut Matrix,
     rhs: &mut Vec<Z>,
     missing: &mut Pending,
@@ -203,7 +210,7 @@ pub(in crate::observed) fn compute(
                 *guard,
                 &vars,
                 &change.reading,
-                &axes,
+                Axes::Parameters(&axes),
                 &mut guard_matrix,
                 &mut guard_rhs,
                 missing,
@@ -261,7 +268,7 @@ pub(in crate::observed) fn compute(
                         let form = v.affine.ok_or_else(|| {
                             unsupported(env, *id, "整数changeの更新式がZアフィンでない")
                         })?;
-                        coordinates(env, *id, &form, &axes, missing)?;
+                        coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
                         let position = Fact {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
@@ -290,7 +297,7 @@ pub(in crate::observed) fn compute(
     let mut action = vec![];
     let mut offset = vec![];
     for (slot, form) in &updates {
-        let (constant, row) = coordinates(env, *body, form, &axes, missing)?;
+        let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
         slots.push(slot.clone());
         action.push(row);
         offset.push(constant);
@@ -334,74 +341,7 @@ pub(in crate::observed) fn compute(
         Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
     updated.object = env.object_domain();
     updated.affine_valuation = updates;
-    let mut matrix = vec![];
-    let mut rhs = vec![];
-    for (name, bindings) in requirements {
-        let law = &env.inputs.law().declarations[name];
-        let Signature::Law {
-            body,
-            guard,
-            params: law_params,
-            ..
-        } = &law.signature
-        else {
-            return Err("整数候補の要求がLawでない".into());
-        };
-        let mut checked = BTreeMap::new();
-        let mut checks = owned_call::Checks::default();
-        for (p, (name, v)) in law_params.iter().zip(bindings) {
-            if p.name != *name {
-                return Err("整数Lawの束縛順が異なる".into());
-            }
-            updated.owned_call_value_check(
-                &p.ty,
-                &crate::observed::term::affine::Value::Known(v.clone()),
-                &checked,
-                &law.reading,
-                law.span,
-                &mut checks,
-            )?;
-            checked.insert(name.as_str(), Some(v));
-        }
-        if checks.failure.is_some() {
-            continue;
-        }
-        if checks.blocked {
-            return Err(unsupported(&updated, *body, "整数Lawの適用条件が未確定"));
-        }
-        let vars = bindings
-            .iter()
-            .map(|(n, v)| Ok((n.clone(), value(&updated, v.clone())?)))
-            .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
-        if let Some(guard) = guard {
-            let v = updated.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
-            usable(&updated, *guard, &v)?;
-            match v.known_value {
-                Some(Scalar::Bool(false)) => continue,
-                Some(Scalar::Bool(true)) => {}
-                _ => {
-                    return Err(unsupported(
-                        &updated,
-                        *guard,
-                        "整数候補で変化するLaw guardの全解は未実装",
-                    ));
-                }
-            }
-        }
-        missing.expression = Some(*body);
-        missing.bindings = bindings.clone();
-        missing.parameters.clear();
-        equations(
-            &updated,
-            *body,
-            &vars,
-            &law.reading,
-            &axes,
-            &mut matrix,
-            &mut rhs,
-            missing,
-        )?;
-    }
+    let (mut matrix, mut rhs) = requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
     let free_count = guard
         .as_ref()
         .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
@@ -495,4 +435,98 @@ fn compose(
         }
     }
     Ok(result)
+}
+
+/// 許可作用の引数と独立な更新位置の座標を分け、方程式側の全自由状態を読む。
+pub(in crate::observed) fn state_equations(
+    env: &Environment<'_>,
+    slots: &[Fact],
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<(Matrix, Vec<Z>), ValidationFailure> {
+    let assignments = env.architecture_values();
+    let mut state = Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
+    state.object = env.object_domain();
+    for slot in slots {
+        env.tick()?;
+        if env.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase() != Type::Z {
+            return Err("整数局所状態の自由位置がZでない".into());
+        }
+        state.affine_valuation.insert(slot.clone(), Form::state(slot, &env.control)?);
+    }
+    requirement_equations(&state, Axes::State(slots), requirements, missing)
+}
+fn requirement_equations(
+    env: &Environment<'_>, axes: Axes<'_>,
+    requirements: &[(String, Vec<(String, Scalar)>)], missing: &mut Pending,
+) -> Result<(Matrix, Vec<Z>), ValidationFailure> {
+    let mut matrix = vec![];
+    let mut rhs = vec![];
+    for (name, bindings) in requirements {
+        let law = &env.inputs.law().declarations[name];
+        let Signature::Law {
+            body,
+            guard,
+            params: law_params,
+            ..
+        } = &law.signature
+        else {
+            return Err("整数候補の要求がLawでない".into());
+        };
+        let mut checked = BTreeMap::new();
+        let mut checks = owned_call::Checks::default();
+        for (p, (name, v)) in law_params.iter().zip(bindings) {
+            if p.name != *name {
+                return Err("整数Lawの束縛順が異なる".into());
+            }
+            env.owned_call_value_check(
+                &p.ty,
+                &crate::observed::term::affine::Value::Known(v.clone()),
+                &checked,
+                &law.reading,
+                law.span,
+                &mut checks,
+            )?;
+            checked.insert(name.as_str(), Some(v));
+        }
+        if checks.failure.is_some() {
+            continue;
+        }
+        if checks.blocked {
+            return Err(unsupported(env, *body, "整数Lawの適用条件が未確定"));
+        }
+        let vars = bindings
+            .iter()
+            .map(|(n, v)| Ok((n.clone(), value(env, v.clone())?)))
+            .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
+        if let Some(guard) = guard {
+            let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
+            usable(env, *guard, &v)?;
+            match v.known_value {
+                Some(Scalar::Bool(false)) => continue,
+                Some(Scalar::Bool(true)) => {}
+                _ => {
+                    return Err(unsupported(
+                        env,
+                        *guard,
+                        "整数候補で変化するLaw guardの全解は未実装",
+                    ));
+                }
+            }
+        }
+        missing.expression = Some(*body);
+        missing.bindings = bindings.clone();
+        missing.parameters.clear();
+        equations(
+            env,
+            *body,
+            &vars,
+            &law.reading,
+            axes,
+            &mut matrix,
+            &mut rhs,
+            missing,
+        )?;
+    }
+    Ok((matrix, rhs))
 }

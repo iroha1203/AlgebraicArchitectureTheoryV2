@@ -121,7 +121,7 @@ pub(super) fn compute(
         }
         identity &= found;
     }
-    let supported = system.finite.is_none()
+    let supported = system.integer.is_none() && system.finite.is_none()
         && left_system == right_system
         && identity
         && operation.source() == operation.target()

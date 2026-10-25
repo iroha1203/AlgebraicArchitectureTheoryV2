@@ -239,7 +239,7 @@ pub(super) fn build(
     })
 }
 
-fn smith(
+pub(in crate::observed) fn smith(
     b: &mut Builder<'_>,
     ring: NodeRef,
     parameter_module: NodeRef,

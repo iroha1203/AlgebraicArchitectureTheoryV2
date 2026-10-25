@@ -44,10 +44,11 @@ pub(in crate::observed) struct Projection {
     pub values: Vec<Scalar>,
     pub support: Support,
 }
-fn project(
+pub(super) fn project(
     b: &mut Builder<'_>,
     mut expression: NodeRef,
     p: &Projection,
+    free: &[Fact],
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     if let Some((subject, location)) = &p.field {
         let subject = change_result::value(b, subject)?;
@@ -90,8 +91,15 @@ fn project(
     }
     }
     let ty = p.values.first().ok_or("Tuple射影の像が空")?.ty();
-    let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
-    let image = domain(b, &ty, &actual)?;
+    let image = if p.support.visible.iter().any(|slot| free.contains(slot)) {
+        if ty != Type::Z || p.support.visible.len() != 1 { return Err(unsupported("整数射影の積の像は未実装")); }
+        b.push(NodeType::Domain, "domain", Json::obj([
+            ("kind", Json::str("type")), ("type", Type::Z.wire())
+        ]), vec![], None, None)?
+    } else {
+        let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
+        domain(b, &ty, &actual)?
+    };
     Ok((expression, image))
 }
 pub(super) struct Local {
@@ -392,7 +400,7 @@ pub(super) fn build(
             let (expression, image) = if let Some(pair) = projected.get(&i) {
                 *pair
             } else {
-                let pair = project(b, reading_refs[2 * p.read], p)?;
+                let pair = project(b, reading_refs[2 * p.read], p, &[])?;
                 projected.insert(i, pair);
                 pair
             };
@@ -581,59 +589,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    // 唯一の生成coverを各contextに引き戻すと、真の部分contextでは恒等射を含む。
-    // 従って生成位相は各最大篩と、全体上のpatchで生成した篩(およびその上位篩)である。
-    // 全体以外はすべてpatch以下なので、上位篩は生成篩自身と最大篩だけ。
-    let mut sieves = vec![];
-    let mut matching_checks = vec![];
-    for w in 0..supports.len() {
-        let sources = (0..supports.len())
-            .filter(|v| arrows.contains_key(&(*v, w)))
-            .collect::<Vec<_>>();
-        matching_checks.push((w, sources.clone()));
-        sieves.push(Json::obj([
-            ("base", contexts[w].wire()),
-            (
-                "arrows",
-                refs(&sources.iter().map(|v| arrows[&(*v, w)]).collect::<Vec<_>>()),
-            ),
-        ]));
-    }
-    if !patch_indices.contains(&0) {
-        let sources = (0..supports.len())
-            .filter(|v| {
-                patch_indices
-                    .iter()
-                    .any(|p| supports[*p].contains(&supports[*v]))
-            })
-            .collect::<Vec<_>>();
-        matching_checks.push((0, sources.clone()));
-        sieves.push(Json::obj([
-            ("base", contexts[0].wire()),
-            (
-                "arrows",
-                refs(&sources.iter().map(|v| arrows[&(*v, 0)]).collect::<Vec<_>>()),
-            ),
-        ]));
-    }
-    let topology = b.push(
-        NodeType::Construction(T::Topology),
-        "topology",
-        Json::obj([
-            ("contexts", refs(&contexts)),
-            ("maps", refs(&maps)),
-            ("generators", refs(&[cover])),
-            ("covering_sieves", Json::Arr(sieves)),
-        ]),
-        contexts
-            .iter()
-            .chain(&maps)
-            .copied()
-            .chain([cover])
-            .collect(),
-        None,
-        None,
-    )?;
+    let (topology, matching_checks) = topology(b, &supports, &contexts, &maps, cover, &arrows, &patch_indices)?;
     let mut checks = vec![];
     let mut summaries = vec![];
     for (side, equation_side) in [("semantic", false), ("equation", true)] {
@@ -792,4 +748,64 @@ pub(super) fn build(
         states: states[0].states,
         patch_count: patch_indices.len(),
     })
+}
+
+pub(super) fn topology(
+    b: &mut Builder<'_>, supports: &[Support], contexts: &[NodeRef], maps: &[NodeRef],
+    cover: NodeRef, arrows: &BTreeMap<(usize, usize), NodeRef>, patch_indices: &[usize],
+) -> Result<(NodeRef, Vec<(usize, Vec<usize>)>), ValidationFailure> {
+    // 唯一の生成coverを各contextに引き戻すと、真の部分contextでは恒等射を含む。
+    // 従って生成位相は各最大篩と、全体上のpatchで生成した篩(およびその上位篩)である。
+    // 全体以外はすべてpatch以下なので、上位篩は生成篩自身と最大篩だけ。
+    let mut sieves = vec![];
+    let mut matching_checks = vec![];
+    for w in 0..supports.len() {
+        let sources = (0..supports.len())
+            .filter(|v| arrows.contains_key(&(*v, w)))
+            .collect::<Vec<_>>();
+        matching_checks.push((w, sources.clone()));
+        sieves.push(Json::obj([
+            ("base", contexts[w].wire()),
+            (
+                "arrows",
+                refs(&sources.iter().map(|v| arrows[&(*v, w)]).collect::<Vec<_>>()),
+            ),
+        ]));
+    }
+    if !patch_indices.contains(&0) {
+        let sources = (0..supports.len())
+            .filter(|v| {
+                patch_indices
+                    .iter()
+                    .any(|p| supports[*p].contains(&supports[*v]))
+            })
+            .collect::<Vec<_>>();
+        matching_checks.push((0, sources.clone()));
+        sieves.push(Json::obj([
+            ("base", contexts[0].wire()),
+            (
+                "arrows",
+                refs(&sources.iter().map(|v| arrows[&(*v, 0)]).collect::<Vec<_>>()),
+            ),
+        ]));
+    }
+    let topology = b.push(
+        NodeType::Construction(T::Topology),
+        "topology",
+        Json::obj([
+            ("contexts", refs(&contexts)),
+            ("maps", refs(&maps)),
+            ("generators", refs(&[cover])),
+            ("covering_sieves", Json::Arr(sieves)),
+        ]),
+        contexts
+            .iter()
+            .chain(maps)
+            .copied()
+            .chain([cover])
+            .collect(),
+        None,
+        None,
+    )?;
+    Ok((topology, matching_checks))
 }

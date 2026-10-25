@@ -23,6 +23,8 @@ use crate::{
     types::Type,
 };
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "local_integer.rs"]
+mod integer;
 #[path = "local_compare.rs"]
 mod comparison;
 #[path = "local_finite.rs"]
@@ -52,6 +54,7 @@ struct System {
     inhabited: bool,
     patch_count: usize,
     finite: Option<geometry::Finite>,
+    integer: Option<integer::Diagram>,
     fixed_positions: Vec<Fact>,
 }
 #[derive(Clone, Debug)]
@@ -102,6 +105,11 @@ impl Data {
         match self.ty() {
             NodeType::Construction(T::LocalSystem) => Some(ProjectionType::LocalSystem),
             NodeType::Construction(T::Diagnostic) => Some(ProjectionType::Diagnostic),
+            NodeType::Construction(T::Cohomology) => Some(ProjectionType::Cohomology),
+            NodeType::Construction(T::Class) => Some(ProjectionType::Class),
+            NodeType::Construction(T::Module) => Some(ProjectionType::Module),
+            NodeType::Construction(T::Ring) => Some(ProjectionType::Ring),
+            NodeType::Vector(_) => Some(ProjectionType::Vector),
             NodeType::Construction(T::Comparison) => Some(ProjectionType::Comparison),
             NodeType::Construction(T::Cover) => Some(ProjectionType::Cover),
             NodeType::Construction(T::Topology) => Some(ProjectionType::Topology),
@@ -115,6 +123,29 @@ impl Data {
                 Some(ProjectionType::EquationSolutionSet)
             }
             NodeType::Proposition => Some(ProjectionType::Proposition),
+            _ => None,
+        }
+    }
+    pub(super) fn scalar_projection(&self, path: &[ProjectionStep]) -> Option<Scalar> {
+        if self.ty() != NodeType::Construction(T::Module) { return None; }
+        let Json::Obj(fields) = &self.part().wire else { return None; };
+        match path {
+            [ProjectionStep::Field(field)] if field == "free_rank" => {
+                let Json::Nat(rank) = fields.get(field)? else { return None; };
+                Some(Scalar::Z((*rank).into()))
+            }
+            [ProjectionStep::Field(field), rest @ ..] if field == "torsion" => {
+                let Json::Arr(values) = fields.get(field)? else { return None; };
+                let values = values.iter().map(|v| {
+                    let Json::Str(value) = v else { return None; };
+                    Some(Scalar::Z(value.parse().ok()?))
+                }).collect::<Option<Vec<_>>>()?;
+                match rest {
+                    [] => Some(Scalar::List { element: Type::Z, items: values }),
+                    [ProjectionStep::Index(i)] => values.get(usize::try_from(*i).ok()?).cloned(),
+                    _ => None,
+                }
+            }
             _ => None,
         }
     }
@@ -135,8 +166,11 @@ impl Data {
             }
             NodeType::Construction(T::Diagnostic) => matches!(
                 field.as_str(),
-                "system" | "matching" | "global" | "restriction"
+                "system" | "matching" | "global" | "restriction" | "space" | "class"
             ),
+            NodeType::Construction(T::Module) => field == "ring",
+            NodeType::Construction(T::Cohomology) => field == "module",
+            NodeType::Construction(T::Class) => matches!(field.as_str(), "cohomology" | "coordinates"),
             NodeType::Construction(T::Comparison) => field == "finite_map",
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             _ => false,
@@ -244,7 +278,12 @@ fn compute(
         if request.kind == QuestionKind::Diagnose {
             return diagnose(g, request, target, original, base, witness.clone(), c);
         }
-        if request.arguments.iter().any(|a| a.name == "using") {
+        if let Some(name) = request.arguments.iter().find_map(|a| match (&*a.name, &a.value) {
+            ("using", Selector::Declaration { name }) => Some(name), _ => None,
+        }) {
+            if matches!(&env.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
+                return integer::compute(env, g, request, target, original, base, witness.clone(), c);
+            }
             return finite::compute(env, g, request, target, original, base, witness.clone(), c);
         }
         let reading = witness.construction().reading();
@@ -879,6 +918,7 @@ fn compute(
                 inhabited,
                 patch_count,
                 finite,
+                integer: None,
                 fixed_positions,
             }),
         })
@@ -912,6 +952,9 @@ fn diagnose(
             }
         })
         .ok_or("診断次数がない")?;
+    if let Some(diagram) = &system.integer {
+        return integer::diagnose(g, request, target, base, witness, diagram, degree, c);
+    }
     if degree > 1 {
         let original = &data.source.parts[system.expression.0 - data.source.base];
         let mut b = Builder {

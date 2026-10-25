@@ -40,6 +40,8 @@ pub(crate) struct Parameter {
 enum Symbol {
     Missing(MissingKey),
     Parameter(Parameter),
+    // 選択changeの更新位置を独立に動かす方程式側の座標。欠測とは別。
+    State(Fact),
     // 関数外延の座標。観測slot/全称binderではなく、元引数の位置だけで対応付ける。
     TermArgument(TermArgument),
 }
@@ -184,6 +186,29 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    pub(in crate::observed) fn state(position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
+        fact_check(position)?;
+        tick(c)?;
+        Ok(Self { ty: Type::Z, constant: Scalar::Z(BigInt::zero()),
+            coefficients: BTreeMap::from([(Symbol::State(position.clone()), Scalar::Z(BigInt::one()))]) })
+    }
+    pub(in crate::observed) fn state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(BigInt, Vec<BigInt>)>, ValidationFailure> {
+        self.check(c)?;
+        let Scalar::Z(constant) = &self.constant else { return Ok(None); };
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            if !matches!(key, Symbol::State(position) if positions.contains(position)) { return Ok(None); }
+        }
+        let mut row = vec![];
+        for position in positions {
+            tick(c)?;
+            row.push(match self.coefficients.get(&Symbol::State(position.clone())) {
+                Some(Scalar::Z(value)) => value.clone(), None => BigInt::zero(),
+                _ => return Err("整数自由状態の係数がZでない".into()),
+            });
+        }
+        Ok(Some((constant.clone(),row)))
+    }
     pub(in crate::observed) fn missing_facts(&self) -> Vec<Fact> {
         self.coefficients.keys().filter_map(|key| match key {
             Symbol::Missing(key) => Some(key.fact.clone()),
@@ -264,6 +289,10 @@ impl Form {
                         if key.kind.ty() != self.ty {
                             return Err("欠測成分の数値型が違う".into());
                         }
+                    }
+                    Symbol::State(position) => {
+                        fact_check(position)?;
+                        if self.ty != Type::Z { return Err("整数自由状態の係数型がZでない".into()); }
                     }
                     Symbol::TermArgument(argument) => {
                         if argument.kind.ty() != self.ty {
@@ -582,7 +611,7 @@ pub(crate) fn partial_forall(
             form.check(control)?;
             for symbol in form.coefficients.keys() {
                 tick(control)?;
-                if matches!(symbol, Symbol::TermArgument(_)) {
+                if matches!(symbol, Symbol::TermArgument(_) | Symbol::State(_)) {
                     return Err("Term外延座標を部分全称のbinderにできない".into());
                 }
                 if let Symbol::Parameter(parameter) = symbol
@@ -864,7 +893,7 @@ pub(crate) fn substitute_parameters(
         for (symbol, coefficient) in &form.coefficients {
             tick(control)?;
             match symbol {
-                Symbol::Missing(_) | Symbol::TermArgument(_) => {
+                Symbol::Missing(_) | Symbol::TermArgument(_) | Symbol::State(_) => {
                     add_coefficient(
                         &mut result.coefficients,
                         symbol,
@@ -978,8 +1007,8 @@ pub(crate) fn universal_equality(
             tick(control)?;
             match symbol {
                 Symbol::Missing(fact) => missing.push((fact.clone(), coefficient.clone())),
-                Symbol::TermArgument(_) => {
-                    return Err("Term外延座標を観測の全称binderにできない".into());
+                Symbol::TermArgument(_) | Symbol::State(_) => {
+                    return Err("外延・自由状態座標を観測の全称binderにできない".into());
                 }
                 Symbol::Parameter(parameter) => {
                     if !declared.contains(parameter) {

@@ -356,6 +356,13 @@ pub(in crate::observed) fn materialize(
     states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
+    materialize_with_free(env, b, declaration, request, coordinates, states, &[], c)
+}
+pub(in crate::observed) fn materialize_with_free(
+    env: &Environment<'_>, b: &mut Builder<'_>, declaration: &Declaration,
+    request: &Request, coordinates: &[NodeRef], states: &[Environment<'_>],
+    free: &[Fact], c: &mut Control,
+) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
         return Err("local署名がない".into());
     };
@@ -402,7 +409,7 @@ pub(in crate::observed) fn materialize(
     }
     let mut contexts = vec![];
     for bindings in &assignments {
-        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, c)?;
+        let context = materialize_instance(env, b, declaration, request, bindings, coordinates, states, free, c)?;
         let stopped = context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
         contexts.push(context);
         if stopped { break; }
@@ -417,6 +424,7 @@ fn materialize_instance(
     bindings: &[(String, Scalar)],
     coordinates: &[NodeRef],
     states: &[Environment<'_>],
+    free: &[Fact],
     c: &mut Control,
 ) -> Result<Context, ValidationFailure> {
     let Signature::Local {
@@ -613,8 +621,17 @@ fn materialize_instance(
         out.visible.extend(visible.iter().cloned());
         if missing_reason.is_some() { continue; }
         let ty = values.first().ok_or("localの読取り像が空")?.ty();
-        let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
-        let image = local_result::domain(b, &ty, &actual)?;
+        let image = if visible.iter().any(|slot| free.contains(slot)) {
+            if ty != Type::Z || visible.len() != 1 {
+                return Err(unsupported(declaration.span, "整数局所読取りの積の像は未実装"));
+            }
+            b.push(NodeType::Domain, "domain", Json::obj([
+                ("kind", Json::str("type")), ("type", Type::Z.wire())
+            ]), vec![], None, None)?
+        } else {
+            let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
+            local_result::domain(b, &ty, &actual)?
+        };
         for projection in projected {
             if let Some(existing) = out.projections.iter_mut().find(|p| p.read == projection.read && p.path == projection.path) {
                 existing.support.carrier.extend(projection.support.carrier);
