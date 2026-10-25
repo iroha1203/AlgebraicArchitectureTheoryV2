@@ -4393,3 +4393,50 @@ fn integer_diagnostic_transport_rejects_a_different_compound_binding() {
         assert_eq!(s(get(&arr(get(&j,"answers"))[8],"status")),"established");
     }
 }
+
+#[test]
+fn integer_local_laws_read_fields_through_bound_tuple_references() {
+    for (side,degree) in [("equation",0),("equation",1),("semantic",0),("semantic",1)] {
+        let dir=integer_transport_input(&format!("integer-projected-reference-{side}-{degree}"),true);
+        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+        std::fs::write(path,law.replace("law optional localValid",
+            "view packed(s:State):(State,Z)=(s,2); law optional packedLaw(b:(State,Z)):b.0.free=b.1; law optional localValid")).unwrap();
+        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "x=evaluate(Reservations.packed,on=$m.candidate.source,s=@v/p)",
+            "y=evaluate(Reservations.packed,on=$m.candidate.target,s=@v/transport_z)",
+            "l=localize($m.candidate.source,law=Reservations.packedLaw,b=$x.value,using=Reservations.move)",
+            "r=localize($m.candidate.target,law=Reservations.packedLaw,b=$y.value,using=Reservations.move)",
+            &ld,&rd,"c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{side}/{degree}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        for i in [5,6] {
+            let space=get(output(&j,i,"space"),"value");let group=get(node(&j,get(space,"module")),"value");
+            assert_eq!(num(get(group,"free_rank")),if degree==0 {1}else{0});assert!(arr(get(group,"torsion")).is_empty());
+        }
+        let cmp=get(output(&j,7,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[7],"status")),"established");
+        for field in ["kernel","cokernel"] {let group=get(node(&j,get(cmp,field)),"value");assert_eq!(num(get(group,"free_rank")),0);assert!(arr(get(group,"torsion")).is_empty());}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }
+}
+
+#[test]
+fn integer_projected_reference_keeps_the_missing_field_in_needed() {
+    #[path = "common/architecture_environment.rs"] mod fixture;
+    use archsig::canonical::Json;
+    let dir=integer_transport_input("integer-projected-reference-missing",false);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(path,law.replace("law optional localValid",
+        "view packed(s:State):(State,Z)=(s,2); law optional packedLaw(b:(State,Z)):b.0.free=b.0.held; law optional localValid")).unwrap();
+    let mut map=fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
+    fixture::atoms(&mut map).retain(|a| !matches!(a,Json::Obj(f) if f.get("id")==Some(&Json::str("p-held"))));
+    std::fs::write(dir.join("a.json"),map.canonical()).unwrap();
+    let r=execute(&dir,"out",&["a=build(Reservations,on=@v/A)","x=evaluate(Reservations.packed,on=$a.object,s=@v/p)",
+        "l=localize($a.object,law=Reservations.packedLaw,b=$x.value,using=Reservations.move)","d=diagnose($l.system)","n=needed($d)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert!(!has(get(&arr(get(&j,"answers"))[3],"outputs"),"class"));
+    let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{
+        let f=get(r,"field");s(get(f,"subject"))=="p"&&s(get(f,"field"))=="Reservations.State.held"
+    }));
+}

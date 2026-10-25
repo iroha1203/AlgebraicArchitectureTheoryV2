@@ -395,7 +395,25 @@ fn state_visibility_inner(
             }
             ExprKind::Dotted(_) | ExprKind::Field { .. } => {
                 let Some((name, fields)) = field_path(env, id)? else {
-                    return Ok(None);
+                    let ExprKind::Field { base, name } = &env.inputs.law().exprs[id].kind else {
+                        return Ok(None);
+                    };
+                    let owner = env.scoped_ast(*base, &variables, &Scope::default(), reading)?;
+                    if owner.condition_failed || owner.condition_pending
+                        || owner.support.iter().any(|f| f.field.is_some()) {
+                        return Ok(None);
+                    }
+                    let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
+                        return Ok(None);
+                    };
+                    visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(),
+                        field: Some(format!("{entity}.{}",name.name)), atom: None });
+                    subject_carrier(owner.known_value.as_ref().ok_or("局所読取り元がない")?, &mut carrier, c)?;
+                    let value = env.scoped_ast(id, &variables, &Scope::default(), reading)?;
+                    if value.condition_failed || value.condition_pending { return Ok(None); }
+                    if let Some(value) = value.known_value { subject_carrier(&value,&mut carrier,c)?; }
+                    chain = true;
+                    continue;
                 };
                 if !variables.contains_key(name) {
                     return Ok(None);
