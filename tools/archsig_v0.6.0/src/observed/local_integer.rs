@@ -7,7 +7,7 @@ use num_traits::Zero;
 #[path = "local_integer_cech.rs"]
 mod cech;
 #[path = "local_integer_linear.rs"]
-mod linear;
+pub(super) mod linear;
 #[path = "local_integer_state.rs"]
 mod state;
 pub(super) use cech::diagnose;

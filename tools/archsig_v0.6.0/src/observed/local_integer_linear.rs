@@ -5,7 +5,7 @@ use num_bigint::BigInt as Z;
 use num_traits::{One, Zero};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Fiber {
+pub(in crate::observed::local_result) struct Fiber {
     pub origin: Option<Vec<Z>>,
     pub known: bool,
     pub basis: Matrix,
@@ -16,7 +16,7 @@ pub(super) fn identity(n: usize) -> Matrix {
         .map(|i| (0..n).map(|j| Z::from(usize::from(i == j))).collect())
         .collect()
 }
-pub(super) fn apply(a: &Matrix, x: &[Z], c: &Control) -> Result<Vec<Z>, ValidationFailure> {
+pub(in crate::observed::local_result) fn apply(a: &Matrix, x: &[Z], c: &Control) -> Result<Vec<Z>, ValidationFailure> {
     let result = integer_fiber::multiply(a, &x.iter().map(|v| vec![v.clone()]).collect(), 1, c)?;
     Ok(result.into_iter().map(|row| row[0].clone()).collect())
 }
@@ -64,7 +64,7 @@ pub(super) fn image(
         result.rank,
     ))
 }
-pub(super) fn coordinates(
+pub(in crate::observed::local_result) fn coordinates(
     basis: &Matrix,
     rank: usize,
     values: &Matrix,
@@ -280,7 +280,7 @@ pub(super) fn glues(
 
 /// 整数readの同じfiberを同一視した自由座標。mapは全射、liftはその切断。
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Reading {
+pub(in crate::observed::local_result) struct Reading {
     pub map: Matrix,
     pub lift: Matrix,
     pub kernel: Matrix,

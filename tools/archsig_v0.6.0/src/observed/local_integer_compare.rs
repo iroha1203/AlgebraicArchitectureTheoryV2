@@ -2,6 +2,10 @@
 use super::*;
 use crate::observed::{change_result::linear_result as wire, integer_fiber};
 use num_bigint::BigInt as Z;
+use num_traits::Zero;
+#[path = "local_integer_transport.rs"]
+mod transport;
+pub(super) use transport::between;
 
 fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = &local(g, r)?.part().wire else {
@@ -77,12 +81,123 @@ fn coordinates(g: &Graph, vector: NodeRef) -> Result<Vec<Z>, ValidationFailure> 
     };
     values.iter().map(|v| integer(g, vector, v)).collect()
 }
+fn from_columns(
+    columns: &[Vec<Z>],
+    rows: usize,
+) -> Result<integer_fiber::Matrix, ValidationFailure> {
+    if columns.iter().any(|c| c.len() != rows) {
+        return Err("整数表示の列次元が違う".into());
+    }
+    Ok((0..rows)
+        .map(|i| columns.iter().map(|c| c[i].clone()).collect())
+        .collect())
+}
+fn map_matrix(g: &Graph, map: NodeRef) -> Result<integer_fiber::Matrix, ValidationFailure> {
+    from_columns(
+        &rows(g, map, "columns")?,
+        size(g, field(g, map, "target")?)?,
+    )
+}
+fn zero_columns(
+    g: &Graph,
+    module: NodeRef,
+    matrix: &integer_fiber::Matrix,
+    cols: usize,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    let relations = rows(g, module, "relations")?;
+    let relations_matrix = from_columns(&relations, size(g, module)?)?;
+    for j in 0..cols {
+        let rhs = matrix.iter().map(|r| r[j].clone()).collect::<Vec<_>>();
+        if integer_fiber::solve(&relations_matrix, relations.len(), &rhs, c)?
+            .particular
+            .is_none()
+        {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+fn induced(
+    g: &Graph,
+    source: NodeRef,
+    target: NodeRef,
+    map: &integer_fiber::Matrix,
+    c: &mut Control,
+) -> Result<integer_fiber::Matrix, ValidationFailure> {
+    let si = field(g, source, "inclusion")?;
+    let ti = field(g, target, "inclusion")?;
+    let sp = field(g, source, "projection")?;
+    let tp = field(g, target, "projection")?;
+    let sm = field(g, source, "module")?;
+    let tm = field(g, target, "module")?;
+    let cycles = size(g, field(g, si, "source")?)?;
+    let target_cycles = size(g, field(g, ti, "source")?)?;
+    let images = integer_fiber::multiply(map, &map_matrix(g, si)?, cycles, c)?;
+    let cycle_map = crate::observed::local_result::integer::linear::coordinates(
+        &map_matrix(g, ti)?,
+        target_cycles,
+        &images,
+        cycles,
+        c,
+    )?;
+    let on_cycles = integer_fiber::multiply(&map_matrix(g, tp)?, &cycle_map, cycles, c)?;
+    let n = size(g, sm)?;
+    let projection = map_matrix(g, sp)?;
+    let mut lift = vec![vec![Z::zero(); n]; cycles];
+    for j in 0..n {
+        let mut unit = vec![Z::zero(); n];
+        unit[j] = Z::from(1);
+        let column = integer_fiber::solve(&projection, cycles, &unit, c)?
+            .particular
+            .ok_or("cohomology商射影が全射でない")?;
+        for i in 0..cycles {
+            lift[i][j] = column[i].clone();
+        }
+    }
+    let result = integer_fiber::multiply(&on_cycles, &lift, n, c)?;
+    let factored = integer_fiber::multiply(&result, &projection, cycles, c)?;
+    let residual = factored
+        .iter()
+        .zip(&on_cycles)
+        .map(|(a, b)| a.iter().zip(b).map(|(x, y)| x - y).collect())
+        .collect();
+    let relations = rows(g, sm, "relations")?;
+    let images =
+        integer_fiber::multiply(&result, &from_columns(&relations, n)?, relations.len(), c)?;
+    if !zero_columns(g, tm, &residual, cycles, c)?
+        || !zero_columns(g, tm, &images, relations.len(), c)?
+    {
+        return Err("cohomology写像がcycle商を通じて因子分解しない".into());
+    }
+    Ok(result)
+}
+fn check_inverse(
+    g: &Graph,
+    module: NodeRef,
+    left: &integer_fiber::Matrix,
+    right: &integer_fiber::Matrix,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    let n = size(g, module)?;
+    let composite = integer_fiber::multiply(left, right, n, c)?;
+    let residual = composite
+        .iter()
+        .zip(identity(n))
+        .map(|(a, b)| a.iter().zip(b).map(|(x, y)| x - y).collect())
+        .collect();
+    if !zero_columns(g, module, &residual, n, c)? {
+        return Err("cohomology写像の合成が恒等でない".into());
+    }
+    Ok(())
+}
 pub(super) fn compare(
     b: &mut Builder<'_>,
     request: &Request,
     left: NodeRef,
     right: NodeRef,
     along: NodeRef,
+    transported: Option<&transport::Maps>,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
     let g = b.g;
@@ -95,24 +210,48 @@ pub(super) fn compare(
     if lm.len() != rm.len()
         || ld.len() != rd.len()
         || record(g, lc)?.get("convention") != record(g, rc)?.get("convention")
-        || field(g, lc, "cover")? != field(g, rc, "cover")?
+        || (transported.is_none() && field(g, lc, "cover")? != field(g, rc, "cover")?)
     {
         return Err("同じ局所系の複体の表示が一致しない".into());
     }
-    let mut components = vec![];
-    for (a, z) in lm.iter().zip(&rm) {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        if !same_module(g, *a, *z)? {
-            return Err("複体の同一座標の加群が一致しない".into());
+    let (forward, backward) = if let Some(maps) = transported {
+        (maps.forward.clone(), maps.inverse.clone())
+    } else {
+        let mut maps = vec![];
+        for (a, z) in lm.iter().zip(&rm) {
+            if !same_module(g, *a, *z)? {
+                return Err("複体の同一座標の加群が一致しない".into());
+            }
+            maps.push(identity(size(g, *a)?));
         }
-        let n = size(g, *a)?;
-        components.push(wire::map(b, *a, *z, &identity(n), n, c)?);
+        (maps.clone(), maps)
+    };
+    if forward.len() != lm.len() || backward.len() != lm.len() {
+        return Err("cochain写像の次数が違う".into());
     }
-    // 同一のordered coverの座標を移す。各微分の実係数を照合して可換性を検査する。
-    for (a, z) in ld.iter().zip(&rd) {
+    let mut components = vec![];
+    for i in 0..lm.len() {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-        if !same_map(g, *a, *z)? {
-            return Err("恒等cochain写像と微分が可換でない".into());
+        let ns = size(g, lm[i])?;
+        let nt = size(g, rm[i])?;
+        if forward[i].len() != nt
+            || forward[i].iter().any(|r| r.len() != ns)
+            || backward[i].len() != ns
+            || backward[i].iter().any(|r| r.len() != nt)
+            || integer_fiber::multiply(&backward[i], &forward[i], ns, c)? != identity(ns)
+            || integer_fiber::multiply(&forward[i], &backward[i], nt, c)? != identity(nt)
+        {
+            return Err("cochain写像の順逆が一致しない".into());
+        }
+        components.push(wire::map(b, lm[i], rm[i], &forward[i], ns, c)?);
+    }
+    for i in 0..ld.len() {
+        let source = map_matrix(g, ld[i])?;
+        let target = map_matrix(g, rd[i])?;
+        if integer_fiber::multiply(&target, &forward[i], size(g, lm[i])?, c)?
+            != integer_fiber::multiply(&forward[i + 1], &source, size(g, lm[i])?, c)?
+        {
+            return Err("cochain写像と微分が可換でない".into());
         }
     }
     let cochain = b.push(
@@ -134,17 +273,43 @@ pub(super) fn compare(
     let rs = field(g, right, "space")?;
     let lh = field(g, ls, "module")?;
     let rh = field(g, rs, "module")?;
-    // cycleの包含と商射影まで照合する。rankの一致だけでHの写像を決めない。
-    if !same_module(g, lh, rh)?
-        || !same_map(g, field(g, ls, "inclusion")?, field(g, rs, "inclusion")?)?
-        || !same_map(g, field(g, ls, "projection")?, field(g, rs, "projection")?)?
-    {
-        return Err("同じ複体からのコホモロジー表示が一致しない".into());
-    }
     let n = size(g, lh)?;
-    let hmap = wire::map(b, lh, rh, &identity(n), n, c)?;
-    let inverse = wire::map(b, rh, lh, &identity(n), n, c)?;
-    // 実表示で互いに逆な恒等写像なので、torsionを含めkernel/cokernelは零。
+    let target_n = size(g, rh)?;
+    let (hforward, hbackward) = if transported.is_some() {
+        let Some(Json::Nat(degree)) = record(g, left)?.get("degree") else {
+            return Err("診断の次数がない".into());
+        };
+        let degree = usize::try_from(*degree)
+            .map_err(|_| ValidationFailure::from("診断次数が大きすぎる"))?;
+        let f = induced(
+            g,
+            ls,
+            rs,
+            forward.get(degree).ok_or("次数のcochain写像がない")?,
+            c,
+        )?;
+        let v = induced(
+            g,
+            rs,
+            ls,
+            backward.get(degree).ok_or("次数の逆cochain写像がない")?,
+            c,
+        )?;
+        check_inverse(g, lh, &v, &f, c)?;
+        check_inverse(g, rh, &f, &v, c)?;
+        (f, v)
+    } else {
+        if !same_module(g, lh, rh)?
+            || !same_map(g, field(g, ls, "inclusion")?, field(g, rs, "inclusion")?)?
+            || !same_map(g, field(g, ls, "projection")?, field(g, rs, "projection")?)?
+        {
+            return Err("同じ複体からのコホモロジー表示が一致しない".into());
+        }
+        (identity(n), identity(n))
+    };
+    let hmap = wire::map(b, lh, rh, &hforward, n, c)?;
+    let inverse = wire::map(b, rh, lh, &hbackward, target_n, c)?;
+    // 関係で割った後にも順逆を検査した同型なのでkernel/cokernelは零。
     let ring = field(g, lh, "ring")?;
     let kernel = wire::module(b, ring, 0, "kernel", vec![hmap])?;
     let cokernel = wire::module(b, ring, 0, "quotient", vec![hmap])?;
@@ -185,11 +350,12 @@ pub(super) fn compare(
             let zv = field(g, z, "coordinates")?;
             let x = coordinates(g, av)?;
             let y = coordinates(g, zv)?;
-            if x.len() != n || y.len() != n {
+            if x.len() != n || y.len() != target_n {
                 return Err("対象類の座標次元が違う".into());
             }
+            let x = crate::observed::local_result::integer::linear::apply(&hforward, &x, c)?;
             let relations = rows(g, rh, "relations")?;
-            let matrix = (0..n)
+            let matrix = (0..target_n)
                 .map(|i| relations.iter().map(|r| r[i].clone()).collect())
                 .collect();
             let delta = x.iter().zip(&y).map(|(x, y)| x - y).collect::<Vec<_>>();
