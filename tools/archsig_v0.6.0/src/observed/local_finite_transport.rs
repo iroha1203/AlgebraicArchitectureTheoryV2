@@ -270,10 +270,13 @@ pub(super) fn between(
     }
     let (from, to, _, _) = public_compose::components(g, along)?;
     let op = public_compose::op(g, along)?;
-    if field(g, ls, "base")? != from
-        || field(g, rs, "base")? != to
-        || op.source().reading() != op.target().reading()
-    {
+    let left_base = field(g, ls, "base")?;
+    let right_base = field(g, rs, "base")?;
+    let endpoints = left_base == from && right_base == to;
+    let same_object = op.source() == op.target()
+        && [from, to].contains(&left_base)
+        && [from, to].contains(&right_base);
+    if !(endpoints || same_object) || op.source().reading() != op.target().reading() {
         return Ok(None);
     }
     let Some(rename) = Renaming::operation(g, along, c)? else {
