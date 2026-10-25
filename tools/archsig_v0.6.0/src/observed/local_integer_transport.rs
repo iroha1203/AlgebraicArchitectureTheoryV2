@@ -55,6 +55,7 @@ impl Renaming {
         env: &Environment<'_>,
         left: &[Fact],
         right: &[Fact],
+        injective: bool,
         c: &mut Control,
     ) -> Result<bool, ValidationFailure> {
         let mut targets = BTreeSet::new();
@@ -68,7 +69,7 @@ impl Renaming {
             let Some(image) = self.fact(source) else {
                 return Ok(false);
             };
-            if !targets.insert(image.clone()) {
+            if !targets.insert(image.clone()) && injective {
                 return Ok(false);
             }
             if !right.iter().any(|p| {
@@ -448,7 +449,7 @@ pub(in crate::observed::local_result) fn between(
     let Some(rename) = Renaming::operation(g, along, c)? else {
         return Ok(None);
     };
-    if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, c)? {
+    if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, true, c)? {
         return Ok(None);
     }
     if a.requirements.len() != b.requirements.len() {

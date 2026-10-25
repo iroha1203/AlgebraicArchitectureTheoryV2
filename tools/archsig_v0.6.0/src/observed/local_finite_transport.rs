@@ -130,13 +130,13 @@ fn states(g: &Graph, system: NodeRef, semantic: bool) -> Result<Vec<State>, Vali
     }
     Ok(result)
 }
-fn permutation(
+fn position_map(
     a: &[Fact],
     b: &[Fact],
     rename: &Renaming,
     c: &mut Control,
 ) -> Result<Option<Vec<usize>>, ValidationFailure> {
-    if a.len() != b.len() {
+    if a.len() < b.len() {
         return Ok(None);
     }
     let mut result = vec![];
@@ -148,30 +148,30 @@ fn permutation(
         let Some(i) = b.iter().position(|z| *z == y) else {
             return Ok(None);
         };
-        if result.contains(&i) {
-            return Ok(None);
-        }
         result.push(i);
+    }
+    if result.iter().copied().collect::<BTreeSet<_>>().len() != b.len() {
+        return Ok(None);
     }
     Ok(Some(result))
 }
 fn state_matches(
     a: &Scalar,
     b: &Scalar,
-    permutation: &[usize],
+    positions: &[usize],
     rename: &Renaming,
     c: &mut Control,
 ) -> Result<bool, ValidationFailure> {
     if matches!((a, b), (Scalar::Unit, Scalar::Unit)) {
-        return Ok(permutation.is_empty());
+        return Ok(positions.is_empty());
     }
     let (Scalar::Tuple(a), Scalar::Tuple(b)) = (a, b) else {
         return Ok(false);
     };
-    if a.len() != permutation.len() || b.len() != permutation.len() {
+    if a.len() != positions.len() || b.len() != positions.iter().copied().collect::<BTreeSet<_>>().len() {
         return Ok(false);
     }
-    for (x, i) in a.iter().zip(permutation) {
+    for (x, i) in a.iter().zip(positions) {
         if !rename.binding(x, &b[*i], c)? {
             return Ok(false);
         }
@@ -307,7 +307,7 @@ pub(super) fn between(
     let Some(rename) = Renaming::operation(g, along, c)? else {
         return Ok(None);
     };
-    if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, c)? {
+    if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, false, c)? {
         return Ok(None);
     }
     if l.laws.len() != r.laws.len() {
@@ -350,6 +350,7 @@ pub(super) fn between(
             return Ok(None);
         };
         carrier.sort_by_key(Json::canonical);
+        carrier.dedup();
         let Some(mut deps) = dependencies(g, x.context)?
             .iter()
             .map(|p| rename.fact(p))
@@ -358,6 +359,7 @@ pub(super) fn between(
             return Ok(None);
         };
         deps.sort();
+        deps.dedup();
         let selected = list(g, x.context, "law_coordinates")?
             .iter()
             .map(|r| laws.get(&r.0).map(|v| v.0))
@@ -380,7 +382,7 @@ pub(super) fn between(
             {
                 continue;
             }
-            let Some(p) = permutation(&x.slots, &y.slots, &rename, c)? else {
+            let Some(p) = position_map(&x.slots, &y.slots, &rename, c)? else {
                 continue;
             };
             let Some(map) = injection(g, &x.values, &y.values, c, |a, b, c| {
