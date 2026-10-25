@@ -1809,7 +1809,7 @@ fn finite_diagnostic_comparison_rejects_incompatible_degree_side_and_non_operati
 }
 
 #[test]
-fn matching_display_values_do_not_replace_the_operation_action_or_system_identity() {
+fn matching_values_require_identity_action_while_repeated_plans_compare() {
     use archsig::canonical::Json;
     #[path = "common/architecture_environment.rs"]
     mod fixture;
@@ -1884,11 +1884,22 @@ fn matching_display_values_do_not_replace_the_operation_action_or_system_identit
             "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
         ],
     );
-    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
     let result = result_json(&dir, &r);
     let answer = &arr(get(&result, "answers"))[5];
-    assert_eq!(s(get(answer, "status")), "undetermined");
-    assert!(format!("{:?}", get(answer, "reasons")).contains("unsupported_algorithm"));
+    assert_eq!(s(get(answer, "status")), "established");
+    let cmp = get(output(&result, 5, "comparison"), "value");
+    let map = get(node(&result, get(cmp, "finite_map")), "value");
+    assert_ne!(get(map, "source").value, get(map, "target").value);
+    let pairs = arr(get(map, "pairs"));
+    assert_eq!(pairs.len(), 1);
+    let pair = arr(&pairs[0]);
+    assert_ne!(pair[0].value, pair[1].value);
+    assert_eq!(get(node(&result, &pair[0]), "value").value,
+        get(node(&result, &pair[1]), "value").value);
+    for condition in arr(get(cmp, "conditions")) {
+        assert_eq!(s(get(get(node(&result, condition), "judgment"), "status")), "established");
+    }
 }
 
 fn implicit_multiple_input(name: &str, left: bool, right: Option<bool>) -> std::path::PathBuf {
