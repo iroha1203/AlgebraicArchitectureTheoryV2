@@ -66,15 +66,8 @@ pub(super) fn analyze(
     c: &mut Control,
 ) -> Result<(Option<Model>, Vec<Fact>), ValidationFailure> {
     let reading = witness.construction().reading();
-    if env
-        .inputs
-        .law()
-        .declarations
-        .values()
-        .any(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }))
-    {
-        return Err(unsupported("有限changeと明示localの公開構成は未実装"));
-    }
+    let explicit = env.inputs.law().declarations.values().any(|d|
+        d.reading == reading && matches!(d.signature, Signature::Local { .. }));
     let change_name = request
         .arguments
         .iter()
@@ -341,6 +334,7 @@ pub(super) fn analyze(
                     ..fact.clone()
                 });
             }
+            if explicit { continue; }
             let Signature::Law { body, guard, .. } = law.signature else {
                 return Err("局所Lawの署名がない".into());
             };

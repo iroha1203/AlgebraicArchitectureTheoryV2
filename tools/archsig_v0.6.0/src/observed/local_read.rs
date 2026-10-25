@@ -207,7 +207,7 @@ fn projections(
                 out.push(local_result::geometry::Projection {
                     read,
                     path,
-                    value: value.clone(),
+                    values: vec![value.clone()],
                     support: local_result::geometry::Support {
                         carrier,
                         positions,
@@ -314,6 +314,7 @@ pub(in crate::observed) fn materialize(
     declaration: &Declaration,
     request: &Request,
     coordinates: &[NodeRef],
+    states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
@@ -363,7 +364,7 @@ pub(in crate::observed) fn materialize(
     assignments
         .iter()
         .map(|bindings| {
-            materialize_instance(env, b, declaration, request, bindings, coordinates, c)
+            materialize_instance(env, b, declaration, request, bindings, coordinates, states, c)
         })
         .collect()
 }
@@ -374,6 +375,7 @@ fn materialize_instance(
     request: &Request,
     bindings: &[(String, Scalar)],
     coordinates: &[NodeRef],
+    states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Context, ValidationFailure> {
     let Signature::Local {
@@ -410,6 +412,21 @@ fn materialize_instance(
             &mut checks,
         )?;
         owner_values.insert(p.name.as_str(), Some(v));
+    }
+    for state in states {
+        c.checkpoint(Checkpoint::Localize)?;
+        let mut varying = owned_call::Checks::default();
+        let mut owners = BTreeMap::new();
+        for (p, (_, v)) in params.iter().zip(bindings) {
+            state.owned_call_value_check(&p.ty, &super::super::term::affine::Value::Known(v.clone()),
+                &owners, &declaration.reading, declaration.span, &mut varying)?;
+            owners.insert(p.name.as_str(), Some(v));
+        }
+        if varying.failure.is_some() != checks.failure.is_some()
+            || varying.blocked != checks.blocked || varying.missing != checks.missing {
+            return Err(unsupported(declaration.span, "自由状態で所属が変わるlocalは未実装"));
+        }
+        out.scope.merge(&varying.scope);
     }
     out.scope.merge(&checks.scope);
     out.positions.extend(positions(&checks.support));
@@ -449,6 +466,14 @@ fn materialize_instance(
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
         let (value, dependencies, absent) =
             evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
+        for state in states {
+            c.checkpoint(Checkpoint::Localize)?;
+            let (other, _, other_absent) = evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
+            if other.known_value != value.known_value || other.condition_failed != value.condition_failed
+                || other.condition_pending != value.condition_pending || other_absent != absent {
+                return Err(unsupported(declaration.span, "自由状態で適用条件が変わるlocalは未実装"));
+            }
+        }
         b.parts[expression.0 - b.base].scope.merge(&value.scope);
         out.scope.merge(&value.scope);
         out.positions.extend(dependencies);
@@ -480,73 +505,81 @@ fn materialize_instance(
             return Err("local guardがBoolでない".into());
         }
     }
+    let states = if states.is_empty() { vec![env] } else { states.iter().collect() };
     for id in reads {
         c.checkpoint(Checkpoint::Localize)?;
-        let visible = visible_slots(env, *id, bindings)?;
-        out.visible.extend(visible.iter().cloned());
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
-        let (read, dependencies, absent) =
-            evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
-        b.parts[expression.0 - b.base].scope.merge(&read.scope);
-        out.scope.merge(&read.scope);
-        out.positions.extend(dependencies.iter().cloned());
         out.arguments.push(expression);
-        if read.condition_failed {
-            return Err(unsupported(
-                declaration.span,
-                "local読取りの式の適用条件が不成立",
-            ));
-        }
-        if read.condition_pending || read.known_value.is_none() {
-            if absent.is_empty() {
-                return Err(unsupported(declaration.span, "localの読取り値が未確定"));
+        let mut values = vec![];
+        let mut carrier = vec![];
+        let mut dependencies = vec![];
+        let mut visible = vec![];
+        let mut absent = vec![];
+        let mut projected = vec![];
+        for state in &states {
+            c.checkpoint(Checkpoint::Localize)?;
+            visible.extend(visible_slots(state, *id, bindings)?);
+            let (read, positions, missing) =
+                evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
+            b.parts[expression.0 - b.base].scope.merge(&read.scope);
+            out.scope.merge(&read.scope);
+            dependencies.extend(positions);
+            absent.extend(missing);
+            if read.condition_failed {
+                return Err(unsupported(declaration.span, "local読取りの式の適用条件が不成立"));
             }
-            reason(
-                &mut out,
-                request,
-                ReasonKind::Missing,
-                absent,
-                declaration.span,
-                vec![expression],
-            );
+            if read.condition_pending || read.known_value.is_none() {
+                if absent.is_empty() {
+                    return Err(unsupported(declaration.span, "localの読取り値が未確定"));
+                }
+                continue;
+            }
+            let value = read.known_value.ok_or("localの確定値がない")?;
+            subject_carrier(&value, &mut carrier, c)?;
+            projections(state, *id, &value, out.readings.len(), bindings,
+                &declaration.reading, &mut projected, c)?;
+            if !values.contains(&value) { values.push(value); }
+        }
+        out.positions.extend(dependencies.iter().cloned());
+        out.visible.extend(visible.iter().cloned());
+        if !absent.is_empty() {
+            absent.sort(); absent.dedup();
+            reason(&mut out, request, ReasonKind::Missing, absent,
+                declaration.span, vec![expression]);
             continue;
         }
-        let value = read.known_value.ok_or("localの確定値がない")?;
-        subject_carrier(&value, &mut out.carrier, c)?;
-        let actual = change_result::value(b, &value)?;
-        let image = local_result::domain(b, &value.ty(), &[actual])?;
-        projections(
-            env,
-            *id,
-            &value,
-            out.readings.len(),
-            bindings,
-            &declaration.reading,
-            &mut out.projections,
-            c,
-        )?;
+        let ty = values.first().ok_or("localの読取り像が空")?.ty();
+        let actual = values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
+        let image = local_result::domain(b, &ty, &actual)?;
+        for projection in projected {
+            if let Some(existing) = out.projections.iter_mut().find(|p| p.read == projection.read && p.path == projection.path) {
+                existing.support.carrier.extend(projection.support.carrier);
+                existing.support.positions.extend(projection.support.positions);
+                existing.support.visible.extend(projection.support.visible);
+                for value in projection.values {
+                    if !existing.values.contains(&value) { existing.values.push(value); }
+                }
+            } else { out.projections.push(projection); }
+        }
         out.readings.push(Json::obj([
-            ("expression", expression.wire()),
-            ("type", value.ty().wire()),
-            ("domain", image.wire()),
+            ("expression", expression.wire()), ("type", ty.wire()), ("domain", image.wire()),
         ]));
         out.arguments.push(image);
         out.read_refs.extend([expression, image]);
-        let mut carrier = vec![];
+        out.carrier.extend(carrier.iter().cloned());
         for (_, v) in &read_bindings(env, *id, bindings, c)? {
             subject_carrier(v, &mut carrier, c)?;
         }
-        subject_carrier(&value, &mut carrier, c)?;
-        carrier.sort_by_key(Json::canonical);
-        carrier.dedup();
+        carrier.sort_by_key(Json::canonical); carrier.dedup();
         let mut dependencies = positions(&dependencies).collect::<Vec<_>>();
-        dependencies.sort();
-        dependencies.dedup();
-        out.read_supports.push(local_result::geometry::Support {
-            carrier,
-            positions: dependencies,
-            visible,
-        });
+        dependencies.sort(); dependencies.dedup();
+        visible.sort(); visible.dedup();
+        out.read_supports.push(local_result::geometry::Support { carrier, positions: dependencies, visible });
+    }
+    for projection in &mut out.projections {
+        projection.support.carrier.sort_by_key(Json::canonical); projection.support.carrier.dedup();
+        projection.support.positions.sort(); projection.support.positions.dedup();
+        projection.support.visible.sort(); projection.support.visible.dedup();
     }
     out.carrier.sort_by_key(Json::canonical);
     out.carrier.dedup();

@@ -667,6 +667,7 @@ fn compute(
                     declaration,
                     request,
                     &expressions,
+                    &[],
                     c,
                 )? {
                     local_scope.merge(&explicit.scope);

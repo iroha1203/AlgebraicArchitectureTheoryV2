@@ -2492,6 +2492,7 @@ fn tuple_component_support_excludes_other_bound_subjects() {
 
 #[test]
 fn finite_change_local_states_distinguish_the_action_image_from_free_equations() {
+    for explicit in [false, true] {
     for correlated in [false, true] {
         let dir = implicit_multiple_input("finite-change-local", false, Some(false));
         explicit_local(
@@ -2502,6 +2503,7 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
                 "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};"
             },
         );
+        if explicit { explicit_local(&dir, "local Flag(t:State) reads t.flag; local Other(t:State) reads t.other;"); }
         let r = execute(
             &dir,
             "out",
@@ -2615,6 +2617,7 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
             if correlated { "refuted" } else { "established" }
         );
     }
+}
 }
 
 #[test]
@@ -2883,6 +2886,7 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
 
 #[test]
 fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
+    for explicit in [false, true] {
         let dir = input("finite-read-bindings", Some(true));
         let mut entities = String::new();
         for entity in ["Left", "Right"] {
@@ -2918,22 +2922,25 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
     let law=std::fs::read_to_string(&path).unwrap().replace("law required valid(s:State):s.flag=true;", "");
     std::fs::write(path,law).unwrap();
     explicit_local(&dir,"law required left(t:State,u:Left[t]):t.flag=u.flag; law required right(t:State,v:Right[t]):t.flag=v.flag; change choose(t:State,b:Bool)=t with {flag=b};");
+    if explicit { explicit_local(&dir,"local LeftRead(t:State,u:Left[t]) reads (t.flag,u.flag,u.owner); local RightRead(t:State,v:Right[t]) reads (t.flag,v.flag,v.owner);"); }
     let asks=["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
+    assert_eq!(r.code,0,"{} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
     let system=get(output(&j,1,"system"),"value");
     let intersection=arr(get(system,"contexts")).iter().map(|r|get(node(&j,r),"value")).find(|v|arr(get(v,"carrier")).len()==1).unwrap();
     let readings=arr(get(intersection,"readings"));
-    assert_eq!(readings.len(),2);
+    assert_eq!(readings.len(),if explicit {1} else {2});
     for reading in readings {
         assert_eq!(s(get(reading,"type")),"Bool");
         let expression=get(node(&j,get(reading,"expression")),"value");
+        if explicit { assert_eq!(s(get(expression,"operation")), "project"); } else {
         let bindings=arr(get(expression,"bindings"));
         assert_eq!(bindings.len(),1);
         assert_eq!(s(get(&bindings[0],"name")),"t");
         let subject=get(node(&j,get(&bindings[0],"value")),"value");
         assert_eq!(s(&arr(subject)[1]),"s");
+        }
         let image=get(node(&j,get(reading,"domain")),"value");
         let values=arr(get(image,"elements"));
         assert_eq!(values.len(),2);
@@ -2945,6 +2952,46 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
     for ask in &asks {args.extend(["--ask",*ask]);}
     let r=run(&dir,&args);
     assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let after=result_json(&dir,&r);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
+}
+}
+
+#[test]
+fn finite_explicit_local_keeps_visibility_and_variable_guard_limits() {
+    for (local, expected) in [
+        ("local Flag(t:State) reads t.flag;", "visibility_insufficient"),
+        ("local Flag(t:State) when t.flag reads t.flag; local Other(t:State) reads t.other;", "unsupported_algorithm"),
+    ] {
+        let dir = implicit_multiple_input("finite-explicit-limit", false, Some(false));
+        explicit_local(&dir, &format!("{local} change choose(t:State,b:Bool,c:Bool)=t with {{flag=b,other=c}};"));
+        let r = execute(&dir, "out", &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,using=Fixed.choose)", "n=needed($l)"]);
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir,&r);
+        let local = &arr(get(&j,"answers"))[1];
+        assert!(!has(get(local,"outputs"),"system"));
+        assert!(arr(get(local,"reasons")).iter().any(|reason| s(get(reason,"code")) == expected));
+        let plan = get(output(&j,2,"plan"),"value");
+        assert!(arr(get(plan,"requirements")).is_empty());
+    }
+}
+
+#[test]
+fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
+    let dir = multiple_read_input("finite-explicit-missing", true, None, "t.flag,t.other");
+    explicit_local(&dir,"change choose(t:State,b:Bool)=t with {flag=b};");
+    let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)", "n=needed($l)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let local=&arr(get(&j,"answers"))[1];
+    assert!(!has(get(local,"outputs"),"system"));
+    let plan=get(output(&j,2,"plan"),"value");
+    assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Fixed.State.other"));
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in asks {args.extend(["--ask",ask]);}
+    let r=run(&dir,&args);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let after=result_json(&dir,&r);
     for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
 }
