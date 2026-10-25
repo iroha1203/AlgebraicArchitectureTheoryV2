@@ -1,7 +1,5 @@
 //! 局所アフィン集合の像、制限、整数座標。特解を一意な状態と見なさない。
 use super::*;
-use crate::observed::integer_fiber::{self, Matrix};
-use num_bigint::BigInt as Z;
 use num_traits::{One, Zero};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

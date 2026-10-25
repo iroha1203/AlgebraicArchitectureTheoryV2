@@ -96,9 +96,9 @@ pub(super) fn project(
     }
     let ty = p.ty.clone();
     let image = if p.support.visible.iter().any(|slot| free.contains(slot)) {
-        if ty != Type::Z || p.support.visible.len() != 1 { return Err(unsupported("整数射影の積の像は未実装")); }
+        if !matches!(ty, Type::Z | Type::Q) || p.support.visible.len() != 1 { return Err(unsupported("アフィン射影の積の像は未実装")); }
         b.push(NodeType::Domain, "domain", Json::obj([
-            ("kind", Json::str("type")), ("type", Type::Z.wire())
+            ("kind", Json::str("type")), ("type", ty.wire())
         ]), vec![], None, None)?
     } else {
         let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;

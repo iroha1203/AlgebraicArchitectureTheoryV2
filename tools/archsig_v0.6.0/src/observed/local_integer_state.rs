@@ -1,6 +1,5 @@
 //! 整数局所状態を既存の型付き加群・解集合として公開する。
 use super::*;
-use crate::observed::change_result::linear_result as wire;
 pub(super) struct State {
     pub ambient: NodeRef,
     pub equation: NodeRef,
@@ -88,7 +87,7 @@ pub(in crate::observed::local_result) fn solutions(
         c,
     )?;
     let (equations, certificate) = if let Some(rhs) = &known_rhs {
-        let (map, proof) = wire::smith(b, ring, ambient, matrix, rhs, &fiber, laws, c)?;
+        let (map, proof) = wire::certificate(b, ring, ambient, matrix, rhs, &fiber, laws, c)?;
         (map, Some(proof))
     } else {
         let target = wire::module(b, ring, matrix.len(), "free", laws.to_vec())?;
@@ -214,7 +213,7 @@ pub(super) fn build(
                             ("component", Json::Arr(vec![])),
                         ]),
                     ),
-                    ("type", Type::Z.wire()),
+                    ("type", coefficient_type().wire()),
                 ]),
             ));
         } else {
@@ -287,7 +286,7 @@ pub(super) fn build(
             ("slots", Json::Arr(state_slots)),
             (
                 "state_type",
-                Type::Tuple(vec![Type::Z; positions.len()]).wire(),
+                Type::Tuple(vec![coefficient_type(); positions.len()]).wire(),
             ),
         ]),
         std::iter::once(target).chain(subjects).collect(),

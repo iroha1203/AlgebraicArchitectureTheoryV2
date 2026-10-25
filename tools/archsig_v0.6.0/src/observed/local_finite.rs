@@ -518,6 +518,7 @@ pub(super) fn compute(
             patch_count: built.patch_count,
             finite: built.finite,
             integer: built.integer,
+            rational: None,
             fixed_positions,
         }),
     })
