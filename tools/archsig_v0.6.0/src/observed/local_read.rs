@@ -34,14 +34,26 @@ fn known(value: Scalar) -> SourceValue {
         scalar_scope: Some(Scope::default()),
     }
 }
-fn subject_carrier(value: &Scalar, carrier: &mut Vec<Json>) {
-    if matches!(value, Scalar::Subject { .. }) {
-        carrier.push(Json::obj([
-            ("type", value.ty().wire()),
-            ("value", value.wire()),
-        ]));
+fn subject_carrier(
+    value: &Scalar,
+    carrier: &mut Vec<Json>,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    let mut pending = vec![value];
+    while let Some(value) = pending.pop() {
+        c.checkpoint(Checkpoint::Localize)?;
+        match value {
+            Scalar::Subject { .. } => carrier.push(Json::obj([
+                ("type", value.ty().wire()),
+                ("value", value.wire()),
+            ])),
+            Scalar::Tuple(items) => pending.extend(items.iter().rev()),
+            _ => {}
+        }
     }
+    Ok(())
 }
+
 fn positions(facts: &[Fact]) -> impl Iterator<Item = Fact> + '_ {
     facts.iter().filter(|f| f.field.is_some()).map(|f| Fact {
         atom: None,
@@ -92,57 +104,70 @@ fn bound_name<'a>(env: &'a Environment<'_>, id: usize) -> Option<&'a str> {
         _ => None,
     }
 }
-fn visible_slot(
+fn visible_slots(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
-) -> Result<Option<Fact>, ValidationFailure> {
-    let expr = &env.inputs.law().exprs[id];
-    let (variable, field) = match &expr.kind {
-        ExprKind::Group(child) => return visible_slot(env, *child, bindings),
-        ExprKind::Dotted(parts) if parts.len() == 2 => {
-            (parts[0].name.as_str(), parts[1].name.as_str())
-        }
-        ExprKind::Field { base, name } => (
-            bound_name(env, *base)
-                .ok_or_else(|| unsupported(expr.span, "明示localの複合field読取りは未実装"))?,
-            name.name.as_str(),
-        ),
-        ExprKind::Dotted(parts)
-            if parts.len() == 1 && bindings.iter().any(|(n, _)| n == &parts[0].name) =>
-        {
-            return Ok(None);
-        }
-        ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {
-            return Ok(None);
-        }
-        _ => {
+) -> Result<Vec<Fact>, ValidationFailure> {
+    let mut visible = vec![];
+    let mut pending = vec![id];
+    while let Some(id) = pending.pop() {
+        env.control.clone().checkpoint(Checkpoint::Localize)?;
+        let expr = &env.inputs.law().exprs[id];
+        let (variable, field) = match &expr.kind {
+            ExprKind::Group(child) => {
+                pending.push(*child);
+                continue;
+            }
+            ExprKind::Tuple(items) => {
+                pending.extend(items.iter().rev());
+                continue;
+            }
+            ExprKind::Dotted(parts) if parts.len() == 2 => {
+                (parts[0].name.as_str(), parts[1].name.as_str())
+            }
+            ExprKind::Field { base, name } => (
+                bound_name(env, *base)
+                    .ok_or_else(|| unsupported(expr.span, "明示localの複合field読取りは未実装"))?,
+                name.name.as_str(),
+            ),
+            ExprKind::Dotted(parts)
+                if parts.len() == 1 && bindings.iter().any(|(n, _)| n == &parts[0].name) =>
+            {
+                continue;
+            }
+            ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => {
+                continue;
+            }
+            _ => {
+                return Err(unsupported(
+                    expr.span,
+                    "明示localの複合読取りの因子分解は未実装",
+                ));
+            }
+        };
+        let Some((
+            _,
+            Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            },
+        )) = bindings.iter().find(|(n, _)| n == variable)
+        else {
             return Err(unsupported(
                 expr.span,
-                "明示localの複合読取りの因子分解は未実装",
+                "明示localの直接読取り元が参照でない",
             ));
-        }
-    };
-    let Some((
-        _,
-        Scalar::Subject {
-            snapshot,
-            subject,
-            entity,
-        },
-    )) = bindings.iter().find(|(n, _)| n == variable)
-    else {
-        return Err(unsupported(
-            expr.span,
-            "明示localの直接読取り元が参照でない",
-        ));
-    };
-    Ok(Some(Fact {
-        snapshot: snapshot.clone(),
-        subject: subject.clone(),
-        field: Some(format!("{entity}.{field}")),
-        atom: None,
-    }))
+        };
+        visible.push(Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some(format!("{entity}.{field}")),
+            atom: None,
+        });
+    }
+    Ok(visible)
 }
 fn reason(
     context: &mut Context,
@@ -276,7 +301,7 @@ pub(in crate::observed) fn materialize(
         .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
     for (_, v) in &bindings {
-        subject_carrier(v, &mut out.carrier);
+        subject_carrier(v, &mut out.carrier, c)?;
     }
     out.arguments.extend(node_bindings.iter().map(|(_, r)| *r));
     let mut scope = Scope::default();
@@ -330,7 +355,7 @@ pub(in crate::observed) fn materialize(
     let mut visible = vec![];
     for id in reads {
         c.checkpoint(Checkpoint::Localize)?;
-        visible.extend(visible_slot(env, *id, &bindings)?);
+        visible.extend(visible_slots(env, *id, &bindings)?);
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
         let (read, dependencies, absent) =
             evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
@@ -359,7 +384,7 @@ pub(in crate::observed) fn materialize(
             continue;
         }
         let value = read.known_value.ok_or("localの確定値がない")?;
-        subject_carrier(&value, &mut out.carrier);
+        subject_carrier(&value, &mut out.carrier, c)?;
         let actual = change_result::value(b, &value)?;
         let image = local_result::domain(b, &value.ty(), &[actual])?;
         out.readings.push(Json::obj([
