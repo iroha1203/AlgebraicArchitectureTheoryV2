@@ -76,6 +76,50 @@ fn pairs(g: &Graph, r: NodeRef) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFai
         })
         .collect()
 }
+fn same_plan(a: &Request, b: &Request) -> bool {
+    a.kind == b.kind
+        && a.head == b.head
+        && a.defaults == b.defaults
+        && a.arguments
+            .iter()
+            .map(|x| (&x.name, &x.value))
+            .collect::<BTreeMap<_, _>>()
+            == b.arguments
+                .iter()
+                .map(|x| (&x.name, &x.value))
+                .collect::<BTreeMap<_, _>>()
+}
+fn identity_pairs(
+    g: &Graph,
+    source: NodeRef,
+    target: NodeRef,
+    c: &mut Control,
+) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
+    let left = elements(g, source)?;
+    if source == target {
+        return Ok(left.into_iter().map(|r| (r, r)).collect());
+    }
+    let right = elements(g, target)?;
+    let mut result = vec![];
+    for a in &left {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        let mut images = vec![];
+        for z in &right {
+            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            if g.scalar(*a)? == g.scalar(*z)? {
+                images.push(*z);
+            }
+        }
+        if images.len() != 1 || result.iter().any(|(_, z)| *z == images[0]) {
+            return Err("同じ構成指定の有限状態の対応が一意でない".into());
+        }
+        result.push((*a, images[0]));
+    }
+    if left.len() != right.len() {
+        return Err("同じ構成指定の有限状態の対応が全射でない".into());
+    }
+    Ok(result)
+}
 pub(super) fn compute(
     env: &Environment<'_>,
     g: &Graph,
@@ -123,7 +167,17 @@ pub(super) fn compute(
         }
         identity &= found;
     }
-    let supported = left_system == right_system
+    let right_data = local(g, right_system)?;
+    let right_plan = right_data
+        .source
+        .system
+        .as_ref()
+        .ok_or("比較先の局所系がない")?;
+    let equivalent_finite = system.integer.is_none()
+        && right_plan.integer.is_none()
+        && field(g, right_system, "base")? == object
+        && same_plan(&data.source.request, &right_data.source.request);
+    let supported = (left_system == right_system || equivalent_finite)
         && identity
         && operation.source() == operation.target()
         && operation.source().reading() == witness.construction().reading()
@@ -192,39 +246,26 @@ pub(super) fn compute(
     } else {
         let lm = field(g, left, "matching")?;
         let rm = field(g, right, "matching")?;
-        let le = elements(g, lm)?;
-        let re = elements(g, rm)?;
-        let mut correspondence = vec![];
-        for a in &le {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-            let mut matches = vec![];
-            for z in &re {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-                if g.scalar(*a)? == g.scalar(*z)? {
-                    matches.push(*z);
-                }
-            }
-            if matches.len() != 1 {
-                return Err("固定局所系のmatching対応が一意でない".into());
-            }
-            correspondence.push((*a, matches[0]));
-        }
-        if le.len() != re.len() {
-            return Err("固定局所系のmatching対応が全射でない".into());
-        }
+        let correspondence = identity_pairs(g, lm, rm, c)?;
         let lr = field(g, left, "restriction")?;
         let rr = field(g, right, "restriction")?;
         let global_domain = field(g, lr, "source")?;
-        if global_domain != field(g, rr, "source")? {
-            return Err("固定局所系の診断の大域状態が一致しない".into());
-        }
-        let global = elements(g, global_domain)?;
-        let global_map = state_map(
-            &mut b,
-            global_domain,
-            global_domain,
-            &global.iter().map(|r| (*r, *r)).collect::<Vec<_>>(),
-        )?;
+        let target_domain = field(g, rr, "source")?;
+        let global_pairs = identity_pairs(g, global_domain, target_domain, c)?;
+        let global_map = state_map(&mut b, global_domain, target_domain, &global_pairs)?;
+        let global_inverse = if global_domain == target_domain {
+            global_map
+        } else {
+            state_map(
+                &mut b,
+                target_domain,
+                global_domain,
+                &global_pairs
+                    .iter()
+                    .map(|(a, z)| (*z, *a))
+                    .collect::<Vec<_>>(),
+            )?
+        };
         let matching_map = state_map(&mut b, lm, rm, &correspondence)?;
         let inverse = state_map(
             &mut b,
@@ -260,7 +301,7 @@ pub(super) fn compute(
         let conditions = vec![
             b.proposition(
                 "inverse_maps",
-                vec![global_map, global_map],
+                vec![global_map, global_inverse],
                 vec![along],
                 Decision::Established,
             )?,
