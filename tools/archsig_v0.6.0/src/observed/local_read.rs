@@ -401,9 +401,9 @@ fn materialize_instance(
         reasons: vec![],
         scope: Scope::default(),
     };
+    let mut checks = owned_call::Checks::default();
     let result = (|| -> Result<(), ValidationFailure> {
     let mut absent = vec![];
-    let mut checks = owned_call::Checks::default();
     let mut owner_values = BTreeMap::new();
     for (p, (_, v)) in params.iter().zip(bindings) {
         env.owned_call_value_check(
@@ -436,7 +436,7 @@ fn materialize_instance(
     if checks.failure.is_some() {
         return Ok(());
     }
-    absent.extend(checks.missing);
+    absent.extend(checks.missing.iter().cloned());
     if checks.blocked || !absent.is_empty() {
         if absent.is_empty() {
             return Err(unsupported(declaration.span, "localの所属条件が未確定"));
@@ -628,6 +628,12 @@ fn materialize_instance(
     Ok(())
     })();
     if let Err(error) = result {
+        out.scope.merge(&checks.scope);
+        out.positions.extend(positions(&checks.support));
+        if checks.failure.is_none() && !checks.missing.is_empty() {
+            reason(&mut out, request, ReasonKind::Missing, checks.missing,
+                declaration.span, coordinates.to_vec());
+        }
         let (kind, location) = match error {
             ValidationFailure::Stop(stop) => (ReasonKind::Stop(stop), None),
             ValidationFailure::UnsupportedExpression { location, .. } => {
@@ -649,4 +655,44 @@ fn materialize_instance(
             missing: vec![], location });
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::observed::{control::{Limits, Usage}, input::check_inputs, request::resolve_native_for_test};
+    #[allow(dead_code)]
+    mod fixture {
+        use crate as archsig;
+        include!("../../tests/common/architecture_environment.rs");
+    }
+    fn quiet() -> Control { Control::new(Limits::default(), |_| Usage::default()) }
+    #[test]
+    fn local_owner_missing_survives_the_first_free_state_stop() {
+        let map = fixture::remove_atom("p-owner");
+        let inputs = check_inputs(fixture::input("local here(a:System,s:State[a]) reads s.free;", Some(&map)), &mut quiet()).unwrap();
+        let requests = resolve_native_for_test(inputs.law(), inputs.archmap(), &["c=check(Reservations.roots,x=@v/A)"], &mut quiet()).unwrap();
+        let env = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+        let declaration = &inputs.law().declarations["Reservations.here"];
+        let bindings = vec![
+            ("a".into(), Scalar::Subject { snapshot:"v".into(), subject:"A".into(), entity:"Reservations.System".into() }),
+            ("s".into(), Scalar::Subject { snapshot:"v".into(), subject:"p".into(), entity:"Reservations.State".into() }),
+        ];
+        for mode in 0..3 {
+            let state = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+            let graph = Graph::new(&quiet());
+            let mut b = Builder { g:&graph, base:0, parts:vec![] };
+            let mut c = Control::new(Limits { time_ms:Some(1), memory_mib:Some(1) }, move |point| {
+                if point != Checkpoint::Localize { return Usage::default(); }
+                match mode {
+                    0 => Usage { elapsed_ms:2, ..Usage::default() },
+                    1 => Usage { memory_mib:2, ..Usage::default() },
+                    _ => Usage { signal:Some(crate::result::Signal::Term), ..Usage::default() },
+                }
+            });
+            let context = materialize_instance(&env, &mut b, declaration, &requests.requests()[0], &bindings, &[], &[state], &mut c).unwrap();
+            assert!(context.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_))));
+            assert!(context.reasons.iter().any(|r| r.missing.iter().any(|f| f.subject=="p" && f.field.as_deref()==Some("Reservations.State.owner"))));
+        }
+    }
 }
