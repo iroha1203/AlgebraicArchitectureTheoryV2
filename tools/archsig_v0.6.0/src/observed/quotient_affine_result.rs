@@ -165,7 +165,7 @@ pub(super) fn compute(
         if let Some(law) = &image.law {
             let target = domain(
                 &mut b,
-                &law_result::family_type(env, &law.name, ty)?,
+                &law_result::family_type(env, &law.name, &law.value_type)?,
                 &[],
                 &[reference, law_expression.ok_or("アフィン商のLaw式がない")?],
             )?;
@@ -428,7 +428,7 @@ fn law_descent(
             candidates.push(change_result::value(b, &row.parameters)?);
             views.push(change_result::value(b, &row.image)?);
             let (family, checked) =
-                law_result::row(b, env, input, &row, &law.name, ty, expression)?;
+                law_result::row(b, env, input, &row, &law.name, &law.value_type, expression)?;
             values.push(change_result::value(b, &family)?);
             evaluations.extend(checked);
         }
@@ -460,20 +460,19 @@ fn law_descent(
         return Ok((None, vec![evidence], evaluations));
     }
     // 固定したinstance keyの左右値を座標とする係数加群。成立Boolや残差には縮めない。
-    let family = linear::module(b, ring, 2, "free", vec![expression])?;
+    let family = linear::module(b, ring, law.matrix.len(), "free", vec![expression])?;
     let key = Scalar::Tuple(
         law.bindings
             .iter()
             .map(|(_, value)| value.clone())
             .collect(),
     );
-    let generators = ["lhs", "rhs"]
-        .iter()
-        .map(|side| {
-            let label = Scalar::Tuple(vec![key.clone(), Scalar::Text((*side).into())]);
-            Json::obj([("type", label.ty().wire()), ("value", label.wire())])
-        })
-        .collect();
+    let mut labels=coefficients::coordinate_names(&law.value_type,"lhs",c)?;
+    labels.extend(coefficients::coordinate_names(&law.value_type,"rhs",c)?);
+    let generators = labels.into_iter().map(|side| {
+        let label=Scalar::Tuple(vec![key.clone(),Scalar::Text(side)]);
+        Json::obj([("type",label.ty().wire()),("value",label.wire())])
+    }).collect();
     let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
         return Err("アフィン商の評価族加群がrecordでない".into());
     };

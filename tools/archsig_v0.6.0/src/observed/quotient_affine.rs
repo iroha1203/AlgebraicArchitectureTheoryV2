@@ -17,6 +17,7 @@ pub(in crate::observed) struct Law {
     pub name: String,
     pub bindings: Vec<(String, Scalar)>,
     pub operands: [usize; 2],
+    pub value_type: Type,
     pub matrix: Matrix,
     pub offset: Vec<Scalar>,
 }
@@ -112,7 +113,8 @@ pub(in crate::observed) fn compute(
                     "アフィン商の直下等式以外のLaw降下は未実装",
                 ));
             };
-            if original.inputs.law().expr_type(lhs) != Some(ty) {
+            let value_type=original.inputs.law().expr_type(lhs).ok_or("商のLaw値型がない")?;
+            if !coefficients::view_type(value_type,ty,c)? {
                 return Err(unsupported(request, "アフィン商の指定係数以外のLaw値型は未実装"));
             }
             let bindings = params
@@ -135,6 +137,7 @@ pub(in crate::observed) fn compute(
                 name: name.clone(),
                 bindings,
                 operands: [lhs, rhs],
+                value_type: value_type.clone(),
                 matrix: vec![],
                 offset: vec![],
             })
@@ -310,12 +313,8 @@ pub(in crate::observed) fn compute(
                 .missing_slot_reads
                 .take()
                 .ok_or("アフィンLaw商の不足収集がない")?;
-            let coordinates = value
-                .affine
-                .as_ref()
-                .map(|f| coefficients::coordinates(f, &linear.axes, ty, c))
-                .transpose()?
-                .flatten();
+            let symbolic=env.symbolic_source(operand,&vars,&Scope::default(),&declaration.reading)?;
+            let coordinates=coefficients::view_coordinates(&symbolic,&linear.axes,ty,c)?;
             if value.condition_failed || value.condition_pending || coordinates.is_none() {
                 result.missing.extend(missing);
                 if !result.missing.is_empty() {
@@ -326,18 +325,12 @@ pub(in crate::observed) fn compute(
                     "アフィン商のLaw値が確定した指定係数のアフィン式でない",
                 ));
             }
-            let (mut constant, row) = coordinates.ok_or("アフィンLaw商の係数がない")?;
-            for (a, x) in row.iter().zip(&result.origin) {
-                c.checkpoint(Checkpoint::Quotient)?;
-                constant = coefficients::add_product(&constant,a,x,c)?;
+            let (mut constants, rows) = coordinates.ok_or("アフィンLaw商の係数がない")?;
+            for (constant,row) in constants.iter_mut().zip(&rows) {
+                for (a,x) in row.iter().zip(&result.origin) {*constant=coefficients::add_product(constant,a,x,c)?;}
             }
-            law.matrix.extend(coefficients::multiply(ty,
-                &vec![row],
-                &result.embedding,
-                dimensions,
-                c,
-            )?);
-            law.offset.push(constant);
+            law.matrix.extend(coefficients::multiply(ty,&rows,&result.embedding,dimensions,c)?);
+            law.offset.extend(constants);
         }
     }
     Ok(result)
@@ -422,7 +415,7 @@ pub(in crate::observed) fn point(
         return Err("アフィン商の反例の左右値がない".into());
     };
     let expected = apply(&law.matrix, &law.offset, coordinates)?;
-    if vec![left.clone(), right.clone()] != expected
+    if Scalar::Tuple(vec![left.clone(), right.clone()]) != coefficients::view_value(&Type::Tuple(vec![law.value_type.clone();2]),&expected,c)?
     {
         return Err("アフィン商の正規形と通常Law評価が違う".into());
     }

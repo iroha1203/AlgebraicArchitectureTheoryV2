@@ -807,3 +807,11 @@ fn integer_tuple_quotient_keeps_lattice_image_and_nested_view_values() {
     let mut xs=vec![];for g in generators {let v=arr(get(g,"value"));assert_eq!(v.len(),2);assert_eq!(arr(&v[1]).len(),2);xs.push(s(&v[0]).parse::<i64>().unwrap().abs());}xs.sort();assert_eq!(xs,vec![0,2]);
     assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
 }
+
+#[test]
+fn integer_tuple_law_descent_uses_all_values_on_the_lattice_image() {
+    let dir=input("integer-tuple-law","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional nested(s:State):(s.x,(s.y,7))=(s.x,(s.y,7));");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.nested)","bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.nested)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);
+    let q=get(output(&j,1,"quotient"),"value");let d=get(node(&j,get(q,"descent")),"value");assert_eq!(coordinates(&j,get(d,"offset")),vec![1,0,7,1,0,7]);let columns=integer_columns(&j,get(d,"linear"));assert_eq!(columns.len(),2);for column in columns{assert_eq!(column.len(),6);assert_eq!(&column[..3],&column[3..]);assert_eq!(column[2],0);assert_eq!(column[0]%2,0);}
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
+}
