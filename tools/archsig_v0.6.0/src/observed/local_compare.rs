@@ -186,8 +186,8 @@ pub(super) fn compute(
         .integer
         .as_ref()
         .is_some_and(|d| !d.equation_only || equation_side);
-    let rational_side = system.rational.is_some();
-    let right_rational_side = right_plan.rational.is_some();
+    let rational_side = system.rational.as_ref().is_some_and(|d| !d.equation_only || equation_side);
+    let right_rational_side = right_plan.rational.as_ref().is_some_and(|d| !d.equation_only || equation_side);
     let equivalent_finite = !rational_side
         && !right_rational_side
         && !integer_side

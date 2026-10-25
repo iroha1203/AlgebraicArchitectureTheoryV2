@@ -29,6 +29,10 @@ mod integer;
 mod rational;
 #[path = "local_compare.rs"]
 mod comparison;
+#[path = "local_rational_finite.rs"]
+mod rational_finite;
+#[path = "local_rational_geometry.rs"]
+mod rational_geometry;
 #[path = "local_finite.rs"]
 mod finite;
 #[path = "local_finite_model.rs"]
@@ -957,7 +961,8 @@ fn diagnose(
         if !diagram.equation_only || !semantic { return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
     }
     if let Some(diagram) = &system.rational {
-        return rational::diagnose(env, g, request, target, base, witness, diagram, degree, c);
+        let semantic=request.arguments.iter().any(|a|a.name=="side"&&matches!(&a.value,Selector::Enum{value} if value=="semantic"));
+        if !diagram.equation_only || !semantic { return rational::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
     }
     if degree > 1 {
         let mut b = Builder {

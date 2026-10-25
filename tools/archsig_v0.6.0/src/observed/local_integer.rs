@@ -3,13 +3,13 @@ mod wire { pub(super) use crate::observed::change_result::linear_result::{module
 use crate::observed::environment::{change_affine, local_read};
 use crate::observed::integer_fiber::{self, Matrix};
 use num_bigint::BigInt as Z;
-fn coefficient_type() -> crate::types::Type {
+pub(in crate::observed::local_result) fn coefficient_type() -> crate::types::Type {
     crate::types::Type::Z
 }
-fn coefficient_name() -> &'static str {
+pub(in crate::observed::local_result) fn coefficient_name() -> &'static str {
     "Z"
 }
-fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
+pub(in crate::observed::local_result) fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     crate::observed::result::Scalar::Z(v)
 }
 pub(in crate::observed::local_result) fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {

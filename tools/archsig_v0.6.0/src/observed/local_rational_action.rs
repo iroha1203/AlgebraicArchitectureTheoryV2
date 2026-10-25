@@ -1,5 +1,5 @@
 use super::*;
-pub(super) use crate::observed::environment::change_affine::Pending;
+pub(in crate::observed::local_result) use crate::observed::environment::change_affine::Pending;
 pub(super) struct Guard {
     pub equations: Matrix,
     pub rhs: Vec<Z>,
@@ -42,7 +42,7 @@ pub(super) fn compute(
         rhs: integer_fiber::vector(&f.rhs)?,
     })
 }
-pub(super) fn state_equations(
+pub(in crate::observed::local_result) fn state_equations(
     env: &Environment<'_>,
     slots: &[Fact],
     requirements: &[(String, Vec<(String, Scalar)>)],

@@ -3,8 +3,9 @@ use super::integer::{Renaming, dependencies, list, record, reference_value};
 use super::*;
 use std::collections::BTreeSet;
 use crate::observed::integer_fiber::{self, Matrix};
-use num_traits::Zero;
 use crate::observed::local_result::integer as affine;
+use crate::observed::local_result::rational as rational_affine;
+use rational_affine::integer_fiber as rational_fiber;
 pub(super) struct Maps {
     pub global: Vec<(NodeRef, NodeRef)>,
     pub matching: Vec<(NodeRef, NodeRef)>,
@@ -161,10 +162,13 @@ fn position_map(
 enum Coordinates {
     Fields(Vec<usize>),
     Read(Matrix, usize),
+    Rational(rational_fiber::Matrix, usize),
 }
-fn read_coordinates(
-    a: &affine::Diagram,
-    b: &affine::Diagram,
+macro_rules! read_coordinates {
+    ($name:ident,$field:ident,$fiber:ident,$variant:ident) => {
+fn $name(
+    a: &$field::Diagram,
+    b: &$field::Diagram,
     i: usize,
     j: usize,
     rename: &Renaming,
@@ -173,17 +177,21 @@ fn read_coordinates(
     let Some(positions) = position_map(&a.slots, &b.slots, rename, c)? else { return Ok(None); };
     if a.slots.len() != b.slots.len() { return Ok(None); }
     let n = a.slots.len();
-    let mut permutation = vec![vec![num_bigint::BigInt::zero(); n]; n];
-    for (i,j) in positions.iter().enumerate() { permutation[*j][i] = 1.into(); }
+    let mut permutation = vec![vec![num_traits::Zero::zero(); n]; n];
+    for (i,j) in positions.iter().enumerate() { permutation[*j][i] = 1usize.into(); }
     let source = &a.readings[i];
     let target = &b.readings[j];
-    let transported = integer_fiber::multiply(&target.map, &permutation, n, c)?;
-    let reading = affine::linear::Reading::new(&transported, n, c)?;
+    let transported = $fiber::multiply(&target.map, &permutation, n, c)?;
+    let reading = $field::linear::Reading::new(&transported, n, c)?;
     // 有限の試料が偶然一致するだけでは、異なる read の context を同一視しない。
     if !source.contains(&reading,c)? || !reading.contains(source,c)? { return Ok(None); }
-    let map = integer_fiber::multiply(&transported, &source.lift, source.map.len(), c)?;
-    Ok(Some(Coordinates::Read(map,source.map.len())))
+    let map = $fiber::multiply(&transported, &source.lift, source.map.len(), c)?;
+    Ok(Some(Coordinates::$variant(map,source.map.len())))
 }
+    };
+}
+read_coordinates!(integer_coordinates,affine,integer_fiber,Read);
+read_coordinates!(rational_coordinates,rational_affine,rational_fiber,Rational);
 fn state_matches(
     a: &Scalar,
     b: &Scalar,
@@ -193,6 +201,13 @@ fn state_matches(
 ) -> Result<bool, ValidationFailure> {
     let positions = match coordinates {
         Coordinates::Fields(p) => p,
+        Coordinates::Rational(map,width) => {
+            let (Scalar::Tuple(a),Scalar::Tuple(b)) = (a,b) else { return Ok(false); };
+            if a.len()!=*width || b.len()!=map.len() { return Ok(false); }
+            let a = a.iter().map(rational_affine::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+            let b = b.iter().map(rational_affine::read_coefficient).collect::<Result<Vec<_>,_>>()?;
+            return Ok(rational_affine::linear::apply(map,&a,c)? == b);
+        }
         Coordinates::Read(map, width) => {
             let (Scalar::Tuple(a),Scalar::Tuple(b)) = (a,b) else { return Ok(false); };
             if a.len()!=*width || b.len()!=map.len() { return Ok(false); }
@@ -333,6 +348,7 @@ pub(super) fn between(
     if l.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side) || r.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side) {
         return Ok(None);
     }
+    if l.rational.as_ref().is_some_and(|d|!d.equation_only||equation_side) || r.rational.as_ref().is_some_and(|d|!d.equation_only||equation_side) { return Ok(None); }
     let (from, to, _, _) = public_compose::components(g, along)?;
     let op = public_compose::op(g, along)?;
     let left_base = field(g, ls, "base")?;
@@ -423,8 +439,12 @@ pub(super) fn between(
                 continue;
             }
             let p = match (&l.integer,&r.integer) {
-                (Some(a),Some(b)) => read_coordinates(a,b,i,j,&rename,c)?,
-                (None,None) => position_map(&x.slots,&y.slots,&rename,c)?.map(Coordinates::Fields),
+                (Some(a),Some(b)) => integer_coordinates(a,b,i,j,&rename,c)?,
+                (None,None) => match (&l.rational,&r.rational) {
+                    (Some(a),Some(b)) => rational_coordinates(a,b,i,j,&rename,c)?,
+                    (None,None) => position_map(&x.slots,&y.slots,&rename,c)?.map(Coordinates::Fields),
+                    _ => None,
+                },
                 _ => None,
             };
             let Some(p) = p else { continue; };

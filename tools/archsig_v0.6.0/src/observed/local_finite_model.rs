@@ -10,7 +10,8 @@ pub(super) struct Reading {
 }
 pub(super) struct Model {
     pub change: String,
-    pub integer_equations: bool,
+    pub affine_equations: bool,
+    pub rational_equations: bool,
     pub assignments: Vec<(Fact, Scalar)>,
     pub candidates: Candidates,
     pub bindings: Vec<(String, Scalar)>,
@@ -133,7 +134,8 @@ pub(super) fn analyze(
     slots.sort();
     slots.dedup();
     let mut slot_types = vec![];
-    let mut integer_equations = false;
+    let mut affine_equations = false;
+    let mut rational_equations = false;
     let mut points = vec![vec![]];
     for slot in &slots {
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
@@ -145,10 +147,11 @@ pub(super) fn analyze(
             )?
             .ty
             .erase();
-        let values = if ty == Type::Z {
-            integer_equations = true;
-            // 整数域の列挙ではなく、有限作用を評価するための値だけを集める。
-            // 方程式側は別途、整数fiberを全域で解く。
+        let values = if matches!(ty,Type::Z|Type::Q) {
+            rational_equations |= ty == Type::Q;
+            affine_equations = true;
+            // 無限域の列挙ではなく、有限作用を評価するための値だけを集める。
+            // 方程式側は別途、アフィンfiberを全域で解く。
             let mut values = vec![];
             for row in &candidates.rows {
                 c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
@@ -165,7 +168,7 @@ pub(super) fn analyze(
                 } else {
                     let field = fixed.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("fieldがない")?)?;
                     if let crate::archmap::Slot::Known { value, .. } = &field.slot {
-                        values.push(crate::observed::environment::scalar_from(value, &ty, env.inputs.law(), c)?.ok_or("整数観測値がない")?);
+                        values.push(crate::observed::environment::scalar_from(value, &ty, env.inputs.law(), c)?.ok_or("数値観測値がない")?);
                     } else { missing.push(slot.clone()); }
                 }
             }
@@ -187,8 +190,8 @@ pub(super) fn analyze(
         points = next;
         slot_types.push(ty);
     }
-    if integer_equations && slot_types.iter().any(|ty| *ty != Type::Z) {
-        return Err(unsupported("有限作用の整数方程式側に混合型がある"));
+    if affine_equations && slot_types.iter().any(|ty| *ty != if rational_equations {Type::Q}else{Type::Z}) {
+        return Err(unsupported("有限作用のアフィン方程式側に混合型がある"));
     }
     let bindings = request
         .arguments
@@ -245,9 +248,9 @@ pub(super) fn analyze(
         }
         requirements.extend(rows.into_iter().map(|row| (law.name.clone(), row)));
     }
-    if integer_equations {
+    if affine_equations {
         let mut pending = crate::observed::environment::change_affine::Pending::default();
-        crate::observed::environment::change_affine::state_equations(&fixed, &slots, &requirements, &mut pending)?;
+        if rational_equations { crate::observed::environment::field_change::state_equations(&fixed, &slots, &requirements, &mut pending)?; } else { crate::observed::environment::change_affine::state_equations(&fixed, &slots, &requirements, &mut pending)?; }
         missing.extend(pending.facts);
         if !missing.is_empty() { return Ok((None, missing)); }
     }
@@ -437,7 +440,8 @@ pub(super) fn analyze(
     Ok((
         Some(Model {
             assignments: env.fixed_values(),
-            integer_equations,
+            affine_equations,
+            rational_equations,
             bindings,
             change: change_name.clone(),
             candidates,

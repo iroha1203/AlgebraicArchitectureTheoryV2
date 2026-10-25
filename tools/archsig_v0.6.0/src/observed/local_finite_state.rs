@@ -5,7 +5,7 @@ fn project(value: &Scalar, from: &State, to: &State, c: &Control) -> Result<Scal
         let Scalar::Tuple(values) = value else { return Err("整数読取り状態がTupleでない".into()); };
         if values.len() != a.map.len() { return Err("整数読取り状態の次元が違う".into()); }
         let values = values.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
-        return Ok(Scalar::Tuple(integer::linear::apply(&a.restriction(z,c)?, &values,c)?.into_iter().map(Scalar::Z).collect()));
+        return Ok(Scalar::Tuple(integer::linear::apply(&a.restriction(z,c)?, &values,c)?.into_iter().map(integer::coefficient_value).collect()));
     }
     if matches!(value, Scalar::Unit) && from.free.is_empty() && to.free.is_empty() { return Ok(Scalar::Unit); }
     let Scalar::Tuple(values) = value else { return Err("有限状態がTupleでない".into()); };
@@ -188,7 +188,7 @@ pub(super) fn build(
         .iter()
         .map(|i| model.slots[*i].clone())
         .collect::<Vec<_>>();
-    let ty = if let Some(reading) = reading { Type::Tuple(vec![Type::Z; reading.map.len()]) } else {
+    let ty = if let Some(reading) = reading { Type::Tuple(vec![integer::coefficient_type(); reading.map.len()]) } else {
         Type::Tuple(indexes.iter().map(|i| model.slot_types[*i].clone()).collect())
     };
     let mut projected = vec![];
@@ -198,7 +198,7 @@ pub(super) fn build(
         c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         let value = if let Some(reading) = reading {
             let values = point.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
-            Scalar::Tuple(integer::linear::apply(&reading.map, &values,c)?.into_iter().map(Scalar::Z).collect())
+            Scalar::Tuple(integer::linear::apply(&reading.map, &values,c)?.into_iter().map(integer::coefficient_value).collect())
         } else { Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect()) };
         if holds(i) {
             equation_values.push(value.clone());
