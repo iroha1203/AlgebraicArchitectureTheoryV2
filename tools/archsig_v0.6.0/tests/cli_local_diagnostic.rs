@@ -5503,3 +5503,60 @@ fn diagnostic_transport_keeps_path_bindings_and_named_compositions() {
         }
     }
 }
+
+#[test]
+fn diagnostic_transport_compares_term_bindings_by_their_values() {
+    for mode in ["finite", "integer", "rational", "nested", "fixed"] {
+        for wrong in [false, true] {
+            let dir = integer_transport_input(&format!("diagnostic-term-{mode}-{wrong}"), true);
+            let (ty, left, right) = match mode {
+                "finite" => ("Term<(Bool)->Z>", "fn(b:Bool)=>if b then 2 else 3", if wrong {"fn(c:Bool)=>if c then 2 else 4"} else {"fn(c:Bool)=>if not c then 3 else 1+1"}),
+                "rational" => ("Term<(Q)->Q>", "fn(x:Q)=>x+rat(1,2)", if wrong {"fn(y:Q)=>y+rat(1,3)"} else {"fn(y:Q)=>rat(2,4)+y"}),
+                "nested" => ("(Term<(Z)->Z>,Z)", "(fn(x:Z)=>x+x,2)", if wrong {"(fn(y:Z)=>2*y+1,2)"} else {"(fn(y:Z)=>2*y,2)"}),
+                _ => ("Term<(Z)->Z>", "fn(x:Z)=>x+x", if wrong {"fn(y:Z)=>2*y+1"} else {"fn(y:Z)=>2*y"}),
+            };
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path).unwrap();
+            let added = format!("view termLeft():{ty} = {left}; view termRight():{ty} = {right}; law optional termLaw(s:State,p:{ty}):s.free=2; law optional localValid");
+            std::fs::write(&path,law.replace("law optional localValid",&added)).unwrap();
+            let mut asks = vec![
+                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                "x=evaluate(Reservations.termLeft,on=$m.candidate.source)",
+                "y=evaluate(Reservations.termRight,on=$m.candidate.target)",
+            ];
+            asks.extend(if mode=="fixed" { [
+                "l=localize($m.candidate.source,law=Reservations.termLaw,s=@v/p,p=$x.value)",
+                "r=localize($m.candidate.target,law=Reservations.termLaw,s=@v/transport_z,p=$y.value)",
+            ] } else { [
+                "l=localize($m.candidate.source,law=Reservations.termLaw,s=@v/p,p=$x.value,using=Reservations.move)",
+                "r=localize($m.candidate.target,law=Reservations.termLaw,s=@v/transport_z,p=$y.value,using=Reservations.move)",
+            ] });
+            asks.extend([
+                "d=diagnose($l.system,degree=0)",
+                "e=diagnose($r.system,degree=0)",
+                "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            ]);
+            let r=execute(&dir,"out",&asks);
+            assert_eq!(r.code,if wrong {2} else {0},"{mode}/{wrong}: {} {}",r.stdout,r.stderr);
+            let j=result_json(&dir,&r);
+            if wrong {
+                let answer=arr(get(&j,"answers")).last().unwrap();
+                assert!(!has(get(answer,"outputs"),"comparison"));
+                assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+            } else {
+                let cmp=get(output(&j,7,"comparison"),"value");
+                if mode!="fixed" {for field in ["kernel","cokernel"] {
+                    let group=get(node(&j,get(cmp,field)),"value");
+                    assert_eq!(num(get(group,"free_rank")),0);
+                    assert!(arr(get(group,"torsion")).is_empty());
+                }}
+            }
+            let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+            for ask in asks {args.extend(["--ask",ask]);}
+            let repeat=run(&dir,&args);
+            assert_eq!(repeat.code,r.code,"{} {}",repeat.stdout,repeat.stderr);
+            let again=result_json(&dir,&repeat);
+            for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+        }
+    }
+}
