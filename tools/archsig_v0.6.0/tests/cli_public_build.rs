@@ -742,3 +742,60 @@ fn unsupported_order_presentation_does_not_replace_an_unobserved_value() {
         s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
     }));
 }
+
+#[test]
+fn explicit_local_instances_cover_each_owned_subject_and_keep_missing_values() {
+    for missing in [false, true] {
+        let dir = files(
+            "build-local-instances",
+            &format!("{BODY} local each(c:Part) reads (c.owner,c.quantity);"),
+            missing,
+        );
+        let r = asks(
+            &dir,
+            &[
+                "b=build(R,on=@v/root)",
+                "l=localize($b.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "n=needed($l)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if missing { 2 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let a = answer(&j, "l");
+        if missing {
+            assert!(!has(get(a, "outputs"), "system"));
+            let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
+            );
+        } else {
+            let system = value(&j, get(get(a, "outputs"), "system"));
+            let cover = value(&j, get(system, "cover"));
+            assert_eq!(arr(get(cover, "patches")).len(), 2);
+            assert_eq!(arr(get(system, "contexts")).len(), 4);
+            let mut subjects = vec![];
+            for patch in arr(get(cover, "patches")) {
+                let context = value(&j, patch);
+                let locals = arr(get(context, "locals"));
+                assert_eq!(locals.len(), 1);
+                let binding = &arr(get(&locals[0], "bindings"))[0];
+                subjects.push(s(&arr(value(&j, get(binding, "value")))[1]).to_owned());
+                assert_eq!(arr(get(context, "law_coordinates")).len(), 1);
+            }
+            subjects.sort();
+            assert_eq!(subjects, vec!["p", "q"]);
+            assert_eq!(s(get(answer(&j, "e"), "status")), "refuted");
+            assert_eq!(s(get(answer(&j, "s"), "status")), "refuted");
+        }
+    }
+}

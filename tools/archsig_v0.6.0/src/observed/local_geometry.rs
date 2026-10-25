@@ -1,17 +1,25 @@
 //! 固定状態の支持context、交わり、生成coverの有限局所系。
 use super::*;
 #[derive(Clone, PartialEq, Eq)]
-pub(super) struct Support {
+pub(in crate::observed) struct Support {
     pub carrier: Vec<Json>,
     pub positions: Vec<Fact>,
+    pub visible: Vec<Fact>,
 }
 impl Support {
-    fn contains(&self, other: &Self) -> bool {
+    pub(super) fn contains(&self, other: &Self) -> bool {
         other.carrier.iter().all(|v| self.carrier.contains(v))
             && other.positions.iter().all(|v| self.positions.contains(v))
+            && other.visible.iter().all(|v| self.visible.contains(v))
     }
     fn intersect(&self, other: &Self) -> Self {
         Self {
+            visible: self
+                .visible
+                .iter()
+                .filter(|v| other.visible.contains(v))
+                .cloned()
+                .collect(),
             carrier: self
                 .carrier
                 .iter()
@@ -26,6 +34,50 @@ impl Support {
                 .collect(),
         }
     }
+}
+pub(in crate::observed) struct Projection {
+    pub read: usize,
+    pub path: Vec<usize>,
+    pub value: Scalar,
+    pub support: Support,
+}
+fn project(
+    b: &mut Builder<'_>,
+    mut expression: NodeRef,
+    p: &Projection,
+) -> Result<(NodeRef, NodeRef), ValidationFailure> {
+    for position in &p.path {
+        let NodeType::Expression(Type::Tuple(types)) = &b.parts[expression.0 - b.base].ty else {
+            return Err("Tuple射影の入力型が積でない".into());
+        };
+        let ty = types
+            .get(*position)
+            .ok_or("Tuple射影の位置が範囲外")?
+            .clone();
+        expression = b.push(
+            NodeType::Expression(ty),
+            "expression",
+            Json::obj([
+                ("kind", Json::str("transform")),
+                ("operation", Json::str("project")),
+                ("operands", refs(&[expression])),
+                ("position", Json::Nat(*position as u64)),
+                ("parameters", Json::Arr(vec![])),
+                ("bindings", Json::Arr(vec![])),
+            ]),
+            vec![expression],
+            None,
+            None,
+        )?;
+    }
+    let actual = change_result::value(b, &p.value)?;
+    let image = domain(b, &p.value.ty(), &[actual])?;
+    Ok((expression, image))
+}
+pub(super) struct Local {
+    pub support: Support,
+    pub instances: Vec<Json>,
+    pub arguments: Vec<NodeRef>,
 }
 pub(super) struct Built {
     pub system: NodeRef,
@@ -184,11 +236,13 @@ pub(super) fn build(
     laws: &[NodeRef],
     truth: &[bool],
     patches: &[Support],
+    law_supports: &[Support],
     global: Support,
     readings: &[Json],
     read_supports: &[Support],
     reading_refs: &[NodeRef],
-    locals: &[Json],
+    projections: &[Projection],
+    locals: &[Local],
     local_scope: &Scope,
     c: &mut Control,
 ) -> Result<Built, ValidationFailure> {
@@ -206,6 +260,7 @@ pub(super) fn build(
         }
     }
     let unit = change_result::value(b, &Scalar::Unit)?;
+    let mut projected = BTreeMap::new();
     let mut contexts = vec![];
     let mut states = vec![];
     let mut inhabited = vec![];
@@ -213,16 +268,12 @@ pub(super) fn build(
     while context_index < supports.len() {
         let support = &supports[context_index];
         c.checkpoint(super::super::control::Checkpoint::Localize)?;
-        let selected = if locals.is_empty() {
-            patches
-                .iter()
-                .enumerate()
-                .filter(|(_, p)| support.contains(p))
-                .map(|(i, _)| i)
-                .collect::<Vec<_>>()
-        } else {
-            (0..laws.len()).collect()
-        };
+        let selected = law_supports
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| support.contains(p))
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>();
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
         let state = state(
@@ -242,26 +293,64 @@ pub(super) fn build(
             .filter(|(_, (_, s))| support.contains(s))
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
-        let dependencies = if locals.is_empty() {
-            visible
-                .iter()
-                .flat_map(|i| reading_refs[2 * i..2 * i + 2].iter().copied())
-                .collect::<Vec<_>>()
-        } else {
-            reading_refs.to_vec()
-        };
+        let selected_locals = locals
+            .iter()
+            .filter(|local| support.contains(&local.support))
+            .collect::<Vec<_>>();
+        let mut dependencies = visible
+            .iter()
+            .flat_map(|i| reading_refs[2 * i..2 * i + 2].iter().copied())
+            .chain(
+                selected_locals
+                    .iter()
+                    .flat_map(|local| local.arguments.iter().copied()),
+            )
+            .collect::<Vec<_>>();
+        let mut context_readings = visible
+            .iter()
+            .map(|i| readings[*i].clone())
+            .collect::<Vec<_>>();
+        let mut selected_projections: Vec<&Projection> = vec![];
+        for (i, p) in projections.iter().enumerate() {
+            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            if !support.contains(&p.support)
+                || visible
+                    .iter()
+                    .any(|j| read_supports[*j].contains(&p.support))
+                || selected_projections
+                    .iter()
+                    .any(|q| q.support == p.support && q.value == p.value)
+            {
+                continue;
+            }
+            let (expression, image) = if let Some(pair) = projected.get(&i) {
+                *pair
+            } else {
+                let pair = project(b, reading_refs[2 * p.read], p)?;
+                projected.insert(i, pair);
+                pair
+            };
+            context_readings.push(Json::obj([
+                ("expression", expression.wire()),
+                ("type", p.value.ty().wire()),
+                ("domain", image.wire()),
+            ]));
+            dependencies.extend([expression, image]);
+            selected_projections.push(p);
+        }
+        let local_instances = selected_locals
+            .iter()
+            .flat_map(|local| local.instances.iter().cloned())
+            .collect::<Vec<_>>();
         let context = b.push(
             NodeType::Construction(T::Context),
             "context",
             Json::obj([
                 ("base", target.wire()),
-                ("locals", Json::Arr(locals.to_vec())),
+                ("locals", Json::Arr(local_instances)),
                 ("carrier", Json::Arr(support.carrier.clone())),
                 ("dependencies", state.slots.clone()),
-                (
-                    "readings",
-                    Json::Arr(visible.iter().map(|i| readings[*i].clone()).collect()),
-                ),
+                ("readings", Json::Arr(context_readings)),
                 ("law_coordinates", refs(&context_laws)),
             ]),
             std::iter::once(target)
@@ -381,7 +470,9 @@ pub(super) fn build(
         patch_indices
             .iter()
             .any(|i| supports[*i].positions.contains(x))
-    }) && (locals.is_empty() && patches.len() == laws.len() || !locals.is_empty());
+    }) && law_supports
+        .iter()
+        .all(|law| patches.iter().any(|patch| patch.contains(law)));
     if !adequate {
         return Err("暗黙支持coverが全体を被覆しない".into());
     }
