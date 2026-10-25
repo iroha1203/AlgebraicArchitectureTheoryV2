@@ -199,6 +199,7 @@ fn project_inner(
         (ProjectionType::LocalSystem,Field(f)) => match f.as_str() {
             "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystemの非公開射影".into()),
         },
+        (ProjectionType::Comparison,Field(f)) if f=="finite_map" => conditional(ProjectionType::StateMap),
         (ProjectionType::Diagnostic,Field(f)) => match f.as_str() {
             "system"=>exact(ProjectionType::LocalSystem), "global"=>exact(ProjectionType::Dynamic(vec![ProjectionType::FixedSolutionSet,ProjectionType::EquationSolutionSet])), "matching"=>exact(ProjectionType::Domain), "restriction"=>exact(ProjectionType::StateMap),_=>Err("Diagnosticの未実装射影".into()),
         },

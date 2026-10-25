@@ -135,7 +135,10 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
-    if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose) {return super::local_result::validate_origin(environment,request,value);}
+    if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose)
+        || (request.kind == QuestionKind::Compare
+            && super::request::comparison::kind(request).is_ok_and(|k| k == "diagnostics"))
+    {return super::local_result::validate_origin(environment,request,value);}
     if request.kind == QuestionKind::Quotient {return super::quotient_result::validate_origin(environment,request,value);}
     if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
         return super::architecture_result::validate_build_origin(

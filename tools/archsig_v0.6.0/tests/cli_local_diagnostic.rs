@@ -1628,3 +1628,259 @@ fn product_read_does_not_publish_a_references_fields_or_fill_a_missing_component
         }
     }
 }
+
+fn diagnostic_compare_input(name: &str, identity: bool, valid: bool) -> std::path::PathBuf {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    let map = fixture::changed_map(|j| {
+        if identity {
+            for a in fixture::atoms(j) {
+                let Json::Obj(o) = a else { panic!("atom") };
+                match o.get("id") {
+                    Some(Json::Str(id)) if id == "m-to" => {
+                        o.insert(
+                            "value".into(),
+                            Json::Arr(vec![Json::str("v"), Json::str("A")]),
+                        );
+                    }
+                    Some(Json::Str(id)) if id == "m-states" || id == "m-reserves" => {
+                        let Json::Arr(pairs) = o.get_mut("value").unwrap() else {
+                            panic!("pairs")
+                        };
+                        for pair in pairs {
+                            let Json::Arr(p) = pair else { panic!("pair") };
+                            p[1] = p[0].clone();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    });
+    let input = fixture::input(
+        &format!(
+            "law optional localValid(s:State):s.free={};",
+            if valid { 2 } else { 3 }
+        ),
+        Some(&map),
+    );
+    let dir = workdir(name);
+    for (name, bytes) in [
+        ("d.json", input.definitions()[0].bytes()),
+        ("l.law", input.law().bytes()),
+        ("a.json", input.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    dir
+}
+#[test]
+fn finite_diagnostics_compare_actual_identity_maps_on_both_sides_and_reuse() {
+    for valid in [true, false] {
+        for side in ["semantic", "equation"] {
+            for degree in [0, 1] {
+                let dir = diagnostic_compare_input(
+                    &format!("diagnostic-compare-{valid}-{side}-{degree}"),
+                    true,
+                    valid,
+                );
+                let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
+                let d2 = format!("d2=diagnose($l.system,side={side},degree={degree})");
+                let asks = [
+                    "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                    "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+                    &d1,
+                    &d2,
+                    "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
+                ];
+                let r = execute(&dir, "out", &asks);
+                assert_eq!(
+                    r.code,
+                    if !valid && degree == 1 { 1 } else { 0 },
+                    "{} {}",
+                    r.stdout,
+                    r.stderr
+                );
+                let result = result_json(&dir, &r);
+                let answers = arr(get(&result, "answers"));
+                assert_eq!(s(get(&answers[4], "status")), "established");
+                let comparison = get(output(&result, 4, "comparison"), "value");
+                assert_eq!(s(get(comparison, "kind")), "diagnostics");
+                assert_eq!(
+                    get(comparison, "along").value,
+                    get(get(&answers[0], "outputs"), "operation").value
+                );
+                let finite = get(node(&result, get(comparison, "finite_map")), "value");
+                assert_eq!(arr(get(finite, "pairs")).len(), usize::from(valid));
+                assert_eq!(get(finite, "source").value, get(finite, "target").value);
+                let conditions = arr(get(comparison, "conditions"));
+                assert_eq!(conditions.len(), 3);
+                for condition in conditions {
+                    assert_eq!(
+                        s(get(get(node(&result, condition), "judgment"), "status")),
+                        "established"
+                    );
+                }
+                let inverse = get(node(&result, &conditions[1]), "value");
+                let operands = arr(get(inverse, "operands"));
+                for reference in operands {
+                    let map = get(node(&result, reference), "value");
+                    assert_eq!(arr(get(map, "pairs")).len(), usize::from(valid));
+                }
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--time-ms",
+                    "120000",
+                ];
+                for ask in asks {
+                    args.extend(["--ask", ask]);
+                }
+                let reused = run(&dir, &args);
+                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+                let again = result_json(&dir, &reused);
+                assert_eq!(get(&again, "answers").value, get(&result, "answers").value);
+                assert_eq!(get(&again, "nodes").value, get(&result, "nodes").value);
+            }
+        }
+    }
+}
+#[test]
+fn finite_diagnostic_comparison_does_not_invent_general_transport() {
+    let dir = diagnostic_compare_input("diagnostic-compare-unsupported", false, true);
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+            "d=diagnose($l.system)",
+            "c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
+            "v=evaluate(Reservations.no)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[3], "status")), "undetermined");
+    assert!(!has(get(&answers[3], "outputs"), "comparison"));
+    assert!(format!("{:?}", get(&answers[3], "reasons")).contains("unsupported_algorithm"));
+    assert_eq!(s(get(&answers[4], "status")), "established");
+}
+#[test]
+fn finite_diagnostic_comparison_rejects_incompatible_degree_side_and_non_operation() {
+    let dir = diagnostic_compare_input("diagnostic-compare-signature", true, true);
+    for (index, d2, along) in [
+        (0, "d2=diagnose($l.system,degree=0)", "$m.operation"),
+        (1, "d2=diagnose($l.system,side=semantic)", "$m.operation"),
+        (2, "d2=diagnose($l.system)", "$m.candidate"),
+    ] {
+        let compare =
+            format!("c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along={along})");
+        let r = execute(
+            &dir,
+            &format!("out{index}"),
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+                "d1=diagnose($l.system)",
+                d2,
+                &compare,
+            ],
+        );
+        assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
+    }
+}
+
+#[test]
+fn matching_display_values_do_not_replace_the_operation_action_or_system_identity() {
+    use archsig::canonical::Json;
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    let dir = diagnostic_compare_input("diagnostic-compare-moved-positions", true, true);
+    let path = dir.join("a.json");
+    let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+    for a in fixture::atoms(&mut map) {
+        let Json::Obj(o) = a else { panic!("atom") };
+        match o.get("id") {
+            Some(Json::Str(id)) if id == "m-states" || id == "m-reserves" => {
+                let Json::Arr(pairs) = o.get_mut("value").unwrap() else {
+                    panic!("pairs")
+                };
+                for pair in pairs {
+                    let Json::Arr(pair) = pair else {
+                        panic!("pair")
+                    };
+                    let Json::Arr(target) = &mut pair[1] else {
+                        panic!("ref")
+                    };
+                    let Json::Str(subject) = &target[1] else {
+                        panic!("subject")
+                    };
+                    target[1] = Json::str(match subject.as_str() {
+                        "p" => "q",
+                        "q" => "p",
+                        "e" => "h",
+                        "h" => "e",
+                        "k" => "h",
+                        _ => panic!("unexpected subject"),
+                    });
+                }
+            }
+            // 両点の値を同じにしても、局所系の参照先を動かした事実は消えない。
+            Some(Json::Str(id)) if id == "q-free" => {
+                o.insert("value".into(), Json::str("2"));
+            }
+            Some(Json::Str(id)) if id == "q-held" => {
+                o.insert("value".into(), Json::str("0"));
+            }
+            _ => {}
+        }
+    }
+    std::fs::write(path, map.canonical()).unwrap();
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+            "d=diagnose($l.system)",
+            "c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert!(has(get(&answers[0], "outputs"), "operation"));
+    assert_eq!(s(get(&answers[2], "status")), "established");
+    assert_eq!(s(get(&answers[3], "status")), "undetermined");
+    assert!(format!("{:?}", get(&answers[3], "reasons")).contains("unsupported_algorithm"));
+    let dir = diagnostic_compare_input("diagnostic-compare-different-system", true, true);
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+            "k=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+            "d1=diagnose($l.system)",
+            "d2=diagnose($k.system)",
+            "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answer = &arr(get(&result, "answers"))[5];
+    assert_eq!(s(get(answer, "status")), "undetermined");
+    assert!(format!("{:?}", get(answer, "reasons")).contains("unsupported_algorithm"));
+}

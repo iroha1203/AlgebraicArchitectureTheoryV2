@@ -101,6 +101,9 @@ pub(super) fn constraints(
     if mode == "value" {
         return value_constraints(law, map, requests, names, request, control);
     }
+    if mode == "diagnostics" {
+        return diagnostic_constraints(law, map, requests, names, request, control);
+    }
     if !matches!(mode, "word" | "action" | "relation") {
         return Err(ResolveFailure::NotApplicable {
             request: request.id.clone(),
@@ -301,4 +304,27 @@ fn value_types(
         }
         Ok(())
     })
+}
+
+fn diagnostic_constraints(
+    law: &CheckedLaw, map: &CheckedArchMap, requests: &[Request],
+    names: &BTreeMap<String, usize>, r: &Request, c: &mut Control,
+) -> Result<Vec<BindingConstraint>, ResolveFailure> {
+    let to = &r.arguments.iter().find(|a|a.name=="to").ok_or_else(||error(&r.id,"to","toがない"))?.value;
+    let along = &r.arguments.iter().find(|a|a.name=="along").ok_or_else(||error(&r.id,"along","alongがない"))?.value;
+    let mut shapes = vec![];
+    for (key,selector) in [("head",&r.head),("to",to)] {
+        let (plan,_) = selector_type(law,map,requests,names,selector,c,(&r.id,key))?;
+        if plan.ty != ProjectionType::Diagnostic { return Err(error(&r.id,key,"診断比較の対象はDiagnostic")); }
+        let Selector::Answer{id,..}=selector else{return Err(error(&r.id,key,"診断の元要求がない"))};
+        let producer=&requests[*names.get(id).ok_or_else(||error(&r.id,key,"診断の元要求がない"))?];
+        let degree=producer.arguments.iter().find(|a|a.name=="degree").map(|a|a.value.clone());
+        let side=producer.arguments.iter().find(|a|a.name=="side").map(|a|a.value.clone());
+        if producer.kind!=QuestionKind::Diagnose || degree.is_none() || side.is_none() {return Err(error(&r.id,key,"診断の次数・sideがない"));}
+        shapes.push((degree,side));
+    }
+    if shapes[0]!=shapes[1] {return Err(error(&r.id,"to","診断比較のdegree/sideが異なる"));}
+    let operation=composition::selected(law,map,requests,names,along,r,"along",c)?;
+    if !matches!(operation,Shape::Operation(_)) {return Err(error(&r.id,"along","alongは確認済みOperationを指定する"));}
+    Ok(vec![])
 }
