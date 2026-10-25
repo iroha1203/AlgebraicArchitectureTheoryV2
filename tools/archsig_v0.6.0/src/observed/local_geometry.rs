@@ -43,6 +43,7 @@ pub(in crate::observed) struct Projection {
     pub arguments: Vec<NodeRef>,
     pub field: Option<(Scalar, Location)>,
     pub values: Vec<Scalar>,
+    pub ty: Type,
     pub support: Support,
 }
 pub(super) fn project(
@@ -53,7 +54,7 @@ pub(super) fn project(
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     if let Some((subject, location)) = &p.field {
         let subject = change_result::value(b, subject)?;
-        let ty = p.values.first().ok_or("field読取りの像が空")?.ty();
+        let ty = p.ty.clone();
         expression = b.push(
             NodeType::Expression(ty), "expression",
             Json::obj([
@@ -91,7 +92,7 @@ pub(super) fn project(
         )?;
     }
     }
-    let ty = p.values.first().ok_or("Tuple射影の像が空")?.ty();
+    let ty = p.ty.clone();
     let image = if p.support.visible.iter().any(|slot| free.contains(slot)) {
         if ty != Type::Z || p.support.visible.len() != 1 { return Err(unsupported("整数射影の積の像は未実装")); }
         b.push(NodeType::Domain, "domain", Json::obj([
@@ -407,7 +408,7 @@ pub(super) fn build(
             };
             context_readings.push(Json::obj([
                 ("expression", expression.wire()),
-                ("type", p.values.first().ok_or("Tuple射影の像が空")?.ty().wire()),
+                ("type", p.ty.clone().wire()),
                 ("domain", image.wire()),
             ]));
             dependencies.extend([expression, image]);

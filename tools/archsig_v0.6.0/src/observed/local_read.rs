@@ -230,6 +230,7 @@ fn projections(
                     arguments: vec![],
                     field: Some((subject, field.location.clone())),
                     values: vec![value.clone()],
+                    ty: value.ty(),
                     support: local_result::geometry::Support {
                         carrier,
                         positions: slots.clone(),
@@ -248,6 +249,7 @@ fn projections(
                     arguments: vec![],
                     field: None,
                     values: vec![value.clone()],
+                    ty: value.ty(),
                     support: local_result::geometry::Support {
                         carrier,
                         positions,
@@ -533,7 +535,7 @@ fn affine_read_image(
     reading: &str,
     free: &[Fact],
     visible: &[Fact],
-    observed: &Scalar,
+    read_type: &Type,
     c: &mut Control,
 ) -> Result<(NodeRef, Vec<Fact>, crate::observed::integer_fiber::Matrix), ValidationFailure> {
     use crate::observed::{
@@ -557,17 +559,17 @@ fn affine_read_image(
         .iter()
         .map(|(n, v)| (n.clone(), known(v.clone())))
         .collect();
-    let mut pending = vec![(id, observed)];
+    let mut pending = vec![(id, read_type)];
     let mut matrix = vec![];
     let mut offset = vec![];
     while let Some((id, value)) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
         match (&env.inputs.law().exprs[id].kind, value) {
             (ExprKind::Group(inner), _) => pending.push((*inner, value)),
-            (ExprKind::Tuple(ids), Scalar::Tuple(values)) if ids.len() == values.len() => {
+            (ExprKind::Tuple(ids), Type::Tuple(values)) if ids.len() == values.len() => {
                 pending.extend(ids.iter().zip(values).rev().map(|(i, v)| (*i, v)))
             }
-            (_, Scalar::Z(_)) => {
+            (_, Type::Z) => {
                 let evaluated = arbitrary.scoped_ast(id, &variables, &Scope::default(), reading)?;
                 let form = evaluated.affine.ok_or_else(|| {
                     unsupported(
@@ -700,7 +702,7 @@ fn affine_read_image(
     let target_domain = b.push(
         NodeType::Domain,
         "domain",
-        Json::obj([("kind", Json::str("type")), ("type", observed.ty().wire())]),
+        Json::obj([("kind", Json::str("type")), ("type", read_type.wire())]),
         vec![],
         None,
         None,
@@ -1070,11 +1072,21 @@ fn materialize_instance(
             let mut projected = vec![];
             for state in &states {
                 c.checkpoint(Checkpoint::Localize)?;
-                let (read, positions, missing) =
+                let (read, positions, mut missing) =
                     evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
                 b.parts[expression.0 - b.base].scope.merge(&read.scope);
                 out.scope.merge(&read.scope);
                 dependencies.extend(positions);
+                let state_visible = if !free.is_empty() {
+                    state_visibility(state, &[*id], bindings, &declaration.reading, c)?
+                        .ok_or_else(|| unsupported(declaration.span, "整数読取りの支持を構成できない"))?.1
+                } else if read.known_value.is_some() && !read.condition_pending {
+                    visible_slots(state, *id, bindings, &declaration.reading)?
+                } else {
+                    visible.clone()
+                };
+                visible = state_visible;
+                missing.retain(|f| !free.contains(f));
                 if !missing.is_empty() {
                     let index = if let Some(index) = missing_reason {
                         index
@@ -1102,25 +1114,14 @@ fn materialize_instance(
                     ));
                 }
                 if read.condition_pending || read.known_value.is_none() {
-                    if !free.is_empty() {
-                        visible = visible_slots(state, *id, bindings, &declaration.reading)?;
+                    if visible.iter().any(|slot| free.contains(slot)) && missing_reason.is_none() {
+                        continue;
                     }
                     if missing_reason.is_none() {
                         return Err(unsupported(declaration.span, "localの読取り値が未確定"));
                     }
                     continue;
                 }
-                let state_visible = if !free.is_empty() {
-                    state_visibility(state, &[*id], bindings, &declaration.reading, c)?
-                        .ok_or_else(|| {
-                            unsupported(declaration.span, "整数読取りの支持を構成できない")
-                        })?
-                        .1
-                } else {
-                    visible_slots(state, *id, bindings, &declaration.reading)?
-                };
-                // changeは参照fieldを更新しない。fieldだけの経路の末端位置は各状態で同じ。
-                visible = state_visible;
                 let value = read.known_value.ok_or("localの確定値がない")?;
                 subject_carrier(&value, &mut carrier, c)?;
                 projections(
@@ -1143,7 +1144,10 @@ fn materialize_instance(
             if missing_reason.is_some() {
                 continue;
             }
-            let ty = values.first().ok_or("localの読取り像が空")?.ty();
+            let NodeType::Expression(ty) = &b.parts[expression.0 - b.base].ty else {
+                return Err("local読取りの型が式でない".into());
+            };
+            let ty = ty.clone();
             let information_before = information.len();
             let image = if visible.iter().any(|slot| free.contains(slot)) {
                 if ty == Type::Z && visible.len() == 1 && field_path(env, *id)?.is_some() {
@@ -1167,7 +1171,7 @@ fn materialize_instance(
                         &declaration.reading,
                         free,
                         &visible,
-                        &values[0],
+                        &ty,
                         c,
                     )?;
                     information.push((slots, matrix));
@@ -1297,14 +1301,14 @@ fn materialize_instance(
                         &declaration.reading,
                         declaration.span,
                     )?
-                    .known_value
-                    .ok_or_else(|| unsupported(declaration.span, "復元するfieldの観測がない"))?;
+                    .known_value;
                 out.projections.push(local_result::geometry::Projection {
                     read: 0,
                     path: vec![],
                     arguments: out.read_refs.clone(),
                     field: Some((subject, field.location.clone())),
-                    values: vec![value],
+                    values: value.into_iter().collect(),
+                    ty: env.field(&slot.snapshot, &slot.subject, name)?.ty.erase(),
                     support: local_result::geometry::Support {
                         carrier: vec![],
                         positions: vec![slot.clone()],

@@ -158,7 +158,8 @@ fn analyze(
         pending.bindings = bindings.clone();
         pending.parameters.clear();
         let (row, absent, _) = env.local_point(declaration, bindings)?;
-        missing.extend(absent);
+        // 更新先は自由状態であり、旧値はLawの固定係数ではない。
+        missing.extend(absent.into_iter().filter(|f| !action.slots.contains(f)));
         pending.facts.extend(missing.iter().cloned());
         scope.merge(&row.scope);
         let roots = std::iter::once(*body)
@@ -844,7 +845,7 @@ pub(super) fn compute(
                         geometry::project(&mut b, e.read_refs[2 * p.read], p, &model.action.slots)?;
                     context_readings.push(Json::obj([
                         ("expression", expression.wire()),
-                        ("type", p.values[0].ty().wire()),
+                        ("type", p.ty.wire()),
                         ("domain", image.wire()),
                     ]));
                     arguments.extend([expression, image]);

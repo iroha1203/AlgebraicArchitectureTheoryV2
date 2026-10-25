@@ -3580,21 +3580,37 @@ fn integer_local_empty_cover_degree_iteration_observes_budget() {
 fn integer_local_noninjective_reads_keep_the_image_and_cover_conditions() {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの整数座標。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
     let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies["Pair"].digest;
-    for mode in ["sum-only","constrained","free"] {
+    for mode in ["sum-only","constrained","free","constrained-missing","free-missing","offset-missing"] {
         let extra=if mode=="sum-only" {""} else {"local Both(s:State) reads (s.x,s.y);"};
-        let requirement=if mode=="free" {""} else {"law required total(s:State):s.x+s.y=0;"};
+        let requirement=if mode.starts_with("free") {""} else {"law required total(s:State):s.x+s.y=0;"};
         let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; {requirement} local Sum(s:State) reads s.x+s.y; {extra} change movePair(s:State,a:Z,b:Z)=s with{{x=a,y=b}}; }}");
+        let law=if mode=="offset-missing" {law.replace("x=a,y=b","x=s.x+a,y=b")} else {law};
         let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"合計の読取り試験。","locations":[],"note":"二座標の原始値。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
+        let map=if mode.ends_with("missing") {
+            map.replace(r#"{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},"#, "")
+        } else {map};
         let dir=workdir(&format!("integer-sum-{mode}"));for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
         let mut asks=vec!["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.movePair)"];
-        if mode!="sum-only" {asks.extend(["z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);}
-        let r=execute(&dir,"out",&asks);assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {} {}",r.stdout,r.stderr);
+        if !matches!(mode,"sum-only"|"offset-missing") {asks.extend(["z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);}
+        let r=execute(&dir,"out",&asks);
+        if mode.ends_with("missing") {assert!(matches!(r.code,0|2),"{mode}: {} {}",r.stdout,r.stderr);}
+        else {assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {} {}",r.stdout,r.stderr);}
         let j=result_json(&dir,&r);
         if mode=="sum-only" {
             let reasons=arr(get(&arr(get(&j,"answers"))[1],"reasons"));
             assert!(reasons.iter().any(|r|s(get(r,"code"))=="visibility_insufficient"));
             assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));
             continue;
+        }
+        if mode=="offset-missing" {
+            let answer=&arr(get(&j,"answers"))[1];
+            assert_eq!(s(get(answer,"status")),"undetermined");
+            assert!(!has(get(answer,"outputs"),"system"));
+            assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+            continue;
+        }
+        for answer in &arr(get(&j,"answers"))[1..] {
+            assert_eq!(s(get(answer,"status")),"established","{mode}: {answer:?}");
         }
         let system=get(output(&j,1,"system"),"value");
         let sum=arr(get(system,"contexts")).iter().find(|r|{
@@ -3603,9 +3619,9 @@ fn integer_local_noninjective_reads_keep_the_image_and_cover_conditions() {
         }).expect("Sumだけの局所がない");
         let context=get(node(&j,sum),"value");assert_eq!(arr(get(context,"readings")).len(),1);
         for coefficient in arr(get(system,"coefficients")).iter().filter(|v|get(v,"context").value==sum.value) {
-            assert_eq!(num(get(get(node(&j,get(coefficient,"module")),"value"),"free_rank")),if mode=="free"{1}else{0});
+            assert_eq!(num(get(get(node(&j,get(coefficient,"module")),"value"),"free_rank")),if mode.starts_with("free"){1}else{0});
         }
-        for (i,rank) in [(2,if mode=="free"{2}else{1}),(3,0)] {
+        for (i,rank) in [(2,if mode.starts_with("free"){2}else{1}),(3,0)] {
             let space=get(output(&j,i,"space"),"value");
             assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
         }
