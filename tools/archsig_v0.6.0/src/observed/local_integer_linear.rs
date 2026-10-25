@@ -49,7 +49,7 @@ pub(super) fn solve_partial(
     fiber.known = false;
     Ok(fiber)
 }
-pub(super) fn image(
+pub(in crate::observed::local_result) fn image(
     a: &Matrix,
     cols: usize,
     c: &Control,
@@ -118,7 +118,7 @@ pub(super) fn affine_image(
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Cohomology {
+pub(in crate::observed::local_result) struct Cohomology {
     pub cycles: Matrix,
     pub cycle_rank: usize,
     pub boundary_rank: usize,
@@ -126,7 +126,7 @@ pub(super) struct Cohomology {
     pub torsion: Vec<Z>,
     pub free_rank: usize,
 }
-pub(super) fn cohomology(
+pub(in crate::observed::local_result) fn cohomology(
     previous: &Matrix,
     previous_cols: usize,
     next: &Matrix,

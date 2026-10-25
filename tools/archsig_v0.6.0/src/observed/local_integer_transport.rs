@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 
 pub(in crate::observed::local_result) struct Maps {
     pub forward: Vec<Matrix>,
-    pub inverse: Vec<Matrix>,
+    pub inverse: Option<Vec<Matrix>>,
 }
 struct Renaming {
     fields: BTreeMap<(String, String, Option<String>), Fact>,
@@ -525,9 +525,7 @@ pub(in crate::observed::local_result) fn between(
                 continue;
             };
             let back = integer_fiber::multiply(&inverse, &sb[j].basis, sb[j].rank, c)?;
-            let Some(inv) = coordinates(&sa[i].basis, sa[i].rank, &back, sb[j].rank, c)? else {
-                continue;
-            };
+            let inv = coordinates(&sa[i].basis, sa[i].rank, &back, sb[j].rank, c)?;
             if sa[i].known != sb[j].known {
                 continue;
             }
@@ -596,12 +594,19 @@ pub(in crate::observed::local_result) fn between(
     let bl = levels(b, semantic, count, c)?;
     let mut inverse_context = vec![0; context_map.len()];
     let mut inverse_coeff = vec![vec![]; context_map.len()];
+    let invertible = inverses.iter().all(Option::is_some);
     for (i, j) in context_map.iter().enumerate() {
         inverse_context[*j] = i;
-        inverse_coeff[*j] = inverses[i].clone();
+        if let Some(inverse) = &inverses[i] {
+            inverse_coeff[*j] = inverse.clone();
+        }
     }
     Ok(Some(Maps {
         forward: cochains(&al, &bl, &context_map, &coefficients, c)?,
-        inverse: cochains(&bl, &al, &inverse_context, &inverse_coeff, c)?,
+        inverse: if invertible {
+            Some(cochains(&bl, &al, &inverse_context, &inverse_coeff, c)?)
+        } else {
+            None
+        },
     }))
 }
