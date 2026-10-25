@@ -243,7 +243,7 @@ fn context_reading(
 }
 fn reading_from(
     model: &Model,
-    information: Option<&(Vec<Fact>, crate::observed::integer_fiber::Matrix)>,
+    information: Option<&(Vec<Fact>, crate::observed::field_fiber::Matrix)>,
     visible: &[Fact],
     c: &Control,
 ) -> Result<linear::Reading, ValidationFailure> {
@@ -260,7 +260,7 @@ fn reading_from(
                         .iter()
                         .position(|f| f == slot)
                         .ok_or("読取りの更新位置がない")?;
-                    result[i] = read_coefficient(value);
+                    result[i] = read_coefficient(value)?;
                 }
                 Ok(result)
             })

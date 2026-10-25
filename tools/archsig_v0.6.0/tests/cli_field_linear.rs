@@ -725,3 +725,47 @@ fn rational_local_equations_do_not_expand_the_change_image() {
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
     for (i,rank) in [(2,1),(3,0)]{let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),rank);}
 }
+#[test]
+fn rational_local_affine_reads_keep_fractional_images_and_joint_information() {
+    for (name,reads) in [
+        ("scaled","e.shift,rat(1,2)*e.from.coordinate+rat(1,3),e.to.coordinate"),
+        ("joint","e.shift,e.from.coordinate+e.to.coordinate,e.from.coordinate"),
+        ("tuple","e.shift,(rat(1,2)*e.from.coordinate,e.to.coordinate)")
+    ] {
+        let dir=rational_triangle(&format!("rational-affine-read-{name}"),Some(2));
+        let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("e.shift,e.from.coordinate,e.to.coordinate",reads);
+        std::fs::write(dir.join("l.law"),law).unwrap();
+        let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)"]);
+        let j=result_json(&dir,&r);assert_eq!(r.code,0,"{name}: {} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
+        let space=get(output(&j,2,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),1);
+        let class=get(output(&j,2,"class"),"value");assert_eq!(qcoordinates(&j,get(class,"coordinates")),vec![vec!["0","1"]]);
+        if name=="scaled" {
+            let system=get(output(&j,1,"system"),"value");let mut saw_fraction=false;
+            for context in arr(get(system,"contexts")) {for read in arr(get(get(node(&j,context),"value"),"readings")) {
+                let domain=get(node(&j,get(read,"domain")),"value");if s(get(domain,"kind"))!="image"{continue;}
+                let map=get(node(&j,get(domain,"map")),"value");
+                if qcoordinates(&j,get(map,"offset"))==vec![vec!["1","3"]] {
+                    let linear=get(node(&j,get(map,"linear")),"value");let columns=arr(get(linear,"columns"));
+                    saw_fraction=columns.iter().any(|col|arr(col).iter().any(|v|{let v=arr(get(node(&j,v),"value"));s(&v[0])=="1"&&s(&v[1])=="2"}));
+                }
+            }}assert!(saw_fraction);
+        }
+    }
+}
+#[test]
+fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
+    for mode in ["constrained","free","sum-only"] {
+        let law=if mode=="free" {""} else {"law required total(s:State):s.x+s.y=1;"};
+        let both=if mode=="sum-only" {""} else {"local Both(s:State) reads (s.x,s.y);"};
+        let dir=input(&format!("rational-read-{mode}"),&format!("{law} local Sum(s:State) reads rat(1,2)*(s.x+s.y)+rat(1,3); {both} change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};"));
+        let mut asks=vec!["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)"];
+        if mode!="sum-only" {asks.extend(["z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);}
+        let r=execute(&dir,"out",&asks);let j=result_json(&dir,&r);assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
+        if mode=="sum-only" {let reasons=arr(get(&arr(get(&j,"answers"))[1],"reasons"));assert!(reasons.iter().any(|r|s(get(r,"code"))=="visibility_insufficient"));assert!(reasons.iter().all(|r|s(get(r,"code"))!="unsupported_algorithm"));continue;}
+        let system=get(output(&j,1,"system"),"value");
+        let sum=arr(get(system,"contexts")).iter().find(|r|{let locals=arr(get(get(node(&j,r),"value"),"locals"));locals.len()==1&&s(get(&locals[0],"declaration"))=="Pair.Sum"}).unwrap();
+        for coefficients in arr(get(system,"coefficients")).iter().filter(|v|get(v,"context").value==sum.value){assert_eq!(num(get(get(node(&j,get(coefficients,"module")),"value"),"free_rank")),if mode=="free"{1}else{0});}
+        let space=get(output(&j,2,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),if mode=="free"{2}else{1});
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in &asks{args.extend(["--ask",ask]);}let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);let again=result_json(&dir,&repeat);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
+    }
+}

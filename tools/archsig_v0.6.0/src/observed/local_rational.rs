@@ -19,8 +19,8 @@ fn coefficient_name() -> &'static str {
 fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     v.scalar()
 }
-fn read_coefficient(v: &num_bigint::BigInt) -> Z {
-    Z::from(v.clone())
+fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
+    Z::from_scalar(v)
 }
 fn reduce_torsion(_: &mut Z, _: &Z) {
     unreachable!("体上の商にtorsionはない")
