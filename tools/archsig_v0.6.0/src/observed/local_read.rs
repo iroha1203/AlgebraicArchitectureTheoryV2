@@ -1,4 +1,4 @@
-//! 明示localの単一instanceが公開する直接読取り。依存と読取り権限を分ける。
+//! 明示localの各instanceが公開する直接読取り。依存と読取り権限を分ける。
 use super::*;
 use crate::observed::{build_result::Builder, change_result, local_result};
 use crate::{
@@ -10,6 +10,9 @@ pub(in crate::observed) struct Context {
     pub locals: Vec<Json>,
     pub carrier: Vec<Json>,
     pub positions: Vec<Fact>,
+    pub visible: Vec<Fact>,
+    pub read_supports: Vec<local_result::geometry::Support>,
+    pub read_refs: Vec<NodeRef>,
     pub readings: Vec<Json>,
     pub arguments: Vec<NodeRef>,
     pub reasons: Vec<Reason>,
@@ -232,8 +235,65 @@ pub(in crate::observed) fn materialize(
     b: &mut Builder<'_>,
     declaration: &Declaration,
     request: &Request,
-    required_carrier: &[Json],
-    required_positions: &[Fact],
+    coordinates: &[NodeRef],
+    c: &mut Control,
+) -> Result<Vec<Context>, ValidationFailure> {
+    let Signature::Local { params, .. } = &declaration.signature else {
+        return Err("local署名がない".into());
+    };
+    let mut assignments = vec![vec![]];
+    let mut missing = vec![];
+    for p in params {
+        let values = change_search::domain(env, &p.ty, p.span, &mut missing)?;
+        let Some(values) = values else {
+            if missing.is_empty() {
+                return Err(unsupported(declaration.span, "localのparameter域が未確定"));
+            }
+            return Ok(vec![Context {
+                locals: vec![],
+                carrier: vec![],
+                positions: vec![],
+                visible: vec![],
+                read_supports: vec![],
+                read_refs: vec![],
+                readings: vec![],
+                arguments: vec![],
+                reasons: vec![Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: coordinates.to_vec(),
+                    missing,
+                    location: Some(Location::Law {
+                        span: declaration.span,
+                    }),
+                }],
+                scope: Scope::default(),
+            }]);
+        };
+        let mut next = vec![];
+        for binding in assignments {
+            for value in &values {
+                c.checkpoint(Checkpoint::Localize)?;
+                let mut instance = binding.clone();
+                instance.push((p.name.clone(), value.clone()));
+                next.push(instance);
+            }
+        }
+        assignments = next;
+    }
+    assignments
+        .iter()
+        .map(|bindings| {
+            materialize_instance(env, b, declaration, request, bindings, coordinates, c)
+        })
+        .collect()
+}
+fn materialize_instance(
+    env: &Environment<'_>,
+    b: &mut Builder<'_>,
+    declaration: &Declaration,
+    request: &Request,
+    bindings: &[(String, Scalar)],
     coordinates: &[NodeRef],
     c: &mut Control,
 ) -> Result<Context, ValidationFailure> {
@@ -249,53 +309,18 @@ pub(in crate::observed) fn materialize(
         locals: vec![],
         carrier: vec![],
         positions: vec![],
+        visible: vec![],
+        read_supports: vec![],
+        read_refs: vec![],
         readings: vec![],
         arguments: vec![],
         reasons: vec![],
         scope: Scope::default(),
     };
-    let visibility = || ReasonKind::VisibilityInsufficient {
-        locals: vec![declaration.name.clone()],
-        coordinates: coordinates.to_vec(),
-    };
-    let mut bindings = vec![];
     let mut absent = vec![];
-    for p in params {
-        c.checkpoint(Checkpoint::Localize)?;
-        let values = change_search::domain(env, &p.ty, p.span, &mut absent)?;
-        let Some(mut values) = values else {
-            reason(
-                &mut out,
-                request,
-                ReasonKind::Missing,
-                absent,
-                declaration.span,
-                coordinates.to_vec(),
-            );
-            return Ok(out);
-        };
-        if values.is_empty() {
-            reason(
-                &mut out,
-                request,
-                visibility(),
-                vec![],
-                declaration.span,
-                coordinates.to_vec(),
-            );
-            return Ok(out);
-        }
-        if values.len() != 1 {
-            return Err(unsupported(
-                declaration.span,
-                "明示localの複数instanceのcoverは未実装",
-            ));
-        }
-        bindings.push((p.name.clone(), values.remove(0)));
-    }
     let mut checks = owned_call::Checks::default();
     let mut owner_values = BTreeMap::new();
-    for (p, (_, v)) in params.iter().zip(&bindings) {
+    for (p, (_, v)) in params.iter().zip(bindings) {
         env.owned_call_value_check(
             &p.ty,
             &super::super::term::affine::Value::Known(v.clone()),
@@ -309,14 +334,6 @@ pub(in crate::observed) fn materialize(
     out.scope.merge(&checks.scope);
     out.positions.extend(positions(&checks.support));
     if checks.failure.is_some() {
-        reason(
-            &mut out,
-            request,
-            visibility(),
-            vec![],
-            declaration.span,
-            coordinates.to_vec(),
-        );
         return Ok(out);
     }
     absent.extend(checks.missing);
@@ -342,7 +359,7 @@ pub(in crate::observed) fn materialize(
         .iter()
         .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
-    for (_, v) in &bindings {
+    for (_, v) in bindings {
         subject_carrier(v, &mut out.carrier, c)?;
     }
     out.arguments.extend(node_bindings.iter().map(|(_, r)| *r));
@@ -377,33 +394,22 @@ pub(in crate::observed) fn materialize(
             return Ok(out);
         }
         if value.known_value == Some(Scalar::Bool(false)) {
-            let dependencies = std::iter::once(expression)
-                .chain(coordinates.iter().copied())
-                .collect();
-            reason(
-                &mut out,
-                request,
-                visibility(),
-                vec![],
-                declaration.span,
-                dependencies,
-            );
             return Ok(out);
         }
         if value.known_value != Some(Scalar::Bool(true)) {
             return Err("local guardがBoolでない".into());
         }
     }
-    let mut visible = vec![];
     for id in reads {
         c.checkpoint(Checkpoint::Localize)?;
-        visible.extend(visible_slots(env, *id, &bindings)?);
+        let visible = visible_slots(env, *id, bindings)?;
+        out.visible.extend(visible.iter().cloned());
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
         let (read, dependencies, absent) =
             evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
         b.parts[expression.0 - b.base].scope.merge(&read.scope);
         out.scope.merge(&read.scope);
-        out.positions.extend(dependencies);
+        out.positions.extend(dependencies.iter().cloned());
         out.arguments.push(expression);
         if read.condition_failed {
             return Err(unsupported(
@@ -435,23 +441,32 @@ pub(in crate::observed) fn materialize(
             ("domain", image.wire()),
         ]));
         out.arguments.push(image);
+        out.read_refs.extend([expression, image]);
+        let mut carrier = vec![];
+        for (_, v) in bindings {
+            subject_carrier(v, &mut carrier, c)?;
+        }
+        subject_carrier(&value, &mut carrier, c)?;
+        carrier.sort_by_key(Json::canonical);
+        carrier.dedup();
+        let mut dependencies = positions(&dependencies).collect::<Vec<_>>();
+        dependencies.sort();
+        dependencies.dedup();
+        out.read_supports.push(local_result::geometry::Support {
+            carrier,
+            positions: dependencies,
+            visible,
+        });
     }
     out.carrier.sort_by_key(Json::canonical);
     out.carrier.dedup();
     out.positions.sort();
     out.positions.dedup();
-    if required_positions.iter().any(|f| !visible.contains(f))
-        || required_carrier.iter().any(|v| !out.carrier.contains(v))
-    {
-        reason(
-            &mut out,
-            request,
-            visibility(),
-            vec![],
-            declaration.span,
-            coordinates.to_vec(),
-        );
-    }
+    out.positions = positions(&out.positions).collect();
+    out.positions.sort();
+    out.positions.dedup();
+    out.visible.sort();
+    out.visible.dedup();
     out.locals.push(Json::obj([
         ("declaration", Json::str(&declaration.name)),
         (

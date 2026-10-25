@@ -26,7 +26,7 @@ use std::{collections::BTreeMap, sync::Arc};
 #[path = "local_compare.rs"]
 mod comparison;
 #[path = "local_geometry.rs"]
-mod geometry;
+pub(super) mod geometry;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -250,9 +250,6 @@ fn compute(
             .values()
             .filter(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }))
             .collect::<Vec<_>>();
-        if locals.len() > 1 {
-            return Err(unsupported("明示localの複数patchのcoverは未実装"));
-        }
         let selected = request
             .arguments
             .iter()
@@ -445,6 +442,7 @@ fn compute(
             patches.push(geometry::Support {
                 carrier: carrier.clone(),
                 positions: positions.clone(),
+                visible: positions.clone(),
             });
             if let Some((prior_carrier, prior_positions)) = &mut common {
                 prior_carrier.extend(carrier);
@@ -623,7 +621,8 @@ fn compute(
                     )?;
                 read_supports.push(geometry::Support {
                     carrier: read_carrier,
-                    positions: read_positions,
+                    positions: read_positions.clone(),
+                    visible: read_positions,
                 });
                 let bs = read
                     .bindings
@@ -643,26 +642,73 @@ fn compute(
             }
         }
         let (mut carrier, mut positions) = common.ok_or("局所系の支持がない")?;
+        let law_supports = patches.clone();
+        let mut visible = positions.clone();
         let mut local_instances = vec![];
         let mut local_scope = Scope::default();
-        if let Some(declaration) = locals.first() {
-            let explicit = super::environment::local_read::materialize(
-                &fixed,
-                &mut b,
-                declaration,
-                request,
-                &carrier,
-                &positions,
-                &expressions,
-                c,
-            )?;
-            carrier = explicit.carrier;
-            positions = explicit.positions;
-            readings = explicit.readings;
-            reading_refs.extend(explicit.arguments);
-            local_instances = explicit.locals;
-            local_scope = explicit.scope;
-            reasons.extend(explicit.reasons);
+        if !locals.is_empty() {
+            carrier.clear();
+            positions.clear();
+            visible.clear();
+            patches.clear();
+            readings.clear();
+            read_supports.clear();
+            reading_refs.clear();
+            for declaration in &locals {
+                for explicit in super::environment::local_read::materialize(
+                    &fixed,
+                    &mut b,
+                    declaration,
+                    request,
+                    &expressions,
+                    c,
+                )? {
+                    local_scope.merge(&explicit.scope);
+                    reasons.extend(explicit.reasons);
+                    if explicit.locals.is_empty() {
+                        continue;
+                    }
+                    let support = geometry::Support {
+                        carrier: explicit.carrier,
+                        positions: explicit.positions,
+                        visible: explicit.visible,
+                    };
+                    carrier.extend(support.carrier.iter().cloned());
+                    positions.extend(support.positions.iter().cloned());
+                    visible.extend(support.visible.iter().cloned());
+                    readings.extend(explicit.readings);
+                    read_supports.extend(explicit.read_supports);
+                    reading_refs.extend(explicit.read_refs);
+                    patches.push(support.clone());
+                    local_instances.push(geometry::Local {
+                        support,
+                        instances: explicit.locals,
+                        arguments: explicit.arguments,
+                    });
+                }
+            }
+            carrier.sort_by_key(Json::canonical);
+            carrier.dedup();
+            positions.sort();
+            positions.dedup();
+            visible.sort();
+            visible.dedup();
+            if reasons.is_empty()
+                && law_supports
+                    .iter()
+                    .any(|law| !patches.iter().any(|patch| patch.contains(law)))
+            {
+                reasons.push(Reason {
+                    kind: ReasonKind::VisibilityInsufficient {
+                        locals: locals.iter().map(|d| d.name.clone()).collect(),
+                        coordinates: expressions.clone(),
+                    },
+                    request: request.id.clone(),
+                    dependencies: expressions.clone(),
+                    missing: vec![],
+                    location: None,
+                });
+            }
         }
         if !reasons.is_empty() {
             let mut scope = local_scope;
@@ -706,13 +752,6 @@ fn compute(
             });
         }
         let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
-        if !locals.is_empty() {
-            patches = vec![geometry::Support {
-                carrier: carrier.clone(),
-                positions: positions.clone(),
-            }];
-            read_supports = vec![patches[0].clone(); readings.len()];
-        }
         let built = match geometry::build(
             env,
             &mut b,
@@ -720,7 +759,12 @@ fn compute(
             &laws,
             &truth,
             &patches,
-            geometry::Support { carrier, positions },
+            &law_supports,
+            geometry::Support {
+                carrier,
+                positions,
+                visible,
+            },
             &readings,
             &read_supports,
             &reading_refs,
@@ -735,14 +779,32 @@ fn compute(
                 let mut scope = Scope::default();
                 for (index, part) in b.parts.iter().enumerate() {
                     scope.merge(&part.scope);
-                    if matches!(part.ty, NodeType::Construction(T::Context | T::ContextMap | T::Overlap | T::Cover | T::Topology)) {
+                    if matches!(
+                        part.ty,
+                        NodeType::Construction(
+                            T::Context | T::ContextMap | T::Overlap | T::Cover | T::Topology
+                        )
+                    ) {
                         reason.dependencies.push(NodeRef(base + index));
                     }
                 }
-                return Ok(Source {base,parts:b.parts,scope_domains,
-                    answer:Answer {id:request.id.clone(),status:Decision::Undetermined,
-                        outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons:vec![reason],scope},
-                    request:request.clone(),witness:witness.clone(),system:None});
+                return Ok(Source {
+                    base,
+                    parts: b.parts,
+                    scope_domains,
+                    answer: Answer {
+                        id: request.id.clone(),
+                        status: Decision::Undetermined,
+                        outputs: BTreeMap::new(),
+                        claim: None,
+                        evidence: vec![],
+                        reasons: vec![reason],
+                        scope,
+                    },
+                    request: request.clone(),
+                    witness: witness.clone(),
+                    system: None,
+                });
             }
             Err(failure) => return Err(failure),
         };

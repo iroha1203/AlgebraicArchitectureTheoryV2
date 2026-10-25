@@ -1,17 +1,25 @@
 //! 固定状態の支持context、交わり、生成coverの有限局所系。
 use super::*;
 #[derive(Clone, PartialEq, Eq)]
-pub(super) struct Support {
+pub(in crate::observed) struct Support {
     pub carrier: Vec<Json>,
     pub positions: Vec<Fact>,
+    pub visible: Vec<Fact>,
 }
 impl Support {
-    fn contains(&self, other: &Self) -> bool {
+    pub(super) fn contains(&self, other: &Self) -> bool {
         other.carrier.iter().all(|v| self.carrier.contains(v))
             && other.positions.iter().all(|v| self.positions.contains(v))
+            && other.visible.iter().all(|v| self.visible.contains(v))
     }
     fn intersect(&self, other: &Self) -> Self {
         Self {
+            visible: self
+                .visible
+                .iter()
+                .filter(|v| other.visible.contains(v))
+                .cloned()
+                .collect(),
             carrier: self
                 .carrier
                 .iter()
@@ -26,6 +34,11 @@ impl Support {
                 .collect(),
         }
     }
+}
+pub(super) struct Local {
+    pub support: Support,
+    pub instances: Vec<Json>,
+    pub arguments: Vec<NodeRef>,
 }
 pub(super) struct Built {
     pub system: NodeRef,
@@ -184,11 +197,12 @@ pub(super) fn build(
     laws: &[NodeRef],
     truth: &[bool],
     patches: &[Support],
+    law_supports: &[Support],
     global: Support,
     readings: &[Json],
     read_supports: &[Support],
     reading_refs: &[NodeRef],
-    locals: &[Json],
+    locals: &[Local],
     local_scope: &Scope,
     c: &mut Control,
 ) -> Result<Built, ValidationFailure> {
@@ -213,16 +227,12 @@ pub(super) fn build(
     while context_index < supports.len() {
         let support = &supports[context_index];
         c.checkpoint(super::super::control::Checkpoint::Localize)?;
-        let selected = if locals.is_empty() {
-            patches
-                .iter()
-                .enumerate()
-                .filter(|(_, p)| support.contains(p))
-                .map(|(i, _)| i)
-                .collect::<Vec<_>>()
-        } else {
-            (0..laws.len()).collect()
-        };
+        let selected = law_supports
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| support.contains(p))
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>();
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
         let state = state(
@@ -242,20 +252,29 @@ pub(super) fn build(
             .filter(|(_, (_, s))| support.contains(s))
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
-        let dependencies = if locals.is_empty() {
-            visible
-                .iter()
-                .flat_map(|i| reading_refs[2 * i..2 * i + 2].iter().copied())
-                .collect::<Vec<_>>()
-        } else {
-            reading_refs.to_vec()
-        };
+        let selected_locals = locals
+            .iter()
+            .filter(|local| support.contains(&local.support))
+            .collect::<Vec<_>>();
+        let dependencies = visible
+            .iter()
+            .flat_map(|i| reading_refs[2 * i..2 * i + 2].iter().copied())
+            .chain(
+                selected_locals
+                    .iter()
+                    .flat_map(|local| local.arguments.iter().copied()),
+            )
+            .collect::<Vec<_>>();
+        let local_instances = selected_locals
+            .iter()
+            .flat_map(|local| local.instances.iter().cloned())
+            .collect::<Vec<_>>();
         let context = b.push(
             NodeType::Construction(T::Context),
             "context",
             Json::obj([
                 ("base", target.wire()),
-                ("locals", Json::Arr(locals.to_vec())),
+                ("locals", Json::Arr(local_instances)),
                 ("carrier", Json::Arr(support.carrier.clone())),
                 ("dependencies", state.slots.clone()),
                 (
@@ -381,7 +400,9 @@ pub(super) fn build(
         patch_indices
             .iter()
             .any(|i| supports[*i].positions.contains(x))
-    }) && (locals.is_empty() && patches.len() == laws.len() || !locals.is_empty());
+    }) && law_supports
+        .iter()
+        .all(|law| patches.iter().any(|patch| patch.contains(law)));
     if !adequate {
         return Err("暗黙支持coverが全体を被覆しない".into());
     }

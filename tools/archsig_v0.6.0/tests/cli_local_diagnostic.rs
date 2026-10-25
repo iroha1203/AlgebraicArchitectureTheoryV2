@@ -2157,3 +2157,125 @@ fn support_closure_stop_retains_completed_contexts_without_claiming_a_system() {
         );
     }
 }
+
+#[test]
+fn explicit_distinct_local_declarations_form_the_selected_cover() {
+    for (left, right) in [(true, true), (true, false), (false, true)] {
+        let dir = implicit_multiple_input("explicit-distinct-cover", left, Some(right));
+        explicit_local(
+            &dir,
+            "local left(t:State) reads t.flag; local right(t:State) reads t.other; local skipped(t:State) when false reads t;",
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if left && right { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(arr(get(system, "contexts")).len(), 4);
+        let cover = get(node(&j, get(system, "cover")), "value");
+        assert_eq!(arr(get(cover, "patches")).len(), 2);
+        for patch in arr(get(cover, "patches")) {
+            assert_ne!(patch.value, get(cover, "base").value);
+            let context = get(node(&j, patch), "value");
+            assert_eq!(arr(get(context, "locals")).len(), 1);
+            assert_eq!(arr(get(context, "law_coordinates")).len(), 1);
+            assert_eq!(arr(get(context, "readings")).len(), 1);
+        }
+        for i in [2, 3] {
+            assert_eq!(
+                s(get(&arr(get(&j, "answers"))[i], "status")),
+                if left && right {
+                    "established"
+                } else {
+                    "refuted"
+                }
+            );
+        }
+        if left && right {
+            let r = run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--ask",
+                    "a=build(Fixed,on=@fixed/s)",
+                    "--ask",
+                    "l=localize($a.object)",
+                    "--ask",
+                    "e=diagnose($l.system)",
+                    "--ask",
+                    "s=diagnose($l.system,side=semantic)",
+                ],
+            );
+            assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+            let after = result_json(&dir, &r);
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&after, field).value);
+            }
+        }
+    }
+}
+
+#[test]
+fn explicit_cover_does_not_turn_union_dependencies_into_a_visible_law() {
+    for hidden in [false, true] {
+        let dir = implicit_multiple_input("explicit-cover-hidden", true, Some(true));
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path)
+            .unwrap()
+            .replace("s.flag=true", "s.flag and s.other")
+            .replace("law required second(s:State):s.other=true;", "");
+        std::fs::write(path, law).unwrap();
+        explicit_local(
+            &dir,
+            if hidden {
+                "local left(t:State) when t.other reads t.flag; local right(t:State) reads t;"
+            } else {
+                "local left(t:State) reads t.flag; local right(t:State) reads t.other;"
+            },
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "n=needed($l)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answer = &arr(get(&j, "answers"))[1];
+        assert!(!has(get(answer, "outputs"), "system"));
+        assert!(
+            arr(get(answer, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "visibility_insufficient")
+        );
+        let plan = get(output(&j, 2, "plan"), "value");
+        assert!(arr(get(plan, "requirements")).is_empty());
+    }
+}
