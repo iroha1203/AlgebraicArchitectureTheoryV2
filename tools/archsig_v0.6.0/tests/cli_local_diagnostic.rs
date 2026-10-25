@@ -2052,109 +2052,124 @@ fn support_closure_stop_retains_completed_contexts_without_claiming_a_system() {
         input::InputSources,
     };
     use std::{cell::Cell, rc::Rc};
-    let dir = implicit_multiple_input("implicit-closure-stop", true, Some(true));
-    let sources = || {
-        InputSources::from_bytes(
-            vec![std::fs::read(dir.join("d.json")).unwrap()],
-            std::fs::read(dir.join("l.law")).unwrap(),
-            std::fs::read(dir.join("a.json")).unwrap(),
-        )
-    };
-    let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object)"];
-    let seen = Rc::new(Cell::new(0usize));
-    let count = seen.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
-        if point == Checkpoint::Localize {
-            count.set(count.get() + 1);
+    for finite in [false, true] {
+        let dir = implicit_multiple_input("implicit-closure-stop", true, Some(true));
+        if finite {
+            explicit_local(
+                &dir,
+                "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};",
+            );
         }
-        Usage::default()
-    });
-    let normal = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
-    assert_eq!(normal.status(), "complete");
-    let total = seen.get();
-    for mode in 0..3 {
-        let mut retained = false;
-        // 実際の実行長から途中位置を選ぶ。特定のcheckpoint件数を契約にしない。
-        for stop in 1..total {
-            let mut count = 0;
-            let mut control = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::Localize {
-                        count += 1;
-                    }
-                    if count >= stop {
-                        match mode {
-                            0 => Usage {
-                                elapsed_ms: 2,
-                                ..Usage::default()
-                            },
-                            1 => Usage {
-                                memory_mib: 2,
-                                ..Usage::default()
-                            },
-                            _ => Usage {
-                                signal: Some(archsig::result::Signal::Term),
-                                ..Usage::default()
-                            },
-                        }
-                    } else {
-                        Usage::default()
-                    }
-                },
-            );
-            let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
-            let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
-            let answer = &arr(get(&j, "answers"))[1];
-            assert!(
-                arr(get(answer, "reasons"))
-                    .iter()
-                    .all(|r| s(get(r, "code")) != "internal"),
-                "stop {stop}/{total}: {answer:?}"
-            );
-            let contexts = arr(get(&j, "nodes"))
-                .iter()
-                .filter(|n| {
-                    has(get(n, "rule"), "name")
-                        && s(get(get(n, "rule"), "name")) == "context"
-                        && has(get(n, "value"), "readings")
-                        && !arr(get(get(n, "value"), "readings")).is_empty()
-                })
-                .count();
-            if !has(get(answer, "outputs"), "system") && contexts > 0 {
-                retained = true;
-                assert_eq!(s(get(answer, "status")), "undetermined");
-                assert!(!has(answer, "claim"));
-                let reason = arr(get(answer, "reasons"))
-                    .iter()
-                    .find(|r| {
-                        s(get(r, "code"))
-                            == if mode == 2 {
-                                "cancelled"
-                            } else {
-                                "budget_exhausted"
-                            }
-                    })
-                    .unwrap_or_else(|| panic!("stop {stop}/{total}: {answer:?}"));
-                assert!(!arr(get(reason, "dependencies")).is_empty());
-                for r in arr(get(reason, "dependencies")) {
-                    node(&j, r);
-                }
-                assert!(
-                    arr(get(&j, "nodes"))
-                        .iter()
-                        .all(|n| !has(get(n, "rule"), "name")
-                            || s(get(get(n, "rule"), "name")) != "local_system")
-                );
+        let sources = || {
+            InputSources::from_bytes(
+                vec![std::fs::read(dir.join("d.json")).unwrap()],
+                std::fs::read(dir.join("l.law")).unwrap(),
+                std::fs::read(dir.join("a.json")).unwrap(),
+            )
+        };
+        let asks = [
+            "a=build(Fixed,on=@fixed/s)",
+            if finite {
+                "l=localize($a.object,using=Fixed.choose)"
+            } else {
+                "l=localize($a.object)"
+            },
+        ];
+        let seen = Rc::new(Cell::new(0usize));
+        let count = seen.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::Localize {
+                count.set(count.get() + 1);
             }
+            Usage::default()
+        });
+        let normal = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+        assert_eq!(normal.status(), "complete");
+        let total = seen.get();
+        for mode in 0..3 {
+            let mut retained = false;
+            // 実際の実行長から途中位置を選ぶ。特定のcheckpoint件数を契約にしない。
+            for stop in 1..total {
+                let mut count = 0;
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: Some(1),
+                    },
+                    move |point| {
+                        if point == Checkpoint::Localize {
+                            count += 1;
+                        }
+                        if count >= stop {
+                            match mode {
+                                0 => Usage {
+                                    elapsed_ms: 2,
+                                    ..Usage::default()
+                                },
+                                1 => Usage {
+                                    memory_mib: 2,
+                                    ..Usage::default()
+                                },
+                                _ => Usage {
+                                    signal: Some(archsig::result::Signal::Term),
+                                    ..Usage::default()
+                                },
+                            }
+                        } else {
+                            Usage::default()
+                        }
+                    },
+                );
+                let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
+                let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
+                let answer = &arr(get(&j, "answers"))[1];
+                assert!(
+                    arr(get(answer, "reasons"))
+                        .iter()
+                        .all(|r| s(get(r, "code")) != "internal"),
+                    "stop {stop}/{total}: {answer:?}"
+                );
+                let contexts = arr(get(&j, "nodes"))
+                    .iter()
+                    .filter(|n| {
+                        has(get(n, "rule"), "name")
+                            && s(get(get(n, "rule"), "name")) == "context"
+                            && has(get(n, "value"), "readings")
+                            && !arr(get(get(n, "value"), "readings")).is_empty()
+                    })
+                    .count();
+                if !has(get(answer, "outputs"), "system") && contexts > 0 {
+                    retained = true;
+                    assert_eq!(s(get(answer, "status")), "undetermined");
+                    assert!(!has(answer, "claim"));
+                    let reason = arr(get(answer, "reasons"))
+                        .iter()
+                        .find(|r| {
+                            s(get(r, "code"))
+                                == if mode == 2 {
+                                    "cancelled"
+                                } else {
+                                    "budget_exhausted"
+                                }
+                        })
+                        .unwrap_or_else(|| panic!("stop {stop}/{total}: {answer:?}"));
+                    assert!(!arr(get(reason, "dependencies")).is_empty());
+                    for r in arr(get(reason, "dependencies")) {
+                        node(&j, r);
+                    }
+                    assert!(
+                        arr(get(&j, "nodes"))
+                            .iter()
+                            .all(|n| !has(get(n, "rule"), "name")
+                                || s(get(get(n, "rule"), "name")) != "local_system")
+                    );
+                }
+            }
+            assert!(
+                retained,
+                "mode {mode}, checkpoints {total}: closure fragments were lost"
+            );
         }
-        assert!(
-            retained,
-            "mode {mode}, checkpoints {total}: closure fragments were lost"
-        );
     }
 }
 
@@ -2473,4 +2488,463 @@ fn tuple_component_support_excludes_other_bound_subjects() {
             archsig::json::JValue::Bool(true)
         );
     }
+}
+
+#[test]
+fn finite_change_local_states_distinguish_the_action_image_from_free_equations() {
+    for correlated in [false, true] {
+        let dir = implicit_multiple_input("finite-change-local", false, Some(false));
+        explicit_local(
+            &dir,
+            if correlated {
+                "change choose(t:State,b:Bool)=t with {flag=b,other=not b};"
+            } else {
+                "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};"
+            },
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object,using=Fixed.choose)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if correlated { 1 } else { 0 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
+        assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "established");
+        assert_eq!(
+            s(get(&arr(get(&j, "answers"))[3], "status")),
+            if correlated { "refuted" } else { "established" }
+        );
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(s(get(system, "change")), "Fixed.choose");
+        assert_eq!(arr(get(system, "contexts")).len(), 4);
+        let sem = get(output(&j, 3, "diagnostic"), "value");
+        let matching = get(node(&j, get(sem, "matching")), "value");
+        assert_eq!(arr(get(matching, "elements")).len(), 1);
+        let global = get(node(&j, get(sem, "global")), "value");
+        assert_eq!(
+            arr(get(get(global, "representation"), "values")).len(),
+            if correlated { 0 } else { 1 }
+        );
+        let candidate = get(node(&j, get(global, "domain")), "value");
+        let parameters = get(node(&j, get(candidate, "parameters")), "value");
+        assert_eq!(
+            arr(get(parameters, "elements")).len(),
+            if correlated { 2 } else { 4 }
+        );
+        let cover = get(node(&j, get(system, "cover")), "value");
+        for patch in arr(get(cover, "patches")) {
+            let state = arr(get(system, "semantic_states"))
+                .iter()
+                .find(|v| get(v, "context").value == patch.value)
+                .unwrap();
+            let image = get(node(&j, get(state, "state_image")), "value");
+            assert_eq!(arr(get(image, "elements")).len(), 1);
+        }
+        let fibers = arr(get(sem, "fibers"));
+        assert_eq!(fibers.len(), 1);
+        let fiber = get(node(&j, get(&fibers[0], "preimage")), "value");
+        assert_eq!(
+            arr(get(get(fiber, "representation"), "values")).len(),
+            if correlated { 0 } else { 1 }
+        );
+        let reused = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+                "--ask",
+                "a=build(Fixed,on=@fixed/s)",
+                "--ask",
+                "l=localize($a.object,using=Fixed.choose)",
+                "--ask",
+                "e=diagnose($l.system)",
+                "--ask",
+                "s=diagnose($l.system,side=semantic)",
+            ],
+        );
+        assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
+        let after = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&after, field).value);
+        }
+        for scope in ["cover", "topology"] {
+            let checks = arr(get(system, "sheaf_checks"));
+            let propositions = ["semantic", "equation"].map(|side| {
+                let check = checks.iter().find(|v| s(get(v,"scope"))==scope && s(get(v,"side"))==side).unwrap();
+                let proposition = get(node(&j,get(check,"proposition")),"value");
+                let operands = arr(get(proposition,"operands"));
+                let maps = arr(get(system,"restrictions")).iter().filter(|v| s(get(v,"side"))==side).map(|v| get(v,"map")).collect::<Vec<_>>();
+                assert_eq!(operands.len(), maps.len()+1);
+                for operand in &operands[1..] {
+                    assert!(maps.iter().any(|map| map.value==operand.value));
+                }
+                proposition
+            });
+            assert_ne!(propositions[0].value,propositions[1].value);
+        }
+        let check = arr(get(system, "sheaf_checks"))
+            .iter()
+            .find(|v| s(get(v, "scope")) == "cover" && s(get(v, "side")) == "semantic")
+            .unwrap();
+        assert_eq!(
+            s(get(
+                get(node(&j, get(check, "proposition")), "judgment"),
+                "status"
+            )),
+            if correlated { "refuted" } else { "established" }
+        );
+    }
+}
+
+#[test]
+fn finite_local_state_uniqueness_does_not_make_assignment_unique_or_fill_fixed_missing() {
+    for missing in [false, true] {
+        let dir = implicit_multiple_input(
+            "finite-local-assignment",
+            false,
+            if missing { None } else { Some(true) },
+        );
+        explicit_local(
+            &dir,
+            "change choose(t:State,b:Bool,ignored:Bool)=t with {flag=b};",
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object,using=Fixed.choose)",
+                "s=diagnose($l.system,side=semantic)",
+                "n=needed($l)",
+                "r=repair(Fixed.valid,on=$a.object,using=Fixed.choose)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if missing { 2 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        if missing {
+            assert!(!has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
+            let plan = get(output(&j, 3, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|v| s(get(get(v, "field"), "field")) == "Fixed.State.other")
+            );
+        } else {
+            assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "established");
+            let diagnostic = get(output(&j, 2, "diagnostic"), "value");
+            let global = get(node(&j, get(diagnostic, "global")), "value");
+            assert_eq!(arr(get(get(global, "representation"), "values")).len(), 2);
+            let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
+            assert_eq!(arr(get(restriction, "pairs")).len(), 1);
+            let repair = &arr(get(&j, "answers"))[4];
+            assert_eq!(s(get(repair, "status")), "refuted");
+            assert!(!has(get(repair, "outputs"), "object"));
+        }
+    }
+}
+
+#[test]
+fn finite_matching_fibers_keep_original_assignments_for_each_state() {
+    let dir = input("finite-local-fibers", Some(false));
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path)
+        .unwrap()
+        .replace("s.flag=true", "s.flag=s.flag");
+    std::fs::write(path, law).unwrap();
+    explicit_local(
+        &dir,
+        "change choose(t:State,b:Bool,ignored:Bool)=t with {flag=b};",
+    );
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object,using=Fixed.choose)",
+            "e=diagnose($l.system)",
+            "s=diagnose($l.system,side=semantic)",
+        ],
+    );
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    for (i, count) in [(2, 1), (3, 2)] {
+        let diagnostic = get(output(&j, i, "diagnostic"), "value");
+        let fibers = arr(get(diagnostic, "fibers"));
+        assert_eq!(fibers.len(), 2);
+        let mut all = vec![];
+        for fiber in fibers {
+            let preimage = get(node(&j, get(fiber, "preimage")), "value");
+            let values = arr(get(get(preimage, "representation"), "values"));
+            assert_eq!(values.len(), count);
+            for value in values {
+                assert!(!all.contains(&&value.value));
+                all.push(&value.value);
+            }
+        }
+        let global = get(node(&j, get(diagnostic, "global")), "value");
+        assert_eq!(
+            arr(get(get(global, "representation"), "values")).len(),
+            all.len()
+        );
+    }
+}
+
+#[test]
+fn finite_change_unknown_owner_keeps_the_observation_requirement() {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    let map = fixture::remove_atom("p-owner");
+    let input = fixture::input(
+        "law optional localValid(s:State):true=true; change choose(t:State,b:Bool)=t with {free=0};",
+        Some(&map),
+    );
+    let dir = workdir("finite-local-owner-domain");
+    for (name, bytes) in [
+        ("d.json", input.definitions()[0].bytes()),
+        ("l.law", input.law().bytes()),
+        ("a.json", input.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            fixture::MAP,
+            "l=localize($m.candidate.source,law=Reservations.localValid,using=Reservations.choose)",
+            "n=needed($l)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert!(!has(get(&answers[1], "outputs"), "system"));
+    assert_eq!(s(get(&answers[1], "status")), "undetermined");
+    assert_eq!(s(get(&answers[2], "status")), "established");
+    let plan = get(output(&result, 2, "plan"), "value");
+    assert!(arr(get(plan, "requirements")).iter().any(|requirement| {
+        let field = get(requirement, "field");
+        s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.owner"
+    }));
+}
+
+#[test]
+fn finite_change_short_circuit_keeps_fixed_missing_observations() {
+    for expression in ["(s.other and false)=false", "(s.other or true)=true"] {
+        for value in [None, Some(false), Some(true)] {
+            let dir = implicit_multiple_input("finite-local-short", false, value);
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path).unwrap().replace("s.other=true", expression);
+            std::fs::write(path, law).unwrap();
+            explicit_local(&dir, "change choose(t:State,b:Bool)=t with {flag=b};");
+            let r = execute(&dir, "out", &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object,using=Fixed.choose)",
+                "d=diagnose($l.system)",
+                "n=needed($l)",
+            ]);
+            assert_eq!(r.code, if value.is_some() { 0 } else { 2 }, "{} {}", r.stdout, r.stderr);
+            let j = result_json(&dir, &r);
+            let answers = arr(get(&j, "answers"));
+            if value.is_none() {
+                assert!(!has(get(&answers[1], "outputs"), "system"));
+                assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
+                assert_eq!(s(get(&answers[1], "status")), "undetermined");
+                let plan = get(output(&j, 3, "plan"), "value");
+                assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                    let f = get(r, "field");
+                    s(get(f, "subject")) == "s" && s(get(f, "field")) == "Fixed.State.other"
+                }));
+            } else {
+                assert_eq!(s(get(&answers[2], "status")), "established");
+            }
+        }
+    }
+}
+
+#[test]
+fn finite_change_preserves_unbound_law_domains_and_bound_selection_in_scope() {
+    let dir = input("finite-local-quantifiers", Some(true));
+    explicit_local(&dir, "law optional scoped(s:State,p:Bool) when p:s.flag; change choose(t:State,b:Bool)=t with {flag=b};");
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "v=evaluate(Fixed.current,s=@fixed/s)",
+        "all=localize($a.object,law=Fixed.scoped,using=Fixed.choose,s=@fixed/s)",
+        "one=localize($a.object,law=Fixed.scoped,using=Fixed.choose,s=@fixed/s,p=$v.value)",
+        "da=diagnose($all.system)",
+        "do=diagnose($one.system)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    let named = |index: usize| arr(get(get(&answers[index], "scope"), "quantifiers")).iter().filter(|q| s(get(q,"name")) == "p").collect::<Vec<_>>();
+    let inherited = arr(get(get(output(&result, 0, "object"), "scope"), "quantifiers"))
+        .iter().filter(|q| s(get(q,"name")) == "p").collect::<Vec<_>>();
+    let all = named(2);
+    assert_eq!(all.len(), inherited.len()+1);
+    assert_eq!(named(3).len(), inherited.len());
+    let added = all.iter().find(|q| !inherited.iter().any(|old| old.value == q.value)).unwrap();
+    assert_eq!(s(get(added, "kind")), "forall");
+    let values = arr(get(get(node(&result, get(added,"domain")),"value"),"elements"));
+    assert_eq!(values.len(), 2);
+    assert!(values.iter().any(|r| matches!(get(node(&result,r),"value").value, archsig::json::JValue::Bool(false))));
+    assert!(values.iter().any(|r| matches!(get(node(&result,r),"value").value, archsig::json::JValue::Bool(true))));
+    for (index, count) in [(2, 2), (3, 1)] {
+        assert_eq!(arr(get(get(output(&result,index,"system"),"value"),"laws")).len(), count);
+    }
+    let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in &asks { args.extend(["--ask", *ask]); }
+    let r = run(&dir, &args);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let after = result_json(&dir, &r);
+    for field in ["answers", "nodes"] { assert_eq!(get(&result,field).value,get(&after,field).value); }
+}
+
+#[test]
+fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
+    for constant in [false, true] {
+        let dir = implicit_multiple_input("finite-unused-slot", true, Some(false));
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
+        std::fs::write(path,law).unwrap();
+        explicit_local(&dir, if constant {
+            "change choose(t:State,b:Bool)=t with {flag=b,other=false};"
+        } else {
+            "change choose(t:State,b:Bool,c:Bool)=t with {flag=b,other=c};"
+        });
+        let asks = ["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
+        let r = execute(&dir,"out",&asks);
+        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+        let j = result_json(&dir,&r);
+        let system = get(output(&j,1,"system"),"value");
+        let cover = get(node(&j,get(system,"cover")),"value");
+        let context = arr(get(cover,"patches")).iter().map(|r| get(node(&j,r),"value")).find(|v| {
+            let deps = arr(get(v,"dependencies"));
+            deps.len()==1 && s(get(&deps[0],"field"))=="Fixed.State.other"
+        }).unwrap();
+        let reading = arr(get(context,"readings")).iter().find(|r| {
+            let e = get(node(&j,get(r,"expression")),"value");
+            s(get(e,"kind"))=="source" && s(get(get(e,"location"),"input"))=="definition0"
+        }).unwrap();
+        assert_eq!(s(get(reading,"type")),"Bool");
+        let expr = get(node(&j,get(reading,"expression")),"value");
+        assert_eq!(s(get(get(expr,"location"),"pointer")),"/vocabularies/0/declarations/0/fields/1");
+        let bindings = arr(get(expr,"bindings"));
+        assert_eq!(bindings.len(),1);
+        let subject = get(node(&j,get(&bindings[0],"value")),"value");
+        assert_eq!(s(&arr(subject)[1]),"s");
+        let image = get(node(&j,get(reading,"domain")),"value");
+        let elements = arr(get(image,"elements"));
+        assert_eq!(elements.len(),2);
+        for expected in [false,true] {
+            assert!(elements.iter().any(|r| matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
+        }
+        for (i,count) in [(2,2),(3,if constant {1} else {2})] {
+            let d = get(output(&j,i,"diagnostic"),"value");
+            let global = get(node(&j,get(d,"global")),"value");
+            assert_eq!(arr(get(get(global,"representation"),"values")).len(),count);
+        }
+        let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+        for ask in &asks { args.extend(["--ask",*ask]); }
+        let r = run(&dir,&args);
+        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+        let after = result_json(&dir,&r);
+        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&after,field).value); }
+    }
+}
+
+#[test]
+fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
+        let dir = input("finite-read-bindings", Some(true));
+        let mut entities = String::new();
+        for entity in ["Left", "Right"] {
+            entities.push_str(&format!(r#"{{"kind":"entity","name":"Fixed.{entity}","meaning":"補助対象。","parameters":[{{"name":"owner","type":["Ref","Fixed.State"],"meaning":"所属。"}}],"fields":[{{"name":"flag","type":"Bool","meaning":"補助値。"}}],"alignments":[]}},"#));
+        }
+        let definition = D.replace(
+            r#""declarations":["#,
+            &format!(r#""declarations":[{entities}"#),
+        );
+        let old = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
+        let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        for file in ["a.json", "l.law"] {
+            let mut text = std::fs::read_to_string(dir.join(file)).unwrap().replace(
+                &old.vocabularies["Fixed"].digest,
+                &new.vocabularies["Fixed"].digest,
+            );
+            if file == "a.json" {
+                for (subject, ty) in [("u", "Left"), ("v", "Right")] {
+                    text = text.replace(
+                    r#""subjects":["#,
+                    &format!(
+                        r#""subjects":[{{"id":"{subject}","type":"Fixed.{ty}","origin":"model"}},"#
+                    ),
+                );
+                    text = text.replace(r#""atoms":["#,&format!(r#""atoms":[{{"id":"{subject}-owner","subject":"{subject}","field":"Fixed.{ty}.owner","value":["fixed","s"],"origin":"model"}},{{"id":"{subject}-flag","subject":"{subject}","field":"Fixed.{ty}.flag","value":true,"origin":"model"}},"#));
+                }
+            }
+            std::fs::write(dir.join(file), text).unwrap();
+        }
+
+    let path=dir.join("l.law");
+    let law=std::fs::read_to_string(&path).unwrap().replace("law required valid(s:State):s.flag=true;", "");
+    std::fs::write(path,law).unwrap();
+    explicit_local(&dir,"law required left(t:State,u:Left[t]):t.flag=u.flag; law required right(t:State,v:Right[t]):t.flag=v.flag; change choose(t:State,b:Bool)=t with {flag=b};");
+    let asks=["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let system=get(output(&j,1,"system"),"value");
+    let intersection=arr(get(system,"contexts")).iter().map(|r|get(node(&j,r),"value")).find(|v|arr(get(v,"carrier")).len()==1).unwrap();
+    let readings=arr(get(intersection,"readings"));
+    assert_eq!(readings.len(),2);
+    for reading in readings {
+        assert_eq!(s(get(reading,"type")),"Bool");
+        let expression=get(node(&j,get(reading,"expression")),"value");
+        let bindings=arr(get(expression,"bindings"));
+        assert_eq!(bindings.len(),1);
+        assert_eq!(s(get(&bindings[0],"name")),"t");
+        let subject=get(node(&j,get(&bindings[0],"value")),"value");
+        assert_eq!(s(&arr(subject)[1]),"s");
+        let image=get(node(&j,get(reading,"domain")),"value");
+        let values=arr(get(image,"elements"));
+        assert_eq!(values.len(),2);
+        for expected in [false,true] {
+            assert!(values.iter().any(|r|matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
+        }
+    }
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in &asks {args.extend(["--ask",*ask]);}
+    let r=run(&dir,&args);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let after=result_json(&dir,&r);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
 }

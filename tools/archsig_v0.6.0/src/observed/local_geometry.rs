@@ -1,5 +1,7 @@
 //! 固定状態の支持context、交わり、生成coverの有限局所系。
 use super::*;
+#[path = "local_finite_state.rs"]
+mod finite_state;
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct Support {
     pub carrier: Vec<Json>,
@@ -12,7 +14,7 @@ impl Support {
             && other.positions.iter().all(|v| self.positions.contains(v))
             && other.visible.iter().all(|v| self.visible.contains(v))
     }
-    fn intersect(&self, other: &Self) -> Self {
+    pub(super) fn intersect(&self, other: &Self) -> Self {
         Self {
             visible: self
                 .visible
@@ -79,6 +81,24 @@ pub(super) struct Local {
     pub instances: Vec<Json>,
     pub arguments: Vec<NodeRef>,
 }
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct FiniteSide {
+    pub global: NodeRef,
+    pub domain: NodeRef,
+    pub solution_domain: NodeRef,
+    pub values: Vec<(Scalar, NodeRef)>,
+    pub matching: Vec<Scalar>,
+    pub matching_type: Type,
+    pub all: NodeRef,
+    pub checked: usize,
+    pub restriction: Vec<(NodeRef, Scalar)>,
+    pub parameters: Vec<(NodeRef, Vec<NodeRef>)>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Finite {
+    pub semantic: FiniteSide,
+    pub equation: FiniteSide,
+}
 pub(super) struct Built {
     pub system: NodeRef,
     pub adequacy: NodeRef,
@@ -87,6 +107,7 @@ pub(super) struct Built {
     pub equation: NodeRef,
     pub states: NodeRef,
     pub patch_count: usize,
+    pub finite: Option<Finite>,
 }
 struct State {
     point: NodeRef,
@@ -97,7 +118,19 @@ struct State {
     identity: NodeRef,
     slots: Json,
     subjects: Vec<NodeRef>,
+    equation_domain: NodeRef,
+    semantic_values: Vec<(Scalar, NodeRef)>,
+    equation_values: Vec<(Scalar, NodeRef)>,
+    free: Vec<Fact>,
+    state_type: Type,
+    equation_parameters: NodeRef,
+    semantic_checked: usize,
+    equation_checked: usize,
+    semantic_action: NodeRef,
+    semantic_solution_domain: NodeRef,
+    semantic_parameters: Vec<(NodeRef, Vec<NodeRef>)>,
 }
+
 fn state(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
@@ -226,6 +259,17 @@ fn state(
         identity,
         slots,
         subjects: slot_subjects,
+        equation_domain: states,
+        semantic_values: elements.iter().map(|r| (Scalar::Unit, *r)).collect(),
+        equation_values: elements.iter().map(|r| (Scalar::Unit, *r)).collect(),
+        free: vec![],
+        state_type: Type::Unit,
+        equation_parameters: point,
+        semantic_checked: 1,
+        equation_checked: 1,
+        semantic_action: identity,
+        semantic_solution_domain: candidates,
+        semantic_parameters: elements.iter().map(|r| (*r, vec![*r])).collect(),
     })
 }
 #[allow(clippy::too_many_arguments)]
@@ -243,6 +287,7 @@ pub(super) fn build(
     reading_refs: &[NodeRef],
     projections: &[Projection],
     locals: &[Local],
+    finite_model: Option<&finite_model::Model>,
     local_scope: &Scope,
     c: &mut Control,
 ) -> Result<Built, ValidationFailure> {
@@ -263,7 +308,6 @@ pub(super) fn build(
     let mut projected = BTreeMap::new();
     let mut contexts = vec![];
     let mut states = vec![];
-    let mut inhabited = vec![];
     let mut context_index = 0;
     while context_index < supports.len() {
         let support = &supports[context_index];
@@ -276,16 +320,20 @@ pub(super) fn build(
             .collect::<Vec<_>>();
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
-        let state = state(
-            env,
-            b,
-            target,
-            &context_laws,
-            &support.positions,
-            holds,
-            unit,
-            c,
-        )?;
+        let state = if let Some(model) = finite_model {
+            finite_state::build(env, b, target, &context_laws, &selected, support, model, c)?
+        } else {
+            state(
+                env,
+                b,
+                target,
+                &context_laws,
+                &support.positions,
+                holds,
+                unit,
+                c,
+            )?
+        };
         let visible = readings
             .iter()
             .zip(read_supports)
@@ -364,7 +412,6 @@ pub(super) fn build(
         b.parts[context.0 - b.base].scope.merge(local_scope);
         contexts.push(context);
         states.push(state);
-        inhabited.push(holds);
         // 完成したcontextを先に保持し、引戻し閉包を一つずつ拡張する。
         for j in 0..context_index {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
@@ -385,19 +432,22 @@ pub(super) fn build(
             if !big.contains(small) {
                 continue;
             }
-            // Law座標を支持で閉じたため、成立する大contextから空の小contextへの写像は生じない。
-            if inhabited[w] && !inhabited[v] {
-                return Err("局所状態の制限が定義できない".into());
-            }
-            let pairs = if inhabited[w] {
-                vec![(unit, unit)]
-            } else {
-                vec![]
-            };
-            let restriction = if v == w {
+            let semantic_pairs = finite_state::restriction(&states[w], &states[v], false, c)?;
+            let equation_pairs = finite_state::restriction(&states[w], &states[v], true, c)?;
+            let restriction = if v == w && finite_model.is_none() {
                 states[v].identity
             } else {
-                state_map(b, states[w].states, states[v].states, &pairs)?
+                state_map(b, states[w].states, states[v].states, &semantic_pairs)?
+            };
+            let equation_restriction = if finite_model.is_some() {
+                state_map(
+                    b,
+                    states[w].equation_domain,
+                    states[v].equation_domain,
+                    &equation_pairs,
+                )?
+            } else {
+                restriction
             };
             let images = small
                 .carrier
@@ -417,16 +467,26 @@ pub(super) fn build(
                     ("source", contexts[v].wire()),
                     ("target", contexts[w].wire()),
                     ("images", Json::Arr(images)),
-                    ("restrictions", refs(&[restriction])),
+                    (
+                        "restrictions",
+                        refs(&if restriction == equation_restriction {
+                            vec![restriction]
+                        } else {
+                            vec![restriction, equation_restriction]
+                        }),
+                    ),
                 ]),
-                vec![contexts[v], contexts[w], restriction],
+                vec![contexts[v], contexts[w], restriction, equation_restriction],
                 None,
                 None,
             )?;
             arrows.insert((v, w), arrow);
             maps.push(arrow);
-            restriction_refs.push(restriction);
-            for side in ["equation", "semantic"] {
+            restriction_refs.extend([restriction, equation_restriction]);
+            for (side, restriction) in [
+                ("equation", equation_restriction),
+                ("semantic", restriction),
+            ] {
                 restrictions.push(Json::obj([
                     ("side", Json::str(side)),
                     ("arrow", arrow.wire()),
@@ -556,14 +616,17 @@ pub(super) fn build(
         None,
         None,
     )?;
-    // 固定状態では各fiberは空または一点。非空な局所状態の制限はすべてUnitを保つので、
-    // matchingの有無と全域状態の有無を照合すれば、存在と一意性を別々に検査できる。
-    let cover_holds = inhabited[0] == patch_indices.iter().all(|i| inhabited[*i]);
-    let topology_holds = matching_checks
-        .iter()
-        .all(|(w, sources)| inhabited[*w] == sources.iter().all(|i| inhabited[*i]));
     let mut checks = vec![];
-    for side in ["equation", "semantic"] {
+    let mut summaries = vec![];
+    for (side, equation_side) in [("semantic", false), ("equation", true)] {
+        let summary =
+            finite_state::summary(&states, &supports, &patch_indices, 0, equation_side, c)?;
+        let cover_holds = finite_state::bijective(&summary, c)?;
+        let mut topology_holds = true;
+        for (w, sources) in &matching_checks {
+            let test = finite_state::summary(&states, &supports, sources, *w, equation_side, c)?;
+            topology_holds &= finite_state::bijective(&test, c)?;
+        }
         for (scope, object, holds) in [
             ("cover", cover, cover_holds),
             ("topology", topology, topology_holds),
@@ -571,7 +634,7 @@ pub(super) fn build(
             let proposition = b.proposition(
                 "sheaf_condition",
                 std::iter::once(object)
-                    .chain(restriction_refs.iter().copied())
+                    .chain(restriction_refs.iter().skip(usize::from(equation_side)).step_by(2).copied())
                     .collect(),
                 vec![],
                 if holds {
@@ -589,7 +652,16 @@ pub(super) fn build(
                 ]),
             ));
         }
+        summaries.push(summary);
     }
+    let finite = if finite_model.is_some() {
+        Some(Finite {
+            semantic: summaries.remove(0),
+            equation: summaries.remove(0),
+        })
+    } else {
+        None
+    };
     let mut fields = BTreeMap::from([
         ("base".into(), target.wire()),
         ("laws".into(), refs(laws)),
@@ -608,7 +680,7 @@ pub(super) fn build(
                             ("context", context.wire()),
                             ("parameters", s.semantic.wire()),
                             ("state_image", s.states.wire()),
-                            ("action", s.identity.wire()),
+                            ("action", s.semantic_action.wire()),
                         ])
                     })
                     .collect(),
@@ -663,6 +735,9 @@ pub(super) fn build(
     ] {
         fields.insert(name.into(), Json::Arr(vec![]));
     }
+    if let Some(model) = finite_model {
+        fields.insert("change".into(), Json::str(&model.change));
+    }
     let system = b.push(
         NodeType::Construction(T::LocalSystem),
         "local_system",
@@ -672,11 +747,17 @@ pub(super) fn build(
             .chain(maps)
             .chain([cover, topology])
             .chain(laws.iter().copied())
-            .chain(
-                states
-                    .iter()
-                    .flat_map(|s| [s.semantic, s.states, s.equations, s.equation, s.identity]),
-            )
+            .chain(states.iter().flat_map(|s| {
+                [
+                    s.semantic,
+                    s.states,
+                    s.equations,
+                    s.equation,
+                    s.identity,
+                    s.semantic_action,
+                    s.equation_domain,
+                ]
+            }))
             .chain(checks.iter().map(|(r, _)| *r))
             .chain(restriction_refs)
             .collect(),
@@ -684,6 +765,7 @@ pub(super) fn build(
         None,
     )?;
     Ok(Built {
+        finite,
         system,
         adequacy,
         point: states[0].point,
