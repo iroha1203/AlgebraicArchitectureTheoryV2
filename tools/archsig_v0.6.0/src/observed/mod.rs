@@ -16,6 +16,7 @@ mod finite_integer_function;
 mod finite_law_diagram;
 mod internal_arrow_diagram;
 mod integer_fiber;
+mod field_fiber;
 mod law_evaluation;
 mod law_family;
 mod law_inapplicable;

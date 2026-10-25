@@ -244,6 +244,24 @@ impl Form {
         }
         Ok(Some((constant.clone(), coefficients)))
     }
+    pub(in crate::observed) fn rational_coordinates(&self, axes:&[Parameter], c:&Control)->Result<Option<(Scalar,Vec<Scalar>)>,ValidationFailure> {
+        self.check(c)?;
+        if !matches!(self.constant,Scalar::Q(_, _)) {return Ok(None);}
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            if !matches!(key,Symbol::Parameter(axis) if axes.contains(axis)) {return Ok(None);}
+        }
+        let mut row=vec![];
+        for axis in axes {
+            tick(c)?;
+            row.push(match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
+                Some(value @ Scalar::Q(_, _))=>value.clone(),
+                None=>numeric::zero(&Type::Q,c)?,
+                _=>return Err("有理式の係数がQでない".into()),
+            });
+        }
+        Ok(Some((self.constant.clone(),row)))
+    }
     /// 元引数・Tuple成分の辞書式順で、定数項と全係数を型付き表示する。
     pub(in crate::observed) fn term_coordinates(
         &self,

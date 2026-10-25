@@ -31,6 +31,7 @@ pub(in crate::observed) struct Linear {
 }
 #[derive(Default)]
 pub(in crate::observed) struct Pending {
+    pub coefficient_type: Option<Type>,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
