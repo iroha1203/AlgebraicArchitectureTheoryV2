@@ -339,6 +339,7 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
 
 #[test]
 fn rational_missing_conditions_keep_source_binding_and_needed_field() {
+    let mut failures = vec![];
     for (guard, body, parameter_count) in [
         (
             "s.y=0",
@@ -360,6 +361,21 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             "change choose(s:State,a:Q) when s.y>0=s with{x=a};law required pinned(s:State):s.x=0;",
             1,
         ),
+        (
+            "(if s.y>0 then true else false)",
+            "change choose(s:State,a:Q) when (if s.y>0 then true else false)=s with{x=a};law required pinned(s:State):s.x=0;",
+            1,
+        ),
+        (
+            "positive(s)",
+            "view positive(s:State):Bool=s.y>0;change choose(s:State,a:Q) when positive(s)=s with{x=a};law required pinned(s:State):s.x=0;",
+            1,
+        ),
+        (
+            "(let b=s.y>0 in b)",
+            "change choose(s:State,a:Q) when (let b=s.y>0 in b)=s with{x=a};law required pinned(s:State):s.x=0;",
+            1,
+        ),
     ] {
         let dir = input("rational-missing-conditions", body);
         let path = dir.join("a.json");
@@ -372,7 +388,10 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             "n=needed($r)",
         ];
         let r = execute(&dir, "out", &asks);
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        if r.code != 2 {
+            failures.push(format!("{guard}: {} {}", r.stdout, r.stderr));
+            continue;
+        }
         let j = result_json(&dir, &r);
         let answer = &arr(get(&j, "answers"))[0];
         let reason = arr(get(answer, "reasons"))
@@ -426,4 +445,5 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             assert_eq!(get(&j, field).value, get(&again, field).value);
         }
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

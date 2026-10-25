@@ -109,7 +109,6 @@ fn equations(
                     .comparison
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
                 else {
-                    guard_missing(env, id, vars, reading, missing)?;
                     return Err(unsupported(
                         env,
                         id,
@@ -133,6 +132,17 @@ fn equations(
 }
 
 pub(in crate::observed) fn compute(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subjects: &[Scalar],
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<Linear, ValidationFailure> {
+    with_missing(env, missing, |missing| {
+        compute_inner(env, change, subjects, requirements, missing)
+    })
+}
+fn compute_inner(
     env: &Environment<'_>,
     change: &Declaration,
     subjects: &[Scalar],
@@ -228,7 +238,6 @@ pub(in crate::observed) fn compute(
                         Some(Scalar::Bool(false)) => *else_branch,
                         _ => {
                             missing.expression = Some(*cond);
-                            guard_missing(env, *cond, &vars, &change.reading, missing)?;
                             return Err(unsupported(env, *cond, "有理changeの未確定分岐は未実装"));
                         }
                     };
@@ -307,7 +316,9 @@ pub(in crate::observed) fn compute(
     let (matrix, rhs) = if candidates_empty {
         (vec![], vec![])
     } else {
-        requirement_equations(&updated, &axes, requirements, missing)?
+        with_missing(&updated, missing, |missing| {
+            requirement_equations(&updated, &axes, requirements, missing)
+        })?
     };
     guard_matrix.extend(matrix);
     guard_rhs.extend(rhs);
@@ -330,48 +341,30 @@ pub(in crate::observed) fn compute(
         fiber,
     })
 }
-// 未確定guardの実評価で残った原始位置を、元のguard Sourceへ結び付ける。
-fn guard_missing(
+// 通常評価器とcacheが既に保持する実読取りを使い、式形ごとの再走査を行わない。
+fn with_missing<T>(
     env: &Environment<'_>,
-    id: usize,
-    vars: &BTreeMap<String, SourceValue>,
-    reading: &str,
     missing: &mut Pending,
-) -> Result<(), ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        let v = env.scoped_ast(id, vars, &Scope::default(), reading)?;
-        if v.known_value.is_some() {
-            return Ok(());
-        }
-        if let Some(form) = &v.affine {
-            missing.facts.extend(form.missing_facts());
-        }
-        if let Some(comparison) = &v.comparison {
-            missing.facts.extend(comparison.left.missing_facts());
-            missing.facts.extend(comparison.right.missing_facts());
-        }
-        match &env.inputs.law().exprs[id].kind {
-            ExprKind::Group(body) => guard_missing(env, *body, vars, reading, missing)?,
-            ExprKind::Let { name, value, body } => {
-                let mut vars = vars.clone();
-                vars.insert(
-                    name.name.clone(),
-                    env.scoped_ast(*value, &vars, &Scope::default(), reading)?,
-                );
-                guard_missing(env, *body, &vars, reading, missing)?;
-            }
-            ExprKind::Binary { lhs, rhs, .. } => {
-                guard_missing(env, *lhs, vars, reading, missing)?;
-                guard_missing(env, *rhs, vars, reading, missing)?;
-            }
-            ExprKind::Unary { operand, .. } => {
-                guard_missing(env, *operand, vars, reading, missing)?
-            }
-            _ => {}
-        }
-        Ok(())
-    })
+    operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
+) -> Result<T, ValidationFailure> {
+    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+    let result = operation(missing);
+    let reads = env
+        .missing_slot_reads
+        .replace(outer)
+        .ok_or("有理変更の不足位置収集がない")?;
+    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
+        outer.extend(reads.iter().cloned());
+    }
+    if result.is_err() {
+        missing.facts.extend(reads.into_iter().filter(|fact| {
+            !env.primitive_valuation
+                .as_ref()
+                .is_some_and(|values| values.contains_key(fact))
+                && !env.affine_valuation.contains_key(fact)
+        }));
+    }
+    result
 }
 fn requirement_equations(
     env: &Environment<'_>,
@@ -428,7 +421,6 @@ fn requirement_equations(
                     missing.expression = Some(*guard);
                     missing.bindings = bindings.clone();
                     missing.parameters.clear();
-                    guard_missing(env, *guard, &vars, &law.reading, missing)?;
                     return Err(unsupported(
                         env,
                         *guard,
