@@ -5389,3 +5389,117 @@ fn diagnostic_comparison_rejects_different_coefficient_rings() {
         }
     }
 }
+
+#[test]
+fn diagnostic_transport_keeps_path_bindings_and_named_compositions() {
+    for mode in ["identity", "arrow", "composite", "nested", "fixed"] {
+        for wrong in [false, true] {
+            let dir = integer_transport_input(&format!("diagnostic-path-{mode}-{wrong}"), true);
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path).unwrap();
+            std::fs::write(&path,law.replace("law optional localValid","law optional pathLaw(s:State,p:Path<State,State>):s.free=2; law optional localValid")).unwrap();
+            if mode == "nested" {
+                let law=std::fs::read_to_string(&path).unwrap().replace("p:Path<State,State>","p:(Path<State,State>,Z)").replace("law optional pathLaw","view packedPath(s:State):(Path<State,State>,Z)=(identity(s),2); law optional pathLaw");
+                std::fs::write(&path,law).unwrap();
+            }
+            let mut asks = vec!["m=map(Reservations.Migration,on=@v/m,reading=Reservations)"];
+            if mode == "nested" {
+                asks.extend(["x=evaluate(Reservations.packedPath,on=$m.candidate.source,s=@v/p)",if wrong {"y=evaluate(Reservations.packedPath,on=$m.candidate.target,s=@v/transport_a)"}else{"y=evaluate(Reservations.packedPath,on=$m.candidate.target,s=@v/transport_z)"}]);
+            } else if mode == "identity" || mode == "fixed" {
+                asks.extend([
+                    "x=evaluate(Reservations.emptyPath,on=$m.candidate.source,s=@v/p)",
+                    if wrong {
+                        "y=evaluate(Reservations.emptyPath,on=$m.candidate.target,s=@v/transport_a)"
+                    } else {
+                        "y=evaluate(Reservations.emptyPath,on=$m.candidate.target,s=@v/transport_z)"
+                    },
+                ]);
+            } else {
+                asks.extend([
+                    "x=evaluate(Reservations.route,on=$m.candidate.source,e=@v/e)",
+                    if wrong {
+                        "y=evaluate(Reservations.route,on=$m.candidate.target,e=@v/transport_aa)"
+                    } else {
+                        "y=evaluate(Reservations.route,on=$m.candidate.target,e=@v/transport_zz)"
+                    },
+                ]);
+            }
+            if mode == "composite" {
+                asks.extend([
+                    "u=evaluate(Reservations.route,on=$m.candidate.source,e=@v/h)",
+                    "v=evaluate(Reservations.route,on=$m.candidate.target,e=@v/transport_ll)",
+                    "xx=compose($x.value,then=$u.value)",
+                    "yy=compose($y.value,then=$v.value)",
+                ]);
+            }
+            let left = if mode == "fixed" {
+                "l=localize($m.candidate.source,law=Reservations.pathLaw,s=@v/p,p=$x.value)"
+            } else if mode == "composite" {
+                "l=localize($m.candidate.source,law=Reservations.pathLaw,s=@v/p,p=$xx.operation,using=Reservations.move)"
+            } else {
+                "l=localize($m.candidate.source,law=Reservations.pathLaw,s=@v/p,p=$x.value,using=Reservations.move)"
+            };
+            let right = if mode == "fixed" {
+                "r=localize($m.candidate.target,law=Reservations.pathLaw,s=@v/transport_z,p=$y.value)"
+            } else if mode == "composite" {
+                "r=localize($m.candidate.target,law=Reservations.pathLaw,s=@v/transport_z,p=$yy.operation,using=Reservations.move)"
+            } else {
+                "r=localize($m.candidate.target,law=Reservations.pathLaw,s=@v/transport_z,p=$y.value,using=Reservations.move)"
+            };
+            asks.extend([
+                left,
+                right,
+                "d=diagnose($l.system,degree=0)",
+                "e=diagnose($r.system,degree=0)",
+                "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            ]);
+            let r = execute(&dir, "out", &asks);
+            assert_eq!(
+                r.code,
+                if wrong { 2 } else { 0 },
+                "{mode}/{wrong}: {} {}",
+                r.stdout,
+                r.stderr
+            );
+            let j = result_json(&dir, &r);
+            if wrong {
+                let answer = arr(get(&j, "answers")).last().unwrap();
+                assert!(!has(get(answer, "outputs"), "comparison"));
+                assert!(arr(get(answer, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "unsupported_algorithm"));
+            } else {
+                let cmp = get(output(&j, asks.len() - 1, "comparison"), "value");
+                for field in if mode=="fixed" {vec![]} else {vec!["kernel", "cokernel"]} {
+                    let group = get(node(&j, get(cmp, field)), "value");
+                    assert_eq!(num(get(group, "free_rank")), 0);
+                    assert!(arr(get(group, "torsion")).is_empty());
+                }
+            }
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+                "--time-ms",
+                "120000",
+            ];
+            for ask in asks {
+                args.extend(["--ask", ask]);
+            }
+            let repeat = run(&dir, &args);
+            assert_eq!(repeat.code, r.code, "{} {}", repeat.stdout, repeat.stderr);
+            let again = result_json(&dir, &repeat);
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&again, field).value);
+            }
+        }
+    }
+}

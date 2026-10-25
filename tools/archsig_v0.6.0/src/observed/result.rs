@@ -4077,6 +4077,24 @@ impl Graph {
         Ok(())
     }
 
+    /// Path を含む束縛は、この要求が依存する既出の型付き値を使う。
+    pub(super) fn retained_path_binding(
+        &self, value: &Scalar,
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        if !super::path_value::contains_path(&value.ty(), &self.control)? {
+            return Ok(None);
+        }
+        let request = self.requests.get(self.active.request).ok_or("Path束縛の要求がない")?;
+        let mut roots = vec![];
+        for (_, answer) in &self.checked_answers {
+            self.tick()?;
+            if request.dependencies.contains(&answer.id) {
+                roots.extend(answer.outputs.values().copied());
+            }
+        }
+        super::path_value::reference(value, &self.nodes, &roots, &self.control).map(Some)
+    }
+
     pub(super) fn scalar_wire(
         &self,
         value: &Scalar,

@@ -29,9 +29,6 @@ impl Renaming {
             .zip(op.map().candidate().images())
         {
             c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-            if source.field != image.field {
-                continue;
-            }
             let key = (
                 source.snapshot.clone(),
                 source.subject.clone(),
@@ -103,7 +100,7 @@ impl Renaming {
         Ok(true)
     }
 
-    pub(in crate::observed::local_result) fn fact(&self, fact: &Fact) -> Option<Fact> {
+    fn image(&self, fact: &Fact) -> Option<Fact> {
         self.fields
             .get(&(
                 fact.snapshot.clone(),
@@ -111,6 +108,49 @@ impl Renaming {
                 fact.field.clone(),
             ))
             .cloned()
+    }
+    pub(in crate::observed::local_result) fn fact(&self, fact: &Fact) -> Option<Fact> {
+        self.image(fact).filter(|image| image.field == fact.field)
+    }
+    fn path(
+        &self, a: &crate::observed::path_value::PathValue,
+        b: &crate::observed::path_value::PathValue, c: &mut Control,
+    ) -> Result<bool, ValidationFailure> {
+        a.check(c)?;
+        b.check(c)?;
+        if a.reading != b.reading || !self.binding(&a.object(), &b.object(), c)?
+            || !self.binding(&a.target(), &b.target(), c)? { return Ok(false); }
+        match (&a.step, &b.step) {
+            (None, None) => Ok(true),
+            (Some(a), Some(b)) => {
+                if a.word_tail.len() != b.word_tail.len()
+                    || !self.binding(&a.generator, &b.generator, c)? { return Ok(false); }
+                for (x, y) in a.word_tail.iter().zip(&b.word_tail) {
+                    if !self.binding(x, y, c)? { return Ok(false); }
+                }
+                // Operation の全域作用と Path の全域作用の可換性。
+                // 対象外の位置を根へ送る作用も保持する。
+                for (source, image) in a.carrier.iter().zip(&a.images) {
+                    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                    let Some(mapped_source) = self.image(source) else { return Ok(false); };
+                    let Some(mapped_image) = self.image(image) else { return Ok(false); };
+                    let mut target_image = None;
+                    for (point, value) in b.carrier.iter().zip(&b.images) {
+                        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                        if point.snapshot == mapped_source.snapshot && point.subject == mapped_source.subject
+                            && point.field == mapped_source.field {
+                            if target_image.is_some() { return Ok(false); }
+                            target_image = Some(value);
+                        }
+                    }
+                    let Some(target_image) = target_image else { return Ok(false); };
+                    if target_image.snapshot != mapped_image.snapshot || target_image.subject != mapped_image.subject
+                        || target_image.field != mapped_image.field { return Ok(false); }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
     }
     fn subject(&self, snapshot: &str, subject: &str) -> Option<Fact> {
         self.fact(&Fact {
@@ -271,6 +311,7 @@ impl Renaming {
                     for (x,y) in x.iter().zip(y) { if !self.binding(x,y,c)? { return Ok(false); } }
                     true
                 }
+                (Scalar::Path(a), Scalar::Path(b)) => self.path(a, b, c)?,
                 (Scalar::Path(_) | Scalar::Term(_), _) | (_, Scalar::Path(_) | Scalar::Term(_)) => false,
                 _ => a == b,
             })

@@ -150,6 +150,7 @@ fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
 }
 pub(super) fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFailure> {
+    if let Some(reference) = b.g.retained_path_binding(scalar)? { return Ok(reference); }
     for (index, part) in b.parts.iter().enumerate() {
         b.g.tick()?;
         if part.scalar.as_ref() == Some(scalar) {
