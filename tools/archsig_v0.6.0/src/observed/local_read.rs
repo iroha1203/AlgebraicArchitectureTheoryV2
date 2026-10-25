@@ -469,18 +469,32 @@ fn materialize_instance(
         let expression = change_result::source_expression(b, env, *id, &node_bindings, &[])?;
         let (value, dependencies, absent) =
             evaluate_read(env, *id, &variables, &scope, &declaration.reading)?;
-        for state in states {
-            c.checkpoint(Checkpoint::Localize)?;
-            let (other, _, other_absent) = evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
-            if other.known_value != value.known_value || other.condition_failed != value.condition_failed
-                || other.condition_pending != value.condition_pending || other_absent != absent {
-                return Err(unsupported(declaration.span, "自由状態で適用条件が変わるlocalは未実装"));
-            }
-        }
         b.parts[expression.0 - b.base].scope.merge(&value.scope);
         out.scope.merge(&value.scope);
         out.positions.extend(dependencies);
         out.arguments.push(expression);
+        let mut guard_missing = absent.clone();
+        let consistent = (|| -> Result<(), ValidationFailure> {
+            for state in states {
+                c.checkpoint(Checkpoint::Localize)?;
+                let (other, _, other_absent) = evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
+                guard_missing.extend(other_absent.iter().cloned());
+                if other.known_value != value.known_value || other.condition_failed != value.condition_failed
+                    || other.condition_pending != value.condition_pending || other_absent != absent {
+                    return Err(unsupported(declaration.span, "自由状態で適用条件が変わるlocalは未実装"));
+                }
+            }
+            Ok(())
+        })();
+        if let Err(error) = consistent {
+            if !guard_missing.is_empty() {
+                guard_missing.sort();
+                guard_missing.dedup();
+                reason(&mut out, request, ReasonKind::Missing, guard_missing,
+                    declaration.span, vec![expression]);
+            }
+            return Err(error);
+        }
         if value.condition_failed {
             return Err(unsupported(
                 declaration.span,

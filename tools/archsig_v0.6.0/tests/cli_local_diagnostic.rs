@@ -2978,8 +2978,8 @@ fn finite_explicit_local_keeps_visibility_and_variable_guard_limits() {
 
 #[test]
 fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
-    for failure in 0..4 {
-    let dir = multiple_read_input("finite-explicit-missing", true, None, if failure == 2 { "t.other,not t.flag" } else { "t.flag,t.other" });
+    for failure in 0..6 {
+    let dir = multiple_read_input("finite-explicit-missing", failure != 5, None, if failure == 2 { "t.other,not t.flag" } else { "t.flag,t.other" });
     let path=dir.join("l.law");
     let law=std::fs::read_to_string(&path).unwrap().replace("law required second(s:State):s.other=true;", "");
     std::fs::write(path,law).unwrap();
@@ -2988,6 +2988,12 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     if failure == 3 {
         let path=dir.join("l.law");
         let law=std::fs::read_to_string(&path).unwrap().replace("local here(t:State) reads t.flag,t.other;", "local here(t:State,b:Bool) when (not b or t.flag) reads (t.flag,t.other);");
+        std::fs::write(path,law).unwrap();
+    }
+    if failure >= 4 {
+        let path=dir.join("l.law");
+        let guard = if failure == 4 { "(t.flag and t.other)" } else { "(if t.flag then t.other else false)" };
+        let law=std::fs::read_to_string(&path).unwrap().replace("local here(t:State) reads t.flag,t.other;", &format!("local here(t:State) when {guard} reads t.flag;"));
         std::fs::write(path,law).unwrap();
     }
     let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)", "n=needed($l)"];
@@ -3031,7 +3037,7 @@ fn finite_explicit_read_stop_keeps_the_missing_field_already_observed() {
     assert!(arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().any(|r| s(get(r,"code")) == "missing_observation"));
     let missing = arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().find(|r| s(get(r,"code")) == "missing_observation").unwrap();
     let expression = s(get(&arr(get(missing,"dependencies"))[0],"node")).to_owned();
-    // 読取り式が保持された最初の停止点は最初のstate開始。その次が二つ目のstate開始。
+    // 読取り式の生成位置を求め、その後の式評価を経た次のstate境界で止める。
     let mut last = None;
     for stop in 1..seen.get() {
         let mut count = 0;
@@ -3042,16 +3048,23 @@ fn finite_explicit_read_stop_keeps_the_missing_field_already_observed() {
         let partial = evaluate_observed_bytes(sources(), &asks, &mut control).unwrap();
         let j = archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap();
         if arr(get(&j,"nodes")).iter().any(|n| s(get(n,"id")) == expression) {
-            last = Some(stop + 1);
+            last = Some(stop);
             break;
         }
     }
     let last = last.expect("読取り開始の停止点");
     for mode in 0..3 {
         let mut count = 0;
+        let mut read_started = false;
+        let mut stopped = false;
         let mut control = Control::new(Limits { time_ms: Some(1), memory_mib: Some(1) }, move |point| {
-            if point == Checkpoint::Localize { count += 1; }
-            if count < last { return Usage::default(); }
+            if point == Checkpoint::Localize {
+                count += 1;
+                stopped |= read_started;
+            } else if point == Checkpoint::FiniteIteration && count >= last {
+                read_started = true;
+            }
+            if !stopped { return Usage::default(); }
             match mode {
                 0 => Usage { elapsed_ms: 2, ..Usage::default() },
                 1 => Usage { memory_mib: 2, ..Usage::default() },
@@ -3068,4 +3081,24 @@ fn finite_explicit_read_stop_keeps_the_missing_field_already_observed() {
         let missing = reasons.iter().find(|r| s(get(r,"code")) == "missing_observation").unwrap_or_else(|| panic!("mode {mode}: {answer:?}"));
         assert!(format!("{missing:?}").contains("Fixed.State.other"));
     }
+}
+
+#[test]
+fn finite_explicit_local_keeps_unpublished_guard_dependencies_fixed() {
+    let dir = multiple_read_input("explicit-fixed-guard", true, Some(false), "t.other");
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace("local here(t:State) reads t.other;", "local here(t:State) when t.flag reads t.other;");
+    std::fs::write(path,law).unwrap();
+    explicit_local(&dir, "change choose(t:State,b:Bool)=t with {other=b};");
+    let r = execute(&dir,"out", &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.second,using=Fixed.choose)", "d=diagnose($l.system)"]);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j = result_json(&dir,&r);
+    let system = get(output(&j,1,"system"),"value");
+    let context = get(node(&j,&arr(get(system,"contexts"))[0]),"value");
+    assert!(arr(get(context,"dependencies")).iter().any(|slot| s(get(slot,"field"))=="Fixed.State.flag"));
+    let diagnostic = get(output(&j,2,"diagnostic"),"value");
+    let solutions = get(node(&j,get(diagnostic,"global")),"value");
+    let equations = get(node(&j,get(solutions,"domain")),"value");
+    assert!(arr(get(equations,"fixed")).iter().any(|slot| s(get(slot,"field"))=="Fixed.State.flag"));
+    assert_eq!(arr(get(equations,"variables")).len(),1);
 }
