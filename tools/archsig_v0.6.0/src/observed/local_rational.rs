@@ -7,16 +7,16 @@ pub(super) use number::Q as Z;
 pub(super) mod integer_fiber;
 use integer_fiber::Matrix;
 #[path = "local_rational_action.rs"]
-mod change_affine;
+pub(super) mod change_affine;
 #[path = "local_rational_wire.rs"]
 pub(super) mod wire;
-fn coefficient_type() -> crate::types::Type {
+pub(in crate::observed::local_result) fn coefficient_type() -> crate::types::Type {
     crate::types::Type::Q
 }
-fn coefficient_name() -> &'static str {
+pub(in crate::observed::local_result) fn coefficient_name() -> &'static str {
     "Q"
 }
-fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
+pub(in crate::observed::local_result) fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     v.scalar()
 }
 pub(in crate::observed::local_result) fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {

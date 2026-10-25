@@ -5637,8 +5637,15 @@ fn finite_integer_noninjective_read_requires_joint_visibility() {
 
 #[test]
 fn finite_integer_diagnostics_transport_noninjective_read_images() {
+    finite_affine_diagnostics_transport_noninjective_read_images(false);
+}
+#[test]
+fn finite_rational_diagnostics_transport_noninjective_read_images() {
+    finite_affine_diagnostics_transport_noninjective_read_images(true);
+}
+fn finite_affine_diagnostics_transport_noninjective_read_images(rational: bool) {
     for mode in ["plain","parallel","collapsed"] { for degree in [0,1] {
-        let dir=workdir(&format!("finite-integer-read-transport-{mode}-{degree}"));
+        let dir=workdir(&format!("finite-affine-read-transport-{rational}-{mode}-{degree}"));
         std::fs::write(dir.join("d.json"),include_str!("fixtures/reservations.atoms.json")).unwrap();
         let map=include_str!("fixtures/configuration-operation.archmap.json")
             .replace("\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"4\"", "\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"2\"")
@@ -5649,6 +5656,24 @@ fn finite_integer_diagnostics_transport_noninjective_read_images() {
             "law optional localValid(s:State):s.free=2; local Sum(s:State) reads s.free+s.held; local Left(s:State) reads s.free; {extra} change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3,held=if b then 0 else -1}}; view holdings"));
         if mode=="collapsed" {law=law.replace("free=if b then 2 else 3,held=if b then 0 else -1","free=2,held=0");}
         std::fs::write(dir.join("l.law"),law).unwrap();
+        if rational {
+            #[path = "common/architecture_environment.rs"] mod fixture;
+            use archsig::canonical::Json;
+            let old=std::fs::read_to_string(dir.join("d.json")).unwrap();
+            let d=old.replace("\"type\": \"Z\"","\"type\": \"Q\"");
+            let before=definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
+            let after=definition::check_definitions(&[("d",d.as_bytes())]).unwrap();
+            let old_digest=&before.vocabularies["Reservations"].digest;let digest=&after.vocabularies["Reservations"].digest;
+            let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace(old_digest,digest).replace("(Z, Z)","(Q, Q)");
+            let text=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(old_digest,digest);
+            let mut map=fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+            for atom in fixture::atoms(&mut map) {let Json::Obj(a)=atom else {panic!("atom")};
+                if matches!(a.get("field"),Some(Json::Str(f)) if f=="Reservations.State.free"||f=="Reservations.State.held") {
+                    let v=a["value"].clone();a.insert("value".into(),Json::Arr(vec![v,Json::str("1")]));
+                }
+            }
+            for (file,text) in [("d.json",d),("l.law",law),("a.json",map.canonical())] {std::fs::write(dir.join(file),text).unwrap();}
+        }
         let ld=format!("d=diagnose($l.system,side=semantic,degree={degree})");
         let rd=format!("e=diagnose($r.system,side=semantic,degree={degree})");
         let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
@@ -5665,4 +5690,33 @@ fn finite_integer_diagnostics_transport_noninjective_read_images() {
         for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
         let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
+}
+
+#[test]
+fn finite_change_on_rational_fields_keeps_full_equation_fibers() {
+    for mode in ["implicit","coordinate","noninjective"] {for selected in [false,true] {for degree in [0,1] {
+        let dir=rational_compare_input(&format!("finite-change-rational-fields-{mode}-{selected}-{degree}"),true);
+        let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies["Reservations"].digest.clone();
+        let mut law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then rat(1,2) else rat(3,2)}}; law optional localValid(s:State):s.free=rat(1,2); }}");
+        if mode=="coordinate" {law=law.replace("change choose","local Here(s:State) reads s.free; change choose");}
+        if mode=="noninjective" {law=law.replace("change choose","local Sum(s:State) reads s.free+s.held; local Left(s:State) reads s.free; change choose").replace("else rat(3,2)}","else rat(3,2),held=if b then 0 else -1}");}
+        std::fs::write(dir.join("l.law"),law).unwrap();
+        let local=if selected {"l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)"}else{"l=localize($m.candidate.source,using=Reservations.choose)"};
+        let eq=format!("d=diagnose($l.system,side=equation,degree={degree})");
+        let sem=format!("e=diagnose($l.system,side=semantic,degree={degree})");
+        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",local,
+            &eq,&sem,"c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
+            "f=compare($e.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"];
+        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{mode}/{selected}/{degree}: {} {}",r.stdout,r.stderr);
+        let j=result_json(&dir,&r);let space=get(output(&j,2,"space"),"value");
+        let group=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(group,"free_rank")),if degree==1{0}else{(if mode=="noninjective"{4}else{2})-u64::from(selected)});
+        assert!(arr(get(group,"torsion")).is_empty());
+        let diagnostic=get(output(&j,3,"diagnostic"),"value");let restriction=get(node(&j,get(diagnostic,"restriction")),"value");
+        let domain=get(node(&j,get(restriction,"source")),"value");assert_eq!(arr(get(domain,"elements")).len(),if selected{2}else{4});
+        for v in arr(get(domain,"elements")) {let values=arr(get(node(&j,v),"value"));assert!(values.iter().any(|q|s(&arr(q)[1])=="2"));}
+        for i in [4,5] {assert_eq!(s(get(&arr(get(&j,"answers"))[i],"status")),"established");}
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }}}
 }

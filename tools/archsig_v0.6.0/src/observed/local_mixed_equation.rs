@@ -1,10 +1,4 @@
-//! 有限作用とは独立な整数方程式の全fiber。
-use super::*;
-use crate::observed::change_result::linear_result as wire;
-use crate::observed::{environment::change_affine, integer_fiber::Matrix};
-use num_bigint::BigInt as Z;
-use num_traits::Zero;
-
+// 有限作用から独立した係数型ごとの局所構成。
 pub(super) struct State {
     pub ambient: NodeRef,
     pub coefficients: NodeRef,
@@ -39,14 +33,14 @@ pub(super) fn solve(
     let (matrix, rhs) =
         change_affine::state_equations(env, &model.slots, &requirements, &mut pending)?;
     if !pending.facts.is_empty() {
-        return Err("整数方程式の固定位置が欠測している".into());
+        return Err("アフィン方程式の固定位置が欠測している".into());
     }
     if matrix.iter().any(|row| {
         row.iter()
             .enumerate()
             .any(|(i, x)| !x.is_zero() && !indexes.contains(&i))
     }) {
-        return Err("局所整数方程式に不可視の座標がある".into());
+        return Err("局所アフィン方程式に不可視の座標がある".into());
     }
     let matrix: Matrix = matrix
         .iter()
@@ -68,7 +62,7 @@ pub(super) fn solve(
     if let Some(reading) = reading {
         let projection: Matrix = reading.map.iter().map(|row| indexes.iter().map(|i| row[*i].clone()).collect()).collect();
         if reading.map.iter().any(|row| row.iter().enumerate().any(|(i,x)| !x.is_zero() && !indexes.contains(&i))) {
-            return Err("整数読取りにcontext外の座標がある".into());
+            return Err("アフィン読取りにcontext外の座標がある".into());
         }
         let read_module = wire::module(b, ring, reading.map.len(), "image", vec![solution])?;
         let read_domain = wire::domain(b, read_module)?;
@@ -98,33 +92,27 @@ pub(super) fn vector(
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Scalar::Tuple(values) = value else {
-        return Err("整数状態がTupleでない".into());
+        return Err("アフィン状態がTupleでない".into());
     };
     let values = values
         .iter()
-        .map(|v| {
-            if let Scalar::Z(n) = v {
-                Ok(n.clone())
-            } else {
-                Err(ValidationFailure::from("整数状態の成分がZでない"))
-            }
-        })
+        .map(integer::read_coefficient)
         .collect::<Result<Vec<_>, _>>()?;
     let origin = state
         .fiber
         .origin
         .as_ref()
-        .ok_or("有限作用の像を含む整数fiberが空か未確定")?;
-    if values.len() != origin.len() { return Err("整数状態の座標数が違う".into()); }
+        .ok_or("有限作用の像を含むアフィンfiberが空か未確定")?;
+    if values.len() != origin.len() { return Err("アフィン状態の座標数が違う".into()); }
     let delta = values
         .iter()
         .zip(origin)
         .map(|(x, y)| x - y)
         .collect::<Vec<_>>();
     let solution =
-        crate::observed::integer_fiber::solve(&state.fiber.basis, state.fiber.rank, &delta, c)?;
+        integer_fiber::solve(&state.fiber.basis, state.fiber.rank, &delta, c)?;
     if solution.particular.is_none() {
-        return Err("有限作用の解が整数方程式を満たさない".into());
+        return Err("有限作用の解がアフィン方程式を満たさない".into());
     }
     wire::vector(b, state.ambient, &values, c)
 }
@@ -135,8 +123,8 @@ pub(super) fn restriction(
     to: &super::State,
     c: &mut Control,
 ) -> Result<(NodeRef, NodeRef, Matrix, Matrix), ValidationFailure> {
-    let a = from.integer.as_ref().ok_or("整数制限元がない")?;
-    let z = to.integer.as_ref().ok_or("整数制限先がない")?;
+    let a = from.integer.as_ref().ok_or("アフィン制限元がない")?;
+    let z = to.integer.as_ref().ok_or("アフィン制限先がない")?;
     let projection: Matrix = if let (Some(a), Some(z)) = (&from.reading, &to.reading) { a.restriction(z,c)? } else { to
         .free
         .iter()
@@ -145,16 +133,16 @@ pub(super) fn restriction(
                 .free
                 .iter()
                 .position(|x| x == f)
-                .ok_or("整数制限先の座標がない")?;
+                .ok_or("アフィン制限先の座標がない")?;
             Ok((0..from.free.len())
-                .map(|j| Z::from(u8::from(i == j)))
+                .map(|j| Z::from(usize::from(i == j)))
                 .collect())
         })
         .collect::<Result<_, ValidationFailure>>()? };
     let from_rank = from.reading.as_ref().map_or(from.free.len(), |r|r.map.len());
     let to_rank = to.reading.as_ref().map_or(to.free.len(), |r|r.map.len());
     let image =
-        crate::observed::integer_fiber::multiply(&projection, &a.fiber.basis, a.fiber.rank, c)?;
+        integer_fiber::multiply(&projection, &a.fiber.basis, a.fiber.rank, c)?;
     let coefficients =
         integer::linear::coordinates(&z.fiber.basis, z.fiber.rank, &image, a.fiber.rank, c)?;
     let map = integer::state::affine_map(
@@ -214,7 +202,7 @@ pub(super) fn diagram(
                 .iter()
                 .map(|i| {
                     (0..model.slots.len())
-                        .map(|j| Z::from(u8::from(*i == j)))
+                        .map(|j| Z::from(usize::from(*i == j)))
                         .collect()
                 })
                 .collect();
@@ -235,7 +223,7 @@ pub(super) fn diagram(
                 s.integer
                     .as_ref()
                     .map(|s| s.fiber.clone())
-                    .ok_or_else(|| ValidationFailure::from("整数fiberがない"))
+                    .ok_or_else(|| ValidationFailure::from("アフィンfiberがない"))
             })
             .collect::<Result<Vec<_>, _>>()?,
         semantic: vec![],
