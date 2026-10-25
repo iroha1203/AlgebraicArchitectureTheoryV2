@@ -1,15 +1,16 @@
-//! 元の整数候補座標上でViewを評価し、選択された部分域へ制限する。
+//! 元のZ/Q候補座標上でViewを評価し、選択された部分域へ制限する。
 use super::*;
 use crate::law::model::Signature;
 use crate::observed::{
     affine,
     change_result::CandidateInput,
-    integer_fiber::{self, Matrix},
+    field_fiber::Matrix,
+    numeric,
     object_evaluate::ObjectDomain,
     projection::ProjectionType,
 };
-use num_bigint::BigInt as Z;
-use num_traits::{One, Zero};
+#[path = "quotient_coefficients.rs"]
+pub(in crate::observed) mod coefficients;
 use std::sync::Arc;
 
 pub(in crate::observed) struct Law {
@@ -17,15 +18,17 @@ pub(in crate::observed) struct Law {
     pub bindings: Vec<(String, Scalar)>,
     pub operands: [usize; 2],
     pub matrix: Matrix,
-    pub offset: Vec<Z>,
+    pub offset: Vec<Scalar>,
 }
 pub(in crate::observed) struct Image {
+    pub ty: Type,
+    pub parameter_count: usize,
     pub law: Option<Law>,
     pub bindings: Vec<(String, Scalar)>,
     pub matrix: Matrix,
-    pub offset: Vec<Z>,
+    pub offset: Vec<Scalar>,
     pub embedding: Matrix,
-    pub origin: Vec<Z>,
+    pub origin: Vec<Scalar>,
     pub dimensions: usize,
     pub empty: bool,
     pub missing: Vec<Fact>,
@@ -46,25 +49,22 @@ pub(in crate::observed) fn compute(
 ) -> Result<Image, ValidationFailure> {
     c.checkpoint(Checkpoint::Quotient)?;
     if !input.search.complete {
-        return Err(unsupported(request, "整数商の候補全域が未確定"));
+        return Err(unsupported(request, "アフィン商の候補全域が未確定"));
     }
-    let linear = input
-        .search
-        .linear
-        .as_ref()
-        .ok_or("整数商の線形表示がない")?;
+    let linear = coefficients::Input::from_search(&input.search, c)?;
+    let ty = &linear.ty;
     let decl =
-        &original.inputs.law().declarations[request.declaration().ok_or("整数商のViewがない")?];
+        &original.inputs.law().declarations[request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View {
         params,
         returns,
         body,
     } = &decl.signature
     else {
-        return Err("整数商のheadがViewでない".into());
+        return Err("アフィン商のheadがViewでない".into());
     };
-    if *returns != Type::Z {
-        return Err(unsupported(request, "整数商のこのView値型は未実装"));
+    if returns != ty {
+        return Err(unsupported(request, "アフィン商のこのView値型は未実装"));
     }
     let bindings = params
         .iter()
@@ -73,7 +73,7 @@ pub(in crate::observed) fn compute(
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
-                .ok_or("整数商の束縛がない")?;
+                .ok_or("アフィン商の束縛がない")?;
             Ok((
                 p.name.clone(),
                 change_search::selector(original, graph, &arg.value)?,
@@ -86,7 +86,7 @@ pub(in crate::observed) fn compute(
         .find(|a| a.name == "law")
         .map(|argument| {
             let Selector::Declaration { name } = &argument.value else {
-                return Err(ValidationFailure::from("整数商のLaw名がない"));
+                return Err(ValidationFailure::from("アフィン商のLaw名がない"));
             };
             let Signature::Law {
                 params,
@@ -95,10 +95,10 @@ pub(in crate::observed) fn compute(
                 ..
             } = &original.inputs.law().declarations[name].signature
             else {
-                return Err(ValidationFailure::from("整数商のLaw署名が違う"));
+                return Err(ValidationFailure::from("アフィン商のLaw署名が違う"));
             };
             if guard.is_some() {
-                return Err(unsupported(request, "整数商のguard付きLaw降下は未実装"));
+                return Err(unsupported(request, "アフィン商のguard付きLaw降下は未実装"));
             }
             let ExprKind::Binary {
                 op: BinOp::Eq,
@@ -108,11 +108,11 @@ pub(in crate::observed) fn compute(
             else {
                 return Err(unsupported(
                     request,
-                    "整数商の直下等式以外のLaw降下は未実装",
+                    "アフィン商の直下等式以外のLaw降下は未実装",
                 ));
             };
-            if original.inputs.law().expr_type(lhs) != Some(&Type::Z) {
-                return Err(unsupported(request, "整数商のZ以外のLaw値型は未実装"));
+            if original.inputs.law().expr_type(lhs) != Some(ty) {
+                return Err(unsupported(request, "アフィン商の指定係数以外のLaw値型は未実装"));
             }
             let bindings = params
                 .iter()
@@ -122,7 +122,7 @@ pub(in crate::observed) fn compute(
                         .iter()
                         .find(|a| a.name == format!("bind.{}", p.name))
                         .ok_or_else(|| {
-                            unsupported(request, "整数商の未束縛Law parameterは未実装")
+                            unsupported(request, "アフィン商の未束縛Law parameterは未実装")
                         })?;
                     Ok((
                         p.name.clone(),
@@ -140,42 +140,15 @@ pub(in crate::observed) fn compute(
         })
         .transpose()?;
     let n = linear.parameter_count;
-    let (origin, embedding, dimensions, empty) =
-        if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
-            let dimensions = linear.kernel.first().map_or(0, Vec::len);
-            (
-                linear
-                    .particular
-                    .clone()
-                    .unwrap_or_else(|| vec![Z::zero(); n]),
-                linear.kernel.clone(),
-                dimensions,
-                linear.particular.is_none(),
-            )
-        } else if linear.candidates_empty {
-            (vec![Z::zero(); n], vec![vec![]; n], 0, true)
-        } else if let Some(guard) = &linear.guard {
-            (
-                guard
-                    .fiber
-                    .particular
-                    .clone()
-                    .ok_or("整数候補guardの原点がない")?,
-                guard.fiber.kernel.clone(),
-                n - guard.fiber.rank,
-                false,
-            )
-        } else {
-            let mut identity = vec![];
-            for i in 0..n {
-                c.checkpoint(Checkpoint::Quotient)?;
-                let mut row = vec![Z::zero(); n];
-                row[i] = Z::one();
-                identity.push(row);
-            }
-            (vec![Z::zero(); n], identity, n, false)
-        };
+    let (origin, embedding, dimensions, empty) = if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
+        let dimensions = linear.kernel.first().map_or(0, Vec::len);
+        (linear.particular.clone().unwrap_or(vec![numeric::zero(ty,c)?;n]),linear.kernel.clone(),dimensions,linear.particular.is_none())
+    } else {
+        (linear.guard_origin.clone().unwrap_or(vec![numeric::zero(ty,c)?;n]),linear.guard_kernel.clone(),linear.guard_dimensions,linear.guard_origin.is_none())
+    };
     let mut result = Image {
+        ty: ty.clone(),
+        parameter_count: n,
         law,
         bindings,
         matrix: vec![],
@@ -207,13 +180,13 @@ pub(in crate::observed) fn compute(
     env.missing_slot_reads.replace(Some(BTreeSet::new()));
     for ((slot, row), offset) in linear.slots.iter().zip(&linear.action).zip(&linear.offset) {
         let mut form =
-            affine::constant(&Scalar::Z(offset.clone()), c)?.ok_or("整数商の定数がない")?;
+            affine::constant(offset, c)?.ok_or("アフィン商の定数がない")?;
         for (axis, coefficient) in linear.axes.iter().zip(row) {
-            let parameter = affine::parameter(&Type::Z, axis, c)?;
-            let coefficient = affine::constant(&Scalar::Z(coefficient.clone()), c)?;
+            let parameter = affine::parameter(ty, axis, c)?;
+            let coefficient = affine::constant(coefficient, c)?;
             let term = affine::binary(BinOp::Mul, parameter.as_ref(), coefficient.as_ref(), c)?;
             form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), c)?
-                .ok_or("整数商の更新式がない")?;
+                .ok_or("アフィン商の更新式がない")?;
         }
         env.affine_valuation.insert(slot.clone(), form);
     }
@@ -253,7 +226,7 @@ pub(in crate::observed) fn compute(
         }
         return Err(unsupported(
             request,
-            "整数商のView適用条件の公開配送は未実装",
+            "アフィン商のView適用条件の公開配送は未実装",
         ));
     }
     let value = env.scoped_ast(*body, &vars, &Scope::default(), &decl.reading)?;
@@ -261,19 +234,19 @@ pub(in crate::observed) fn compute(
     result.missing = env
         .missing_slot_reads
         .take()
-        .ok_or("整数商の不足収集がない")?
+        .ok_or("アフィン商の不足収集がない")?
         .into_iter()
         .collect();
     if value.condition_failed || value.condition_pending {
         if !result.missing.is_empty() {
             return Ok(result);
         }
-        return Err(unsupported(request, "整数商のView構成条件が未成立"));
+        return Err(unsupported(request, "アフィン商のView構成条件が未成立"));
     }
     let coordinates = value
         .affine
         .as_ref()
-        .map(|form| form.integer_coordinates(&linear.axes, c))
+        .map(|form| coefficients::coordinates(form, &linear.axes, ty, c))
         .transpose()?
         .flatten();
     let Some((constant, row)) = coordinates else {
@@ -282,21 +255,21 @@ pub(in crate::observed) fn compute(
         }
         return Err(unsupported(
             request,
-            "整数商のViewが候補parameterのZアフィン式でない",
+            "アフィン商のViewが候補parameterの指定係数のアフィン式でない",
         ));
     };
     result.missing.clear();
     let mut offset = constant;
     for (a, x) in row.iter().zip(&result.origin) {
         c.checkpoint(Checkpoint::Quotient)?;
-        offset += a * x;
+        offset = coefficients::add_product(&offset,a,x,c)?;
     }
-    result.matrix = integer_fiber::multiply(&vec![row], &result.embedding, dimensions, c)?;
+    result.matrix = coefficients::multiply(ty, &vec![row], &result.embedding, dimensions, c)?;
     result.offset = vec![offset];
     if let Some(law) = &mut result.law {
         let declaration = &original.inputs.law().declarations[&law.name];
         let Signature::Law { params, .. } = &declaration.signature else {
-            return Err("整数商のLaw署名がない".into());
+            return Err("アフィン商のLaw署名がない".into());
         };
         let mut vars = BTreeMap::new();
         let mut checked = BTreeMap::new();
@@ -334,7 +307,7 @@ pub(in crate::observed) fn compute(
             }
             return Err(unsupported(
                 request,
-                "整数商のLaw適用条件の公開配送は未実装",
+                "アフィン商のLaw適用条件の公開配送は未実装",
             ));
         }
         result.scope.readings.insert(declaration.reading.clone());
@@ -345,11 +318,11 @@ pub(in crate::observed) fn compute(
             let missing = env
                 .missing_slot_reads
                 .take()
-                .ok_or("整数Law商の不足収集がない")?;
+                .ok_or("アフィンLaw商の不足収集がない")?;
             let coordinates = value
                 .affine
                 .as_ref()
-                .map(|f| f.integer_coordinates(&linear.axes, c))
+                .map(|f| coefficients::coordinates(f, &linear.axes, ty, c))
                 .transpose()?
                 .flatten();
             if value.condition_failed || value.condition_pending || coordinates.is_none() {
@@ -359,15 +332,15 @@ pub(in crate::observed) fn compute(
                 }
                 return Err(unsupported(
                     request,
-                    "整数商のLaw値が確定したZアフィン式でない",
+                    "アフィン商のLaw値が確定した指定係数のアフィン式でない",
                 ));
             }
-            let (mut constant, row) = coordinates.ok_or("整数Law商の係数がない")?;
+            let (mut constant, row) = coordinates.ok_or("アフィンLaw商の係数がない")?;
             for (a, x) in row.iter().zip(&result.origin) {
                 c.checkpoint(Checkpoint::Quotient)?;
-                constant += a * x;
+                constant = coefficients::add_product(&constant,a,x,c)?;
             }
-            law.matrix.extend(integer_fiber::multiply(
+            law.matrix.extend(coefficients::multiply(ty,
                 &vec![row],
                 &result.embedding,
                 dimensions,
@@ -384,24 +357,25 @@ pub(in crate::observed) fn point(
     original: &Environment<'_>,
     input: &CandidateInput,
     image: &Image,
-    coordinates: &[Z],
+    coordinates: &[Scalar],
     request: &Request,
     c: &mut Control,
 ) -> Result<quotient_evaluation::Row, ValidationFailure> {
-    let law = image.law.as_ref().ok_or("整数商のLawがない")?;
-    let linear = input.search.linear.as_ref().ok_or("整数商の更新式がない")?;
-    let apply = |matrix: &Matrix, offset: &[Z], point: &[Z]| -> Result<Vec<Z>, ValidationFailure> {
+    let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
+    let linear = coefficients::Input::from_search(&input.search,c)?;
+    let arithmetic_control=c.clone();
+    let apply = |matrix: &Matrix, offset: &[Scalar], point: &[Scalar]| -> Result<Vec<Scalar>, ValidationFailure> {
         matrix
             .iter()
             .zip(offset)
             .map(|(row, constant)| {
                 if row.len() != point.len() {
-                    return Err("整数商の点の次元が違う".into());
+                    return Err("アフィン商の点の次元が違う".into());
                 }
                 let mut value = constant.clone();
                 for (a, x) in row.iter().zip(point) {
                     original.tick()?;
-                    value += a * x;
+                    value = coefficients::add_product(&value,a,x,&arithmetic_control)?;
                 }
                 Ok(value)
             })
@@ -419,7 +393,7 @@ pub(in crate::observed) fn point(
             .slots
             .iter()
             .cloned()
-            .zip(values.into_iter().map(Scalar::Z)),
+            .zip(values),
     );
     let assignments = assignments.into_iter().collect::<Vec<_>>();
     let mut env = Environment::with_primitive_valuation(original.inputs, &assignments, c)?;
@@ -431,7 +405,7 @@ pub(in crate::observed) fn point(
     )?));
     let declaration = &original.inputs.law().declarations[&law.name];
     let Signature::Law { body, .. } = &declaration.signature else {
-        return Err("整数商のLaw署名がない".into());
+        return Err("アフィン商のLaw署名がない".into());
     };
     env.evaluation_capture
         .replace(Some(quotient_evaluation::EvaluationCapture {
@@ -444,30 +418,30 @@ pub(in crate::observed) fn point(
     let capture = env
         .evaluation_capture
         .take()
-        .ok_or("整数商のLaw評価出現がない")?;
+        .ok_or("アフィン商のLaw評価出現がない")?;
     let evaluated = evaluated?;
     if evaluated.application != Some(true)
         || evaluated.guard != Some(true)
         || evaluated.condition_failed
         || evaluated.condition_pending
     {
-        return Err(unsupported(request, "整数商の反例点でLaw評価が未確定"));
+        return Err(unsupported(request, "アフィン商の反例点でLaw評価が未確定"));
     }
     let Some((_, Some(left), Some(right))) = evaluated.operands else {
-        return Err("整数商の反例の左右値がない".into());
+        return Err("アフィン商の反例の左右値がない".into());
     };
     let expected = apply(&law.matrix, &law.offset, coordinates)?;
-    if vec![left.clone(), right.clone()] != expected.into_iter().map(Scalar::Z).collect::<Vec<_>>()
+    if vec![left.clone(), right.clone()] != expected
     {
-        return Err("整数商の正規形と通常Law評価が違う".into());
+        return Err("アフィン商の正規形と通常Law評価が違う".into());
     }
     let declaration =
-        &original.inputs.law().declarations[request.declaration().ok_or("整数商のViewがない")?];
+        &original.inputs.law().declarations[request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View {
         body: view_body, ..
     } = &declaration.signature
     else {
-        return Err("整数商のView署名がない".into());
+        return Err("アフィン商のView署名がない".into());
     };
     let vars = image
         .bindings
@@ -491,9 +465,9 @@ pub(in crate::observed) fn point(
         .collect();
     let view = env.scoped_ast(*view_body, &vars, &Scope::default(), &declaration.reading)?;
     let expected = apply(&image.matrix, &image.offset, coordinates)?;
-    let view = view.known_value.ok_or("整数商の反例のView値がない")?;
-    if expected.len() != 1 || view != Scalar::Z(expected[0].clone()) {
-        return Err("整数商の正規形と通常View評価が違う".into());
+    let view = view.known_value.ok_or("アフィン商の反例のView値がない")?;
+    if expected.len() != 1 || view != expected[0] {
+        return Err("アフィン商の正規形と通常View評価が違う".into());
     }
     let body_evaluation = capture
         .roots
@@ -501,7 +475,7 @@ pub(in crate::observed) fn point(
         .copied()
         .find(|i| capture.nodes[*i].expression == *body);
     Ok(quotient_evaluation::Row {
-        parameters: Scalar::Tuple(parameters.into_iter().map(Scalar::Z).collect()),
+        parameters: Scalar::Tuple(parameters),
         image: view,
         assignments,
         laws: vec![quotient_evaluation::LawRow {

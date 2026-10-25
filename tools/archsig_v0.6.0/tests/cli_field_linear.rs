@@ -487,3 +487,64 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+
+#[test]
+fn rational_quotient_keeps_candidate_solution_domains_and_law_descent() {
+    let dir = input("rational-quotient", "change choose(s:State,a:Q,b:Q) when a+b=1=s with{x=a,y=b}; law required pinned(s:State):s.x=s.y; view total(s:State):Q=s.x+s.y; law optional total_law(s:State):s.x+s.y=1;");
+    let asks=[
+        "s=solve(Pair.pinned,on=@v/s,using=Pair.choose)",
+        "q=quotient(Pair.total,on=$s.domain,s=@v/s,law=Pair.total_law)",
+        "bad=quotient(Pair.total,on=$s.domain,s=@v/s,law=Pair.pinned)",
+        "good=quotient(Pair.total,on=$s.solutions,s=@v/s,law=Pair.pinned)",
+    ];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    for (i,status) in [(1,"established"),(2,"refuted"),(3,"established")] {
+        assert_eq!(s(get(&arr(get(&j,"answers"))[i],"status")),status);
+    }
+    let bad=&arr(get(&j,"answers"))[2];
+    let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");
+    assert_eq!(s(get(proof,"kind")),"separating_pair");
+    let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));
+    assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);
+    assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
+    assert_ne!(get(node(&j,get(data,"first")),"value").value,get(node(&j,get(data,"second")),"value").value);
+    let q=get(output(&j,1,"quotient"),"value");
+    let rep=get(q,"representation");
+    assert_eq!(s(get(rep,"kind")),"affine");
+    let offset=get(node(&j,get(rep,"offset")),"value");
+    let scalar=node(&j,&arr(get(offset,"coordinates"))[0]);
+    assert_eq!(arr(get(scalar,"value")).iter().map(s).collect::<Vec<_>>(),["1","1"]);
+}
+
+fn qcoordinates(j:&JNode,reference:&JNode)->Vec<Vec<String>> {
+    arr(get(get(node(j,reference),"value"),"coordinates")).iter().map(|r|arr(get(node(j,r),"value")).iter().map(|v|s(v).to_owned()).collect()).collect()
+}
+#[test]
+fn rational_quotient_image_and_descent_keep_fractional_coordinates_and_reuse() {
+    let dir=input("rational-quotient-image","change choose(s:State,a:Q,b:Q)=s with{x=rat(1,2)*a+rat(1,3),y=b}; law required total(s:State):s.x+s.y=1; view twice(s:State):Q=2*s.x; law optional same(s:State):s.x=s.x;");
+    let asks=["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.twice,on=$s.domain,s=@v/s,law=Pair.same)","sum=quotient(Pair.x,on=$s.solutions,s=@v/s)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let q=get(output(&j,1,"quotient"),"value");let rep=get(q,"representation");
+    assert_eq!(qcoordinates(&j,get(rep,"offset")),vec![vec!["2".to_owned(),"3".to_owned()]]);
+    let image=get(node(&j,get(rep,"image")),"value");assert_eq!(num(get(image,"free_rank")),1);
+    let descent=get(node(&j,get(q,"descent")),"value");
+    assert_eq!(qcoordinates(&j,get(descent,"offset")),vec![vec!["1".to_owned(),"3".to_owned()];2]);
+    let columns=arr(get(get(node(&j,get(descent,"linear")),"value"),"columns"));assert_eq!(columns.len(),1);
+    for v in arr(&columns[0]) {assert_eq!(arr(get(node(&j,v),"value")).iter().map(s).collect::<Vec<_>>(),["1","2"]);}
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);let again=result_json(&dir,&reused);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
+}
+#[test]
+fn rational_quotient_empty_and_missing_do_not_become_a_constant_class() {
+    for (label,guard,law,on) in [("guard"," when a=0 and a=1","s.x=0","$s.domain"),("solution","","s.x=0 and s.x=1","$s.solutions")] {
+        let dir=input(label,&format!("change choose(s:State,a:Q){guard}=s with{{x=a}};law required impossible(s:State):{law};view fixed(s:State):Q=7;"));
+        let q=format!("q=quotient(Pair.fixed,on={on},s=@v/s)");let r=execute(&dir,"out",&["s=solve(Pair.impossible,on=@v/s,using=Pair.choose)",&q]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let q=get(output(&j,1,"quotient"),"value");assert!(arr(get(get(q,"representation"),"fibers")).is_empty());
+    }
+    let dir=input("rational-quotient-missing","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;view second(s:State):Q=s.y;law optional same(s:State):s.y=s.y;");
+    let path=dir.join("a.json");let old=std::fs::read_to_string(&path).unwrap();let new=old.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");assert_ne!(new,old);std::fs::write(path,new).unwrap();
+    for (label,ask) in [("view","q=quotient(Pair.second,on=$s.domain,s=@v/s)"),("law","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.same)")] {
+        let r=execute(&dir,label,&["s=solve(Pair.first,on=@v/s,using=Pair.choose)",ask]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert_eq!(s(get(answer,"status")),"undetermined");assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+    }
+}

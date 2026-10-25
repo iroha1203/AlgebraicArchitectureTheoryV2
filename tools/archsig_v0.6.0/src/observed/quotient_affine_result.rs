@@ -1,12 +1,13 @@
-//! 整数Viewの実アフィン像。終域を周囲の格子全体に置き換えない。
+//! Z/Q Viewの実アフィン像。終域を周囲の格子全体に置き換えない。
 use super::*;
 use crate::observed::{
     change_result::{CandidateInput, linear_result as linear},
     environment::quotient_affine,
-    integer_fiber,
+    environment::quotient_affine::coefficients,
+    change_result::field_linear_result as scalar_wire,
+    numeric,
 };
-use num_bigint::BigInt as Z;
-use num_traits::Zero;
+
 
 pub(super) fn compute(
     env: &Environment<'_>,
@@ -18,10 +19,11 @@ pub(super) fn compute(
     c: &mut Control,
 ) -> Result<Source, ValidationFailure> {
     let image = quotient_affine::compute(env, g, &input, request, c)?;
+    let ty = &image.ty;
     let declaration =
-        &env.inputs.law().declarations[request.declaration().ok_or("整数商のViewがない")?];
+        &env.inputs.law().declarations[request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View { body, .. } = &declaration.signature else {
-        return Err("整数商のView署名が違う".into());
+        return Err("アフィン商のView署名が違う".into());
     };
     let mut b = Builder {
         g,
@@ -36,7 +38,7 @@ pub(super) fn compute(
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{name}"))
-                .ok_or("整数商の束縛がない")?
+                .ok_or("アフィン商の束縛がない")?
                 .value;
             let r = if matches!(selector, Selector::Answer { .. }) {
                 match env.answer_binding(g, selector, (0, 0))? {
@@ -46,9 +48,9 @@ pub(super) fn compute(
                         .iter()
                         .position(|n| *n == node)
                         .map(NodeRef)
-                        .ok_or("整数商の公開束縛が保持されていない")?,
+                        .ok_or("アフィン商の公開束縛が保持されていない")?,
                     AnswerBinding::Inapplicable(_) => {
-                        return Err(ValidationFailure::from("整数商の束縛射影が不適合"));
+                        return Err(ValidationFailure::from("アフィン商の束縛射影が不適合"));
                     }
                 }
             } else {
@@ -68,7 +70,7 @@ pub(super) fn compute(
     let law_expression = if let Some(law) = &image.law {
         let declaration = &env.inputs.law().declarations[&law.name];
         let Signature::Law { body, .. } = &declaration.signature else {
-            return Err("整数商のLaw署名がない".into());
+            return Err("アフィン商のLaw署名がない".into());
         };
         let bindings = bindings
             .iter()
@@ -128,7 +130,7 @@ pub(super) fn compute(
                 ("kind", Json::str("solutions")),
                 ("solutions", reference.wire()),
             ]),
-            _ => return Err("整数商の元domain型が違う".into()),
+            _ => return Err("アフィン商の元domain型が違う".into()),
         },
         vec![reference, expression],
         None,
@@ -139,13 +141,7 @@ pub(super) fn compute(
     let mut evaluations = vec![];
     let (classes, projection, representation) = if image.empty {
         let parameter_type = Type::Tuple(vec![
-            Type::Z;
-            input
-                .search
-                .linear
-                .as_ref()
-                .ok_or("整数商の元parameterがない")?
-                .parameter_count
+            ty.clone(); image.parameter_count
         ]);
         let classes = domain(
             &mut b,
@@ -169,9 +165,9 @@ pub(super) fn compute(
         if let Some(law) = &image.law {
             let target = domain(
                 &mut b,
-                &law_result::family_type(env, &law.name, &Type::Z)?,
+                &law_result::family_type(env, &law.name, ty)?,
                 &[],
-                &[reference, law_expression.ok_or("整数商のLaw式がない")?],
+                &[reference, law_expression.ok_or("アフィン商のLaw式がない")?],
             )?;
             descent = Some(b.push(
                 NodeType::Construction(T::StateMap),
@@ -197,7 +193,7 @@ pub(super) fn compute(
         let ring = b.push(
             NodeType::Construction(T::Ring),
             "ring",
-            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
+            Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             vec![],
             None,
             None,
@@ -205,20 +201,20 @@ pub(super) fn compute(
         let original = linear::module(&mut b, ring, image.origin.len(), "free", vec![reference])?;
         let parameters = linear::module(&mut b, ring, n, "free", vec![reference])?;
         // 元Assignmentへの復元は、解集合またはguardで選んだ同じ表示を使う。
-        let embedding = linear::map(&mut b, parameters, original, &image.embedding, n, c)?;
-        let origin = linear::vector(&mut b, original, &image.origin, c)?;
+        let embedding = scalar_wire::map(&mut b, parameters, original, &image.embedding, n, c)?;
+        let origin = scalar_wire::vector(&mut b, original, &image.origin, c)?;
         let ambient = linear::module(&mut b, ring, 1, "free", vec![expression])?;
-        let map = linear::map(&mut b, parameters, ambient, &image.matrix, n, c)?;
-        let offset = linear::vector(&mut b, ambient, &image.offset, c)?;
-        let fiber = integer_fiber::solve(&image.matrix, n, &[Z::zero()], c)?;
+        let map = scalar_wire::map(&mut b, parameters, ambient, &image.matrix, n, c)?;
+        let offset = scalar_wire::vector(&mut b, ambient, &image.offset, c)?;
+        let fiber = coefficients::fiber(ty,&image.matrix,n,c)?;
         let actual_image = linear::module(&mut b, ring, fiber.rank, "image", vec![map])?;
         let kernel = linear::module(&mut b, ring, n - fiber.rank, "kernel", vec![map])?;
-        let basis = integer_fiber::multiply(&image.matrix, &fiber.right, n, c)?;
+        let basis = &fiber.image;
         let image_generators = (0..fiber.rank)
             .map(|j| {
                 Json::obj([
-                    ("type", Type::Z.wire()),
-                    ("value", Scalar::Z(basis[0][j].clone()).wire()),
+                    ("type", ty.wire()),
+                    ("value", basis[0][j].wire()),
                 ])
             })
             .collect();
@@ -228,7 +224,7 @@ pub(super) fn compute(
                     fiber
                         .kernel
                         .iter()
-                        .map(|row| Scalar::Z(row[j].clone()))
+                        .map(|row| row[j].clone())
                         .collect(),
                 );
                 Json::obj([("type", value.ty().wire()), ("value", value.wire())])
@@ -239,14 +235,14 @@ pub(super) fn compute(
             (kernel, kernel_generators),
         ] {
             let Json::Obj(wire) = &mut b.parts[r.0 - base].wire else {
-                return Err("整数商の加群がrecordでない".into());
+                return Err("アフィン商の加群がrecordでない".into());
             };
             wire.insert("generators".into(), Json::Arr(generators));
         }
-        let inclusion = linear::map(&mut b, kernel, parameters, &fiber.kernel, n - fiber.rank, c)?;
+        let inclusion = scalar_wire::map(&mut b, kernel, parameters, &fiber.kernel, n - fiber.rank, c)?;
         let image_basis = basis.iter().map(|row| row[..fiber.rank].to_vec()).collect();
         let image_inclusion =
-            linear::map(&mut b, actual_image, ambient, &image_basis, fiber.rank, c)?;
+            scalar_wire::map(&mut b, actual_image, ambient, &image_basis, fiber.rank, c)?;
         let ambient_domain = linear::domain(&mut b, ambient)?;
         let view = b.push(
             NodeType::Construction(T::StateMap),
@@ -305,7 +301,7 @@ pub(super) fn compute(
                 &image,
                 reference,
                 request,
-                law_expression.ok_or("整数商のLaw式がない")?,
+                law_expression.ok_or("アフィン商のLaw式がない")?,
                 ring,
                 actual_image,
                 classes,
@@ -336,7 +332,7 @@ pub(super) fn compute(
             ("domain", reference.wire()),
             (
                 "view",
-                Json::str(request.declaration().ok_or("整数商のViewがない")?),
+                Json::str(request.declaration().ok_or("アフィン商のViewがない")?),
             ),
             (
                 "bindings",
@@ -363,7 +359,7 @@ pub(super) fn compute(
     let mut claim = None;
     if let Some(law) = &image.law {
         let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
-            return Err("整数商のrecordがない".into());
+            return Err("アフィン商のrecordがない".into());
         };
         wire.insert("law".into(), Json::str(&law.name));
         if let Some(descent) = descent {
@@ -377,7 +373,7 @@ pub(super) fn compute(
         part.evidence = evidence.clone();
         part.judgment
             .as_mut()
-            .ok_or("整数商の十分性判断がない")?
+            .ok_or("アフィン商の十分性判断がない")?
             .evidence = evidence.clone();
         outputs.insert("proposition".into(), proposition);
         claim = Some(proposition);
@@ -412,15 +408,17 @@ fn law_descent(
     ring: NodeRef,
     actual_image: NodeRef,
     classes: NodeRef,
-    fiber: &integer_fiber::Fiber,
+    fiber: &coefficients::Fiber,
     c: &mut Control,
 ) -> Result<(Option<NodeRef>, Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
-    let law = image.law.as_ref().ok_or("整数商のLawがない")?;
+    let ty = &image.ty;
+    let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
     let free = image.dimensions - fiber.rank;
-    let differences = integer_fiber::multiply(&law.matrix, &fiber.kernel, free, c)?;
-    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| !row[*j].is_zero())) {
+    let differences = coefficients::multiply(ty,&law.matrix, &fiber.kernel, free, c)?;
+    let zero=numeric::zero(ty,c)?;
+    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| row[*j]!=zero)) {
         let points = [
-            vec![Z::zero(); image.dimensions],
+            vec![zero; image.dimensions],
             fiber.kernel.iter().map(|row| row[j].clone()).collect(),
         ];
         let mut candidates = vec![];
@@ -432,7 +430,7 @@ fn law_descent(
             candidates.push(change_result::value(b, &row.parameters)?);
             views.push(change_result::value(b, &row.image)?);
             let (family, checked) =
-                law_result::row(b, env, input, &row, &law.name, &Type::Z, expression)?;
+                law_result::row(b, env, input, &row, &law.name, ty, expression)?;
             values.push(change_result::value(b, &family)?);
             evaluations.extend(checked);
         }
@@ -463,7 +461,7 @@ fn law_descent(
         )?;
         return Ok((None, vec![evidence], evaluations));
     }
-    // 固定したinstance keyの左右値を座標とするZ加群。成立Boolや残差には縮めない。
+    // 固定したinstance keyの左右値を座標とする係数加群。成立Boolや残差には縮めない。
     let family = linear::module(b, ring, 2, "free", vec![expression])?;
     let key = Scalar::Tuple(
         law.bindings
@@ -479,16 +477,16 @@ fn law_descent(
         })
         .collect();
     let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
-        return Err("整数商の評価族加群がrecordでない".into());
+        return Err("アフィン商の評価族加群がrecordでない".into());
     };
     wire.insert("generators".into(), Json::Arr(generators));
-    let transformed = integer_fiber::multiply(&law.matrix, &fiber.right, image.dimensions, c)?;
+    let transformed = coefficients::multiply(ty,&law.matrix, &fiber.lifts, fiber.rank, c)?;
     let matrix = transformed
         .iter()
         .map(|row| row[..fiber.rank].to_vec())
         .collect();
-    let linear = linear::map(b, actual_image, family, &matrix, fiber.rank, c)?;
-    let offset = linear::vector(b, family, &law.offset, c)?;
+    let linear = scalar_wire::map(b, actual_image, family, &matrix, fiber.rank, c)?;
+    let offset = scalar_wire::vector(b, family, &law.offset, c)?;
     let target = linear::domain(b, family)?;
     let descent = b.push(
         NodeType::Construction(T::StateMap),

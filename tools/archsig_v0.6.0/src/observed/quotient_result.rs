@@ -145,7 +145,7 @@ fn compute(
             return Err("商のonが既出参照でない".into());
         };
         let input = change_result::candidate_input(env, g, reference, c)?;
-        if input.search.linear.is_some() {
+        if input.search.linear.is_some() || input.search.rational.is_some() {
             return affine_result::compute(env, g, input, reference, request, base, c);
         }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
