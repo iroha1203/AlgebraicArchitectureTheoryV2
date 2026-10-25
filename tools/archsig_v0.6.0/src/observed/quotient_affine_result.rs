@@ -203,7 +203,7 @@ pub(super) fn compute(
         // 元Assignmentへの復元は、解集合またはguardで選んだ同じ表示を使う。
         let embedding = scalar_wire::map(&mut b, parameters, original, &image.embedding, n, c)?;
         let origin = scalar_wire::vector(&mut b, original, &image.origin, c)?;
-        let ambient = linear::module(&mut b, ring, 1, "free", vec![expression])?;
+        let ambient = linear::module(&mut b, ring, image.matrix.len(), "free", vec![expression])?;
         let map = scalar_wire::map(&mut b, parameters, ambient, &image.matrix, n, c)?;
         let offset = scalar_wire::vector(&mut b, ambient, &image.offset, c)?;
         let fiber = coefficients::fiber(ty,&image.matrix,n,c)?;
@@ -212,12 +212,10 @@ pub(super) fn compute(
         let basis = &fiber.image;
         let image_generators = (0..fiber.rank)
             .map(|j| {
-                Json::obj([
-                    ("type", ty.wire()),
-                    ("value", basis[0][j].wire()),
-                ])
-            })
-            .collect();
+                let column=basis.iter().map(|row|row[j].clone()).collect::<Vec<_>>();
+                let generator=coefficients::view_value(&image.view_type,&column,c)?;
+                Ok(Json::obj([("type",image.view_type.wire()),("value",generator.wire())]))
+            }).collect::<Result<Vec<_>,ValidationFailure>>()?;
         let kernel_generators = (0..n - fiber.rank)
             .map(|j| {
                 let value = Scalar::Tuple(

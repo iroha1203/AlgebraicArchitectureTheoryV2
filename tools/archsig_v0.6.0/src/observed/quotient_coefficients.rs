@@ -175,3 +175,93 @@ pub(in crate::observed) fn fiber(
         lifts,
     })
 }
+
+pub(in crate::observed) fn view_type(
+    ty: &Type,
+    coefficient: &Type,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::Quotient)?;
+        if ty == coefficient {
+            return Ok(true);
+        }
+        if let Type::Tuple(items) = ty {
+            for item in items {
+                if !view_type(item, coefficient, c)? {
+                    return Ok(false);
+                }
+            }
+            return Ok(true);
+        }
+        Ok(false)
+    })
+}
+pub(in crate::observed) fn view_coordinates(
+    value: &crate::observed::term::affine::Value,
+    axes: &[affine::Parameter],
+    ty: &Type,
+    c: &Control,
+) -> Result<Option<(Vec<Scalar>, Matrix)>, ValidationFailure> {
+    use crate::observed::term::affine::Value;
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::Quotient)?;
+        let items = match value {
+            Value::Tuple(xs) => Some(xs.clone()),
+            Value::Known(Scalar::Tuple(xs)) => Some(xs.iter().cloned().map(Value::Known).collect()),
+            _ => None,
+        };
+        if let Some(items) = items {
+            let mut offsets = vec![];
+            let mut matrix = vec![];
+            for item in items {
+                let Some((o, m)) = view_coordinates(&item, axes, ty, c)? else {
+                    return Ok(None);
+                };
+                offsets.extend(o);
+                matrix.extend(m);
+            }
+            return Ok(Some((offsets, matrix)));
+        }
+        let Some(form) = value.number(c)? else {
+            return Ok(None);
+        };
+        Ok(coordinates(&form, axes, ty, c)?.map(|(o, m)| (vec![o], vec![m])))
+    })
+}
+pub(in crate::observed) fn view_value(
+    ty: &Type,
+    flat: &[Scalar],
+    c: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    fn read(
+        ty: &Type,
+        flat: &[Scalar],
+        at: &mut usize,
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            c.clone().checkpoint(Checkpoint::Quotient)?;
+            if let Type::Tuple(items) = ty {
+                return Ok(Scalar::Tuple(
+                    items
+                        .iter()
+                        .map(|t| read(t, flat, at, c))
+                        .collect::<Result<_, _>>()?,
+                ));
+            }
+            let value = flat.get(*at).ok_or("商のView座標が足りない")?;
+            if value.ty() != *ty {
+                return Err("商のView座標の型が違う".into());
+            }
+            *at += 1;
+            Ok(value.clone())
+        })
+    }
+    let mut at = 0;
+    let value = read(ty, flat, &mut at, c)?;
+    if at != flat.len() {
+        return Err("商のView座標が余る".into());
+    }
+    Ok(value)
+}

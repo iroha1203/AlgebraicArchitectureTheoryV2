@@ -795,3 +795,15 @@ fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
         for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
+
+#[test]
+fn integer_tuple_quotient_keeps_lattice_image_and_nested_view_values() {
+    let dir=input("integer-tuple-quotient","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,(Z,Z))=(s.x,(s.y,7));view coupled(s:State):(Z,Z)=(s.x+s.y,2*(s.x+s.y));law optional same(s:State):s.x=s.x;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.same)","bad=quotient(Pair.coupled,on=$s.domain,s=@pair/s,law=Pair.same)"]);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);
+    let rep=quotient_representation(&j,1);assert_eq!(coordinates(&j,get(rep,"offset")),vec![1,0,7]);assert_eq!(integer_columns(&j,get(rep,"map")),vec![vec![2,0,0],vec![0,1,0]]);
+    let image=get(node(&j,get(rep,"image")),"value");assert_eq!(num(get(image,"free_rank")),2);
+    let generators=arr(get(image,"generators"));assert_eq!(generators.len(),2);
+    let mut xs=vec![];for g in generators {let v=arr(get(g,"value"));assert_eq!(v.len(),2);assert_eq!(arr(&v[1]).len(),2);xs.push(s(&v[0]).parse::<i64>().unwrap().abs());}xs.sort();assert_eq!(xs,vec![0,2]);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
+}
