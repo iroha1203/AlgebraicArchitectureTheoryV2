@@ -5315,3 +5315,77 @@ fn rational_diagnostic_transport_moves_fractional_classes_with_its_actual_matrix
     }
     assert!(changed, "patchの並び替えを反映するcochain成分がない");
 }
+
+#[test]
+fn diagnostic_comparison_rejects_different_coefficient_rings() {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    let dir = diagnostic_compare_input("diagnostic-coefficient-rings", true, true);
+    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let before = definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let mut definitions = fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
+    fn field(j: &mut Json) {
+        match j {
+            Json::Obj(o) => {
+                if o.get("name") == Some(&Json::str("held")) {
+                    o.insert("type".into(), Json::str("Q"));
+                }
+                for v in o.values_mut() {
+                    field(v);
+                }
+            }
+            Json::Arr(xs) => {
+                for x in xs {
+                    field(x)
+                }
+            }
+            _ => {}
+        }
+    }
+    field(&mut definitions);
+    let definitions = definitions.canonical();
+    let after = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
+    let digest = &after.vocabularies["Reservations"].digest;
+    let text = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(&before.vocabularies["Reservations"].digest, digest);
+    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(a) = atom else { panic!("atom") };
+        if a.get("field") == Some(&Json::str("Reservations.State.held")) {
+            let v = a["value"].clone();
+            a.insert("value".into(), Json::Arr(vec![v, Json::str("1")]));
+        }
+    }
+    let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; law optional zi(s:State):s.free=s.free; law optional qi(s:State):s.held=s.held; change zm(s:State,d:Z)=s with{{free=s.free+d}}; change qm(s:State,d:Q)=s with{{held=s.held+d}}; }}");
+    for (name, text) in [
+        ("d.json", definitions),
+        ("l.law", law),
+        ("a.json", map.canonical()),
+    ] {
+        std::fs::write(dir.join(name), text).unwrap();
+    }
+    for side in ["equation", "semantic"] {
+        for reverse in [false, true] {
+            let d = format!("d=diagnose($l.system,side={side},degree=0)");
+            let e = format!("e=diagnose($r.system,side={side},degree=0)");
+            let mut asks = vec![
+                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                "l=localize($m.candidate.source,law=Reservations.zi,s=@v/p,using=Reservations.zm)",
+                "r=localize($m.candidate.source,law=Reservations.qi,s=@v/p,using=Reservations.qm)",
+                &d,
+                &e,
+            ];
+            let valid = execute(&dir, &format!("valid-{side}-{reverse}"), &asks);
+            assert_eq!(valid.code, 0, "{} {}", valid.stdout, valid.stderr);
+            asks.push(if reverse {
+                "c=compare($e.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)"
+            } else {
+                "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"
+            });
+            let r = execute(&dir, &format!("out-{side}-{reverse}"), &asks);
+            assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
+        }
+    }
+}

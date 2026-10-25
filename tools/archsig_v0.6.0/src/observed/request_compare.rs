@@ -306,6 +306,29 @@ fn value_types(
     })
 }
 
+// アフィン局所系の係数は、localize が選ぶ change の parameter 型から決まる。
+// 有限診断にはここで係数環を仮定しない。
+fn diagnostic_coefficient(
+    law: &CheckedLaw, requests: &[Request], names: &BTreeMap<String, usize>,
+    diagnose: &Request, c: &mut Control,
+) -> Result<Option<Type>, ResolveFailure> {
+    phase(c, Checkpoint::RequestBinding)?;
+    let Selector::Answer { id, .. } = &diagnose.head else { return Ok(None); };
+    let Some(localize) = names.get(id).and_then(|i| requests.get(*i)) else { return Ok(None); };
+    if localize.kind != QuestionKind::Localize { return Ok(None); }
+    let Some(Selector::Declaration { name }) = localize.arguments.iter()
+        .find(|a| a.name == "using").map(|a| &a.value) else { return Ok(None); };
+    let Some(declaration) = law.declarations.get(name) else { return Ok(None); };
+    let Signature::Change { params, .. } = &declaration.signature else { return Ok(None); };
+    for coefficient in [Type::Z, Type::Q] {
+        for parameter in params.iter().skip(1) {
+            phase(c, Checkpoint::RequestBinding)?;
+            if parameter.ty == coefficient { return Ok(Some(coefficient)); }
+        }
+    }
+    Ok(None)
+}
+
 fn diagnostic_constraints(
     law: &CheckedLaw, map: &CheckedArchMap, requests: &[Request],
     names: &BTreeMap<String, usize>, r: &Request, c: &mut Control,
@@ -313,6 +336,7 @@ fn diagnostic_constraints(
     let to = &r.arguments.iter().find(|a|a.name=="to").ok_or_else(||error(&r.id,"to","toがない"))?.value;
     let along = &r.arguments.iter().find(|a|a.name=="along").ok_or_else(||error(&r.id,"along","alongがない"))?.value;
     let mut shapes = vec![];
+    let mut coefficients = vec![];
     for (key,selector) in [("head",&r.head),("to",to)] {
         let (plan,_) = selector_type(law,map,requests,names,selector,c,(&r.id,key))?;
         if plan.ty != ProjectionType::Diagnostic { return Err(error(&r.id,key,"診断比較の対象はDiagnostic")); }
@@ -321,9 +345,13 @@ fn diagnostic_constraints(
         let degree=producer.arguments.iter().find(|a|a.name=="degree").map(|a|a.value.clone());
         let side=producer.arguments.iter().find(|a|a.name=="side").map(|a|a.value.clone());
         if producer.kind!=QuestionKind::Diagnose || degree.is_none() || side.is_none() {return Err(error(&r.id,key,"診断の次数・sideがない"));}
+        coefficients.push(diagnostic_coefficient(law, requests, names, producer, c)?);
         shapes.push((degree,side));
     }
     if shapes[0]!=shapes[1] {return Err(error(&r.id,"to","診断比較のdegree/sideが異なる"));}
+    if matches!((&coefficients[0], &coefficients[1]), (Some(a), Some(b)) if a != b) {
+        return Err(error(&r.id, "to", "診断比較の係数環が異なる"));
+    }
     let operation=composition::selected(law,map,requests,names,along,r,"along",c)?;
     if !matches!(operation,Shape::Operation(_)) {return Err(error(&r.id,"along","alongは確認済みOperationを指定する"));}
     Ok(vec![])
