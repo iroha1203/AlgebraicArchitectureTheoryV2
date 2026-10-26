@@ -85,7 +85,7 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(s(get(&r.receipt, "status")), status);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
     let res = result_json(dir, r);
-    assert_eq!(s(get(&res, "format")), "archsig.result/3");
+    assert_eq!(s(get(&res, "format")), "archsig.result/4");
     assert_eq!(s(get(&res, "command")), "check");
     assert_eq!(s(get(&res, "status")), status);
     assert_eq!(num(get(&res, "exit_code")), code as u64);
@@ -122,4 +122,20 @@ pub fn notified(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
         );
     }
     parse(r.stdout.trim_end().as_bytes()).unwrap()
+}
+pub fn warnings(result: &JNode) -> &[JNode] {
+    if has(result, "warnings") { arr(get(result, "warnings")) } else { &[] }
+}
+
+/// 導出の検査は内部APIで行い、利用者用の保存形式に証明データを要求しない。
+pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
+    let sources = archsig::observed::input::InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let asks: Vec<_> = arr(get(saved, "requests")).iter().map(|r| s(get(r,"text"))).collect();
+    let result = archsig::observed::evaluate_observed_bytes(sources, &asks,
+        &mut archsig::observed::control::Control::unlimited()).unwrap();
+    parse(result.wire().canonical().as_bytes()).unwrap()
 }

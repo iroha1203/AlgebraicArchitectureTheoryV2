@@ -61,7 +61,7 @@ fn plan<'a>(result: &'a JNode, id: &str) -> &'a JNode {
     assert!(arr(get(answer, "reasons")).is_empty());
     let node = node(result, get(get(answer, "outputs"), "plan"));
     assert_eq!(s(get(node, "type")), "ObservationPlan");
-    assert_eq!(s(get(get(node, "rule"), "name")), "observation_plan");
+    assert_eq!(s(get(node, "type")), "ObservationPlan");
     get(node, "value")
 }
 #[test]
@@ -113,7 +113,7 @@ fn missing_slot_survives_backward_and_nested_needed_without_duplicate_requiremen
     assert_eq!(reused.code, 2, "{}", reused.stdout);
     let replay = result_json(&dir, &reused);
     assert_eq!(get(&result, "nodes"), get(&replay, "nodes"));
-    assert!(arr(get(get(&replay, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&replay).is_empty());
     assert_eq!(std::fs::read(dir.join("out/result.json")).unwrap(), old);
 }
 #[test]
@@ -360,7 +360,7 @@ fn reuse_recomputes_current_missing_subject_and_preserves_existing_output() {
         std::fs::read(dir.join("previous/result.json")).unwrap(),
         bytes
     );
-    assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(!warnings(&result).is_empty());
     let rejected = execute(&dir, "previous", Some("previous"), &asks);
     assert_eq!(rejected.code, 64);
     assert_eq!(
@@ -408,7 +408,7 @@ fn args(dir: &Path) -> archsig::run::RunArgs {
             atom_definitions: vec![dir.join("d.json")],
             law: dir.join("l.law"),
             archmap: Some(dir.join("a.json")),
-            out: dir.join("out"),
+            out: Some(dir.join("out")),
         },
         asks: vec![
             "n=evaluate(CountCheck.amount,s=@v/s)".into(),

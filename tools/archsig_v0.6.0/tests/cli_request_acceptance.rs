@@ -105,7 +105,7 @@ fn ready_priority_backward_references_and_answer_order_match_internal_and_cli() 
     let d = files("request-order");
     let r = asks(&d, &ts);
     let w = saved(&d, &r, 0);
-    for w in [internal(&ts), w] {
+    for (_inspection,w) in [(true,internal(&ts)), (false,w)] {
         assert_eq!(s(get(&w, "status")), "complete");
         for key in ["requests", "answers"] {
             assert_eq!(ids(&w, key), ["take", "second", "first", "seed", "copy"]);
@@ -158,7 +158,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
     let d = files("request-partial");
     let r = asks(&d, &ts);
     let w = saved(&d, &r, 1);
-    for w in [internal(&ts), w] {
+    for (inspection,w) in [(true,internal(&ts)), (false,w)] {
         assert_eq!(s(get(answer(&w, "partial"), "status")), "refuted");
         assert_eq!(s(get(answer(&w, "full"), "status")), "established");
         let req = &arr(get(&w, "requests"))[0];
@@ -188,7 +188,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
             ["b"]
         );
         let e = node(&w, get(get(answer(&w, "partial"), "outputs"), "evaluation"));
-        let q = arr(get(get(e, "scope"), "quantifiers"))
+        let q = arr(get(get(if inspection { e } else { answer(&w,"partial") }, "scope"), "quantifiers"))
             .iter()
             .find(|q| s(get(q, "name")) == "b")
             .unwrap();
@@ -223,7 +223,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
         }
         assert_eq!(actual, [("A", true), ("B", false)]);
 
-        assert!(!arr(get(answer(&w, "partial"), "evidence")).is_empty());
+        assert!(!arr(get(answer(&w, "partial"), if inspection {"evidence"} else {"counterexamples"})).is_empty());
     }
     std::fs::remove_dir_all(d).unwrap();
 }
@@ -399,11 +399,11 @@ fn dynamic_projection_failures_keep_original_condition_and_block_each_later_cons
         let d = files(&format!("request-dynamic-{i}"));
         let r = asks(&d, &ts);
         let w = saved(&d, &r, 2);
-        for w in [internal(&ts), w] {
+        for (inspection,w) in [(true,internal(&ts)), (false,w)] {
             assert_eq!(s(get(&w, "status")), "partial");
             assert_eq!(s(get(answer(&w, "producer"), "status")), "established");
             assert_eq!(s(get(answer(&w, "prior"), "status")), "refuted");
-            assert!(!arr(get(answer(&w, "prior"), "evidence")).is_empty());
+            assert!(!arr(get(answer(&w, "prior"), if inspection {"evidence"} else {"counterexamples"})).is_empty());
             assert_eq!(s(get(value(&w, "known"), "value")), "10");
             let mut original: Option<&JNode> = None;
             for (id, parent) in [("take", "producer"), ("tail", "take")] {
@@ -420,7 +420,7 @@ fn dynamic_projection_failures_keep_original_condition_and_block_each_later_cons
                 assert_eq!(s(get(get(reason, "details"), "construction")), "projection");
                 let condition = node(&w, get(get(reason, "details"), "condition"));
                 assert_eq!(s(get(get(condition, "judgment"), "status")), "refuted");
-                assert!(!arr(get(condition, "evidence")).is_empty());
+                if inspection { assert!(!arr(get(condition, "evidence")).is_empty()); }
                 if let Some(expected) = original {
                     assert_eq!(reason, expected);
                 } else {
@@ -460,7 +460,7 @@ fn unavailable_evaluation_environment_preserves_all_original_reasons_through_two
         let d = files(&format!("request-unavailable-environment-{i}"));
         let r = asks(&d, &ts);
         let w = saved(&d, &r, 2);
-        for w in [internal(&ts), w] {
+        for (inspection,w) in [(true,internal(&ts)), (false,w)] {
             let source = answer(&w, "producer");
             assert_eq!(s(get(source, "status")), "undetermined");
             assert!(has(get(source, "outputs"), "evaluation"));
@@ -493,12 +493,9 @@ fn unavailable_evaluation_environment_preserves_all_original_reasons_through_two
                 .find(|r| s(get(r, "code")) == "condition_failed" && s(get(r, "request")) == "take")
                 .unwrap();
             let c = node(&w, get(get(condition, "details"), "condition"));
-            assert_eq!(
-                &arr(get(c, "arguments"))[0],
-                get(get(source, "outputs"), "evaluation")
-            );
+            if inspection { assert_eq!(&arr(get(c,"arguments"))[0],get(get(source,"outputs"),"evaluation")); }
             assert_eq!(s(get(get(c, "judgment"), "status")), "refuted");
-            assert!(!arr(get(c, "evidence")).is_empty());
+            if inspection { assert!(!arr(get(c,"evidence")).is_empty()); }
             assert_eq!(s(get(value(&w, "known"), "value")), "10");
             assert_eq!(s(get(answer(&w, "prior"), "status")), "refuted");
         }

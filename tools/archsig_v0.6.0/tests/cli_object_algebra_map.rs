@@ -243,7 +243,7 @@ fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
     let reused = repeat("reused");
     assert_eq!(reused.code, 0, "{}", reused.stdout);
     let result = result_json(&dir, &reused);
-    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&result).is_empty());
     let map = value(
         &original,
         get(get(answer(&original, "m"), "outputs"), "map"),
@@ -264,8 +264,8 @@ fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
     let rejected = repeat("rejected");
     assert_eq!(rejected.code, 0, "{}", rejected.stdout);
     let result = result_json(&dir, &rejected);
-    assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
-    assert_eq!(num(get(get(&result, "reuse"), "accepted_nodes")), 0);
+    assert!(!warnings(&result).is_empty());
+    assert!(!has(&result, "reuse"));
     let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
     assert_eq!(arr(get(map, "object_maps")).len(), 3);
     std::fs::remove_dir_all(dir).unwrap();
@@ -420,6 +420,7 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
             }
         }
     }
+    let result=internal_graph(&dir,&result);
     let predicates = arr(get(&result, "nodes"))
         .iter()
         .filter(|n| matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "Proposition"))
@@ -434,6 +435,7 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
         |n| s(get(get(n, "value"), "predicate")) == "residual_zero_iff"
             && s(get(get(n, "judgment"), "status")) == "refuted"
     ));
+
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -505,6 +507,7 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
     let a = answer(&result, "m");
     assert_eq!(s(get(a, "status")), "refuted");
     assert!(!has(get(a, "outputs"), "map"));
+    let result=internal_graph(&dir,&result);
     let mut holds = 0;
     let mut nonzero = 0;
     for n in arr(get(&result, "nodes")) {
@@ -603,9 +606,8 @@ law required conserved(e: Reserve): e.to.free+e.to.held=e.from.free+e.from.held;
     let axes = arr(get(signature, "axes"));
     assert_eq!(axes.len(), 6);
     for axis in axes {
-        let arguments = arr(get(node(&result, get(map, "signature")), "arguments"));
         for name in ["source", "target", "coordinates", "selected"] {
-            assert!(arguments.iter().any(|r| s(get(r, "node")) == s(get(get(axis, name), "node"))));
+            node(&result, get(axis, name));
         }
         assert_eq!(arr(get(axis, "checks")).len(), 4);
         assert_eq!(s(get(get(node(&result, get(axis, "selected")), "judgment"), "status")), "established");
@@ -664,6 +666,7 @@ view holdings(s: State): (Z, Z) = (s.free,s.held);
     assert!(!arr(get(&result, "nodes")).iter().any(|n| {
         matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "SignatureMap")
     }));
+    let result=internal_graph(&dir,&result);
     for name in ["invariant_transport", "signature_transport"] {
         assert!(arr(get(&result, "nodes")).iter().any(|n| {
             has(n, "value") && has(get(n, "value"), "predicate")

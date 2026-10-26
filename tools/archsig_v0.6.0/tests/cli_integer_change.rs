@@ -215,10 +215,7 @@ fn integer_repair_reuse_rechecks_the_same_full_solution() {
     );
     assert_eq!(repeated.code, 0, "{}", repeated.stdout);
     let result = result_json(&dir, &repeated);
-    assert_eq!(
-        get(get(&result, "reuse"), "requested").value,
-        archsig::json::JValue::Bool(true)
-    );
+    assert!(!has(&result, "reuse"));
     for field in ["answers", "nodes"] {
         assert_eq!(get(&result, field).value, get(&original, field).value);
     }
@@ -659,7 +656,7 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
         let label=arr(get(label,"value"));assert_eq!(s(&label[1]),side);
         let key=arr(&label[0]);assert_eq!(key.len(),1);assert_eq!(key[0].value,archsig::json::parse(br#"["pair","s"]"#).unwrap().value);
     }
-    assert_eq!(s(get(&answers[2],"status")),"refuted");let evidence=get(node(&result,&arr(get(&answers[2],"evidence"))[0]),"value");assert_eq!(s(get(evidence,"kind")),"separating_pair");
+    assert_eq!(s(get(&answers[2],"status")),"refuted");let evidence=get(node(&result,&arr(get(&answers[2],"counterexamples"))[0]),"value");assert_eq!(s(get(evidence,"kind")),"separating_pair");
     let data=get(evidence,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&result,&views[0]),"value").value,get(node(&result,&views[1]),"value").value);
     let values=arr(get(data,"law_values"));assert_ne!(get(node(&result,&values[0]),"value").value,get(node(&result,&values[1]),"value").value);
     assert_ne!(get(node(&result,get(data,"first")),"value").value,get(node(&result,get(data,"second")),"value").value);
@@ -839,13 +836,13 @@ fn integer_tuple_law_descent_uses_all_values_on_the_lattice_image() {
 fn integer_quotient_finite_law_instances_preserve_lattice_and_false_keys() {
     let dir=input("integer-finite-law","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional indexed(s:State,b:Bool) when b:s.y=s.y;");
     let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);
-    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);for reference in laws{let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);for reference in laws{let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
 }
 
 #[test]
 fn integer_quotient_composed_guard_uses_the_candidate_lattice_and_reuses() {
     let dir=input("integer-composed-guard","change setpair(s:State,a:Z,b:Z) when a+b=1=s with{x=2*a+1,y=2*b};view pair(s:State):(Z,Z)=(s.x,s.y);view combined(s:State):Z=s.x+s.y;law optional indexed(s:State,b:Bool) when (let fixed=s.x+s.y=3 in fixed and b):s.x=s.x;");
     let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.indexed)"];
-    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));for reference in views {assert_eq!(s(get(node(&j,reference),"value")),"3");}let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));for reference in views {assert_eq!(s(get(node(&j,reference),"value")),"3");}let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks {args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 }

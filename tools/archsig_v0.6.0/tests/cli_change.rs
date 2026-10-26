@@ -82,77 +82,9 @@ fn finite_solve_returns_original_assignments_for_all_local_subjects() {
     let representation = get(get(node, "value"), "representation");
     assert_eq!(s(get(representation, "kind")), "finite");
     assert_eq!(arr(get(representation, "values")).len(), 1);
-    let constructions = [
-        "binding",
-        "projection",
-        "expression",
-        "evaluation",
-        "law_instance",
-        "configuration",
-        "architecture",
-        "atom_universe",
-        "atom_map",
-        "map_candidate",
-        "configuration_map",
-        "object_component",
-        "object_algebra",
-        "equation_family",
-        "equation_map",
-        "circuit_pattern",
-        "circuit_case",
-        "circuit_detector",
-        "circuit_map",
-        "invariant",
-        "invariant_map",
-        "signature_axis",
-        "signature_map",
-        "value_map",
-        "value_equivalence",
-        "declaration_transport",
-        "object_algebra_map",
-        "operation",
-        "composition",
-        "comparison",
-        "domain",
-        "state_space",
-        "state_map",
-        "candidate_space",
-        "solution_set",
-        "equation_space",
-        "equation_solutions",
-        "path",
-        "context",
-        "context_map",
-        "cover",
-        "topology",
-        "local_system",
-        "equation_presentation",
-        "ring",
-        "polynomial",
-        "finite_function",
-        "ring_map",
-        "ideal",
-        "module",
-        "module_map",
-        "vector",
-        "action",
-        "complex",
-        "cochain_map",
-        "cohomology",
-        "class",
-        "diagnostic",
-        "assignment",
-        "repair",
-        "quotient",
-        "observation_plan",
-        "proposition",
-        "evidence",
-    ];
     for node in arr(get(&result, "nodes")) {
-        let rule = get(node, "rule");
-        if s(get(rule, "kind")) == "construction" {
-            assert!(constructions.contains(&s(get(rule, "name"))), "{:?}", rule);
-        }
+        assert!(!has(node, "rule"));
+        assert!(!has(node, "arguments"));
     }
 }
 
@@ -383,10 +315,7 @@ fn saved_finite_repair_is_rechecked_with_its_followup_request() {
     let repeated = run(&dir, &args);
     assert_eq!(repeated.code, 0, "{}", repeated.stdout);
     let result = result_json(&dir, &repeated);
-    assert_eq!(
-        get(get(&result, "reuse"), "requested").value,
-        archsig::json::JValue::Bool(true)
-    );
+    assert!(!has(&result, "reuse"));
     for field in ["answers", "nodes"] {
         assert_eq!(get(&result, field).value, get(&original, field).value);
     }

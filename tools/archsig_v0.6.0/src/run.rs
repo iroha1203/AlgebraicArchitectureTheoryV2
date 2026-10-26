@@ -46,7 +46,7 @@ pub struct CheckArgs {
     pub atom_definitions: Vec<PathBuf>,
     pub law: PathBuf,
     pub archmap: Option<PathBuf>,
-    pub out: PathBuf,
+    pub out: Option<PathBuf>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -89,10 +89,14 @@ pub struct Outcome {
     pub exit_code: u8,
     pub result: Option<PathBuf>,
     pub issues: Vec<Json>,
+    pub summary: Option<Json>,
 }
 
 impl Outcome {
     pub fn receipt(&self) -> String {
+        if let Some(summary) = &self.summary {
+            return summary.canonical();
+        }
         let mut entries = vec![
             ("format", Json::str("archsig.receipt/1")),
             ("status", Json::str(self.status.wire())),
@@ -173,10 +177,15 @@ pub fn run_check(
             started,
         );
     }
-    if let Err(m) = out_ok(&args.out) {
+    let Some(out) = &args.out else {
+        return usage_without_result(signals, ResultIssue::Usage {
+            argument: "--out".into(), message: "check は --out が必要".into(),
+        });
+    };
+    if let Err(m) = out_ok(out) {
         let issue = ResultIssue::Usage {
             argument: "--out".to_owned(),
-            message: format!("{}: {m}", args.out.display()),
+            message: format!("{}: {m}", out.display()),
         };
         return usage_without_result(signals, issue);
     }
@@ -306,7 +315,7 @@ pub fn run_check(
         owned_copies.push(("inputs/archmap.json".to_owned(), bytes.as_slice()));
     }
     let copies: Vec<_> = owned_copies.iter().map(|(p, b)| (p.as_str(), *b)).collect();
-    finalize(io, signals, &args.out, result, &copies, started)
+    finalize(io, signals, out, result, &copies, started)
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {

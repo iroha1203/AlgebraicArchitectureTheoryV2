@@ -172,8 +172,8 @@ fn incompatible_actual_intermediate_objects_are_refutations_and_block_dependents
     assert_eq!(s(get(bad, "status")), "refuted");
     assert!(!has(get(bad, "outputs"), "operation"));
     assert!(!has(get(bad, "outputs"), "map"));
-    assert_eq!(arr(get(bad, "evidence")).len(), 1);
-    let evidence = value(&j, &arr(get(bad, "evidence"))[0]);
+    assert_eq!(arr(get(bad, "counterexamples")).len(), 1);
+    let evidence = value(&j, &arr(get(bad, "counterexamples"))[0]);
     assert_eq!(s(get(evidence, "kind")), "counterexample");
     assert_eq!(s(get(answer(&j, "blocked"), "status")), "undetermined");
     assert_eq!(s(get(answer(&j, "plan"), "status")), "established");

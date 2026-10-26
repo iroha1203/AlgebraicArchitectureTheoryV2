@@ -392,7 +392,7 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
             value(&b, get(get(answer(&b, "a"), "outputs"), "value")),
             &archsig::json::parse(if expected { b"true" } else { b"false" }).unwrap()
         );
-        assert_eq!(num(get(get(&b, "reuse"), "accepted_nodes")), 0);
+        assert!(!has(&b, "reuse"));
     }
     let mut forged = fixture::owned(&archsig::json::parse(&previous_bytes).unwrap());
     let Json::Arr(nodes) = fixture::field(&mut forged, "nodes") else {
@@ -415,7 +415,7 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
     let reused = asks_at(&dir, &source, "rejected", Some("forged"));
     assert_eq!(reused.code, 0, "{}", reused.stdout);
     let j = result_json(&dir, &reused);
-    assert!(!arr(get(get(&j, "reuse"), "rejected")).is_empty());
+    assert!(!warnings(&j).is_empty());
     assert_eq!(
         value(&j, get(get(answer(&j, "a"), "outputs"), "value")),
         &archsig::json::parse(b"true").unwrap()
@@ -517,7 +517,7 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
                 atom_definitions: vec![dir.join("d.json")],
                 law: dir.join("l.law"),
                 archmap: Some(dir.join("a.json")),
-                out: dir.join("out"),
+                out: Some(dir.join("out")),
             },
             asks: vec![
                 fixture::MAP.into(),
@@ -659,7 +659,7 @@ law required dependentScope(a:System,s:State[a]):true;
     ] {
         let a = answer(&j, id);
         assert_scope(get(a, "scope"));
-        assert_scope(get(node(&j, get(get(a, "outputs"), "evaluation")), "scope"));
+        assert!(!has(node(&j, get(get(a, "outputs"), "evaluation")), "scope"));
     }
     let constant = node(
         &j,

@@ -82,7 +82,7 @@ fn value_comparison_distinguishes_equal_values_refutations_and_false_bool_values
         assert_eq!(s(get(get(p, "value"), "predicate")), "equal");
     }
     let a = answer(&j, "different");
-    let e = node(&j, &arr(get(a, "evidence"))[0]);
+    let e = node(&j, &arr(get(a, "counterexamples"))[0]);
     let data = get(get(e, "value"), "data");
     assert_eq!(
         get(data, "left"),
@@ -152,7 +152,7 @@ fn all_ground_primitive_types_follow_value_semantics_and_keep_original_refs() {
             get(get(answer(&j, &format!("b_{name}")), "outputs"), "value")
         );
         assert!(!has(c, "support"));
-        assert!(!arr(get(c, "arguments")).is_empty());
+        assert!(!has(c, "arguments"));
     }
     for (id, status) in [
         ("same_ref", "established"),
@@ -292,8 +292,8 @@ view copied(s:Sample):Sample=s;
     {
         let a = answer(&j, id);
         assert_eq!(s(get(a, "status")), "refuted", "{id}");
-        assert_eq!(arr(get(a, "evidence")).len(), 1);
-        let e = node(&j, &arr(get(a, "evidence"))[0]);
+        assert_eq!(arr(get(a, "counterexamples")).len(), 1);
+        let e = node(&j, &arr(get(a, "counterexamples"))[0]);
         let data = get(get(e, "value"), "data");
         for key in ["bindings", "paths", "left", "right", "facts"] {
             assert!(has(data, key));
@@ -338,8 +338,8 @@ fn reused_value_comparison_rejects_forgery_and_recomputes_current_observations()
     }
     let r = run(&dir, &args);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
-    assert!(!arr(get(get(&j, "reuse"), "rejected")).is_empty());
+    assert!(!has(&j, "reuse"));
+    assert!(!warnings(&j).is_empty());
     assert_eq!(get(&j, "nodes"), get(&original, "nodes"));
     assert_eq!(get(&j, "answers"), get(&original, "answers"));
     std::fs::write(
@@ -350,7 +350,7 @@ fn reused_value_comparison_rejects_forgery_and_recomputes_current_observations()
     args[8] = "fresh";
     let r = run(&dir, &args);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
+    assert!(!has(&j, "reuse"));
     assert_eq!(s(get(answer(&j, "c"), "status")), "refuted");
     assert_ne!(get(&j, "nodes"), get(&original, "nodes"));
     std::fs::remove_dir_all(dir).unwrap();

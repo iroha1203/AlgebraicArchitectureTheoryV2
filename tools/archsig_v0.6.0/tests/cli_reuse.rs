@@ -43,16 +43,10 @@ fn execute(dir: &Path, out: &str, reuse: Option<&str>, asks: &[&str]) -> Run {
     }
     run(dir, &args)
 }
-fn checked(dir: &Path, r: &Run, code: i32, reused: bool) -> JNode {
+fn checked(dir: &Path, r: &Run, code: i32, _reused: bool) -> JNode {
     assert_eq!(r.code, code, "{}", r.stdout);
     let result = result_json(dir, r);
-    let reuse = get(&result, "reuse");
-    assert_eq!(get(reuse, "requested").value, JValue::Bool(reused));
-    assert_eq!(num(get(reuse, "accepted_nodes")), 0);
-    assert_eq!(
-        num(get(reuse, "recomputed_nodes")),
-        arr(get(&result, "nodes")).len() as u64
-    );
+    assert!(!has(&result, "reuse"));
     assert_eq!(num(get(&result, "exit_code")), code as u64);
     assert!(!has(&r.receipt, "issues"), "候補の拒否は実行失敗にしない");
     result
@@ -117,7 +111,7 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
     let reused = execute(&dir, "out", Some("previous"), &ASKS);
     let result = checked(&dir, &reused, 0, true);
     assert_eq!(value(&result), "2");
-    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&result).is_empty());
     for field in ["requests", "answers", "nodes", "inputs"] {
         assert_eq!(get(&plain, field), get(&result, field), "{field}");
     }
@@ -128,13 +122,13 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
     // Natは綴りでなく値を検査する。整数を表す小数/指数のmetadataも同じ値である。
     let notation = String::from_utf8(bytes)
         .unwrap()
-        .replace("\"accepted_nodes\":0", "\"accepted_nodes\":0e0")
+        .replace("\"exit_code\":0", "\"exit_code\":0e0")
         .replace("\"exit_code\":0", "\"exit_code\":0.0");
     std::fs::write(dir.join("previous/result.json"), notation).unwrap();
     let notation_run = execute(&dir, "out-notation", Some("previous"), &ASKS);
     let notation_result = checked(&dir, &notation_run, 0, true);
     assert_eq!(value(&notation_result), "2");
-    assert!(arr(get(get(&notation_result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&notation_result).is_empty());
 }
 
 #[test]
@@ -150,13 +144,11 @@ fn duplicate_verified_derivation_does_not_require_the_same_plan_or_node_count() 
     let mut duplicate = nodes.last().unwrap().clone();
     *field_mut(&mut duplicate, "id") = Json::str(format!("n{original_len}"));
     nodes.push(duplicate);
-    *field_mut(field_mut(&mut candidate, "reuse"), "recomputed_nodes") =
-        Json::Nat((original_len + 1) as u64);
     std::fs::write(dir.join("previous/result.json"), candidate.canonical()).unwrap();
     let reused = execute(&dir, "out", Some("previous"), &ASKS);
     let result = checked(&dir, &reused, 0, true);
     assert_eq!(value(&result), "2");
-    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&result).is_empty());
     assert_eq!(arr(get(&result, "nodes")).len(), original_len);
 }
 
@@ -169,7 +161,7 @@ fn missing_observations_remain_partial_with_a_valid_partial_candidate() {
     let plain = checked(&dir, &previous, 2, false);
     let reused = execute(&dir, "out", Some("previous"), &ASKS);
     let result = checked(&dir, &reused, 2, true);
-    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&result).is_empty());
     for name in ["answers", "nodes", "issues"] {
         assert_eq!(get(&plain, name), get(&result, name));
     }
@@ -197,21 +189,14 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         "syntax",
         "duplicate_key",
         "command_check",
-        "nat_accepted",
-        "nat_recomputed",
+        "nat_exit",
         "nat_huge",
-        "Evaluation",
-        "Evidence",
-        "Expression",
-        "LawInstance",
         "Proposition",
-        "Domain",
         "judgment",
         "rule",
         "scope",
         "support",
         "reasons",
-        "rule_extra",
         "inputs",
         "requests",
         "declarations",
@@ -228,8 +213,8 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
             "nat_huge" => owned(&source)
                 .canonical()
                 .replace(
-                    "\"accepted_nodes\":0",
-                    &format!("\"accepted_nodes\":1{}", "0".repeat(100)),
+                    "\"exit_code\":0",
+                    &format!("\"exit_code\":1{}", "0".repeat(100)),
                 )
                 .into_bytes(),
             _ => {
@@ -240,14 +225,8 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                     "command_check" => {
                         *field_mut(&mut candidate, "command") = Json::str("check");
                     }
-                    "nat_accepted" | "nat_recomputed" => {
-                        let name = if kind == "nat_accepted" {
-                            "accepted_nodes"
-                        } else {
-                            "recomputed_nodes"
-                        };
-                        *field_mut(field_mut(&mut candidate, "reuse"), name) =
-                            Json::Nat(9_007_199_254_740_992);
+                    "nat_exit" => {
+                        *field_mut(&mut candidate, "exit_code") = Json::Nat(9_007_199_254_740_992);
                     }
                     "version" => {
                         *field_mut(&mut candidate, "format") = Json::str("archsig.result/999")
@@ -259,7 +238,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         *field_mut(first_node(&mut candidate), "type") = Json::str("Bool")
                     }
                     "forward" => {
-                        *field_mut(first_node(&mut candidate), "arguments") =
+                        *field_mut(first_node(&mut candidate), "value") =
                             Json::Arr(vec![Json::obj([("node", Json::str("future"))])])
                     }
                     "duplicate_id" => {
@@ -275,7 +254,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         };
                         fields.insert("extra".into(), Json::Bool(true));
                     }
-                    "Evaluation" | "Evidence" | "Expression" | "LawInstance" | "Proposition"
+                    "Evaluation" | "Counterexample" | "Expression" | "LawInstance" | "Proposition"
                     | "Domain" => {
                         *field_mut(typed_node(&mut candidate, kind), "value") = Json::obj([]);
                     }
@@ -286,7 +265,8 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         fields.remove("judgment");
                     }
                     "rule" | "scope" => {
-                        *field_mut(first_node(&mut candidate), kind) = Json::obj([])
+                        let Json::Obj(fields) = first_node(&mut candidate) else { panic!("node") };
+                        fields.insert(kind.into(), Json::obj([]));
                     }
                     "support" => {
                         let Json::Obj(fields) = first_node(&mut candidate) else {
@@ -338,7 +318,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         let run = execute(&dir, &out, Some(&name), &ASKS);
         let result = checked(&dir, &run, 0, true);
         assert_eq!(value(&result), "2");
-        let rejected = arr(get(get(&result, "reuse"), "rejected"));
+        let rejected = warnings(&result);
         assert!(!rejected.is_empty(), "{kind}");
         assert_eq!(s(get(get(&rejected[0], "details"), "argument")), "--reuse");
         assert!(!s(get(&rejected[0], "message")).is_empty());
@@ -422,7 +402,7 @@ fn unavailable_and_linked_candidates_do_not_change_inputs_or_outputs() {
     for (index, candidate) in ["missing", "not-directory", "empty"].iter().enumerate() {
         let r = execute(&dir, &format!("out-{index}"), Some(candidate), &ASKS);
         let result = checked(&dir, &r, 0, true);
-        assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+        assert!(!warnings(&result).is_empty());
         assert_eq!(value(&result), "2");
     }
     #[cfg(unix)]
@@ -448,7 +428,7 @@ fn unavailable_and_linked_candidates_do_not_change_inputs_or_outputs() {
         {
             let r = execute(&dir, &format!("out-linked-{index}"), Some(candidate), &ASKS);
             let result = checked(&dir, &r, 0, true);
-            assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+            assert!(!warnings(&result).is_empty());
         }
     }
     assert_eq!(

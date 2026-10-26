@@ -363,7 +363,7 @@ fn incompatible_extension_keeps_counterexample_and_reusable_object() {
     assert_eq!(s(get(b, "status")), "refuted");
     assert!(has(get(b, "outputs"), "object"));
     assert!(!has(get(b, "outputs"), "algebra"));
-    let evidence = arr(get(b, "evidence"));
+    let evidence = arr(get(b, "counterexamples"));
     assert!(!evidence.is_empty());
     for proof in evidence {
         assert_eq!(s(get(value(&result, proof), "kind")), "counterexample");

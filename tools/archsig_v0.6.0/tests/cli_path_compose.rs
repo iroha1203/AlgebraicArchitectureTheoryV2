@@ -125,7 +125,7 @@ fn path_endpoint_refutations_block_dependents_and_needed_keeps_the_condition() {
     let bad = answer(&j, "bad");
     assert_eq!(s(get(bad, "status")), "refuted");
     assert!(!has(get(bad, "outputs"), "operation"));
-    let proof = value(&j, &arr(get(bad, "evidence"))[0]);
+    let proof = value(&j, &arr(get(bad, "counterexamples"))[0]);
     let data = get(proof, "data");
     assert!(arr(get(data, "facts")).is_empty());
     let archsig::json::JValue::Obj(fields) = &data.value else {
@@ -318,8 +318,8 @@ fn path_reuse_rejects_changed_reading_and_recomputes_current_nodes() {
         ],
     );
     let j = saved(&d, &r, "complete", 0);
-    assert!(!arr(get(get(&j, "reuse"), "rejected")).is_empty());
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
+    assert!(!warnings(&j).is_empty());
+    assert!(!has(&j, "reuse"));
     assert_eq!(get(&j, "nodes"), get(&original, "nodes"));
     assert_eq!(get(&j, "answers"), get(&original, "answers"));
     std::fs::remove_dir_all(d).unwrap();
@@ -422,7 +422,7 @@ fn composition_rejects_generators_outside_its_reading_and_preserves_the_reason()
     let bad = answer(&j, "bad");
     assert_eq!(s(get(bad, "status")), "refuted");
     assert!(!has(get(bad, "outputs"), "operation"));
-    let proof = value(&j, &arr(get(bad, "evidence"))[0]);
+    let proof = value(&j, &arr(get(bad, "counterexamples"))[0]);
     let data = get(proof, "data");
     assert!(arr(get(data, "facts")).is_empty());
     assert_eq!(

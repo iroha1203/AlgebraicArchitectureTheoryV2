@@ -45,7 +45,7 @@ fn partial_domain_case(outside: bool) {
     let compared = answer(&result, "compared");
     assert_eq!(s(get(compared, "status")), "refuted");
     assert!(!has(get(compared, "outputs"), "comparison"));
-    assert!(!arr(get(compared, "evidence")).is_empty());
+    assert!(!arr(get(compared, "counterexamples")).is_empty());
     assert!(
         arr(get(compared, "reasons"))
             .iter()
@@ -143,16 +143,12 @@ fn relation_membership_and_free_word_nonmembership_have_distinct_checked_evidenc
         assert!(has(get(compared, "outputs"), "comparison"));
         let claim = node(&result, get(get(compared, "outputs"), "proposition"));
         assert_eq!(s(get(get(claim, "value"), "predicate")), "relation_equal");
-        assert_eq!(arr(get(compared, "evidence")).len(), 2);
-        let proof = node(&result, &arr(get(compared, "evidence"))[1]);
-        assert_eq!(
-            s(get(get(proof, "value"), "kind")),
-            if expected == "established" {
-                "normalization"
-            } else {
-                "counterexample"
-            }
-        );
+        if expected == "established" { assert!(!has(compared,"counterexamples")); }
+        else {
+            assert_eq!(arr(get(compared,"counterexamples")).len(),1);
+            let example=node(&result,&arr(get(compared,"counterexamples"))[0]);
+            assert_eq!(s(get(get(example,"value"),"kind")),"counterexample");
+        }
         assert!(arr(get(&result, "issues")).is_empty());
     }
 }
@@ -172,6 +168,8 @@ fn a_composed_path_uses_the_original_relation_inside_its_query_context() {
     );
     let result = saved(&dir, &run, "complete", 0);
     assert_eq!(s(get(answer(&result, "compared"), "status")), "established");
+    assert!(!has(answer(&result,"compared"),"counterexamples"));
+    let result=internal_graph(&dir,&result);
     let proof = node(
         &result,
         &arr(get(answer(&result, "compared"), "evidence"))[1],

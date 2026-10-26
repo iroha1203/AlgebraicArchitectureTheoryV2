@@ -182,7 +182,7 @@ fn endpoint_refutation_keeps_candidate_and_concrete_facts_without_map_or_operati
     assert!(!has(outputs, "operation"));
     let claim = node(&result, get(outputs, "proposition"));
     assert_eq!(s(get(get(claim, "judgment"), "status")), "refuted");
-    let evidence = arr(get(a, "evidence"));
+    let evidence = arr(get(a, "counterexamples"));
     assert!(!evidence.is_empty());
     let mut facts = vec![];
     for e in evidence {
@@ -218,10 +218,10 @@ fn missing_table_keeps_independent_endpoint_refutation_and_needed_slots() {
     assert_eq!(s(get(candidate, "state")), "blocked");
     assert!(!has(candidate, "value"));
     assert!(has(candidate, "partial"));
-    let evidence = arr(get(a, "evidence"));
+    let evidence = arr(get(a, "counterexamples"));
     assert_eq!(evidence.len(), 1);
     assert_eq!(
-        s(get(get(node(&result, &evidence[0]), "scope"), "domain")),
+        s(get(get(a, "scope"), "domain")),
         "all_completions"
     );
     let facts = arr(get(get(value(&result, &evidence[0]), "data"), "facts"));
@@ -430,14 +430,14 @@ fn valid_object_algebra_kind_reports_internal_unimplemented_instead_of_math_unce
         &dir,
         &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
     );
-    let _result = saved(&dir, &r, "error", 70);
+    notified(&dir, &r, "error", 70);
     let receipt = &r.receipt;
     assert!(
         arr(get(&receipt, "issues"))
             .iter()
             .all(|i| s(get(i, "code")) == "internal")
     );
-    assert!(dir.join("out/result.json").exists());
+    assert!(!dir.join("out").exists());
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
@@ -467,7 +467,7 @@ fn map_reuse_rechecks_the_total_action_and_rejects_a_forged_saved_operation() {
     };
     let second = command("second");
     let result = saved(&dir, &second, "complete", 0);
-    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(warnings(&result).is_empty());
     let output = get(answer(&original, "m"), "outputs");
     let operation_id = s(get(get(output, "operation"), "node"));
     let mut forged = std::fs::read_to_string(dir.join("out/result.json")).unwrap();
@@ -486,13 +486,13 @@ fn map_reuse_rechecks_the_total_action_and_rejects_a_forged_saved_operation() {
     std::fs::write(dir.join("out/result.json"), forged).unwrap();
     let third = command("third");
     let result = saved(&dir, &third, "complete", 0);
-    assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert!(!warnings(&result).is_empty());
     let operation = value(
         &result,
         get(get(answer(&result, "m"), "outputs"), "operation"),
     );
     assert_eq!(arr(get(operation, "word")).len(), 1);
-    assert_eq!(num(get(get(&result, "reuse"), "accepted_nodes")), 0);
+    assert!(!has(&result, "reuse"));
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
@@ -510,7 +510,7 @@ fn refuted_candidate_remains_consumable_while_its_missing_operation_blocks_only_
     for id in ["m", "again"] {
         let a = answer(&result, id);
         assert_eq!(s(get(a, "status")), "refuted");
-        assert!(!arr(get(a, "evidence")).is_empty());
+        assert!(!arr(get(a, "counterexamples")).is_empty());
     }
     let blocked = answer(&result, "blocked");
     assert_eq!(s(get(blocked, "status")), "undetermined");
@@ -608,7 +608,7 @@ fn architecture_scope_keeps_classification_without_exporting_support() {
         get(get(answer(&result, "m"), "outputs"), "candidate"),
     );
     let architecture = node(&result, get(candidate, "source"));
-    let modes = arr(get(get(architecture, "scope"), "modes"))
+    let modes = arr(get(get(answer(&result, "m"), "scope"), "modes"))
         .iter()
         .map(s)
         .collect::<Vec<_>>();
@@ -656,8 +656,7 @@ fn map_consumes_option_tuple_and_list_subject_projections_from_checked_producers
         let candidate = value(&result, get(get(a, "outputs"), "candidate"));
         assert_eq!(s(&arr(value(&result, get(candidate, "subject")))[1]), "m");
         let selected = node(&result, get(candidate, "subject"));
-        assert_eq!(s(get(get(selected, "rule"), "name")), "projection");
-        assert!(!arr(get(selected, "arguments")).is_empty());
+        assert!(!has(selected, "arguments"));
         assert_eq!(s(get(&arr(get(&result, "answers"))[0], "id")), "copy");
         std::fs::remove_dir_all(dir).unwrap();
     }
@@ -707,7 +706,7 @@ fn map_dynamic_projection_failures_keep_refuted_conditions_and_propagate_origina
             let condition = get(details, "condition");
             let n = node(&result, condition);
             assert_eq!(s(get(get(n, "judgment"), "status")), "refuted");
-            assert!(!arr(get(n, "evidence")).is_empty());
+            assert!(!arr(get(get(n, "judgment"), "counterexamples")).is_empty());
             if let Some(expected) = original_condition {
                 assert_eq!(s(get(condition, "node")), expected);
             }
@@ -801,7 +800,7 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
     assert!(has(candidate, "partial"));
     assert!(!has(candidate, "value"));
     assert!(!has(output, "map") && !has(output, "operation"));
-    assert!(!arr(get(a, "evidence")).is_empty());
+    assert!(!arr(get(a, "counterexamples")).is_empty());
     let condition = node(&result, get(output, "proposition"));
     assert_eq!(s(get(get(condition, "judgment"), "status")), "refuted");
     assert!(
@@ -815,7 +814,7 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
             .any(|r| s(get(r, "code")) == "missing_observation" || s(get(r, "code")) == "internal")
     );
     let facts = arr(get(
-        get(value(&result, &arr(get(a, "evidence"))[0]), "data"),
+        get(value(&result, &arr(get(a, "counterexamples"))[0]), "data"),
         "facts",
     ));
     assert!(
@@ -921,10 +920,10 @@ fn valid_unimplemented_map_dependencies_keep_their_declared_public_projection_ty
         let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
         std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
         let run=asks(&dir,requests);
-        let _result=saved(&dir,&run,"error",70);
+        notified(&dir,&run,"error",70);
         let receipt=&run.receipt;
         assert!(arr(get(&receipt,"issues")).iter().all(|issue|s(get(issue,"code"))=="internal"));
-        assert!(dir.join("out/result.json").exists());
+        assert!(!dir.join("out").exists());
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
@@ -967,8 +966,8 @@ fn map_reuse_rejects_saved_values_that_drop_preservation_conditions() {
         ],
     );
     let result = saved(&dir, &rerun, "complete", 0);
-    assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
-    assert_eq!(num(get(get(&result, "reuse"), "accepted_nodes")), 0);
+    assert!(!warnings(&result).is_empty());
+    assert!(!has(&result, "reuse"));
     let output = get(answer(&result, "m"), "outputs");
     for key in ["map", "operation"] {
         let conditions = arr(get(node(&result, get(output, key)), "conditions"));
@@ -1000,20 +999,10 @@ fn repeated_unknown_reference_refutations_keep_their_all_completions_scope() {
     let result = saved(&dir, &run, "partial", 2);
     let a = answer(&result, "m");
     assert_eq!(s(get(get(a, "scope"), "domain")), "all_completions");
-    assert_eq!(
-        s(get(
-            get(
-                node(&result, get(get(a, "outputs"), "proposition")),
-                "scope"
-            ),
-            "domain"
-        )),
-        "all_completions"
-    );
-    let evidence = arr(get(a, "evidence"));
+    let evidence = arr(get(a, "counterexamples"));
     assert_eq!(evidence.len(), 1);
     assert_eq!(
-        s(get(get(node(&result, &evidence[0]), "scope"), "domain")),
+        s(get(get(a, "scope"), "domain")),
         "all_completions"
     );
     let facts = arr(get(get(value(&result, &evidence[0]), "data"), "facts"));
@@ -1043,7 +1032,7 @@ fn repeated_unknown_reference_refutations_keep_their_all_completions_scope() {
             let result = saved(&dir, &run, "complete", 1);
             let a = answer(&result, "m");
             assert_eq!(s(get(a, "status")), "refuted");
-            assert!(!arr(get(a, "evidence")).is_empty());
+            assert!(!arr(get(a, "counterexamples")).is_empty());
             assert_eq!(s(get(get(a, "scope"), "domain")), "finite_model");
             assert!(!has(get(a, "outputs"), "operation"));
             std::fs::remove_dir_all(dir).unwrap();
@@ -1069,13 +1058,7 @@ fn fixed_reference_shape_refutations_do_not_acquire_an_unrelated_completion_scop
             code,
         );
         let a = answer(&result, "m");
-        for e in arr(get(a, "evidence")) {
-            assert_eq!(
-                s(get(get(node(&result, e), "scope"), "domain")),
-                "finite_model"
-            );
-        }
-        assert!(!arr(get(a, "evidence")).is_empty());
+        assert!(!arr(get(a, "counterexamples")).is_empty());
         assert_eq!(s(get(get(a, "scope"), "domain")), "finite_model");
         std::fs::remove_dir_all(dir).unwrap();
     }

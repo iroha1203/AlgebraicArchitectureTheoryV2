@@ -54,7 +54,7 @@ fn setup(name: &str, kind: usize) -> (PathBuf, RunArgs) {
             atom_definitions: vec![dir.join("d.json")],
             law: dir.join("l.law"),
             archmap: Some(dir.join("a.json")),
-            out: dir.join("out"),
+            out: Some(dir.join("out")),
         },
         asks: if kind == 2 {
             TERM_ASKS.iter().map(|s| (*s).into()).collect()
@@ -284,10 +284,10 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "comparison"));
         assert_eq!(
-            arr(get(answer, "evidence")).len(),
+            arr(get(answer, "counterexamples")).len(),
             if kind == 2 { 3 } else { 1 }
         );
-        let proof = arr(get(answer, "evidence")).last().unwrap();
+        let proof = arr(get(answer, "counterexamples")).last().unwrap();
         let evidence = arr(get(&result, "nodes"))
             .iter()
             .find(|n| get(n, "id") == get(proof, "node"))
@@ -362,11 +362,11 @@ fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(kind
         );
         if race {
             assert_eq!(
-                std::fs::read(args.inputs.out.join("result.json")).unwrap(),
+                std::fs::read(args.inputs.out.as_ref().unwrap().join("result.json")).unwrap(),
                 b"existing result bytes"
             );
         } else {
-            assert!(!args.inputs.out.exists());
+            assert!(!args.inputs.out.as_ref().unwrap().exists());
         }
         let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
         assert!(!has(&receipt, "result"));
