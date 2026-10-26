@@ -2458,11 +2458,11 @@ impl Graph {
         template: NodeRef,
     ) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
         self.tick()?;
-        self.expect(template, &NodeType::Expression(Type::Bool))?;
         let node = self.get(template)?;
-        if matches!(&node.payload, Some(Payload::Expression { .. })) {
+        if matches!(&node.ty, NodeType::Expression(_)) && matches!(&node.payload, Some(Payload::Expression { .. })) {
             return Ok((template, None));
         }
+        self.expect(template, &NodeType::Expression(Type::Bool))?;
         self.parameterized_transform_shape(node)?;
         let Some(Payload::ParameterizedTransform {
             operation: TransformOp::Not,
@@ -4188,7 +4188,6 @@ impl Graph {
                 let [source] = node.arguments.as_slice() else {
                     return Err("型全域Domainに元Sourceがない".into());
                 };
-                self.expect(*source, &NodeType::Expression(Type::Bool))?;
                 self.universal_template_sources(*source)?;
             }
             (NodeType::Domain, Some(Payload::Domain { ty, elements })) => {

@@ -150,7 +150,7 @@ impl Data {
         let (a, o) = origin(g, self.source.origin.expression)?;
         if !Arc::ptr_eq(&a, &self.source.architecture)
             || o != self.source.origin
-            || !o.parameters.is_empty()
+            || (!o.parameters.is_empty() && !numeric_parameters(&o))
             || !matches!(&o.application,InstanceApplication::Applicable{conditions} if conditions.is_empty())
             || g.context_at(o.expression.0) != g.context_at(o.architecture.0)
         {
@@ -328,6 +328,9 @@ fn put(g: &mut Graph, source: Arc<Source>, kind: Kind) -> Result<NodeRef, Valida
         None,
     )
 }
+pub(super) fn numeric_parameters(o: &ViewOrigin) -> bool {
+    !o.parameters.is_empty() && o.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
+}
 pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
@@ -348,10 +351,11 @@ pub(super) fn evaluate(
         }
         _ => (),
     };
-    if !o.parameters.is_empty() {
+    if !o.parameters.is_empty() && !numeric_parameters(&o) {
         return Ok(Outcome::Parameters(o.parameters.clone()));
     }
     let (support, scope) = metadata(g, &o)?;
+    // このframeは固定済みの対象束縛だけを運ぶ。残る数値軸は式評価のTypeDomainで保持する。
     let source = Arc::new(Source {
         architecture: a,
         origin: o.clone(),

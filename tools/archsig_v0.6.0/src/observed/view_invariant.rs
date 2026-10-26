@@ -352,7 +352,7 @@ pub(super) fn retain(
         let rs = expressions(g, &a, &objects, instance, c)?;
         let (_, o) = reading::origin(g, rs[0])?;
         // 全対象の元式は同じparameter域を共有する。保留なら評価の生成前に返す。
-        if !o.parameters.is_empty() {
+        if !o.parameters.is_empty() && !reading::numeric_parameters(&o) {
             let parameters = view_family::parameter_readings(env, g, rs[0], c)?;
             if parameters
                 .iter()
@@ -369,7 +369,7 @@ pub(super) fn retain(
         let mut evaluations = vec![];
         for expression in rs {
             tick(c)?;
-            let evaluation = if o.parameters.is_empty() {
+            let evaluation = if o.parameters.is_empty() || reading::numeric_parameters(&o) {
                 let whole::Outcome::Evaluation { evaluation, .. } =
                     whole::evaluate(env, g, expression, c)?
                 else {

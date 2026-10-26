@@ -1062,7 +1062,12 @@ impl Environment<'_> {
         let native = if let Some(index) = self.current_context(graph).instance {
             crate::observed::law_evaluation::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
         } else { None };
+        let view = if let Some(index) = self.current_context(graph).instance {
+            crate::observed::object_reading_evaluation::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+        } else { None };
         let name = if let Some(inputs) = &native {
+            inputs.origin.declaration.as_str()
+        } else if let Some(inputs) = &view {
             inputs.origin.declaration.as_str()
         } else if request.kind == QuestionKind::Check {
             request.declaration().ok_or("元要求に宣言がない")?
@@ -1075,14 +1080,10 @@ impl Environment<'_> {
             .declarations
             .get(name)
             .ok_or("全域の元Lawがない")?;
-        let Signature::Law {
-            params,
-            guard,
-            body,
-            ..
-        } = &declaration.signature
-        else {
-            return Ok(None);
+        let (params, guard, body) = match &declaration.signature {
+            Signature::Law { params, guard, body, .. } => (params, *guard, *body),
+            Signature::View { params, body, .. } if view.is_some() => (params, None, *body),
+            _ => return Ok(None),
         };
         let mut parameters = Vec::new();
         let context = self.current_context(graph);
@@ -1105,13 +1106,15 @@ impl Environment<'_> {
             return Ok(None);
         }
         let mut plan = UniversalPlan {
-            template_span: self.inputs.law().exprs[*body].span,
-            body: *body,
-            guard: *guard,
+            template_span: self.inputs.law().exprs[body].span,
+            body,
+            guard,
             parameters,
             family: true,
         };
-        self.universal_strip_quantifiers(graph, &mut plan)?;
+        if view.is_none() {
+            self.universal_strip_quantifiers(graph, &mut plan)?;
+        }
         Ok(Some(plan))
     }
     pub(in crate::observed) fn universal_quantifier_plan(

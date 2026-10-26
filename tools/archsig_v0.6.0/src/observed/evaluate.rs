@@ -126,7 +126,12 @@ pub(in crate::observed) fn instance_expression<'a>(
         evaluator
             .environment
             .require_native_law_expression(evaluator.graph, expression)?;
-        match evaluator.eval(expression) {
+        let result = if matches!(declaration.signature, Signature::View { .. }) {
+            let plan = environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)?;
+            if let Some(plan) = plan { evaluator.universal_view_evaluation(plan) }
+            else { evaluator.eval(expression) }
+        } else { evaluator.eval(expression) };
+        match result {
             Ok(value) => Ok(RelationSide { expression: value.expression, evaluation: value.evaluation, value: value.value, support: value.support, scope: value.scope, reasons: value.reasons }),
             Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
             Err(Failure::Internal(s)) => Err(ValidationFailure::Internal(s)),
