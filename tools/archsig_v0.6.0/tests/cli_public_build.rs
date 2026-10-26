@@ -1713,3 +1713,36 @@ fn boolean_cases_keep_numeric_products_applicability_and_reuse() {
         }
     }
 }
+
+#[test]
+fn boolean_cases_keep_laws_after_numeric_parameter_cancellation() {
+    for ty in ["Z", "Q"] { for offset in [0, 1] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let body = format!("view off():Bool=false;law required balanced(c:Part,n:{ty},b:Bool) when b:n*c.quantity=n*c.quantity+{offset};");
+        let dir = files_with_definition("finite-cancelled-parameter", &body, false, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "c=check(R.balanced,on=$a.object,c=@v/q)", "off=check(R.balanced,on=$a.object,c=@v/q,b=$f.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, offset, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert!(!has(&normal.receipt, "nodes"));
+        eprintln!("cancelled finite product {ty}/{offset}: stdout {} bytes", normal.stdout.len());
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "complete", offset);
+        assert_eq!(s(get(answer(&j,"c"),"status")), if offset == 0 { "established" } else { "refuted" });
+        assert_eq!(s(get(answer(&j,"off"),"status")), "established");
+        assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, offset, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
+    }}
+}
