@@ -806,10 +806,14 @@ pub(in crate::observed) fn parameter_differences_with_bindings(
     inputs: &CheckedInputs,
     root: usize,
     ty: &Type,
+    context: crate::observed::call::Context,
     values: &[(String, Scalar)],
     parameters: &[(String, affine::Form)],
     c: &mut Control,
-) -> Result<Option<(EquationRing, Vec<PolynomialFamily>)>, ConstructionFailure> {
+) -> Result<
+    Option<(EquationRing, Vec<PolynomialFamily>, Vec<affine::Parameter>)>,
+    ConstructionFailure,
+> {
     if !matches!(ty, Type::Z | Type::Q) {
         return Ok(None);
     }
@@ -854,10 +858,20 @@ pub(in crate::observed) fn parameter_differences_with_bindings(
         variables,
     };
     let mut differences = vec![];
-    if collect_parameter_equations(&mut compiler, root, &mut differences, c)?.is_none() {
+    let mut local_parameters = vec![];
+    if collect_parameter_equations(
+        &mut compiler,
+        root,
+        &mut differences,
+        context,
+        &mut local_parameters,
+        c,
+    )?
+    .is_none()
+    {
         return Ok(None);
     }
-    Ok(Some((ring, differences)))
+    Ok(Some((ring, differences, local_parameters)))
 }
 fn family_operands_from_variables(
     inputs: &CheckedInputs,
@@ -930,6 +944,8 @@ fn collect_parameter_equations(
     compiler: &mut Compiler<'_>,
     root: usize,
     out: &mut Vec<PolynomialFamily>,
+    context: crate::observed::call::Context,
+    local_parameters: &mut Vec<affine::Parameter>,
     c: &mut Control,
 ) -> Result<Option<()>, ConstructionFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -938,17 +954,65 @@ fn collect_parameter_equations(
             return Ok(None);
         };
         match &compiler.inputs.law().exprs[cursor].kind {
+            ExprKind::Quant {
+                kind: crate::law::ast::QuantKind::Forall,
+                var,
+                split:
+                    crate::law::ast::QuantSplit::Fixed {
+                        domain: crate::law::ast::QuantDomain::Type(_),
+                        body,
+                    },
+            } => {
+                let Some(ty) = compiler
+                    .inputs
+                    .law()
+                    .quantifier_types
+                    .get(cursor)
+                    .and_then(Option::as_ref)
+                else {
+                    return Err(bad("全称係数の元binder型がない"));
+                };
+                let kind = match ty {
+                    Type::Z => affine::NumberType::Z,
+                    Type::Q => affine::NumberType::Q,
+                    _ => return Ok(None),
+                };
+                if ty != &compiler.ring.ty {
+                    return Ok(None);
+                }
+                let parameter = affine::Parameter {
+                    binder: var.span,
+                    name: var.name.clone(),
+                    context,
+                    kind,
+                };
+                let Some(form) = affine::parameter(ty, &parameter, c).map_err(invalid)? else {
+                    return Ok(None);
+                };
+                let previous = compiler.variables.clone();
+                compiler
+                    .variables
+                    .insert(var.name.clone(), Binding::ParameterForm(form));
+                local_parameters.push(parameter);
+                let result =
+                    collect_parameter_equations(compiler, *body, out, context, local_parameters, c);
+                compiler.variables = previous;
+                result
+            }
             ExprKind::Binary {
                 op: BinOp::And,
                 lhs,
                 rhs,
             } => {
                 let previous = compiler.variables.clone();
-                if collect_parameter_equations(compiler, *lhs, out, c)?.is_none() {
+                if collect_parameter_equations(compiler, *lhs, out, context, local_parameters, c)?
+                    .is_none()
+                {
                     return Ok(None);
                 }
                 compiler.variables = previous.clone();
-                let result = collect_parameter_equations(compiler, *rhs, out, c);
+                let result =
+                    collect_parameter_equations(compiler, *rhs, out, context, local_parameters, c);
                 compiler.variables = previous;
                 result
             }

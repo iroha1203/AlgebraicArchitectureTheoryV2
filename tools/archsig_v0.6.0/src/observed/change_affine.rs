@@ -145,7 +145,6 @@ fn equations(
             return Ok(());
         }
         if v.comparison.is_none()
-            && !missing.universal.is_empty()
             && let Some(forms) = parameter_coefficient_forms(env, id, vars, reading, &missing.universal)?
         {
             for form in forms {
@@ -221,11 +220,12 @@ fn parameter_coefficient_forms(
             return Ok(None);
         }
     }
-    let Some((ring, families)) =
+    let Some((ring, families, local_parameters)) =
         crate::observed::object_equation_presentation::parameter_differences_with_bindings(
             env.inputs,
             id,
             &Type::Z,
+            env.context.get().unwrap_or_default(),
             &values,
             &parameters,
             &mut env.control.clone(),
@@ -246,7 +246,7 @@ fn parameter_coefficient_forms(
         || families
             .iter()
             .flat_map(|family| &family.parameters)
-            .any(|(p, _)| !universal.contains(p))
+            .any(|(p, _)| !universal.contains(p) && !local_parameters.contains(p))
     {
         return Ok(None);
     }
