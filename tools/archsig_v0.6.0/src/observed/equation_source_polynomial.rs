@@ -136,6 +136,20 @@ impl Compiler<'_> {
                 return Ok(Some(value));
             }
             match (left, right) {
+                (Binding::Tuple(left), Binding::Tuple(right)) => {
+                    if left.len() != right.len() {
+                        return Err(bad("元式Tuple等値の形が違う"));
+                    }
+                    let mut known = true;
+                    for (left, right) in left.iter().zip(right) {
+                        match self.equal(left, right, span, c)? {
+                            Some(false) => return Ok(Some(false)),
+                            None => known = false,
+                            _ => {}
+                        }
+                    }
+                    Ok(known.then_some(true))
+                }
                 (
                     Binding::Option {
                         element: lty,
