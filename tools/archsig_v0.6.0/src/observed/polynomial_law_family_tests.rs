@@ -88,6 +88,25 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn inactive_parameter_families_keep_original_difference_without_required_generators() {
+    let p=prepared(false,false,"view active(n:Z):Bool=n+1=n;law required zero(c:Part,n:Z) when active(n):n=0;","root");
+    let (mut g,a)=built(&p);
+    let ds=retain_family(&mut g,p.shared_inputs(),a,&mut quiet()).unwrap();
+    assert!(!ds[0].coordinates.is_empty());
+    for q in &ds[0].coordinates {
+        assert_eq!(q.guard,EquationGuard::AlwaysFalse);
+        assert!(q.epsilon.is_none());
+        assert!(terms(&g,q.residual.unwrap()).is_empty());
+        let Part::Polynomial { parameters, terms, .. }=data(&g,q.nu.unwrap()).part() else { panic!("family") };
+        assert_eq!(parameters,&vec![("n".into(),Type::Z)]); assert_eq!(terms.len(),1);
+    }
+    for ideal in &ds[0].required {
+        let Part::Ideal { generators, .. }=data(&g,*ideal).part() else { panic!("ideal") };
+        assert!(generators.is_empty());
+    }
+    replay(&p,&g,&g.nodes).unwrap();
+}
+#[test]
 fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     let p = prepared(false, false, "law required equal(c:Part,n:Z):n+c.quantity=c.quantity+1;", "root");
     let (mut g, a) = built(&p);

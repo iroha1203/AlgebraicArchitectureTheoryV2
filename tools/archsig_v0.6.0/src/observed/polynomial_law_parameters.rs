@@ -235,7 +235,7 @@ pub(super) fn plans(
                 a.readings().instances()[*instance].applications()[object],
                 InstanceApplication::NotApplicable
             );
-            let epsilon = if outside {
+            let epsilon = if outside || !source.guard {
                 None
             } else if observation_free_difference(source) {
                 Some(nu)
@@ -267,7 +267,7 @@ pub(super) fn plans(
                     c,
                 )?)
             };
-            let residual = if outside {
+            let residual = if outside || !source.guard {
                 let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                     .map_err(|e| construction_failure(&e))?;
                 polynomial(parts, base, &zero, *ring, &ty, variables, c)?
@@ -319,10 +319,12 @@ pub(super) fn plans(
                 witness: Some(witness),
                 guard: if outside {
                     EquationGuard::OutsideObject
+                } else if !source.guard {
+                    EquationGuard::AlwaysFalse
                 } else {
                     EquationGuard::AlwaysTrue
                 },
-                status: if outside {
+                status: if outside || !source.guard {
                     EquationPresentationStatus::NotApplicable
                 } else {
                     EquationPresentationStatus::Ready
@@ -367,7 +369,7 @@ pub(super) fn plans(
         for (ty, scalar, ring, domain, evaluation) in &bases {
             let mut polynomials = vec![];
             for q in out.coordinates.iter().filter(|q| {
-                q.required && q.ring == Some(*ring) && q.guard != EquationGuard::OutsideObject
+                q.required && q.ring == Some(*ring) && q.guard == EquationGuard::AlwaysTrue
             }) {
                 let source = &equations[q.occurrence].1;
                 // 全引数の値で生成されるidealは、定数項と各独立軸の係数で生成される。

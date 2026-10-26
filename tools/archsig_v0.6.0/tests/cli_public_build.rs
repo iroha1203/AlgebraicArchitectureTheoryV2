@@ -9,6 +9,51 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn predicate_helper_guards_keep_missing_reads_separate_from_constant_truth() {
+    for condition in ["x=x", "true"] {
+        let dir=files("predicate-guard-missing", &format!("view active(x:Z,y:Z):Bool={condition};view zero():Z=0;view one():Z=1;law required equal(c:Part,n:Z) when active(n,c.quantity):n=0;"),true);
+        let r=asks(&dir,&["b=build(R,on=@v/root)","z=evaluate(R.zero,on=$b.object)","o=evaluate(R.one,on=$b.object)","p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)","q=check(R.equal,on=$b.object,c=@v/q,n=$o.value)","n=needed($b)"]);
+        let j=saved(&dir,&r,"partial",2);
+        assert_eq!(s(get(answer(&j,"p"),"status")),"established");
+        // 未観測yのどの補完でもguardは真。n=1の本体は反証できるが、読取りの欠測は残る。
+        assert_eq!(s(get(answer(&j,"q"),"status")),"refuted");
+        let plan=value(&j,get(get(answer(&j,"n"),"outputs"),"plan"));
+        assert!(arr(get(plan,"requirements")).iter().any(|r| s(get(get(r,"field"),"field"))=="Build.Part.quantity"));
+    }
+}
+#[test]
+fn predicate_helper_guards_keep_parameter_dependent_laws() {
+    for ty in ["Z", "Q"] {
+        let dir=files("predicate-helper-guard", &format!("view active(x:{ty}):Bool=x=x;law required zero(c:Part,n:{ty}) when active(n):n=0;"),false);
+        let r=asks(&dir,&["b=build(R,on=@v/root)","c=check(R.zero,on=$b.object,c=@v/p)"]);
+        let j=saved(&dir,&r,"complete",1);
+        assert!(has(get(answer(&j,"b"),"outputs"),"algebra"));
+        assert_eq!(s(get(answer(&j,"c"),"status")),"refuted");
+    }
+}
+#[test]
+fn predicate_helper_guards_build_check_and_reuse_without_extra_files() {
+    for ty in ["Z","Q"] { for active in [true,false] {
+        let condition=if active {"x=x"}else{"x+1=x"};
+        let dir=files("predicate-guard-delivery",&format!("view inner(x:{ty}):Bool={condition};view active(n:{ty}):Bool=inner(n);view zero():{ty}=0;view one():{ty}=1;law required equal(c:Part,n:{ty}) when active(n):n=0;"),false);
+        let requests=["b=build(R,on=@v/root)","z=evaluate(R.zero,on=$b.object)","o=evaluate(R.one,on=$b.object)","all=check(R.equal,on=$b.object,c=@v/p)","zero=check(R.equal,on=$b.object,c=@v/p,n=$z.value)","one=check(R.equal,on=$b.object,c=@v/p,n=$o.value)"];
+        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
+        for request in requests { args.extend(["--ask",request]); }
+        let normal=cli::run(&dir,&args); let code=if active{1}else{0};
+        assert_eq!(normal.code,code,"{}",normal.stdout); assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3); assert!(!has(&normal.receipt,"nodes"));
+        eprintln!("predicate guard {ty}/{active}: stdout {} bytes",normal.stdout.len());
+        let r=asks(&dir,&requests); let j=saved(&dir,&r,"complete",code);
+        assert_eq!(s(get(answer(&j,"zero"),"status")),"established");
+        for id in ["all","one"] { assert_eq!(s(get(answer(&j,id),"status")),if active{"refuted"}else{"established"}); }
+        if !active { assert_eq!(s(get(answer(&j,"all"),"applicability")),"not_applicable"); }
+        args.extend(["--out","again","--reuse","out"]); let reused=cli::run(&dir,&args);
+        assert_eq!(reused.code,code,"{}",reused.stdout); let again=result_json(&dir,&reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
+    }}
+}
+#[test]
 fn parameter_predicate_helpers_feed_public_build() {
     let dir = files("parameter-predicate-helper", "view iszero(n:Z):Bool=n=0;law required zero(c:Part,n:Z):iszero(n);", false);
     let r = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.zero,on=$b.object,c=@v/p)"]);
