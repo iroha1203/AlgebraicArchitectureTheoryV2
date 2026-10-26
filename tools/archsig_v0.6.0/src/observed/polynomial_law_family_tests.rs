@@ -957,3 +957,41 @@ fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
+
+#[test]
+fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z,tag:(Fp(3),(Bool,Bool))) when tag.1.0 and tag.1.1 and tag.0+1=0:n*c.quantity=0;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let diagram = &ds[0];
+    assert_eq!(diagram.originals.len(), 24);
+    assert_eq!(diagram.coordinates.len(), 24);
+    let ty = Type::Tuple(vec![Type::Fp("3".into()), Type::Tuple(vec![Type::Bool, Type::Bool])]);
+    for (index, original) in diagram.originals.iter().enumerate() {
+        assert_eq!(original.finite.len(), 1);
+        assert_eq!(original.finite[0].0, "tag");
+        assert_eq!(original.finite[0].1.ty(), ty);
+        assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+        assert_eq!(original.quantifiers.len(), 1);
+        assert_eq!(original.quantifiers[0].name, "n");
+        let binding = original.bindings.iter().find(|b| b.name == "tag").unwrap();
+        assert_eq!(g.scalar(binding.value).unwrap(), &original.finite[0].1);
+        let value = Scalar::Tuple(vec![Scalar::Fp { modulus: "3".into(), value: ((index % 12) / 4).into() },
+            Scalar::Tuple(vec![Scalar::Bool(index % 4 >= 2), Scalar::Bool(index % 2 == 1)])]);
+        assert_eq!(original.finite[0].1, value);
+        let active = index % 12 == 11;
+        let coordinate = &diagram.coordinates[index];
+        assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+        if !active { assert!(coordinate.epsilon.is_none()); assert!(terms(&g, coordinate.residual.unwrap()).is_empty()); }
+    }
+    replay(&p, &g, &g.nodes).unwrap();
+}
+
+#[test]
+fn tuples_with_integer_components_are_not_finite_case_samples() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z,tag:(Z,Bool)) when tag.1:n*c.quantity=0;", "root");
+    let (g, a) = built(&p);
+    let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else { panic!("architecture") };
+    let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
+    assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().is_none());
+}

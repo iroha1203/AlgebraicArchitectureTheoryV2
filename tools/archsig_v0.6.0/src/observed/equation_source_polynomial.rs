@@ -119,6 +119,11 @@ impl Compiler<'_> {
                 self.variables = previous;
                 result
             }
+            Binding::FiniteScalar(Scalar::Tuple(ref items)) if !path.is_empty() => {
+                let value = items.get(path[0]).cloned().ok_or_else(|| bad("有限tupleの成分が範囲外"))?;
+                let value = match value { Scalar::Bool(value) => Binding::Boolean(value), value => Binding::FiniteScalar(value) };
+                self.binding(value, &path[1..], c)
+            }
             Binding::Tuple(items) if !path.is_empty() => {
                 let item = items
                     .get(path[0])
