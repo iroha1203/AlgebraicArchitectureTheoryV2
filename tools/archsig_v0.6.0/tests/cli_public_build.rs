@@ -9,6 +9,16 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn text_literal_guards_preserve_numeric_products() {
+    for (name,guard) in [
+        ("text-literal-equality", r#"(n,"ready")=(n,"ready")"#),
+        ("text-literal-difference", r#"(n,"ready")!=(n,"done")"#),
+        ("text-literal-let", r#"let tag="ready" in (n,tag)=(n,"ready")"#),
+        ("text-literal-unicode", r#"(n,"数量")=(n,"数量")"#),
+        ("text-literal-decoded", r#"(n,"line\n")=(n,"line\u000a")"#),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
 fn list_numeric_parameter_equality_preserves_products() {
     for (name,guard) in [
         ("symbolic-list-equality", "list<Number>[n,n]=list<Number>[n,n]"),
@@ -867,8 +877,9 @@ fn missing_coefficient_does_not_hide_unsupported_integer_existential() {
 }
 #[test]
 fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
-    for ty in ["Z", "Q"] {
-        for guard in [
+    inactive_products(
+        "parameter",
+        &[
             "false",
             "inactive(n)",
             "false and n*n=1",
@@ -887,7 +898,16 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "list<Number>[n,n+1]=list<Number>[n+1,n]",
             "list<Number>[n]!=list<Number>[n]",
             "list<Number>[n,0]=list<Number>[0,1]",
-        ] {
+        ],
+    );
+}
+#[test]
+fn text_literal_false_guard_keeps_missing_values_undetermined() {
+    inactive_products("text-literal", &[r#"(n,"ready")=(n,"done")"#]);
+}
+fn inactive_products(name: &str, guards: &[&str]) {
+    for ty in ["Z", "Q"] {
+        for guard in guards {
             let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {
                 let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -900,7 +920,7 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
                     "view inactive(n:{ty}):Bool=n+1=n;{view}law required zero(c:Part,n:{ty}) when {guard}:n*c.quantity=0;"
                 );
                 let dir =
-                    files_with_definition("inactive-product-missing", &body, true, &definition);
+                    files_with_definition(&format!("inactive-product-{name}-{ty}-{read_missing}"), &body, true, &definition);
                 if ty == "Q" {
                     let map = std::fs::read_to_string(dir.join("a.json"))
                         .unwrap()

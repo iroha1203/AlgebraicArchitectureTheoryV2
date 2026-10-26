@@ -456,6 +456,7 @@ impl Compiler<'_> {
                         c,
                     )?))
                 }
+                ExprKind::Str(value) if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Text(value.clone()))),
                 ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
                 ExprKind::Unit if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Unit)),
                 ExprKind::ListLit { items, .. } if path.is_empty() => {
