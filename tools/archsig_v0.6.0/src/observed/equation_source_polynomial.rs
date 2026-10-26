@@ -793,6 +793,78 @@ fn family_operands_from_root(
     left: usize, right: usize, path: &[usize], ring: &mut EquationRing, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let variables = variables_for(instance, finite, c)?;
+    family_operands_from_variables(inputs, root, left, right, path, ring, variables, c)
+}
+
+/// 現在の束縛を使い、既存の原式正規化から全称数値引数の係数を得る。
+pub(in crate::observed) fn parameter_difference_with_bindings(
+    inputs: &CheckedInputs,
+    root: usize,
+    values: &[(String, Scalar)],
+    parameters: &[(String, affine::Form)],
+    c: &mut Control,
+) -> Result<Option<(EquationRing, PolynomialFamily)>, ConstructionFailure> {
+    let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, root, c)?
+    else {
+        return Ok(None);
+    };
+    let ExprKind::Binary {
+        lhs: left,
+        rhs: right,
+        ..
+    } = inputs.law().exprs[eq].kind
+    else {
+        return Ok(None);
+    };
+    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else {
+        return Ok(None);
+    };
+    let mut ring = EquationRing {
+        ty: ty.clone(),
+        symbols: vec![],
+        evaluation_images: Some(vec![]),
+        required_generators: vec![],
+    };
+    let mut variables = BTreeMap::new();
+    for (name, value) in values {
+        tick(c)?;
+        let binding = match value {
+            Scalar::Subject {
+                snapshot, subject, ..
+            } => Binding::Reference {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+            },
+            Scalar::Bool(value) => Binding::Boolean(*value),
+            value if value.ty() == *ty => {
+                Binding::Polynomial(EquationPolynomial::constant(value.clone(), c)?)
+            }
+            value => Binding::FiniteScalar(value.clone()),
+        };
+        if variables.insert(name.clone(), binding).is_some() {
+            return Err(bad("係数の束縛名が重複"));
+        }
+    }
+    for (name, form) in parameters {
+        tick(c)?;
+        if variables
+            .insert(name.clone(), Binding::ParameterForm(form.clone()))
+            .is_some()
+        {
+            return Err(bad("係数の引数名が重複"));
+        }
+    }
+    let Some(source) =
+        family_operands_from_variables(inputs, root, left, right, &[], &mut ring, variables, c)?
+    else {
+        return Ok(None);
+    };
+    Ok(Some((ring, source.difference)))
+}
+fn family_operands_from_variables(
+    inputs: &CheckedInputs, root: usize, left: usize, right: usize, path: &[usize],
+    ring: &mut EquationRing, variables: BTreeMap<String, Binding>, c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let mut candidate = ring.clone();
     let mut compiler = Compiler {
         inputs,

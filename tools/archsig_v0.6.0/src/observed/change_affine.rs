@@ -144,6 +144,17 @@ fn equations(
             }
             return Ok(());
         }
+        if v.comparison.is_none()
+            && !missing.universal.is_empty()
+            && let Some(forms) = parameter_coefficient_forms(env, id, vars, reading, &missing.universal)?
+        {
+            for form in forms {
+                let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
+                matrix.push(coefficients);
+                rhs.push(constant.map(|v| -v));
+            }
+            return Ok(());
+        }
         match &env.inputs.law().exprs[id].kind {
             ExprKind::Group(body) => equations(env, *body, vars, reading, axes, matrix, rhs, missing),
             ExprKind::Let { name, value, body } => {
@@ -188,6 +199,122 @@ fn equations(
     })
 }
 
+fn parameter_coefficient_forms(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    reading: &str,
+    universal: &[Parameter],
+) -> Result<Option<Vec<Form>>, ValidationFailure> {
+    let mut values = vec![];
+    let mut parameters = vec![];
+    for (name, value) in vars {
+        env.tick()?;
+        if value.condition_failed || value.condition_pending {
+            return Ok(None);
+        }
+        if let Some(value) = &value.known_value {
+            values.push((name.clone(), value.clone()));
+        } else if let Some(form) = &value.affine {
+            parameters.push((name.clone(), form.as_ref().clone()));
+        } else {
+            return Ok(None);
+        }
+    }
+    let Some((ring, family)) =
+        crate::observed::object_equation_presentation::parameter_difference_with_bindings(
+            env.inputs,
+            id,
+            &values,
+            &parameters,
+            &mut env.control.clone(),
+        )
+        .map_err(|cause| match cause {
+            crate::construction::ConstructionFailure::Stopped(stop) => {
+                ValidationFailure::Stop(stop)
+            }
+            crate::construction::ConstructionFailure::InvalidSelection(message)
+            | crate::construction::ConstructionFailure::Inconsistent(message) => {
+                format!("数値Law係数: {message}").into()
+            }
+        })?
+    else {
+        return Ok(None);
+    };
+    if ring.ty != Type::Z
+        || family
+            .parameters
+            .iter()
+            .any(|(p, _)| !universal.contains(p))
+    {
+        return Ok(None);
+    }
+    let mut fields = vec![];
+    for symbol in &ring.symbols {
+        env.tick()?;
+        let slot = &symbol.slot;
+        if !slot.component.is_empty() {
+            return Ok(None);
+        }
+        let subject = env.subject(&slot.snapshot, &slot.subject)?;
+        let prefix = format!("{}.", subject.ty);
+        let field = slot
+            .field
+            .strip_prefix(&prefix)
+            .ok_or("係数のfieldが元subject型と違う")?;
+        let base = value(
+            env,
+            Scalar::Subject {
+                snapshot: slot.snapshot.clone(),
+                subject: slot.subject.clone(),
+                entity: subject.ty.clone(),
+            },
+        )?;
+        let source = env.scoped_field(
+            base,
+            field,
+            &Scope::default(),
+            reading,
+            env.inputs.law().exprs[id].span,
+        )?;
+        usable(env, id, &source)?;
+        let Some(form) = source.affine else {
+            return Ok(None);
+        };
+        fields.push(*form);
+    }
+    let mut forms = vec![];
+    for coefficient in
+        std::iter::once(&family.constant).chain(family.parameters.iter().map(|(_, p)| p))
+    {
+        env.tick()?;
+        if coefficient.terms.is_empty() {
+            continue;
+        }
+        let mut sum =
+            affine::constant(&Scalar::Z(Z::zero()), &env.control)?.ok_or("係数の零がZでない")?;
+        for term in &coefficient.terms {
+            env.tick()?;
+            let Some(mut product) = affine::constant(term.coefficient.scalar(), &env.control)?
+            else {
+                return Ok(None);
+            };
+            for &variable in &term.variables {
+                let field = fields.get(variable).ok_or("係数の記号が範囲外")?;
+                let Some(next) =
+                    affine::binary(BinOp::Mul, Some(&product), Some(field), &env.control)?
+                else {
+                    return Ok(None);
+                };
+                product = next;
+            }
+            sum = affine::binary(BinOp::Add, Some(&sum), Some(&product), &env.control)?
+                .ok_or("係数の和がない")?;
+        }
+        forms.push(sum);
+    }
+    Ok(Some(forms))
+}
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
     change: &Declaration,

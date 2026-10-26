@@ -57,6 +57,270 @@ fn output<'a>(result: &'a JNode, index: usize, key: &str) -> &'a JNode {
     )
 }
 #[test]
+fn parameter_product_repairs_keep_full_quantifiers_and_original_assignments() {
+    for (label, change, parameter, predicate) in [
+        (
+            "direct",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "z",
+            "z*(s.x+s.y)=z",
+        ),
+        (
+            "let",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "z",
+            "let k=z in k*(s.x+s.y)=z",
+        ),
+        (
+            "helper",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};view scaled(k:Z,t:State):Z=k*(t.x+t.y);",
+            "z",
+            "scaled(z,s)=z",
+        ),
+        (
+            "same-name",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "a",
+            "a*(s.x+s.y)=a",
+        ),
+        (
+            "finite",
+            "change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};",
+            "z",
+            "z*(s.x+s.y)=z",
+        ),
+    ] {
+        let dir = product_input(label, change, &format!("{parameter}:Z,"), predicate, false);
+        let asks = [
+            "a=solve(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
+            "c=check(Pair.total,on=$r.object)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let before =
+            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = run(&dir, &args);
+        assert_eq!(
+            normal.code, 0,
+            "{label}: {} {}",
+            normal.stdout, normal.stderr
+        );
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+        }
+        assert!(!has(&normal.receipt, "nodes"));
+        eprintln!(
+            "product repair {label}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(
+            result.code, 0,
+            "{label}: {} {}",
+            result.stdout, result.stderr
+        );
+        let j = result_json(&dir, &result);
+        assert_eq!(s(get(output(&j, 2, "value"), "value")), "1");
+        let scope = get(&arr(get(&j, "answers"))[0], "scope");
+        assert!(
+            arr(get(scope, "quantifiers"))
+                .iter()
+                .any(|q| s(get(q, "name")) == parameter
+                    && s(get(q, "kind")) == "forall"
+                    && !has(q, "domain"))
+        );
+        product_reuse(&dir, &asks, &j, 0);
+    }
+}
+fn product_input(
+    name: &str,
+    change: &str,
+    parameters: &str,
+    predicate: &str,
+    missing: bool,
+) -> std::path::PathBuf {
+    let dir = input(&format!("parameter-product-{name}"), change);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace(
+        "total(s:State):s.x+s.y=1",
+        &format!("total({parameters}s:State):{predicate}"),
+    );
+    std::fs::write(path, law).unwrap();
+    if missing {
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(
+                r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,
+                "",
+            );
+        std::fs::write(dir.join("a.json"), map).unwrap();
+    }
+    dir
+}
+fn product_reuse(dir: &std::path::Path, asks: &[&str], original: &JNode, code: i32) {
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for ask in asks {
+        args.extend(["--ask", *ask]);
+    }
+    let repeated = run(dir, &args);
+    assert_eq!(
+        repeated.code, code,
+        "{} {}",
+        repeated.stdout, repeated.stderr
+    );
+    assert!(repeated.stderr.is_empty());
+    let result = result_json(dir, &repeated);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&result, field).value, get(original, field).value);
+    }
+}
+#[test]
+fn parameter_product_coefficients_keep_nonunique_integer_repairs() {
+    for (label, change) in [
+        (
+            "nonunique",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};",
+        ),
+        (
+            "same-state",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=0};",
+        ),
+    ] {
+        let dir = product_input(label, change, "z:Z,", "z*(s.x+s.y)=z", false);
+        let asks = ["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"];
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(result.code, 1, "{} {}", result.stdout, result.stderr);
+        let j = result_json(&dir, &result);
+        assert!(!has(get(&arr(get(&j, "answers"))[0], "outputs"), "object"));
+        assert_eq!(
+            s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
+            "established"
+        );
+        let representation = get(get(output(&j, 0, "solutions"), "value"), "representation");
+        assert_eq!(s(get(representation, "kind")), "affine");
+        assert_eq!(
+            num(get(
+                get(node(&j, get(representation, "directions")), "value"),
+                "free_rank"
+            )),
+            1
+        );
+        product_reuse(&dir, &asks, &j, 1);
+    }
+}
+#[test]
+fn parameter_product_coefficients_keep_independent_universal_axes() {
+    let dir = product_input(
+        "two-axes",
+        "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};view second(s:State):Z=s.y;",
+        "z:Z,w:Z,",
+        "z*s.x+w*s.y=z+2*w",
+        false,
+    );
+    let asks = [
+        "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+        "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
+        "y=evaluate(Pair.second,on=$r.object,s=@pair/s)",
+        "c=check(Pair.total,on=$r.object)",
+    ];
+    let result = execute(&dir, "out", &asks);
+    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
+    let j = result_json(&dir, &result);
+    assert_eq!(s(get(output(&j, 1, "value"), "value")), "1");
+    assert_eq!(s(get(output(&j, 2, "value"), "value")), "2");
+    product_reuse(&dir, &asks, &j, 0);
+}
+#[test]
+fn parameter_product_missing_unmodified_field_is_not_zero() {
+    for (label, change, code) in [
+        (
+            "reset-missing",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            0,
+        ),
+        (
+            "keep-missing",
+            "change setpair(s:State,a:Z)=s with{x=a};",
+            2,
+        ),
+    ] {
+        let dir = product_input(label, change, "z:Z,", "z*(s.x+s.y)=z", true);
+        let asks = [
+            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "n=needed($r)",
+        ];
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(
+            result.code, code,
+            "{label}: {} {}",
+            result.stdout, result.stderr
+        );
+        let j = result_json(&dir, &result);
+        let outputs = get(&arr(get(&j, "answers"))[0], "outputs");
+        assert_eq!(has(outputs, "object"), code == 0);
+        if code == 2 {
+            assert!(
+                arr(get(&arr(get(&j, "answers"))[0], "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "missing_observation")
+            );
+            let plan = get(output(&j, 1, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
+            );
+        }
+        product_reuse(&dir, &asks, &j, code);
+    }
+}
+#[test]
+fn parameter_product_nonlinear_coefficients_are_not_linear_solutions() {
+    let dir = product_input(
+        "nonlinear-coefficient",
+        "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+        "z:Z,",
+        "z*s.x*s.x=z",
+        false,
+    );
+    let result = execute(
+        &dir,
+        "out",
+        &["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"],
+    );
+    assert_eq!(result.code, 70, "{} {}", result.stdout, result.stderr);
+    notified(&dir, &result, "error", 70);
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+}
+#[test]
 fn universal_integer_law_repairs_finite_and_integer_changes() {
     for change in ["change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};",
         "change setpair(s:State,a:Z)=s with{x=a,y=0};"] {
