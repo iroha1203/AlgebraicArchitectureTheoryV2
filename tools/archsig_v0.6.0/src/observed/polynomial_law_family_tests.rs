@@ -88,6 +88,27 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn option_guards_do_not_choose_a_numeric_parameter_value() {
+    for guard in ["some(n)=some(0)", "some(n)!=some(0)"] {
+        let p = prepared(
+            false,
+            false,
+            &format!("law required zero(c:Part,n:Z) when {guard}:n*c.quantity=0;"),
+            "root",
+        );
+        let (g, a) = built(&p);
+        let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else {
+            panic!("architecture")
+        };
+        let Witness::Architecture(a) = &value.witness else {
+            panic!("architecture witness")
+        };
+        assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet())
+            .unwrap()
+            .is_none());
+    }
+}
+#[test]
 fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values() {
     for guard in ["false", "true"] {
         let p = prepared(

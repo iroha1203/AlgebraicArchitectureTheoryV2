@@ -8262,6 +8262,16 @@ impl<'a> Environment<'a> {
                 result.scalar_scope = Some(result.scope.clone());
             }
         }
+        if result.known_value.is_none() && matches!(op, BinOp::Eq | BinOp::Ne) && matches!(ty,Type::Option(_)) {
+            if let Some(equal) = super::term::affine::pointwise_equal(
+                &self.symbolic_source(*lhs,variables,base,reading)?,
+                &self.symbolic_source(*rhs,variables,base,reading)?,
+                law,&self.control,
+            )? {
+                result.known_value=Some(Scalar::Bool(equal == (*op==BinOp::Eq)));
+                result.scalar_scope=Some(result.scope.clone());
+            }
+        }
         Ok(result)
     }
     fn scoped_quantified(

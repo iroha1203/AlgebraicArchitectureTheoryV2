@@ -9,6 +9,16 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn option_numeric_parameter_equality_preserves_products() {
+    for (name,guard) in [
+        ("symbolic-option-equality", "some(n)=some(n)"),
+        ("symbolic-option-affine", "some(n+n)=some(2*n)"),
+        ("symbolic-option-let", "let x=some(n) in x=some(n)"),
+        ("symbolic-option-nested", "some(some(n))=some(some(n))"),
+        ("symbolic-option-constructor", "some(n)!=none<Number>"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
 fn explicit_list_sum_cancels_numeric_parameters() {
     for (name,guard) in [
         ("symbolic-list-sum", "sum(list<Number>[n,-n])=0"),
@@ -710,6 +720,7 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when sum(list<Q>[rat(1,2),rat(1,2)])=1"),
             ("", " when count(list<Number>[n,n])=2"),
             ("", " when sum(list<Number>[n,-n])=0"),
+            ("", " when some(n)=some(n)"),
         ] {
             let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -841,6 +852,9 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "sum(list<Q>[])!=0",
             "count(list<Number>[n,n])=1",
             "sum(list<Number>[n,-n])!=0",
+            "some(n)=none<Number>",
+            "some(n+1)=some(n)",
+            "some(n)!=some(n)",
         ] {
             let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {

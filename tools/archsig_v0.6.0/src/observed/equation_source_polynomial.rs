@@ -16,6 +16,7 @@ enum Binding {
     ParameterForm(affine::Form),
     Family(PolynomialFamily),
     Tuple(Vec<Binding>),
+    Option { element: Type, value: Option<Box<Binding>> },
     List { element: Type, items: Vec<Binding> },
     Lexical {
         expression: usize,
@@ -31,6 +32,17 @@ impl Binding {
                 Self::FiniteScalar(value) => Some(value.clone()),
                 Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
                     value.evaluate(&[], c)?.map(|value| value.scalar().clone())
+                }
+                Self::Option { element, value } => {
+                    let value = match value {
+                        Some(value) => {
+                            let Some(value) = value.finite_scalar(c)? else { return Ok(None) };
+                            if value.ty() != *element { return Ok(None) }
+                            Some(Box::new(value))
+                        }
+                        None => None,
+                    };
+                    Some(Scalar::Option { element: element.clone(), value })
                 }
                 Self::List { element, items } => {
                     let mut values = Vec::new();
@@ -99,6 +111,72 @@ struct Compiler<'a> {
     variables: BTreeMap<String, Binding>,
 }
 impl Compiler<'_> {
+    fn equal(
+        &mut self,
+        left: &Binding,
+        right: &Binding,
+        span: (usize, usize),
+        c: &mut Control,
+    ) -> Result<Option<bool>, ConstructionFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            if let (Some(left), Some(right)) = (left.finite_scalar(c)?, right.finite_scalar(c)?) {
+                let Scalar::Bool(value) = super::super::environment::binary(
+                    BinOp::Eq,
+                    &left,
+                    &right,
+                    self.inputs.law(),
+                    span,
+                    c,
+                )
+                .map_err(invalid)?
+                else {
+                    return Err(bad("等値の結果がBoolでない"));
+                };
+                return Ok(Some(value));
+            }
+            match (left, right) {
+                (
+                    Binding::Option {
+                        element: lty,
+                        value: left,
+                    },
+                    Binding::Option {
+                        element: rty,
+                        value: right,
+                    },
+                ) if lty == rty => match (left, right) {
+                    (Some(left), Some(right)) => self.equal(left, right, span, c),
+                    (None, None) => Ok(Some(true)),
+                    _ => Ok(Some(false)),
+                },
+                (
+                    Binding::Reference {
+                        snapshot: ls,
+                        subject: lo,
+                    },
+                    Binding::Reference {
+                        snapshot: rs,
+                        subject: ro,
+                    },
+                ) => Ok(Some(ls == rs && lo == ro)),
+                _ => {
+                    let family = match left.binary(BinOp::Sub, right, c)? {
+                        Some(value) => PolynomialFamily::from_binding(&value, c)?,
+                        None => None,
+                    };
+                    Ok(match family {
+                        Some(value)
+                            if self.ring.symbols.is_empty() && value.parameters.is_empty() =>
+                        {
+                            Some(value.constant.terms.is_empty())
+                        }
+                        _ => None,
+                    })
+                }
+            }
+        })
+    }
     // Scalar環への翻訳は使用箇所のcomponent pathが判明してから行う。
     // initializerの環境を保存し、後続letやhelperの局所名を捕獲しない。
     fn lexical(&self, expression: usize) -> Binding {
@@ -368,26 +446,12 @@ impl Compiler<'_> {
                     Some(Binding::FiniteScalar(super::super::data::set((**element).clone(), &values, c).map_err(invalid)?))
                 }
                 ExprKind::None(_) | ExprKind::Some(_) if path.is_empty() => {
-                    let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else {
-                        return Err(bad("原式のOption型がない"));
-                    };
+                    let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else { return Err(bad("原式のOption型がない")) };
                     let value = if let ExprKind::Some(inner) = expression.kind {
-                        let Some(binding) = self.expression(inner, &[], c)? else {
-                            return Ok(None);
-                        };
-                        let Some(value) = binding.finite_scalar(c)? else {
-                            return Ok(None);
-                        };
-                        if value.ty() != **element {
-                            return Ok(None);
-                        }
-                        Some(Box::new(value))
-                    } else {
-                        None
-                    };
-                    Some(Binding::FiniteScalar(Scalar::Option {
-                        element: (**element).clone(), value,
-                    }))
+                        let Some(binding) = self.expression(inner, &[], c)? else { return Ok(None) };
+                        Some(Box::new(binding))
+                    } else { None };
+                    Some(Binding::Option { element: (**element).clone(), value })
                 }
                 ExprKind::Unary { op: UnOp::Not, operand } if path.is_empty() => {
                     match self.expression(*operand, &[], c)? { Some(Binding::Boolean(value)) => Some(Binding::Boolean(!value)), _ => None }
@@ -424,20 +488,8 @@ impl Compiler<'_> {
                         return Ok(Some(Binding::Boolean(value)));
                     }
                     match (left, right) {
-                        (Some(Binding::Reference { snapshot: left_snapshot, subject: left_subject }),
-                         Some(Binding::Reference { snapshot: right_snapshot, subject: right_subject }))
-                            if matches!(op, BinOp::Eq | BinOp::Ne) => Some(Binding::Boolean(
-                                (left_snapshot == right_snapshot && left_subject == right_subject) == (*op == BinOp::Eq),
-                            )),
                         (Some(left), Some(right)) if matches!(op, BinOp::Eq | BinOp::Ne) => {
-                            let family = match left.binary(BinOp::Sub, &right, c)? {
-                                Some(value) => PolynomialFamily::from_binding(&value, c)?,
-                                None => None,
-                            };
-                            match family {
-                                Some(value) if self.ring.symbols.is_empty() && value.parameters.is_empty() => Some(Binding::Boolean(value.constant.terms.is_empty() == (*op == BinOp::Eq))),
-                                _ => None,
-                            }
+                            self.equal(&left, &right, expression.span, c)?.map(|value| Binding::Boolean(value == (*op == BinOp::Eq)))
                         }
                         _ => None,
                     }
