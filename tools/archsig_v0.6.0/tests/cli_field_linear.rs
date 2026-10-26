@@ -49,6 +49,44 @@ fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
     run(dir, &args)
 }
 #[test]
+fn universal_rational_law_repairs_exact_fraction() {
+    let dir = input("universal-rational-repair",
+        "change choose(s:State,a:Q)=s with{x=a,y=0}; law required pinned(z:Q,s:State):s.x+z=z+rat(1,2);");
+    let asks = ["a=solve(Pair.pinned,on=@v/s,using=Pair.choose)",
+        "r=repair(Pair.pinned,on=@v/s,using=Pair.choose)",
+        "x=evaluate(Pair.x,on=$r.object,s=@v/s)",
+        "c=check(Pair.pinned,on=$r.object)"];
+    let result = execute(&dir,"out",&asks);
+    assert_eq!(result.code,0,"{} {}",result.stdout,result.stderr);
+    let j = result_json(&dir,&result);
+    let q = arr(get(output(&j,2,"value"),"value"));
+    assert_eq!((s(&q[0]),s(&q[1])),("1","2"));
+    let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+    for ask in asks { args.extend(["--ask",ask]); }
+    let reused = run(&dir,&args);
+    assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+    let again = result_json(&dir,&reused);
+    for key in ["answers","nodes"] { assert_eq!(get(&j,key).value,get(&again,key).value); }
+}
+
+#[test]
+fn universal_rational_law_keeps_empty_and_nonunique_repairs_distinct() {
+    for predicate in ["z=z","z=s.x"] {
+        let dir = input("universal-rational-empty-nonunique",&format!(
+            "change choose(s:State,a:Q)=s with{{x=a,y=0}};law required pinned(z:Q,s:State):{predicate};"));
+        let result = execute(&dir,"out",&["r=repair(Pair.pinned,on=@v/s,using=Pair.choose)"]);
+        assert_eq!(result.code,1,"{} {}",result.stdout,result.stderr);
+        let j = result_json(&dir,&result);
+        let all = predicate == "z=z";
+        assert!(!has(get(&arr(get(&j,"answers"))[0],"outputs"),"object"));
+        assert_eq!(s(get(get(output(&j,0,"existence"),"judgment"),"status")),if all {"established"} else {"refuted"});
+        let repr = get(get(output(&j,0,"solutions"),"value"),"representation");
+        assert_eq!(s(get(repr,"kind")),if all {"affine"} else {"empty"});
+        if all { assert_eq!(num(get(get(node(&j,get(repr,"directions")),"value"),"free_rank")),1); }
+    }
+}
+
+#[test]
 fn rational_unique_repair_keeps_exact_fraction_and_original_observations() {
     let dir = input(
         "rational-unique-repair",

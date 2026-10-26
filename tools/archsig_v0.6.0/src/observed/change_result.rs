@@ -329,7 +329,7 @@ fn compute_inner(
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
         let law = &env.inputs.law().declarations[name];
         let Signature::Law {
-            role, body, guard, ..
+            role, body, guard, params: law_params,
         } = &law.signature
         else {
             return Err("候補の元Lawがない".into());
@@ -338,9 +338,18 @@ fn compute_inner(
             .iter()
             .map(|(name, v)| Ok((name.clone(), value(&mut b, v)?)))
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
-        let body = source_expression(&mut b, env, *body, &bindings, &[])?;
+        let unbound = law_params.iter().filter(|p| !bindings.iter().any(|(name,_)| *name == p.name)).collect::<Vec<_>>();
+        let parameters = unbound.iter().map(|p| (p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
+        let body = source_expression(&mut b, env, *body, &bindings, &parameters)?;
+        for parameter in unbound {
+            b.parts[body.0 - base].scope.quantifiers.push(Quantifier {
+                kind: crate::law::ast::QuantKind::Forall,
+                name: parameter.name.clone(), ty: parameter.ty.erase(), domain: None,
+                occurrence: parameter.span, context: Some(env.current_context(g)),
+            });
+        }
         let guard = guard
-            .map(|id| source_expression(&mut b, env, id, &bindings, &[]))
+            .map(|id| source_expression(&mut b, env, id, &bindings, &parameters))
             .transpose()?;
         let mut args = bindings.iter().map(|(_, r)| *r).collect::<Vec<_>>();
         args.push(body);

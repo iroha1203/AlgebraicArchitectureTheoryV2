@@ -1115,6 +1115,13 @@ pub(in crate::observed) fn evaluate_point(
 ) -> Result<FiniteLawRow, ValidationFailure> {
     evaluate_point_mode(environment, declaration, bindings, point, true)
 }
+/// 候補のLawは未束縛のZ/Q引数を全称評価し、偽のguardではbodyを実行しない。
+pub(in crate::observed) fn evaluate_change_point(
+    environment: &Environment<'_>, declaration: &Declaration,
+    bindings: &[(String, Scalar)], point: usize,
+) -> Result<FiniteLawRow, ValidationFailure> {
+    Ok(probe_local_mode(environment, declaration, bindings, point, true, true)?.row)
+}
 /// 局所系は非適用bodyも含めた原式の読取り位置を必要とする。
 pub(in crate::observed) fn evaluate_local_point(
     environment: &Environment<'_>,

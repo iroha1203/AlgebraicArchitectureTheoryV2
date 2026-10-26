@@ -57,6 +57,66 @@ fn output<'a>(result: &'a JNode, index: usize, key: &str) -> &'a JNode {
     )
 }
 #[test]
+fn universal_integer_law_repairs_finite_and_integer_changes() {
+    for change in ["change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};",
+        "change setpair(s:State,a:Z)=s with{x=a,y=0};"] {
+        let dir = input("universal-integer-repair", change);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap()
+            .replace("total(s:State):s.x+s.y=1", "total(z:Z,s:State):s.x+s.y+z=z+1");
+        std::fs::write(path, law).unwrap();
+        let asks = ["a=solve(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
+            "c=check(Pair.total,on=$r.object)"];
+        let mut normal_args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
+        for ask in asks { normal_args.extend(["--ask",ask]); }
+        let normal = run(&dir,&normal_args);
+        assert_eq!(normal.code,0,"{} {}",normal.stdout,normal.stderr);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(s(get(&normal.receipt,"format")),"archsig.summary/1");
+        assert!(!has(&normal.receipt,"nodes"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
+        let j = result_json(&dir, &result);
+        assert_eq!(s(get(output(&j,2,"value"),"value")), "1");
+        let scope = get(&arr(get(&j,"answers"))[0],"scope");
+        let quantifiers = arr(get(scope,"quantifiers"));
+        assert!(quantifiers.iter().any(|q| s(get(q,"name")) == "z" && s(get(q,"kind")) == "forall" && !has(q,"domain")));
+        let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+        for ask in asks { args.extend(["--ask",ask]); }
+        let reused = run(&dir,&args);
+        assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+        let again = result_json(&dir,&reused);
+        for key in ["answers","nodes"] { assert_eq!(get(&j,key).value,get(&again,key).value); }
+    }
+}
+
+#[test]
+fn universal_integer_law_keeps_empty_and_nonunique_repairs_distinct() {
+    for finite in [false,true] { for predicate in ["z=z","z=s.x"] {
+        let change = if finite { "change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};" }
+            else { "change setpair(s:State,a:Z)=s with{x=a,y=0};" };
+        let dir = input("universal-integer-empty-nonunique",change);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap()
+            .replace("total(s:State):s.x+s.y=1", &format!("total(z:Z,s:State):{predicate}"));
+        std::fs::write(path,law).unwrap();
+        let result = execute(&dir,"out",&["r=repair(Pair.total,on=@pair/s,using=Pair.setpair)"]);
+        assert_eq!(result.code,1,"{} {}",result.stdout,result.stderr);
+        let j = result_json(&dir,&result);
+        assert!(!has(get(&arr(get(&j,"answers"))[0],"outputs"),"object"));
+        let all = predicate == "z=z";
+        assert_eq!(s(get(get(output(&j,0,"existence"),"judgment"),"status")),if all {"established"} else {"refuted"});
+        let repr = get(get(output(&j,0,"solutions"),"value"),"representation");
+        assert_eq!(s(get(repr,"kind")),if !all {"empty"} else if finite {"finite"} else {"affine"});
+        if all && finite { assert_eq!(arr(get(repr,"values")).len(),2); }
+        if all && !finite { assert_eq!(num(get(get(node(&j,get(repr,"directions")),"value"),"free_rank")),1); }
+    }}
+}
+
+#[test]
 fn integer_total_and_pinned_keep_full_fibers_and_only_unique_repair_objects() {
     let dir = input(
         "integer-pair",
