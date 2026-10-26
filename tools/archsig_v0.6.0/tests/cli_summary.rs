@@ -36,6 +36,51 @@ fn execute(dir: &Path, asks: &[&str], extra: &[&str]) -> Run {
     args.extend(extra);
     run(dir, &args)
 }
+fn no_saved_proofs(result: &archsig::json::JNode) {
+    for node in arr(get(result, "nodes")) {
+        if let archsig::json::JValue::Str(ty) = &get(node, "type").value {
+            assert!(!matches!(ty.as_str(), "Evidence" | "Evaluation"));
+            if ty == "Counterexample" {
+                assert!(matches!(
+                    s(get(get(node, "value"), "kind")),
+                    "counterexample" | "completion_pair" | "separating_pair"
+                ));
+            }
+        }
+    }
+}
+#[test]
+fn empty_integer_solutions_are_saved_without_smith_certificates() {
+    let dir = counter("summary-empty-integer", Some("2"));
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace("view amount", "change choose(s:State,a:Z)=s with{count=2*a}; law optional one(s:State):s.count=1; view amount");
+    std::fs::write(path, law).unwrap();
+    let asks = ["x=solve(CountCheck.one,on=@v/s,using=CountCheck.choose,s=@v/s)"];
+    let brief = execute(&dir, &asks, &[]);
+    assert_eq!(brief.code, 1, "{}", brief.stdout);
+    assert!(brief.stdout.len() < 1500);
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    let saved = execute(&dir, &asks, &["--out", "saved"]);
+    assert_eq!(saved.code, 1);
+    let result = result_json(&dir, &saved);
+    no_saved_proofs(&result);
+    let id = s(get(
+        get(
+            get(&arr(get(&result, "answers"))[0], "outputs"),
+            "solutions",
+        ),
+        "node",
+    ));
+    let solution = arr(get(&result, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == id)
+        .unwrap();
+    let representation = get(get(solution, "value"), "representation");
+    assert_eq!(s(get(representation, "kind")), "empty");
+    assert!(!has(representation, "certificate"));
+    let reused = execute(&dir, &asks, &["--reuse", "saved"]);
+    assert_eq!(brief.receipt.value, reused.receipt.value);
+}
 #[test]
 fn daily_answers_return_values_refutations_and_missing_without_files() {
     for (label, count, code) in [
@@ -217,6 +262,7 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     let full = execute(&dir, &asks, &["--out", "saved"]);
     assert_eq!(full.code, 0, "{}", full.stdout);
     let result = result_json(&dir, &full);
+    no_saved_proofs(&result);
     for internal in ["producer", "reuse", "usage", "limits"] {
         assert!(!has(&result, internal));
     }

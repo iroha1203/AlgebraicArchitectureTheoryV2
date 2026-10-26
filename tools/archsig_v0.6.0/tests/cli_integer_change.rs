@@ -739,6 +739,9 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
                 assert_eq!(kernel[0][0].abs(),1);
                 assert!(kernel[0].iter().all(|v|*v==kernel[0][0]));
             } else {
+                assert!(!has(representation,"certificate"));
+                let j = internal_graph(&dir, &j);
+                let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
                 let proof=get(get(node(&j,get(representation,"certificate")),"value"),"data");
                 let columns=integer_columns(&j,get(proof,"map"));
                 assert_eq!(columns,vec![vec![-1,0,-1],vec![1,-1,0],vec![0,1,1]]);

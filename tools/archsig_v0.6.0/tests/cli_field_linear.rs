@@ -225,9 +225,12 @@ fn rational_fibers_keep_nonunique_assignments_and_inconsistency() {
             );
         } else {
             assert_eq!(s(get(repr, "kind")), "empty");
-            let proof = get(node(&j, get(repr, "certificate")), "value");
+            assert!(!has(repr, "certificate"));
+            let internal = internal_graph(&dir, &j);
+            let repr = get(get(output(&internal, 0, "solutions"), "value"), "representation");
+            let proof = get(node(&internal, get(repr, "certificate")), "value");
             assert_eq!(s(get(proof, "kind")), "linear_inconsistent");
-            verify_inconsistent_wire(&j, proof);
+            verify_inconsistent_wire(&internal, proof);
             assert_eq!(
                 s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
                 "refuted"

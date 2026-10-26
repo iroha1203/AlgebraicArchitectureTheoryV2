@@ -90,6 +90,24 @@ fn clean_reasons(value: &mut Json) {
         _ => {}
     });
 }
+fn remove_proof_refs(value: &mut Json, proofs: &BTreeSet<String>) -> bool {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
+        Json::Obj(fields) => {
+            if fields.len() == 1
+                && let Some(Json::Str(id)) = fields.get("node")
+            {
+                return !proofs.contains(id);
+            }
+            fields.retain(|_, value| remove_proof_refs(value, proofs));
+            true
+        }
+        Json::Arr(items) => {
+            items.retain_mut(|value| remove_proof_refs(value, proofs));
+            true
+        }
+        _ => true,
+    })
+}
 pub(super) fn compact(
     result: &mut Json,
     native: &[Node],
@@ -104,7 +122,7 @@ pub(super) fn compact(
     let Json::Arr(old) = &mut old else {
         unreachable!()
     };
-    let examples = old
+    let examples: BTreeSet<_> = old
         .iter()
         .enumerate()
         .filter_map(|(index, node)| {
@@ -122,6 +140,22 @@ pub(super) fn compact(
             .then(|| format!("n{index}"))
         })
         .collect();
+    let proofs = native
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| {
+            let id = format!("n{index}");
+            (node.ty == NodeType::Evidence && !examples.contains(&id)).then_some(id)
+        })
+        .collect();
+    // 証明への参照は evidence 欄以外（例: 解集合の certificate）にもある。
+    // ノード型で全経路を除き、実値の反例だけを残す。
+    for value in document.values_mut() {
+        remove_proof_refs(value, &proofs);
+    }
+    for node in old.iter_mut() {
+        remove_proof_refs(node, &proofs);
+    }
     let Json::Arr(answers) = document.get_mut("answers").unwrap() else {
         unreachable!()
     };
@@ -185,7 +219,7 @@ pub(super) fn compact(
         if let Some(Json::Obj(judgment)) = fields.get_mut("judgment") {
             retain_examples(judgment, &examples);
         }
-        if native[index].ty == NodeType::Evidence {
+        if examples.contains(&format!("n{index}")) {
             fields.insert("type".into(), Json::str("Counterexample"));
         }
         if matches!(native[index].ty, NodeType::Evaluation(_)) {
