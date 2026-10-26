@@ -29,6 +29,8 @@ mod family;
 mod reading;
 #[path = "polynomial_law_sources.rs"]
 mod sources;
+#[path = "polynomial_law_parameters.rs"]
+mod parameters;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
@@ -74,6 +76,7 @@ enum Transform {
     Substitute,
     Project,
     Equal,
+    Difference,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ParameterDomain {
@@ -311,6 +314,7 @@ impl Part {
                             Transform::Substitute => "substitute",
                             Transform::Project => "project",
                             Transform::Equal => "equal",
+                            Transform::Difference => "difference",
                         }),
                     ),
                     ("operands", refs(operands)),
@@ -499,6 +503,13 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn parameter_family(&self, expected: &[(String, Type)]) -> bool {
+        let Part::Polynomial { terms, .. } = self.part() else { return false };
+        let [(coefficient, powers)] = terms.as_slice() else { return false };
+        if powers.iter().any(|n| *n != 0) { return false; }
+        let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
+        matches!(self.source.parts.get(index), Some(Part::Transform { operation: Transform::Difference, parameters, .. }) if parameters == expected && !parameters.is_empty())
+    }
     pub(super) fn polynomial(&self) -> Option<(NodeRef, &[(NodeRef, Vec<usize>)])> {
         match self.source.parts.get(self.index) {
             Some(Part::Polynomial { ring, terms }) => Some((*ring, terms)),

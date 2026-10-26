@@ -177,6 +177,15 @@ impl Source {
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
             return Err("共有多項式族の元三入力とArchitectureが違う".into());
         }
+        if let Some(equations) = parameters::sources(&inputs, &a, c)? {
+            let mut parts = vec![];
+            let mut outputs = parameters::plans(&inputs, &a, reference, &equations, &mut parts, base, c)?;
+            if outputs.is_empty() { return Err("数値族のbase対象がない".into()); }
+            let first = outputs.remove(0);
+            let (support, scope) = metadata(&inputs, &a, None, c)?;
+            return Ok(Self { inputs, architecture: a, reference, object: 0, core: None, base, parts,
+                outputs: first, owned_outputs: Some(outputs), support, scope });
+        }
         let mut cores = vec![];
         for object in 0..a.readings().objects().len() {
             tick(c)?;
