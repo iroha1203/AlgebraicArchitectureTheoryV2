@@ -95,6 +95,10 @@ fn option_guards_do_not_choose_a_numeric_parameter_value() {
 fn tuple_guards_do_not_choose_a_numeric_parameter_value() {
     guards_do_not_choose_a_numeric_parameter_value(&["(n,true)=(0,true)", "(n,true)!=(0,true)"]);
 }
+#[test]
+fn list_guards_do_not_choose_a_numeric_parameter_value() {
+    guards_do_not_choose_a_numeric_parameter_value(&["list<Z>[n]=list<Z>[0]", "list<Z>[n]!=list<Z>[0]"]);
+}
 fn guards_do_not_choose_a_numeric_parameter_value(guards: &[&str]) {
     for guard in guards {
         let p = prepared(
