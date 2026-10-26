@@ -571,6 +571,17 @@ impl Compiler<'_> {
                                 Binding::Polynomial(EquationPolynomial::constant(value, c)?)
                             } else { Binding::FiniteScalar(value) }));
                         }
+                        if name.name == "sum" && let Binding::List { element, items } = &binding
+                            && element == &self.ring.ty
+                        {
+                            let mut total = Binding::Polynomial(EquationPolynomial::constant(numeric::zero(element, c).map_err(invalid)?, c)?);
+                            for item in items {
+                                tick(c)?;
+                                let Some(next) = total.binary(BinOp::Add, item, c)? else { return Ok(None) };
+                                total = next;
+                            }
+                            return Ok(Some(total));
+                        }
                         let Some(value) = binding.finite_scalar(c)? else {
                             return Ok(None);
                         };

@@ -8100,7 +8100,7 @@ impl<'a> Environment<'a> {
                         let mut target = *callee;
                         while let ExprKind::Group(inner) = self.inputs.law().exprs[target].kind { self.tick()?; target = inner; }
                         if let ExprKind::Dotted(parts) = &self.inputs.law().exprs[target].kind
-                            && parts.len() == 1 && parts[0].name == "count"
+                            && parts.len() == 1 && matches!(parts[0].name.as_str(), "count" | "sum")
                         {
                             self.symbolic_source(args[0], variables, base, reading)?.list_aggregate(
                                 &parts[0].name, self.inputs.law(), expression.span, &self.control,
