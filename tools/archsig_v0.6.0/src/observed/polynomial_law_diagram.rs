@@ -672,7 +672,9 @@ impl Data {
         let application = self.source.architecture.readings().instances().get(original.instance)
             .and_then(|instance| instance.applications().get(object))
             .ok_or("元Lawの対象適用がない")?;
-        let numeric_family = guard.is_none() && original.row.is_none()
+        let known_guard = guard.is_none() || (self.source.core.is_none() && diagram.unavailable.is_none()
+            && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysTrue));
+        let numeric_family = known_guard && original.row.is_none()
             && original.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
