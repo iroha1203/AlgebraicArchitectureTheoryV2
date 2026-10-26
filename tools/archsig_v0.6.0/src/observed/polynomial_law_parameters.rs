@@ -80,7 +80,7 @@ pub(super) fn sources(
             tick(c)?;
             let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
                 .map_err(|e| construction_failure(&e))? else { return Ok(None) };
-            if source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
+            if source.guard && source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
             // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
             symbolic |= !source.difference.parameters.is_empty()
                 || (!source.finite.is_empty() && instance.parameters().iter().any(|p| matches!(p.ty, Type::Z | Type::Q)));
@@ -114,7 +114,7 @@ pub(super) fn plans(
                 b.scalar,
                 b.ring,
                 b.domain,
-                b.evaluation.ok_or("数値族の共有観測代入がない")?,
+                b.evaluation,
             ))
         })
         .collect::<Result<_, ValidationFailure>>()?;
@@ -458,7 +458,7 @@ pub(super) fn plans(
                         .collect(),
                     witnesses: coordinates.iter().map(|q| q.witness.unwrap()).collect(),
                     required,
-                    evaluation: Some(*evaluation),
+                    evaluation: *evaluation,
                     context,
                     quantifiers: quantifiers.clone(),
                     omissions: vec![],
@@ -468,7 +468,7 @@ pub(super) fn plans(
             out.rings.push(*ring);
             out.bases.push(*scalar);
             out.domains.push(*domain);
-            out.evaluations.push(Some(*evaluation));
+            out.evaluations.push(*evaluation);
             out.required.push(required);
             out.presentations.push(Some(presentation));
         }
