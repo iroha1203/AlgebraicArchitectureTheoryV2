@@ -5715,6 +5715,61 @@ fn finite_change_on_rational_fields_keeps_full_equation_fibers() {
 }
 
 #[test]
+fn universal_laws_localize_integer_and_rational_affine_changes() {
+    for rational in [false,true] {
+        for (predicate, rank, empty) in [("z=z",2,false),("s.free+z=z+2",0,false),
+            ("z=s.free",2,true),("(let a=z+w in a=w+z) and s.free=2",0,false)] {
+            let dir = if rational { rational_compare_input("universal-affine-local-q",true) }
+                else { diagnostic_compare_input("universal-affine-local-z",true,true) };
+            let digest = definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())])
+                .unwrap().vocabularies["Reservations"].digest.clone();
+            let ty = if rational {"Q"} else {"Z"};
+            let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,n:{ty})=s with{{free=n}}; law required symbolic(z:{ty},s:State,w:{ty}):{predicate}; }}");
+            std::fs::write(dir.join("l.law"),law).unwrap();
+            let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                "l=localize($m.candidate.source,using=Reservations.choose)",
+                "d=diagnose($l.system,side=equation,degree=0)",
+                "e=diagnose($l.system,side=semantic,degree=0)"];
+            if predicate == "z=z" {
+                let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
+                for ask in asks {args.extend(["--ask",ask]);}
+                let normal = run(&dir,&args);
+                assert_eq!(normal.code,0,"{} {}",normal.stdout,normal.stderr);
+                assert!(normal.stderr.is_empty());
+                assert_eq!(s(get(&normal.receipt,"format")),"archsig.summary/1");
+                assert!(!has(&normal.receipt,"nodes"));
+                assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
+                eprintln!("universal-affine rational={rational} stdout={} bytes",normal.stdout.len());
+            }
+            let r = execute(&dir,"out",&asks);
+            assert_eq!(r.code,0,"{rational}/{predicate}: {} {}",r.stdout,r.stderr);
+            let j = result_json(&dir,&r);
+            for i in [2,3] {
+                let space = get(output(&j,i,"space"),"value");
+                assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
+            }
+            let system = get(output(&j,1,"system"),"value");
+            for (side,key) in [("equation_states","solutions"),("semantic_states","parameters")] {
+                let states = arr(get(system,side));
+                assert!(!states.is_empty());
+                assert_eq!(states.iter().any(|state| {
+                    let value = get(node(&j,get(state,key)),"value");
+                    s(get(get(value,"representation"),"kind")) == "empty"
+                }),empty);
+            }
+            let qs = arr(get(get(&arr(get(&j,"answers"))[1],"scope"),"quantifiers"));
+            for name in ["z","w"] { assert!(qs.iter().any(|q|s(get(q,"name"))==name && s(get(q,"kind"))=="forall" && !has(q,"domain"))); }
+            let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+            for ask in asks {args.extend(["--ask",ask]);}
+            let reused = run(&dir,&args);
+            assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+            let again = result_json(&dir,&reused);
+            for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+        }
+    }
+}
+
+#[test]
 fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
     for rational in [false, true] {
         for (predicate, count, rank) in [

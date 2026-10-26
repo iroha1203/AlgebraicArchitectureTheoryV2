@@ -121,6 +121,7 @@ fn analyze(
             {
                 vec![change_search::selector(original, g, &a.value)?]
             } else {
+                if matches!(p.ty, Type::Z | Type::Q) { continue; }
                 change_search::domain(env, &p.ty, p.span, &mut missing)?.ok_or_else(|| {
                     *missing_domain = true;
                     pending.facts.extend(missing.iter().cloned());
@@ -151,12 +152,20 @@ fn analyze(
     let mut scope = Scope::default();
     for (name, bindings) in &requirements {
         let declaration = &env.inputs.law().declarations[name];
-        let Signature::Law { body, guard, .. } = &declaration.signature else {
+        let Signature::Law { body, guard, params, .. } = &declaration.signature else {
             return Err("整数局所Lawでない".into());
         };
         pending.expression = Some(*body);
         pending.bindings = bindings.clone();
-        pending.parameters.clear();
+        let parameters = params.iter().filter(|p| !bindings.iter().any(|(name,_)| *name == p.name)).cloned().collect::<Vec<_>>();
+        pending.parameters = parameters.iter().map(|p| (p.name.clone(),p.ty.clone())).collect();
+        for parameter in &parameters {
+            scope.add_quantifier(Quantifier {
+                kind: crate::law::ast::QuantKind::Forall, name: parameter.name.clone(),
+                ty: parameter.ty.erase(), domain: None, occurrence: parameter.span,
+                context: Some(original.current_context(g)),
+            });
+        }
         let (row, absent, _) = env.local_point(declaration, bindings)?;
         // 更新先は自由状態であり、旧値はLawの固定係数ではない。
         missing.extend(absent.into_iter().filter(|f| !action.slots.contains(f)));
@@ -166,7 +175,7 @@ fn analyze(
             .chain(guard.iter().copied())
             .collect::<Vec<_>>();
         let (carrier, visible) =
-            local_read::state_visibility(env, &roots, bindings, reading, c)?
+            local_read::state_visibility_with_parameters(env, &roots, bindings, &parameters, reading, c)?
                 .ok_or_else(|| unsupported("整数局所Lawの読取り座標の因子分解は未実装"))?;
         let mut positions = row
             .support
@@ -470,7 +479,7 @@ pub(super) fn compute(
         for (name, bindings) in &model.requirements {
             let declaration = &env.inputs.law().declarations[name];
             let Signature::Law {
-                body, guard, role, ..
+                body, guard, role, ref params,
             } = declaration.signature
             else {
                 return Err("整数局所Lawの署名がない".into());
@@ -479,11 +488,13 @@ pub(super) fn compute(
                 .iter()
                 .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
-            let expression = change_result::source_expression(&mut b, env, body, &bindings, &[])?;
+            let unbound = params.iter().filter(|p| !bindings.iter().any(|(name,_)| *name == p.name)).collect::<Vec<_>>();
+            let parameters = unbound.iter().map(|p| (p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
+            let expression = change_result::source_expression(&mut b, env, body, &bindings, &parameters)?;
             b.parts[expression.0 - base].scope.merge(&model.scope);
             expressions.push(expression);
             let guard = guard
-                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
+                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &parameters))
                 .transpose()?;
             let mut fields = BTreeMap::from([
                 ("name".into(), Json::str(name)),

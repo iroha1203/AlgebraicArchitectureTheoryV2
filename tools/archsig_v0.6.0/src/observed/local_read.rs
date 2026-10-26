@@ -329,18 +329,25 @@ pub(in crate::observed) fn fixed_chain_visibility(
     env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
-    state_visibility_inner(env, roots, bindings, reading, c, true)
+    state_visibility_inner(env, roots, bindings, &[], reading, c, true)
 }
 pub(in crate::observed) fn state_visibility(
     env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
-    state_visibility_inner(env, roots, bindings, reading, c, false)
+    state_visibility_inner(env, roots, bindings, &[], reading, c, false)
+}
+pub(in crate::observed) fn state_visibility_with_parameters(
+    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param], reading: &str, c: &mut Control,
+) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
+    state_visibility_inner(env, roots, bindings, parameters, reading, c, false)
 }
 fn state_visibility_inner(
     env: &Environment<'_>,
     roots: &[usize],
     bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param],
     reading: &str,
     c: &mut Control,
     require_chain: bool,
@@ -349,10 +356,10 @@ fn state_visibility_inner(
     for (_, value) in bindings {
         subject_carrier(value, &mut carrier, c)?;
     }
-    let variables: BTreeMap<String, SourceValue> = bindings
+    let (mut variables, _) = change_affine::law_variables(env, parameters, &[])?;
+    variables.extend(bindings
         .iter()
-        .map(|(n, v)| (n.clone(), known(v.clone())))
-        .collect();
+        .map(|(n, v)| (n.clone(), known(v.clone()))));
     let mut pending = roots
         .iter()
         .map(|id| (*id, variables.clone()))
