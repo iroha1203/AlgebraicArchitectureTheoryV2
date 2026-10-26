@@ -329,6 +329,16 @@ fn tuple_values(v: &Value, c: &Control) -> Result<Option<Vec<Value>>, Validation
         _ => None,
     })
 }
+fn option_value(v: &Value, c: &Control) -> Result<Option<Option<Value>>, ValidationFailure> {
+    tick(c)?;
+    Ok(match v {
+        Value::Option { value, .. } => Some(value.as_deref().cloned()),
+        Value::Known(Scalar::Option { value, .. }) => {
+            Some(value.as_deref().cloned().map(Value::Known))
+        }
+        _ => None,
+    })
+}
 pub(in crate::observed) fn pointwise_equal(
     a: &Value,
     b: &Value,
@@ -342,6 +352,13 @@ pub(in crate::observed) fn pointwise_equal(
         }
         if let (Some(a), Some(b)) = (a.known(c)?, b.known(c)?) {
             return value_equality::equal(&a, &b, law, c);
+        }
+        if let (Some(a), Some(b)) = (option_value(a, c)?, option_value(b, c)?) {
+            return match (a, b) {
+                (Some(a), Some(b)) => pointwise_equal(&a, &b, law, c),
+                (None, None) => Ok(Some(true)),
+                _ => Ok(Some(false)),
+            };
         }
         if let (Some(a), Some(b)) = (tuple_values(a, c)?, tuple_values(b, c)?) {
             let mut known = true;
