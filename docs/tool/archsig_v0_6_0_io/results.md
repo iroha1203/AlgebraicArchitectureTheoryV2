@@ -312,10 +312,13 @@ proposition, evidence`。作者が呼ぶ関数名として公開しない。
 
 `Binding={name:String,value:Ref}`、`Slot={subject:Ref,field:QName}`とする。
 Expressionは原式または核の固定変換を表し、自由parameterとbindingsを明示する。
+`multiply` は同じ数値型 `Z` または `Q` の二つのoperandの積を表し、結果も同じ型を持つ。
+数値引数を持つ多項式の係数にも使い、観測変数の冪と引数への依存を保持する。
+保存結果の再利用は現在の三入力から構成を再検査する。`multiply` を含まない既存のExpressionも同じ形式で読み取る。
 
 | Type | Payload |
 | --- | --- |
-| Expression | `{kind:"source",location:Location,parameters:Parameter[],bindings:Binding[]}` / `{kind:"transform",operation:"difference"\|"substitute"\|"compose"\|"project"\|"equal"\|"not"\|"and",operands:Ref[],parameters:Parameter[],bindings:Binding[],position?:Nat}` / `{kind:"object_reading",object:ObjectComponent,declaration:QName,parameters:Parameter[],bindings:Binding[],returns:T}` |
+| Expression | `{kind:"source",location:Location,parameters:Parameter[],bindings:Binding[]}` / `{kind:"transform",operation:"difference"\|"multiply"\|"substitute"\|"compose"\|"project"\|"equal"\|"not"\|"and",operands:Ref[],parameters:Parameter[],bindings:Binding[],position?:Nat}` / `{kind:"object_reading",object:ObjectComponent,declaration:QName,parameters:Parameter[],bindings:Binding[],returns:T}` |
 | Evaluation | `{expression:Expression,bindings:Binding[],environment?:Architecture,parts:{location:Location,value?:Ref,residual?:Ref,children:Ref[]}[],value?:Ref,applicability:"applicable"\|"not_applicable"\|"undetermined"}` |
 | LawInstance | `{name:QName,role:Role,bindings:Binding[],guard?:Expression,body:Expression,occurrence:Location}` |
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |

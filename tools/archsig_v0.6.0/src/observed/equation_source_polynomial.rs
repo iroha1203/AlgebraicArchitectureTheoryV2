@@ -12,7 +12,7 @@ enum Binding {
     },
     Polynomial(EquationPolynomial),
     ParameterForm(affine::Form),
-    Sum { polynomial: EquationPolynomial, parameters: affine::Form },
+    Family(PolynomialFamily),
     Tuple(Vec<Binding>),
     Lexical {
         expression: usize,
@@ -27,11 +27,6 @@ impl Binding {
                 let Some(value) = value.evaluate(&[], c)? else { return Ok(None) };
                 affine::constant(value.scalar(), c).map_err(invalid)
             }
-            Self::Sum { polynomial, parameters } if polynomial.terms.iter().all(|term| term.variables.is_empty()) => {
-                let Some(value) = polynomial.evaluate(&[], c)? else { return Ok(None) };
-                let constant = affine::constant(value.scalar(), c).map_err(invalid)?;
-                affine::binary(BinOp::Add, constant.as_ref(), Some(parameters), c).map_err(invalid)
-            }
             _ => Ok(None),
         }
     }
@@ -42,26 +37,12 @@ impl Binding {
         if let Some(value) = affine::binary(op, self.affine(c)?.as_ref(), rhs.affine(c)?.as_ref(), c).map_err(invalid)? {
             return Ok(Some(Self::ParameterForm(value)));
         }
-        if op == BinOp::Mul {
-            for (value, factor) in [(self, rhs), (rhs, self)] {
-                let Some(factor) = factor.affine(c)? else { continue };
-                let Some(scalar) = factor.value(c).map_err(invalid)? else { continue };
-                let Some((polynomial, parameters)) = value.split(c)? else { continue };
-                let scalar = EquationPolynomial::constant(scalar, c)?;
-                let polynomial = polynomial.binary(BinOp::Mul, &scalar, c)?;
-                let Some(parameters) = affine::binary(BinOp::Mul, Some(&parameters), Some(&factor), c).map_err(invalid)? else { return Ok(None) };
-                return Ok(Some(Self::Sum { polynomial, parameters }));
-            }
-            return Ok(None);
-        }
-        if !matches!(op, BinOp::Add | BinOp::Sub) { return Ok(None); }
-        let (Some((left, a)), Some((right, b))) = (self.split(c)?, rhs.split(c)?) else { return Ok(None) };
-        let Some(parameters) = affine::binary(op, Some(&a), Some(&b), c).map_err(invalid)? else { return Ok(None) };
-        Ok(Some(Self::Sum { polynomial: left.binary(op, &right, c)?, parameters }))
+        let (Some(left), Some(right)) = (PolynomialFamily::from_binding(self, c)?, PolynomialFamily::from_binding(rhs, c)?) else { return Ok(None) };
+        Ok(left.binary(op, &right, c)?.map(Self::Family))
     }
+
     fn split(&self, c: &mut Control) -> Result<Option<(EquationPolynomial, affine::Form)>, ConstructionFailure> {
         Ok(match self {
-            Self::Sum { polynomial, parameters } => Some((polynomial.clone(), parameters.clone())),
             Self::Polynomial(polynomial) => {
                 let zero = numeric::zero(&polynomial.ty, c).map_err(invalid)?;
                 affine::constant(&zero, c).map_err(invalid)?.map(|form| (polynomial.clone(), form))
@@ -424,7 +405,7 @@ pub(super) struct SourceDifference {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct PolynomialFamily {
     pub constant: EquationPolynomial,
-    pub parameters: Vec<(affine::Parameter, Scalar)>,
+    pub parameters: Vec<(affine::Parameter, EquationPolynomial)>,
 }
 impl PolynomialFamily {
     pub(super) fn at(&self, values: &[(affine::Parameter, Scalar)], c: &mut Control) -> Result<EquationPolynomial, ConstructionFailure> {
@@ -439,15 +420,40 @@ impl PolynomialFamily {
         for (parameter, coefficient) in &self.parameters {
             tick(c)?;
             let value = assignments.get(parameter).ok_or_else(|| bad("数値関数族の元parameter代入がない"))?;
-            let term = numeric::binary(BinOp::Mul, coefficient, value, c).map_err(invalid)?;
-            result = result.binary(BinOp::Add, &EquationPolynomial::constant(term, c)?, c)?;
+            let term = coefficient.binary(BinOp::Mul, &EquationPolynomial::constant((*value).clone(), c)?, c)?;
+            result = result.binary(BinOp::Add, &term, c)?;
         }
         Ok(result)
     }
     fn from_binding(value: &Binding, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+        if let Binding::Family(family) = value { return Ok(Some(family.clone())); }
         let Some((polynomial, form)) = value.split(c)? else { return Ok(None) };
         let Some((constant, parameters)) = form.parameter_coordinates(c).map_err(invalid)? else { return Ok(None) };
+        let parameters = parameters.into_iter().map(|(parameter, coefficient)| Ok((parameter, EquationPolynomial::constant(coefficient, c)?))).collect::<Result<_, ConstructionFailure>>()?;
         Ok(Some(Self { constant: polynomial.binary(BinOp::Add, &EquationPolynomial::constant(constant, c)?, c)?, parameters }))
+    }
+    fn binary(&self, op: BinOp, rhs: &Self, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+        if !matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) { return Ok(None); }
+        if op == BinOp::Mul && !self.parameters.is_empty() && !rhs.parameters.is_empty() { return Ok(None); }
+        let constant = self.constant.binary(op, &rhs.constant, c)?;
+        let mut parameters: Vec<(affine::Parameter, EquationPolynomial)> = vec![];
+        let zero = EquationPolynomial::constant(numeric::zero(&constant.ty, c).map_err(invalid)?, c)?;
+        for (family, factor, right) in [(self, &rhs.constant, false), (rhs, &self.constant, true)] {
+            for (parameter, coefficient) in &family.parameters {
+                tick(c)?;
+                let coefficient = match op {
+                    BinOp::Mul => coefficient.binary(BinOp::Mul, factor, c)?,
+                    BinOp::Sub if right => zero.binary(BinOp::Sub, coefficient, c)?,
+                    _ => coefficient.clone(),
+                };
+                if let Some((_, previous)) = parameters.iter_mut().find(|(p, _)| p == parameter) {
+                    *previous = previous.binary(BinOp::Add, &coefficient, c)?;
+                } else { parameters.push((parameter.clone(), coefficient)); }
+            }
+        }
+        parameters.retain(|(_, coefficient)| !coefficient.terms.is_empty());
+        parameters.sort_by(|a, b| a.0.cmp(&b.0));
+        Ok(Some(Self { constant, parameters }))
     }
     fn constant_polynomial(self) -> Option<EquationPolynomial> {
         self.parameters.is_empty().then_some(self.constant)

@@ -7,6 +7,7 @@ use crate::observed::object_equation_presentation::{
 
 fn observation_free_difference(source: &ParameterEquation) -> bool {
     source.difference.constant.terms.iter().all(|term| term.variables.is_empty())
+        && source.difference.parameters.iter().all(|(_, coefficient)| coefficient.terms.iter().all(|term| term.variables.is_empty()))
 }
 
 fn difference(
@@ -161,6 +162,8 @@ pub(super) fn plans(
                     Some(&shared),
                     c,
                 )?
+            } else if source.difference.parameters.iter().any(|(_, coefficient)| coefficient.terms.iter().any(|term| !term.variables.is_empty())) {
+                parameter_polynomial(inputs, original, source, *ring, &ty, &shared, parts, base, c)?
             } else if !observation_free_difference(source) {
                 // 差Dの全引数を零へ同時代入したD(0)は観測多項式。
                 // D-D(0)へ定数項を戻して、元式由来の引数係数を作る。
@@ -386,8 +389,7 @@ pub(super) fn plans(
                     polynomials.push((source.difference.constant.clone(), &source.ring));
                 }
                 for (_, coefficient) in &source.difference.parameters {
-                    let p = EquationPolynomial::constant(coefficient.clone(), c)
-                        .map_err(|e| construction_failure(&e))?;
+                    let p = coefficient.clone();
                     if !p.terms.is_empty()
                         && !polynomials.iter().any(|(previous, _)| previous == &p)
                     {
@@ -461,4 +463,38 @@ pub(super) fn plans(
         result.push(out);
     }
     Ok(result)
+}
+
+fn parameter_polynomial(
+    inputs: &CheckedInputs, original: &Original, source: &ParameterEquation,
+    ring: NodeRef, ty: &Type, shared: &[family::Basis], parts: &mut Vec<Part>, base: usize, c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    let constant = family::polynomial(parts, base, &source.difference.constant, ring, ty, &source.ring, Some(shared), c)?;
+    let Part::Polynomial { terms, .. } = &parts[constant.0 - base] else { return Err("引数族の定数項が多項式でない".into()) };
+    let mut result = terms.clone();
+    let Part::Source { location: Location::Law { span }, .. } = &parts[original.body.0 - base] else { return Err("引数族の元bodyがない".into()) };
+    let span = *span;
+    for (parameter, coefficient) in &source.difference.parameters {
+        tick(c)?;
+        let (expression, node) = inputs.law().exprs.iter().enumerate().find(|(id, expression)| {
+            inputs.law().expr_type(*id) == Some(ty) && expression.span.0 >= span.0 && expression.span.1 <= span.1 &&
+                matches!(&expression.kind, crate::law::ast::ExprKind::Dotted(names) if names.len() == 1 && names[0].name == parameter.name)
+        }).ok_or("引数族の元parameter参照がない")?;
+        let argument = push(parts, base, Part::Source { quantifiers: original.quantifiers.clone(), instance: original.instance, row: original.row,
+            expression, location: Location::Law { span: node.span }, ty: ty.clone(), parameters: original.parameters.clone(), bindings: original.bindings.clone() }, c)?;
+        let polynomial = family::polynomial(parts, base, coefficient, ring, ty, &source.ring, Some(shared), c)?;
+        let Part::Polynomial { terms, .. } = &parts[polynomial.0 - base] else { return Err("引数係数が多項式でない".into()) };
+        for (scalar, powers) in terms.clone() {
+            let product = push(parts, base, Part::Transform { quantifiers: original.quantifiers.clone(), operation: Transform::Multiply,
+                parameters: original.parameters.clone(), ty: ty.clone(), operands: vec![argument, scalar], bindings: vec![], position: None }, c)?;
+            // 同じ単項式の係数は差を用いて正確に加える。
+            if let Some((previous, _)) = result.iter_mut().find(|(_, old)| old == &powers) {
+                let zero = push(parts, base, Part::Scalar(super::super::numeric::zero(ty, c)?), c)?;
+                let negative = difference(parts, base, original, ty, zero, product, c)?;
+                *previous = difference(parts, base, original, ty, *previous, negative, c)?;
+            } else { result.push((product, powers)); }
+        }
+    }
+    result.sort_by(|a, b| a.1.cmp(&b.1));
+    push(parts, base, Part::Polynomial { ring, parameters: original.parameters.clone(), terms: result }, c)
 }
