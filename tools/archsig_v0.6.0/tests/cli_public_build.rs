@@ -8,6 +8,51 @@ use std::path::{Path, PathBuf};
 
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
+#[test]
+fn universal_numeric_laws_build_objects_for_later_queries() {
+    for ty in ["Z", "Q"] {
+        let dir=files(&format!("universal-build-{ty}"),&format!("view amount(c:Part):Z=c.quantity;law required reflexive(c:Part,n:{ty}):n=n;"),false);
+        let run=asks(&dir,&["b=build(R,on=@v/root)","n=evaluate(R.amount,on=$b.object,c=@v/q)","l=localize($b.object)","d=diagnose($l.system,degree=0)"]);
+        let result=saved(&dir,&run,"complete",0);
+        let outputs=get(answer(&result,"b"),"outputs");
+        assert!(has(outputs,"object") && has(outputs,"algebra"));
+        assert_eq!(s(value(&result,get(get(answer(&result,"n"),"outputs"),"value"))),"1");
+        assert_eq!(s(get(answer(&result,"d"),"status")),"established");
+    }
+}
+#[test]
+fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
+    for ty in ["Z", "Q"] {
+        for offset in [0, 1] {
+            let dir = files(&format!("constant-family-{ty}-{offset}"), &format!(
+                "law required balanced(c:Part,n:{ty},m:{ty}):let a=n+m in a=n+m+{offset};"
+            ), false);
+            let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"];
+            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+            for request in requests { args.extend(["--ask", request]); }
+            let normal = cli::run(&dir, &args);
+            assert_eq!(normal.code, offset, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            let summary = archsig::json::parse(normal.stdout.as_bytes()).unwrap();
+            assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
+            assert!(!has(&summary, "nodes"));
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            eprintln!("constant family {ty}/{offset}: stdout {} bytes", normal.stdout.len());
+            let run = asks(&dir, &requests);
+            let result = saved(&dir, &run, "complete", offset);
+            eprintln!("constant family {ty}/{offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+            assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+            assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, run.code, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&again, field).value, get(&result, field).value);
+            }
+        }
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =

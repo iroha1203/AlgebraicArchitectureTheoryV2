@@ -30,7 +30,7 @@ mod family;
 pub use family::{
     FiniteLawFamily, LawParameterComparison, LawReadingDomain, LawReadingFamily, LawReadingRow,
 };
-pub(super) use family::{compare_native_readings, read_native_family};
+pub(super) use family::{compare_native_readings, read_native_family, constant_numeric_family};
 
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {

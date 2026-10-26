@@ -1135,7 +1135,28 @@ fn populate(
                         occurrence.left = Some(lhs);
                         occurrence.right = Some(rhs);
                     }
+                    if occurrence.nu.is_none() && row.is_none() {
+                        // 同じ元instanceの全域正規化だけを共有する。対象外でbodyを実行しない。
+                        for source in r.base.base().evaluations() {
+                            tick(c)?;
+                            if source.position().instance != e.position.instance { continue; }
+                            if let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(source.evaluation(), c)? {
+                                occurrence.nu = Some(EquationPolynomial::constant(value, c)?);
+                                break;
+                            }
+                        }
+                    }
                     occurrence.status = EquationPresentationStatus::NotApplicable;
+                } else if row.is_none()
+                    && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(original, c)? {
+                    let polynomial = EquationPolynomial::constant(value.clone(), c)?;
+                    occurrence.nu = Some(polynomial);
+                    occurrence.evaluated_nu = Some(NumericTransportValue::observed(value.clone()));
+                    occurrence.component_holds = Some(value == numeric::zero(&ty, c).map_err(invalid)?);
+                    occurrence.status = EquationPresentationStatus::Ready;
+                    if occurrence.required && guard == EquationGuard::AlwaysTrue {
+                        r.rings[index].required_generators.push(r.occurrences.len());
+                    }
                 } else if let (Some(g), [l, rhs]) = (g, q.operand_evaluations.as_slice()) {
                     let mut compiler = Compiler {
                         inputs,
@@ -1272,11 +1293,14 @@ mod tests {
     use crate::observed::input::{InputSources, check_inputs};
 
     fn inputs() -> Arc<CheckedInputs> {
+        inputs_with("law required amount(c:Part):c.quantity+1=0;")
+    }
+    fn inputs_with(body: &str) -> Arc<CheckedInputs> {
         let d = crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
             .unwrap();
         let digest = &d.vocabularies["Pattern"].digest;
         let law = format!(
-            "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required amount(c:Part):c.quantity+1=0;}}"
+            "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";{body}}}"
         );
         Arc::new(
             check_inputs(
@@ -1289,6 +1313,50 @@ mod tests {
             )
             .unwrap(),
         )
+    }
+    #[test]
+    fn uniform_numeric_difference_retains_full_parameters_and_rejects_changed_residual() {
+        for ty in [Type::Z, Type::Q] {
+            let name = if ty == Type::Z { "Z" } else { "Q" };
+            let inputs = inputs_with(&format!("law required balanced(c:Part,n:{name},m:{name}):let a=n+m in a=n+m+1;"));
+            let mut c = Control::unlimited();
+            let mut presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+            assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+            assert!(!presentation.occurrences.is_empty());
+            let one = numeric::literal("1", &ty, &c).unwrap();
+            let expected = NumericTransportValue::observed(numeric::unary(UnOp::Neg, &one, &c).unwrap());
+            for occurrence in &presentation.occurrences {
+                assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+                assert_eq!(occurrence.residual.as_ref(), Some(&expected));
+                assert_eq!(occurrence.component_holds, Some(false));
+                assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected.clone()));
+                assert!(occurrence.row.is_none());
+            }
+            for source in presentation.base.base().evaluations() {
+                assert_eq!(source.evaluation().instance().parameters().len(), 2);
+                assert!(source.family().rows().is_empty());
+                assert!(source.family().domains().is_empty());
+                assert!(source.family().uniform().is_some());
+            }
+            presentation.recheck(inputs.clone(), &mut c).unwrap();
+            presentation.occurrences[0].nu = Some(EquationPolynomial::constant(numeric::zero(&ty, &c).unwrap(), &mut c).unwrap());
+            assert!(presentation.recheck(inputs, &mut c).is_err());
+        }
+    }
+    #[test]
+    fn numeric_family_uniformity_is_not_inferred_from_false_or_observed_values() {
+        for body in [
+            "law required varying(c:Part,n:Z):n=0;",
+            "law required varying(c:Part,n:Z):n+c.quantity=n;",
+            "law required varying(c:Part,n:Z) when false:n=n;",
+        ] {
+            let inputs = inputs_with(body);
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, 0, &mut c).unwrap();
+            assert!(super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap().is_none());
+        }
     }
     #[test]
     fn recheck_rejects_forged_symbols_polynomials_ideal_substitution_origin_and_status() {
