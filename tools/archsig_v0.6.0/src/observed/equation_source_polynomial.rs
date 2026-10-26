@@ -28,6 +28,9 @@ impl Binding {
             Ok(match self {
                 Self::Boolean(value) => Some(Scalar::Bool(*value)),
                 Self::FiniteScalar(value) => Some(value.clone()),
+                Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
+                    value.evaluate(&[], c)?.map(|value| value.scalar().clone())
+                }
                 Self::Tuple(items) => {
                     let mut values = Vec::new();
                     for item in items {
@@ -315,7 +318,7 @@ impl Compiler<'_> {
                         .expr_type(id)
                         .ok_or_else(|| bad("原式の数値型がない"))?;
                     if ty != &self.ring.ty {
-                        return if matches!(ty, Type::Fp(_)) {
+                        return if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) {
                             Ok(Some(Binding::FiniteScalar(numeric::literal(n, ty, c).map_err(invalid)?)))
                         } else { Ok(None) };
                     }
@@ -373,7 +376,7 @@ impl Compiler<'_> {
                     match self.expression(*operand, &[], c)? { Some(Binding::Boolean(value)) => Some(Binding::Boolean(!value)), _ => None }
                 }
                 ExprKind::Binary {
-                    op: op @ (BinOp::And | BinOp::Or | BinOp::Implies | BinOp::Eq | BinOp::Ne | BinOp::In),
+                    op: op @ (BinOp::And | BinOp::Or | BinOp::Implies | BinOp::Eq | BinOp::Ne | BinOp::In | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge),
                     lhs,
                     rhs,
                 } if path.is_empty() => {
@@ -529,6 +532,26 @@ impl Compiler<'_> {
                     while let ExprKind::Group(inner) = self.inputs.law().exprs[callee].kind {
                         tick(c)?;
                         callee = inner;
+                    }
+                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs[callee].kind
+                        && let [name] = names.as_slice()
+                        && matches!(name.name.as_str(), "count" | "sum")
+                    {
+                        let [argument] = args.as_slice() else {
+                            return Ok(None);
+                        };
+                        let Some(binding) = self.expression(*argument, &[], c)? else {
+                            return Ok(None);
+                        };
+                        let Some(value) = binding.finite_scalar(c)? else {
+                            return Ok(None);
+                        };
+                        let value = super::super::data::aggregate(&name.name, &value, c).map_err(invalid)?;
+                        return Ok(Some(if value.ty() == self.ring.ty {
+                            Binding::Polynomial(EquationPolynomial::constant(value, c)?)
+                        } else {
+                            Binding::FiniteScalar(value)
+                        }));
                     }
                     if let ExprKind::Dotted(names) = &self.inputs.law().exprs[callee].kind
                         && names.len() == 1
