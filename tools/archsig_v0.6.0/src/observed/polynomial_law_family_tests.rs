@@ -1077,10 +1077,25 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
 }
 
 #[test]
-fn tuples_with_integer_components_are_not_finite_case_samples() {
-    let p = prepared(false, false, "law required zero(c:Part,n:Z,tag:(Z,Bool)) when tag.1:n*c.quantity=0;", "root");
-    let (g, a) = built(&p);
-    let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else { panic!("architecture") };
-    let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
-    assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().is_none());
+fn infinite_components_are_not_finite_case_samples() {
+    for (ty, guard) in [("(Z,Bool)", " when tag.1"), ("Option<Z>", "")] {
+        let p = prepared(
+            false,
+            false,
+            &format!("law required zero(c:Part,n:Z,tag:{ty}){guard}:n*c.quantity=0;"),
+            "root",
+        );
+        let (g, a) = built(&p);
+        let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else {
+            panic!("architecture")
+        };
+        let Witness::Architecture(a) = &value.witness else {
+            panic!("architecture witness")
+        };
+        assert!(
+            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+                .unwrap()
+                .is_none()
+        );
+    }
 }

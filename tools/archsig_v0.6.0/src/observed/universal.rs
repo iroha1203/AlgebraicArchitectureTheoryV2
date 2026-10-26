@@ -186,13 +186,14 @@ impl Environment<'_> {
                 if matches!(parameter.ty, Type::Z | Type::Q) {
                     continue;
                 }
-                if !matches!(parameter.ty, Type::Bool | Type::Fp(_) | Type::Tuple(_))
-                    || !crate::observed::finite::completion_supported(
-                        &parameter.ty,
-                        self.inputs.law(),
-                        &mut self.control.clone(),
-                    )?
-                {
+                if !matches!(
+                    parameter.ty,
+                    Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_)
+                ) || !crate::observed::finite::completion_supported(
+                    &parameter.ty,
+                    self.inputs.law(),
+                    &mut self.control.clone(),
+                )? {
                     return Ok(None);
                 }
                 let Some(binding) = bindings.iter().find(|b| b.name == parameter.name) else {
