@@ -91,19 +91,43 @@ impl ProcessSignals {
         }
     }
 
+    fn usage_for_limits(
+        limits: archsig::observed::control::Limits,
+        elapsed: impl FnOnce() -> u128,
+        memory: impl FnOnce() -> u128,
+        signal: impl FnOnce() -> Option<Signal>,
+    ) -> archsig::observed::control::Usage {
+        archsig::observed::control::Usage {
+            elapsed_ms: if limits.time_ms.is_some() {
+                elapsed()
+            } else {
+                0
+            },
+            memory_mib: if limits.memory_mib.is_some() {
+                memory()
+            } else {
+                0
+            },
+            signal: signal(),
+        }
+    }
+
     fn control(
         &self,
         started: Instant,
         limits: archsig::observed::control::Limits,
     ) -> archsig::observed::control::Control {
-        use archsig::observed::control::{Control, Usage};
+        use archsig::observed::control::Control;
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        Control::new(limits, move |_| Usage {
-            elapsed_ms: started.elapsed().as_millis(),
-            memory_mib: u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
-            signal: Self::observed_signal(&first, &int, &term),
+        Control::new(limits, move |_| {
+            Self::usage_for_limits(
+                limits,
+                || started.elapsed().as_millis(),
+                || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
+                || Self::observed_signal(&first, &int, &term),
+            )
         })
     }
 }
@@ -210,6 +234,71 @@ fn execute(
 mod tests {
     use super::*;
     use archsig::observed::control::{Checkpoint, StopReason};
+
+    #[test]
+    fn resource_probes_follow_requested_limits_and_always_observe_signals() {
+        use archsig::observed::control::{Control, Limits, Resource};
+        use std::{cell::RefCell, rc::Rc};
+        for (time, memory) in [(false, false), (true, false), (false, true), (true, true)] {
+            for signal in [None, Some(Signal::Int), Some(Signal::Term)] {
+                let limits = Limits {
+                    time_ms: time.then_some(5),
+                    memory_mib: memory.then_some(7),
+                };
+                let calls = Rc::new(RefCell::new(vec![]));
+                let observed = calls.clone();
+                let mut control = Control::new(limits, move |_| {
+                    ProcessSignals::usage_for_limits(
+                        limits,
+                        || {
+                            observed.borrow_mut().push("time");
+                            11
+                        },
+                        || {
+                            observed.borrow_mut().push("memory");
+                            13
+                        },
+                        || {
+                            observed.borrow_mut().push("signal");
+                            signal
+                        },
+                    )
+                });
+                let expected = if let Some(signal) = signal {
+                    Err(StopReason::Cancelled(signal))
+                } else if time {
+                    Err(StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 5,
+                        observed: 11,
+                    })
+                } else if memory {
+                    Err(StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 7,
+                        observed: 13,
+                    })
+                } else {
+                    Ok(())
+                };
+                assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
+                let mut requested = vec![];
+                if time {
+                    requested.push("time");
+                }
+                if memory {
+                    requested.push("memory");
+                }
+                requested.push("signal");
+                assert_eq!(*calls.borrow(), requested);
+                assert_eq!(control.checkpoint(Checkpoint::FiniteIteration), expected);
+                if expected.is_ok() {
+                    requested.push("signal");
+                }
+                assert_eq!(*calls.borrow(), requested);
+            }
+        }
+    }
 
     /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
     fn isolated_signal_test(name: &str) -> bool {
