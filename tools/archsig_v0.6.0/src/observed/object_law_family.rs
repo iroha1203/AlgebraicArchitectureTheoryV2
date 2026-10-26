@@ -416,6 +416,8 @@ pub(in crate::observed) fn constant_numeric_family(
     let Signature::Law { body, guard, .. } = &law.declarations
         .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
     else { return Ok(None) };
+    let symbolic_constant = super::super::object_equation_presentation::constant_source_difference(g.prepared().inputs(), e.instance(), c)?;
+    if symbolic_constant.is_none() {
     // この共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
     // 観測時の定数へ畳んで記号的な差と取り違えない。
     let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
@@ -464,6 +466,7 @@ pub(in crate::observed) fn constant_numeric_family(
             _ => return Ok(None),
         }
     }
+    }
     let mut expression = *body;
     loop {
         tick(c)?;
@@ -475,7 +478,9 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let Some(root) = g.answers.first().and_then(|a| a.outputs.get("evaluation")).copied() else { return Ok(None) };
     let node = g.nodes.get(root.0).ok_or_else(|| inconsistent("元数値族の評価がない"))?;
-    if node.support.iter().any(|f| f.field.is_some()) || !node.reasons.is_empty() { return Ok(None) }
+    if (symbolic_constant.is_none() && node.support.iter().any(|f| f.field.is_some()))
+        || node.reasons.iter().any(|reason| symbolic_constant.is_none()
+            || !matches!(reason.kind, super::super::result::ReasonKind::Missing)) { return Ok(None) }
     let Some(Payload::Evaluation { parts, applicability: "applicable", .. }) = &node.payload else { return Ok(None) };
     let part = match (guard, parts.as_slice()) {
         (None, [body]) => body,
@@ -490,6 +495,9 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
     if !matches!(value.ty(), Type::Z | Type::Q) { return Ok(None) }
+    if symbolic_constant.as_ref().is_some_and(|constant| constant != value) {
+        return Err(inconsistent("元記号差と数値族の実残差が違う"));
+    }
     Ok(Some((root, residual, value.clone())))
 }
 fn consensus(values: impl Iterator<Item = Option<bool>>) -> Option<bool> {

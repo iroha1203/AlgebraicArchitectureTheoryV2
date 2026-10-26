@@ -12,6 +12,7 @@ enum Binding {
     },
     Polynomial(EquationPolynomial),
     ParameterForm(affine::Form),
+    Sum { polynomial: EquationPolynomial, parameters: affine::Form },
     Tuple(Vec<Binding>),
     Lexical {
         expression: usize,
@@ -24,6 +25,10 @@ impl Binding {
             Self::Polynomial(value) => Ok(Some(value.clone())),
             Self::ParameterForm(value) => value.value(c).map_err(invalid)?
                 .map(|value| EquationPolynomial::constant(value, c)).transpose(),
+            Self::Sum { polynomial, parameters } => {
+                let Some(value) = parameters.value(c).map_err(invalid)? else { return Ok(None) };
+                Ok(Some(polynomial.binary(BinOp::Add, &EquationPolynomial::constant(value, c)?, c)?))
+            }
             _ => Ok(None),
         }
     }
@@ -34,6 +39,11 @@ impl Binding {
                 let Some(value) = value.evaluate(&[], c)? else { return Ok(None) };
                 affine::constant(value.scalar(), c).map_err(invalid)
             }
+            Self::Sum { polynomial, parameters } if polynomial.terms.iter().all(|term| term.variables.is_empty()) => {
+                let Some(value) = polynomial.evaluate(&[], c)? else { return Ok(None) };
+                let constant = affine::constant(value.scalar(), c).map_err(invalid)?;
+                affine::binary(BinOp::Add, constant.as_ref(), Some(parameters), c).map_err(invalid)
+            }
             _ => Ok(None),
         }
     }
@@ -41,8 +51,27 @@ impl Binding {
         if let (Self::Polynomial(left), Self::Polynomial(right)) = (self, rhs) {
             return Ok(Some(Self::Polynomial(left.binary(op, right, c)?)));
         }
-        Ok(affine::binary(op, self.affine(c)?.as_ref(), rhs.affine(c)?.as_ref(), c)
-            .map_err(invalid)?.map(Self::ParameterForm))
+        if let Some(value) = affine::binary(op, self.affine(c)?.as_ref(), rhs.affine(c)?.as_ref(), c).map_err(invalid)? {
+            return Ok(Some(Self::ParameterForm(value)));
+        }
+        if !matches!(op, BinOp::Add | BinOp::Sub) { return Ok(None); }
+        let (Some((left, a)), Some((right, b))) = (self.split(c)?, rhs.split(c)?) else { return Ok(None) };
+        let Some(parameters) = affine::binary(op, Some(&a), Some(&b), c).map_err(invalid)? else { return Ok(None) };
+        Ok(Some(Self::Sum { polynomial: left.binary(op, &right, c)?, parameters }))
+    }
+    fn split(&self, c: &mut Control) -> Result<Option<(EquationPolynomial, affine::Form)>, ConstructionFailure> {
+        Ok(match self {
+            Self::Sum { polynomial, parameters } => Some((polynomial.clone(), parameters.clone())),
+            Self::Polynomial(polynomial) => {
+                let zero = numeric::zero(&polynomial.ty, c).map_err(invalid)?;
+                affine::constant(&zero, c).map_err(invalid)?.map(|form| (polynomial.clone(), form))
+            }
+            Self::ParameterForm(form) => {
+                let zero = numeric::zero(&form.ty(c).map_err(invalid)?, c).map_err(invalid)?;
+                Some((EquationPolynomial::constant(zero, c)?, form.clone()))
+            }
+            _ => None,
+        })
     }
 }
 struct Compiler<'a> {
