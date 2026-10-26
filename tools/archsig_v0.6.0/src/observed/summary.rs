@@ -70,15 +70,11 @@ impl ObservedEvaluation {
                     }
                 }
                 if !answer.reasons.is_empty() {
+                    let mut reasons = answer.reasons.iter().map(|reason| notice(&reason.wire())).collect();
+                    super::result::concise_reasons(&mut reasons);
                     row.insert(
                         "reasons".into(),
-                        Json::Arr(
-                            answer
-                                .reasons
-                                .iter()
-                                .map(|reason| notice(&reason.wire()))
-                                .collect(),
-                        ),
+                        Json::Arr(reasons),
                     );
                 }
                 Json::Obj(row)

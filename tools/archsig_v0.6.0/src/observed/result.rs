@@ -10,6 +10,7 @@ use num_bigint::BigInt;
 mod completion_graph;
 #[path = "semantic_result.rs"]
 mod semantic_result;
+pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug)]
