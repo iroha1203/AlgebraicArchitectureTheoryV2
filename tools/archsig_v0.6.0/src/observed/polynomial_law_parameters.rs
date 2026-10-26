@@ -5,14 +5,14 @@ use crate::observed::object_equation_presentation::{
     ParameterEquation, parameter_source_difference,
 };
 
-// 一方のoperandが引数だけ、他方が定数項のない観測多項式なら、
-// 元operandをそのまま係数式にできる。観測値を係数へ埋め込まない。
+// 一方のoperandが引数だけ、他方が観測多項式なら、
+// その定数項を元operandの係数式へまとめる。観測値を係数へ埋め込まない。
 fn separated_parameter_side(source: &ParameterEquation) -> Option<bool> {
     let pure = |p: &super::super::object_equation_presentation::PolynomialFamily| {
         p.constant.terms.iter().all(|t| t.variables.is_empty())
     };
     let field = |p: &super::super::object_equation_presentation::PolynomialFamily| {
-        p.parameters.is_empty() && p.constant.terms.iter().all(|t| !t.variables.is_empty())
+        p.parameters.is_empty()
     };
     if pure(&source.left) && field(&source.right) {
         Some(true)
@@ -187,7 +187,7 @@ pub(super) fn plans(
                     separated_parameter_side(source).ok_or("数値族の係数式が分離できない")?;
                 let operand = if left { lhs } else { rhs };
                 let zero = difference(parts, base, original, &ty, operand, operand, c)?;
-                let coefficient = difference(
+                let mut coefficient = difference(
                     parts,
                     base,
                     original,
@@ -196,7 +196,7 @@ pub(super) fn plans(
                     if left { zero } else { operand },
                     c,
                 )?;
-                let field = if left {
+                let mut field = if left {
                     EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                         .and_then(|zero| {
                             zero.binary(crate::law::ast::BinOp::Sub, &source.right.constant, c)
@@ -205,6 +205,14 @@ pub(super) fn plans(
                 } else {
                     source.left.constant.clone()
                 };
+                if let Some(term) = field.terms.iter().find(|term| term.variables.is_empty()) {
+                    let negative = super::super::numeric::unary(
+                        crate::law::ast::UnOp::Neg, term.coefficient.scalar(), c,
+                    )?;
+                    let constant = push(parts, base, Part::Scalar(negative), c)?;
+                    coefficient = difference(parts, base, original, &ty, coefficient, constant, c)?;
+                    field.terms.retain(|term| !term.variables.is_empty());
+                }
                 let reference = family::polynomial(
                     parts,
                     base,

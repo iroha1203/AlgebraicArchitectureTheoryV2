@@ -88,6 +88,44 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn parameter_offset_polynomials_keep_free_observation_variables() {
+    fn coefficient(g: &Graph, r: NodeRef, n: i64) -> i64 {
+        match data(g, r).part() {
+            Part::Scalar(Scalar::Z(value)) => value.to_string().parse().unwrap(),
+            Part::Source { expression, .. } => {
+                let input = &data(g, r).source.inputs;
+                let crate::law::ast::ExprKind::Dotted(names) = &input.law().exprs[*expression].kind else { panic!("parameter source") };
+                assert_eq!(names.len(), 1);
+                assert_eq!(names[0].name, "n");
+                n
+            }
+            Part::Transform { operation: Transform::Difference, operands, .. } => {
+                assert_eq!(operands.len(), 2);
+                coefficient(g, operands[0], n) - coefficient(g, operands[1], n)
+            }
+            _ => panic!("numeric coefficient"),
+        }
+    }
+    for (body, sign) in [("n=c.quantity+2", 1), ("c.quantity+2=n", -1)] {
+        let p = prepared(false, false, &format!("law required equal(c:Part,n:Z):{body};"), "root");
+        let (mut g, a) = built(&p);
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        for coordinate in &ds[0].coordinates {
+            let Part::Polynomial { terms, .. } = data(&g, coordinate.nu.unwrap()).part() else { panic!("polynomial") };
+            assert_eq!(terms.iter().filter(|(_, powers)| powers.iter().all(|p| *p == 0)).count(), 1);
+            for n in [-3, 0, 4] {
+                for x in [-5i64, 0, 7] {
+                    let actual: i64 = terms.iter().map(|(r, powers)| {
+                        coefficient(&g, *r, n) * powers.iter().map(|power| x.pow(*power as u32)).product::<i64>()
+                    }).sum();
+                    assert_eq!(actual, sign * (n - x - 2));
+                }
+            }
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+#[test]
 fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
     let p = prepared(false, false, "law required zero(c:Part,n:Z):n=0;", "root");
     let (mut g, a) = built(&p);
