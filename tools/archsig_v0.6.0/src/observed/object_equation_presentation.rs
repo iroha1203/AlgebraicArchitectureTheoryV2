@@ -1359,6 +1359,21 @@ mod tests {
         }
     }
     #[test]
+    fn uniform_rational_literal_difference_is_exact() {
+        let inputs = inputs_with("law required balanced(c:Part,n:Q):n+rat(1,2)=n+rat(1,3);");
+        let mut c = Control::unlimited();
+        let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+        assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+        let expected = NumericTransportValue::observed(numeric::rational(&Scalar::Z(1.into()), &Scalar::Z(6.into()), &c).unwrap());
+        assert!(!presentation.occurrences.is_empty());
+        for occurrence in &presentation.occurrences {
+            assert_eq!(occurrence.ty, Type::Q);
+            assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+            assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected.clone()));
+        }
+        presentation.recheck(inputs, &mut c).unwrap();
+    }
+    #[test]
     fn recheck_rejects_forged_symbols_polynomials_ideal_substitution_origin_and_status() {
         let i = inputs();
         for mode in 0..28 {
