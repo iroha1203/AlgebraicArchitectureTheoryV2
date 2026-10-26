@@ -215,6 +215,56 @@ fn localize_defaults_select_required_law_and_fixed_unit_candidate() {
     assert_eq!(rejected.code, 64, "{} {}", rejected.stdout, rejected.stderr);
 }
 #[test]
+fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
+    for ty in ["Z", "Q"] {
+        for explicit in [false,true] {
+        for (predicate, truth) in [("z=z", true), ("z=w", false), ("(let a=z+w in a=w+z) and s.free=s.free", true)] {
+            let dir=if ty=="Q" {rational_compare_input("universal-fixed-q",true)} else {diagnostic_compare_input("universal-fixed-z",true,true)};
+            let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies["Reservations"].digest.clone();
+            let local=if explicit {"local here(t:State) reads t.free;"} else {""};
+            let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; view two():{ty}=2; {local} law required valid(z:{ty},s:State,w:{ty}):{predicate}; }}");
+            std::fs::write(dir.join("l.law"),law).unwrap();
+            let asks=["a=map(Reservations.Migration,on=@v/m,reading=Reservations)","l=localize($a.candidate.source)","e=diagnose($l.system,degree=0)","s=diagnose($l.system,side=semantic,degree=0)"];
+            if predicate=="z=z" {
+                let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
+                for ask in asks {args.extend(["--ask",ask]);}
+                let normal=run(&dir,&args);assert_eq!(normal.code,0,"{}",normal.stdout);
+                assert!(normal.stderr.is_empty());assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
+                assert_eq!(s(get(&normal.receipt,"format")),"archsig.summary/1");
+                eprintln!("universal-fixed {ty} stdout={} bytes",normal.stdout.len());
+            }
+            let r=execute(&dir,"out",&asks);
+            assert_eq!(r.code,0,"{ty} {predicate}: {} {}",r.stdout,r.stderr);
+            let j=result_json(&dir,&r);
+            let system=get(output(&j,1,"system"),"value");
+            for (states,solutions) in [("equation_states","solutions"),("semantic_states","parameters")] {
+                let state=&arr(get(system,states))[0];
+                let values=get(node(&j,get(state,solutions)),"value");
+                assert_eq!(arr(get(get(values,"representation"),"values")).is_empty(),!truth);
+            }
+            let scope=get(&arr(get(&j,"answers"))[1],"scope");
+            for name in ["z","w"] {
+                assert!(arr(get(scope,"quantifiers")).iter().any(|q|s(get(q,"name"))==name && !has(q,"domain")));
+            }
+            let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
+            for ask in asks {args.extend(["--ask",ask]);}
+            let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{}",reused.stdout);
+            let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+            if predicate=="z=w" {
+                let bound=execute(&dir,"bound",&[asks[0],"n=evaluate(Reservations.two,on=$a.candidate.source)","l=localize($a.candidate.source,law=Reservations.valid,z=$n.value,w=$n.value)","d=diagnose($l.system,degree=0)"]);
+                assert_eq!(bound.code,0,"{}",bound.stdout);
+                let j=result_json(&dir,&bound);
+                let system=get(output(&j,2,"system"),"value");
+                for (states,key) in [("equation_states","solutions"),("semantic_states","parameters")] {
+                    let state=&arr(get(system,states))[0];let solution=get(node(&j,get(state,key)),"value");
+                    assert_eq!(arr(get(get(solution,"representation"),"values")).len(),1);
+                }
+            }
+        }
+        }
+    }
+}
+#[test]
 fn unknown_fixed_value_is_not_a_free_coordinate_or_empty_solution() {
     let dir = input("local-missing", None);
     let r = execute(
