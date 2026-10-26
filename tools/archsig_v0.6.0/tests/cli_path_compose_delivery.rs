@@ -33,7 +33,7 @@ fn setup(name: &str) -> (PathBuf, RunArgs) {
             atom_definitions: vec![dir.join("d.json")],
             law: dir.join("l.law"),
             archmap: Some(dir.join("a.json")),
-            out: dir.join("out"),
+            out: Some(dir.join("out")),
         },
         asks: ASKS.iter().map(|s| (*s).into()).collect(),
         reuse: None,
@@ -264,11 +264,11 @@ fn path_compose_write_failures_remove_only_this_runs_temporary_directory() {
         );
         if race {
             assert_eq!(
-                std::fs::read(args.inputs.out.join("result.json")).unwrap(),
+                std::fs::read(args.inputs.out.as_ref().unwrap().join("result.json")).unwrap(),
                 b"existing result bytes"
             );
         } else {
-            assert!(!args.inputs.out.exists());
+            assert!(!args.inputs.out.as_ref().unwrap().exists());
         }
         let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
         assert!(!has(&receipt, "result"));

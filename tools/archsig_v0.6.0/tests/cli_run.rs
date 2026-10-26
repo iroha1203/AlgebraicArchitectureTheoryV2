@@ -58,7 +58,7 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(s(get(&run.receipt, "status")), status);
     assert_eq!(num(get(&run.receipt, "exit_code")), code as u64);
     let res = result_json(dir, run);
-    assert_eq!(s(get(&res, "format")), "archsig.result/3");
+    assert_eq!(s(get(&res, "format")), "archsig.result/4");
     assert_eq!(s(get(&res, "semantics")), "archsig/0.6.0");
     assert_eq!(s(get(&res, "command")), "run");
     assert_eq!(s(get(&res, "status")), status);
@@ -72,7 +72,6 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
         [
             "format",
             "semantics",
-            "producer",
             "command",
             "status",
             "exit_code",
@@ -81,9 +80,6 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
             "answers",
             "nodes",
             "issues",
-            "reuse",
-            "usage",
-            "limits"
         ]
         .into_iter()
         .collect()
@@ -110,14 +106,14 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     }
     let mut prior = BTreeSet::new();
     for n in arr(get(&res, "nodes")) {
-        for refs in ["arguments", "conditions", "evidence"] {
+        for refs in ["conditions"] {
             for r in arr(get(n, refs)) {
                 assert!(prior.contains(s(get(r, "node"))), "DAGの先行node: {refs}");
             }
         }
         assert!(!has(n, "support"));
         assert!(prior.insert(s(get(n, "id"))));
-        for key in ["rule", "scope", "reasons", "type", "state"] {
+        for key in ["reasons", "type", "state"] {
             get(n, key);
         }
     }
@@ -167,7 +163,7 @@ fn counter_value_refutation_and_missing_are_results() {
             let n = node(&res, get(get(answer(&res, "n"), "outputs"), "value"));
             assert_eq!(s(get(n, "type")), "Z");
             assert_eq!(s(get(n, "value")), count);
-            assert!(!arr(get(n, "arguments")).is_empty());
+            assert!(!has(n, "arguments"));
             assert!(!has(&r.receipt, "issues"));
         } else {
             for a in arr(get(&res, "answers")) {
@@ -207,9 +203,8 @@ fn false_value_and_guarded_inapplicability_are_distinct() {
     assert_eq!(s(get(value, "type")), "Bool");
     assert!(matches!(get(value, "value").value, JValue::Bool(false)));
     assert_eq!(s(get(answer(&res, "v"), "status")), "established");
-    let guard = node(&res, get(get(answer(&res, "g"), "outputs"), "evaluation"));
     assert_eq!(
-        s(get(get(guard, "value"), "applicability")),
+        s(get(answer(&res, "g"), "applicability")),
         "not_applicable"
     );
     assert_eq!(s(get(answer(&res, "g"), "status")), "established");
@@ -341,8 +336,7 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
         ],
     );
     let res = result(&dir, &r, "complete", 0);
-    assert_eq!(s(get(get(&res, "limits"), "time_ms")), n);
-    assert_eq!(s(get(get(&res, "limits"), "memory_mib")), n);
+    assert!(!has(&res, "limits"));
 }
 
 #[test]
@@ -470,7 +464,7 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
             atom_definitions: vec![dir.join("d.json")],
             law: dir.join("l.law"),
             archmap: Some(dir.join("a.json")),
-            out: dir.join("out"),
+            out: Some(dir.join("out")),
         },
         asks: ASKS.iter().map(|s| s.to_string()).collect(),
         reuse: None,
@@ -630,7 +624,6 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
         ("law", "--law"),
         ("archmap", "--archmap"),
         ("ask", "--ask"),
-        ("out", "--out"),
     ] {
         let dir = inputs(&format!("run-missing-{missing}"), Some("2"), L);
         let mut args = vec!["run"];
@@ -668,7 +661,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     std::fs::rename(dir.join("out"), dir.join("previous")).unwrap();
     let mut args = run_args(&dir);
     args.reuse = Some(dir.join("previous"));
-    args.inputs.out = dir.join("measured");
+    args.inputs.out = Some(dir.join("measured"));
     let seen = Rc::new(Cell::new(0usize));
     let count = Rc::clone(&seen);
     let before_evaluation = Rc::new(Cell::new(None));
@@ -700,7 +693,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
             (Some(Signal::Int), 130),
             (Some(Signal::Term), 143),
         ] {
-            args.inputs.out = dir.join(format!("stopped-{at}-{code}"));
+            args.inputs.out = Some(dir.join(format!("stopped-{at}-{code}")));
             let seen = Rc::new(Cell::new(0usize));
             let count = Rc::clone(&seen);
             let mut control = Control::new(
@@ -732,14 +725,14 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
             assert_eq!(signals.freezes, 1);
             if at <= before_evaluation {
                 assert!(outcome.result.is_none());
-                assert!(!args.inputs.out.exists());
+                assert!(!args.inputs.out.as_ref().unwrap().exists());
             } else {
                 assert!(
                     outcome.result.is_some(),
                     "照合前に得た検査済み結果を保持する"
                 );
                 let res = archsig::json::parse(
-                    &std::fs::read(args.inputs.out.join("result.json")).unwrap(),
+                    &std::fs::read(args.inputs.out.as_ref().unwrap().join("result.json")).unwrap(),
                 )
                 .unwrap();
                 assert_eq!(num(get(&res, "exit_code")), u64::from(code));
@@ -837,8 +830,7 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
     let dir = inputs("counterexample-origin", Some("12"), L);
     let r = requests(&dir, &["audit=check(CountAudit.bounded)"]);
     let res = result(&dir, &r, "complete", 1);
-    let claim = node(&res, get(answer(&res, "audit"), "claim"));
-    let evidence = arr(get(get(claim, "judgment"), "evidence"))
+    let evidence = arr(get(answer(&res, "audit"), "counterexamples"))
         .iter()
         .map(|r| get(node(&res, r), "value"))
         .find(|e| s(get(e, "kind")) == "counterexample")

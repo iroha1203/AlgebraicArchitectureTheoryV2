@@ -60,7 +60,7 @@ fn inputs(name: &str, with_map: bool) -> (std::path::PathBuf, CheckArgs) {
         atom_definitions: vec![dir.join("d.json")],
         law: dir.join("l.law"),
         archmap: with_map.then(|| dir.join("a.json")),
-        out: dir.join("out"),
+        out: Some(dir.join("out")),
     };
     (dir, args)
 }

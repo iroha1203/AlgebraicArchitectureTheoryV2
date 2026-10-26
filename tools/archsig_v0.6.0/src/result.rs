@@ -7,7 +7,7 @@ use crate::law::ast::Role;
 use crate::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use std::collections::{BTreeMap, BTreeSet};
 
-pub(crate) const RESULT_FORMAT: &str = "archsig.result/3";
+pub(crate) const RESULT_FORMAT: &str = "archsig.result/4";
 
 /// RunStatus と終了コード(実行仕様 §6)。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

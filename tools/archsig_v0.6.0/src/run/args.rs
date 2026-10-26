@@ -93,14 +93,15 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     if running && asks.is_empty() {
         return Err(usage("--ask", "run は --ask が一つ以上必要"));
     }
-    let out = singles
-        .remove("--out")
-        .ok_or_else(|| usage("--out", "--out が必要"))?;
+    let out = singles.remove("--out").map(PathBuf::from);
+    if !running && out.is_none() {
+        return Err(usage("--out", "check は --out が必要"));
+    }
     let inputs = CheckArgs {
         atom_definitions: definitions,
         law: PathBuf::from(law),
         archmap,
-        out: PathBuf::from(out),
+        out,
     };
     if running {
         Ok(Command::Run(RunArgs {

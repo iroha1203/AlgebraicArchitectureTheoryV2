@@ -8,6 +8,8 @@ use crate::{canonical::Json, issue::Location, result::location_wire, types::Type
 use num_bigint::BigInt;
 #[path = "completion_graph.rs"]
 mod completion_graph;
+#[path = "semantic_result.rs"]
+mod semantic_result;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug)]
@@ -1660,6 +1662,9 @@ impl ObservedEvaluation {
             Json::Arr(self.issues.iter().map(Reason::wire).collect()),
         );
         control.checkpoint(point)?;
+        if !inspection {
+            semantic_result::compact(&mut result, &self.nodes, control, point)?;
+        }
         Ok(result)
     }
 }

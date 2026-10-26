@@ -75,7 +75,8 @@ fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_eviden
         let a = answer(&j, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
         assert!(has(get(a, "outputs"), "comparison"));
-        assert!(!arr(get(a, "evidence")).is_empty(), "{id}");
+        if status == "refuted" { assert!(!arr(get(a, "counterexamples")).is_empty(), "{id}"); }
+        else { assert!(!has(a, "counterexamples")); }
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -91,7 +92,8 @@ fn evidence<'a>(
     id: &str,
     kind: &str,
 ) -> Vec<&'a archsig::json::JNode> {
-    arr(get(answer(j, id), "evidence"))
+    let a = answer(j,id);
+    arr(get(a, if has(a,"evidence") { "evidence" } else { "counterexamples" }))
         .iter()
         .map(|r| node(j, r))
         .filter(|n| s(get(get(n, "value"), "kind")) == kind)
@@ -141,6 +143,7 @@ fn term_evidence_retains_the_finite_domain_normal_forms_and_reapplied_zero_unit_
             assert!(has(node(&j, get(binding, "value")), "type"));
         }
     }
+    let j = internal_graph(&dir, &j);
     let ex = evidence(&j, "finite_equal", "finite_exhaustion");
     assert_eq!(ex.len(), 1);
     let data = get(get(ex[0], "value"), "data");
@@ -224,7 +227,8 @@ fn nested_term_values_and_term_returning_terms_use_extensional_equality() {
         ("higher_other", "refuted"),
     ] {
         assert_eq!(s(get(answer(&j, id), "status")), status, "{id}");
-        assert!(!arr(get(answer(&j, id), "evidence")).is_empty());
+        if status == "refuted" { assert!(!arr(get(answer(&j, id), "counterexamples")).is_empty()); }
+        else { assert!(!has(answer(&j,id),"counterexamples")); }
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -303,6 +307,7 @@ view multiRight():Term<(Bool,Option<Unit>,Set<Unit>)->Z> = fn(x:Bool,y:Option<Un
     let r = asks(&dir, &qs.iter().map(String::as_str).collect::<Vec<_>>());
     assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
+    let j = internal_graph(&dir, &j);
     for (name, size) in [
         ("zero", 1),
         ("unit", 1),
@@ -376,7 +381,7 @@ view bigRight():Term<(Z)->Z> = fn(y:Z)=>y*12345678901234567890123456789012345678
         ("big", "established"),
     ] {
         assert_eq!(s(get(answer(&j, id), "status")), status, "{id}");
-        assert_eq!(evidence(&j, id, "normalization").len(), 2);
+        if status == "established" { assert!(!has(answer(&j,id),"counterexamples")); }
     }
     let e = evidence(&j, "q_difference", "counterexample");
     let data = get(get(e[0], "value"), "data");
@@ -488,8 +493,8 @@ fn reused_term_proofs_reject_mutations_and_recompute_current_terms() {
     let path = dir.join(s(get(&r.receipt, "result")));
     let raw = std::fs::read_to_string(&path).unwrap();
     for (i, (from, to)) in [
-        ("\"checked\":2", "\"checked\":1"),
-        ("\"kind\":\"normalization\"", "\"kind\":\"counterexample\""),
+        ("\"status\":\"established\"", "\"status\":\"refuted\""),
+        ("\"predicate\":\"equal\"", "\"predicate\":\"unequal\""),
         ("\"kind\":\"value\"", "\"kind\":\"word\""),
     ]
     .iter()
@@ -518,8 +523,8 @@ fn reused_term_proofs_reject_mutations_and_recompute_current_terms() {
         let r = run(&dir, &args);
         assert_eq!(r.code, 0, "{}", r.stdout);
         let j = result_json(&dir, &r);
-        assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
-        assert!(!arr(get(get(&j, "reuse"), "rejected")).is_empty());
+        assert!(!has(&j, "reuse"));
+        assert!(!warnings(&j).is_empty());
         assert_eq!(get(&j, "answers"), get(&original, "answers"));
         assert_eq!(get(&j, "nodes"), get(&original, "nodes"));
     }
@@ -555,7 +560,7 @@ fn reused_term_proofs_reject_mutations_and_recompute_current_terms() {
     assert_eq!(r.code, 1, "{}", r.stdout);
     let j = result_json(&dir, &r);
     assert_eq!(s(get(answer(&j, "c"), "status")), "refuted");
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
+    assert!(!has(&j, "reuse"));
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]

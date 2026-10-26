@@ -12,7 +12,6 @@ use crate::observed::{
     result::{Decision, ReasonKind},
 };
 use crate::result::{ResultIssue, Signal, Status, exit_code};
-use std::collections::BTreeMap;
 use std::time::Instant;
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
@@ -41,17 +40,18 @@ pub fn run_requests(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &RunArgs,
-    started: Instant,
+    _started: Instant,
     control: &mut Control,
 ) -> Outcome {
     let usage = |argument: &str, message: String| ResultIssue::Usage {
         argument: argument.to_owned(),
         message,
     };
-    if let Err(message) = output::out_ok(&args.inputs.out) {
+    if let Some(out) = &args.inputs.out
+        && let Err(message) = output::out_ok(out) {
         return output::usage_without_result(
             signals,
-            usage("--out", format!("{}: {message}", args.inputs.out.display())),
+            usage("--out", format!("{}: {message}", out.display())),
         );
     }
     let Some(map_path) = &args.inputs.archmap else {
@@ -181,7 +181,7 @@ pub fn run_requests(
     };
     let (rejected, reuse_stop) = candidate.verify(&evaluation, control);
     deliver(
-        io, signals, args, evaluation, rejected, reuse_stop, started, control,
+        io, signals, args, evaluation, rejected, reuse_stop, control,
     )
 }
 
@@ -192,11 +192,8 @@ fn deliver(
     evaluation: ObservedEvaluation,
     rejected: Vec<Json>,
     reuse_stop: Option<StopReason>,
-    started: Instant,
     control: &Control,
 ) -> Outcome {
-    let elapsed_ms = started.elapsed().as_millis();
-    let peak_bytes = output::peak_rss_bytes();
     let (mut status, mut code) = match evaluation.status() {
         "complete" => (
             Status::Complete,
@@ -261,6 +258,16 @@ fn deliver(
         }
     }
     output::sort_issues(&mut issues);
+    let Some(out) = &args.inputs.out else {
+        let mut summary = evaluation.summary_wire(status.wire(), code, &issues);
+        if !rejected.is_empty() && let Json::Obj(fields) = &mut summary {
+            fields.insert("warnings".into(), Json::Arr(rejected));
+        }
+        return Outcome {
+            status, exit_code: code, result: None, issues: Vec::new(),
+            summary: Some(summary),
+        };
+    };
     let inputs = evaluation.prepared().inputs();
     let sources = inputs.sources();
     let mut copies: Vec<(String, &[u8])> = sources
@@ -294,69 +301,39 @@ fn deliver(
     for (key, value) in [
         ("format", Json::str(crate::result::RESULT_FORMAT)),
         ("semantics", Json::str(crate::law::SEMANTICS)),
-        (
-            "producer",
-            Json::obj([
-                ("version", Json::str(env!("CARGO_PKG_VERSION"))),
-                (
-                    "build",
-                    Json::str(concat!(
-                        env!("CARGO_PKG_NAME"),
-                        "-",
-                        env!("CARGO_PKG_VERSION")
-                    )),
-                ),
-            ]),
-        ),
         ("command", Json::str("run")),
         ("status", Json::str(status.wire())),
         ("exit_code", Json::Nat(u64::from(code))),
-        ("issues", Json::Arr(issues.clone())),
-        (
-            "reuse",
-            Json::obj([
-                ("requested", Json::Bool(args.reuse.is_some())),
-                ("accepted_nodes", Json::Nat(0)),
-                ("recomputed_nodes", Json::Nat(evaluation.nodes.len() as u64)),
-                ("rejected", Json::Arr(rejected)),
-            ]),
-        ),
-        (
-            "usage",
-            Json::obj([
-                ("elapsed_ms", Json::str(elapsed_ms.to_string())),
-                ("peak_bytes", Json::str(peak_bytes.to_string())),
-            ]),
-        ),
     ] {
         document.insert(key.into(), value);
     }
-    let mut limits = BTreeMap::new();
-    if let Some(n) = &args.time_ms {
-        limits.insert("time_ms".into(), Json::str(n));
+    if !rejected.is_empty() {
+        document.insert("warnings".into(), Json::Arr(rejected));
     }
-    if let Some(n) = &args.memory_mib {
-        limits.insert("memory_mib".into(), Json::str(n));
+    let Json::Arr(saved_issues) = document.get_mut("issues").unwrap() else { unreachable!() };
+    if let Some(reason) = reuse_stop { saved_issues.push(reason.wire()); }
+    if prior_signal(control).is_none() && let Some(signal) = frozen {
+        saved_issues.push(ResultIssue::Cancelled(signal).wire());
     }
-    document.insert("limits".into(), Json::Obj(limits));
     let copies: Vec<_> = copies
         .iter()
         .map(|(name, bytes)| (name.as_str(), *bytes))
         .collect();
     let receipt_issues = if matches!(status, Status::Error | Status::Interrupted) {
-        issues
+        saved_issues.clone()
     } else {
         Vec::new()
     };
     output::publish(
         io,
-        &args.inputs.out,
+        out,
         wire,
         &copies,
         Outcome {
             status,
             exit_code: code,
-            result: Some(args.inputs.out.join("result.json")),
+            result: Some(out.join("result.json")),
+            summary: None,
             issues: receipt_issues,
         },
     )

@@ -134,7 +134,7 @@ fn operation_aliases_keep_named_words_and_equal_full_actions() {
         );
     }
     let a = answer(&j, "word");
-    let e = value(&j, &arr(get(a, "evidence"))[0]);
+    let e = value(&j, &arr(get(a, "counterexamples"))[0]);
     let data = get(e, "data");
     for field in ["bindings", "paths", "facts"] {
         assert!(arr(get(data, field)).is_empty());
@@ -162,7 +162,7 @@ fn path_action_compares_the_whole_universe_and_keeps_a_concrete_counterexample()
     let j = saved(&dir, &r, "complete", 1);
     let a = answer(&j, "a");
     assert_eq!(s(get(a, "status")), "refuted");
-    let data = get(value(&j, &arr(get(a, "evidence"))[0]), "data");
+    let data = get(value(&j, &arr(get(a, "counterexamples"))[0]), "data");
     // p↦r agrees at the selected source; q↦r versus q↦q distinguishes total maps.
     let facts = arr(get(data, "facts"));
     assert_eq!(facts.len(), 3);
@@ -262,7 +262,7 @@ fn actual_action_endpoint_mismatch_is_a_checked_construction_refutation() {
         let claim = node(&j, get(get(a, "outputs"), "proposition"));
         assert_eq!(s(get(get(claim, "value"), "predicate")), "constructible");
         assert_eq!(arr(get(get(claim, "value"), "operands")).len(), 3);
-        let data = get(value(&j, &arr(get(a, "evidence"))[0]), "data");
+        let data = get(value(&j, &arr(get(a, "counterexamples"))[0]), "data");
         for field in ["bindings", "paths", "facts"] {
             assert!(arr(get(data, field)).is_empty());
         }
@@ -398,8 +398,8 @@ fn reused_comparison_is_recomputed_after_forged_kind_or_input_changes() {
     }
     let r = run(&dir, &args);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
-    assert!(!arr(get(get(&j, "reuse"), "rejected")).is_empty());
+    assert!(!has(&j, "reuse"));
+    assert!(!warnings(&j).is_empty());
     assert_eq!(get(&j, "nodes"), get(&original, "nodes"));
     assert_eq!(get(&j, "answers"), get(&original, "answers"));
     // A provenance revision invalidates the hint; current primitives are rechecked.
@@ -408,7 +408,7 @@ fn reused_comparison_is_recomputed_after_forged_kind_or_input_changes() {
     args[8] = "fresh";
     let r = run(&dir, &args);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(num(get(get(&j, "reuse"), "accepted_nodes")), 0);
+    assert!(!has(&j, "reuse"));
     assert_eq!(s(get(answer(&j, "a"), "status")), "refuted");
     std::fs::remove_dir_all(dir).unwrap();
 }

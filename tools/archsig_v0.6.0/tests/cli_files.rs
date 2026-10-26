@@ -335,7 +335,7 @@ fn args(dir: &Path) -> CheckArgs {
         atom_definitions: vec![dir.join("d.json")],
         law: dir.join("l.law"),
         archmap: None,
-        out: dir.join("o"),
+        out: Some(dir.join("o")),
     }
 }
 

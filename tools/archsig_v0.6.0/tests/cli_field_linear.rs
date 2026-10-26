@@ -225,9 +225,12 @@ fn rational_fibers_keep_nonunique_assignments_and_inconsistency() {
             );
         } else {
             assert_eq!(s(get(repr, "kind")), "empty");
-            let proof = get(node(&j, get(repr, "certificate")), "value");
+            assert!(!has(repr, "certificate"));
+            let internal = internal_graph(&dir, &j);
+            let repr = get(get(output(&internal, 0, "solutions"), "value"), "representation");
+            let proof = get(node(&internal, get(repr, "certificate")), "value");
             assert_eq!(s(get(proof, "kind")), "linear_inconsistent");
-            verify_inconsistent_wire(&j, proof);
+            verify_inconsistent_wire(&internal, proof);
             assert_eq!(
                 s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
                 "refuted"
@@ -433,12 +436,13 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             continue;
         }
         let j = result_json(&dir, &r);
-        let answer = &arr(get(&j, "answers"))[0];
+        let internal = internal_graph(&dir, &j);
+        let answer = &arr(get(&internal, "answers"))[0];
         let reason = arr(get(answer, "reasons"))
             .iter()
             .find(|r| s(get(r, "code")) == "missing_observation")
             .unwrap();
-        let expression = get(node(&j, &arr(get(reason, "dependencies"))[0]), "value");
+        let expression = get(node(&internal, &arr(get(reason, "dependencies"))[0]), "value");
         let span = arr(get(get(expression, "location"), "span"));
         let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
         assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], guard);
@@ -447,7 +451,7 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             .find(|b| s(get(b, "name")) == "s")
             .unwrap();
         assert_eq!(
-            arr(get(node(&j, get(binding, "value")), "value"))
+            arr(get(node(&internal, get(binding, "value")), "value"))
                 .iter()
                 .map(s)
                 .collect::<Vec<_>>(),
@@ -504,7 +508,7 @@ fn rational_quotient_keeps_candidate_solution_domains_and_law_descent() {
         assert_eq!(s(get(&arr(get(&j,"answers"))[i],"status")),status);
     }
     let bad=&arr(get(&j,"answers"))[2];
-    let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");
+    let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");
     assert_eq!(s(get(proof,"kind")),"separating_pair");
     let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));
     assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);
@@ -559,7 +563,7 @@ fn rational_tuple_quotient_retains_nested_image_and_law_family() {
     let q=get(output(&j,1,"quotient"),"value");let rep=get(q,"representation");let image=get(node(&j,get(rep,"image")),"value");assert_eq!(num(get(image,"free_rank")),2);
     let generator=get(&arr(get(image,"generators"))[0],"value");assert_eq!(arr(generator).len(),2);assert_eq!(arr(&arr(generator)[1]).len(),2);
     assert_eq!(qcoordinates(&j,get(rep,"offset")),vec![vec!["0".to_owned(),"1".to_owned()],vec!["0".to_owned(),"1".to_owned()],vec!["1".to_owned(),"3".to_owned()]]);
-    let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"evidence"))[0]),"value");
+    let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"counterexamples"))[0]),"value");
     let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));
     assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);
     assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
@@ -587,7 +591,7 @@ fn rational_tuple_law_descent_keeps_operand_components_and_counterexample() {
     for (column,expected) in arr(get(map,"columns")).iter().zip([["1","0","0","1","0","0"],["0","1","0","0","1","0"]]) {assert_eq!(arr(column).len(),6);for (r,n) in arr(column).iter().zip(expected){assert_eq!(arr(get(node(&j,r),"value")).iter().map(s).collect::<Vec<_>>(),[n,"1"]);}}
     assert_eq!(arr(get(map,"columns")).len(),2);
     let offsets=qcoordinates(&j,get(descent,"offset"));assert_eq!(offsets.len(),6);for (i,v) in offsets.iter().enumerate(){assert_eq!(v, &if i%3==2{vec!["1".to_owned(),"3".to_owned()]}else{vec!["0".to_owned(),"1".to_owned()]});}
-    let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"evidence"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
+    let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks{args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 
 }
@@ -605,8 +609,8 @@ fn rational_quotient_finite_law_instances_keep_guard_false_keys() {
     let asks=["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.domain,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.domain,s=@v/s,law=Pair.indexed)"];
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
     let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),2);
-    let pattern=&arr(get(get(family,"construction"),"arguments"))[1];let tags=arr(get(node(&j,pattern),"value"));assert_eq!(tags.len(),2);assert!(tags.iter().any(|v|get_bool(&arr(v)[1])==false));assert!(tags.iter().any(|v|get_bool(&arr(v)[1])));
-    let answer=&arr(get(&j,"answers"))[2];assert_eq!(s(get(answer,"status")),"refuted");let evidence=get(node(&j,&arr(get(answer,"evidence"))[0]),"value");let data=get(evidence,"data");let values=arr(get(data,"law_values"));for reference in values {let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
+    let pattern=get(family,"applicability");let tags=arr(get(node(&j,pattern),"value"));assert_eq!(tags.len(),2);assert!(tags.iter().any(|v|get_bool(&arr(v)[1])==false));assert!(tags.iter().any(|v|get_bool(&arr(v)[1])));
+    let answer=&arr(get(&j,"answers"))[2];assert_eq!(s(get(answer,"status")),"refuted");let evidence=get(node(&j,&arr(get(answer,"counterexamples"))[0]),"value");let data=get(evidence,"data");let values=arr(get(data,"law_values"));for reference in values {let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks{args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 
 }
@@ -616,7 +620,7 @@ fn get_bool(value:&JNode)->bool {if let archsig::json::JValue::Bool(value)=value
 fn rational_quotient_guards_are_restricted_to_the_selected_solution_fiber() {
     let dir=input("rational-fixed-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view combined(s:State):Q=s.x+s.y;law optional active(s:State) when s.x+s.y=1:s.x=s.x;law optional inactive(s:State) when s.x+s.y=2:s.x=s.x;");
     let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","a=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.active)","b=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.inactive)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"refuted");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"established");
-    let q=get(output(&j,2,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);let tags=arr(get(node(&j,&arr(get(get(family,"construction"),"arguments"))[1]),"value"));assert_eq!(tags.len(),1);assert!(!get_bool(&arr(&tags[0])[1]));
+    let q=get(output(&j,2,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);let tags=arr(get(node(&j,get(family,"applicability")),"value"));assert_eq!(tags.len(),1);assert!(!get_bool(&arr(&tags[0])[1]));
 }
 #[test]
 fn rational_quotient_missing_guard_does_not_drop_its_instances() {
@@ -637,28 +641,28 @@ fn rational_quotient_unguarded_and_empty_instance_families() {
     let dir=input("rational-unguarded-instances","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view pair(s:State):(Q,Q)=(s.x,s.y);law optional indexed(s:State,b:Bool):(if b then s.x else s.y)=0;");
     let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.domain,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
     let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),4);
-    let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");for reference in arr(get(get(proof,"data"),"law_values")){let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert!(rows.iter().all(|row|has(&arr(row)[1],"some")));}
+    let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");for reference in arr(get(get(proof,"data"),"law_values")){let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert!(rows.iter().all(|row|has(&arr(row)[1],"some")));}
 
     let dir=input("rational-empty-instances","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;law optional empty(s:State,t:Ghost):s.x=s.x;");
     let path=dir.join("d.json");let old=std::fs::read_to_string(&path).unwrap();let before=definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
     let new=old.replace(r#""alignments":[]}]}]}"#,r#""alignments":[]},{"kind":"entity","name":"Pair.Ghost","meaning":"観測個体のない型。","parameters":[],"fields":[],"alignments":[]}]}]}"#);assert_ne!(new,old);
     let after=definition::check_definitions(&[("d",new.as_bytes())]).unwrap();std::fs::write(path,new).unwrap();
     for name in ["a.json","l.law"]{let path=dir.join(name);let text=std::fs::read_to_string(&path).unwrap().replace(&before.vocabularies["Pair"].digest,&after.vocabularies["Pair"].digest);std::fs::write(path,text).unwrap();}
-    let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.empty)"]);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);assert!(arr(get(family,"generators")).is_empty());assert_eq!(arr(get(get(family,"construction"),"arguments")).len(),1);
+    let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.empty)"]);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);assert!(arr(get(family,"generators")).is_empty());assert!(!has(family,"applicability"));
 }
 
 #[test]
 fn rational_quotient_composed_fixed_guards_keep_the_selected_domain() {
     for (label,guard) in [("and","(s.x+s.y=1) and b"),("or","(s.x+s.y=2) or b"),("not","not (s.x+s.y!=1) and b"),("let","let fixed=s.x+s.y=1 in fixed and b"),("if","if s.x+s.y=1 then b else false"),("view","fixed(s) and b")] {
         let dir=input(label,&format!("change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law required total(s:State):s.x+s.y=1;view pair(s:State):(Q,Q)=(s.x,s.y);view combined(s:State):Q=s.x+s.y;view fixed(s:State):Bool=s.x+s.y=1;law optional indexed(s:State,b:Bool) when ({guard}):s.x=s.x;"));
-        let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.solutions,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{label}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");for reference in arr(get(get(proof,"data"),"law_values")){let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
+        let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.solutions,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{label}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");for reference in arr(get(get(proof,"data"),"law_values")){let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
     }
 }
 
 #[test]
 fn rational_quotient_varying_guard_is_not_fixed_by_an_arbitrary_assignment() {
     let dir=input("rational-varying-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional indexed(s:State,b:Bool) when (s.x+s.y=1) and b:s.x=s.x;");
-    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("商の候補域で変化するLaw guard")));let j=result_json(&dir,&r);assert!(!has(get(&arr(get(&j,"answers"))[1],"outputs"),"quotient"));
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("商の候補域で変化するLaw guard")));assert!(!has(&r.receipt,"result"));assert!(!dir.join("out").exists());
 }
 
 #[test]
@@ -705,17 +709,17 @@ fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
             let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
             if gamma==Some(2){
                 assert_eq!(coordinates[0],vec!["0","1"]);
-                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value")).find(|e|s(get(e,"kind"))=="gluing").unwrap();
-                let data=get(proof,"data");assert_eq!(arr(get(data,"rechecks")).len(),3);
-                for check in arr(get(data,"rechecks")){assert_eq!(s(get(get(node(&j,check),"judgment"),"status")),"established");}
+                assert!(!has(answer,"counterexamples"));
             }else{
                 assert_ne!(coordinates[0][0],"0");
+                let j=internal_graph(&dir,&j);
+                let answer=&arr(get(&j,"answers"))[i];
                 let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value")).find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
                 let pairing=arr(get(node(&j,get(get(proof,"data"),"pairing")),"value"));assert_ne!(s(&pairing[0]),"0");
             }
         }
         if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
-        assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="evidence"&&s(get(get(n,"value"),"kind"))=="smith"));
+        assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
     }
 }
 #[test]

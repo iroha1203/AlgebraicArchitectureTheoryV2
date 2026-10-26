@@ -178,6 +178,17 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     {
         return Err(invalid("format/semanticsが対応版と異なる"));
     }
+    if text(field(document, "command")?)? == "run" {
+        record(document, &[
+            "format", "semantics", "command", "status", "exit_code", "inputs",
+            "requests", "answers", "nodes", "issues",
+        ], &["warnings"])?;
+        nat(field(document, "exit_code")?)?;
+        if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
+            for issue in array(warnings)? { issue_shape(issue, control)?; }
+        }
+        return Ok(());
+    }
     record(
         document,
         &[

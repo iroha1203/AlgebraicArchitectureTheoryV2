@@ -493,6 +493,7 @@ fn law_descent(
         };
         arguments.push(change_result::value(b, &pattern)?);
     }
+    let applicability = arguments.get(1).copied();
     let family = linear::module(b, ring, law.matrix.len(), "free", arguments)?;
     let mut labels = coefficients::coordinate_names(&law.value_type, "lhs", c)?;
     labels.extend(coefficients::coordinate_names(&law.value_type, "rhs", c)?);
@@ -517,6 +518,9 @@ fn law_descent(
         return Err("アフィン商の評価族加群がrecordでない".into());
     };
     wire.insert("generators".into(), Json::Arr(generators));
+    if let Some(pattern) = applicability {
+        wire.insert("applicability".into(), pattern.wire());
+    }
     let transformed = coefficients::multiply(ty, &law.matrix, &fiber.lifts, fiber.rank, c)?;
     let matrix = transformed
         .iter()

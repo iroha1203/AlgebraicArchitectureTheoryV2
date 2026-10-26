@@ -52,6 +52,7 @@ mod public_path_compose;
 mod quantifier;
 pub mod result;
 mod term;
+mod summary;
 mod value_equality;
 pub(crate) mod value_transport;
 mod view_family;

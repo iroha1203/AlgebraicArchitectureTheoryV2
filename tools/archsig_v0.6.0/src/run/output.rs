@@ -94,6 +94,7 @@ pub(super) fn notify(
         status,
         exit_code: code,
         result: None,
+        summary: None,
         issues,
     }
 }
@@ -153,6 +154,7 @@ pub(super) fn finalize(
         status: result.status,
         exit_code: result.exit_code,
         result: Some(out.join("result.json")),
+        summary: None,
         issues: result.issues.iter().map(ResultIssue::wire).collect(),
     };
     publish(io, out, result.wire(), copies, outcome)
@@ -224,6 +226,7 @@ pub(super) fn publish(
                 status: Status::Error,
                 exit_code: 74,
                 result: None,
+                summary: None,
                 issues: vec![issue.wire()],
             }
         }
