@@ -67,6 +67,17 @@ impl Environment<'_> {
                 },
             );
         }
+        let declaration = self.inputs.law().declarations.get(&i.origin.declaration)
+            .ok_or("元viewの宣言がない")?;
+        if let crate::law::model::Signature::View { params, .. } = &declaration.signature {
+            for parameter in params {
+                self.tick()?;
+                if !variables.contains_key(&parameter.name) && matches!(parameter.ty, Type::Z | Type::Q) {
+                    let (free, _) = change_affine::law_variables(self, std::slice::from_ref(parameter), &[])?;
+                    variables.extend(free);
+                }
+            }
+        }
         Ok(Some((i.bindings, variables, scope)))
     }
 }

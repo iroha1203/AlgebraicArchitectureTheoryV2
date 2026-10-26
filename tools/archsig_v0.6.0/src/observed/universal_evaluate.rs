@@ -462,6 +462,7 @@ impl Evaluator<'_, '_> {
         &mut self,
         plan: &UniversalPlan,
         span: (usize, usize),
+        ty: Type,
     ) -> Result<(NodeRef, SourceAnalysis), Failure> {
         let analyzed = self.environment.universal_template_source_analysis(
             self.graph,
@@ -472,7 +473,7 @@ impl Evaluator<'_, '_> {
         self.retained_scope.merge(&analyzed.analysis.scope);
         let analysis = analyzed.analysis.clone();
         let source = self.push(Node {
-            ty: NodeType::Expression(Type::Bool),
+            ty: NodeType::Expression(ty),
             payload: Some(Payload::Expression {
                 location: Location::Law { span },
                 parameters: analyzed.parameters,
@@ -527,12 +528,12 @@ impl Evaluator<'_, '_> {
         &mut self,
         plan: &UniversalPlan,
     ) -> Result<(NodeRef, NodeRef, Option<NodeRef>), Failure> {
-        let (body, body_analysis) = self.universal_raw_source(plan, plan.template_span)?;
+        let (body, body_analysis) = self.universal_raw_source(plan, plan.template_span, Type::Bool)?;
         let Some(guard) = plan.guard else {
             return Ok((body, body, None));
         };
         let guard_span = self.environment.inputs.law().exprs[guard].span;
-        let (guard, guard_analysis) = self.universal_raw_source(plan, guard_span)?;
+        let (guard, guard_analysis) = self.universal_raw_source(plan, guard_span, Type::Bool)?;
         let Some(Payload::Expression { parameters, .. }) = &self.graph.get(body)?.payload else {
             unreachable!()
         };
@@ -578,12 +579,25 @@ impl Evaluator<'_, '_> {
         })
     }
 
+    pub(super) fn universal_view_evaluation(&mut self, plan: UniversalPlan) -> Result<Evaluated, Failure> {
+        let ty = self.environment.inputs.law().expr_type(plan.body)
+            .ok_or_else(|| Failure::Internal("全域viewの戻り型がない".into()))?.clone();
+        let (template, _) = self.universal_raw_source(&plan, plan.template_span, ty)?;
+        let domains = self.universal_parameter_domains(&plan, template)?;
+        Ok(self.universal_pointwise(&plan, template, &domains, plan.body)?.evaluated)
+    }
+
     #[inline(never)]
     fn universal_evaluation_inner(
         &mut self,
         plan: UniversalPlan,
     ) -> Result<UniversalEvaluation, Failure> {
         let (template, raw_body, raw_guard) = self.universal_template(&plan)?;
+        let domains = self.universal_parameter_domains(&plan, template)?;
+        self.universal_evaluation_with_domains(plan, template, raw_body, raw_guard, domains)
+    }
+
+    fn universal_parameter_domains(&mut self, plan: &UniversalPlan, template: NodeRef) -> Result<Vec<NodeRef>, Failure> {
         let mut domains = Vec::new();
         for parameter in &plan.parameters {
             self.universal_observe(plan.template_span, 0)?;
@@ -606,6 +620,10 @@ impl Evaluator<'_, '_> {
                 reasons: vec![],
             })?);
         }
+        Ok(domains)
+    }
+
+    fn universal_evaluation_with_domains(&mut self, plan: UniversalPlan, template: NodeRef, raw_body: NodeRef, raw_guard: Option<NodeRef>, domains: Vec<NodeRef>) -> Result<UniversalEvaluation, Failure> {
         let analyzed =
             self.environment
                 .universal_analysis(self.graph, template, &domains, &self.bindings)?;

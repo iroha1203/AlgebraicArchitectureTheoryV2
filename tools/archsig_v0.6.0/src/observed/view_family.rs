@@ -708,6 +708,9 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
     else {
         return Err("全view族が通常Evaluationでない".into());
     };
+    if reading::numeric_parameters(&reading::origin(g, *expression)?.1) {
+        return whole::validate(g, n, at);
+    }
     let [part] = parts.as_slice() else {
         return Err("全view族の元body出現がない".into());
     };

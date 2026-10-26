@@ -114,7 +114,7 @@ fn plan(
     evaluated: Option<NodeRef>,
 ) -> Result<Plan, ValidationFailure> {
     let (a, o) = body::origin(g, expression)?;
-    if !o.parameters.is_empty() {
+    if !o.parameters.is_empty() && !body::numeric_parameters(&o) {
         return Err("残るview parameterを閉じた読取りで評価できない".into());
     }
     let Type::Option(ty) = &o.returns else {
@@ -250,6 +250,8 @@ fn plan(
     support.sort();
     support.dedup();
     reasons.dedup();
+    // 全引数の関数を、一つのOption値として公開しない。
+    let value = if o.parameters.is_empty() { value } else { None };
     Ok(Plan {
         origin: o,
         support,
@@ -377,7 +379,7 @@ pub(super) fn evaluate(
     }
     env.recheck_node(g, g.get(expression)?, expression.0)?;
     let (_, o) = body::origin(g, expression)?;
-    if !o.parameters.is_empty() {
+    if !o.parameters.is_empty() && !body::numeric_parameters(&o) {
         return Ok(Outcome::Parameters(o.parameters));
     }
     let evaluated = match body::evaluate(env, g, expression, c)? {
