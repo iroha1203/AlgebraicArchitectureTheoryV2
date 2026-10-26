@@ -354,10 +354,7 @@ pub(super) fn retain(
         // 全対象の元式は同じparameter域を共有する。保留なら評価の生成前に返す。
         if !o.parameters.is_empty() && !reading::numeric_parameters(&o) {
             let parameters = view_family::parameter_readings(env, g, rs[0], c)?;
-            if parameters
-                .iter()
-                .any(|p| p.values.is_none() || !p.missing.is_empty())
-            {
+            if view_family::pending_parameters(&parameters) {
                 diagram.pending.push(Pending {
                     instance,
                     expressions: rs,
