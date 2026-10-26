@@ -430,6 +430,17 @@ pub(in crate::observed) fn constant_numeric_family(
                 inner.insert(name.name.clone());
                 pending.push((*body, Arc::new(inner)));
             },
+            ExprKind::Call { callee, args } if args.len() == 2 => {
+                let mut callee = *callee;
+                while let ExprKind::Group(inner) = law.exprs[callee].kind {
+                    tick(c)?;
+                    callee = inner;
+                }
+                if !matches!(&law.exprs[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat")
+                    || !args.iter().all(|arg| matches!(law.exprs[*arg].kind, ExprKind::Int(_))) {
+                    return Ok(None);
+                }
+            },
             _ => return Ok(None),
         }
     }

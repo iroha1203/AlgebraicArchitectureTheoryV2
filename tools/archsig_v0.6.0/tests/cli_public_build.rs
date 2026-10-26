@@ -53,6 +53,18 @@ fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
         }
     }
 }
+#[test]
+fn rational_literals_in_universal_laws_feed_public_build_and_checks() {
+    for (rhs, code) in [("n+rat(2,4)", 0), ("n", 1)] {
+        let dir = files(&format!("rational-family-{code}"), &format!(
+            "law required balanced(c:Part,n:Q):n+rat(1,2)={rhs};"
+        ), false);
+        let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
+        let result = saved(&dir, &run, "complete", code);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "c"), "status")), if code == 0 { "established" } else { "refuted" });
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =
