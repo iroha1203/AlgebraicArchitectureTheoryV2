@@ -9,6 +9,23 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn same_slot_guards_preserve_numeric_products() {
+    for (name,guard) in [
+        ("same-slot-option", "some(c.quantity)=some(c.quantity)"),
+        ("same-slot-option-difference", "some(c.quantity+1)!=some(c.quantity)"),
+        ("same-slot-tuple", "(n,c.quantity,true)=(n,c.quantity,true)"),
+        ("same-slot-list", "list<Number>[c.quantity,n]=list<Number>[c.quantity,n]"),
+    ] { known_numeric_product(name,"",guard); }
+}
+#[test]
+fn same_slot_guard_keeps_missing_body_undetermined() {
+    active_products("same-slot", &[("", " when some(c.quantity)=some(c.quantity)")]);
+}
+#[test]
+fn same_slot_false_guard_keeps_missing_read_undetermined() {
+    inactive_products_with_guard_reads("same-slot", &["some(c.quantity+1)=some(c.quantity)"], true);
+}
+#[test]
 fn text_literal_guards_preserve_numeric_products() {
     for (name,guard) in [
         ("text-literal-equality", r#"(n,"ready")=(n,"ready")"#),
@@ -742,8 +759,7 @@ fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, gu
 }
 #[test]
 fn active_parameter_product_keeps_missing_observation_undetermined() {
-    for ty in ["Z", "Q"] {
-        for (extra, guard) in [
+    active_products("parameter", &[
             ("", ""),
             ("", " when true"),
             (",u:Unit", " when u=unit"),
@@ -755,11 +771,15 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when some(n)=some(n)"),
             ("", " when (n,true)=(n,true)"),
             ("", " when list<Number>[n,n]=list<Number>[n,n]"),
-        ] {
+    ]);
+}
+fn active_products(name: &str, guards: &[(&str,&str)]) {
+    for ty in ["Z", "Q"] {
+        for (case,(extra,guard)) in guards.iter().enumerate() {
             let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
             let body = format!("law required zero(c:Part,n:{ty}{extra}){guard}:n*c.quantity=0;");
-            let dir = files_with_definition("active-product-missing", &body, true, &definition);
+            let dir = files_with_definition(&format!("active-product-{name}-{ty}-{case}"), &body, true, &definition);
             if ty == "Q" {
                 let map = std::fs::read_to_string(dir.join("a.json"))
                     .unwrap()
@@ -906,6 +926,9 @@ fn text_literal_false_guard_keeps_missing_values_undetermined() {
     inactive_products("text-literal", &[r#"(n,"ready")=(n,"done")"#]);
 }
 fn inactive_products(name: &str, guards: &[&str]) {
+    inactive_products_with_guard_reads(name, guards, false);
+}
+fn inactive_products_with_guard_reads(name: &str, guards: &[&str], guard_reads: bool) {
     for ty in ["Z", "Q"] {
         for guard in guards {
             let guard = guard.replace("Number",ty);
@@ -935,7 +958,9 @@ fn inactive_products(name: &str, guards: &[&str]) {
                 if read_missing {
                     requests.extend(["v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"]);
                 }
-                let code = if read_missing { 2 } else { 0 };
+                // 恒偽でもguard自身の原始読取りはbuildの支持に残る。
+                let build_missing = read_missing || guard_reads;
+                let code = if build_missing { 2 } else { 0 };
                 let mut args = vec![
                     "run",
                     "--atom-definition",
@@ -975,12 +1000,12 @@ fn inactive_products(name: &str, guards: &[&str]) {
                 let j = saved(
                     &dir,
                     &r,
-                    if read_missing { "partial" } else { "complete" },
+                    if build_missing { "partial" } else { "complete" },
                     code,
                 );
                 assert_eq!(
                     has(get(answer(&j, "b"), "outputs"), "algebra"),
-                    !read_missing
+                    !build_missing
                 );
                 for id in ["p", "q"] {
                     assert_eq!(s(get(answer(&j, id), "status")), "established");
