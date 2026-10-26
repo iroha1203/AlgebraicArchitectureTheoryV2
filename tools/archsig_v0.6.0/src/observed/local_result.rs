@@ -382,6 +382,10 @@ fn compute(
                 {
                     vec![change_search::selector(env, g, &a.value)?]
                 } else {
+                    if matches!(p.ty.erase(), Type::Z | Type::Q) {
+                        universal.push((p, None));
+                        continue;
+                    }
                     let Some(values) =
                         change_search::domain(&fixed, &p.ty, p.span, &mut domain_missing)?
                     else {
@@ -390,7 +394,7 @@ fn compute(
                     if values.is_empty() {
                         return Err(unsupported("空のinstance族の局所系は未実装"));
                     }
-                    universal.push((p, values.clone()));
+                    universal.push((p, Some(values.clone())));
                     values
                 };
                 let mut next = vec![];
@@ -489,18 +493,20 @@ fn compute(
         ) in evaluations
         {
             let Signature::Law {
-                role, body, guard, ..
+                role, body, guard, params, ..
             } = &declaration.signature
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
+            let parameters = params.iter().filter(|p| !bindings.iter().any(|(n, _)| *n == p.name)).cloned().collect::<Vec<_>>();
+            let typed_parameters = parameters.iter().map(|p| (p.name.clone(), p.ty.erase())).collect::<Vec<_>>();
             let mut law_support = geometry::Support {
                 carrier: carrier.clone(), positions: positions.clone(), visible: positions.clone(),
             };
             if !locals.is_empty() && missing.is_empty() {
                 let roots = std::iter::once(*body).chain(guard.iter().copied()).collect::<Vec<_>>();
                 if let Some((carrier, visible)) = super::environment::local_read::fixed_chain_visibility(
-                    &fixed, &roots, &bindings, reading, c,
+                    &fixed, &roots, &bindings, &parameters, reading, c,
                 )? {
                     law_support.carrier = carrier;
                     law_support.visible = visible;
@@ -519,32 +525,37 @@ fn compute(
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let mut quantifiers = vec![];
             for (p, values) in universal {
-                let key = (declaration.name.clone(), p.name.clone());
-                let domain = if let Some(reference) = parameter_domains.get(&key) {
-                    *reference
+                let domain = if let Some(values) = values {
+                    let key = (declaration.name.clone(), p.name.clone());
+                    let domain = if let Some(reference) = parameter_domains.get(&key) {
+                        *reference
+                    } else {
+                        let items = values
+                            .iter()
+                            .map(|v| change_result::value(&mut b, v))
+                            .collect::<Result<Vec<_>, _>>()?;
+                        let reference = domain(&mut b, &p.ty.erase(), &items)?;
+                        scope_domains.push((reference, p.ty.erase()));
+                        parameter_domains.insert(key, reference);
+                        reference
+                    };
+                    Some(domain)
                 } else {
-                    let items = values
-                        .iter()
-                        .map(|v| change_result::value(&mut b, v))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    let reference = domain(&mut b, &p.ty.erase(), &items)?;
-                    scope_domains.push((reference, p.ty.erase()));
-                    parameter_domains.insert(key, reference);
-                    reference
+                    None
                 };
                 quantifiers.push(Quantifier {
                     kind: crate::law::ast::QuantKind::Forall,
                     name: p.name.clone(),
                     ty: p.ty.erase(),
-                    domain: Some(domain),
+                    domain,
                     occurrence: p.span,
                     context: Some(env.current_context(g)),
                 });
             }
             let guard_expression = guard
-                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
+                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &typed_parameters))
                 .transpose()?;
-            let expression = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
+            let expression = change_result::source_expression(&mut b, env, *body, &bindings, &typed_parameters)?;
             b.parts[expression.0 - base]
                 .arguments
                 .extend(quantifiers.iter().filter_map(|q| q.domain));
@@ -658,7 +669,10 @@ fn compute(
                 })
             {
                 let Some(value) = read.value else {
-                    return Err("確定した局所読取りの値がない".into());
+                    if parameters.is_empty() {
+                        return Err("確定した局所読取りの値がない".into());
+                    }
+                    continue;
                 };
                 let bs = read
                     .bindings
@@ -670,10 +684,11 @@ fn compute(
                     continue;
                 }
                 let (read_carrier, read_positions) =
-                    super::environment::local_read::implicit_support(
+                    super::environment::local_read::implicit_support_with_parameters(
                         &fixed,
                         read.expression,
                         &read.bindings,
+                        &parameters,
                         reading,
                         c,
                     )?;
@@ -683,7 +698,7 @@ fn compute(
                     visible: read_positions,
                 });
                 let expr =
-                    change_result::source_expression(&mut b, env, read.expression, &bs, &[])?;
+                    change_result::source_expression(&mut b, env, read.expression, &bs, &typed_parameters)?;
                 let actual = change_result::value(&mut b, &value)?;
                 let image = domain(&mut b, &value.ty(), &[actual])?;
                 readings.push(Json::obj([

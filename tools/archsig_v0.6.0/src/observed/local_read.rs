@@ -326,10 +326,11 @@ fn visible_slots(
 /// 固定状態の参照経路では、中間参照を値座標の公開要件へ混ぜない。
 /// let/helper等の一般因子分解はここで推測せず、従来の支持検査へ戻す。
 pub(in crate::observed) fn fixed_chain_visibility(
-    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
+    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param], reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
-    state_visibility_inner(env, roots, bindings, &[], reading, c, true)
+    state_visibility_inner(env, roots, bindings, parameters, reading, c, true)
 }
 pub(in crate::observed) fn state_visibility(
     env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
