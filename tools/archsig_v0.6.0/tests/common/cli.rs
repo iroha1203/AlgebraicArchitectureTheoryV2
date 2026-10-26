@@ -97,6 +97,7 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
 
 /// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
 pub fn notified(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+    assert!(r.stderr.is_empty(), "エラーは stdout のみ: {}", r.stderr);
     assert_eq!(r.code, code, "{}", r.stderr);
     assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
     assert_eq!(s(get(&r.receipt, "status")), status);

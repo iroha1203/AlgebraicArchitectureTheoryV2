@@ -140,12 +140,9 @@ impl Signals for ProcessSignals {
     }
 }
 
-/// stderr へ可能な範囲で書く。書けなくても確定した終了コードを変えない。
-fn note(message: &str) {
-    let _ = writeln!(std::io::stderr(), "{message}");
-}
-
 fn main() {
+    // 捕捉した内部障害は receipt で通知する。panic の既定表示を重複させない。
+    std::panic::set_hook(Box::new(|_| {}));
     let started = Instant::now();
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
     let mut signals = ProcessSignals::new();
@@ -159,16 +156,10 @@ fn finish(outcome: Option<Outcome>, version: &str) -> ! {
         Some(o) => o.receipt(),
         None => version.to_owned(),
     };
-    if let Err(e) = writeln!(stdout, "{line}").and_then(|_| stdout.flush()) {
-        note(&format!("archsig: stdout へ書けなかった: {e}"));
-    }
+    // 閉じた pipe には通知できない。計算で確定した終了コードを保つ。
+    let _ = writeln!(stdout, "{line}").and_then(|_| stdout.flush());
     let code = match outcome {
-        Some(o) => {
-            for m in &o.stderr {
-                note(m);
-            }
-            o.exit_code
-        }
+        Some(o) => o.exit_code,
         None => 0,
     };
     std::process::exit(i32::from(code));

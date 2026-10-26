@@ -48,9 +48,8 @@ pub(super) fn out_ok(out: &Path) -> Result<(), String> {
 pub(super) fn usage_without_result(
     signals: &mut dyn Signals,
     issue: ResultIssue,
-    stderr: Vec<String>,
 ) -> Outcome {
-    without_result(signals, Status::Invalid, vec![issue], stderr)
+    without_result(signals, Status::Invalid, vec![issue])
 }
 
 /// 成果物のない実行失敗・中断を一度だけ確定する。
@@ -58,7 +57,6 @@ pub(super) fn without_result(
     signals: &mut dyn Signals,
     status: Status,
     mut issues: Vec<ResultIssue>,
-    stderr: Vec<String>,
 ) -> Outcome {
     let prior_signal = issues.iter().find_map(|i| match i {
         ResultIssue::Cancelled(signal) => Some(*signal),
@@ -72,7 +70,6 @@ pub(super) fn without_result(
         code,
         prior_signal,
         issues.iter().map(ResultIssue::wire).collect(),
-        stderr,
     )
 }
 
@@ -83,7 +80,6 @@ pub(super) fn notify(
     mut code: u8,
     prior_signal: Option<crate::result::Signal>,
     mut issues: Vec<Json>,
-    stderr: Vec<String>,
 ) -> Outcome {
     let frozen = signals.freeze();
     if let Some(signal) = prior_signal.or(frozen) {
@@ -98,7 +94,6 @@ pub(super) fn notify(
         status,
         exit_code: code,
         result: None,
-        stderr,
         issues,
     }
 }
@@ -141,10 +136,9 @@ pub(super) fn finalize(
     mut result: CheckResult,
     copies: &[(&str, &[u8])],
     started: Instant,
-    stderr: Vec<String>,
 ) -> Outcome {
     if result.status != Status::Complete {
-        return without_result(signals, result.status, result.issues, stderr);
+        return without_result(signals, result.status, result.issues);
     }
     if let Some(signal) = signals.freeze() {
         result.status = Status::Interrupted;
@@ -159,7 +153,6 @@ pub(super) fn finalize(
         status: result.status,
         exit_code: result.exit_code,
         result: Some(out.join("result.json")),
-        stderr,
         issues: result.issues.iter().map(ResultIssue::wire).collect(),
     };
     publish(io, out, result.wire(), copies, outcome)
@@ -171,7 +164,7 @@ pub(super) fn publish(
     out: &Path,
     document: Json,
     copies: &[(&str, &[u8])],
-    mut outcome: Outcome,
+    outcome: Outcome,
 ) -> Outcome {
     let tmp = temp_dir(out);
     let mut created = false;
@@ -212,12 +205,11 @@ pub(super) fn publish(
     match written {
         Ok(()) => outcome,
         Err((op, path, e)) => {
-            let message = format!("出力の{op}に失敗した({}): {e}", path.display());
-            outcome.stderr.push(format!("archsig: {message}"));
+            let mut message = format!("出力の{op}に失敗した({}): {e}", path.display());
             if created {
                 if let Err(cleanup) = io.remove_dir_all(&tmp) {
-                    outcome.stderr.push(format!(
-                        "archsig: 未完成の一時 directory を片付けられない({}): {cleanup}",
+                    message.push_str(&format!(
+                        "; 未完成の一時 directory を片付けられない({}): {cleanup}",
                         tmp.display()
                     ));
                 }
@@ -232,7 +224,6 @@ pub(super) fn publish(
                 status: Status::Error,
                 exit_code: 74,
                 result: None,
-                stderr: outcome.stderr,
                 issues: vec![issue.wire()],
             }
         }

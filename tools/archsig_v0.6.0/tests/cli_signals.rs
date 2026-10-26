@@ -148,7 +148,7 @@ fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
         .read_to_string(&mut stderr)
         .unwrap();
     assert_eq!(child.0.wait().unwrap().code(), Some(2));
-    assert!(stderr.contains("stdout"));
+    assert!(stderr.is_empty());
     let result = parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&result, "status")), "partial");
     assert_eq!(num(get(&result, "exit_code")), 2);
