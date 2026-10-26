@@ -31,6 +31,12 @@ pub(super) struct Parameter {
     pub support: Vec<Fact>,
     pub scope: Scope,
 }
+fn symbolic(p: &Parameter) -> bool {
+    p.values.is_none() && matches!(p.declaration.ty, Type::Z | Type::Q)
+}
+pub(super) fn pending_parameters(ps: &[Parameter]) -> bool {
+    ps.iter().any(|p| (!symbolic(p) && p.values.is_none()) || !p.missing.is_empty())
+}
 fn parameters(
     env: &Environment<'_>,
     g: &Graph,
@@ -142,7 +148,8 @@ impl Part {
                 ("kind", Json::str("object_reading")),
                 ("object", o.component.wire()),
                 ("declaration", Json::str(&o.declaration)),
-                ("parameters", Json::Arr(vec![])),
+                ("parameters", Json::Arr(o.parameters.iter().map(|(name, ty)|
+                    Json::obj([("name", Json::str(name)), ("type", ty.wire())])).collect())),
                 (
                     "bindings",
                     Json::Arr(
@@ -362,12 +369,13 @@ fn build_source(
         if !p.missing.is_empty() {
             return Err("有限view域の所属が欠測".into());
         }
+        support.extend(p.support.iter().cloned());
+        scope.merge(&p.scope);
+        if symbolic(p) { continue; }
         let vs = p
             .values
             .as_ref()
             .ok_or("view parameter型が有限全域でない")?;
-        support.extend(p.support.iter().cloned());
-        scope.merge(&p.scope);
         let mut elements = vec![];
         for v in vs {
             if v.ty() != p.declaration.ty.erase() {
@@ -401,6 +409,7 @@ fn build_source(
     }
     let types = ps
         .iter()
+        .filter(|p| !symbolic(p))
         .map(|p| p.declaration.ty.erase())
         .collect::<Vec<_>>();
     let product_type = super::environment::family::family_type(&types);
@@ -468,8 +477,10 @@ fn build_source(
             if let [b] = fixed.as_slice() {
                 bindings.push((*b).clone());
             } else if fixed.is_empty() {
+                if matches!(p.ty, Type::Z | Type::Q) { continue; }
                 let i = ps
                     .iter()
+                    .filter(|p| !symbolic(p))
                     .position(|x| x.declaration == *p)
                     .ok_or("具体viewの元parameter位置がない")?;
                 bindings.push(Binding {
@@ -484,7 +495,7 @@ fn build_source(
         let expression = NodeRef(base.checked_add(parts.len()).ok_or("view行位置が範囲外")?);
         let mut row = o.clone();
         row.expression = expression;
-        row.parameters.clear();
+        row.parameters.retain(|(_, ty)| matches!(ty, Type::Z | Type::Q));
         row.bindings = bindings;
         rows.push(push(
             &mut parts,
@@ -596,7 +607,7 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
     let mut scope = s.scope.clone();
     scope.assignments = true;
     let mut reasons = vec![];
-    for (p, r) in s.parameters.iter().zip(&s.domains) {
+    for (p, r) in s.parameters.iter().filter(|p| !symbolic(p)).zip(&s.domains) {
         scope.quantifiers.push(Quantifier {
             kind: crate::law::ast::QuantKind::Forall,
             name: p.declaration.name.clone(),
@@ -708,7 +719,8 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
     else {
         return Err("全view族が通常Evaluationでない".into());
     };
-    if reading::numeric_parameters(&reading::origin(g, *expression)?.1) {
+    if reading::numeric_parameters(&reading::origin(g, *expression)?.1)
+        && !n.arguments.iter().any(|r| source_at(g, *r).is_ok_and(|d| *r == d.source.product)) {
         return whole::validate(g, n, at);
     }
     let [part] = parts.as_slice() else {
@@ -748,10 +760,7 @@ pub(super) fn evaluate(
     }
     env.recheck_node(g, g.get(expression)?, expression.0)?;
     let (a, o, ps) = parameters(env, g, expression, c)?;
-    if ps
-        .iter()
-        .any(|p| p.values.is_none() || !p.missing.is_empty())
-    {
+    if pending_parameters(&ps) {
         return Ok(Outcome::Pending(Pending {
             expression,
             parameters: ps,

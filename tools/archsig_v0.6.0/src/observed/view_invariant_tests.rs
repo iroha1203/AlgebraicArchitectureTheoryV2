@@ -393,7 +393,7 @@ fn missing_applicable_values_and_inapplicable_none_remain_distinct_on_axes() {
 fn unmaterialized_parameters_keep_all_original_expressions_and_full_domain_readings() {
     let law = LAW.replace(
         "view root(r: Root): Bool = true;",
-        "view pending(p:Part,n:Z,b:Bool):Z=n+amount(p);",
+        "view pending(p:Part,n:Text,b:Bool):Z=amount(p);",
     );
     let p = prepared(&law, MAP);
     let (g, d) = complete(&p);
@@ -403,7 +403,7 @@ fn unmaterialized_parameters_keep_all_original_expressions_and_full_domain_readi
     assert_eq!(pending.expressions.len(), 2);
     assert_eq!(pending.parameters.len(), 2);
     assert_eq!(pending.parameters[0].declaration.name, "n");
-    assert_eq!(pending.parameters[0].declaration.ty, Type::Z);
+    assert_eq!(pending.parameters[0].declaration.ty, Type::Text);
     assert!(pending.parameters[0].values.is_none());
     assert_eq!(
         pending.parameters[1].values,

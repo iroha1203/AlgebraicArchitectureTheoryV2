@@ -194,6 +194,30 @@ fn observed_numeric_view_family_feeds_public_build_and_evaluate() {
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
+#[test]
+fn mixed_numeric_view_family_feeds_public_build_and_evaluate() {
+    let dir = files("mixed-numeric-view", "view plus(c:Part,x:Z,b:Bool):Z=if b then c.quantity+x else x;view seed():Z=2;view enabled():Bool=true;law required balanced(c:Part):c.quantity=c.quantity;", false);
+    let requests = ["b=build(R,on=@v/root)", "s=evaluate(R.seed,on=$b.object)", "e=evaluate(R.enabled,on=$b.object)", "v=evaluate(R.plus,on=$b.object,c=@v/q,x=$s.value,b=$e.value)"];
+    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+    for request in requests { args.extend(["--ask", request]); }
+    let normal = cli::run(&dir, &args);
+    assert_eq!(normal.code, 0, "{}", normal.stdout);
+    assert!(normal.stderr.is_empty());
+    assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+    assert!(!has(&normal.receipt, "nodes"));
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    eprintln!("mixed numeric view: stdout {} bytes", normal.stdout.len());
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "complete", 0);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(value(&result, get(get(answer(&result, "v"), "outputs"), "value"))), "3");
+    eprintln!("mixed numeric view: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+    args.extend(["--out", "again", "--reuse", "out"]);
+    let reused = cli::run(&dir, &args);
+    assert_eq!(reused.code, 0, "{}", reused.stdout);
+    let again = result_json(&dir, &reused);
+    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =

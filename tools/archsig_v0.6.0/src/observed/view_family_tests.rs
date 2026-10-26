@@ -402,8 +402,8 @@ fn external_prepared(extra: &str) -> PreparedObserved {
     }
 }
 #[test]
-fn nonfinite_and_missing_owned_domains_preserve_the_whole_signature_without_fake_rows() {
-    let law=LAW.replace("view root(r: Root): Bool = true;","view shift(p:Part,n:Z,b:Bool):Z=amount(p)+n; view owned(r:Root,x:Option<Part[r]>,b:Bool):Bool=true;");
+fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fake_rows() {
+    let law=LAW.replace("view root(r: Root): Bool = true;","view shift(p:Part,n:Text,b:Bool):Z=amount(p); view owned(r:Root,x:Option<Part[r]>,b:Bool):Bool=true;");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -490,6 +490,32 @@ fn nonfinite_and_missing_owned_domains_preserve_the_whole_signature_without_fake
     }
     assert!(count > 0);
     replay(&p, &g);
+}
+#[test]
+fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
+    for ty in ["Z", "Q"] {
+        let offset = if ty == "Z" { "amount(p)" } else { "rat(1,2)" };
+        let law = LAW.replace("view root(r: Root): Bool = true;", &format!(
+            "view shift(p:Part,n:{ty},b:Bool,m:{ty}):{ty}=if b then n+m+{offset} else n+m;"));
+        let p = prepared(&law, MAP);
+        let (mut g, o) = start(&p);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let r = selected(&g, &o, 0, ".shift");
+        let f = family(&env, &mut g, r);
+        assert_eq!(f.domains.len(), 1);
+        assert_eq!(f.evaluations.len(), 2);
+        for (index, expression) in f.expressions.iter().enumerate() {
+            let (_, origin) = reading::origin(&g, *expression).unwrap();
+            assert_eq!(origin.parameters.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>(), ["n", "m"]);
+            assert_eq!(g.scalar(origin.bindings.iter().find(|b| b.name == "b").unwrap().value).unwrap(), &Scalar::Bool(index == 1));
+            assert!(matches!(&g.get(f.evaluations[index]).unwrap().payload, Some(Payload::Evaluation { value: None, .. })));
+        }
+        let mut bad = g.get(f.evaluation).unwrap().clone();
+        let Some(Payload::Evaluation { parts, .. }) = &mut bad.payload else { panic!() };
+        parts[0].children.reverse();
+        assert!(validate_family(&g, &bad, f.evaluation.0).is_err());
+        replay(&p, &g);
+    }
 }
 #[test]
 fn family_metadata_rejects_duplicated_quantifiers() {
