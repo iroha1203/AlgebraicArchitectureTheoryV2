@@ -9,6 +9,23 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn constant_order_guards_preserve_numeric_products() {
+    for (name, guard) in [
+        ("order-lt", "n<n+1"), ("order-le", "n+n<=2*n"),
+        ("order-gt", "n+1>n"), ("order-ge", "n+n>=2*n"),
+        ("order-slot", "c.quantity+1>c.quantity"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
+fn constant_order_true_guard_keeps_missing_body_undetermined() {
+    active_products("constant-order", &[("", " when c.quantity+1>c.quantity")]);
+}
+#[test]
+fn constant_order_false_guard_keeps_missing_read_undetermined() {
+    inactive_products("constant-order", &["n<n", "n+1<=n", "n>n", "n>=n+1"]);
+    inactive_products_with_guard_reads("constant-order-slot", &["c.quantity+1<=c.quantity"], true);
+}
+#[test]
 fn right_boolean_constant_guards_preserve_numeric_products() {
     for (name, guard) in [
         ("right-or-true", "n=0 or true"),

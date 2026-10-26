@@ -91,6 +91,13 @@ impl Binding {
         Ok(left.binary(op, &right, c)?.map(Self::Family))
     }
 
+    fn constant_difference(&self, rhs: &Self, c: &mut Control) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
+        let Some(value) = self.binary(BinOp::Sub, rhs, c)? else { return Ok(None) };
+        let Some(value) = PolynomialFamily::from_binding(&value, c)? else { return Ok(None) };
+        Ok((value.parameters.is_empty()
+            && value.constant.terms.iter().all(|term| term.variables.is_empty()))
+            .then_some(value.constant))
+    }
     fn split(&self, c: &mut Control) -> Result<Option<(EquationPolynomial, affine::Form)>, ConstructionFailure> {
         Ok(match self {
             Self::Polynomial(polynomial) => {
@@ -184,21 +191,7 @@ impl Compiler<'_> {
                         subject: ro,
                     },
                 ) => Ok(Some(ls == rs && lo == ro)),
-                _ => {
-                    let family = match left.binary(BinOp::Sub, right, c)? {
-                        Some(value) => PolynomialFamily::from_binding(&value, c)?,
-                        None => None,
-                    };
-                    Ok(match family {
-                        Some(value)
-                            if value.parameters.is_empty()
-                                && value.constant.terms.iter().all(|term| term.variables.is_empty()) =>
-                        {
-                            Some(value.constant.terms.is_empty())
-                        }
-                        _ => None,
-                    })
-                }
+                _ => Ok(left.constant_difference(right, c)?.map(|value| value.terms.is_empty())),
             }
         })
     }
@@ -544,6 +537,15 @@ impl Compiler<'_> {
                     match (left, right) {
                         (Some(left), Some(right)) if matches!(op, BinOp::Eq | BinOp::Ne) => {
                             self.equal(&left, &right, expression.span, c)?.map(|value| Binding::Boolean(value == (*op == BinOp::Eq)))
+                        }
+                        (Some(left), Some(right)) if matches!(op, BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge) => {
+                            let Some(difference) = left.constant_difference(&right, c)? else { return Ok(None) };
+                            let Some(value) = difference.evaluate(&[], c)? else { return Ok(None) };
+                            let zero = numeric::zero(&difference.ty, c).map_err(invalid)?;
+                            let Scalar::Bool(value) = numeric::binary(*op, value.scalar(), &zero, c).map_err(invalid)? else {
+                                return Err(bad("順序比較の結果がBoolでない"));
+                            };
+                            Some(Binding::Boolean(value))
                         }
                         _ => None,
                     }

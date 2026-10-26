@@ -8208,7 +8208,7 @@ impl<'a> Environment<'a> {
             )?;
             let known_value = match known_value {
                 Some(value) => Some(value),
-                None if matches!(op, BinOp::Eq | BinOp::Ne) => super::affine::equality(
+                None if is_comparison(*op) => super::affine::comparison(
                     *op,
                     left_affine.as_deref(),
                     right.affine.as_deref(),
