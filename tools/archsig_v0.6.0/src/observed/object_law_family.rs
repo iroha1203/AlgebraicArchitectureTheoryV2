@@ -453,7 +453,7 @@ pub(in crate::observed) fn constant_numeric_family(
                     let declaration = law.declarations.get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
                     let Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
                     if params.len() != args.len() || !params.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
-                        || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q)) { return Ok(None); }
+                        || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q | Type::Bool)) { return Ok(None); }
                     pending.extend(args.iter().map(|arg| (*arg, names.clone())));
                     if helpers.insert(target.clone()) {
                         let parameters = params.iter().map(|p| p.name.clone()).collect();
