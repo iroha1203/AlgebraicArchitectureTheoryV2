@@ -41,7 +41,7 @@ pub(super) fn sources(
     c: &mut Control,
 ) -> Result<Option<Vec<(usize, ParameterEquation)>>, ValidationFailure> {
     let mut equations = vec![];
-    let mut varying = false;
+    let mut symbolic = false;
     for (i, instance) in a.readings().instances().iter().enumerate() {
         tick(c)?;
         if instance.declaration().kind != "law" {
@@ -78,11 +78,13 @@ pub(super) fn sources(
             let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
                 .map_err(|e| construction_failure(&e))? else { return Ok(None) };
             if source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
-            varying |= !source.difference.parameters.is_empty();
+            // 正規化で数値軸が消えても、Boolで固定した各ケースの元量化を保持する。
+            symbolic |= !source.difference.parameters.is_empty()
+                || (!source.finite.is_empty() && instance.parameters().iter().any(|p| matches!(p.ty, Type::Z | Type::Q)));
             equations.push((i, source));
         }
     }
-    Ok(varying.then_some(equations))
+    Ok(symbolic.then_some(equations))
 }
 
 pub(super) fn plans(

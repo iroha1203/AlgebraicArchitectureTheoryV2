@@ -899,3 +899,32 @@ fn boolean_case_products_cover_joint_guards_and_keep_inactive_ideals_empty() {
         replay(&p, &g, &g.nodes).unwrap();
     }
 }
+
+#[test]
+fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
+    for offset in [0, 1] {
+        let p = prepared(false, false, &format!("law required balanced(c:Part,n:Z,b:Bool) when b:n*c.quantity=n*c.quantity+{offset};"), "root");
+        let (mut g, a) = built(&p);
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagram = &ds[0];
+        assert_eq!(diagram.originals.len(), 4);
+        assert_eq!(diagram.coordinates.len(), 4);
+        for (ordinal, original) in diagram.originals.iter().enumerate() {
+            let active = ordinal % 2 == 1;
+            assert_eq!(original.finite, vec![("b".into(), active)]);
+            assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+            assert_eq!(original.quantifiers.len(), 1);
+            assert_eq!(original.quantifiers[0].name, "n");
+            let coordinate = &diagram.coordinates[ordinal];
+            let actual = terms(&g, coordinate.nu.unwrap());
+            if offset == 0 { assert!(actual.is_empty()); }
+            else { assert_eq!(actual, vec![(Scalar::Z((-1).into()).wire(), vec![0,0])]); }
+            assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+            if !active {
+                assert!(coordinate.epsilon.is_none());
+                assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+            }
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
