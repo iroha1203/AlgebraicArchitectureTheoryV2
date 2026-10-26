@@ -128,6 +128,35 @@ fn nested_numeric_helpers_feed_public_build_and_checks() {
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(get(answer(&result, "c"), "status")), "established");
 }
+#[test]
+fn inactive_numeric_laws_feed_public_build_and_checks() {
+    for (ty, guard) in [("Z", "false"), ("Q", "n+1=n")] {
+        let dir = files(&format!("inactive-numeric-{ty}"), &format!(
+            "law required balanced(c:Part,n:{ty}) when {guard}:n=n+1;"
+        ), false);
+        let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 0, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        assert!(!has(&normal.receipt, "nodes"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(answer(&normal.receipt, "c"), "applicability")), "not_applicable");
+        eprintln!("inactive numeric {ty}: stdout {} bytes", normal.stdout.len());
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 0);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "c"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "c"), "applicability")), "not_applicable");
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 0, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =

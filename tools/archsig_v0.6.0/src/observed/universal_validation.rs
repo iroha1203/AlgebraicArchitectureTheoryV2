@@ -2534,9 +2534,9 @@ impl Environment<'_> {
                 }
             }
         }
-        if let Some(Payload::Expression {location:Location::Law {span},bindings,..})=&node.payload {
+        if let Some(Payload::Expression {location:Location::Law {span},bindings,parameters,..})=&node.payload {
             if let Some(index)=self.current_context(graph).instance {
-                if self.native_law_skipped_source(graph,index,*span,bindings)?.is_some()
+                if (parameters.is_empty() && self.native_law_skipped_source(graph,index,*span,bindings)?.is_some())
                     || self.finite_family_skipped_source(graph,index,*span,bindings)?.is_some() {
                     return Ok(false);
                 }

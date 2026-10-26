@@ -36,13 +36,13 @@ impl Environment<'_> {
         // 真であることを入力式から全parameter上で再計算できる場合に限り、
         // その本文を構成できる。観測値から得た真を全域の真へ昇格しない。
         if let Some(inputs) = frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
-            && inputs.origin.body_allowed
             && let Some(guard) = inputs.origin.guard
         {
             let law = self.inputs.law();
             let body = law.exprs.get(inputs.origin.body).ok_or("元Law body式がない")?.span;
             let guard_span = law.exprs.get(guard).ok_or("元Law guard式がない")?.span;
             if body.0 <= span.0 && span.1 <= body.1 {
+                if !inputs.origin.body_allowed { return Ok(false); }
                 let request = graph.requests.get(self.current_context(graph).request).ok_or("元Law要求がない")?;
                 if let Some(plan) = self.universal_family_plan(graph, request, &inputs.bindings)?
                     && plan.guard == Some(guard)
@@ -115,15 +115,27 @@ impl Environment<'_> {
         {
             return Ok(None);
         }
-        let (allowed, guard) =
-            frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
-        let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
-        self.validate_at(graph, graph.get(guard)?, guard.0)?;
-        let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
-            return Err("実guardが評価でない".into());
-        };
-        if allowed || graph.boolean(*value)? != Some(false) {
-            return Err("未評価bodyの実guardがfalseでない".into());
+        let request = graph.requests.get(context.request).ok_or("元Law要求がない")?;
+        let universal_false = if let Some(plan) = self.universal_family_plan(graph, request, bindings)?
+            && plan.parameters.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+            && let Some(guard) = plan.guard {
+            // 全域templateのSourceは実guard評価より先に保持される。元guardを
+            // 全parameter上で再計算し、falseの場合だけ値のないbodyを保持する。
+            let guard = self.universal_template_source_analysis(graph, &plan,
+                self.inputs.law().exprs[guard].span, bindings)?;
+            guard.analysis.known_value == Some(Scalar::Bool(false))
+        } else { false };
+        if !universal_false {
+            let (allowed, guard) =
+                frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
+            let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
+            self.validate_at(graph, graph.get(guard)?, guard.0)?;
+            let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
+                return Err("実guardが評価でない".into());
+            };
+            if allowed || graph.boolean(*value)? != Some(false) {
+                return Err("未評価bodyの実guardがfalseでない".into());
+            }
         }
         let mut scope = inputs.origin.scope;
         scope.merge(&self.architecture_scope());
