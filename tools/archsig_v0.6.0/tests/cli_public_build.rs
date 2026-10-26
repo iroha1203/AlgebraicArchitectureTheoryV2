@@ -120,6 +120,14 @@ fn numeric_view_build_delivers_values_and_reuses_without_extra_files() {
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
+#[test]
+fn nested_numeric_helpers_feed_public_build_and_checks() {
+    let dir = files("nested-numeric-helpers", "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required balanced(c:Part,n:Z):twice(n)=n+2;", false);
+    let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
+    let result = saved(&dir, &run, "complete", 0);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "c"), "status")), "established");
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =

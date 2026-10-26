@@ -414,6 +414,7 @@ pub(in crate::observed) fn constant_numeric_family(
     // 観測時の定数へ畳んで記号的な差と取り違えない。
     let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
     let mut pending = vec![(*body, names.clone())];
+    let mut helpers = std::collections::BTreeSet::new();
     if let Some(guard) = guard { pending.push((*guard, names)); }
     while let Some((id, names)) = pending.pop() {
         tick(c)?;
@@ -443,12 +444,15 @@ pub(in crate::observed) fn constant_numeric_family(
                     let span = law.exprs[callee].span;
                     let target = law.infos.iter().flat_map(|info| &info.references).find_map(|(at, name)| (*at == span).then_some(name));
                     let Some(target) = target else { return Ok(None) };
-                    let Some(term) = super::super::term::Term::from_numeric_view(law, g.prepared().inputs().sources().law().bytes(), target, c).map_err(|failure| match failure {
-                        ValidationFailure::Stop(reason) => ConstructionFailure::Stopped(reason),
-                        other => inconsistent(&format!("数値view関数の構成: {other:?}")),
-                    })? else { return Ok(None) };
-                    if term.params.len() != args.len() { return Ok(None); }
+                    let declaration = law.declarations.get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
+                    let Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
+                    if params.len() != args.len() || !params.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                        || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q)) { return Ok(None); }
                     pending.extend(args.iter().map(|arg| (*arg, names.clone())));
+                    if helpers.insert(target.clone()) {
+                        let parameters = params.iter().map(|p| p.name.clone()).collect();
+                        pending.push((*body, Arc::new(parameters)));
+                    }
                 }
             },
             _ => return Ok(None),

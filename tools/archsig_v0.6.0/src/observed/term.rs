@@ -163,61 +163,6 @@ fn children(e: &Expr) -> Result<Vec<usize>, ValidationFailure> {
     })
 }
 impl Term {
-    /// 参照や観測に依存しない数値helperを、既存の全域アフィン計算へ渡す。
-    pub(super) fn from_numeric_view(
-        law: &CheckedLaw,
-        raw: &[u8],
-        name: &str,
-        c: &Control,
-    ) -> Result<Option<Self>, ValidationFailure> {
-        let Some(declaration) = law.declarations.get(name) else { return Err("元view宣言がない".into()) };
-        let crate::law::model::Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
-        let returns = law.expr_type(*body).ok_or("元view型がない")?;
-        if !params.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
-            || !matches!(returns, Type::Z | Type::Q)
-        {
-            return Ok(None);
-        }
-        let mut pending = vec![*body];
-        while let Some(id) = pending.pop() {
-            tick(c)?;
-            match &law.exprs[id].kind {
-                ExprKind::Int(_) | ExprKind::Dotted(_) => {},
-                ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push(*child),
-                ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs, *rhs]),
-                ExprKind::Let { value, body, .. } => pending.extend([*value, *body]),
-                ExprKind::Call { callee, args } if args.len() == 2 => {
-                    let mut callee = *callee;
-                    while let ExprKind::Group(inner) = law.exprs[callee].kind {
-                        tick(c)?;
-                        callee = inner;
-                    }
-                    if !matches!(&law.exprs[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat")
-                        || !args.iter().all(|arg| matches!(law.exprs[*arg].kind, ExprKind::Int(_))) {
-                        return Ok(None);
-                    }
-                }
-                _ => return Ok(None),
-            }
-        }
-        let span = law.exprs[*body].span;
-        let text = std::str::from_utf8(raw.get(span.0..span.1).ok_or("元view body範囲が違う")?)
-            .map_err(|_| ValidationFailure::from("元viewがUTF-8でない"))?
-            .to_string();
-        let term = Self::capture(
-            |i| law.exprs.get(i),
-            |i| law.expr_type(i),
-            |i| law.quantifier_types.get(i).and_then(Option::as_ref),
-            &[],
-            *body,
-            params.iter().map(|p| (p.name.clone(), p.ty.erase())).collect(),
-            returns.clone(),
-            text,
-            span.0,
-            c,
-        )?;
-        Ok(affine::comparison(&term, &term, law, c)?.is_some().then_some(term))
-    }
     #[allow(clippy::too_many_arguments)]
     fn capture<'a>(
         expr: impl Fn(usize) -> Option<&'a Expr>,

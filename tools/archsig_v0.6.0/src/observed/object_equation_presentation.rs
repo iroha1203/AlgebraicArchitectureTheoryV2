@@ -1352,6 +1352,7 @@ mod tests {
             "law required varying(c:Part,n:Z) when n=0:n=n;",
             "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
             "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=n;",
+            "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required varying(c:Part,n:Z):twice(n)=0;",
         ] {
             let inputs = inputs_with(body);
             let mut c = Control::unlimited();
@@ -1401,6 +1402,21 @@ mod tests {
             assert_eq!(source.evaluation().instance().parameters().len(), 2);
             assert!(source.family().rows().is_empty());
             assert!(source.family().domains().is_empty());
+        }
+        presentation.recheck(inputs, &mut c).unwrap();
+    }
+    #[test]
+    fn nested_numeric_helpers_preserve_scope_and_exact_residual() {
+        let inputs = inputs_with("view plus(x:Q):Q=let y=x+rat(1,2) in y;view twice(y:Q):Q=plus(plus(y));law required balanced(c:Part,n:Q):let x=n+1 in twice(x)=n+rat(5,2);");
+        let mut c = Control::unlimited();
+        let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+        assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+        let expected = NumericTransportValue::observed(numeric::rational(&Scalar::Z((-1).into()), &Scalar::Z(2.into()), &c).unwrap());
+        assert!(!presentation.occurrences.is_empty());
+        for occurrence in &presentation.occurrences {
+            assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+            assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected.clone()));
+            assert_eq!(occurrence.component_holds, Some(false));
         }
         presentation.recheck(inputs, &mut c).unwrap();
     }
