@@ -470,6 +470,37 @@ pub(super) fn family_operands(
     ring: &mut EquationRing,
     c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
+    let Signature::Law { body, .. } = &inputs.law().declarations
+        .get(&instance.declaration().name).ok_or_else(|| bad("原式のLaw宣言がない"))?.signature
+    else { return Err(bad("原式の宣言がLawでない")) };
+    family_operands_from_root(inputs, instance, *body, left, right, path, ring, c)
+}
+
+pub(super) fn guard_is_true(inputs: &CheckedInputs, instance: &ObjectInstance, c: &mut Control) -> Result<bool, ConstructionFailure> {
+    let Signature::Law { guard, .. } = &inputs.law().declarations
+        .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
+    else { return Ok(false) };
+    let Some(root) = *guard else { return Ok(true) };
+    let mut cursor = root;
+    let (left, right) = loop {
+        tick(c)?;
+        match inputs.law().exprs[cursor].kind {
+            ExprKind::Group(next) => cursor = next,
+            ExprKind::Bool(value) => return Ok(value),
+            ExprKind::Binary { op: BinOp::Eq, lhs, rhs } => break (lhs, rhs),
+            _ => return Ok(false),
+        }
+    };
+    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(false) };
+    let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+    let Some(source) = family_operands_from_root(inputs, instance, root, left, right, &[], &mut ring, c)? else { return Ok(false) };
+    Ok(ring.symbols.is_empty() && source.difference.parameters.is_empty() && source.difference.constant.terms.is_empty())
+}
+
+fn family_operands_from_root(
+    inputs: &CheckedInputs, instance: &ObjectInstance, root: usize,
+    left: usize, right: usize, path: &[usize], ring: &mut EquationRing, c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
         .iter()
@@ -504,18 +535,8 @@ pub(super) fn family_operands(
         ring: &mut candidate,
         variables,
     };
-    // shapeは外側のlet/matchを除いた左右を指す。元bodyから同じlexical束縛を
-    // 順に復元してから翻訳し、局所名を未束縛の原始変数に変えない。
-    let Signature::Law { body, .. } = &inputs
-        .law()
-        .declarations
-        .get(&instance.declaration().name)
-        .ok_or_else(|| bad("原式のLaw宣言がない"))?
-        .signature
-    else {
-        return Err(bad("原式の宣言がLawでない"));
-    };
-    let mut cursor = *body;
+    // guardとbodyそれぞれの元rootからlexical束縛を復元し、互いのletを捕獲しない。
+    let mut cursor = root;
     loop {
         tick(c)?;
         match &inputs.law().exprs[cursor].kind {

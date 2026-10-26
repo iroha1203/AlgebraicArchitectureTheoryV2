@@ -286,6 +286,51 @@ fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
+fn true_guards_on_parameter_dependent_laws_feed_public_build() {
+    for (ty, guard, equation) in [("Z", "true", "n=0"), ("Q", "n=n", "n=0"), ("Z", "n=n", "n=c.quantity")] {
+        let dir = files(&format!("parameter-guard-{ty}-{equation}"), &format!(
+            "view zero():{ty}=0;law required equal(c:Part,n:{ty}) when {guard}:{equation};"
+        ), false);
+        let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
+            "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+        eprintln!("parameter guard {ty}/{guard}/{equation}: stdout {} bytes", normal.stdout.len());
+        args.extend(["--reuse", "out", "--out", "again"]);
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "complete", 1);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
+#[test]
+fn missing_observation_in_parameter_law_keeps_known_checks_and_needed() {
+    let dir = files("missing-parameter-law", "view zero():Z=0;law required equal(c:Part,n:Z):n=c.quantity;", true);
+    let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
+        "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)", "q=check(R.equal,on=$b.object,c=@v/q,n=$z.value)", "n=needed($b)"];
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "partial", 2);
+    assert_eq!(s(get(answer(&result, "b"), "status")), "undetermined");
+    assert!(has(get(answer(&result, "b"), "outputs"), "object"));
+    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "q"), "status")), "undetermined");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+        let field = get(r, "field");
+        s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
+    }));
+}
+#[test]
 fn observed_and_parameter_numeric_law_builds_for_later_checks() {
     for ty in ["Z", "Q"] {
         for equation in ["n=c.quantity", "c.quantity=n"] {

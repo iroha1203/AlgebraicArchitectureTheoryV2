@@ -45,8 +45,9 @@ pub(in crate::observed) struct ParameterEquation {
 pub(in crate::observed) fn parameter_source_difference(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
-    let crate::law::model::Signature::Law { body, guard: None, .. } = &inputs.law().declarations
+    let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
+    if !source_polynomial::guard_is_true(inputs, instance, c)? { return Ok(None); }
     let mut cursor = *body;
     let (left, right) = loop {
         tick(c)?;
@@ -1417,6 +1418,17 @@ mod tests {
             presentation.recheck(inputs.clone(), &mut c).unwrap();
             presentation.occurrences[0].nu = Some(EquationPolynomial::constant(numeric::zero(&ty, &c).unwrap(), &mut c).unwrap());
             assert!(presentation.recheck(inputs, &mut c).is_err());
+        }
+    }
+    #[test]
+    fn parameter_guard_requires_uniform_truth_without_observation() {
+        for (guard, expected) in [("n=m", false), ("n=n", true), ("false", false), ("c.quantity=c.quantity", false)] {
+            let inputs = inputs_with(&format!("law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
+            assert_eq!(source_polynomial::guard_is_true(&inputs, instance, &mut c).unwrap(), expected);
         }
     }
     #[test]
