@@ -1077,6 +1077,45 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
 }
 
 #[test]
+fn finite_predicates_and_short_circuits_keep_numeric_axes() {
+    for (extra, guard, active) in [
+        (
+            ",tag:Set<Bool>",
+            "tag!=set<Bool>{} and (true in tag implies false in tag)",
+            vec![false, true, false, true],
+        ),
+        (",tag:Bool", "false implies n*n=1", vec![true, true]),
+        (",tag:Bool", "false and n*n=1", vec![false, false]),
+        (",tag:Bool", "true or n*n=1", vec![true, true]),
+    ] {
+        let p = prepared(
+            false,
+            false,
+            &format!("law required zero(c:Part,n:Z{extra}) when {guard}:n*c.quantity=0;"),
+            "root",
+        );
+        let (mut g, a) = built(&p);
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagram = &diagrams[0];
+        assert_eq!(diagram.coordinates.len(), 2 * active.len(), "{guard}");
+        for (index, coordinate) in diagram.coordinates.iter().enumerate() {
+            assert_eq!(
+                coordinate.guard,
+                if active[index % active.len()] {
+                    EquationGuard::AlwaysTrue
+                } else {
+                    EquationGuard::AlwaysFalse
+                }
+            );
+            assert_eq!(
+                diagram.originals[index].parameters,
+                vec![("n".into(), Type::Z)]
+            );
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+#[test]
 fn finite_set_cases_keep_all_subsets_and_numeric_axes() {
     let p = prepared(
         false,

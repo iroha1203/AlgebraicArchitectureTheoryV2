@@ -10,10 +10,37 @@ const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"a
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
 fn finite_set_guards_preserve_known_numeric_products() {
+    finite_set_known_product("b=set<Bool>{false,true}");
+}
+#[test]
+fn finite_predicates_preserve_known_numeric_products() {
+    finite_set_known_product("b!=set<Bool>{} and (true in b implies false in b)");
+}
+#[test]
+fn finite_predicates_keep_missing_and_applicability() {
+    finite_missing_product(
+        "set-predicate",
+        "Set<Bool>",
+        "set<Bool>{}",
+        "set<Bool>{false,true}",
+        "b!=set<Bool>{} and (true in b implies false in b)",
+    );
+}
+#[test]
+fn finite_tuple_equality_keeps_missing_and_applicability() {
+    finite_missing_product(
+        "tuple-equality",
+        "(Bool,Bool)",
+        "(false,true)",
+        "(true,true)",
+        "b=(true,true)",
+    );
+}
+fn finite_set_known_product(guard: &str) {
     for ty in ["Z", "Q"] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
         let body = format!(
-            "law required zero(c:Part,n:{ty},b:Set<Bool>) when b=set<Bool>{{false,true}}:n*c.quantity=0;"
+            "law required zero(c:Part,n:{ty},b:Set<Bool>) when {guard}:n*c.quantity=0;"
         );
         let dir = files_with_definition("finite-set-known", &body, false, &definition);
         if ty == "Q" {
