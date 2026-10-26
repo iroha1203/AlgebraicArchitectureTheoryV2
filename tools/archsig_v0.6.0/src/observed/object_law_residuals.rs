@@ -650,6 +650,10 @@ fn extract(
                 .as_mut()
                 .ok_or_else(|| bad("一様残差読取りがない"))?;
             read_case(&mut row.cases[0], &out.shape, inputs, g, c)?;
+            if reading.application().value() == Some(false) {
+                row.cases[0].evaluation = g.and_then(|graph| graph.answers.first())
+                    .and_then(|answer| answer.outputs.get("evaluation")).map(|root| root.0);
+            }
             if let Some((root, producer, value)) = super::object_law_transport::constant_numeric_family(src.evaluation(), c)? {
                 let case = &mut row.cases[0];
                 let [component] = case.components.as_mut_slice() else { return Err(bad("一様数値差の成分数が違う")) };

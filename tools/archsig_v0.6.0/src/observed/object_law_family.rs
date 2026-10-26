@@ -300,6 +300,12 @@ impl LawReadingFamily {
         c: &mut Control,
     ) -> Result<Vec<NodeRef>, ConstructionFailure> {
         if row.is_none() {
+            if self.uniform.as_ref().is_some_and(|r| r.application.value() == Some(false))
+                && e.instance().parameters().iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                && let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() {
+                return Ok(g.answers.first().and_then(|a| a.outputs.get("evaluation"))
+                    .copied().into_iter().collect());
+            }
             return Ok(constant_numeric_family(e, c)?.map(|(root, _, _)| root).into_iter().collect());
         }
         let (ObjectEvaluationOutcome::Evaluated(g), Some(row)) = (e.outcome(), row) else {
@@ -798,8 +804,11 @@ pub(in crate::observed) fn read_native_family(
     }
     let env = crate::observed::environment::Environment::new(inputs, c)
         .map_err(ConstructionFailure::from)?;
-    if constant_numeric_family(e, c)?.is_some() {
-        result.uniform = Some(reading(e, c)?);
+    let value = reading(e, c)?;
+    let inactive_numeric = value.application.value() == Some(false)
+        && e.instance().parameters().iter().all(|p| matches!(p.ty, Type::Z | Type::Q));
+    if inactive_numeric || constant_numeric_family(e, c)?.is_some() {
+        result.uniform = Some(value);
         result.complete = true;
         return tick(c).map_err(Into::into);
     }

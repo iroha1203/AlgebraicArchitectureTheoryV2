@@ -1121,7 +1121,7 @@ fn populate(
                     // 適用外/guard偽でも原式の記号表示は残す。通常評価を実行したことにはせず、
                     // 生差εは未生成のまま、適用条件付きresidualの零と区別する。
                     if let LawNumericShape::Equality { left, right, .. } = e.shape
-                        && let Some((lhs, rhs)) = source_polynomial::operands(
+                        && let Some(source) = source_polynomial::operands(
                             inputs,
                             original.instance(),
                             left,
@@ -1131,9 +1131,9 @@ fn populate(
                             c,
                         )?
                     {
-                        occurrence.nu = Some(lhs.binary(BinOp::Sub, &rhs, c)?);
-                        occurrence.left = Some(lhs);
-                        occurrence.right = Some(rhs);
+                        occurrence.nu = Some(source.difference);
+                        occurrence.left = source.left;
+                        occurrence.right = source.right;
                     }
                     if occurrence.nu.is_none() && row.is_none() {
                         // 同じ元instanceの全域正規化だけを共有する。対象外でbodyを実行しない。
@@ -1361,6 +1361,31 @@ mod tests {
             let instance = readings.instances().iter().position(|instance| instance.declaration().kind == "law").unwrap();
             let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, instance, &mut c).unwrap();
             assert!(super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap().is_none());
+        }
+    }
+    #[test]
+    fn inactive_numeric_law_preserves_unevaluated_body() {
+        for (ty, guard) in [("Z", "false"), ("Q", "n+1=n")] {
+            let inputs = inputs_with(&format!("view plus(x:{ty}):{ty}=x+1;law required balanced(c:Part,n:{ty},m:{ty}) when {guard}:let x=n+m in plus(x)=m+n+2;"));
+            let mut c = Control::unlimited();
+            let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+            assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+            assert!(!presentation.occurrences.is_empty());
+            for occurrence in &presentation.occurrences {
+                assert!(matches!(occurrence.guard, EquationGuard::AlwaysFalse | EquationGuard::OutsideObject));
+                assert!(occurrence.epsilon.is_none() && occurrence.epsilon_producer.is_none());
+                assert!(occurrence.evaluated_nu.is_none() && occurrence.component_holds.is_none());
+                let value = occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap().unwrap();
+                let one = numeric::literal("1", &value.scalar().ty(), &c).unwrap();
+                assert_eq!(value.scalar(), &numeric::unary(UnOp::Neg, &one, &c).unwrap());
+                assert_eq!(occurrence.residual.as_ref().unwrap().scalar(), &numeric::zero(&value.scalar().ty(), &c).unwrap());
+            }
+            assert!(presentation.rings.iter().all(|ring| ring.symbols.is_empty() && ring.required_generators.is_empty()));
+            for source in presentation.base.base().evaluations() {
+                assert_eq!(source.evaluation().instance().parameters().len(), 2);
+                assert!(source.family().rows().is_empty() && source.family().domains().is_empty());
+            }
+            presentation.recheck(inputs, &mut c).unwrap();
         }
     }
     #[test]

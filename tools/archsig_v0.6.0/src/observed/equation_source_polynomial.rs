@@ -1,5 +1,6 @@
 //! 未実行の原式を同じ型付きASTから多項式へ翻訳する。原式の評価値は生成しない。
 use super::*;
+use crate::observed::affine;
 use crate::{archmap::Slot, construction::readings::ObjectInstance, law::model::Signature};
 use std::{collections::BTreeMap, sync::Arc};
 
@@ -10,11 +11,39 @@ enum Binding {
         subject: String,
     },
     Polynomial(EquationPolynomial),
+    ParameterForm(affine::Form),
     Tuple(Vec<Binding>),
     Lexical {
         expression: usize,
         variables: Arc<BTreeMap<String, Binding>>,
     },
+}
+impl Binding {
+    fn polynomial(&self, c: &mut Control) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
+        match self {
+            Self::Polynomial(value) => Ok(Some(value.clone())),
+            Self::ParameterForm(value) => value.value(c).map_err(invalid)?
+                .map(|value| EquationPolynomial::constant(value, c)).transpose(),
+            _ => Ok(None),
+        }
+    }
+    fn affine(&self, c: &mut Control) -> Result<Option<affine::Form>, ConstructionFailure> {
+        match self {
+            Self::ParameterForm(value) => Ok(Some(value.clone())),
+            Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
+                let Some(value) = value.evaluate(&[], c)? else { return Ok(None) };
+                affine::constant(value.scalar(), c).map_err(invalid)
+            }
+            _ => Ok(None),
+        }
+    }
+    fn binary(&self, op: BinOp, rhs: &Self, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+        if let (Self::Polynomial(left), Self::Polynomial(right)) = (self, rhs) {
+            return Ok(Some(Self::Polynomial(left.binary(op, right, c)?)));
+        }
+        Ok(affine::binary(op, self.affine(c)?.as_ref(), rhs.affine(c)?.as_ref(), c)
+            .map_err(invalid)?.map(Self::ParameterForm))
+    }
 }
 struct Compiler<'a> {
     inputs: &'a CheckedInputs,
@@ -255,7 +284,7 @@ impl Compiler<'_> {
                     op: UnOp::Neg,
                     operand,
                 } => {
-                    let Some(Binding::Polynomial(value)) = self.expression(*operand, path, c)?
+                    let Some(value) = self.expression(*operand, path, c)?
                     else {
                         return Ok(None);
                     };
@@ -263,20 +292,20 @@ impl Compiler<'_> {
                         numeric::zero(&self.ring.ty, c).map_err(invalid)?,
                         c,
                     )?;
-                    Some(Binding::Polynomial(zero.binary(BinOp::Sub, &value, c)?))
+                    Binding::Polynomial(zero).binary(BinOp::Sub, &value, c)?
                 }
                 ExprKind::Binary {
                     op: op @ (BinOp::Add | BinOp::Sub | BinOp::Mul),
                     lhs,
                     rhs,
                 } => {
-                    let Some(Binding::Polynomial(left)) = self.expression(*lhs, path, c)? else {
+                    let Some(left) = self.expression(*lhs, path, c)? else {
                         return Ok(None);
                     };
-                    let Some(Binding::Polynomial(right)) = self.expression(*rhs, path, c)? else {
+                    let Some(right) = self.expression(*rhs, path, c)? else {
                         return Ok(None);
                     };
-                    Some(Binding::Polynomial(left.binary(*op, &right, c)?))
+                    left.binary(*op, &right, c)?
                 }
                 ExprKind::Match { scrutinee, arms } => {
                     let previous = self.variables.clone();
@@ -357,6 +386,11 @@ impl Compiler<'_> {
     }
 }
 
+pub(super) struct SourceDifference {
+    pub left: Option<EquationPolynomial>,
+    pub right: Option<EquationPolynomial>,
+    pub difference: EquationPolynomial,
+}
 pub(super) fn operands(
     inputs: &CheckedInputs,
     instance: &ObjectInstance,
@@ -365,8 +399,8 @@ pub(super) fn operands(
     path: &[usize],
     ring: &mut EquationRing,
     c: &mut Control,
-) -> Result<Option<(EquationPolynomial, EquationPolynomial)>, ConstructionFailure> {
-    let variables = instance
+) -> Result<Option<SourceDifference>, ConstructionFailure> {
+    let mut variables: BTreeMap<_, _> = instance
         .bindings()
         .iter()
         .map(|b| {
@@ -379,6 +413,21 @@ pub(super) fn operands(
             )
         })
         .collect();
+    // 未束縛parameterは観測slotではない。独立の元binder軸のまま計算し、
+    // 差から全軸が消えた場合だけK[X]へ移す。具体値の代入は行わない。
+    for parameter in instance.parameters() {
+        tick(c)?;
+        let kind = match parameter.ty {
+            Type::Z => affine::NumberType::Z,
+            Type::Q => affine::NumberType::Q,
+            _ => continue,
+        };
+        let key = affine::Parameter { binder: parameter.span, name: parameter.name.clone(),
+            context: Default::default(), kind };
+        if let Some(value) = affine::parameter(&parameter.ty, &key, c).map_err(invalid)? {
+            variables.insert(parameter.name.clone(), Binding::ParameterForm(value));
+        }
+    }
     let mut candidate = ring.clone();
     let mut compiler = Compiler {
         inputs,
@@ -415,12 +464,15 @@ pub(super) fn operands(
             _ => break,
         }
     }
-    let Some(Binding::Polynomial(left)) = compiler.expression(left, path, c)? else {
+    let Some(left) = compiler.expression(left, path, c)? else {
         return Ok(None);
     };
-    let Some(Binding::Polynomial(right)) = compiler.expression(right, path, c)? else {
+    let Some(right) = compiler.expression(right, path, c)? else {
         return Ok(None);
     };
+    let Some(difference) = left.binary(BinOp::Sub, &right, c)? else { return Ok(None) };
+    let Some(difference) = difference.polynomial(c)? else { return Ok(None) };
+    let result = SourceDifference { left: left.polynomial(c)?, right: right.polynomial(c)?, difference };
     *ring = candidate;
-    Ok(Some((left, right)))
+    Ok(Some(result))
 }
