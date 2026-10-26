@@ -119,28 +119,47 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     let (g, a) = built(&p);
     let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else { panic!("architecture") };
     let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
-    assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().is_none());
+    let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().unwrap();
+    assert!(equations.iter().any(|(_, source)| source.ring.symbols.len() == 2
+        && source.difference.constant.terms.iter().filter(|term| !term.variables.is_empty()).count() == 2));
 }
 #[test]
-fn parameter_offset_polynomials_keep_free_observation_variables() {
-    fn coefficient(g: &Graph, r: NodeRef, n: i64) -> i64 {
+fn parameter_polynomials_keep_free_observation_variables() {
+    fn expression(inputs: &CheckedInputs, id: usize, n: i64, x: i64) -> i64 {
+        use crate::law::ast::{BinOp, ExprKind};
+        match &inputs.law().exprs[id].kind {
+            ExprKind::Int(value) => value.parse().unwrap(),
+            ExprKind::Group(child) => expression(inputs, *child, n, x),
+            ExprKind::Dotted(names) if names.len() == 1 && names[0].name == "n" => n,
+            ExprKind::Dotted(names) if names.last().unwrap().name == "quantity" => x,
+            ExprKind::Field { name, .. } if name.name == "quantity" => x,
+            ExprKind::Binary { op, lhs, rhs } => {
+                let lhs = expression(inputs, *lhs, n, x);
+                let rhs = expression(inputs, *rhs, n, x);
+                match op { BinOp::Add => lhs + rhs, BinOp::Sub => lhs - rhs, BinOp::Mul => lhs * rhs, _ => panic!("arithmetic") }
+            }
+            _ => panic!("numeric source"),
+        }
+    }
+    fn coefficient(g: &Graph, r: NodeRef, n: i64, x: i64) -> i64 {
         match data(g, r).part() {
             Part::Scalar(Scalar::Z(value)) => value.to_string().parse().unwrap(),
-            Part::Source { expression, .. } => {
-                let input = &data(g, r).source.inputs;
-                let crate::law::ast::ExprKind::Dotted(names) = &input.law().exprs[*expression].kind else { panic!("parameter source") };
-                assert_eq!(names.len(), 1);
-                assert_eq!(names[0].name, "n");
-                n
+            Part::Source { expression: id, .. } => expression(&data(g, r).source.inputs, *id, n, x),
+            Part::Transform { operation: Transform::Substitute, operands, bindings, .. } => {
+                assert_eq!(bindings.len(), 1);
+                assert_eq!(bindings[0].name, "n");
+                let value = coefficient(g, bindings[0].value, n, x);
+                coefficient(g, operands[0], value, x)
             }
             Part::Transform { operation: Transform::Difference, operands, .. } => {
                 assert_eq!(operands.len(), 2);
-                coefficient(g, operands[0], n) - coefficient(g, operands[1], n)
+                coefficient(g, operands[0], n, x) - coefficient(g, operands[1], n, x)
             }
             _ => panic!("numeric coefficient"),
         }
     }
-    for (body, sign) in [("n=c.quantity+2", 1), ("c.quantity+2=n", -1)] {
+    for (body, parameter, observation, constant) in [("n=c.quantity+2", 1, -1, -2), ("c.quantity+2=n", -1, 1, 2),
+        ("n+c.quantity=2", 1, 1, -2), ("n+c.quantity=2*n+1", -1, 1, -1)] {
         let p = prepared(false, false, &format!("law required equal(c:Part,n:Z):{body};"), "root");
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
@@ -150,9 +169,9 @@ fn parameter_offset_polynomials_keep_free_observation_variables() {
             for n in [-3, 0, 4] {
                 for x in [-5i64, 0, 7] {
                     let actual: i64 = terms.iter().map(|(r, powers)| {
-                        coefficient(&g, *r, n) * powers.iter().map(|power| x.pow(*power as u32)).product::<i64>()
+                        coefficient(&g, *r, n, x) * powers.iter().map(|power| x.pow(*power as u32)).product::<i64>()
                     }).sum();
-                    assert_eq!(actual, sign * (n - x - 2));
+                    assert_eq!(actual, parameter * n + observation * x + constant);
                 }
             }
         }

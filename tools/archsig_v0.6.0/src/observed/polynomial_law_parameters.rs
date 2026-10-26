@@ -5,24 +5,6 @@ use crate::observed::object_equation_presentation::{
     ParameterEquation, parameter_source_difference,
 };
 
-// 一方のoperandが引数だけ、他方が観測多項式なら、
-// その定数項を元operandの係数式へまとめる。観測値を係数へ埋め込まない。
-fn separated_parameter_side(source: &ParameterEquation) -> Option<bool> {
-    let pure = |p: &super::super::object_equation_presentation::PolynomialFamily| {
-        p.constant.terms.iter().all(|t| t.variables.is_empty())
-    };
-    let field = |p: &super::super::object_equation_presentation::PolynomialFamily| {
-        p.parameters.is_empty()
-    };
-    if pure(&source.left) && field(&source.right) {
-        Some(true)
-    } else if field(&source.left) && pure(&source.right) {
-        Some(false)
-    } else {
-        None
-    }
-}
-
 fn observation_free_difference(source: &ParameterEquation) -> bool {
     source.difference.constant.terms.iter().all(|term| term.variables.is_empty())
 }
@@ -76,16 +58,8 @@ pub(super) fn sources(
         else {
             return Ok(None);
         };
-        if !source.ring.symbols.is_empty() {
-            if source.ring.symbols.iter().any(|s| s.value.is_none()) {
-                return Ok(None);
-            }
-            if !source.difference.parameters.is_empty()
-                && !observation_free_difference(&source)
-                && separated_parameter_side(&source).is_none()
-            {
-                return Ok(None);
-            }
+        if source.ring.symbols.iter().any(|s| s.value.is_none()) {
+            return Ok(None);
         }
         if instance.applications().iter().any(|a| match a {
             InstanceApplication::NotApplicable => false,
@@ -188,28 +162,25 @@ pub(super) fn plans(
                     c,
                 )?
             } else if !observation_free_difference(source) {
-                let left =
-                    separated_parameter_side(source).ok_or("数値族の係数式が分離できない")?;
-                let operand = if left { lhs } else { rhs };
-                let zero = difference(parts, base, original, &ty, operand, operand, c)?;
-                let mut coefficient = difference(
-                    parts,
-                    base,
-                    original,
-                    &ty,
-                    if left { operand } else { zero },
-                    if left { zero } else { operand },
-                    c,
-                )?;
-                let mut field = if left {
-                    EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
-                        .and_then(|zero| {
-                            zero.binary(crate::law::ast::BinOp::Sub, &source.right.constant, c)
-                        })
-                        .map_err(|e| construction_failure(&e))?
-                } else {
-                    source.left.constant.clone()
-                };
+                // 差Dの全引数を零へ同時代入したD(0)は観測多項式。
+                // D-D(0)へ定数項を戻して、元式由来の引数係数を作る。
+                let mut bindings = vec![];
+                for (name, parameter_type) in &original.parameters {
+                    let zero = super::super::numeric::zero(parameter_type, c)?;
+                    let value = push(parts, base, Part::Scalar(zero), c)?;
+                    bindings.push(Binding { name: name.clone(), ty: parameter_type.clone(), value });
+                }
+                let at_zero = push(parts, base, Part::Transform {
+                    quantifiers: original.quantifiers.clone(),
+                    operation: Transform::Substitute,
+                    parameters: vec![],
+                    ty: ty.clone(),
+                    operands: vec![expression],
+                    bindings,
+                    position: None,
+                }, c)?;
+                let mut coefficient = difference(parts, base, original, &ty, expression, at_zero, c)?;
+                let mut field = source.difference.constant.clone();
                 if let Some(term) = field.terms.iter().find(|term| term.variables.is_empty()) {
                     let negative = super::super::numeric::unary(
                         crate::law::ast::UnOp::Neg, term.coefficient.scalar(), c,
