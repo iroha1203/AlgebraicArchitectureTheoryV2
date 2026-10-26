@@ -1099,3 +1099,65 @@ fn infinite_components_are_not_finite_case_samples() {
         );
     }
 }
+
+#[test]
+fn infinite_data_is_not_a_finite_case_sample() {
+    use crate::observed::input::{InputSources, check_inputs};
+    for payload in [r#""Z""#, r#"["Data","Family.Flag"]"#] {
+        let mut p = prepared(
+            false,
+            false,
+            "law required zero(c:Part,n:Z):n*c.quantity=0;",
+            "root",
+        );
+        let sources = p.inputs.sources();
+        let original = std::str::from_utf8(sources.definitions()[0].bytes()).unwrap();
+        let definition = original.replace(
+            r#""declarations":["#,
+            &format!(r#""declarations":[{{"kind":"data","name":"Family.Flag","meaning":"選択。","constructors":[{{"name":"Off","arguments":[],"meaning":"停止。"}},{{"name":"On","arguments":[{payload}],"meaning":"選択。"}}]}},"#),
+        );
+        let old =
+            crate::definition::check_definitions(&[("definition0", original.as_bytes())]).unwrap();
+        let new = crate::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
+        let old_digest = &old.vocabularies["Family"].digest;
+        let new_digest = &new.vocabularies["Family"].digest;
+        let law = std::str::from_utf8(sources.law().bytes())
+            .unwrap()
+            .replace(old_digest, new_digest)
+            .replace("n:Z)", "n:Z,tag:Flag)");
+        let map = std::str::from_utf8(sources.archmap().bytes())
+            .unwrap()
+            .replace(old_digest, new_digest);
+        p.inputs = Arc::new(
+            check_inputs(
+                InputSources::from_bytes(
+                    vec![definition.into_bytes()],
+                    law.into_bytes(),
+                    map.into_bytes(),
+                ),
+                &mut quiet(),
+            )
+            .unwrap(),
+        );
+        p.requests = resolve_native_for_test(
+            p.inputs.law(),
+            p.inputs.archmap(),
+            &["b=build(Selected,on=@v/root)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        let (g, a) = built(&p);
+        let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else {
+            panic!("architecture")
+        };
+        let Witness::Architecture(a) = &value.witness else {
+            panic!("architecture witness")
+        };
+        assert!(
+            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+                .unwrap()
+                .is_none()
+        );
+    }
+}

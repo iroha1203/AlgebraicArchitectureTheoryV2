@@ -9,6 +9,129 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn finite_data_guards_keep_numeric_products() {
+    for ty in ["Z", "Q"] {
+        for missing in [false, true] {
+            let dir = finite_data_product_input(ty, missing);
+            let requests = [
+                "a=build(R,on=@v/root)",
+                "p=check(R.zero,on=$a.object,c=@v/p)",
+                "q=check(R.zero,on=$a.object,c=@v/q)",
+            ];
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in requests {
+                args.extend(["--ask", request]);
+            }
+            let before =
+                ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+            let normal = cli::run(&dir, &args);
+            let code = if missing { 2 } else { 1 };
+            assert_eq!(normal.code, code, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+                assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+            }
+            assert!(!has(&normal.receipt, "nodes"));
+            assert!(!has(&normal.receipt, "result"));
+            assert_eq!(
+                s(get(answer(&normal.receipt, "p"), "status")),
+                "established"
+            );
+            assert_eq!(
+                s(get(answer(&normal.receipt, "q"), "status")),
+                if missing { "undetermined" } else { "refuted" }
+            );
+            eprintln!(
+                "finite data {ty}/{missing}: stdout {} bytes",
+                normal.stdout.len()
+            );
+            let mut full_requests = requests.to_vec();
+            full_requests.extend([
+                "f=evaluate(R.off,on=$a.object)",
+                "d=evaluate(R.deny,on=$a.object)",
+                "t=evaluate(R.on,on=$a.object)",
+                "off=check(R.zero,on=$a.object,c=@v/q,tag=$f.value)",
+                "deny=check(R.zero,on=$a.object,c=@v/q,tag=$d.value)",
+                "on=check(R.zero,on=$a.object,c=@v/q,tag=$t.value)",
+                "n=needed($q)",
+            ]);
+            let r = asks(&dir, &full_requests);
+            let j = saved(&dir, &r, if missing { "partial" } else { "complete" }, code);
+            for id in ["off", "deny"] {
+                assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
+            }
+            assert_eq!(s(get(answer(&j, "on"), "applicability")), "applicable");
+            assert_eq!(
+                s(get(answer(&j, "on"), "status")),
+                if missing { "undetermined" } else { "refuted" }
+            );
+            if missing {
+                for id in ["a", "q", "on"] {
+                    assert!(
+                        arr(get(answer(&j, id), "reasons"))
+                            .iter()
+                            .all(|r| s(get(r, "code")) == "missing_observation")
+                    );
+                }
+                let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+                assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                    get(r, "field"),
+                    "field"
+                )) == "Build.Part.quantity"
+                    && s(get(get(r, "field"), "subject")) == "q"));
+            }
+            let mut reuse_args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ];
+            for request in full_requests {
+                reuse_args.extend(["--ask", request]);
+            }
+            let reused = cli::run(&dir, &reuse_args);
+            assert_eq!(reused.code, code, "{}", reused.stdout);
+            assert!(reused.stderr.is_empty());
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&again, field).value);
+            }
+        }
+    }
+}
+fn finite_data_product_input(ty: &str, missing: bool) -> PathBuf {
+    let definition = DEFINITION.replace(r#""declarations":["#,r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"停止。"},{"name":"On","arguments":["Bool"],"meaning":"選択。"}]},{"kind":"data","name":"Build.Wrapper","meaning":"包装。","constructors":[{"name":"Packed","arguments":[["Data","Build.Flag"]],"meaning":"包装。"}]},"#).replace(r#""type":"Z""#,&format!(r#""type":"{ty}""#));
+    let body = format!(
+        "view off():Wrapper=Packed(Off);view deny():Wrapper=Packed(On(false));view on():Wrapper=Packed(On(true));view active(tag:Wrapper):Bool=match tag{{Packed(inner)=>match inner{{Off=>false;On(b)=>b;}};}};law required zero(c:Part,n:{ty},tag:Wrapper) when active(tag):n*c.quantity=0;"
+    );
+    let dir = files_with_definition("finite-data-product", &body, missing, &definition);
+    if ty == "Q" {
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+            .replace(r#""value":"1""#, r#""value":["1","2"]"#);
+        std::fs::write(dir.join("a.json"), map).unwrap();
+    }
+    dir
+}
+#[test]
 fn unit_and_option_parameters_keep_numeric_products() {
     for ty in ["Z", "Q"] {
         for (parameter, guard) in [
