@@ -672,8 +672,10 @@ impl Data {
         let application = self.source.architecture.readings().instances().get(original.instance)
             .and_then(|instance| instance.applications().get(object))
             .ok_or("元Lawの対象適用がない")?;
-        let known_guard = guard.is_none() || (self.source.core.is_none() && diagram.unavailable.is_none()
+        let true_guard = guard.is_none() || (self.source.core.is_none() && diagram.unavailable.is_none()
             && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysTrue));
+        let known_guard = true_guard || (self.source.core.is_none() && diagram.unavailable.is_none()
+            && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysFalse));
         let numeric_family = known_guard && original.row.is_none()
             && original.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
@@ -702,7 +704,7 @@ impl Data {
                 )
             }),
             outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
-            body_allowed: numeric_family || reading
+            body_allowed: (numeric_family && true_guard) || reading
                 .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))

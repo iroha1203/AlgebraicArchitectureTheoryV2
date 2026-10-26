@@ -30,6 +30,7 @@ pub(super) fn parameter_constant_source_value(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let Some(source) = parameter_source_difference(inputs, instance, c)? else { return Ok(None) };
+    if !source.guard { return Ok(None) }
     if !source.difference.parameters.is_empty() { return Ok(None) }
     let values: Vec<_> = source.ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
     Ok(source.difference.constant.evaluate(&values, c)?.map(|value| value.scalar().clone()))
@@ -37,6 +38,7 @@ pub(super) fn parameter_constant_source_value(
 pub(in crate::observed) use source_polynomial::PolynomialFamily;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
+    pub guard: bool,
     pub ring: EquationRing,
     pub difference: PolynomialFamily,
 }
@@ -45,13 +47,13 @@ pub(in crate::observed) fn parameter_source_difference(
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
-    if !source_polynomial::guard_is_true(inputs, instance, c)? { return Ok(None); }
+    let Some(guard) = source_polynomial::guard_value(inputs, instance, c)? else { return Ok(None) };
     let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? else { return Ok(None) };
     let ExprKind::Binary { lhs: left, rhs: right, .. } = inputs.law().exprs[eq].kind else { return Ok(None) };
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
     let Some(source) = source_polynomial::family_operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
-    Ok(Some(ParameterEquation { ring, difference: source.difference }))
+    Ok(Some(ParameterEquation { guard, ring, difference: source.difference }))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
@@ -1425,13 +1427,14 @@ mod tests {
     }
     #[test]
     fn parameter_guard_requires_uniform_truth_without_observation() {
-        for (guard, expected) in [("n=m", false), ("n=n", true), ("false", false), ("c.quantity=c.quantity", false)] {
-            let inputs = inputs_with(&format!("law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
+        for (guard, expected) in [("n=m", false), ("n=n", true), ("false", false), ("c.quantity=c.quantity", false),
+            ("active(n,m)",false), ("active(n,n)",true), ("active(c.quantity,c.quantity)",false), ("nested(n)",true)] {
+            let inputs = inputs_with(&format!("view active(x:Z,y:Z):Bool=x=y;view nested(x:Z):Bool=active(x,x);law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
             let mut c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
             let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
             let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
-            assert_eq!(source_polynomial::guard_is_true(&inputs, instance, &mut c).unwrap(), expected);
+            assert_eq!(source_polynomial::guard_value(&inputs, instance, &mut c).unwrap() == Some(true), expected);
         }
     }
     #[test]

@@ -488,25 +488,29 @@ pub(super) fn family_operands(
     family_operands_from_root(inputs, instance, *body, left, right, path, ring, c)
 }
 
-pub(super) fn guard_is_true(inputs: &CheckedInputs, instance: &ObjectInstance, c: &mut Control) -> Result<bool, ConstructionFailure> {
+pub(super) fn guard_value(inputs: &CheckedInputs, instance: &ObjectInstance, c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
     let Signature::Law { guard, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
-    else { return Ok(false) };
-    let Some(root) = *guard else { return Ok(true) };
+    else { return Ok(None) };
+    let Some(root) = *guard else { return Ok(Some(true)) };
     let mut cursor = root;
     let (left, right) = loop {
         tick(c)?;
         match inputs.law().exprs[cursor].kind {
             ExprKind::Group(next) => cursor = next,
-            ExprKind::Bool(value) => return Ok(value),
+            ExprKind::Call { .. } => {
+                let Some((_, body, _)) = crate::observed::object_law_residuals::predicate_call(inputs,cursor) else { return Ok(None) };
+                cursor = body;
+            }
+            ExprKind::Bool(value) => return Ok(Some(value)),
             ExprKind::Binary { op: BinOp::Eq, lhs, rhs } => break (lhs, rhs),
-            _ => return Ok(false),
+            _ => return Ok(None),
         }
     };
-    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(false) };
+    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-    let Some(source) = family_operands_from_root(inputs, instance, root, left, right, &[], &mut ring, c)? else { return Ok(false) };
-    Ok(ring.symbols.is_empty() && source.difference.parameters.is_empty() && source.difference.constant.terms.is_empty())
+    let Some(source) = family_operands_from_root(inputs, instance, root, left, right, &[], &mut ring, c)? else { return Ok(None) };
+    Ok((ring.symbols.is_empty() && source.difference.parameters.is_empty()).then_some(source.difference.constant.terms.is_empty()))
 }
 
 fn family_operands_from_root(
