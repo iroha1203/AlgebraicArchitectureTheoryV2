@@ -372,20 +372,45 @@ impl Compiler<'_> {
                 ExprKind::Unary { op: UnOp::Not, operand } if path.is_empty() => {
                     match self.expression(*operand, &[], c)? { Some(Binding::Boolean(value)) => Some(Binding::Boolean(!value)), _ => None }
                 }
-                ExprKind::Binary { op: op @ (BinOp::And | BinOp::Or | BinOp::Eq), lhs, rhs } if path.is_empty() => {
+                ExprKind::Binary {
+                    op: op @ (BinOp::And | BinOp::Or | BinOp::Implies | BinOp::Eq | BinOp::Ne | BinOp::In),
+                    lhs,
+                    rhs,
+                } if path.is_empty() => {
                     let left = self.expression(*lhs, &[], c)?;
-                    if matches!((&left, op), (Some(Binding::Boolean(false)), BinOp::And) | (Some(Binding::Boolean(true)), BinOp::Or)) { return Ok(left); }
+                    match (&left, op) {
+                        (Some(Binding::Boolean(false)), BinOp::And) => return Ok(left),
+                        (Some(Binding::Boolean(true)), BinOp::Or) => return Ok(left),
+                        (Some(Binding::Boolean(false)), BinOp::Implies) => {
+                            return Ok(Some(Binding::Boolean(true)));
+                        }
+                        _ => (),
+                    }
                     let right = self.expression(*rhs, &[], c)?;
+                    if let (Some(left), Some(right)) = (&left, &right)
+                        && let (Some(left), Some(right)) =
+                            (left.finite_scalar(c)?, right.finite_scalar(c)?)
+                    {
+                        let Scalar::Bool(value) = super::super::environment::binary(
+                            *op,
+                            &left,
+                            &right,
+                            self.inputs.law(),
+                            expression.span,
+                            c,
+                        ).map_err(invalid)? else {
+                            return Err(bad("有限述語の結果がBoolでない"));
+                        };
+                        return Ok(Some(Binding::Boolean(value)));
+                    }
                     match (left, right) {
-                        (Some(Binding::Boolean(left)), Some(Binding::Boolean(right))) => Some(Binding::Boolean(match op { BinOp::And => left && right, BinOp::Or => left || right, _ => left == right })),
-                        (Some(Binding::FiniteScalar(left)), Some(Binding::FiniteScalar(right))) if *op == BinOp::Eq => Some(Binding::Boolean(left == right)),
-                        (Some(left), Some(right)) if *op == BinOp::Eq => {
+                        (Some(left), Some(right)) if matches!(op, BinOp::Eq | BinOp::Ne) => {
                             let family = match left.binary(BinOp::Sub, &right, c)? {
                                 Some(value) => PolynomialFamily::from_binding(&value, c)?,
                                 None => None,
                             };
                             match family {
-                                Some(value) if self.ring.symbols.is_empty() && value.parameters.is_empty() => Some(Binding::Boolean(value.constant.terms.is_empty())),
+                                Some(value) if self.ring.symbols.is_empty() && value.parameters.is_empty() => Some(Binding::Boolean(value.constant.terms.is_empty() == (*op == BinOp::Eq))),
                                 _ => None,
                             }
                         }
