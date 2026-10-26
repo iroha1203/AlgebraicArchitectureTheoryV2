@@ -1087,6 +1087,10 @@ fn finite_predicates_and_short_circuits_keep_numeric_axes() {
         (",tag:Bool", "false implies n*n=1", vec![true, true]),
         (",tag:Bool", "false and n*n=1", vec![false, false]),
         (",tag:Bool", "true or n*n=1", vec![true, true]),
+        ("", "false implies n*n=1", vec![true]),
+        ("", "false and n*n=1", vec![false]),
+        ("", "true or n*n=1", vec![true]),
+        ("", "rat(1,2)=rat(1,2)", vec![true]),
     ] {
         let p = prepared(
             false,
