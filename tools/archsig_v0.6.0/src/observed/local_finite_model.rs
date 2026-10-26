@@ -5,6 +5,7 @@ use crate::observed::environment::change_evaluation::{self, Candidates, State};
 pub(super) struct Reading {
     pub expression: usize,
     pub bindings: Vec<(String, Scalar)>,
+    pub parameters: Vec<crate::law::model::Param>,
     pub support: geometry::Support,
     pub values: Vec<Scalar>,
 }
@@ -20,7 +21,7 @@ pub(super) struct Model {
     pub points: Vec<Vec<Scalar>>,
     pub candidate_points: Vec<Option<usize>>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
-    pub universal: Vec<(String, crate::law::model::Param, Vec<Scalar>)>,
+    pub universal: Vec<(String, crate::law::model::Param, Option<Vec<Scalar>>)>,
     pub truth: Vec<Vec<bool>>,
     pub law_supports: Vec<geometry::Support>,
     pub readings: Vec<Reading>,
@@ -227,12 +228,16 @@ pub(super) fn analyze(
             {
                 vec![change_search::selector(original, g, &arg.value)?]
             } else {
+                if matches!(p.ty, Type::Z | Type::Q) {
+                    universal.push((law.name.clone(), p.clone(), None));
+                    continue;
+                }
                 let values = change_search::domain(&fixed, &p.ty, p.span, &mut missing)?;
                 if !missing.is_empty() {
                     return Ok((None, missing));
                 }
                 let values = values.ok_or_else(|| unsupported("局所Lawのparameter域が未確定"))?;
-                universal.push((law.name.clone(), p.clone(), values.clone()));
+                universal.push((law.name.clone(), p.clone(), Some(values.clone())));
                 values
             };
             let mut next = vec![];
@@ -372,9 +377,10 @@ pub(super) fn analyze(
                 });
             }
             if explicit { continue; }
-            let Signature::Law { body, guard, .. } = law.signature else {
+            let Signature::Law { body, guard, ref params, .. } = law.signature else {
                 return Err("局所Lawの署名がない".into());
             };
+            let parameters = params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name)).cloned().collect::<Vec<_>>();
             let roots = match env.inputs.law().exprs[body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
@@ -399,10 +405,11 @@ pub(super) fn analyze(
                 let bindings = super::super::environment::local_read::read_bindings(
                     &state, read.expression, &read.bindings, c,
                 )?;
-                let (carrier, positions) = super::super::environment::local_read::implicit_support(
+                let (carrier, positions) = super::super::environment::local_read::implicit_support_with_parameters(
                     &state,
                     read.expression,
                     &bindings,
+                    &parameters,
                     reading,
                     c,
                 )?;
@@ -415,6 +422,7 @@ pub(super) fn analyze(
                     readings.push(Reading {
                         expression: read.expression,
                         bindings,
+                        parameters: parameters.clone(),
                         support: empty_support(),
                         values: vec![],
                     });
