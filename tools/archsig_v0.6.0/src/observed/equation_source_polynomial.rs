@@ -96,24 +96,49 @@ impl Compiler<'_> {
     }
     fn bind_match(
         &mut self,
+        id: usize,
         scrutinee: usize,
         arms: &[crate::law::ast::Arm],
         c: &mut Control,
     ) -> Result<Option<usize>, ConstructionFailure> {
-        let Some(body) = super::super::object_law_residuals::binding_match_body(
+        if let Some(body) = super::super::object_law_residuals::binding_match_body(
             self.inputs,
             scrutinee,
             arms,
             c,
         )?
+        {
+            if let crate::law::ast::Pattern::Name(name) = &arms[0].pattern {
+                let value = self.lexical(scrutinee);
+                self.variables.insert(name.name.clone(), value);
+            }
+            return Ok(Some(body));
+        }
+        let Some(input) = self.expression(scrutinee, &[], c)? else {
+            return Ok(None);
+        };
+        let Some(value) = input.finite_scalar(c)? else {
+            return Ok(None);
+        };
+        let Some(arm) = super::super::data::select(self.inputs.law(), id, Some(&value), c)
+            .map_err(invalid)?
         else {
             return Ok(None);
         };
-        if let crate::law::ast::Pattern::Name(name) = &arms[0].pattern {
-            let value = self.lexical(scrutinee);
-            self.variables.insert(name.name.clone(), value);
+        for (name, value) in
+            super::super::data::bindings(self.inputs.law(), id, arm, &value, c).map_err(invalid)?
+        {
+            let binding = match value {
+                Scalar::Bool(value) => Binding::Boolean(value),
+                value => Binding::FiniteScalar(value),
+            };
+            self.variables.insert(name, binding);
         }
-        Ok(Some(body))
+        Ok(Some(
+            arms.get(arm)
+                .ok_or_else(|| bad("有限matchの選択armがない"))?
+                .body,
+        ))
     }
     // Lawのratは整数literal二つだけを許す。既存の正確な数値構成を再利用する。
     fn integer_literal(&self, id: usize, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
@@ -407,7 +432,7 @@ impl Compiler<'_> {
                 }
                 ExprKind::Match { scrutinee, arms } => {
                     let previous = self.variables.clone();
-                    let Some(body) = self.bind_match(*scrutinee, arms, c)? else {
+                    let Some(body) = self.bind_match(id, *scrutinee, arms, c)? else {
                         return Ok(None);
                     };
                     let result = self.expression(body, path, c);
@@ -691,7 +716,7 @@ fn family_operands_from_root(
                 cursor = *body;
             }
             ExprKind::Match { scrutinee, arms } => {
-                let Some(body) = compiler.bind_match(*scrutinee, arms, c)? else {
+                let Some(body) = compiler.bind_match(cursor, *scrutinee, arms, c)? else {
                     return Ok(None);
                 };
                 cursor = body;

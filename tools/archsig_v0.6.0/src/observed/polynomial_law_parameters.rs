@@ -58,7 +58,7 @@ pub(super) fn sources(
             tick(c)?;
             match parameter.ty {
                 Type::Z | Type::Q => (),
-                Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) => {
+                Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) => {
                     if !super::super::finite::completion_supported(&parameter.ty, inputs.law(), c)? { return Ok(None); }
                     let values = super::super::finite::values(&parameter.ty, inputs.law(), c,
                         &mut |_| Err("有限値型に参照rosterはない".into()), &mut |_| {})?;
