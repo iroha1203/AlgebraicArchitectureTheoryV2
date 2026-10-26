@@ -329,9 +329,11 @@ impl Compiler<'_> {
                 }
                 ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
                 ExprKind::Unit if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Unit)),
-                ExprKind::SetLit { items, .. } if path.is_empty() => {
-                    let Some(Type::Set(element)) = self.inputs.law().expr_type(id) else {
-                        return Err(bad("原式のSet型がない"));
+                ExprKind::ListLit { items, .. } | ExprKind::SetLit { items, .. } if path.is_empty() => {
+                    let (element, set) = match (&expression.kind, self.inputs.law().expr_type(id)) {
+                        (ExprKind::ListLit { .. }, Some(Type::List(element))) => (element, false),
+                        (ExprKind::SetLit { .. }, Some(Type::Set(element))) => (element, true),
+                        _ => return Err(bad("原式のList/Set型がない")),
                     };
                     let mut values = Vec::new();
                     for item in items {
@@ -346,9 +348,11 @@ impl Compiler<'_> {
                         }
                         values.push(value);
                     }
-                    Some(Binding::FiniteScalar(
-                        super::super::data::set((**element).clone(), &values, c).map_err(invalid)?,
-                    ))
+                    Some(Binding::FiniteScalar(if set {
+                        super::super::data::set((**element).clone(), &values, c).map_err(invalid)?
+                    } else {
+                        Scalar::List { element: (**element).clone(), items: values }
+                    }))
                 }
                 ExprKind::None(_) | ExprKind::Some(_) if path.is_empty() => {
                     let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else {
@@ -557,16 +561,18 @@ impl Compiler<'_> {
                         && names.len() == 1
                         && names[0].name == "rat"
                     {
-                        if self.ring.ty != Type::Q || !path.is_empty() || args.len() != 2 {
+                        if !path.is_empty() || args.len() != 2 {
                             return Ok(None);
                         }
                         let numerator = self.integer_literal(args[0], c)?;
                         let denominator = self.integer_literal(args[1], c)?;
                         let value =
                             numeric::rational(&numerator, &denominator, c).map_err(invalid)?;
-                        return Ok(Some(Binding::Polynomial(EquationPolynomial::constant(
-                            value, c,
-                        )?)));
+                        return Ok(Some(if self.ring.ty == Type::Q {
+                            Binding::Polynomial(EquationPolynomial::constant(value, c)?)
+                        } else {
+                            Binding::FiniteScalar(value)
+                        }));
                     }
                     let span = self.inputs.law().exprs[callee].span;
                     let target = self.inputs.law().infos.iter().find_map(|info| {

@@ -1155,6 +1155,11 @@ fn finite_predicates_and_short_circuits_keep_numeric_axes() {
         ("", "false and n*n=1", vec![false]),
         ("", "true or n*n=1", vec![true]),
         ("", "rat(1,2)=rat(1,2)", vec![true]),
+        ("", "count(list<Bool>[true,false,true])=3 and sum(list<Z>[1,1])=2", vec![true]),
+        ("", "sum(list<Q>[rat(1,2),rat(1,2)])=1", vec![true]),
+        ("", "count(list<Bool>[])=0 and sum(list<Q>[])=0", vec![true]),
+        ("", "count(list<Bool>[])>0", vec![false]),
+        ("", "sum(list<Z>[1,1])=1", vec![false]),
     ] {
         let p = prepared(
             false,
