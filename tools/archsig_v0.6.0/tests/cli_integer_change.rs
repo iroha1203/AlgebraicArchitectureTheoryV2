@@ -661,7 +661,7 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
     let values=arr(get(data,"law_values"));assert_ne!(get(node(&result,&values[0]),"value").value,get(node(&result,&values[1]),"value").value);
     assert_ne!(get(node(&result,get(data,"first")),"value").value,get(node(&result,get(data,"second")),"value").value);
     let bad=get(output(&result,2,"quotient"),"value");assert!(!has(bad,"descent"));assert_eq!(arr(get(bad,"evaluations")).len(),2);
-    for evaluation in arr(get(bad,"evaluations")) {let evaluation=get(node(&result,evaluation),"value");assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,archsig::json::JValue::Bool(true));assert!(has(evaluation,"environment"));assert!(!arr(get(evaluation,"parts")).is_empty());}
+    for evaluation in arr(get(bad,"evaluations")) {let evaluation=get(node(&result,evaluation),"value");assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,archsig::json::JValue::Bool(true));assert!(has(evaluation,"environment"));assert!(!has(evaluation,"parts"));}
     for (i,expected) in [(3,vec![1,1]),(4,vec![1,2])] {let q=get(output(&result,i,"quotient"),"value");let d=get(node(&result,get(q,"descent")),"value");assert_eq!(coordinates(&result,get(d,"offset")),expected);for column in integer_columns(&result,get(d,"linear")) {assert_eq!(column,vec![0,0]);}}
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
     for ask in &asks {args.extend(["--ask",ask]);}let repeat=run(&dir,&args);assert_eq!(repeat.code,1,"{} {}",repeat.stdout,repeat.stderr);let reused=result_json(&dir,&repeat);
@@ -790,15 +790,16 @@ fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
         let result=execute(&dir,"out",&asks);
         assert_eq!(result.code,2,"{label}: {} {}",result.stdout,result.stderr);
         let j=result_json(&dir,&result);
-        let answer=&arr(get(&j,"answers"))[0];
+        let internal = internal_graph(&dir, &j);
+        let answer=&arr(get(&internal,"answers"))[0];
         let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
-        let expression=get(node(&j,&arr(get(reason,"dependencies"))[0]),"value");
+        let expression=get(node(&internal,&arr(get(reason,"dependencies"))[0]),"value");
         let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
         let span=arr(get(get(expression,"location"),"span"));
         let text=&law[num(&span[0]) as usize..num(&span[1]) as usize];
         assert!(text.contains(expected),"{label}: dependency {text}");
         let binding=arr(get(expression,"bindings")).iter().find(|b|s(get(b,"name"))=="s").expect("subject binding");
-        let subject=arr(get(node(&j,get(binding,"value")),"value"));
+        let subject=arr(get(node(&internal,get(binding,"value")),"value"));
         assert_eq!((s(&subject[0]),s(&subject[1])),("pair","s"));
         assert_eq!(arr(get(expression,"parameters")).len(),if label=="law" {0} else {1});
         let plan=get(output(&j,1,"plan"),"value");

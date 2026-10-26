@@ -3270,9 +3270,10 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
         assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
         assert_eq!(s(get(output(&j,6,"value"),"value")),"1");
         assert_eq!(s(get(output(&j,7,"value"),"value")),"1");
+        let internal = internal_graph(&dir, &j);
         for index in [6,7] {
-            let evaluation=get(output(&j,index,"evaluation"),"value");
-            let projected=node(&j,get(&arr(get(evaluation,"bindings"))[0],"value"));
+            let evaluation=get(output(&internal,index,"evaluation"),"value");
+            let projected=node(&internal,get(&arr(get(evaluation,"bindings"))[0],"value"));
             assert_eq!(s(get(projected,"value")),"1");
         }
         let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
@@ -4198,12 +4199,13 @@ fn empty_local_law_family_keeps_change_expression_for_unsupported_followups() {
     let answers = arr(get(&j, "answers"));
     for i in [1,2,3,4,7,8] { assert_eq!(s(get(&answers[i], "status")), "established"); }
     assert_eq!(s(get(&answers[5],"status")),"refuted");
+    let internal = internal_graph(&dir, &j);
     for i in [6] {
         assert_eq!(s(get(&answers[i], "status")), "undetermined");
-        let reason = arr(get(&answers[i], "reasons")).iter().find(|r| s(get(r,"code")) == "unsupported_algorithm").unwrap();
+        let reason = arr(get(&arr(get(&internal,"answers"))[i], "reasons")).iter().find(|r| s(get(r,"code")) == "unsupported_algorithm").unwrap();
         let dependencies = arr(get(reason, "dependencies"));
         assert!(!dependencies.is_empty());
-        let expression = dependencies.iter().map(|r| get(node(&j, r), "value"))
+        let expression = dependencies.iter().map(|r| get(node(&internal, r), "value"))
             .find(|value| has(value, "kind") && s(get(value, "kind")) == "source").unwrap();
         assert_eq!(arr(get(expression, "parameters")).iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(), vec!["s", "b"]);
         assert!(arr(get(expression, "bindings")).is_empty());
@@ -4299,11 +4301,12 @@ fn fixed_empty_law_diagnostics_keep_unsupported_dependencies_without_inventing_a
     let result=execute(&dir,"out",&asks);assert_eq!(result.code,2,"{} {}",result.stdout,result.stderr);
     let j=result_json(&dir,&result);let answers=arr(get(&j,"answers"));
     for i in [1,2,3,4,7,8] {assert_eq!(s(get(&answers[i],"status")),"established");}
+    let internal = internal_graph(&dir, &j);
     for i in [5,6] {
         assert_eq!(s(get(&answers[i],"status")),"undetermined");
-        let reason=arr(get(&answers[i],"reasons")).iter().find(|r|s(get(r,"code"))=="unsupported_algorithm").unwrap();
+        let reason=arr(get(&arr(get(&internal,"answers"))[i],"reasons")).iter().find(|r|s(get(r,"code"))=="unsupported_algorithm").unwrap();
         let deps=arr(get(reason,"dependencies"));assert!(!deps.is_empty());
-        for dep in deps {let value=get(node(&j,dep),"value");assert!(!has(value,"kind") || s(get(value,"kind"))!="source");}
+        for dep in deps {let value=get(node(&internal,dep),"value");assert!(!has(value,"kind") || s(get(value,"kind"))!="source");}
     }
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
     for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);

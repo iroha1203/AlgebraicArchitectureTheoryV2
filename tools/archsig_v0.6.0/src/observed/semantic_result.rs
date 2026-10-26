@@ -65,12 +65,38 @@ fn retain_examples(fields: &mut BTreeMap<String, Json>, examples: &BTreeSet<Stri
         fields.insert("counterexamples".into(), evidence);
     }
 }
+fn clean_reasons(value: &mut Json) {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
+        Json::Obj(fields) => {
+            if fields.contains_key("code") && fields.contains_key("message") {
+                fields.insert("dependencies".into(), Json::Arr(vec![]));
+                if let Some(Json::Obj(details)) = fields.get_mut("details") {
+                    details.retain(|_, value| {
+                        let mut references = BTreeSet::new();
+                        refs(value, &mut references);
+                        references.is_empty()
+                    });
+                }
+            }
+            for value in fields.values_mut() {
+                clean_reasons(value);
+            }
+        }
+        Json::Arr(items) => {
+            for value in items {
+                clean_reasons(value);
+            }
+        }
+        _ => {}
+    });
+}
 pub(super) fn compact(
     result: &mut Json,
     native: &[Node],
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<(), StopReason> {
+    clean_reasons(result);
     let Json::Obj(document) = result else {
         unreachable!()
     };
@@ -104,6 +130,49 @@ pub(super) fn compact(
             unreachable!()
         };
         retain_examples(answer, &examples);
+        let law_claim = |reference: &Json| {
+            let Json::Obj(reference) = reference else {
+                return false;
+            };
+            let Some(Json::Str(id)) = reference.get("node") else {
+                return false;
+            };
+            let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+            let Json::Obj(node) = &old[index] else {
+                return false;
+            };
+            let Some(Json::Obj(value)) = node.get("value") else {
+                return false;
+            };
+            matches!(value.get("predicate"), Some(Json::Str(predicate)) if predicate == "law_holds")
+        };
+        if answer.get("claim").is_some_and(law_claim) {
+            answer.remove("claim");
+        }
+        let Some(Json::Obj(outputs)) = answer.get_mut("outputs") else {
+            unreachable!()
+        };
+        if outputs.get("proposition").is_some_and(law_claim) {
+            outputs.remove("proposition");
+        }
+        let evaluation = outputs.remove("evaluation");
+        let mut applicability = None;
+        if let Some(Json::Obj(reference)) = &evaluation {
+            if let Some(Json::Str(id)) = reference.get("node") {
+                let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+                if let Json::Obj(node) = &old[index] {
+                    if let Some(Json::Obj(value)) = node.get("value") {
+                        applicability = value.get("applicability").cloned();
+                        if let Some(environment) = value.get("environment") {
+                            outputs.insert("environment".into(), environment.clone());
+                        }
+                    }
+                }
+            }
+        }
+        if let Some(applicability) = applicability {
+            answer.insert("applicability".into(), applicability);
+        }
     }
     for (index, node) in old.iter_mut().enumerate() {
         control.checkpoint(point)?;
@@ -119,8 +188,39 @@ pub(super) fn compact(
         if native[index].ty == NodeType::Evidence {
             fields.insert("type".into(), Json::str("Counterexample"));
         }
+        if matches!(native[index].ty, NodeType::Evaluation(_)) {
+            fields.insert("type".into(), Json::str("EvaluationResult"));
+        }
         if let Some(Json::Obj(value)) = fields.get_mut("value") {
             match native[index].ty {
+                NodeType::Evaluation(_) => {
+                    // 適用可否、引数、値、後続要求が使う環境だけが結果。
+                    // 子評価や式の出現位置は内部の検査用グラフに留める。
+                    value.retain(|key, _| {
+                        matches!(
+                            key.as_str(),
+                            "applicability" | "bindings" | "value" | "environment"
+                        )
+                    });
+                }
+                NodeType::LawInstance => {
+                    if let Some(Json::Obj(body)) = value.get("body") {
+                        let Some(Json::Str(id)) = body.get("node") else {
+                            unreachable!()
+                        };
+                        let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+                        if let Some(payload) = &native[index].payload {
+                            if let Json::Obj(body) = &payload.wire() {
+                                if let Some(parameters) = body.get("parameters") {
+                                    value.insert("parameters".into(), parameters.clone());
+                                }
+                            }
+                        }
+                    }
+                    value.retain(|key, _| {
+                        matches!(key.as_str(), "name" | "role" | "bindings" | "parameters")
+                    });
+                }
                 NodeType::Construction(_) => {
                     value.remove("construction");
                 }

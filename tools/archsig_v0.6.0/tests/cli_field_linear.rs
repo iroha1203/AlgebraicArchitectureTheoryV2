@@ -433,12 +433,13 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             continue;
         }
         let j = result_json(&dir, &r);
-        let answer = &arr(get(&j, "answers"))[0];
+        let internal = internal_graph(&dir, &j);
+        let answer = &arr(get(&internal, "answers"))[0];
         let reason = arr(get(answer, "reasons"))
             .iter()
             .find(|r| s(get(r, "code")) == "missing_observation")
             .unwrap();
-        let expression = get(node(&j, &arr(get(reason, "dependencies"))[0]), "value");
+        let expression = get(node(&internal, &arr(get(reason, "dependencies"))[0]), "value");
         let span = arr(get(get(expression, "location"), "span"));
         let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
         assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], guard);
@@ -447,7 +448,7 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             .find(|b| s(get(b, "name")) == "s")
             .unwrap();
         assert_eq!(
-            arr(get(node(&j, get(binding, "value")), "value"))
+            arr(get(node(&internal, get(binding, "value")), "value"))
                 .iter()
                 .map(s)
                 .collect::<Vec<_>>(),

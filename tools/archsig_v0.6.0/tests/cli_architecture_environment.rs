@@ -107,13 +107,9 @@ fn public_architecture_on_scopes_root_families_and_retains_the_actual_environmen
         ("target", "target"),
         ("after", "target"),
     ] {
-        let evaluation = value(&j, get(get(answer(&j, id), "outputs"), "evaluation"));
-        assert_eq!(get(evaluation, "environment"), get(candidate, side), "{id}");
+        assert_eq!(get(get(answer(&j, id), "outputs"), "environment"), get(candidate, side), "{id}");
     }
-    let observed = value(
-        &j,
-        get(get(answer(&j, "observed"), "outputs"), "evaluation"),
-    );
+    let observed = get(answer(&j, "observed"), "outputs");
     assert!(!has(observed, "environment"));
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -169,9 +165,10 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
     for id in ["symbolic", "product", "guard", "dependent"] {
         assert_eq!(s(get(answer(&j, id), "status")), "established", "{id}");
     }
-    let evaluation = value(&j, get(get(answer(&j, "product"), "outputs"), "evaluation"));
     let root = value(&j, get(get(answer(&j, "m"), "outputs"), "candidate"));
-    assert_eq!(get(evaluation, "environment"), get(root, "source"));
+    assert_eq!(get(get(answer(&j, "product"), "outputs"), "environment"), get(root, "source"));
+    let internal = internal_graph(&dir, &j);
+    let evaluation = value(&internal, get(get(answer(&internal, "product"), "outputs"), "evaluation"));
     // Product has 1 root × 2 states, not the complete ArchMap's 2 × 4.
     assert_eq!(
         arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
@@ -353,7 +350,8 @@ fn public_architecture_root_domains_exclude_other_snapshots_and_empty_families_r
             "{name}"
         );
         assert_eq!(s(get(answer(&j, "c"), "status")), "established");
-        let evaluation = value(&j, get(get(answer(&j, "c"), "outputs"), "evaluation"));
+        let internal = internal_graph(&dir, &j);
+        let evaluation = value(&internal, get(get(answer(&internal, "c"), "outputs"), "evaluation"));
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
             count,
@@ -395,13 +393,13 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
         assert!(!has(&b, "reuse"));
     }
     let mut forged = fixture::owned(&archsig::json::parse(&previous_bytes).unwrap());
-    let Json::Arr(nodes) = fixture::field(&mut forged, "nodes") else {
-        panic!("nodes")
+    let Json::Arr(nodes) = fixture::field(&mut forged, "answers") else {
+        panic!("answers")
     };
     let mut changed = false;
     for n in nodes {
         let Json::Obj(o) = n else { panic!("node") };
-        if let Some(Json::Obj(value)) = o.get_mut("value") {
+        if let Some(Json::Obj(value)) = o.get_mut("outputs") {
             if let Some(environment) = value.get_mut("environment") {
                 *environment = Json::obj([("node", Json::str("n999999"))]);
                 changed = true;
@@ -587,11 +585,7 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
                 &saved,
                 get(get(answer(&saved, "m"), "outputs"), "candidate"),
             );
-            let evaluation = value(
-                &saved,
-                get(get(answer(&saved, "a"), "outputs"), "evaluation"),
-            );
-            assert_eq!(get(evaluation, "environment"), get(candidate, "source"));
+            assert_eq!(get(get(answer(&saved, "a"), "outputs"), "environment"), get(candidate, "source"));
         }
         assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
             !e.unwrap()
@@ -648,6 +642,7 @@ law required dependentScope(a:System,s:State[a]):true;
             );
         }
     };
+    let internal = internal_graph(&dir, &j);
     for id in [
         "constant",
         "nested",
@@ -658,17 +653,12 @@ law required dependentScope(a:System,s:State[a]):true;
         "bound",
     ] {
         let a = answer(&j, id);
-        assert_scope(get(a, "scope"));
-        assert!(!has(node(&j, get(get(a, "outputs"), "evaluation")), "scope"));
+        assert_scope(get(answer(&internal, id), "scope"));
+        assert!(!has(get(a, "outputs"), "evaluation"));
     }
-    let constant = node(
-        &j,
-        get(get(answer(&j, "constant"), "outputs"), "evaluation"),
-    );
-    assert!(!has(constant, "support"));
     let primitive = node(&j, get(get(answer(&j, "constant"), "outputs"), "value"));
     assert!(!has(primitive, "support"));
-    let observed = get(answer(&j, "observed"), "scope");
+    let observed = get(answer(&internal, "observed"), "scope");
     assert!(arr(get(observed, "snapshots")).is_empty());
     assert!(arr(get(observed, "modes")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
@@ -713,9 +703,10 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
             );
             if supplied {
                 assert!(arr(get(a, "reasons")).is_empty());
-                let evaluation = value(&j, get(get(a, "outputs"), "evaluation"));
+                let internal = internal_graph(&dir, &j);
+                let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
                 assert_eq!(
-                    value(&j, get(evaluation, "value")),
+                    value(&internal, get(evaluation, "value")),
                     &archsig::json::parse(b"true").unwrap()
                 );
                 if id == "family" {
@@ -783,7 +774,8 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
     ] {
         let a = answer(&j, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
-        let evaluation = value(&j, get(get(a, "outputs"), "evaluation"));
+        let internal = internal_graph(&dir, &j);
+        let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
             rows,

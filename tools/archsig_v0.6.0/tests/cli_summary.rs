@@ -69,7 +69,16 @@ fn daily_answers_return_values_refutations_and_missing_without_files() {
         let full = execute(&dir, &asks, &["--out", "saved"]);
         assert_eq!(full.code, brief.code);
         let result = result_json(&dir, &full);
+        for answer in arr(get(&result, "answers")) {
+            assert!(!has(answer, "claim"));
+            for key in ["evaluation", "proposition"] {
+                assert!(!has(get(answer, "outputs"), key));
+            }
+        }
         for node in arr(get(&result, "nodes")) {
+            assert!(
+                !matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if matches!(t.as_str(), "Evaluation" | "Expression" | "LawInstance" | "Proposition"))
+            );
             assert!(!has(node, "evidence"));
             if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "Counterexample")
             {
@@ -85,6 +94,32 @@ fn daily_answers_return_values_refutations_and_missing_without_files() {
         let reused = execute(&dir, &asks, &["--reuse", "saved"]);
         assert_eq!(reused.receipt.value, brief.receipt.value);
         assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 4);
+    }
+}
+#[test]
+fn daily_check_distinguishes_inapplicable_from_applicable_laws() {
+    let dir = counter("summary-guard", Some("2"));
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace(
+        "view amount",
+        "law required guarded(s: State) when false: s.count < 0; view amount",
+    );
+    std::fs::write(path, law).unwrap();
+    let asks = [
+        "g=check(CountCheck.guarded,s=@v/s)",
+        "c=check(CountAudit.bounded,s=@v/s)",
+    ];
+    let brief = execute(&dir, &asks, &[]);
+    assert_eq!(brief.code, 0, "{}", brief.stdout);
+    let answers = arr(get(&brief.receipt, "answers"));
+    assert_eq!(s(get(&answers[0], "applicability")), "not_applicable");
+    assert_eq!(s(get(&answers[1], "applicability")), "applicable");
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    let saved = execute(&dir, &asks, &["--out", "saved"]);
+    let result = result_json(&dir, &saved);
+    let full = arr(get(&result, "answers"));
+    for (a, b) in answers.iter().zip(full) {
+        assert_eq!(get(a, "applicability").value, get(b, "applicability").value);
     }
 }
 #[test]
@@ -194,6 +229,19 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     for node in arr(get(&result, "nodes")) {
         for internal in ["rule", "arguments", "evidence", "scope", "support"] {
             assert!(!has(node, internal), "{internal}");
+        }
+        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "EvaluationResult")
+        {
+            for internal in ["parts", "expression"] {
+                assert!(!has(get(node, "value"), internal));
+            }
+        }
+        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "LawInstance")
+            && has(node, "value")
+        {
+            for internal in ["body", "guard", "occurrence"] {
+                assert!(!has(get(node, "value"), internal));
+            }
         }
     }
     let reused = execute(&dir, &asks, &["--reuse", "saved"]);

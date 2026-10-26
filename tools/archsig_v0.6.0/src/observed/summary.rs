@@ -61,6 +61,14 @@ impl ObservedEvaluation {
                         ),
                     ),
                 ]);
+                if let Some(reference) = answer.outputs.get("evaluation") {
+                    let node = &self.nodes[reference.0];
+                    if let Some(super::result::Payload::Evaluation { applicability, .. }) =
+                        &node.payload
+                    {
+                        row.insert("applicability".into(), Json::str(*applicability));
+                    }
+                }
                 if !answer.reasons.is_empty() {
                     row.insert(
                         "reasons".into(),

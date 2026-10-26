@@ -664,7 +664,7 @@ fn unsupported_integer_order_presentation_keeps_the_object_for_checks_and_locali
                 s(get(get(reason, "details"), "method")),
                 "integer_order_equation_presentation"
             );
-            assert!(!arr(get(reason, "dependencies")).is_empty());
+            assert!(arr(get(reason, "dependencies")).is_empty());
             assert!(arr(get(reason, "missing")).is_empty());
         }
         assert_eq!(

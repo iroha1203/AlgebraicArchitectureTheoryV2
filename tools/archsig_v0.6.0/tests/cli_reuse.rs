@@ -191,7 +191,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         "command_check",
         "nat_exit",
         "nat_huge",
-        "Proposition",
+        "Z",
         "judgment",
         "rule",
         "scope",
@@ -254,15 +254,15 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         };
                         fields.insert("extra".into(), Json::Bool(true));
                     }
-                    "Evaluation" | "Counterexample" | "Expression" | "LawInstance" | "Proposition"
+                    "Z" | "Evaluation" | "Counterexample" | "Expression" | "LawInstance" | "Proposition"
                     | "Domain" => {
                         *field_mut(typed_node(&mut candidate, kind), "value") = Json::obj([]);
                     }
                     "judgment" => {
-                        let Json::Obj(fields) = typed_node(&mut candidate, "Proposition") else {
+                        let Json::Obj(fields) = first_node(&mut candidate) else {
                             panic!("node")
                         };
-                        fields.remove("judgment");
+                        fields.insert("judgment".into(), Json::obj([("status", Json::str("refuted"))]));
                     }
                     "rule" | "scope" => {
                         let Json::Obj(fields) = first_node(&mut candidate) else { panic!("node") };

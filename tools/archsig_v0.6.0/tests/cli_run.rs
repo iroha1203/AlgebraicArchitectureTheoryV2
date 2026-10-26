@@ -203,9 +203,8 @@ fn false_value_and_guarded_inapplicability_are_distinct() {
     assert_eq!(s(get(value, "type")), "Bool");
     assert!(matches!(get(value, "value").value, JValue::Bool(false)));
     assert_eq!(s(get(answer(&res, "v"), "status")), "established");
-    let guard = node(&res, get(get(answer(&res, "g"), "outputs"), "evaluation"));
     assert_eq!(
-        s(get(get(guard, "value"), "applicability")),
+        s(get(answer(&res, "g"), "applicability")),
         "not_applicable"
     );
     assert_eq!(s(get(answer(&res, "g"), "status")), "established");
@@ -831,8 +830,7 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
     let dir = inputs("counterexample-origin", Some("12"), L);
     let r = requests(&dir, &["audit=check(CountAudit.bounded)"]);
     let res = result(&dir, &r, "complete", 1);
-    let claim = node(&res, get(answer(&res, "audit"), "claim"));
-    let evidence = arr(get(get(claim, "judgment"), "counterexamples"))
+    let evidence = arr(get(answer(&res, "audit"), "counterexamples"))
         .iter()
         .map(|r| get(node(&res, r), "value"))
         .find(|e| s(get(e, "kind")) == "counterexample")

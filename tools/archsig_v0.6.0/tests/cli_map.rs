@@ -74,10 +74,8 @@ fn configuration_map_exports_complete_architectures_total_action_and_confirmed_o
         assert_eq!(s(get(law, "name")), "Reservations.conserved");
         assert_eq!(s(get(law, "role")), "required");
         assert_eq!(arr(get(law, "bindings")).len(), 1);
-        let body = value(&result, get(law, "body"));
-        assert_eq!(s(get(body, "kind")), "source");
-        assert!(has(body, "location"));
-        assert!(has(law, "occurrence"));
+        assert!(!has(law, "body"));
+        assert!(!has(law, "occurrence"));
         let arrows = arr(get(architecture, "internal_arrows"));
         assert_eq!(arrows.len(), 1);
         assert_eq!(s(&arr(value(&result, &arrows[0]))[1]), arrow);
@@ -335,8 +333,7 @@ fn map_keeps_distinct_readings_and_unbound_law_parameter_domains() {
         let law = value(&result, law);
         assert_eq!(s(get(law, "name")), "TargetReading.lower");
         assert_eq!(s(get(law, "role")), "optional");
-        let body = value(&result, get(law, "body"));
-        let parameters = arr(get(body, "parameters"));
+        let parameters = arr(get(law, "parameters"));
         assert_eq!(parameters.len(), 1);
         assert_eq!(s(get(&parameters[0], "name")), "n");
         assert_eq!(s(get(&parameters[0], "type")), "Z");
@@ -690,6 +687,7 @@ fn map_dynamic_projection_failures_keep_refuted_conditions_and_propagate_origina
             2,
         );
         assert_eq!(s(get(answer(&result, "v"), "status")), "established");
+        let internal = internal_graph(&dir, &result);
         let mut original_condition = None;
         for id in ["bad", "copy"] {
             let a = answer(&result, id);
@@ -703,10 +701,12 @@ fn map_dynamic_projection_failures_keep_refuted_conditions_and_propagate_origina
             assert_eq!(s(get(failure, "request")), "bad");
             let details = get(failure, "details");
             assert_eq!(s(get(details, "construction")), "projection");
-            let condition = get(details, "condition");
-            let n = node(&result, condition);
+            assert!(!has(details, "condition"));
+            let internal_reason = arr(get(answer(&internal,id),"reasons")).iter().find(|r|s(get(r,"code"))=="condition_failed").unwrap();
+            let condition = get(get(internal_reason,"details"), "condition");
+            let n = node(&internal, condition);
             assert_eq!(s(get(get(n, "judgment"), "status")), "refuted");
-            assert!(!arr(get(get(n, "judgment"), "counterexamples")).is_empty());
+            assert!(!arr(get(get(n, "judgment"), "evidence")).is_empty());
             if let Some(expected) = original_condition {
                 assert_eq!(s(get(condition, "node")), expected);
             }

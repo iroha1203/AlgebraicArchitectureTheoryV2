@@ -247,7 +247,7 @@ fn missing_view_keeps_quotient_undetermined_and_independent_followup_available()
     }
     assert_eq!(s(get(&answers[2],"status")),"refuted");
     let reason=arr(get(&answers[1],"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
-    assert!(!arr(get(reason,"dependencies")).is_empty());
+    assert!(arr(get(reason,"dependencies")).is_empty());
     assert!(arr(get(reason,"missing")).iter().any(|f|s(get(f,"field"))=="Pair.State.y"));
     let defaults=arr(get(&arr(get(&result,"requests"))[1],"defaults"));
     assert_eq!(defaults.len(),1);assert_eq!(s(get(&defaults[0],"rule")),"no_law_check");
@@ -447,8 +447,7 @@ fn law_descent_distinguishes_guard_and_preserves_empty_domain_type() {
     assert_eq!(inactive.len(),2);
     for e in inactive {
         assert!(!has(e,"value"));
-        let parts=arr(get(e,"parts"));assert_eq!(parts.len(),2);
-        assert!(arr(get(&parts[1],"children")).is_empty());assert!(!has(&parts[1],"value"));
+        assert!(!has(e,"parts"));
     }
 }
 #[test]
@@ -480,6 +479,8 @@ fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
     let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],None);
     assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
     let result=result_json(&dir,&r);
+    let saved_result = result;
+    let result = internal_graph(&dir, &saved_result);
     let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
     let check_children=|children:&[JNode],expected:&[bool]| {
         assert_eq!(children.len(),2);
@@ -513,13 +514,14 @@ fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
     let reused=execute(&dir,"reused",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],Some("out"));
     assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);
     let reused=result_json(&dir,&reused);
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
+    for key in ["answers","nodes"] {assert_eq!(get(&saved_result,key).value,get(&reused,key).value);}
 }
 #[test]
 fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_descent() {
     let dir=law_input("quotient-law-numeric","law optional numeric(s:State):1=2;law optional tuple(s:State):(1,2)=(3,1);view rational():Q=rat(1,2);view modular():Fp(3)=1;law optional ratio(s:State):rational()=1;law optional prime(s:State):modular()=2;");
     let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.numeric)","t=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.tuple)","qrat=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.ratio)","qfp=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.prime)"],None);
     assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let result=result_json(&dir,&r);
+    let result = internal_graph(&dir, &result);
     for index in 1..=4 {
         assert_eq!(s(get(&arr(get(&result,"answers"))[index],"status")),"established");
         for reference in arr(get(quotient(&result,index),"evaluations")) {

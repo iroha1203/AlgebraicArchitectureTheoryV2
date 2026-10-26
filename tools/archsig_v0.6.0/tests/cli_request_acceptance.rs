@@ -187,8 +187,8 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
                 .collect::<Vec<_>>(),
             ["b"]
         );
-        let e = node(&w, get(get(answer(&w, "partial"), "outputs"), "evaluation"));
-        let q = arr(get(get(if inspection { e } else { answer(&w,"partial") }, "scope"), "quantifiers"))
+        let e = if inspection { node(&w, get(get(answer(&w, "partial"), "outputs"), "evaluation")) } else { answer(&w,"partial") };
+        let q = arr(get(get(e, "scope"), "quantifiers"))
             .iter()
             .find(|q| s(get(q, "name")) == "b")
             .unwrap();
@@ -205,6 +205,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
             })
             .collect();
         assert_eq!(subjects, ["A", "B"]);
+        if inspection {
         let rows = arr(get(&arr(get(get(e, "value"), "parts"))[0], "children"));
         assert_eq!(rows.len(), 2);
         let mut actual = vec![];
@@ -222,6 +223,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
             actual.push((subject, holds));
         }
         assert_eq!(actual, [("A", true), ("B", false)]);
+        }
 
         assert!(!arr(get(answer(&w, "partial"), if inspection {"evidence"} else {"counterexamples"})).is_empty());
     }
@@ -418,9 +420,11 @@ fn dynamic_projection_failures_keep_original_condition_and_block_each_later_cons
                     .find(|r| s(get(r, "code")) == "condition_failed")
                     .unwrap();
                 assert_eq!(s(get(get(reason, "details"), "construction")), "projection");
+                if inspection {
                 let condition = node(&w, get(get(reason, "details"), "condition"));
                 assert_eq!(s(get(get(condition, "judgment"), "status")), "refuted");
-                if inspection { assert!(!arr(get(condition, "evidence")).is_empty()); }
+                assert!(!arr(get(condition, "evidence")).is_empty());
+                } else { assert!(!has(get(reason,"details"), "condition")); }
                 if let Some(expected) = original {
                     assert_eq!(reason, expected);
                 } else {
@@ -463,7 +467,7 @@ fn unavailable_evaluation_environment_preserves_all_original_reasons_through_two
         for (inspection,w) in [(true,internal(&ts)), (false,w)] {
             let source = answer(&w, "producer");
             assert_eq!(s(get(source, "status")), "undetermined");
-            assert!(has(get(source, "outputs"), "evaluation"));
+            assert_eq!(has(get(source, "outputs"), "evaluation"), inspection);
             assert!(!has(get(source, "outputs"), "value"));
             assert!(
                 arr(get(source, "reasons"))
@@ -492,10 +496,12 @@ fn unavailable_evaluation_environment_preserves_all_original_reasons_through_two
                 .iter()
                 .find(|r| s(get(r, "code")) == "condition_failed" && s(get(r, "request")) == "take")
                 .unwrap();
+            if inspection {
             let c = node(&w, get(get(condition, "details"), "condition"));
-            if inspection { assert_eq!(&arr(get(c,"arguments"))[0],get(get(source,"outputs"),"evaluation")); }
+            assert_eq!(&arr(get(c,"arguments"))[0],get(get(source,"outputs"),"evaluation"));
             assert_eq!(s(get(get(c, "judgment"), "status")), "refuted");
-            if inspection { assert!(!arr(get(c,"evidence")).is_empty()); }
+            assert!(!arr(get(c,"evidence")).is_empty());
+            } else { assert!(!has(get(condition,"details"), "condition")); }
             assert_eq!(s(get(value(&w, "known"), "value")), "10");
             assert_eq!(s(get(answer(&w, "prior"), "status")), "refuted");
         }
