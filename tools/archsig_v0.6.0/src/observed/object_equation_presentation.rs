@@ -1351,12 +1351,14 @@ mod tests {
             "law required varying(c:Part,n:Z) when false:n=n;",
             "law required varying(c:Part,n:Z) when n=0:n=n;",
             "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
+            "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=n;",
         ] {
             let inputs = inputs_with(body);
             let mut c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
             let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
-            let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, 0, &mut c).unwrap();
+            let instance = readings.instances().iter().position(|instance| instance.declaration().kind == "law").unwrap();
+            let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, instance, &mut c).unwrap();
             assert!(super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap().is_none());
         }
     }
@@ -1382,6 +1384,25 @@ mod tests {
             assert!(applicable > 0);
             presentation.recheck(inputs, &mut c).unwrap();
         }
+    }
+    #[test]
+    fn numeric_helper_calls_keep_exact_difference_and_full_parameters() {
+        let inputs = inputs_with("view plus(x:Q,y:Q):Q=let z=x+y in z+rat(1,2);view third():Q=rat(1,3);law required balanced(c:Part,n:Q,m:Q):plus(n,m)=n+m+third();");
+        let mut c = Control::unlimited();
+        let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+        assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+        let expected = NumericTransportValue::observed(numeric::rational(&Scalar::Z(1.into()), &Scalar::Z(6.into()), &c).unwrap());
+        assert!(!presentation.occurrences.is_empty());
+        for occurrence in &presentation.occurrences {
+            assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+            assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected.clone()));
+        }
+        for source in presentation.base.base().evaluations() {
+            assert_eq!(source.evaluation().instance().parameters().len(), 2);
+            assert!(source.family().rows().is_empty());
+            assert!(source.family().domains().is_empty());
+        }
+        presentation.recheck(inputs, &mut c).unwrap();
     }
     #[test]
     fn uniform_rational_literal_difference_is_exact() {
