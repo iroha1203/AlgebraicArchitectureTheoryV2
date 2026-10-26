@@ -88,6 +88,32 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn cancelled_observation_families_share_constant_polynomial_and_residual() {
+    let p = prepared(false, false, "law required equal(c:Part,n:Z):n+c.quantity=c.quantity+1;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    for coordinate in &ds[0].coordinates {
+        let nu = coordinate.nu.unwrap();
+        assert_eq!(coordinate.epsilon, Some(nu));
+        let Part::Polynomial { terms, parameters, .. } = data(&g, nu).part() else { panic!("polynomial") };
+        assert_eq!(parameters.len(), 1);
+        assert_eq!(terms.len(), 1);
+        assert!(terms[0].1.iter().all(|power| *power == 0));
+        let (_, family) = data(&g, nu).parameter_difference(&mut quiet()).unwrap().unwrap();
+        assert_eq!(family.parameters.len(), 1);
+        assert_eq!(family.parameters[0].1, Scalar::Z(1.into()));
+        let value = family.constant.evaluate(&[], &mut quiet()).unwrap().unwrap();
+        assert_eq!(value.scalar(), &Scalar::Z((-1).into()));
+    }
+    replay(&p, &g, &g.nodes).unwrap();
+    // 別の観測位置は実際の値が一致する場合でも相殺しない。
+    let p = prepared(false, false, "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;", "root");
+    let (g, a) = built(&p);
+    let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else { panic!("architecture") };
+    let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
+    assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().is_none());
+}
+#[test]
 fn parameter_offset_polynomials_keep_free_observation_variables() {
     fn coefficient(g: &Graph, r: NodeRef, n: i64) -> i64 {
         match data(g, r).part() {

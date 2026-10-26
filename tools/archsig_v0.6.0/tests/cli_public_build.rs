@@ -286,6 +286,44 @@ fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
+fn cancelled_observation_parameter_law_builds_for_later_checks() {
+    for (ty, equation) in [
+        ("Z", "n+c.quantity=c.quantity+1"), ("Z", "c.quantity+1=n+c.quantity"),
+        ("Q", "n+c.quantity=c.quantity+1"), ("Q", "c.quantity+1=n+c.quantity"),
+    ] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let dir = files_with_definition(&format!("cancelled-observation-{ty}-{equation}"), &format!("view one():{ty}=1;law required equal(c:Part,n:{ty}):{equation};"), false, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
+                .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+                .replace(r#""value":"1""#, r#""value":["1","1"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.one,on=$b.object)",
+            "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value)",
+            "q=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        for (id, status) in [("all", "refuted"), ("p", "established"), ("q", "established")] {
+            assert_eq!(s(get(answer(&result, id), "status")), status);
+        }
+        eprintln!("cancelled observation {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+        args.extend(["--reuse", "out", "--out", "again"]);
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "complete", 1);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
+#[test]
 fn observed_offset_parameter_law_builds_for_later_checks() {
     for ty in ["Z", "Q"] {
         for equation in ["n=c.quantity+1", "c.quantity+1=n"] {

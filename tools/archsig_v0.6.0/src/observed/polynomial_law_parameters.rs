@@ -23,6 +23,10 @@ fn separated_parameter_side(source: &ParameterEquation) -> Option<bool> {
     }
 }
 
+fn observation_free_difference(source: &ParameterEquation) -> bool {
+    source.difference.constant.terms.iter().all(|term| term.variables.is_empty())
+}
+
 fn difference(
     parts: &mut Vec<Part>,
     base: usize,
@@ -77,6 +81,7 @@ pub(super) fn sources(
                 return Ok(None);
             }
             if !source.difference.parameters.is_empty()
+                && !observation_free_difference(&source)
                 && separated_parameter_side(&source).is_none()
             {
                 return Ok(None);
@@ -182,7 +187,7 @@ pub(super) fn plans(
                     Some(&shared),
                     c,
                 )?
-            } else if !source.ring.symbols.is_empty() {
+            } else if !observation_free_difference(source) {
                 let left =
                     separated_parameter_side(source).ok_or("数値族の係数式が分離できない")?;
                 let operand = if left { lhs } else { rhs };
@@ -261,7 +266,7 @@ pub(super) fn plans(
             );
             let epsilon = if outside {
                 None
-            } else if source.ring.symbols.is_empty() {
+            } else if observation_free_difference(source) {
                 Some(nu)
             } else if source.difference.parameters.is_empty() {
                 let values = source
