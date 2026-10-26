@@ -35,7 +35,7 @@ pub(super) fn parameter_constant_source_value(
     let values: Vec<_> = source.ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
     Ok(source.difference.constant.evaluate(&values, c)?.map(|value| value.scalar().clone()))
 }
-pub(in crate::observed) use source_polynomial::{PolynomialFamily, parameter_difference_with_bindings};
+pub(in crate::observed) use source_polynomial::{PolynomialFamily, parameter_differences_with_bindings};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
     pub guard: bool,

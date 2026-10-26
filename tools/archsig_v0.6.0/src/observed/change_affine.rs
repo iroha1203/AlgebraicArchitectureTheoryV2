@@ -221,10 +221,11 @@ fn parameter_coefficient_forms(
             return Ok(None);
         }
     }
-    let Some((ring, family)) =
-        crate::observed::object_equation_presentation::parameter_difference_with_bindings(
+    let Some((ring, families)) =
+        crate::observed::object_equation_presentation::parameter_differences_with_bindings(
             env.inputs,
             id,
+            &Type::Z,
             &values,
             &parameters,
             &mut env.control.clone(),
@@ -242,9 +243,9 @@ fn parameter_coefficient_forms(
         return Ok(None);
     };
     if ring.ty != Type::Z
-        || family
-            .parameters
+        || families
             .iter()
+            .flat_map(|family| &family.parameters)
             .any(|(p, _)| !universal.contains(p))
     {
         return Ok(None);
@@ -284,9 +285,9 @@ fn parameter_coefficient_forms(
         fields.push(*form);
     }
     let mut forms = vec![];
-    for coefficient in
+    for coefficient in families.iter().flat_map(|family| {
         std::iter::once(&family.constant).chain(family.parameters.iter().map(|(_, p)| p))
-    {
+    }) {
         env.tick()?;
         if coefficient.terms.is_empty() {
             continue;
@@ -369,7 +370,10 @@ pub(in crate::observed) fn compute(
             vars.insert(p.name.clone(), v);
         }
         missing.bindings = vec![(params[0].name.clone(), subject.clone())];
-        missing.parameters = params[1..].iter().map(|p| (p.name.clone(), p.ty.clone())).collect();
+        missing.parameters = params[1..]
+            .iter()
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect();
         if let Some(guard) = guard {
             missing.expression = Some(*guard);
             equations(
@@ -469,7 +473,10 @@ pub(in crate::observed) fn compute(
         action.push(row);
         offset.push(constant.ok_or("作用の固定項が未確定")?);
     }
-    let guard_rhs = guard_rhs.into_iter().collect::<Option<Vec<_>>>().ok_or("guardの固定項が未確定")?;
+    let guard_rhs = guard_rhs
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("guardの固定項が未確定")?;
     let guard = if !guard_matrix.is_empty() {
         let fiber = integer_fiber::solve(&guard_matrix, axes.len(), &guard_rhs, &env.control)?;
         if fiber.particular.is_none() {
@@ -509,8 +516,12 @@ pub(in crate::observed) fn compute(
         Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
     updated.object = env.object_domain();
     updated.affine_valuation = updates;
-    let (mut matrix, rhs) = requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
-    let mut rhs = rhs.into_iter().collect::<Option<Vec<_>>>().ok_or("parameter方程式の固定項が未確定")?;
+    let (mut matrix, rhs) =
+        requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
+    let mut rhs = rhs
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("parameter方程式の固定項が未確定")?;
     let free_count = guard
         .as_ref()
         .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
@@ -565,7 +576,6 @@ pub(in crate::observed) fn compute(
         fiber,
     })
 }
-
 fn apply(matrix: &Matrix, point: &[Z], c: &Control) -> Result<Vec<Z>, ValidationFailure> {
     matrix
         .iter()

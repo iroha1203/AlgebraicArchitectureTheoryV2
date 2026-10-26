@@ -72,6 +72,24 @@ fn parameter_product_repairs_keep_full_quantifiers_and_original_assignments() {
             "let k=z in k*(s.x+s.y)=z",
         ),
         (
+            "let-and",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "z",
+            "let k=s.x in z*k=z and s.y=0",
+        ),
+        (
+            "helper-and",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};view valid(k:Z,t:State):Bool=let q=t.x in k*q=k and t.y=0;",
+            "z",
+            "valid(z,s)",
+        ),
+        (
+            "let-and-reference",
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "z",
+            "let k=s.x in z*k=z and s=s",
+        ),
+        (
             "helper",
             "change setpair(s:State,a:Z)=s with{x=a,y=0};view scaled(k:Z,t:State):Z=k*(t.x+t.y);",
             "z",
@@ -301,6 +319,33 @@ fn parameter_product_missing_unmodified_field_is_not_zero() {
         }
         product_reuse(&dir, &asks, &j, code);
     }
+}
+#[test]
+fn parameter_product_lexical_conjunction_keeps_inconsistent_constraints() {
+    let dir = product_input(
+        "inconsistent-and",
+        "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+        "z:Z,",
+        "let k=s.x in z*k=z and z*k=2*z",
+        false,
+    );
+    let asks = ["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"];
+    let result = execute(&dir, "out", &asks);
+    assert_eq!(result.code, 1, "{} {}", result.stdout, result.stderr);
+    let j = result_json(&dir, &result);
+    assert!(!has(get(&arr(get(&j, "answers"))[0], "outputs"), "object"));
+    assert_eq!(
+        s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
+        "refuted"
+    );
+    assert_eq!(
+        s(get(
+            get(get(output(&j, 0, "solutions"), "value"), "representation"),
+            "kind"
+        )),
+        "empty"
+    );
+    product_reuse(&dir, &asks, &j, 1);
 }
 #[test]
 fn parameter_product_nonlinear_coefficients_are_not_linear_solutions() {
