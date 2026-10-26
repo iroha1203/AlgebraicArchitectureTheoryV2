@@ -553,6 +553,12 @@ fn family_operands_from_root(
         tick(c)?;
         match &inputs.law().exprs[cursor].kind {
             ExprKind::Group(child) => cursor = *child,
+            ExprKind::Call { .. } => {
+                let Some((params, body, args)) = crate::observed::object_law_residuals::predicate_call(inputs,cursor) else { return Ok(None) };
+                let bindings = params.iter().zip(args).map(|(p,a)| (p.name.clone(),compiler.lexical(*a))).collect();
+                compiler.variables = bindings;
+                cursor = body;
+            }
             ExprKind::Let { name, value, body } => {
                 let value = compiler.lexical(*value);
                 compiler.variables.insert(name.name.clone(), value);

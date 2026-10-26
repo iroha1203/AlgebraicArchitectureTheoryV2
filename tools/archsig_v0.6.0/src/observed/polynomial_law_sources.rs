@@ -55,10 +55,11 @@ impl Builder<'_> {
                 .original
                 .parameters
                 .iter()
+                .filter(|(name,_)| !locals.iter().any(|b| b.name == *name))
                 .cloned()
                 .chain(locals.iter().map(|b| (b.name.clone(), b.ty.clone())))
                 .collect(),
-            bindings: self.original.bindings.clone(),
+            bindings: self.original.bindings.iter().filter(|b| !locals.iter().any(|local| local.name == b.name)).cloned().collect(),
         })?;
         if locals.is_empty() {
             return Ok((source, ty));
@@ -80,14 +81,7 @@ impl Builder<'_> {
         name: &str,
         expression: usize,
     ) -> Result<(), ValidationFailure> {
-        if self.original.parameters.iter().any(|(n, _)| n == name)
-            || self
-                .original
-                .bindings
-                .iter()
-                .chain(locals.iter())
-                .any(|b| b.name == name)
-        {
+        if locals.iter().any(|b| b.name == name) {
             return Err("多項式operandのlexical束縛名が重複する".into());
         }
         let (value, ty) = self.closed(expression, locals)?;
@@ -102,11 +96,11 @@ impl Builder<'_> {
         &mut self,
         body: usize,
     ) -> Result<((NodeRef, Type), (NodeRef, Type)), ValidationFailure> {
-        let eq = super::super::environment::finite_law_valuations::equation(
+        let eq = super::super::object_law_residuals::predicate_equation(
             self.inputs,
             body,
             self.control,
-        )?;
+        ).map_err(|e| construction_failure(&e))?;
         let Some(eq) = eq else {
             // 一般条件の原bodyを保持し、恒真は固定のUnit等値として構成する。
             let unit = self.put(Part::Scalar(Scalar::Unit))?;
@@ -134,6 +128,18 @@ impl Builder<'_> {
                 .kind
             {
                 ExprKind::Group(child) => current = *child,
+                ExprKind::Call { .. } => {
+                    let Some((params, body, args)) = super::super::object_law_residuals::predicate_call(self.inputs,current) else { return Err("多項式operandの述語呼出しがない".into()) };
+                    let params = params.to_vec();
+                    let args = args.to_vec();
+                    let mut bindings = vec![];
+                    for (parameter, argument) in params.iter().zip(args) {
+                        let (value, ty) = self.closed(argument, &locals)?;
+                        bindings.push(Binding { name: parameter.name.clone(), value, ty });
+                    }
+                    locals = bindings;
+                    current = body;
+                }
                 ExprKind::Let { name, value, body } => {
                     let (name, value, next) = (name.name.clone(), *value, *body);
                     self.local(&mut locals, &name, value)?;
