@@ -101,7 +101,35 @@ fn every_flag_requires_its_value() {
 }
 #[test]
 fn each_required_flag_missing_is_reported_without_files() {
-    group("required_missing");
+    let fixture = cases();
+    for case in arr(get(&fixture, "required_missing")) {
+        let dir = setup(s(get(case, "name")));
+        let args = strings(get(case, "args"));
+        // 保存先はrunでは任意。旧fixtureの候補も正常実行として検査する。
+        if args.first() == Some(&"run") && s(get(case, "argument")) == "--out" {
+            let before = tree(&dir);
+            let r = run(&dir, &args);
+            assert_eq!(r.code, 0, "{}", r.stdout);
+            assert!(r.stderr.is_empty(), "{}", r.stderr);
+            assert_eq!(s(get(&r.receipt, "format")), "archsig.summary/1");
+            assert_eq!(s(get(&r.receipt, "status")), "complete");
+            assert_eq!(num(get(&r.receipt, "exit_code")), 0);
+            assert!(!has(&r.receipt, "result"));
+            assert!(!has(&r.receipt, "nodes"));
+            let answers = arr(get(&r.receipt, "answers"));
+            assert_eq!(answers.len(), 1);
+            let answer = &answers[0];
+            assert_eq!(s(get(answer, "id")), "n");
+            assert_eq!(s(get(answer, "status")), "established");
+            let value = get(get(answer, "outputs"), "value");
+            assert_eq!(s(get(value, "type")), "Z");
+            assert_eq!(s(get(value, "value")), "2");
+            assert_eq!(tree(&dir), before, "通常実行がfile/directoryを変更した");
+            eprintln!("run without --out: {} stdout bytes", r.stdout.len());
+        } else {
+            usage(&dir, &args, case);
+        }
+    }
 }
 #[test]
 fn commands_unknown_flags_positionals_and_run_only_flags_are_closed() {
