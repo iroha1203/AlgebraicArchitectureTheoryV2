@@ -127,7 +127,8 @@ fn finite_data_constructor_guards_keep_numeric_products() {
 fn finite_data_guard_product(constructor: bool) {
     for ty in ["Z", "Q"] {
         for missing in [false, true] {
-            let dir = finite_data_product_input(ty, missing);
+            let mode = if constructor { "constructor" } else { "match" };
+            let dir = finite_data_product_input(ty, missing, mode);
             if constructor {
                 let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("match tag{Packed(inner)=>match inner{Off=>false;On(b)=>b;};}", "tag=Packed(On(true)) and not(tag=Packed(Off))");
                 std::fs::write(dir.join("l.law"), law).unwrap();
@@ -235,12 +236,12 @@ fn finite_data_guard_product(constructor: bool) {
         }
     }
 }
-fn finite_data_product_input(ty: &str, missing: bool) -> PathBuf {
+fn finite_data_product_input(ty: &str, missing: bool, mode: &str) -> PathBuf {
     let definition = DEFINITION.replace(r#""declarations":["#,r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"停止。"},{"name":"On","arguments":["Bool"],"meaning":"選択。"}]},{"kind":"data","name":"Build.Wrapper","meaning":"包装。","constructors":[{"name":"Packed","arguments":[["Data","Build.Flag"]],"meaning":"包装。"}]},"#).replace(r#""type":"Z""#,&format!(r#""type":"{ty}""#));
     let body = format!(
         "view off():Wrapper=Packed(Off);view deny():Wrapper=Packed(On(false));view on():Wrapper=Packed(On(true));view active(tag:Wrapper):Bool=match tag{{Packed(inner)=>match inner{{Off=>false;On(b)=>b;}};}};law required zero(c:Part,n:{ty},tag:Wrapper) when active(tag):n*c.quantity=0;"
     );
-    let dir = files_with_definition("finite-data-product", &body, missing, &definition);
+    let dir = files_with_definition(&format!("finite-data-product-{mode}-{ty}-{missing}"), &body, missing, &definition);
     if ty == "Q" {
         let map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
