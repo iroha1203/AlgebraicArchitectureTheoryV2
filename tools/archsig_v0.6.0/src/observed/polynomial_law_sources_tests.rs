@@ -272,8 +272,9 @@ fn missing_outside_false_guard_and_unsupported_keep_original_sources_without_fab
     for q in &d.coordinates {
         assert!(d.originals.iter().any(|o| o.reference == q.instance));
         if q.guard == EquationGuard::OutsideObject {
-            assert!(q.nu.is_none() && q.epsilon.is_none());
-            assert!(q.residual.is_some());
+            assert!(q.epsilon.is_none());
+            assert!(terms(&g,q.nu.unwrap()).iter().any(|(_,powers)| powers.iter().any(|p| *p == 1)));
+            assert!(terms(&g,q.residual.unwrap()).is_empty());
             assert_eq!(source_text(&e, &g, q.lhs), "c.quantity");
         }
     }

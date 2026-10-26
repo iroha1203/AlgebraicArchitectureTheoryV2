@@ -470,7 +470,7 @@ fn polynomial_tuple_reading_is_one_original_law_truth_and_keeps_both_numeric_com
     replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
-fn polynomial_empty_and_unimplemented_scalar_families_do_not_invent_concrete_readings() {
+fn polynomial_empty_and_symbolic_scalar_families_do_not_invent_concrete_readings() {
     let p = prepared(false, false, BODY, "r2");
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
@@ -487,7 +487,12 @@ fn polynomial_empty_and_unimplemented_scalar_families_do_not_invent_concrete_rea
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     for d in &ds {
         assert!(d.readings.is_empty());
-        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+        assert!(d.unavailable.is_none());
+        assert!(!d.coordinates.is_empty());
+        for coordinate in &d.coordinates {
+            let Part::Polynomial { parameters, .. } = data(&g,coordinate.nu.unwrap()).part() else { panic!("polynomial family") };
+            assert_eq!(parameters, &vec![("k".into(),Type::Z)]);
+        }
         assert!(
             d.originals
                 .iter()

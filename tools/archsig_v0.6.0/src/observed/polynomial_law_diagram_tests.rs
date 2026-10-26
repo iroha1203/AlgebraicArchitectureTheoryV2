@@ -417,10 +417,12 @@ fn owned_architecture_keeps_containing_root_and_outside_object_residual_without_
             assert_eq!(source.reference, objects.architectures[index]);
             assert_eq!(source.object, index);
             if q.guard == EquationGuard::OutsideObject {
-                assert!(q.nu.is_none());
+                let nu = q.nu.unwrap();
+                assert!(terms(&g, nu).iter().any(|(_, powers)| powers.iter().any(|p| *p == 1)));
                 assert!(q.epsilon.is_none());
                 assert!(terms(&g, q.residual.unwrap()).is_empty());
-                assert!(q.witness.is_none());
+                let Part::Ideal { generators, .. } = data(&g, q.witness.unwrap()).part() else { panic!("ideal") };
+                assert_eq!(generators, &vec![nu]);
             } else {
                 assert_eq!(q.guard, EquationGuard::AlwaysTrue);
                 let expected = if index == 1 {
