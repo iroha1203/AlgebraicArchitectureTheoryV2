@@ -1160,6 +1160,7 @@ fn finite_predicates_and_short_circuits_keep_numeric_axes() {
         ("", "count(list<Bool>[])=0 and sum(list<Q>[])=0", vec![true]),
         ("", "count(list<Bool>[])>0", vec![false]),
         ("", "sum(list<Z>[1,1])=1", vec![false]),
+        ("", "list<Z>[2,1]=list<Z>[1,2]", vec![false]),
     ] {
         let p = prepared(
             false,
