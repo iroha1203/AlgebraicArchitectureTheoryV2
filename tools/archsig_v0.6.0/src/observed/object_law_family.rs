@@ -299,6 +299,9 @@ impl LawReadingFamily {
         row: Option<usize>,
         c: &mut Control,
     ) -> Result<Vec<NodeRef>, ConstructionFailure> {
+        if row.is_none() {
+            return Ok(constant_numeric_family(e, c)?.map(|(root, _, _)| root).into_iter().collect());
+        }
         let (ObjectEvaluationOutcome::Evaluated(g), Some(row)) = (e.outcome(), row) else {
             return Ok(vec![]);
         };
@@ -390,6 +393,69 @@ impl LawReadingFamily {
             .cloned()
             .ok_or_else(|| inconsistent("元観測のparameter行がない"))
     }
+}
+/// 元評価器が全parameter上で正規化した、観測fieldに依存しない数値差。
+/// 全称Boolだけでは非定数関数の一様性を判断しない。
+pub(in crate::observed) fn constant_numeric_family(
+    e: &ObjectEvaluation, c: &mut Control,
+) -> Result<Option<(NodeRef, NodeRef, Scalar)>, ConstructionFailure> {
+    use crate::law::{ast::{BinOp, ExprKind}, model::Signature};
+    tick(c)?;
+    if e.instance().parameters().is_empty()
+        || !e.instance().parameters().iter().all(|p| matches!(p.ty.erase(), Type::Z | Type::Q)) {
+        return Ok(None);
+    }
+    let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else { return Ok(None) };
+    let law = g.prepared().inputs().law();
+    let Signature::Law { body, guard: None, .. } = &law.declarations
+        .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
+    else { return Ok(None) };
+    // この共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
+    // 観測時の定数へ畳んで記号的な差と取り違えない。
+    let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
+    let mut pending = vec![(*body, names)];
+    while let Some((id, names)) = pending.pop() {
+        tick(c)?;
+        match &law.exprs[id].kind {
+            ExprKind::Int(_) => {},
+            ExprKind::Dotted(path) if path.len() == 1 && names.contains(&path[0].name) => {},
+            ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push((*child, names)),
+            ExprKind::Binary { lhs, rhs, .. } => {
+                pending.push((*lhs, names.clone()));
+                pending.push((*rhs, names));
+            },
+            ExprKind::Let { name, value, body } => {
+                pending.push((*value, names.clone()));
+                let mut inner = (*names).clone();
+                inner.insert(name.name.clone());
+                pending.push((*body, Arc::new(inner)));
+            },
+            _ => return Ok(None),
+        }
+    }
+    let mut expression = *body;
+    loop {
+        tick(c)?;
+        match &law.exprs[expression].kind {
+            ExprKind::Group(next) | ExprKind::Let { body: next, .. } => expression = *next,
+            ExprKind::Binary { op: BinOp::Eq, .. } => break,
+            _ => return Ok(None),
+        }
+    }
+    let Some(root) = g.answers.first().and_then(|a| a.outputs.get("evaluation")).copied() else { return Ok(None) };
+    let node = g.nodes.get(root.0).ok_or_else(|| inconsistent("元数値族の評価がない"))?;
+    if node.support.iter().any(|f| f.field.is_some()) || !node.reasons.is_empty() { return Ok(None) }
+    let Some(Payload::Evaluation { parts, applicability: "applicable", .. }) = &node.payload else { return Ok(None) };
+    let [part] = parts.as_slice() else { return Ok(None) };
+    let Some(residual) = part.residual else { return Ok(None) };
+    let Some(Payload::Evaluation { expression, value: Some(value), .. }) = g.nodes.get(residual.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
+    if !matches!(g.nodes.get(expression.0).and_then(|n| n.payload.as_ref()),
+        Some(Payload::ParameterizedTransform { operation: super::super::result::TransformOp::Difference, .. })) {
+        return Ok(None);
+    }
+    let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
+    if !matches!(value.ty(), Type::Z | Type::Q) { return Ok(None) }
+    Ok(Some((root, residual, value.clone())))
 }
 fn consensus(values: impl Iterator<Item = Option<bool>>) -> Option<bool> {
     let mut values = values;
@@ -703,6 +769,11 @@ pub(in crate::observed) fn read_native_family(
     }
     let env = crate::observed::environment::Environment::new(inputs, c)
         .map_err(ConstructionFailure::from)?;
+    if constant_numeric_family(e, c)?.is_some() {
+        result.uniform = Some(reading(e, c)?);
+        result.complete = true;
+        return tick(c).map_err(Into::into);
+    }
     for p in e.instance().parameters() {
         tick(c)?;
         let Some((domain, missing)) = env

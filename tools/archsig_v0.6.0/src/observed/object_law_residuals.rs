@@ -343,6 +343,10 @@ pub(in crate::observed) fn observed_epsilon(
     component: &[usize],
     c: &mut Control,
 ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
+    if row.is_none() && component.is_empty()
+        && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(source.evaluation(), c)? {
+        return Ok(Some(NumericTransportValue::observed(value)));
+    }
     let refs = source
         .family()
         .observed_row_evaluations(source.evaluation(), row, c)?;
@@ -646,6 +650,15 @@ fn extract(
                 .as_mut()
                 .ok_or_else(|| bad("一様残差読取りがない"))?;
             read_case(&mut row.cases[0], &out.shape, inputs, g, c)?;
+            if let Some((root, producer, value)) = super::object_law_transport::constant_numeric_family(src.evaluation(), c)? {
+                let case = &mut row.cases[0];
+                let [component] = case.components.as_mut_slice() else { return Err(bad("一様数値差の成分数が違う")) };
+                if !component.path.is_empty() || component.ty != value.ty() { return Err(bad("一様数値差の型が違う")) }
+                case.evaluation = Some(root.0);
+                case.epsilon_producer = Some(producer.0);
+                component.epsilon = Some(NumericTransportValue::observed(value.clone()));
+                component.residual = Some(NumericTransportValue::observed(value));
+            }
             row.complete = true;
             c.checkpoint(Checkpoint::ObjectLawResidualCase)?;
         }
