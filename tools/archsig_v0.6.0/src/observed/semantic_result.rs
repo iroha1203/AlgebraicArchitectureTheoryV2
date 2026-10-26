@@ -295,6 +295,7 @@ pub(super) fn compact(
             continue;
         }
         rename(&mut node, &ids);
+        // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
         let shared = matches!(
             native[index].ty,
             NodeType::Value(_)
@@ -303,6 +304,8 @@ pub(super) fn compact(
                 | NodeType::Domain
                 | NodeType::Construction(
                     super::super::construction_result::ConstructionType::StateMap
+                        | super::super::construction_result::ConstructionType::Ring
+                        | super::super::construction_result::ConstructionType::Module
                 )
         );
         let Json::Obj(fields) = &mut node else {
