@@ -461,7 +461,7 @@ pub(in crate::observed) fn solution_row(
             .declarations
             .get(name)
             .ok_or("候補の元Lawがない")?;
-        let law = finite_law_valuations::evaluate_point(&updated, declaration, bindings, point)?;
+        let law = finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point)?;
         let holds = if law.application == Some(false) {
             Some(true)
         } else if law.application.is_none() || law.condition_pending {

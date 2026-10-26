@@ -285,6 +285,9 @@ pub(in crate::observed) fn search(
                     .push((parameter.name.clone(), selected.clone()));
                 vec![selected]
             } else {
+                if matches!(parameter.ty, Type::Z | Type::Q) {
+                    continue;
+                }
                 let Some(values) = domain(
                     &environment,
                     &parameter.ty,
