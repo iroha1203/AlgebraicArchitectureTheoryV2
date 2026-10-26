@@ -260,6 +260,30 @@ fn assert_missing_quantity_once(result: &JNode) {
         assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
     }
 }
+#[test]
+fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
+    let dir = files("state-dependent-law", "law required balanced(c:Part,n:Z):c.quantity+n=n;", false);
+    let requests = ["b=build(R,on=@v/root)", "p=check(R.balanced,on=$b.object,c=@v/p)", "q=check(R.balanced,on=$b.object,c=@v/q)"];
+    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+    for request in requests { args.extend(["--ask", request]); }
+    let normal = cli::run(&dir, &args);
+    assert_eq!(normal.code, 1, "{}", normal.stdout);
+    assert!(normal.stderr.is_empty());
+    assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    eprintln!("state-dependent law: stdout {} bytes", normal.stdout.len());
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "complete", 1);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+    eprintln!("state-dependent law: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+    args.extend(["--out", "again", "--reuse", "out"]);
+    let reused = cli::run(&dir, &args);
+    assert_eq!(reused.code, 1, "{}", reused.stdout);
+    let again = result_json(&dir, &reused);
+    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =

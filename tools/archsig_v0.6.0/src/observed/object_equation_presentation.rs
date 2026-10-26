@@ -25,8 +25,8 @@ mod source_polynomial;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
-// 観測値へ代入する前の共有slotと数値binderがすべて消える差だけを共有する。
-pub(super) fn constant_source_difference(
+// 数値binderが消えた原式の差を、元の共有slotへの観測代入で評価する。
+pub(super) fn parameter_constant_source_value(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, guard: None, .. } = &inputs.law().declarations
@@ -43,8 +43,8 @@ pub(super) fn constant_source_difference(
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
     let Some(source) = source_polynomial::operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
-    if source.difference.terms.iter().any(|term| !term.variables.is_empty()) { return Ok(None); }
-    Ok(source.difference.evaluate(&[], c)?.map(|value| value.scalar().clone()))
+    let values: Vec<_> = ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
+    Ok(source.difference.evaluate(&values, c)?.map(|value| value.scalar().clone()))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
@@ -1170,10 +1170,14 @@ fn populate(
                     occurrence.status = EquationPresentationStatus::NotApplicable;
                 } else if row.is_none()
                     && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(original, c)? {
-                    let polynomial = EquationPolynomial::constant(value.clone(), c)?;
+                    let mut polynomial = EquationPolynomial::constant(value.clone(), c)?;
                     if let LawNumericShape::Equality { left, right, .. } = e.shape
                         && let Some(source) = source_polynomial::operands(inputs, original.instance(), left, right, &path, &mut r.rings[index], c)? {
-                        if source.difference != polynomial { return Err(bad("元記号差と全域族の定数差が違う")); }
+                        let values: Vec<_> = r.rings[index].symbols.iter().map(|symbol| symbol.value.clone()).collect();
+                        if source.difference.evaluate(&values, c)?.as_ref().map(|value| value.scalar()) != Some(&value) {
+                            return Err(bad("元記号差の観測代入と全域族の残差が違う"));
+                        }
+                        polynomial = source.difference;
                         occurrence.left = source.left;
                         occurrence.right = source.right;
                     }
@@ -1401,15 +1405,40 @@ mod tests {
         }
     }
     #[test]
+    fn numeric_family_keeps_state_polynomial_after_parameter_cancellation() {
+        for ty in ["Z", "Q"] {
+            let definition = fixture::D.replace("\"type\":\"Z\"", &format!("\"type\":\"{ty}\""));
+            let map = if ty == "Q" { fixture::A.replace("\"value\":\"2\"", "\"value\":[\"2\",\"1\"]") } else { fixture::A.to_owned() };
+            let inputs = inputs_from(&format!("view plus(c:Part,x:{ty}):{ty}=c.quantity+x;law required balanced(c:Part,n:{ty}):let a=plus(c,n) in a=n;"), &definition, &map);
+            let mut c = Control::unlimited();
+            let mut presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+            assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+            assert_eq!(presentation.rings[0].symbols.len(), 1);
+            let value = if ty == "Z" { Scalar::Z(2.into()) } else { Scalar::Q(2.into(), 1.into()) };
+            for occurrence in &presentation.occurrences {
+                let polynomial = occurrence.nu.as_ref().unwrap();
+                assert!(polynomial.terms.iter().any(|term| !term.variables.is_empty()));
+                assert!(polynomial.evaluate(&[], &mut c).unwrap().is_none());
+                assert_eq!(polynomial.evaluate(&[Some(NumericTransportValue::observed(value.clone()))], &mut c).unwrap(), Some(NumericTransportValue::observed(value.clone())));
+                assert_eq!(occurrence.component_holds, Some(false));
+                assert!(occurrence.row.is_none());
+            }
+            presentation.recheck(inputs.clone(), &mut c).unwrap();
+            // 同じ観測値でも、元のfieldを定数へ置き換えた表示は受け入れない。
+            presentation.occurrences[0].nu = Some(EquationPolynomial::constant(value, &mut c).unwrap());
+            assert!(presentation.recheck(inputs, &mut c).is_err());
+        }
+    }
+    #[test]
     fn numeric_family_uniformity_is_not_inferred_from_false_or_observed_values() {
         for body in [
             "law required varying(c:Part,n:Z):n=0;",
-            "law required varying(c:Part,n:Z):n+c.quantity=n;",
+            "law required varying(c:Part,n:Z):n+c.quantity=0;",
             "law required varying(c:Part,n:Z) when false:n=n;",
             "law required varying(c:Part,n:Z) when n=0:n=n;",
             "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
             "view active(x:Z):Bool=x=0;law required varying(c:Part,n:Z) when active(n):n=n;",
-            "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=n;",
+            "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=0;",
             "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required varying(c:Part,n:Z):twice(n)=0;",
         ] {
             let inputs = inputs_with(body);

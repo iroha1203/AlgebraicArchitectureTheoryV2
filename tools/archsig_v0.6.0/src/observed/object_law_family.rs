@@ -400,7 +400,7 @@ impl LawReadingFamily {
             .ok_or_else(|| inconsistent("元観測のparameter行がない"))
     }
 }
-/// 元評価器が全parameter上で正規化した、観測fieldに依存しない数値差。
+/// 元評価器が全parameter上で正規化した、各対象でparameterに依存しない数値差。
 /// 全称Boolだけでは非定数関数の一様性を判断しない。
 pub(in crate::observed) fn constant_numeric_family(
     e: &ObjectEvaluation, c: &mut Control,
@@ -416,7 +416,7 @@ pub(in crate::observed) fn constant_numeric_family(
     let Signature::Law { body, guard, .. } = &law.declarations
         .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
     else { return Ok(None) };
-    let symbolic_constant = super::super::object_equation_presentation::constant_source_difference(g.prepared().inputs(), e.instance(), c)?;
+    let symbolic_constant = super::super::object_equation_presentation::parameter_constant_source_value(g.prepared().inputs(), e.instance(), c)?;
     if symbolic_constant.is_none() {
     // この共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
     // 観測時の定数へ畳んで記号的な差と取り違えない。
