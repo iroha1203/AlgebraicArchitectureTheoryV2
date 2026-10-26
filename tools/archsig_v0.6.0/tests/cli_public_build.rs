@@ -9,6 +9,15 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn explicit_list_sum_cancels_numeric_parameters() {
+    for (name,guard) in [
+        ("symbolic-list-sum", "sum(list<Number>[n,-n])=0"),
+        ("symbolic-list-sum-double", "sum(list<Number>[n,n])=n+n"),
+        ("symbolic-list-sum-let", "let xs=list<Number>[n,-n] in sum(xs)=0"),
+        ("symbolic-list-sum-empty", "sum(list<Number>[])=0"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
 fn explicit_list_count_uses_shape_with_numeric_parameters() {
     for (name,guard) in [
         ("symbolic-list-count", "count(list<Number>[n,n])=2"),
@@ -700,6 +709,7 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when true or n*n=1"),
             ("", " when sum(list<Q>[rat(1,2),rat(1,2)])=1"),
             ("", " when count(list<Number>[n,n])=2"),
+            ("", " when sum(list<Number>[n,-n])=0"),
         ] {
             let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -830,6 +840,7 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "count(list<Bool>[])>0",
             "sum(list<Q>[])!=0",
             "count(list<Number>[n,n])=1",
+            "sum(list<Number>[n,-n])!=0",
         ] {
             let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {
