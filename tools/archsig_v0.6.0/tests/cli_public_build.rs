@@ -9,6 +9,17 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn tuple_numeric_parameter_equality_preserves_products() {
+    for (name,guard) in [
+        ("symbolic-tuple-equality", "(n,true)=(n,true)"),
+        ("symbolic-tuple-affine", "(n+n,false)=(2*n,false)"),
+        ("symbolic-tuple-let", "let x=(n,true) in x=(n,true)"),
+        ("symbolic-tuple-nested", "(some(n),(n,true))=(some(n),(n,true))"),
+        ("symbolic-tuple-numeric", "(n,n+n)=(n,2*n)"),
+    ] { known_numeric_product(name, "", guard); }
+    known_numeric_product("symbolic-tuple-finite-bool", ",b:Bool", "(n,b)=(n,b)");
+}
+#[test]
 fn option_numeric_parameter_equality_preserves_products() {
     for (name,guard) in [
         ("symbolic-option-equality", "some(n)=some(n)"),
@@ -721,6 +732,7 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when count(list<Number>[n,n])=2"),
             ("", " when sum(list<Number>[n,-n])=0"),
             ("", " when some(n)=some(n)"),
+            ("", " when (n,true)=(n,true)"),
         ] {
             let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -855,6 +867,10 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "some(n)=none<Number>",
             "some(n+1)=some(n)",
             "some(n)!=some(n)",
+            "(n,true)=(n,false)",
+            "(n+1,true)=(n,true)",
+            "(n,true)!=(n,true)",
+            "(n,true)=(0,false)",
         ] {
             let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {

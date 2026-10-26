@@ -89,7 +89,14 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
 fn option_guards_do_not_choose_a_numeric_parameter_value() {
-    for guard in ["some(n)=some(0)", "some(n)!=some(0)"] {
+    guards_do_not_choose_a_numeric_parameter_value(&["some(n)=some(0)", "some(n)!=some(0)"]);
+}
+#[test]
+fn tuple_guards_do_not_choose_a_numeric_parameter_value() {
+    guards_do_not_choose_a_numeric_parameter_value(&["(n,true)=(0,true)", "(n,true)!=(0,true)"]);
+}
+fn guards_do_not_choose_a_numeric_parameter_value(guards: &[&str]) {
+    for guard in guards {
         let p = prepared(
             false,
             false,
