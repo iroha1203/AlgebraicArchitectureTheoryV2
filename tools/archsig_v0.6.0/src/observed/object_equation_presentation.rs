@@ -38,8 +38,6 @@ pub(in crate::observed) use source_polynomial::PolynomialFamily;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
     pub ring: EquationRing,
-    pub left: PolynomialFamily,
-    pub right: PolynomialFamily,
     pub difference: PolynomialFamily,
 }
 pub(in crate::observed) fn parameter_source_difference(
@@ -60,7 +58,7 @@ pub(in crate::observed) fn parameter_source_difference(
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
     let Some(source) = source_polynomial::family_operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
-    Ok(Some(ParameterEquation { ring, left: source.left, right: source.right, difference: source.difference }))
+    Ok(Some(ParameterEquation { ring, difference: source.difference }))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
