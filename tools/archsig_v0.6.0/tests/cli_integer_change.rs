@@ -982,6 +982,15 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
         "all=quotient(Pair.first,on=$s.domain,s=@pair/s)",
         "good=quotient(Pair.combined,on=$s.solutions,s=@pair/s)"];
+    let before=["d.json","a.json","l.law"].map(|name|std::fs::read(dir.join(name)).unwrap());
+    let mut normal_args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
+    for ask in asks {normal_args.extend(["--ask",ask]);}
+    let normal=run(&dir,&normal_args);
+    assert_eq!(normal.code,0,"{} {}",normal.stdout,normal.stderr);
+    assert!(normal.stderr.is_empty());
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
+    for (name,bytes) in ["d.json","a.json","l.law"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
+    eprintln!("integer quotient: stdout {} bytes",normal.stdout.len());
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
     let result=result_json(&dir,&r);assert_module_owners(&result);
     let all=quotient_representation(&result,1);
@@ -1000,6 +1009,17 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     let coefficient=s(get(node(&result,&arr(&arr(get(get(inclusions[0],"value"),"columns"))[0])[0]),"value")).parse::<i64>().unwrap();
     assert_eq!(coefficient,s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap());
 
+    let kernel_inclusions=arr(get(&result,"nodes")).iter().filter(|n| {
+        if !has(n,"value") {return false;} let v=get(n,"value");
+        has(v,"columns") && get(v,"source").value==get(all,"kernel").value && get(v,"target").value==get(original_map,"source").value
+    }).collect::<Vec<_>>();
+    assert_eq!(kernel_inclusions.len(),1,"核の包含ModuleMapが必要");
+    let kernel_column=arr(&arr(get(get(kernel_inclusions[0],"value"),"columns"))[0]).iter().map(|r|s(get(node(&result,r),"value")).parse::<i64>().unwrap()).collect::<Vec<_>>();
+    let kernel_module=get(node(&result,get(all,"kernel")),"value");
+    let kernel_generator=arr(get(&arr(get(kernel_module,"generators"))[0],"value")).iter().map(|v|s(v).parse::<i64>().unwrap()).collect::<Vec<_>>();
+    assert_eq!(kernel_column,kernel_generator);
+    for n in arr(get(&result,"nodes")) {for key in ["rule","arguments","evidence","support"] {assert!(!has(n,key));}}
+
     let classes=node(&result,get(get(output(&result,1,"quotient"),"value"),"classes"));
     assert_eq!(s(get(get(classes,"value"),"kind")),"image");
     let actual_map=node(&result,get(get(classes,"value"),"map"));
@@ -1012,7 +1032,7 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
     for ask in &asks {args.extend(["--ask",ask]);}
     let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);
-    let reused=result_json(&dir,&repeat);for field in ["answers","nodes"] {assert_eq!(get(&result,field).value,get(&reused,field).value);}
+    let reused=result_json(&dir,&repeat);assert!(warnings(&reused).is_empty());for field in ["answers","nodes"] {assert_eq!(get(&result,field).value,get(&reused,field).value);}
 }
 #[test]
 fn integer_quotient_distinguishes_empty_solutions_from_one_class() {
