@@ -10,11 +10,11 @@ const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"a
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
 fn finite_set_guards_preserve_known_numeric_products() {
-    finite_set_known_product("b=set<Bool>{false,true}");
+    finite_set_known_product("set-equality", "b=set<Bool>{false,true}");
 }
 #[test]
 fn finite_predicates_preserve_known_numeric_products() {
-    finite_set_known_product("b!=set<Bool>{} and (true in b implies false in b)");
+    finite_set_known_product("set-predicate", "b!=set<Bool>{} and (true in b implies false in b)");
 }
 #[test]
 fn finite_predicates_keep_missing_and_applicability() {
@@ -36,22 +36,22 @@ fn finite_tuple_equality_keeps_missing_and_applicability() {
         "b=(true,true)",
     );
 }
-fn finite_set_known_product(guard: &str) {
-    known_numeric_product(",b:Set<Bool>", guard);
+fn finite_set_known_product(name: &str, guard: &str) {
+    known_numeric_product(name, ",b:Set<Bool>", guard);
 }
 #[test]
 fn numeric_guards_preserve_known_products() {
-    for guard in ["false implies n*n=1", "true or n*n=1", "n=n and true"] {
-        known_numeric_product("", guard);
+    for (name, guard) in [("numeric-implies", "false implies n*n=1"), ("numeric-or", "true or n*n=1"), ("numeric-and", "n=n and true")] {
+        known_numeric_product(name, "", guard);
     }
 }
-fn known_numeric_product(extra: &str, guard: &str) {
+fn known_numeric_product(name: &str, extra: &str, guard: &str) {
     for ty in ["Z", "Q"] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
         let body = format!(
             "law required zero(c:Part,n:{ty}{extra}) when {guard}:n*c.quantity=0;"
         );
-        let dir = files_with_definition("finite-set-known", &body, false, &definition);
+        let dir = files_with_definition(&format!("known-product-{name}-{ty}"), &body, false, &definition);
         if ty == "Q" {
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
