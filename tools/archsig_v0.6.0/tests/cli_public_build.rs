@@ -286,6 +286,56 @@ fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
+fn scaled_numeric_binders_build_check_and_reuse() {
+    for (ty, equation, p_value, q_value) in [
+        ("Z", "2*(n+c.quantity)=m", "2", "4"), ("Z", "(n+c.quantity)*2=m", "2", "4"),
+        ("Q", "rat(1,2)*(n+c.quantity)=m", "rat(1,2)", "1"), ("Q", "(n+c.quantity)*rat(1,2)=m", "rat(1,2)", "1"),
+    ] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let dir = files_with_definition(&format!("scaled-binders-{ty}-{equation}"), &format!(
+            "view one():{ty}=1;view pvalue():{ty}={p_value};view qvalue():{ty}={q_value};law required equal(c:Part,n:{ty},m:{ty}):{equation};"
+        ), false, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
+                .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+                .replace(r#""value":"1""#, r#""value":["1","1"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.one,on=$b.object)", "pv=evaluate(R.pvalue,on=$b.object)", "qv=evaluate(R.qvalue,on=$b.object)",
+            "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value,m=$pv.value)",
+            "q0=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$pv.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$qv.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        for (id, status) in [("all", "refuted"), ("p", "established"), ("q0", "refuted"), ("q1", "established")] {
+            assert_eq!(s(get(answer(&result, id), "status")), status);
+        }
+        eprintln!("scaled binders {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+        args.extend(["--reuse", "out", "--out", "again"]);
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "complete", 1);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
+#[test]
+fn scaled_mixed_parameter_law_builds_for_later_checks() {
+    let dir = files("scaled-mixed-parameter", "view zero():Z=0;law required equal(c:Part,n:Z):2*(n+c.quantity)=0;", false);
+    let run = asks(&dir, &["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
+        "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"]);
+    let result = saved(&dir, &run, "complete", 1);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
+    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+}
+#[test]
 fn mixed_numeric_binders_build_check_and_reuse() {
     for (ty, equation) in [("Z", "2*n+c.quantity=m"), ("Q", "m=2*n+c.quantity"), ("Z", "n+c.quantity=2*n+m")] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));

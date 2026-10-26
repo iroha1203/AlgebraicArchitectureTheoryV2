@@ -1419,6 +1419,18 @@ mod tests {
         }
     }
     #[test]
+    fn mixed_products_require_a_constant_factor() {
+        for (expression, expected) in [("2*(n+c.quantity)", true), ("(n+c.quantity)*2", true),
+            ("0*(n+c.quantity)", true), ("n*(m+c.quantity)", false), ("c.quantity*(n+c.quantity)", false)] {
+            let inputs = inputs_with(&format!("law required equal(c:Part,n:Z,m:Z):{expression}=m;"));
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
+            assert_eq!(parameter_source_difference(&inputs, instance, &mut c).unwrap().is_some(), expected);
+        }
+    }
+    #[test]
     fn parameter_guard_requires_uniform_truth_without_observation() {
         for (guard, expected) in [("n=m", false), ("n=n", true), ("false", false), ("c.quantity=c.quantity", false)] {
             let inputs = inputs_with(&format!("law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
