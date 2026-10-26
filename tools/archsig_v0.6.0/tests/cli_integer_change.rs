@@ -285,6 +285,17 @@ fn nonlinear_change_is_not_misreported_as_an_integer_affine_solution() {
     ]);
     notified(&dir, &r, "error", 70);
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    // 先行する欠測のノード参照も、成果物のないエラー通知へ漏らさない。
+    let map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+    let map = map.replace(r#"{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},"#, "");
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let r = execute(&dir, "after-missing", &[
+        "v=evaluate(Pair.first,s=@pair/s)",
+        "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+    ]);
+    let receipt = notified(&dir, &r, "error", 70);
+    assert!(arr(get(&receipt, "issues")).iter().all(|issue| s(get(issue, "code")) == "internal"));
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
 }
 
 #[test]
