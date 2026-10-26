@@ -9,6 +9,17 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn list_numeric_parameter_equality_preserves_products() {
+    for (name,guard) in [
+        ("symbolic-list-equality", "list<Number>[n,n]=list<Number>[n,n]"),
+        ("symbolic-list-affine-equality", "list<Number>[n+n]=list<Number>[2*n]"),
+        ("symbolic-list-let-equality", "let xs=list<Number>[n,n+1] in xs=list<Number>[n,n+1]"),
+        ("symbolic-list-length-inequality", "list<Number>[n]!=list<Number>[n,n]"),
+        ("symbolic-list-order-inequality", "list<Number>[n,n+1]!=list<Number>[n+1,n]"),
+        ("symbolic-list-nested-equality", "list<Option<Number>>[some(n),none<Number>]=list<Option<Number>>[some(n),none<Number>]"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
 fn tuple_numeric_parameter_equality_preserves_products() {
     for (name,guard) in [
         ("symbolic-tuple-equality", "(n,true)=(n,true)"),
@@ -733,6 +744,7 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when sum(list<Number>[n,-n])=0"),
             ("", " when some(n)=some(n)"),
             ("", " when (n,true)=(n,true)"),
+            ("", " when list<Number>[n,n]=list<Number>[n,n]"),
         ] {
             let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -871,6 +883,10 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "(n+1,true)=(n,true)",
             "(n,true)!=(n,true)",
             "(n,true)=(0,false)",
+            "list<Number>[n]=list<Number>[n,n]",
+            "list<Number>[n,n+1]=list<Number>[n+1,n]",
+            "list<Number>[n]!=list<Number>[n]",
+            "list<Number>[n,0]=list<Number>[0,1]",
         ] {
             let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {

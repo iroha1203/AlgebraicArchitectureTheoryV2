@@ -140,15 +140,25 @@ impl Compiler<'_> {
                     if left.len() != right.len() {
                         return Err(bad("元式Tuple等値の形が違う"));
                     }
-                    let mut known = true;
-                    for (left, right) in left.iter().zip(right) {
-                        match self.equal(left, right, span, c)? {
-                            Some(false) => return Ok(Some(false)),
-                            None => known = false,
-                            _ => {}
-                        }
+                    self.equal_components(left, right, span, c)
+                }
+                (
+                    Binding::List {
+                        element: lty,
+                        items: left,
+                    },
+                    Binding::List {
+                        element: rty,
+                        items: right,
+                    },
+                ) => {
+                    if lty != rty {
+                        return Err(bad("元式List等値の要素型が違う"));
                     }
-                    Ok(known.then_some(true))
+                    if left.len() != right.len() {
+                        return Ok(Some(false));
+                    }
+                    self.equal_components(left, right, span, c)
                 }
                 (
                     Binding::Option {
@@ -190,6 +200,23 @@ impl Compiler<'_> {
                 }
             }
         })
+    }
+    fn equal_components(
+        &mut self,
+        left: &[Binding],
+        right: &[Binding],
+        span: (usize, usize),
+        c: &mut Control,
+    ) -> Result<Option<bool>, ConstructionFailure> {
+        let mut known = true;
+        for (left, right) in left.iter().zip(right) {
+            match self.equal(left, right, span, c)? {
+                Some(false) => return Ok(Some(false)),
+                None => known = false,
+                _ => {}
+            }
+        }
+        Ok(known.then_some(true))
     }
     // Scalar環への翻訳は使用箇所のcomponent pathが判明してから行う。
     // initializerの環境を保存し、後続letやhelperの局所名を捕獲しない。

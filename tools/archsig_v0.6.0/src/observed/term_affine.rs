@@ -360,7 +360,13 @@ pub(in crate::observed) fn pointwise_equal(
                 _ => Ok(Some(false)),
             };
         }
-        if let (Some(a), Some(b)) = (tuple_values(a, c)?, tuple_values(b, c)?) {
+        if let (Some(a), Some(b)) = (
+            tuple_values(a, c)?.or(list_values(a, c)?),
+            tuple_values(b, c)?.or(list_values(b, c)?),
+        ) {
+            if a.len() != b.len() {
+                return Ok(Some(false));
+            }
             let mut known = true;
             for (a, b) in a.iter().zip(&b) {
                 match pointwise_equal(a, b, law, c)? {
