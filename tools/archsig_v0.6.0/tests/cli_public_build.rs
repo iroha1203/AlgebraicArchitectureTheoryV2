@@ -47,6 +47,7 @@ fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
             let reused = cli::run(&dir, &args);
             assert_eq!(reused.code, run.code, "{}", reused.stdout);
             let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
             for field in ["answers", "nodes"] {
                 assert_eq!(get(&again, field).value, get(&result, field).value);
             }
@@ -293,6 +294,19 @@ fn parameter_dependent_numeric_law_builds_without_constant_residual() {
     assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
 }
 #[test]
+fn parameter_family_build_compares_identical_patterns() {
+    let dir = files("parameter-identical-patterns", "law required zero(c:Part,n:Z):n=0;", false);
+    let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
+        .replace(r#",{"id":"q","type":"Build.Part","origin":"model"}"#, "")
+        .replace(r#",{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}"#, "")
+        .replace(r#",{"id":"xq","subject":"q","field":"Build.Part.quantity","value":"1","origin":"model"}"#, "");
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/p)"]);
+    let result = saved(&dir, &run, "complete", 1);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+}
+#[test]
 fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
     for ty in ["Z", "Q"] {
         let dir = files(&format!("parameter-circuit-{ty}"), &format!(
@@ -322,6 +336,21 @@ fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
         assert!(arr(get(ring, "variables")).is_empty());
         assert_eq!(s(get(value(&result, get(ring, "base")), "scalar")), ty);
         let ideal = value(&result, get(presentation, "required_ideal"));
+        assert!(!has(ideal, "parameters"));
+        for coordinate in arr(get(presentation, "coordinates")) {
+            for key in ["nu", "epsilon"] {
+                let polynomial = value(&result, get(coordinate, key));
+                assert_eq!(arr(get(polynomial, "parameters")).len(), 2);
+                for term in arr(get(polynomial, "terms")) {
+                    let coefficient = node(&result, get(term, "coefficient"));
+                    assert_eq!(s(get(coefficient, "type")), "Expression");
+                    assert_eq!(get(get(coefficient, "value"), "parameters").value, get(polynomial, "parameters").value);
+                }
+            }
+        }
+        for witness in arr(get(presentation, "witness_ideals")) {
+            assert_eq!(arr(get(value(&result, witness), "parameters")).len(), 2);
+        }
         let coefficients = arr(get(ideal, "generators")).iter().flat_map(|r| arr(get(value(&result, r), "terms")))
             .map(|term| value(&result, get(term, "coefficient"))).collect::<Vec<_>>();
         assert!(!coefficients.is_empty());
@@ -347,7 +376,23 @@ fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
         let reused = cli::run(&dir, &args);
         assert_eq!(reused.code, 1, "{}", reused.stdout);
         let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
         for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        let original = std::fs::read_to_string(dir.join(s(get(&run.receipt, "result")))).unwrap();
+        let prefix = format!("\"type\":\"Polynomial\",\"value\":{{\"parameters\":[{{\"name\":\"n\",\"type\":\"{ty}\"}},{{\"name\":\"m\",\"type\":\"{ty}\"}}],");
+        let tampered = original.replacen(&prefix, "\"type\":\"Polynomial\",\"value\":{", 1);
+        assert_ne!(tampered, original);
+        std::fs::create_dir(dir.join("tampered")).unwrap();
+        std::fs::write(dir.join("tampered/result.json"), tampered).unwrap();
+        let out_at = args.iter().position(|s| *s == "--out").unwrap() + 1;
+        let reuse_at = args.iter().position(|s| *s == "--reuse").unwrap() + 1;
+        args[out_at] = "rejected";
+        args[reuse_at] = "tampered";
+        let rejected = cli::run(&dir, &args);
+        assert_eq!(rejected.code, 1, "{}", rejected.stdout);
+        let checked = result_json(&dir, &rejected);
+        assert!(!warnings(&checked).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&checked, field).value, get(&result, field).value); }
     }
 }
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {

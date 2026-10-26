@@ -126,9 +126,13 @@ pub(super) fn closed(
             .position(|r| *r == coordinate.index)
             .ok_or("circuitの元Law添字がない")?;
         let mut cases = vec![];
-        let parameters = if matches!(&coordinate.source, Source::Polynomial(q) if q.row.is_none()) {
-            diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
-                .ok_or("circuitの元parameter宣言がない")?.parameters.clone()
+        let parameters = if let Source::Polynomial(q) = &coordinate.source && q.row.is_none() {
+            let parameters = &diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
+                .ok_or("circuitの元parameter宣言がない")?.parameters;
+            if let Some(reference) = q.nu
+                && let Some(Payload::Construction(value)) = &g.get(reference)?.payload
+                && let D::PolynomialLaw(data) = &value.data
+                && data.parameter_family(parameters) { parameters.clone() } else { vec![] }
         } else { vec![] };
         for (object, row) in layout.data.objects.iter().enumerate() {
             tick(c)?;
@@ -175,12 +179,15 @@ pub(super) fn closed(
             let Some(epsilon) = current.value(Reading::Epsilon) else {
                 return Ok(None);
             };
-            let when = constant_nonzero(g, epsilon, &ty, c)?;
-            if when.is_none() {
+            let when = if !parameters.is_empty() {
                 let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
                 let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
-                if parameters.is_empty() || !data.parameter_family(&parameters) { return Ok(None); }
-            }
+                if !data.parameter_family(&parameters) { return Ok(None); }
+                None
+            } else {
+                let Some(value) = constant_nonzero(g, epsilon, &ty, c)? else { return Ok(None) };
+                Some(value)
+            };
             let pattern = patterns
                 .rows
                 .get(object)

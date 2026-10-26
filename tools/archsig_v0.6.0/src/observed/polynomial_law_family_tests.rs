@@ -75,15 +75,44 @@ fn data(g: &Graph, r: NodeRef) -> &Data {
     d
 }
 fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
-    let Part::Polynomial { terms, .. } = data(g, r).part() else {
+    let Part::Polynomial { terms, parameters, .. } = data(g, r).part() else {
         panic!("polynomial")
     };
+    assert!(parameters.is_empty());
+    let Json::Obj(ref wire) = data(g, r).wire() else { panic!() };
+    assert!(!wire.contains_key("parameters"));
     terms
         .iter()
         .map(|(coefficient, powers)| (g.scalar(*coefficient).unwrap().wire(), powers.clone()))
         .collect()
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
+#[test]
+fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z):n=0;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let nu = ds[0].coordinates[0].nu.unwrap();
+    let d = data(&g, nu);
+    assert!(d.polynomial().is_none());
+    let (ring, family) = d.parameter_difference(&mut quiet()).unwrap().unwrap();
+    assert_eq!(Some(ring), ds[0].coordinates[0].ring);
+    assert_eq!(family.parameters.len(), 1);
+    let original = d.source.clone();
+    for change in 0..4 {
+        let mut source = original.as_ref().clone();
+        let Part::Polynomial { parameters, terms, .. } = &mut source.parts[d.index] else { panic!() };
+        match change {
+            0 => parameters.clear(),
+            1 => parameters[0].1 = Type::Q,
+            2 => parameters[0].0 = "other".into(),
+            3 => terms[0].1.push(1),
+            _ => unreachable!(),
+        }
+        assert!(source.recheck(&p.inputs, &original.architecture, &mut quiet()).is_err());
+    }
+    original.recheck(&p.inputs, &original.architecture, &mut quiet()).unwrap();
+}
 #[test]
 fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
     let p = prepared(false, false, BODY, "root");
@@ -139,11 +168,13 @@ fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
             ring,
             generators,
             required,
+            parameters,
         } = data(&g, d.required[0]).part()
         else {
             panic!("required")
         };
         assert!(*required);
+        assert!(parameters.is_empty());
         assert_eq!(*ring, d.rings[0]);
         assert_eq!(
             *generators,

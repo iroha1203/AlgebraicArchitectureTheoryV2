@@ -144,6 +144,7 @@ pub(super) fn plans(
                     base,
                     Part::Polynomial {
                         ring: *ring,
+                        parameters: original.parameters.clone(),
                         terms: vec![(difference, vec![])],
                     },
                     c,
@@ -165,6 +166,7 @@ pub(super) fn plans(
                 base,
                 Part::Ideal {
                     ring: *ring,
+                    parameters: if source.difference.parameters.is_empty() { vec![] } else { original.parameters.clone() },
                     generators: vec![nu],
                     required: false,
                 },
@@ -257,6 +259,7 @@ pub(super) fn plans(
                 base,
                 Part::Ideal {
                     ring: *ring,
+                    parameters: vec![],
                     generators,
                     required: true,
                 },

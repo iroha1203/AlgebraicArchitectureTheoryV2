@@ -50,6 +50,14 @@ fn binding_values(bindings: &[Binding]) -> Json {
 fn indices(values: &[usize]) -> Json {
     Json::Arr(values.iter().map(|n| Json::Nat(*n as u64)).collect())
 }
+fn with_parameters(mut value: Json, parameters: &[(String, Type)]) -> Json {
+    if !parameters.is_empty() && let Json::Obj(fields) = &mut value {
+        fields.insert("parameters".into(), Json::Arr(parameters.iter().map(|(name, ty)| {
+            Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+        }).collect()));
+    }
+    value
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Variable {
     field: Fact,
@@ -170,10 +178,12 @@ enum Part {
     },
     Polynomial {
         ring: NodeRef,
+        parameters: Vec<(String, Type)>,
         terms: Vec<(NodeRef, Vec<usize>)>,
     },
     Ideal {
         ring: NodeRef,
+        parameters: Vec<(String, Type)>,
         generators: Vec<NodeRef>,
         required: bool,
     },
@@ -241,7 +251,7 @@ impl Part {
 
             Self::Domain { ring, .. } => vec![*ring],
             Self::Ring { base, .. } => vec![*base],
-            Self::Polynomial { ring, terms } => std::iter::once(*ring)
+            Self::Polynomial { ring, terms, .. } => std::iter::once(*ring)
                 .chain(terms.iter().map(|t| t.0))
                 .collect(),
             Self::Ideal {
@@ -384,7 +394,7 @@ impl Part {
                     Json::Arr(variables.iter().map(Variable::wire).collect()),
                 ),
             ]),
-            Self::Polynomial { ring, terms } => Json::obj([
+            Self::Polynomial { ring, terms, parameters } => with_parameters(Json::obj([
                 ("ring", ring.wire()),
                 (
                     "terms",
@@ -400,19 +410,20 @@ impl Part {
                             .collect(),
                     ),
                 ),
-            ]),
+            ]), parameters),
             Self::Ideal {
                 ring,
                 generators,
                 required,
-            } => Json::obj([
+                parameters,
+            } => with_parameters(Json::obj([
                 ("ring", ring.wire()),
                 ("generators", refs(generators)),
                 (
                     "kind",
                     Json::str(if *required { "obstruction" } else { "witness" }),
                 ),
-            ]),
+            ]), parameters),
             Self::Evaluation {
                 source,
                 target,
@@ -503,8 +514,29 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn parameter_difference(&self, c: &mut Control) -> Result<Option<(NodeRef, super::object_equation_presentation::PolynomialFamily)>, ValidationFailure> {
+        let Part::Polynomial { ring, parameters, .. } = self.part() else { return Ok(None) };
+        if parameters.is_empty() { return Ok(None); }
+        let reference = NodeRef(self.source.base + self.index);
+        let diagrams = std::iter::once(&self.source.outputs).chain(self.source.owned_outputs.iter().flatten());
+        for diagram in diagrams {
+            for coordinate in &diagram.coordinates {
+                tick(c)?;
+                if coordinate.nu != Some(reference) { continue; }
+                let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance).ok_or("数値族の元出現がない")?;
+                if !self.parameter_family(&original.parameters) { return Ok(None); }
+                let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
+                let source = super::object_equation_presentation::parameter_source_difference(&self.source.inputs, instance, c)
+                    .map_err(|e| construction_failure(&e))?.ok_or("数値族の原式差がない")?;
+                if !source.ring.symbols.is_empty() || source.difference.parameters.is_empty() { return Err("数値族の原式の域が違う".into()); }
+                return Ok(Some((*ring, source.difference)));
+            }
+        }
+        Ok(None)
+    }
     pub(super) fn parameter_family(&self, expected: &[(String, Type)]) -> bool {
-        let Part::Polynomial { terms, .. } = self.part() else { return false };
+        let Part::Polynomial { terms, parameters, .. } = self.part() else { return false };
+        if parameters != expected || parameters.is_empty() { return false; }
         let [(coefficient, powers)] = terms.as_slice() else { return false };
         if powers.iter().any(|n| *n != 0) { return false; }
         let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
@@ -512,7 +544,7 @@ impl Data {
     }
     pub(super) fn polynomial(&self) -> Option<(NodeRef, &[(NodeRef, Vec<usize>)])> {
         match self.source.parts.get(self.index) {
-            Some(Part::Polynomial { ring, terms }) => Some((*ring, terms)),
+            Some(Part::Polynomial { ring, terms, parameters }) if parameters.is_empty() => Some((*ring, terms)),
             _ => None,
         }
     }
@@ -775,6 +807,7 @@ fn polynomial(
         base,
         Part::Polynomial {
             ring,
+            parameters: vec![],
             terms: values,
         },
         c,
@@ -940,6 +973,7 @@ fn object_plan(
                     base,
                     Part::Ideal {
                         ring,
+                        parameters: vec![],
                         generators: vec![nu],
                         required: false,
                     },
@@ -976,6 +1010,7 @@ fn object_plan(
             base,
             Part::Ideal {
                 ring: r,
+                parameters: vec![],
                 generators,
                 required: true,
             },

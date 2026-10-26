@@ -529,10 +529,10 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 | LocalSystem | `{base:Architecture,laws:LawInstance[],change?:QName,contexts:Context[],maps:ContextMap[],cover:Cover,topology:Topology,semantic_states:{context:Context,parameters:SolutionSet,state_image:Domain,action:StateMap}[],equation_states:{context:Context,space:EquationSpace,solutions:EquationSolutionSet}[],restrictions:{side:Side,arrow:ContextMap,map:StateMap}[],coefficients:{side:Side,context:Context,module:Ref}[],coefficient_restrictions:{side:Side,arrow:ContextMap,map:Ref}[],actions:Action[],state_comparisons:{context:Context,map:StateMap,conditions:Proposition[]}[],sheaf_checks:{scope:"cover"\|"topology",side:Side,proposition:Proposition}[],presentations:EquationPresentation[],polynomial_inclusions:{along:ContextMap,map:RingMap}[],residual_restrictions:{along:ContextMap,state_projection:StateMap,residual_projection:StateMap,commutes:Proposition}[],conditions:Proposition[]}` |
 | EquationPresentation | `{instances:LawInstance[],domain:Domain,ring:Ring,coordinates:{instance:LawInstance,component:Nat[],lhs:Expression,rhs:Expression,nu:Ref,epsilon?:Ref}[],witness_ideals:Ideal[],required_ideal:Ideal,evaluation?:RingMap,context:Context}` |
 | Ring | `{kind:"scalar",scalar:"Z"\|"Q"\|["Fp",String]}` / `{kind:"polynomial",base:Ring,variables:{position:Position,type:P}[]}` / `{kind:"finite_functions",domain:Domain}` |
-| Polynomial | `{ring:Ring,terms:{coefficient:Ref,powers:Nat[]}[]}` |
+| Polynomial | `{ring:Ring,parameters?:Parameter[],terms:{coefficient:Ref,powers:Nat[]}[]}` |
 | FiniteFunction | `{ring:Ring,values:Ref[]}` |
 | RingMap | `{kind:"polynomial",source:Ring,target:Ring,images:Polynomial[]}` / `{kind:"finite_functions",source:Ring,target:Ring,basis_images:Ref[]}` / `{kind:"identity",source:Ring,target:Ring}` |
-| Ideal | `{ring:Ring,generators:Ref[],kind:"witness"\|"obstruction"}` |
+| Ideal | `{ring:Ring,parameters?:Parameter[],generators:Ref[],kind:"witness"\|"obstruction"}` |
 
 Domain.elements、Context.dependencies/carrier、Cover.patches/overlaps等は意味上の集合表。
 有限StateMapのpairsはsourceの全元を一回ずつ含み、像はtargetに属する。
@@ -578,14 +578,32 @@ changeの自由parameterそのものを方程式の自由な状態位置と取�
 εは対象における評価を同じringへ定数として戻したPolynomialまたはFiniteFunction。
 欠測ならepsilon/evaluationを省略し理由を残す。
 各Polynomialは零係数を除き、同じpowersをまとめ、powersの辞書順に並べる。零多項式は空terms。
-各powersの長さはring.variables数、coefficientはbaseのscalar型。RingMap.imagesはsourceの
-各変数のtarget上の像をsourceの変数順に並べ、同じscalar baseを保つ。
+各powersの長さはring.variables数。parametersを持たないPolynomialのcoefficientはbaseのscalar型。
+RingMap.imagesはparametersを持たないPolynomialで、sourceの各変数のtarget上の像を
+sourceの変数順に並べ、同じscalar baseを保つ。
+Z/Q係数環で未束縛のZ/Q引数が残るPolynomialは、非空のparametersを宣言順に持つ引数付き族とする。
+名前は一意で、各引数域は宣言型の全域。ringの変数へ引数を追加せず、各代入で同じringの元を返す。
+この族のcoefficientだけは、baseのscalar値または同じparametersを持つscalar型のExpressionを参照できる。
+Expressionは元の束縛を保持し、全引数代入で定義された値を返す。観測位置は共有ringの変数として保持し、
+引数や観測値へ取り違えない。代入後に係数を評価し、零項を除き、同冪を集約する。
+代入前の零項除去は全引数で恒零と確認された項だけに行う。εの族は各代入で定数多項式になる。
+引数に依存しないと確認できた族はparametersを省略した通常のPolynomialで表せる。
+Scopeの全域量化だけを根拠に、通常のPolynomialのcoefficientへExpressionを入れてはならない。
 scalar ring上のPolynomialはpowers=[]の定数、RingMap.images=[]である。
 finite_functionsのdomainは有限の全共有代入域D、各FiniteFunction.valuesはDのcanonical順のZ値。
 νは各代入でguardが成立し左右が異なることの指示値0/1、εは実対象代入のZ値を全Dへ戻した定数関数。
 元のZ評価値はEvaluation.partsへ保持する。basis_imagesはDの各特性関数の像で、
 環準同型の単位・積・和の保存を検査する。有限関数環の対象評価のtargetはscalar Z。
 Ideal.generatorsは同じringのPolynomialまたはFiniteFunctionであり、異なる表示を混在させない。
+Idealの非空parametersは同じ引数域上のideal族を表す。各生成元は通常の多項式か、
+同じparametersを持つ多項式族とし、同じ引数を一斉に代入してidealを生成する。
+引数欄のないIdealへ多項式族を直接入れない。witness idealは各引数におけるνの生成idealであり、
+全引数を走るrequired idealとは区別する。後者を通常のIdealで保存する場合は、全引数の生成元が
+生成するidealと等しい有限生成元を計算する。アフィン族では定数項と各独立引数の係数が生成元となる。
+EquationPresentationの各座標とwitness idealは元Lawの引数に対応し、異なる族の引数を暗黙に結合しない。
+読取り処理はparametersの有無を判定してから係数・生成元を消費する。従来のparameterなしの
+payloadは変更しない。引数付き族に未対応の読取り処理は、それを通常の多項式として読まず拒否する。
+保存再利用は入力から族と全域の対応を再構成して照合し、有限標本の一致で代用しない。
 EquationPresentationのcontextは全支持の基底で、そのAAT接続の制限は恒等だけとする。
 局所の状態制限W→Vと残差射影の可換性はresidual_restrictionsに保持する。
 支持型の局所多項式表示ではContextMap V→Wに対してK[X_V]→K[X_W]の環包含を

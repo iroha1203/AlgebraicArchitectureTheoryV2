@@ -48,7 +48,7 @@ fn universal_numeric_build_laws_preserve_parameter_functions() {
             let table = plan.laws.as_ref().unwrap();
             let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet()).unwrap().unwrap();
             assert_eq!(circuits.len(), 1);
-            assert_eq!(circuits[0].parameters.len(), 1);
+            assert_eq!(circuits[0].parameters.len(), if body == "n=0" { 1 } else { 0 });
             assert!(!circuits[0].cases.is_empty());
             for case in &circuits[0].cases {
                 assert_eq!(case.when, if body == "n=0" { None } else { Some(!truth) });
