@@ -298,6 +298,27 @@ impl Compiler<'_> {
                 }
                 ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
                 ExprKind::Unit if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Unit)),
+                ExprKind::SetLit { items, .. } if path.is_empty() => {
+                    let Some(Type::Set(element)) = self.inputs.law().expr_type(id) else {
+                        return Err(bad("原式のSet型がない"));
+                    };
+                    let mut values = Vec::new();
+                    for item in items {
+                        let Some(binding) = self.expression(*item, &[], c)? else {
+                            return Ok(None);
+                        };
+                        let Some(value) = binding.finite_scalar(c)? else {
+                            return Ok(None);
+                        };
+                        if value.ty() != **element {
+                            return Ok(None);
+                        }
+                        values.push(value);
+                    }
+                    Some(Binding::FiniteScalar(
+                        super::super::data::set((**element).clone(), &values, c).map_err(invalid)?,
+                    ))
+                }
                 ExprKind::None(_) | ExprKind::Some(_) if path.is_empty() => {
                     let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else {
                         return Err(bad("原式のOption型がない"));

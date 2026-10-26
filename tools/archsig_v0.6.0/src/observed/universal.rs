@@ -188,7 +188,7 @@ impl Environment<'_> {
                 }
                 if !matches!(
                     parameter.ty,
-                    Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_)
+                    Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) | Type::Set(_)
                 ) || !crate::observed::finite::completion_supported(
                     &parameter.ty,
                     self.inputs.law(),

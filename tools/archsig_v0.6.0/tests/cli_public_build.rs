@@ -9,6 +9,78 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn finite_set_guards_preserve_known_numeric_products() {
+    for ty in ["Z", "Q"] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let body = format!(
+            "law required zero(c:Part,n:{ty},b:Set<Bool>) when b=set<Bool>{{false,true}}:n*c.quantity=0;"
+        );
+        let dir = files_with_definition("finite-set-known", &body, false, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+                .replace(r#""value":"1""#, r#""value":["1","2"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = [
+            "a=build(R,on=@v/root)",
+            "p=check(R.zero,on=$a.object,c=@v/p)",
+            "q=check(R.zero,on=$a.object,c=@v/q)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in requests {
+            args.extend(["--ask", request]);
+        }
+        let before =
+            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+        }
+        assert!(!has(&normal.receipt, "nodes"));
+        assert!(!has(&normal.receipt, "result"));
+        assert_eq!(
+            s(get(answer(&normal.receipt, "p"), "status")),
+            "established"
+        );
+        assert_eq!(s(get(answer(&normal.receipt, "q"), "status")), "refuted");
+        eprintln!("finite set {ty}: stdout {} bytes", normal.stdout.len());
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "complete", 1);
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{}", reused.stdout);
+        assert!(reused.stderr.is_empty());
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&again, field).value);
+        }
+    }
+}
+#[test]
+fn finite_set_numeric_products_keep_missing_and_applicability() {
+    finite_missing_product(
+        "set",
+        "Set<Bool>",
+        "set<Bool>{}",
+        "set<Bool>{true,false,true}",
+        "b=set<Bool>{false,true}",
+    );
+}
+#[test]
 fn finite_data_guards_keep_numeric_products() {
     for ty in ["Z", "Q"] {
         for missing in [false, true] {
