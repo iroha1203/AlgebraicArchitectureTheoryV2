@@ -5,6 +5,49 @@ use crate::observed::object_equation_presentation::{
     ParameterEquation, parameter_source_difference,
 };
 
+// 一方のoperandが引数だけ、他方が定数項のない観測多項式なら、
+// 元operandをそのまま係数式にできる。観測値を係数へ埋め込まない。
+fn separated_parameter_side(source: &ParameterEquation) -> Option<bool> {
+    let pure = |p: &super::super::object_equation_presentation::PolynomialFamily| {
+        p.constant.terms.iter().all(|t| t.variables.is_empty())
+    };
+    let field = |p: &super::super::object_equation_presentation::PolynomialFamily| {
+        p.parameters.is_empty() && p.constant.terms.iter().all(|t| !t.variables.is_empty())
+    };
+    if pure(&source.left) && field(&source.right) {
+        Some(true)
+    } else if field(&source.left) && pure(&source.right) {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+fn difference(
+    parts: &mut Vec<Part>,
+    base: usize,
+    original: &Original,
+    ty: &Type,
+    lhs: NodeRef,
+    rhs: NodeRef,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    push(
+        parts,
+        base,
+        Part::Transform {
+            quantifiers: original.quantifiers.clone(),
+            operation: Transform::Difference,
+            parameters: original.parameters.clone(),
+            ty: ty.clone(),
+            operands: vec![lhs, rhs],
+            bindings: vec![],
+            position: None,
+        },
+        c,
+    )
+}
+
 pub(super) fn sources(
     inputs: &CheckedInputs,
     a: &ArchitectureWitness,
@@ -29,9 +72,15 @@ pub(super) fn sources(
         else {
             return Ok(None);
         };
-        // この経路の係数は元数値引数だけに依存する。観測slotは別の多項式経路で扱う。
         if !source.ring.symbols.is_empty() {
-            return Ok(None);
+            if source.ring.symbols.iter().any(|s| s.value.is_none()) {
+                return Ok(None);
+            }
+            if !source.difference.parameters.is_empty()
+                && separated_parameter_side(&source).is_none()
+            {
+                return Ok(None);
+            }
         }
         if instance.applications().iter().any(|a| match a {
             InstanceApplication::NotApplicable => false,
@@ -55,43 +104,24 @@ pub(super) fn plans(
     c: &mut Control,
 ) -> Result<Vec<Diagram>, ValidationFailure> {
     use super::super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
-    let mut bases = vec![];
-    for (_, source) in equations {
-        let ty = &source.ring.ty;
-        if bases.iter().any(|(t, _, _, _, _)| t == ty) {
-            continue;
-        }
-        let scalar = push(parts, base, Part::Base(ty.clone()), c)?;
-        let ring = push(
-            parts,
-            base,
-            Part::Ring {
-                base: scalar,
-                variables: vec![],
-            },
-            c,
-        )?;
-        let domain = push(
-            parts,
-            base,
-            Part::Domain {
-                ring,
-                ty: Type::Unit,
-            },
-            c,
-        )?;
-        let evaluation = push(
-            parts,
-            base,
-            Part::Evaluation {
-                source: ring,
-                target: scalar,
-                images: vec![],
-            },
-            c,
-        )?;
-        bases.push((ty.clone(), scalar, ring, domain, evaluation));
-    }
+    let shared = family::basis_from_rings(
+        equations.iter().map(|(_, source)| &source.ring),
+        parts,
+        base,
+        c,
+    )?;
+    let bases: Vec<_> = shared
+        .iter()
+        .map(|b| {
+            Ok((
+                b.ty.clone(),
+                b.scalar,
+                b.ring,
+                b.domain,
+                b.evaluation.ok_or("数値族の共有観測代入がない")?,
+            ))
+        })
+        .collect::<Result<_, ValidationFailure>>()?;
     let mut result = vec![];
     for object in 0..a.readings().objects().len() {
         tick(c)?;
@@ -121,7 +151,7 @@ pub(super) fn plans(
                 .iter()
                 .find(|b| b.0 == ty)
                 .ok_or("数値族の共有環がない")?;
-            let difference = push(
+            let expression = push(
                 parts,
                 base,
                 Part::Transform {
@@ -135,8 +165,76 @@ pub(super) fn plans(
                 },
                 c,
             )?;
+            let variables = shared
+                .iter()
+                .find(|b| b.ring == *ring)
+                .ok_or("数値族の共有環がない")?
+                .variables
+                .len();
             let nu = if source.difference.parameters.is_empty() {
-                polynomial(parts, base, &source.difference.constant, *ring, &ty, 0, c)?
+                family::polynomial(
+                    parts,
+                    base,
+                    &source.difference.constant,
+                    *ring,
+                    &ty,
+                    &source.ring,
+                    Some(&shared),
+                    c,
+                )?
+            } else if !source.ring.symbols.is_empty() {
+                let left =
+                    separated_parameter_side(source).ok_or("数値族の係数式が分離できない")?;
+                let operand = if left { lhs } else { rhs };
+                let zero = difference(parts, base, original, &ty, operand, operand, c)?;
+                let coefficient = difference(
+                    parts,
+                    base,
+                    original,
+                    &ty,
+                    if left { operand } else { zero },
+                    if left { zero } else { operand },
+                    c,
+                )?;
+                let field = if left {
+                    EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
+                        .and_then(|zero| {
+                            zero.binary(crate::law::ast::BinOp::Sub, &source.right.constant, c)
+                        })
+                        .map_err(|e| construction_failure(&e))?
+                } else {
+                    source.left.constant.clone()
+                };
+                let reference = family::polynomial(
+                    parts,
+                    base,
+                    &field,
+                    *ring,
+                    &ty,
+                    &source.ring,
+                    Some(&shared),
+                    c,
+                )?;
+                let Part::Polynomial { terms, .. } = &parts[reference.0 - base] else {
+                    return Err("数値族の観測項が多項式でない".into());
+                };
+                let mut terms = terms.clone();
+                if reference.0 != base + parts.len() - 1 {
+                    return Err("数値族の観測項が末尾にない".into());
+                }
+                parts.pop();
+                terms.push((coefficient, vec![0; variables]));
+                terms.sort_by(|a, b| a.1.cmp(&b.1));
+                push(
+                    parts,
+                    base,
+                    Part::Polynomial {
+                        ring: *ring,
+                        parameters: original.parameters.clone(),
+                        terms,
+                    },
+                    c,
+                )?
             } else {
                 push(
                     parts,
@@ -144,7 +242,7 @@ pub(super) fn plans(
                     Part::Polynomial {
                         ring: *ring,
                         parameters: original.parameters.clone(),
-                        terms: vec![(difference, vec![])],
+                        terms: vec![(expression, vec![0; variables])],
                     },
                     c,
                 )?
@@ -153,19 +251,55 @@ pub(super) fn plans(
                 a.readings().instances()[*instance].applications()[object],
                 InstanceApplication::NotApplicable
             );
+            let epsilon = if outside {
+                None
+            } else if source.ring.symbols.is_empty() {
+                Some(nu)
+            } else if source.difference.parameters.is_empty() {
+                let values = source
+                    .ring
+                    .symbols
+                    .iter()
+                    .map(|s| s.value.clone())
+                    .collect::<Vec<_>>();
+                let value = source
+                    .difference
+                    .constant
+                    .evaluate(&values, c)
+                    .map_err(|e| construction_failure(&e))?
+                    .ok_or("数値族の実観測代入がない")?;
+                let p = EquationPolynomial::constant(value.scalar().clone(), c)
+                    .map_err(|e| construction_failure(&e))?;
+                Some(polynomial(parts, base, &p, *ring, &ty, variables, c)?)
+            } else {
+                Some(push(
+                    parts,
+                    base,
+                    Part::Polynomial {
+                        ring: *ring,
+                        parameters: original.parameters.clone(),
+                        terms: vec![(expression, vec![0; variables])],
+                    },
+                    c,
+                )?)
+            };
             let residual = if outside {
                 let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                     .map_err(|e| construction_failure(&e))?;
-                polynomial(parts, base, &zero, *ring, &ty, 0, c)?
+                polynomial(parts, base, &zero, *ring, &ty, variables, c)?
             } else {
-                nu
+                epsilon.ok_or("適用された数値族の実差がない")?
             };
             let witness = push(
                 parts,
                 base,
                 Part::Ideal {
                     ring: *ring,
-                    parameters: if source.difference.parameters.is_empty() { vec![] } else { original.parameters.clone() },
+                    parameters: if source.difference.parameters.is_empty() {
+                        vec![]
+                    } else {
+                        original.parameters.clone()
+                    },
                     generators: vec![nu],
                     required: false,
                 },
@@ -196,7 +330,7 @@ pub(super) fn plans(
                 left: None,
                 right: None,
                 nu: Some(nu),
-                epsilon: (!outside).then_some(nu),
+                epsilon,
                 residual: Some(residual),
                 witness: Some(witness),
                 guard: if outside {
@@ -211,18 +345,35 @@ pub(super) fn plans(
                 },
             });
         }
-        let quantifiers = out
-            .originals
+        let mut quantifiers = vec![];
+        for original in &out.originals {
+            for quantifier in &original.quantifiers {
+                tick(c)?;
+                if !quantifiers.contains(quantifier) {
+                    quantifiers.push(quantifier.clone());
+                }
+            }
+        }
+        let mut positions = shared
             .iter()
-            .flat_map(|o| o.quantifiers.iter().cloned())
+            .flat_map(|b| b.variables.iter().map(|v| v.field.clone()))
             .collect::<Vec<_>>();
+        positions.sort();
+        positions.dedup();
+        let dependencies = common::dependencies(inputs, &positions, c, |value| {
+            let at = base
+                .checked_add(parts.len())
+                .ok_or("数値族Contextの生成番号が範囲外")?;
+            parts.push(Part::Scalar(value));
+            Ok(NodeRef(at))
+        })?;
         let context = push(
             parts,
             base,
             Part::Equation(E::Context {
                 base: reference,
                 carrier: common::carrier(a, c)?,
-                dependencies: vec![],
+                dependencies: dependencies.slots,
                 laws: out.originals.iter().map(|o| o.reference).collect(),
                 quantifiers: quantifiers.clone(),
             }),
@@ -237,21 +388,39 @@ pub(super) fn plans(
                 let source = &equations[q.occurrence].1;
                 // 全引数の値で生成されるidealは、定数項と各独立軸の係数で生成される。
                 if !source.difference.constant.terms.is_empty()
-                    && !polynomials.contains(&source.difference.constant)
+                    && !polynomials.iter().any(
+                        |(p, r): &(
+                            EquationPolynomial,
+                            &super::super::object_equation_presentation::EquationRing,
+                        )| {
+                            p == &source.difference.constant && *r == &source.ring
+                        },
+                    )
                 {
-                    polynomials.push(source.difference.constant.clone());
+                    polynomials.push((source.difference.constant.clone(), &source.ring));
                 }
                 for (_, coefficient) in &source.difference.parameters {
                     let p = EquationPolynomial::constant(coefficient.clone(), c)
                         .map_err(|e| construction_failure(&e))?;
-                    if !p.terms.is_empty() && !polynomials.contains(&p) {
-                        polynomials.push(p);
+                    if !p.terms.is_empty()
+                        && !polynomials.iter().any(|(previous, _)| previous == &p)
+                    {
+                        polynomials.push((p, &source.ring));
                     }
                 }
             }
             let mut generators = vec![];
-            for p in &polynomials {
-                generators.push(polynomial(parts, base, p, *ring, ty, 0, c)?);
+            for (p, original) in &polynomials {
+                generators.push(family::polynomial(
+                    parts,
+                    base,
+                    p,
+                    *ring,
+                    ty,
+                    original,
+                    Some(&shared),
+                    c,
+                )?);
             }
             let required = push(
                 parts,

@@ -112,6 +112,7 @@ fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
         assert!(source.recheck(&p.inputs, &original.architecture, &mut quiet()).is_err());
     }
     original.recheck(&p.inputs, &original.architecture, &mut quiet()).unwrap();
+    replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
 fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
@@ -460,7 +461,7 @@ fn empty_shared_polynomial_family_preserves_base_and_owned_objects_without_rings
 }
 
 #[test]
-fn finite_parameter_rows_and_symbolic_unimplemented_parameters_are_preserved() {
+fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
     let p = prepared(
         false,
         false,
@@ -515,9 +516,20 @@ fn finite_parameter_rows_and_symbolic_unimplemented_parameters_are_preserved() {
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     for d in &ds {
-        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
-        assert_eq!(d.status, EquationPresentationStatus::Undetermined);
-        assert!(d.rings.is_empty() && d.coordinates.is_empty() && d.evaluations.is_empty());
+        assert!(d.unavailable.is_none());
+        assert_eq!(d.status, EquationPresentationStatus::Ready);
+        assert_eq!(d.rings, ds[0].rings);
+        assert_eq!(d.coordinates.len(), 2);
+        assert!(d.evaluations.iter().all(Option::is_some));
+        for q in &d.coordinates {
+            assert!(data(&g, q.nu.unwrap()).parameter_family(&[("k".into(), Type::Z)]));
+            if q.guard == EquationGuard::OutsideObject {
+                assert!(q.epsilon.is_none());
+                assert!(terms(&g, q.residual.unwrap()).is_empty());
+            } else {
+                assert!(data(&g, q.epsilon.unwrap()).parameter_difference(&mut quiet()).unwrap().is_some());
+            }
+        }
         assert!(
             d.originals
                 .iter()

@@ -33,31 +33,44 @@ fn basis(
     base: usize,
     c: &mut Control,
 ) -> Result<Vec<Basis>, ValidationFailure> {
+    basis_from_rings(
+        cores
+            .iter()
+            .flat_map(|(core, _)| core.iter().flat_map(|c| c.rings())),
+        parts,
+        base,
+        c,
+    )
+}
+pub(super) fn basis_from_rings<'a>(
+    rings: impl IntoIterator<Item = &'a EquationRing>,
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
+) -> Result<Vec<Basis>, ValidationFailure> {
     let mut groups: Vec<(Type, Vec<(Variable, Option<NumericTransportValue>)>)> = vec![];
-    for (core, _) in cores {
-        for ring in core.iter().flat_map(|c| c.rings()) {
-            tick(c)?;
-            if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
-                return Err("共有多項式の係数型がscalarでない".into());
+    for ring in rings {
+        tick(c)?;
+        if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
+            return Err("共有多項式の係数型がscalarでない".into());
+        }
+        let at = match groups.iter().position(|g| g.0 == ring.ty) {
+            Some(at) => at,
+            None => {
+                groups.push((ring.ty.clone(), vec![]));
+                groups.len() - 1
             }
-            let at = match groups.iter().position(|g| g.0 == ring.ty) {
-                Some(at) => at,
-                None => {
-                    groups.push((ring.ty.clone(), vec![]));
-                    groups.len() - 1
+        };
+        let slots = &mut groups[at].1;
+        for symbol in &ring.symbols {
+            tick(c)?;
+            let v = variable(symbol, &ring.ty);
+            if let Some((_, previous)) = slots.iter().find(|(s, _)| s == &v) {
+                if previous != &symbol.value {
+                    return Err("共有原始slotの実観測値が対象で違う".into());
                 }
-            };
-            let slots = &mut groups[at].1;
-            for symbol in &ring.symbols {
-                tick(c)?;
-                let v = variable(symbol, &ring.ty);
-                if let Some((_, previous)) = slots.iter().find(|(s, _)| s == &v) {
-                    if previous != &symbol.value {
-                        return Err("共有原始slotの実観測値が対象で違う".into());
-                    }
-                } else {
-                    slots.push((v, symbol.value.clone()));
-                }
+            } else {
+                slots.push((v, symbol.value.clone()));
             }
         }
     }
@@ -179,12 +192,26 @@ impl Source {
         }
         if let Some(equations) = parameters::sources(&inputs, &a, c)? {
             let mut parts = vec![];
-            let mut outputs = parameters::plans(&inputs, &a, reference, &equations, &mut parts, base, c)?;
-            if outputs.is_empty() { return Err("数値族のbase対象がない".into()); }
+            let mut outputs =
+                parameters::plans(&inputs, &a, reference, &equations, &mut parts, base, c)?;
+            if outputs.is_empty() {
+                return Err("数値族のbase対象がない".into());
+            }
             let first = outputs.remove(0);
             let (support, scope) = metadata(&inputs, &a, None, c)?;
-            return Ok(Self { inputs, architecture: a, reference, object: 0, core: None, base, parts,
-                outputs: first, owned_outputs: Some(outputs), support, scope });
+            return Ok(Self {
+                inputs,
+                architecture: a,
+                reference,
+                object: 0,
+                core: None,
+                base,
+                parts,
+                outputs: first,
+                owned_outputs: Some(outputs),
+                support,
+                scope,
+            });
         }
         let mut cores = vec![];
         for object in 0..a.readings().objects().len() {
