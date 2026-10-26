@@ -46,15 +46,8 @@ pub(in crate::observed) fn parameter_source_difference(
     let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
     if !source_polynomial::guard_is_true(inputs, instance, c)? { return Ok(None); }
-    let mut cursor = *body;
-    let (left, right) = loop {
-        tick(c)?;
-        match inputs.law().exprs[cursor].kind {
-            ExprKind::Group(next) | ExprKind::Let { body: next, .. } => cursor = next,
-            ExprKind::Binary { op: BinOp::Eq, lhs, rhs } => break (lhs, rhs),
-            _ => return Ok(None),
-        }
-    };
+    let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? else { return Ok(None) };
+    let ExprKind::Binary { lhs: left, rhs: right, .. } = inputs.law().exprs[eq].kind else { return Ok(None) };
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
     let Some(source) = source_polynomial::family_operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };

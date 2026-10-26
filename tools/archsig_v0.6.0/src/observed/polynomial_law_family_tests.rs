@@ -160,8 +160,9 @@ fn parameter_polynomials_keep_free_observation_variables() {
     }
     for (body, parameter, observation, constant) in [("n=c.quantity+2", 1, -1, -2), ("c.quantity+2=n", -1, 1, 2),
         ("n+c.quantity=2", 1, 1, -2), ("n+c.quantity=2*n+1", -1, 1, -1),
-        ("2*(n+c.quantity)=2", 2, 2, -2), ("(n+c.quantity)*2=2", 2, 2, -2)] {
-        let p = prepared(false, false, &format!("law required equal(c:Part,n:Z):{body};"), "root");
+        ("2*(n+c.quantity)=2", 2, 2, -2), ("(n+c.quantity)*2=2", 2, 2, -2),
+        ("equalvalue(n+c.quantity)",1,1,-2), ("twice(n+c.quantity)",2,2,-2)] {
+        let p = prepared(false, false, &format!("view equalvalue(n:Z):Bool=n=2;view twice(n:Z):Bool=equalvalue(2*n);law required equal(c:Part,n:Z):{body};"), "root");
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
         for coordinate in &ds[0].coordinates {

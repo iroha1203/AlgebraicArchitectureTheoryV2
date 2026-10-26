@@ -34,6 +34,28 @@ fn invalid(f: ValidationFailure) -> ConstructionFailure {
         f => bad(&format!("数値Lawの元値: {f:?}")),
     }
 }
+pub(in crate::observed) fn predicate_call(inputs: &CheckedInputs, id: usize) -> Option<(&[crate::law::model::Param], usize, &[usize])> {
+    let ExprKind::Call { callee, args } = &inputs.law().exprs[id].kind else { return None };
+    let mut callee = *callee;
+    while let ExprKind::Group(child) = inputs.law().exprs[callee].kind { callee = child; }
+    let span = inputs.law().exprs[callee].span;
+    let target = inputs.law().infos.iter().find_map(|info| info.references.iter().find_map(|(at,name)| (*at == span).then_some(name)))?;
+    let Signature::View { params, body, .. } = &inputs.law().declarations.get(target)?.signature else { return None };
+    if params.len() != args.len() || params.iter().any(|p| matches!(p.ty, Type::Owned(..))) || inputs.law().expr_type(*body) != Some(&Type::Bool) { return None; }
+    Some((params, *body, args))
+}
+pub(in crate::observed) fn predicate_equation(inputs: &CheckedInputs, mut id: usize, c: &mut Control) -> Result<Option<usize>, ConstructionFailure> {
+    loop {
+        tick(c)?;
+        match &inputs.law().exprs[id].kind {
+            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => id = *child,
+            ExprKind::Call { .. } => { let Some((_, body, _)) = predicate_call(inputs,id) else { return Ok(None) }; id = body; }
+            ExprKind::Match { scrutinee, arms } => { let Some(body) = binding_match_body(inputs,*scrutinee,arms,c)? else { return Ok(None) }; id = body; }
+            ExprKind::Binary { op: BinOp::Eq, .. } => return Ok(Some(id)),
+            _ => return Ok(None),
+        }
+    }
+}
 /// 数値等式以外も、元bodyと型付き通常条件をbaseに保持する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum LawNumericShape {
