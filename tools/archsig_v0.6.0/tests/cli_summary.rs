@@ -263,6 +263,15 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     assert_eq!(full.code, 0, "{}", full.stdout);
     let result = result_json(&dir, &full);
     no_saved_proofs(&result);
+    let mut coordinates = std::collections::BTreeSet::new();
+    for node in arr(get(&result, "nodes")) {
+        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if matches!(t.as_str(), "Ring" | "Module")) {
+            let mut value = fixture::owned(node);
+            let Json::Obj(fields) = &mut value else { unreachable!() };
+            fields.remove("id");
+            assert!(coordinates.insert(value.canonical()), "同じ座標表示を重複保存しない");
+        }
+    }
     for internal in ["producer", "reuse", "usage", "limits"] {
         assert!(!has(&result, internal));
     }
