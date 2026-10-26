@@ -9,6 +9,21 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn right_boolean_constant_guards_preserve_numeric_products() {
+    for (name, guard) in [
+        ("right-or-true", "n=0 or true"),
+        ("right-implies-true", "n=0 implies true"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
+fn right_boolean_true_guard_keeps_missing_body_undetermined() {
+    active_products("right-boolean", &[("", " when n=0 or true")]);
+}
+#[test]
+fn right_boolean_false_guard_keeps_missing_read_undetermined() {
+    inactive_products("right-boolean", &["n=0 and false"]);
+}
+#[test]
 fn same_slot_guards_preserve_numeric_products() {
     for (name,guard) in [
         ("same-slot-option", "some(c.quantity)=some(c.quantity)"),

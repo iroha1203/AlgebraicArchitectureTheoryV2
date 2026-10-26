@@ -514,6 +514,17 @@ impl Compiler<'_> {
                         _ => (),
                     }
                     let right = self.expression(*rhs, &[], c)?;
+                    if matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
+                        let left = match &left { Some(value) => value.finite_scalar(c)?, None => None };
+                        let right = match &right { Some(value) => value.finite_scalar(c)?, None => None };
+                        return match super::super::environment::partial_binary(
+                            *op, left.as_ref(), right.as_ref(), self.inputs.law(), expression.span, c,
+                        ).map_err(invalid)? {
+                            Some(Scalar::Bool(value)) => Ok(Some(Binding::Boolean(value))),
+                            None => Ok(None),
+                            _ => Err(bad("論理演算の結果がBoolでない")),
+                        };
+                    }
                     if let (Some(left), Some(right)) = (&left, &right)
                         && let (Some(left), Some(right)) =
                             (left.finite_scalar(c)?, right.finite_scalar(c)?)

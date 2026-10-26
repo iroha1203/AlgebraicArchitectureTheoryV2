@@ -1439,6 +1439,10 @@ mod tests {
             ("c.quantity=c.quantity", Some(true)), ("c.quantity+1=c.quantity", Some(false)),
             ("c.quantity=2", None), ("active(n,m)",None), ("active(n,n)",Some(true)),
             ("active(c.quantity,c.quantity)",Some(true)), ("nested(n)",Some(true)),
+            ("n=0 and false", Some(false)), ("n=0 or true", Some(true)),
+            ("n=0 implies true", Some(true)), ("n=0 and true", None),
+            ("n=0 or false", None), ("n=0 implies false", None),
+            ("c.quantity=2 or true", Some(true)), ("c.quantity=2 and false", Some(false)),
         ] {
             let inputs = inputs_with(&format!("view active(x:Z,y:Z):Bool=x=y;view nested(x:Z):Bool=active(x,x);law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
             let mut c = Control::unlimited();
