@@ -1735,6 +1735,8 @@ impl Environment<'_> {
         sort_reasons(&mut reasons);
         if analysis.value.is_none()
             && !analysis.analysis.condition_pending
+            && !(reasons.iter().any(|r| matches!(r.kind, ReasonKind::Missing))
+                && self.universal_missing_parameter_equation(graph, &plan, bindings)?)
             && !reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))

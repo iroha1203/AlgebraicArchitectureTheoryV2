@@ -760,6 +760,8 @@ impl Evaluator<'_, '_> {
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
             && !analyzed.analysis.condition_pending
+            && !(reasons.iter().any(|r| matches!(r.kind, ReasonKind::Missing))
+                && self.environment.universal_missing_parameter_equation(self.graph, &plan, &self.bindings)?)
             && !reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))

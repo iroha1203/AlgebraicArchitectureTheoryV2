@@ -106,8 +106,7 @@ fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values(
         let equations =
             parameters::sources(&p.shared_inputs(), architecture, &mut quiet()).unwrap();
         if guard == "true" {
-            // 適用される欠測本体には、この完全観測parameter経路を使わない。
-            assert!(equations.is_none());
+            assert!(equations.is_some());
             continue;
         }
         let equations = equations.unwrap();
@@ -133,6 +132,49 @@ fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values(
         }
         replay(&p, &g, &g.nodes).unwrap();
     }
+}
+#[test]
+fn active_missing_parameter_products_keep_symbolic_equations_and_missing_reasons() {
+    let p = prepared(
+        true,
+        false,
+        "law required zero(c:Part,n:Z):n*c.quantity=0;",
+        "root",
+    );
+    let (mut g, a) = built(&p);
+    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let mut pending = false;
+    for diagram in diagrams {
+        assert_eq!(diagram.evaluations, [None]);
+        for coordinate in diagram.coordinates {
+            if coordinate.guard == EquationGuard::AlwaysTrue && coordinate.epsilon.is_none() {
+                pending = true;
+                assert_eq!(coordinate.status, EquationPresentationStatus::Undetermined);
+                assert!(coordinate.nu.is_some());
+                assert!(coordinate.residual.is_none());
+            }
+        }
+        if diagram.status == EquationPresentationStatus::Undetermined {
+            assert!(diagram.presentations.iter().flatten().any(|r| {
+                let Part::Equation(
+                    crate::observed::equation_presentation_node::Part::Presentation {
+                        omissions,
+                        ..
+                    },
+                ) = data(&g, *r).part()
+                else {
+                    panic!("presentation")
+                };
+                omissions.iter().any(|r| {
+                    r.missing.iter().any(|f| {
+                        f.subject == "q" && f.field.as_deref() == Some("Family.Part.quantity")
+                    })
+                })
+            }));
+        }
+    }
+    assert!(pending);
+    replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
 fn inactive_parameter_families_keep_original_difference_without_required_generators() {

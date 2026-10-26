@@ -86,6 +86,105 @@ fn number(ty: &Type) -> Option<NumberType> {
     }
 }
 impl Environment<'_> {
+    pub(in crate::observed) fn universal_missing_parameter_equation(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        if !plan.family
+            || self.universal_has_exists(plan)?
+            || plan
+                .parameters
+                .iter()
+                .any(|p| p.affine_parameter().is_none())
+        {
+            return Ok(false);
+        }
+        let native = if let Some(index) = self.current_context(graph).instance {
+            crate::observed::law_evaluation::instance_inputs(
+                graph,
+                index,
+                self.cutoff.get().min(graph.nodes.len()),
+            )?
+        } else {
+            None
+        };
+        let (architecture, name) = if let Some(native) = native {
+            if native.origin.body != plan.body {
+                return Ok(false);
+            }
+            (native.origin.architecture, native.origin.declaration)
+        } else {
+            let Some(reference) = self.architecture_ref() else {
+                return Ok(false);
+            };
+            let request = graph
+                .requests
+                .get(self.current_context(graph).request)
+                .ok_or("欠測係数の元Requestがない")?;
+            if request.kind != QuestionKind::Check {
+                return Ok(false);
+            }
+            let name = request.declaration().ok_or("欠測係数の元宣言がない")?;
+            let declaration = self
+                .inputs
+                .law()
+                .declarations
+                .get(name)
+                .ok_or("欠測係数の元Lawがない")?;
+            let Signature::Law { body, .. } = &declaration.signature else {
+                return Ok(false);
+            };
+            if *body != plan.body {
+                return Ok(false);
+            }
+            (
+                crate::observed::construction_result::architecture_origin(graph, reference, 0)?
+                    .clone(),
+                name.to_owned(),
+            )
+        };
+        for instance in architecture.readings().instances() {
+            self.tick()?;
+            if instance.declaration().name != name {
+                continue;
+            }
+            let mut matching = true;
+            for fixed in instance.bindings() {
+                let Some(binding) = bindings.iter().find(|b| b.name == fixed.parameter().name)
+                else {
+                    matching = false;
+                    break;
+                };
+                if !matches!(graph.scalar(binding.value)?, Scalar::Subject { snapshot, subject, .. }
+                    if snapshot == &fixed.subject().snapshot && subject == &fixed.subject().subject)
+                {
+                    matching = false;
+                    break;
+                }
+            }
+            if !matching {
+                continue;
+            }
+            let source =
+                crate::observed::object_equation_presentation::parameter_source_difference(
+                    self.inputs,
+                    instance,
+                    &mut self.control.clone(),
+                )
+                .map_err(|e| match e {
+                    crate::construction::ConstructionFailure::Stopped(stop) => {
+                        ValidationFailure::Stop(stop)
+                    }
+                    other => ValidationFailure::Internal(format!("欠測係数の元式照合: {other:?}")),
+                })?;
+            return Ok(
+                source.is_some_and(|s| s.guard && s.ring.symbols.iter().any(|s| s.value.is_none()))
+            );
+        }
+        Ok(false)
+    }
     // Parameterの数値型と、元ASTのforall/existsは別の情報として保つ。
     // Law自由parameterは全代入だが、明示existsを全称軸へ変えない。
     fn universal_parameter_quantifier_kind(
