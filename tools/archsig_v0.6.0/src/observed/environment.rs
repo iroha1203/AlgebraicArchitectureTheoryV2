@@ -8096,6 +8096,17 @@ impl<'a> Environment<'a> {
                             &self.control,
                         )?)
                     }
+                    ExprKind::Call { callee, args } if args.len() == 1 => {
+                        let mut target = *callee;
+                        while let ExprKind::Group(inner) = self.inputs.law().exprs[target].kind { self.tick()?; target = inner; }
+                        if let ExprKind::Dotted(parts) = &self.inputs.law().exprs[target].kind
+                            && parts.len() == 1 && parts[0].name == "count"
+                        {
+                            self.symbolic_source(args[0], variables, base, reading)?.list_aggregate(
+                                &parts[0].name, self.inputs.law(), expression.span, &self.control,
+                            )?
+                        } else { None }
+                    }
                     _ => None,
                 };
                 if let Some(v) = symbolic {

@@ -16,6 +16,7 @@ enum Binding {
     ParameterForm(affine::Form),
     Family(PolynomialFamily),
     Tuple(Vec<Binding>),
+    List { element: Type, items: Vec<Binding> },
     Lexical {
         expression: usize,
         variables: Arc<BTreeMap<String, Binding>>,
@@ -30,6 +31,15 @@ impl Binding {
                 Self::FiniteScalar(value) => Some(value.clone()),
                 Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
                     value.evaluate(&[], c)?.map(|value| value.scalar().clone())
+                }
+                Self::List { element, items } => {
+                    let mut values = Vec::new();
+                    for item in items {
+                        let Some(value) = item.finite_scalar(c)? else { return Ok(None) };
+                        if value.ty() != *element { return Ok(None) }
+                        values.push(value);
+                    }
+                    Some(Scalar::List { element: element.clone(), items: values })
                 }
                 Self::Tuple(items) => {
                     let mut values = Vec::new();
@@ -329,11 +339,18 @@ impl Compiler<'_> {
                 }
                 ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
                 ExprKind::Unit if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Unit)),
-                ExprKind::ListLit { items, .. } | ExprKind::SetLit { items, .. } if path.is_empty() => {
-                    let (element, set) = match (&expression.kind, self.inputs.law().expr_type(id)) {
-                        (ExprKind::ListLit { .. }, Some(Type::List(element))) => (element, false),
-                        (ExprKind::SetLit { .. }, Some(Type::Set(element))) => (element, true),
-                        _ => return Err(bad("原式のList/Set型がない")),
+                ExprKind::ListLit { items, .. } if path.is_empty() => {
+                    let Some(Type::List(element)) = self.inputs.law().expr_type(id) else { return Err(bad("原式のList型がない")) };
+                    let mut bindings = Vec::new();
+                    for item in items {
+                        let Some(binding) = self.expression(*item, &[], c)? else { return Ok(None) };
+                        bindings.push(binding);
+                    }
+                    Some(Binding::List { element: (**element).clone(), items: bindings })
+                }
+                ExprKind::SetLit { items, .. } if path.is_empty() => {
+                    let Some(Type::Set(element)) = self.inputs.law().expr_type(id) else {
+                        return Err(bad("原式のSet型がない"));
                     };
                     let mut values = Vec::new();
                     for item in items {
@@ -348,11 +365,7 @@ impl Compiler<'_> {
                         }
                         values.push(value);
                     }
-                    Some(Binding::FiniteScalar(if set {
-                        super::super::data::set((**element).clone(), &values, c).map_err(invalid)?
-                    } else {
-                        Scalar::List { element: (**element).clone(), items: values }
-                    }))
+                    Some(Binding::FiniteScalar(super::super::data::set((**element).clone(), &values, c).map_err(invalid)?))
                 }
                 ExprKind::None(_) | ExprKind::Some(_) if path.is_empty() => {
                     let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else {
@@ -552,6 +565,12 @@ impl Compiler<'_> {
                         let Some(binding) = self.expression(*argument, &[], c)? else {
                             return Ok(None);
                         };
+                        if name.name == "count" && let Binding::List { items, .. } = &binding {
+                            let value = Scalar::Z(items.len().into());
+                            return Ok(Some(if self.ring.ty == Type::Z {
+                                Binding::Polynomial(EquationPolynomial::constant(value, c)?)
+                            } else { Binding::FiniteScalar(value) }));
+                        }
                         let Some(value) = binding.finite_scalar(c)? else {
                             return Ok(None);
                         };
