@@ -1349,6 +1349,8 @@ mod tests {
             "law required varying(c:Part,n:Z):n=0;",
             "law required varying(c:Part,n:Z):n+c.quantity=n;",
             "law required varying(c:Part,n:Z) when false:n=n;",
+            "law required varying(c:Part,n:Z) when n=0:n=n;",
+            "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
         ] {
             let inputs = inputs_with(body);
             let mut c = Control::unlimited();
@@ -1356,6 +1358,29 @@ mod tests {
             let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
             let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, 0, &mut c).unwrap();
             assert!(super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap().is_none());
+        }
+    }
+    #[test]
+    fn uniform_true_guard_preserves_numeric_difference() {
+        for (ty, guard) in [("Z", "true"), ("Q", "let a=n+1 in a=n+1")] {
+            let inputs = inputs_with(&format!("law required balanced(c:Part,n:{ty}) when {guard}:n=n+1;"));
+            let mut c = Control::unlimited();
+            let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+            assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+            let ty = if ty == "Z" { Type::Z } else { Type::Q };
+            let one = numeric::literal("1", &ty, &c).unwrap();
+            let expected = NumericTransportValue::observed(numeric::unary(UnOp::Neg, &one, &c).unwrap());
+            let mut applicable = 0;
+            for occurrence in &presentation.occurrences {
+                if occurrence.guard == EquationGuard::OutsideObject { continue; }
+                applicable += 1;
+                assert_eq!(occurrence.guard, EquationGuard::AlwaysTrue);
+                assert_eq!(occurrence.component_holds, Some(false));
+                assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+                assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected.clone()));
+            }
+            assert!(applicable > 0);
+            presentation.recheck(inputs, &mut c).unwrap();
         }
     }
     #[test]
