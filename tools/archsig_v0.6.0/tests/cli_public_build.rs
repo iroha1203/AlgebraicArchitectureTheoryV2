@@ -286,6 +286,68 @@ fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
+fn observed_and_parameter_numeric_law_builds_for_later_checks() {
+    for ty in ["Z", "Q"] {
+        for equation in ["n=c.quantity", "c.quantity=n"] {
+            let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+            let body = format!("view zero():{ty}=0;view one():{ty}=1;law required equal(c:Part,n:{ty}):{equation};");
+            let dir = files_with_definition(&format!("observed-parameter-{ty}-{equation}"), &body, false, &definition);
+            if ty == "Q" {
+                let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
+                    .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+                    .replace(r#""value":"1""#, r#""value":["1","1"]"#);
+                std::fs::write(dir.join("a.json"), map).unwrap();
+            }
+            let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "i=evaluate(R.one,on=$b.object)",
+                "all=check(R.equal,on=$b.object,c=@v/q)", "p0=check(R.equal,on=$b.object,c=@v/p,n=$z.value)",
+                "q0=check(R.equal,on=$b.object,c=@v/q,n=$z.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
+            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+            for request in requests { args.extend(["--ask", request]); }
+            let normal = cli::run(&dir, &args);
+            assert_eq!(normal.code, 1, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+            let run = asks(&dir, &requests);
+            let result = saved(&dir, &run, "complete", 1);
+            assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+            let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
+            let equations = value(&result, get(algebra, "equations"));
+            let base_row = &arr(get(equations, "objects"))[0];
+            let presentation = value(&result, &arr(get(base_row, "presentations"))[0]);
+            let ring = value(&result, get(presentation, "ring"));
+            assert_eq!(arr(get(ring, "variables")).len(), 2);
+            assert_eq!(s(get(value(&result, get(ring, "base")), "scalar")), ty);
+            let mut axes = vec![];
+            for coordinate in arr(get(presentation, "coordinates")) {
+                let nu = value(&result, get(coordinate, "nu"));
+                let epsilon = value(&result, get(coordinate, "epsilon"));
+                assert_eq!(arr(get(nu, "parameters")).len(), 1);
+                assert_eq!(arr(get(nu, "terms")).len(), 2);
+                for term in arr(get(nu, "terms")) {
+                    let powers = arr(get(term, "powers")).iter().map(num).collect::<Vec<_>>();
+                    if powers.iter().any(|p| *p != 0) { axes.push(powers); }
+                    else { assert_eq!(s(get(node(&result, get(term, "coefficient")), "type")), "Expression"); }
+                }
+                let terms = arr(get(epsilon, "terms"));
+                assert_eq!(terms.len(), 1);
+                assert!(arr(get(&terms[0], "powers")).iter().all(|p| num(p) == 0));
+            }
+            axes.sort();
+            assert_eq!(axes, vec![vec![0,1], vec![1,0]]);
+            for (id, status) in [("all", "refuted"), ("p0", "established"), ("q0", "refuted"), ("q1", "established")] {
+                assert_eq!(s(get(answer(&result, id), "status")), status);
+            }
+            eprintln!("observed parameter {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+            args.extend(["--reuse", "out", "--out", "again"]);
+            let reused = cli::run(&dir, &args);
+            let again = saved(&dir, &reused, "complete", 1);
+            assert!(warnings(&again).is_empty());
+            for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        }
+    }
+}
+#[test]
 fn parameter_dependent_numeric_law_builds_without_constant_residual() {
     let dir = files("parameter-dependent-law", "law required zero(c:Part,n:Z):n=0;", false);
     let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)"]);
@@ -417,9 +479,12 @@ fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
     }
 }
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
+    files_with_definition(name, body, missing, DEFINITION)
+}
+fn files_with_definition(name: &str, body: &str, missing: bool, definition: &str) -> PathBuf {
     let dir = workdir(name);
     let defs =
-        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
     let digest = &defs.vocabularies["Build"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Build version \"1\" digest \"{digest}\";{body}}}"
@@ -433,7 +498,7 @@ fn files(name: &str, body: &str, missing: bool) -> PathBuf {
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Build","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"独立の公開構成入力。","locations":[],"note":"p=0、q=1。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"root","type":"Build.Root","origin":"model"}},{{"id":"p","type":"Build.Part","origin":"model"}},{{"id":"q","type":"Build.Part","origin":"model"}}],"atoms":[{{"id":"op","subject":"p","field":"Build.Part.owner","value":["v","root"],"origin":"model"}},{{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}},{{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}}{quantity}]}}]}}"#
     );
     for (name, bytes) in [
-        ("d.json", DEFINITION.as_bytes()),
+        ("d.json", definition.as_bytes()),
         ("l.law", law.as_bytes()),
         ("a.json", map.as_bytes()),
     ] {

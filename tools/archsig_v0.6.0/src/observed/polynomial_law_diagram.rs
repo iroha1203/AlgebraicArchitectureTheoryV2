@@ -522,13 +522,19 @@ impl Data {
         for diagram in diagrams {
             for coordinate in &diagram.coordinates {
                 tick(c)?;
-                if coordinate.nu != Some(reference) { continue; }
+                if coordinate.residual != Some(reference) { continue; }
                 let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance).ok_or("数値族の元出現がない")?;
                 if !self.parameter_family(&original.parameters) { return Ok(None); }
                 let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
-                let source = super::object_equation_presentation::parameter_source_difference(&self.source.inputs, instance, c)
+                let mut source = super::object_equation_presentation::parameter_source_difference(&self.source.inputs, instance, c)
                     .map_err(|e| construction_failure(&e))?.ok_or("数値族の原式差がない")?;
-                if !source.ring.symbols.is_empty() || source.difference.parameters.is_empty() { return Err("数値族の原式の域が違う".into()); }
+                if source.difference.parameters.is_empty() { return Err("数値族の原式の域が違う".into()); }
+                if !source.ring.symbols.is_empty() {
+                    let values = source.ring.symbols.iter().map(|s| s.value.clone()).collect::<Vec<_>>();
+                    let value = source.difference.constant.evaluate(&values, c).map_err(|e| construction_failure(&e))?
+                        .ok_or("数値族の残差の実観測値がない")?;
+                    source.difference.constant = EquationPolynomial::constant(value.scalar().clone(), c).map_err(|e| construction_failure(&e))?;
+                }
                 return Ok(Some((*ring, source.difference)));
             }
         }
@@ -537,10 +543,16 @@ impl Data {
     pub(super) fn parameter_family(&self, expected: &[(String, Type)]) -> bool {
         let Part::Polynomial { terms, parameters, .. } = self.part() else { return false };
         if parameters != expected || parameters.is_empty() { return false; }
-        let [(coefficient, powers)] = terms.as_slice() else { return false };
-        if powers.iter().any(|n| *n != 0) { return false; }
-        let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
-        matches!(self.source.parts.get(index), Some(Part::Transform { operation: Transform::Difference, parameters, .. }) if parameters == expected && !parameters.is_empty())
+        let mut expression = false;
+        for (coefficient, powers) in terms {
+            let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
+            match self.source.parts.get(index) {
+                Some(Part::Scalar(_)) => (),
+                Some(Part::Transform { operation: Transform::Difference, parameters, .. }) if parameters == expected && powers.iter().all(|n| *n == 0) => expression = true,
+                _ => return false,
+            }
+        }
+        expression
     }
     pub(super) fn polynomial(&self) -> Option<(NodeRef, &[(NodeRef, Vec<usize>)])> {
         match self.source.parts.get(self.index) {
