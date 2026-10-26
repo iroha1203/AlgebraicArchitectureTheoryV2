@@ -1077,8 +1077,55 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
 }
 
 #[test]
+fn finite_set_cases_keep_all_subsets_and_numeric_axes() {
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part,n:Z,tag:Set<Bool>) when tag=set<Bool>{true,false,true}:n*c.quantity=0;",
+        "root",
+    );
+    let (mut g, a) = built(&p);
+    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let diagram = &diagrams[0];
+    assert_eq!(diagram.originals.len(), 8);
+    assert_eq!(diagram.coordinates.len(), 8);
+    for (index, original) in diagram.originals.iter().enumerate() {
+        let items = match index % 4 {
+            0 => vec![],
+            1 => vec![Scalar::Bool(false)],
+            2 => vec![Scalar::Bool(true)],
+            _ => vec![Scalar::Bool(false), Scalar::Bool(true)],
+        };
+        let value = Scalar::Set {
+            element: Type::Bool,
+            items,
+        };
+        assert_eq!(original.finite, vec![("tag".into(), value.clone())]);
+        assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+        assert_eq!(original.quantifiers.len(), 1);
+        assert_eq!(original.quantifiers[0].name, "n");
+        let binding = original.bindings.iter().find(|b| b.name == "tag").unwrap();
+        assert_eq!(g.scalar(binding.value).unwrap(), &value);
+        let coordinate = &diagram.coordinates[index];
+        let active = index % 4 == 3;
+        assert_eq!(
+            coordinate.guard,
+            if active {
+                EquationGuard::AlwaysTrue
+            } else {
+                EquationGuard::AlwaysFalse
+            }
+        );
+        if !active {
+            assert!(coordinate.epsilon.is_none());
+            assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+        }
+    }
+    replay(&p, &g, &g.nodes).unwrap();
+}
+#[test]
 fn infinite_components_are_not_finite_case_samples() {
-    for (ty, guard) in [("(Z,Bool)", " when tag.1"), ("Option<Z>", "")] {
+    for (ty, guard) in [("(Z,Bool)", " when tag.1"), ("Option<Z>", ""), ("Set<Z>", "")] {
         let p = prepared(
             false,
             false,
