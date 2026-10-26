@@ -186,6 +186,17 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    /// 正規化後に全称parameterの非零係数が残れば、全域での等式は成立しない。
+    pub(in crate::observed) fn varies_over(&self, parameters: &[Parameter], c: &Control) -> Result<bool, ValidationFailure> {
+        self.check(c)?;
+        for parameter in parameters {
+            tick(c)?;
+            if self.coefficients.contains_key(&Symbol::Parameter(parameter.clone())) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
     pub(in crate::observed) fn state(position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
         Self::typed_state(&Type::Z, position, c)
     }

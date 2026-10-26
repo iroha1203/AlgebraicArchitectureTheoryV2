@@ -1,7 +1,7 @@
 //! 固定した元Lawと束縛を、共有原始位置の有限候補上で読む。
 use super::*;
 use crate::law::model::{Declaration, Signature};
-use crate::observed::{finite, input::InputSources};
+use crate::observed::{affine, finite, input::InputSources};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
@@ -1121,7 +1121,7 @@ pub(in crate::observed) fn evaluate_local_point(
     declaration: &Declaration,
     bindings: &[(String, Scalar)],
 ) -> Result<FiniteLawRow, ValidationFailure> {
-    evaluate_point_mode(environment, declaration, bindings, 0, false)
+    Ok(probe_local_mode(environment, declaration, bindings, 0, false, true)?.row)
 }
 fn evaluate_point_mode(
     environment: &Environment<'_>,
@@ -1148,11 +1148,17 @@ fn probe(
     probe_mode(e, decl, bindings, point, false)
 }
 fn probe_mode(
+    e: &Environment<'_>, decl: &Declaration, bindings: &[(String, Scalar)], point: usize, conditional: bool,
+) -> Result<Probe, ValidationFailure> {
+    probe_local_mode(e, decl, bindings, point, conditional, false)
+}
+fn probe_local_mode(
     e: &Environment<'_>,
     decl: &Declaration,
     bindings: &[(String, Scalar)],
     point: usize,
     conditional: bool,
+    universal: bool,
 ) -> Result<Probe, ValidationFailure> {
     let Signature::Law {
         params,
@@ -1163,13 +1169,16 @@ fn probe_mode(
     else {
         return Err("元Law署名がない".into());
     };
-    let vars = bindings
+    let (vars, parameters) = if universal {
+        super::change_affine::law_variables(e, params, bindings)?
+    } else { (bindings
         .iter()
         .map(|(n, v)| (n.clone(), source(v.clone())))
-        .collect::<BTreeMap<_, _>>();
+        .collect::<BTreeMap<_, _>>(), vec![]) };
     let mut values = BTreeMap::new();
     let mut checks = owned_call::Checks::default();
-    for (p, (_, v)) in params.iter().zip(bindings) {
+    for (name, v) in bindings {
+        let p = params.iter().find(|p| p.name == *name).ok_or("Law束縛名が存在しない")?;
         tick(&e.control)?;
         e.owned_call_value_check(
             &p.ty,
@@ -1242,6 +1251,9 @@ fn probe_mode(
         None => None,
         _ => return Err("元Law述語がBoolでない".into()),
     };
+    if row.predicate.is_none() && !parameters.is_empty() {
+        row.predicate = local_universal_truth(e, *body, &vars, &scope, &decl.reading, &parameters)?;
+    }
     row.operands = operands(e, *body, &vars, &scope, &decl.reading)?;
     if let Some((_, a, b)) = &row.operands {
         for value in a.iter().chain(b) {
@@ -1291,6 +1303,41 @@ fn probe_mode(
         row,
         admissible: true,
         blocked: false,
+    })
+}
+fn local_universal_truth(
+    e: &Environment<'_>, id: usize, vars: &BTreeMap<String, SourceValue>, scope: &Scope,
+    reading: &str, parameters: &[affine::Parameter],
+) -> Result<Option<bool>, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        tick(&e.control)?;
+        let v = e.scoped_ast(id, vars, scope, reading)?;
+        if v.condition_failed || v.condition_pending { return Ok(None); }
+        if let Some(Scalar::Bool(value)) = v.known_value { return Ok(Some(value)); }
+        match &e.inputs.law().exprs[id].kind {
+            ExprKind::Group(body) => local_universal_truth(e,*body,vars,scope,reading,parameters),
+            ExprKind::Let { name, value, body } => {
+                let mut vars = vars.clone();
+                vars.insert(name.name.clone(), e.scoped_ast(*value,&vars,scope,reading)?);
+                local_universal_truth(e,*body,&vars,scope,reading,parameters)
+            }
+            ExprKind::Binary { op: BinOp::And, lhs, rhs } => {
+                let left = local_universal_truth(e,*lhs,vars,scope,reading,parameters)?;
+                let right = local_universal_truth(e,*rhs,vars,scope,reading,parameters)?;
+                Ok(match (left,right) { (Some(false),_) | (_,Some(false)) => Some(false), (Some(true),Some(true)) => Some(true), _ => None })
+            }
+            _ => {
+                let Some(p) = v.comparison.filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty()) else { return Ok(None); };
+                let difference = affine::binary(BinOp::Sub,Some(&p.left),Some(&p.right),&e.control)?.ok_or("全称等式の差がない")?;
+                if difference.varies_over(parameters,&e.control)? { return Ok(Some(false)); }
+                match difference.value(&e.control)? {
+                    Some(value) => match numeric::binary(BinOp::Eq,&value,&numeric::zero(&value.ty(),&e.control)?,&e.control)? {
+                        Scalar::Bool(value) => Ok(Some(value)), _ => Err("全称等式の比較がBoolでない".into()),
+                    },
+                    None => Ok(None),
+                }
+            }
+        }
     })
 }
 fn populate_family(

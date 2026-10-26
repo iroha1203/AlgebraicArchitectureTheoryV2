@@ -140,6 +140,11 @@ fn equations(
                 };
                 let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
                     .ok_or("有理等式の差がない")?;
+                if form.varies_over(&missing.universal, &env.control)? {
+                    matrix.push(vec![numeric::zero(&Type::Q, &env.control)?; axes.len()]);
+                    rhs.push(Some(numeric::literal("1", &Type::Q, &env.control)?));
+                    return Ok(());
+                }
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 matrix.push(coefficients);
                 rhs.push(
@@ -462,10 +467,8 @@ fn requirement_equations(
         };
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
-        for (p, (name, v)) in law_params.iter().zip(bindings) {
-            if p.name != *name {
-                return Err("有理Lawの束縛順が異なる".into());
-            }
+        for (name, v) in bindings {
+            let p = law_params.iter().find(|p| p.name == *name).ok_or("有理Lawの束縛名が異なる")?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),
@@ -482,10 +485,8 @@ fn requirement_equations(
         if checks.blocked {
             return Err(unsupported(env, *body, "有理Lawの適用条件が未確定"));
         }
-        let vars = bindings
-            .iter()
-            .map(|(n, v)| Ok((n.clone(), value(env, v.clone())?)))
-            .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
+        let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
+        missing.universal = universal;
         if let Some(guard) = guard {
             let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
             usable(env, *guard, &v)?;
@@ -506,7 +507,8 @@ fn requirement_equations(
         }
         missing.expression = Some(*body);
         missing.bindings = bindings.clone();
-        missing.parameters.clear();
+        missing.parameters = law_params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name))
+            .map(|p| (p.name.clone(), p.ty.clone())).collect();
         equations(
             env,
             *body,

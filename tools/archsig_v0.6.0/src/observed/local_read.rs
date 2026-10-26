@@ -111,10 +111,16 @@ pub(in crate::observed) fn implicit_support(
     reading: &str,
     c: &mut Control,
 ) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
-    let variables = bindings
+    implicit_support_with_parameters(env, id, bindings, &[], reading, c)
+}
+pub(in crate::observed) fn implicit_support_with_parameters(
+    env: &Environment<'_>, id: usize, bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param], reading: &str, c: &mut Control,
+) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
+    let (mut variables, _) = change_affine::law_variables(env, parameters, &[])?;
+    variables.extend(bindings
         .iter()
-        .map(|(n, v)| (n.clone(), known(v.clone())))
-        .collect();
+        .map(|(n, v)| (n.clone(), known(v.clone()))));
     let (value, reads, missing) = evaluate_read(env, id, &variables, &Scope::default(), reading)?;
     if !missing.is_empty() {
         return Err("確定した暗黙読取りに欠測がある".into());

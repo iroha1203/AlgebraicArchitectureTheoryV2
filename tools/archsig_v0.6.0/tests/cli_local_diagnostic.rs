@@ -5713,3 +5713,71 @@ fn finite_change_on_rational_fields_keeps_full_equation_fibers() {
         let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
+
+#[test]
+fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
+    for rational in [false, true] {
+        for (predicate, count, rank) in [
+            ("z=z", 4, 2),
+            ("s.free+z=z+2", 1, 0),
+            ("z=s.free", 0, 2),
+            ("z+w=w+z and s.free+z=z+2", 1, 0),
+            ("z=w", 0, 2),
+            ("(let a=z in a=z)", 4, 2),
+        ] {
+            let dir = if rational { rational_compare_input("universal-local-q", true) }
+                else { diagnostic_compare_input("universal-local-z", true, true) };
+            let digest = definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
+                .unwrap().vocabularies["Reservations"].digest.clone();
+            let ty = if rational { "Q" } else { "Z" };
+            // 数値parameterが束縛済みStateの前後にある場合も元binderを保つ。
+            let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law required symbolic(z:{ty},s:State,w:{ty}):{predicate}; }}");
+            std::fs::write(dir.join("l.law"), law).unwrap();
+            let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+                "l=localize($m.candidate.source,using=Reservations.choose)",
+                "d=diagnose($l.system,side=equation,degree=0)",
+                "e=diagnose($l.system,side=semantic,degree=0)"];
+            let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law"];
+            for ask in asks { args.extend(["--ask", ask]); }
+            let files = || std::fs::read_dir(&dir).unwrap().map(|p| p.unwrap().file_name()).collect::<std::collections::BTreeSet<_>>();
+            let before = files();
+            let normal = run(&dir, &args);
+            assert_eq!(normal.code, 0, "{rational}/{predicate}: {} {}", normal.stdout, normal.stderr);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(files(), before);
+            let summary = archsig::json::parse(normal.stdout.as_bytes()).unwrap();
+            assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
+            assert!(!has(&summary, "nodes"));
+            let saved = execute(&dir, "out", &asks);
+            assert_eq!(saved.code, 0, "{} {}", saved.stdout, saved.stderr);
+            let j = result_json(&dir, &saved);
+            let diagnostic = get(output(&j, 3, "diagnostic"), "value");
+            let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
+            let domain = get(node(&j, get(restriction, "source")), "value");
+            assert_eq!(arr(get(domain, "elements")).len(), count, "{rational}/{predicate}");
+            let space = get(output(&j, 2, "space"), "value");
+            let module = get(node(&j, get(space, "module")), "value");
+            assert_eq!(num(get(module, "free_rank")), rank, "{rational}/{predicate}");
+            // 空のアフィン解と、その斉次方向の階数は別の結果。
+            let system = get(output(&j, 1, "system"), "value");
+            let equations = arr(get(system,"equation_states"));
+            assert!(!equations.is_empty());
+            let has_empty = equations.iter().any(|e| {
+                let solution = get(node(&j,get(e,"solutions")),"value");
+                s(get(get(solution,"representation"),"kind")) == "empty"
+            });
+            assert_eq!(has_empty, count == 0, "{rational}/{predicate}");
+            let quantifiers = arr(get(get(&arr(get(&j,"answers"))[1],"scope"),"quantifiers"));
+            for name in ["z", "w"] {
+                let qs = quantifiers.iter().filter(|q| s(get(q,"name")) == name).collect::<Vec<_>>();
+                assert!(!qs.is_empty());
+                for q in qs { assert_eq!(s(get(q,"kind")),"forall"); assert!(!has(q,"domain")); }
+            }
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = run(&dir, &args);
+            assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
+            let again = result_json(&dir, &reused);
+            for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
+        }
+    }
+}

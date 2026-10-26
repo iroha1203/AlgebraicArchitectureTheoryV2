@@ -31,6 +31,7 @@ pub(in crate::observed) struct Linear {
 }
 #[derive(Default)]
 pub(in crate::observed) struct Pending {
+    pub universal: Vec<Parameter>,
     pub coefficient_type: Option<Type>,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
@@ -57,6 +58,39 @@ fn value(env: &Environment<'_>, scalar: Scalar) -> Result<SourceValue, Validatio
         support: vec![],
         scalar_scope: Some(Scope::default()),
     })
+}
+/// 未束縛の数値Law引数は標本値ではなく、元binderの全域記号として評価する。
+pub(super) fn law_variables(
+    env: &Environment<'_>, params: &[crate::law::model::Param], bindings: &[(String, Scalar)],
+) -> Result<(BTreeMap<String, SourceValue>, Vec<Parameter>), ValidationFailure> {
+    let mut names = std::collections::BTreeSet::new();
+    for (name, scalar) in bindings {
+        env.tick()?;
+        if !names.insert(name) || !params.iter().any(|p| p.name == *name && p.ty.erase() == scalar.ty()) {
+            return Err("Law束縛の名前・型または重複が不正".into());
+        }
+    }
+    let mut vars = BTreeMap::new();
+    let mut universal = vec![];
+    for p in params {
+        env.tick()?;
+        if let Some((_, scalar)) = bindings.iter().find(|(name, _)| *name == p.name) {
+            vars.insert(p.name.clone(), value(env, scalar.clone())?);
+        } else {
+            let kind = match p.ty.erase() {
+                Type::Z => NumberType::Z, Type::Q => NumberType::Q,
+                _ => return Err("未束縛の局所Law引数がZ/Qでない".into()),
+            };
+            let parameter = Parameter { binder: p.span, name: p.name.clone(), context: env.context.get().unwrap_or_default(), kind };
+            let mut v = value(env, numeric::zero(&kind.ty(), &env.control)?)?;
+            v.known_value = None;
+            v.scalar_scope = None;
+            v.affine = affine::parameter(&kind.ty(), &parameter, &env.control)?.map(Box::new);
+            vars.insert(p.name.clone(), v);
+            universal.push(parameter);
+        }
+    }
+    Ok((vars, universal))
 }
 fn usable(env: &Environment<'_>, id: usize, v: &SourceValue) -> Result<(), ValidationFailure> {
     if v.condition_failed || v.condition_pending {
@@ -140,6 +174,11 @@ fn equations(
                 };
                 let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
                     .ok_or("整数等式の差がない")?;
+                if form.varies_over(&missing.universal, &env.control)? {
+                    matrix.push(vec![Z::zero(); axes.len()]);
+                    rhs.push(Some(Z::one()));
+                    return Ok(());
+                }
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 matrix.push(coefficients);
                 rhs.push(constant.map(|v|-v));
@@ -478,10 +517,8 @@ fn requirement_equations(
         };
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
-        for (p, (name, v)) in law_params.iter().zip(bindings) {
-            if p.name != *name {
-                return Err("整数Lawの束縛順が異なる".into());
-            }
+        for (name, v) in bindings {
+            let p = law_params.iter().find(|p| p.name == *name).ok_or("整数Lawの束縛名が異なる")?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),
@@ -498,10 +535,8 @@ fn requirement_equations(
         if checks.blocked {
             return Err(unsupported(env, *body, "整数Lawの適用条件が未確定"));
         }
-        let vars = bindings
-            .iter()
-            .map(|(n, v)| Ok((n.clone(), value(env, v.clone())?)))
-            .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
+        let (vars, universal) = law_variables(env, law_params, bindings)?;
+        missing.universal = universal;
         if let Some(guard) = guard {
             let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
             usable(env, *guard, &v)?;
@@ -519,7 +554,8 @@ fn requirement_equations(
         }
         missing.expression = Some(*body);
         missing.bindings = bindings.clone();
-        missing.parameters.clear();
+        missing.parameters = law_params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name))
+            .map(|p| (p.name.clone(), p.ty.clone())).collect();
         equations(
             env,
             *body,

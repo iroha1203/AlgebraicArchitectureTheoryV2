@@ -29,14 +29,17 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         }
         for (name, parameter, values) in &model.universal {
             c.checkpoint(super::super::control::Checkpoint::Localize)?;
-            let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
-            let reference = domain(&mut b, &parameter.ty.erase(), &items)?;
-            scope_domains.push((reference, parameter.ty.erase()));
+            let reference = if let Some(values) = values {
+                let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
+                let reference = domain(&mut b, &parameter.ty.erase(), &items)?;
+                scope_domains.push((reference, parameter.ty.erase()));
+                Some(reference)
+            } else { None };
             quantifiers.push((name, Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
                 name: parameter.name.clone(),
                 ty: parameter.ty.erase(),
-                domain: Some(reference),
+                domain: reference,
                 occurrence: parameter.span,
                 context: Some(env.current_context(g)),
             }));
@@ -54,7 +57,9 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 .iter()
                 .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
-            let expression = change_result::source_expression(&mut b, env, body, &bindings, &[])?;
+            let parameters = model.universal.iter().filter(|(law,_,values)| law == name && values.is_none())
+                .map(|(_,p,_)| (p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
+            let expression = change_result::source_expression(&mut b, env, body, &bindings, &parameters)?;
             b.parts[expression.0 - base].scope.merge(&model.scope);
             for (_, quantifier) in quantifiers.iter().filter(|(law, _)| *law == name) {
                 b.parts[expression.0 - base].arguments.extend(quantifier.domain);
@@ -62,7 +67,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             }
             expressions.push(expression);
             let guard = guard
-                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
+                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &parameters))
                 .transpose()?;
             let mut fields = BTreeMap::from([
                 ("name".into(), Json::str(name)),
@@ -145,7 +150,8 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let expression =
-                change_result::source_expression(&mut b, env, read.expression, &bindings, &[])?;
+                change_result::source_expression(&mut b, env, read.expression, &bindings,
+                    &read.parameters.iter().map(|p| (p.name.clone(), p.ty.clone())).collect::<Vec<_>>())?;
             let ty = read.values.first().ok_or("有限読取りの値域が空")?.ty();
             let values = read
                 .values
