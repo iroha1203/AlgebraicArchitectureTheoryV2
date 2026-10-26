@@ -22,6 +22,26 @@ enum Binding {
     },
 }
 impl Binding {
+    fn finite_scalar(&self, c: &mut Control) -> Result<Option<Scalar>, ConstructionFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            Ok(match self {
+                Self::Boolean(value) => Some(Scalar::Bool(*value)),
+                Self::FiniteScalar(value) => Some(value.clone()),
+                Self::Tuple(items) => {
+                    let mut values = Vec::new();
+                    for item in items {
+                        let Some(value) = item.finite_scalar(c)? else {
+                            return Ok(None);
+                        };
+                        values.push(value);
+                    }
+                    Some(Scalar::Tuple(values))
+                }
+                _ => None,
+            })
+        })
+    }
     fn affine(&self, c: &mut Control) -> Result<Option<affine::Form>, ConstructionFailure> {
         match self {
             Self::ParameterForm(value) => Ok(Some(value.clone())),
@@ -252,6 +272,29 @@ impl Compiler<'_> {
                     )?))
                 }
                 ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
+                ExprKind::Unit if path.is_empty() => Some(Binding::FiniteScalar(Scalar::Unit)),
+                ExprKind::None(_) | ExprKind::Some(_) if path.is_empty() => {
+                    let Some(Type::Option(element)) = self.inputs.law().expr_type(id) else {
+                        return Err(bad("原式のOption型がない"));
+                    };
+                    let value = if let ExprKind::Some(inner) = expression.kind {
+                        let Some(binding) = self.expression(inner, &[], c)? else {
+                            return Ok(None);
+                        };
+                        let Some(value) = binding.finite_scalar(c)? else {
+                            return Ok(None);
+                        };
+                        if value.ty() != **element {
+                            return Ok(None);
+                        }
+                        Some(Box::new(value))
+                    } else {
+                        None
+                    };
+                    Some(Binding::FiniteScalar(Scalar::Option {
+                        element: (**element).clone(), value,
+                    }))
+                }
                 ExprKind::Unary { op: UnOp::Not, operand } if path.is_empty() => {
                     match self.expression(*operand, &[], c)? { Some(Binding::Boolean(value)) => Some(Binding::Boolean(!value)), _ => None }
                 }
