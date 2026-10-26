@@ -1,5 +1,5 @@
 //! 保存結果には値の参照グラフを残し、導出グラフを公開しない。
-use super::{Node, NodeType};
+use super::{Node, NodeRef, NodeType};
 use crate::{
     canonical::Json,
     observed::control::{Checkpoint, Control, StopReason},
@@ -26,6 +26,75 @@ fn refs(value: &Json, into: &mut BTreeSet<String>) {
         }
         _ => {}
     });
+}
+fn reference(value: Option<&Json>) -> Option<NodeRef> {
+    let Json::Obj(fields) = value? else {
+        return None;
+    };
+    if fields.len() != 1 {
+        return None;
+    }
+    let Json::Str(id) = fields.get("node")? else {
+        return None;
+    };
+    Some(NodeRef(id.strip_prefix('n')?.parse().ok()?))
+}
+// 商の実像・核の包含は写像データ。導出arguments全体を保存へ戻さない。
+fn quotient_maps(
+    node: &Json,
+    native: &[Node],
+    into: &mut BTreeSet<String>,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<(), StopReason> {
+    let Json::Obj(fields) = node else {
+        return Ok(());
+    };
+    let Some(Json::Obj(value)) = fields.get("value") else {
+        return Ok(());
+    };
+    let Some(Json::Obj(representation)) = value.get("representation") else {
+        return Ok(());
+    };
+    if !matches!(representation.get("kind"), Some(Json::Str(kind)) if kind == "affine") {
+        return Ok(());
+    }
+    let (Some(image), Some(kernel), Some(linear), Some(projection)) = (
+        reference(representation.get("image")),
+        reference(representation.get("kernel")),
+        reference(representation.get("map")),
+        reference(value.get("projection")),
+    ) else {
+        return Ok(());
+    };
+    let Some(Node {
+        ty: NodeType::ModuleMap(source, target),
+        ..
+    }) = native.get(linear.0)
+    else {
+        return Ok(());
+    };
+    let Some(projection) = native.get(projection.0) else {
+        return Ok(());
+    };
+    if !matches!(
+        projection.ty,
+        NodeType::Construction(super::super::construction_result::ConstructionType::StateMap)
+    ) {
+        return Ok(());
+    }
+    for argument in &projection.arguments {
+        control.checkpoint(point)?;
+        if let Some(Node {
+            ty: NodeType::ModuleMap(from, to),
+            ..
+        }) = native.get(argument.0)
+            && ((*from == image && to == target) || (*from == kernel && to == source))
+        {
+            into.insert(format!("n{}", argument.0));
+        }
+    }
+    Ok(())
 }
 fn rename(value: &mut Json, ids: &BTreeMap<String, String>) {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
@@ -322,6 +391,9 @@ pub(super) fn compact(
         let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
         let mut children = BTreeSet::new();
         refs(&old[index], &mut children);
+        if matches!(native[index].ty, NodeType::Construction(super::super::construction_result::ConstructionType::Quotient)) {
+            quotient_maps(&old[index], native, &mut children, control, point)?;
+        }
         for child in children {
             if reachable.insert(child.clone()) {
                 pending.push(child);
