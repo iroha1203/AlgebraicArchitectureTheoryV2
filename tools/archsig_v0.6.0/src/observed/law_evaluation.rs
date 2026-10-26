@@ -1,4 +1,4 @@
-//! 元native Law行の完全束縛を、通常Evaluatorのinstance入力へ接続する。
+//! 元native Law行の固定束縛を、通常Evaluatorのinstance入力へ接続する。
 use super::{
     construction_result::{
         self as native, ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness,
@@ -466,7 +466,7 @@ pub(super) fn prepare_instance(
             },
         )?);
     }
-    // 全parameterを固定済みの一点。元の全parameter域を有限化する域ではない。
+    // 元行の固定束縛を表す一点。残る数値parameterの全域を有限化する域ではない。
     let member = put(
         graph,
         &row,

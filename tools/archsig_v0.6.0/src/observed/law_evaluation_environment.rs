@@ -1,4 +1,4 @@
-//! 完全束縛済みnative Law行の元値と対象を、通常Sourceの再検査へ渡す。
+//! native Law行の固定値・未束縛数値parameter・対象を通常Sourceの再検査へ渡す。
 use super::*;
 use crate::observed::{
     construction_result::{ConstructionData as D, ConstructionValue},
@@ -175,6 +175,16 @@ impl Environment<'_> {
                     scalar_scope: Some(graph.get(binding.value)?.scope.clone()),
                 },
             );
+        }
+        let declaration = self.inputs.law().declarations.get(&inputs.origin.declaration)
+            .ok_or("元Lawの宣言がない")?;
+        if let crate::law::model::Signature::Law { params, .. } = &declaration.signature {
+            for parameter in params {
+                if !variables.contains_key(&parameter.name) && matches!(parameter.ty, Type::Z | Type::Q) {
+                    let (free, _) = change_affine::law_variables(self, std::slice::from_ref(parameter), &[])?;
+                    variables.extend(free);
+                }
+            }
         }
         Ok(Some((inputs.bindings, variables, inputs.origin.scope)))
     }
