@@ -278,6 +278,34 @@ impl Compiler<'_> {
                 .exprs
                 .get(id)
                 .ok_or_else(|| bad("原式IDがない"))?;
+            if path.is_empty()
+                && let Some(Type::Data(family)) = self.inputs.law().expr_type(id)
+                && let Some((constructor, arguments)) =
+                    super::super::data::expression(self.inputs.law(), id, c).map_err(invalid)?
+            {
+                let types = super::super::data::constructor(self.inputs.law(), family, &constructor, c)
+                    .map_err(invalid)?
+                    .arguments
+                    .clone();
+                let mut args = Vec::new();
+                for (argument, ty) in arguments.iter().zip(types) {
+                    let Some(binding) = self.expression(*argument, &[], c)? else {
+                        return Ok(None);
+                    };
+                    let Some(value) = binding.finite_scalar(c)? else {
+                        return Ok(None);
+                    };
+                    if value.ty() != ty {
+                        return Ok(None);
+                    }
+                    args.push(value);
+                }
+                return Ok(Some(Binding::FiniteScalar(Scalar::Data {
+                    family: family.clone(),
+                    constructor,
+                    args,
+                })));
+            }
             Ok(match &expression.kind {
                 ExprKind::Group(child) => self.expression(*child, path, c)?,
                 ExprKind::Int(n) if path.is_empty() => {

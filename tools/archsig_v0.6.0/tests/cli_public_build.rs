@@ -82,9 +82,20 @@ fn finite_set_numeric_products_keep_missing_and_applicability() {
 }
 #[test]
 fn finite_data_guards_keep_numeric_products() {
+    finite_data_guard_product(false);
+}
+#[test]
+fn finite_data_constructor_guards_keep_numeric_products() {
+    finite_data_guard_product(true);
+}
+fn finite_data_guard_product(constructor: bool) {
     for ty in ["Z", "Q"] {
         for missing in [false, true] {
             let dir = finite_data_product_input(ty, missing);
+            if constructor {
+                let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("match tag{Packed(inner)=>match inner{Off=>false;On(b)=>b;};}", "tag=Packed(On(true)) and not(tag=Packed(Off))");
+                std::fs::write(dir.join("l.law"), law).unwrap();
+            }
             let requests = [
                 "a=build(R,on=@v/root)",
                 "p=check(R.zero,on=$a.object,c=@v/p)",
