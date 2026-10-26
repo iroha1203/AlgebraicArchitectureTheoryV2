@@ -1351,6 +1351,7 @@ mod tests {
             "law required varying(c:Part,n:Z) when false:n=n;",
             "law required varying(c:Part,n:Z) when n=0:n=n;",
             "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
+            "view active(x:Z):Bool=x=0;law required varying(c:Part,n:Z) when active(n):n=n;",
             "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=n;",
             "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required varying(c:Part,n:Z):twice(n)=0;",
         ] {
@@ -1387,6 +1388,22 @@ mod tests {
             }
             presentation.recheck(inputs, &mut c).unwrap();
         }
+    }
+    #[test]
+    fn boolean_view_guard_retains_numeric_difference() {
+        let inputs = inputs_with("view active(x:Q):Bool=let y=x+1 in y=x+1;view enabled(y:Q):Bool=active(y);law required balanced(c:Part,n:Q) when enabled(n):n=n+1;");
+        let mut c = Control::unlimited();
+        let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+        assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+        assert!(!presentation.occurrences.is_empty());
+        for occurrence in &presentation.occurrences {
+            assert_eq!(occurrence.guard, EquationGuard::AlwaysTrue);
+            let expected = NumericTransportValue::observed(Scalar::Q((-1).into(), 1.into()));
+            assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+            assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected));
+            assert_eq!(occurrence.component_holds, Some(false));
+        }
+        presentation.recheck(inputs, &mut c).unwrap();
     }
     #[test]
     fn uniform_true_guard_preserves_numeric_difference() {

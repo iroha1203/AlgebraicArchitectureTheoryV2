@@ -157,6 +157,19 @@ fn inactive_numeric_laws_feed_public_build_and_checks() {
         for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }
 }
+#[test]
+fn boolean_view_guards_feed_public_build_and_checks() {
+    for (ty, condition, applicable) in [("Z", "x=x", true), ("Q", "x+1=x", false)] {
+        let dir = files(&format!("boolean-view-guard-{ty}"), &format!(
+            "view active(x:{ty}):Bool={condition};law required balanced(c:Part,n:{ty}) when active(n):n=n;"
+        ), false);
+        let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
+        let result = saved(&dir, &run, "complete", 0);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "c"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "c"), "applicability")), if applicable { "applicable" } else { "not_applicable" });
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =
