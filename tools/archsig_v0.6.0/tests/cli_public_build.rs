@@ -9,6 +9,158 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn correlated_missing_products_decide_constant_differences_and_reuse() {
+    for (ty, lexical, offset) in [
+        ("Z", false, 0),
+        ("Q", false, 1),
+        ("Z", true, 1),
+        ("Q", true, 0),
+    ] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let predicate = if lexical {
+            format!("let v=n*c.quantity in v=c.quantity*n+{offset}")
+        } else {
+            format!("n*c.quantity=c.quantity*n+{offset}")
+        };
+        let body = format!(
+            "view amount(c:Part):{ty}=c.quantity;law required zero(c:Part,n:{ty}):{predicate};"
+        );
+        let dir = files_with_definition("correlated-missing-product", &body, true, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(r#""value":"0""#, r#""value":["0","1"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = [
+            "a=build(R,on=@v/root)",
+            "q=check(R.zero,on=$a.object,c=@v/q)",
+            "v=evaluate(R.amount,on=$a.object,c=@v/q)",
+            "n=needed($v)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in requests {
+            args.extend(["--ask", request]);
+        }
+        let before =
+            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 2, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(!has(&normal.receipt, "nodes"));
+        assert!(!has(&normal.receipt, "result"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+        }
+        let status = if offset == 0 {
+            "established"
+        } else {
+            "refuted"
+        };
+        assert_eq!(s(get(answer(&normal.receipt, "q"), "status")), status);
+        assert_eq!(
+            s(get(answer(&normal.receipt, "v"), "status")),
+            "undetermined"
+        );
+        assert!(!has(get(answer(&normal.receipt, "v"), "outputs"), "value"));
+        eprintln!(
+            "correlated product {ty}/{lexical}/{offset}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "partial", 2);
+        assert_eq!(s(get(answer(&j, "q"), "status")), status);
+        assert_eq!(
+            s(get(get(answer(&j, "q"), "scope"), "domain")),
+            "all_completions"
+        );
+        assert!(
+            arr(get(get(answer(&j, "q"), "scope"), "quantifiers"))
+                .iter()
+                .any(|q| s(get(q, "name")) == "n"
+                    && s(get(q, "kind")) == "forall"
+                    && s(get(q, "type")) == ty)
+        );
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        assert!(
+            arr(get(plan, "requirements"))
+                .iter()
+                .any(
+                    |r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"
+                        && s(get(get(r, "field"), "subject")) == "q"
+                )
+        );
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 2, "{}", reused.stdout);
+        assert!(reused.stderr.is_empty());
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&again, field).value);
+        }
+    }
+}
+#[test]
+fn different_missing_product_slots_remain_independent() {
+    for ty in ["Z", "Q"] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let body = format!("law required equal(c:Part,d:Part,n:{ty}):n*c.quantity=n*d.quantity;");
+        let dir = files_with_definition("independent-missing-product", &body, true, &definition);
+        let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#",{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}"#,"").replace("p=0、q=1。", "pとqの数量は未観測。");
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        let r = cli::run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "a=build(R,on=@v/root)",
+                "--ask",
+                "same=check(R.equal,on=$a.object,c=@v/q,d=@v/q)",
+                "--ask",
+                "different=check(R.equal,on=$a.object,c=@v/p,d=@v/q)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{}", r.stdout);
+        assert!(r.stderr.is_empty());
+        assert_eq!(s(get(answer(&r.receipt, "same"), "status")), "established");
+        assert_eq!(
+            s(get(answer(&r.receipt, "different"), "status")),
+            "undetermined"
+        );
+        let reasons = arr(get(answer(&r.receipt, "different"), "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .all(|r| s(get(r, "code")) == "missing_observation")
+        );
+        for subject in ["p", "q"] {
+            assert!(
+                reasons
+                    .iter()
+                    .flat_map(|r| arr(get(r, "missing")))
+                    .any(|f| s(get(f, "subject")) == subject
+                        && s(get(f, "field")) == "Build.Part.quantity")
+            );
+        }
+    }
+}
+#[test]
 fn boolean_numeric_products_keep_missing_coefficients_separate_from_applicability() {
     finite_missing_product("bool", "Bool", "false", "true", "b");
 }
