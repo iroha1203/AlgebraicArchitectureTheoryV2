@@ -80,7 +80,6 @@ pub(super) fn sources(
             tick(c)?;
             let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
                 .map_err(|e| construction_failure(&e))? else { return Ok(None) };
-            if source.guard && source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
             // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
             symbolic |= !source.difference.parameters.is_empty()
                 || (!source.finite.is_empty() && instance.parameters().iter().any(|p| matches!(p.ty, Type::Z | Type::Q)));
@@ -250,7 +249,8 @@ pub(super) fn plans(
                 a.readings().instances()[*instance].applications()[object],
                 InstanceApplication::NotApplicable
             );
-            let epsilon = if outside || !source.guard {
+            let missing = source.ring.symbols.iter().any(|s| s.value.is_none());
+            let epsilon = if outside || !source.guard || missing {
                 None
             } else if observation_free_difference(source) {
                 Some(nu)
@@ -285,9 +285,9 @@ pub(super) fn plans(
             let residual = if outside || !source.guard {
                 let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                     .map_err(|e| construction_failure(&e))?;
-                polynomial(parts, base, &zero, *ring, &ty, variables, c)?
+                Some(polynomial(parts, base, &zero, *ring, &ty, variables, c)?)
             } else {
-                epsilon.ok_or("適用された数値族の実差がない")?
+                epsilon
             };
             let witness = push(
                 parts,
@@ -330,7 +330,7 @@ pub(super) fn plans(
                 right: None,
                 nu: Some(nu),
                 epsilon,
-                residual: Some(residual),
+                residual,
                 witness: Some(witness),
                 guard: if outside {
                     EquationGuard::OutsideObject
@@ -341,10 +341,15 @@ pub(super) fn plans(
                 },
                 status: if outside || !source.guard {
                     EquationPresentationStatus::NotApplicable
+                } else if missing {
+                    EquationPresentationStatus::Undetermined
                 } else {
                     EquationPresentationStatus::Ready
                 },
             });
+            if !outside && source.guard && missing {
+                out.status = EquationPresentationStatus::Undetermined;
+            }
         }
         let mut quantifiers = vec![];
         for original in &out.originals {
@@ -374,7 +379,7 @@ pub(super) fn plans(
             Part::Equation(E::Context {
                 base: reference,
                 carrier: common::carrier(a, c)?,
-                dependencies: dependencies.slots,
+                dependencies: dependencies.slots.clone(),
                 laws: out.originals.iter().map(|o| o.reference).collect(),
                 quantifiers: quantifiers.clone(),
             }),
@@ -438,6 +443,15 @@ pub(super) fn plans(
                 .iter()
                 .filter(|q| q.ring == Some(*ring))
                 .collect::<Vec<_>>();
+            let missing_positions = coordinates.iter()
+                .filter(|q| q.guard == EquationGuard::AlwaysTrue && q.epsilon.is_none())
+                .flat_map(|q| equations[q.occurrence].1.ring.symbols.iter())
+                .filter(|s| s.value.is_none())
+                .map(|s| Fact { snapshot: s.slot.snapshot.clone(), subject: s.slot.subject.clone(), field: Some(s.slot.field.clone()), atom: None })
+                .collect::<Vec<_>>();
+            let omissions = dependencies.missing_reasons(inputs, &missing_positions,
+                &out.originals.iter().flat_map(|o| std::iter::once(o.body).chain(o.guard)).collect::<Vec<_>>(),
+                Witness::Architecture(a.clone()).request(), c)?;
             let presentation = push(
                 parts,
                 base,
@@ -461,7 +475,7 @@ pub(super) fn plans(
                     evaluation: *evaluation,
                     context,
                     quantifiers: quantifiers.clone(),
-                    omissions: vec![],
+                    omissions,
                 }),
                 c,
             )?;

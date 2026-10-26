@@ -9,6 +9,128 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn active_parameter_product_keeps_missing_observation_undetermined() {
+    for ty in ["Z", "Q"] {
+        for guard in ["", " when true"] {
+            let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+            let body = format!("law required zero(c:Part,n:{ty}){guard}:n*c.quantity=0;");
+            let dir = files_with_definition("active-product-missing", &body, true, &definition);
+            if ty == "Q" {
+                let map = std::fs::read_to_string(dir.join("a.json"))
+                    .unwrap()
+                    .replace(r#""value":"0""#, r#""value":["0","1"]"#);
+                std::fs::write(dir.join("a.json"), map).unwrap();
+            }
+            let requests = [
+                "b=build(R,on=@v/root)",
+                "p=check(R.zero,on=$b.object,c=@v/p)",
+                "q=check(R.zero,on=$b.object,c=@v/q)",
+                "n=needed($b)",
+            ];
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in requests {
+                args.extend(["--ask", request]);
+            }
+            let before =
+                ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+            let normal = cli::run(&dir, &args);
+            assert_eq!(normal.code, 2, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert!(!has(&normal.receipt, "nodes"));
+            assert!(!has(&normal.receipt, "result"));
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+                assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+            }
+            eprintln!(
+                "active missing product {ty}/{guard}: stdout {} bytes",
+                normal.stdout.len()
+            );
+            for id in ["b", "q"] {
+                let answer = answer(&normal.receipt, id);
+                assert_eq!(s(get(answer, "status")), "undetermined");
+                let reasons = arr(get(answer, "reasons"));
+                assert!(!reasons.is_empty());
+                assert!(
+                    reasons
+                        .iter()
+                        .all(|r| s(get(r, "code")) == "missing_observation")
+                );
+            }
+            assert_eq!(
+                s(get(answer(&normal.receipt, "p"), "status")),
+                "established"
+            );
+            let r = asks(&dir, &requests);
+            let j = saved(&dir, &r, "partial", 2);
+            assert!(has(get(answer(&j, "b"), "outputs"), "object"));
+            assert!(!has(get(answer(&j, "b"), "outputs"), "algebra"));
+            let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "field"
+            )) == "Build.Part.quantity"
+                && s(get(get(r, "field"), "subject")) == "q"));
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, 2, "{}", reused.stdout);
+            assert!(reused.stderr.is_empty());
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for field in ["answers", "nodes"] {
+                assert_eq!(get(&j, field).value, get(&again, field).value);
+            }
+        }
+    }
+}
+#[test]
+fn missing_coefficient_does_not_hide_unsupported_integer_existential() {
+    let dir = files(
+        "existential-product-missing",
+        "law required zero(c:Part):exists n:Z.n*n=c.quantity;",
+        true,
+    );
+    let r = cli::run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "b=build(R,on=@v/root)",
+            "--ask",
+            "q=check(R.zero,on=$b.object,c=@v/q)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    assert!(r.stderr.is_empty());
+    for id in ["b", "q"] {
+        let reasons = arr(get(answer(&r.receipt, id), "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "missing_observation")
+        );
+        assert!(
+            reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+        );
+    }
+}
+#[test]
 fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
     for ty in ["Z", "Q"] {
         for guard in ["false", "inactive(n)"] {
