@@ -85,6 +85,7 @@ enum Transform {
     Project,
     Equal,
     Difference,
+    Multiply,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ParameterDomain {
@@ -325,6 +326,7 @@ impl Part {
                             Transform::Project => "project",
                             Transform::Equal => "equal",
                             Transform::Difference => "difference",
+                            Transform::Multiply => "multiply",
                         }),
                     ),
                     ("operands", refs(operands)),
@@ -528,12 +530,16 @@ impl Data {
                 let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
                 let mut source = super::object_equation_presentation::parameter_source_difference(&self.source.inputs, instance, c)
                     .map_err(|e| construction_failure(&e))?.ok_or("数値族の原式差がない")?;
-                if source.difference.parameters.is_empty() { return Err("数値族の原式の域が違う".into()); }
                 if !source.ring.symbols.is_empty() {
                     let values = source.ring.symbols.iter().map(|s| s.value.clone()).collect::<Vec<_>>();
                     let value = source.difference.constant.evaluate(&values, c).map_err(|e| construction_failure(&e))?
                         .ok_or("数値族の残差の実観測値がない")?;
                     source.difference.constant = EquationPolynomial::constant(value.scalar().clone(), c).map_err(|e| construction_failure(&e))?;
+                    for (_, coefficient) in &mut source.difference.parameters {
+                        let value = coefficient.evaluate(&values, c).map_err(|e| construction_failure(&e))?.ok_or("引数係数の実観測値がない")?;
+                        *coefficient = EquationPolynomial::constant(value.scalar().clone(), c).map_err(|e| construction_failure(&e))?;
+                    }
+                    source.difference.parameters.retain(|(_, coefficient)| !coefficient.terms.is_empty());
                 }
                 return Ok(Some((*ring, source.difference)));
             }
@@ -548,7 +554,7 @@ impl Data {
             let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
             match self.source.parts.get(index) {
                 Some(Part::Scalar(_)) => (),
-                Some(Part::Transform { operation: Transform::Difference, parameters, .. }) if parameters == expected && powers.iter().all(|n| *n == 0) => expression = true,
+                Some(Part::Transform { operation: Transform::Difference | Transform::Multiply, parameters, .. }) if parameters == expected => expression = true,
                 _ => return false,
             }
         }

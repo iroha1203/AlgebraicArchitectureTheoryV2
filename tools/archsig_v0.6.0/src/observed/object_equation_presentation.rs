@@ -1414,9 +1414,9 @@ mod tests {
         }
     }
     #[test]
-    fn mixed_products_require_a_constant_factor() {
+    fn mixed_products_preserve_affine_parameters_with_observed_coefficients() {
         for (expression, expected) in [("2*(n+c.quantity)", true), ("(n+c.quantity)*2", true),
-            ("0*(n+c.quantity)", true), ("n*(m+c.quantity)", false), ("c.quantity*(n+c.quantity)", false)] {
+            ("0*(n+c.quantity)", true), ("n*(m+c.quantity)", false), ("c.quantity*(n+c.quantity)", true)] {
             let inputs = inputs_with(&format!("law required equal(c:Part,n:Z,m:Z):{expression}=m;"));
             let mut c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();

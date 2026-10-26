@@ -120,7 +120,7 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
         assert!(terms[0].1.iter().all(|power| *power == 0));
         let (_, family) = data(&g, nu).parameter_difference(&mut quiet()).unwrap().unwrap();
         assert_eq!(family.parameters.len(), 1);
-        assert_eq!(family.parameters[0].1, Scalar::Z(1.into()));
+        assert_eq!(family.parameters[0].1, EquationPolynomial::constant(Scalar::Z(1.into()), &mut quiet()).unwrap());
         let value = family.constant.evaluate(&[], &mut quiet()).unwrap().unwrap();
         assert_eq!(value.scalar(), &Scalar::Z((-1).into()));
     }
@@ -174,25 +174,32 @@ fn parameter_polynomials_keep_free_observation_variables() {
                 assert_eq!(operands.len(), 2);
                 coefficient(g, operands[0], n, x) - coefficient(g, operands[1], n, x)
             }
+            Part::Transform { operation: Transform::Multiply, operands, .. } => {
+                coefficient(g, operands[0], n, x) * coefficient(g, operands[1], n, x)
+            }
             _ => panic!("numeric coefficient"),
         }
     }
-    for (body, parameter, observation, constant) in [("n=c.quantity+2", 1, -1, -2), ("c.quantity+2=n", -1, 1, 2),
+    for (body, parameter, observation, constant, cross) in [("n=c.quantity+2", 1, -1, -2), ("c.quantity+2=n", -1, 1, 2),
         ("n+c.quantity=2", 1, 1, -2), ("n+c.quantity=2*n+1", -1, 1, -1),
         ("2*(n+c.quantity)=2", 2, 2, -2), ("(n+c.quantity)*2=2", 2, 2, -2),
-        ("equalvalue(n+c.quantity)",1,1,-2), ("twice(n+c.quantity)",2,2,-2)] {
+        ("equalvalue(n+c.quantity)",1,1,-2), ("twice(n+c.quantity)",2,2,-2)].into_iter().map(|(body, p, o, c)| (body, p, o, c, 0))
+        .chain([("n*c.quantity=0",0,0,0,1), ("c.quantity*n=0",0,0,0,1),
+            ("2*(n*c.quantity)+c.quantity=3",0,1,-3,2), ("n*c.quantity-n*c.quantity=n",-1,0,0,0)]) {
         let p = prepared(false, false, &format!("view equalvalue(n:Z):Bool=n=2;view twice(n:Z):Bool=equalvalue(2*n);law required equal(c:Part,n:Z):{body};"), "root");
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
         for coordinate in &ds[0].coordinates {
             let Part::Polynomial { terms, .. } = data(&g, coordinate.nu.unwrap()).part() else { panic!("polynomial") };
-            assert_eq!(terms.iter().filter(|(_, powers)| powers.iter().all(|p| *p == 0)).count(), 1);
+            if parameter != 0 || constant != 0 {
+                assert_eq!(terms.iter().filter(|(_, powers)| powers.iter().all(|p| *p == 0)).count(), 1);
+            }
             for n in [-3, 0, 4] {
                 for x in [-5i64, 0, 7] {
                     let actual: i64 = terms.iter().map(|(r, powers)| {
                         coefficient(&g, *r, n, x) * powers.iter().map(|power| x.pow(*power as u32)).product::<i64>()
                     }).sum();
-                    assert_eq!(actual, parameter * n + observation * x + constant);
+                    assert_eq!(actual, parameter * n + observation * x + constant + cross * n * x);
                 }
             }
         }
