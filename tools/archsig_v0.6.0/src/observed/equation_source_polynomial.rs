@@ -696,13 +696,11 @@ pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstanc
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
     else { return Ok(None) };
     let Some(root) = *guard else { return Ok(Some(true)) };
-    if !finite.is_empty() {
-        let ty = instance.parameters().iter().find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone()).unwrap_or(Type::Z);
-        let mut ring = EquationRing { ty, symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-        let variables = variables_for(instance, finite, c)?;
-        let mut compiler = Compiler { inputs, ring: &mut ring, variables };
-        if let Some(Binding::Boolean(value)) = compiler.expression(root, &[], c)? { return Ok(Some(value)); }
-    }
+    let ty = instance.parameters().iter().find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone()).unwrap_or(Type::Z);
+    let mut ring = EquationRing { ty, symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+    let variables = variables_for(instance, finite, c)?;
+    let mut compiler = Compiler { inputs, ring: &mut ring, variables };
+    if let Some(Binding::Boolean(value)) = compiler.expression(root, &[], c)? { return Ok(Some(value)); }
     let mut cursor = root;
     let (left, right) = loop {
         tick(c)?;
