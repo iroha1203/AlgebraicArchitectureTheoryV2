@@ -113,6 +113,31 @@ impl Drop for Value {
     }
 }
 impl Value {
+    pub(in crate::observed) fn list_aggregate(
+        &self,
+        name: &str,
+        law: &CheckedLaw,
+        span: (usize, usize),
+        c: &Control,
+    ) -> Result<Option<Value>, ValidationFailure> {
+        let Self::List { element, items } = self else {
+            return Ok(None);
+        };
+        tick(c)?;
+        if name == "count" {
+            return Ok(Some(Self::Known(Scalar::Z(items.len().into()))));
+        }
+        if name != "sum" {
+            return Ok(None);
+        }
+        let mut total = Self::Known(numeric::zero(element, c)?);
+        for item in items {
+            tick(c)?;
+            total = operation(BinOp::Add, &total, item, element, law, span, c)?;
+        }
+        Ok(Some(total))
+    }
+
     pub(in crate::observed) fn missing(
         ty: &Type,
         fact: &Fact,
@@ -1012,20 +1037,7 @@ impl Term {
                         && a.len() == 1
                         && matches!(a[0], Value::List { .. })
                     {
-                        let Value::List { element, items } = &a[0] else {
-                            unreachable!()
-                        };
-                        if builtin_name == Some("count") {
-                            Value::Known(numeric::literal(&items.len().to_string(), &Type::Z, c)?)
-                        } else {
-                            let mut total = Value::Known(numeric::zero(element, c)?);
-                            for item in items {
-                                tick(c)?;
-                                total =
-                                    operation(BinOp::Add, &total, item, element, law, e.span, c)?;
-                            }
-                            total
-                        }
+                        a[0].list_aggregate(builtin_name.ok_or("集計名がない")?, law, e.span, c)?.ok_or("記号List集計がない")?
                     } else if a
                         .iter()
                         .map(|v| v.known(c))

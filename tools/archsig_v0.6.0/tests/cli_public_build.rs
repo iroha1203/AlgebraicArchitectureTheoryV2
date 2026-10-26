@@ -9,6 +9,13 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn explicit_list_count_uses_shape_with_numeric_parameters() {
+    for (name,guard) in [
+        ("symbolic-list-count", "count(list<Number>[n,n])=2"),
+        ("symbolic-list-count-let", "let xs=list<Number>[n,n+n] in count(xs)=2"),
+    ] { known_numeric_product(name, "", guard); }
+}
+#[test]
 fn explicit_list_aggregate_guards_preserve_numeric_products() {
     for (name, guard) in [
         ("list-count-sum", "count(list<Bool>[true,false,true])=3 and sum(list<Z>[1,1])=2"),
@@ -86,6 +93,7 @@ fn numeric_guards_preserve_known_products() {
 fn known_numeric_product(name: &str, extra: &str, guard: &str) {
     for ty in ["Z", "Q"] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let guard = guard.replace("Number", ty);
         let body = format!(
             "law required zero(c:Part,n:{ty}{extra}) when {guard}:n*c.quantity=0;"
         );
@@ -691,7 +699,9 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
             ("", " when false implies n*n=1"),
             ("", " when true or n*n=1"),
             ("", " when sum(list<Q>[rat(1,2),rat(1,2)])=1"),
+            ("", " when count(list<Number>[n,n])=2"),
         ] {
+            let guard = guard.replace("Number",ty);
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
             let body = format!("law required zero(c:Part,n:{ty}{extra}){guard}:n*c.quantity=0;");
             let dir = files_with_definition("active-product-missing", &body, true, &definition);
@@ -819,7 +829,9 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
             "false and n*n=1",
             "count(list<Bool>[])>0",
             "sum(list<Q>[])!=0",
+            "count(list<Number>[n,n])=1",
         ] {
+            let guard = guard.replace("Number",ty);
             for read_missing in [false, true] {
                 let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
                 let view = if read_missing {
