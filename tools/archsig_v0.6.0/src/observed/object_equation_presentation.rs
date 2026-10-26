@@ -25,6 +25,27 @@ mod source_polynomial;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
+// 観測値へ代入する前の共有slotと数値binderがすべて消える差だけを共有する。
+pub(super) fn constant_source_difference(
+    inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
+) -> Result<Option<Scalar>, ConstructionFailure> {
+    let crate::law::model::Signature::Law { body, guard: None, .. } = &inputs.law().declarations
+        .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
+    let mut cursor = *body;
+    let (left, right) = loop {
+        tick(c)?;
+        match inputs.law().exprs[cursor].kind {
+            ExprKind::Group(next) | ExprKind::Let { body: next, .. } => cursor = next,
+            ExprKind::Binary { op: BinOp::Eq, lhs, rhs } => break (lhs, rhs),
+            _ => return Ok(None),
+        }
+    };
+    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
+    let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+    let Some(source) = source_polynomial::operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
+    if source.difference.terms.iter().any(|term| !term.variables.is_empty()) { return Ok(None); }
+    Ok(source.difference.evaluate(&[], c)?.map(|value| value.scalar().clone()))
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
     pub snapshot: String,
@@ -1150,6 +1171,12 @@ fn populate(
                 } else if row.is_none()
                     && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(original, c)? {
                     let polynomial = EquationPolynomial::constant(value.clone(), c)?;
+                    if let LawNumericShape::Equality { left, right, .. } = e.shape
+                        && let Some(source) = source_polynomial::operands(inputs, original.instance(), left, right, &path, &mut r.rings[index], c)? {
+                        if source.difference != polynomial { return Err(bad("元記号差と全域族の定数差が違う")); }
+                        occurrence.left = source.left;
+                        occurrence.right = source.right;
+                    }
                     occurrence.nu = Some(polynomial);
                     occurrence.evaluated_nu = Some(NumericTransportValue::observed(value.clone()));
                     occurrence.component_holds = Some(value == numeric::zero(&ty, c).map_err(invalid)?);
@@ -1296,7 +1323,10 @@ mod tests {
         inputs_with("law required amount(c:Part):c.quantity+1=0;")
     }
     fn inputs_with(body: &str) -> Arc<CheckedInputs> {
-        let d = crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
+        inputs_from(body, fixture::D, fixture::A)
+    }
+    fn inputs_from(body: &str, definition: &str, map: &str) -> Arc<CheckedInputs> {
+        let d = crate::definition::check_definitions(&[("definition0", definition.as_bytes())])
             .unwrap();
         let digest = &d.vocabularies["Pattern"].digest;
         let law = format!(
@@ -1305,14 +1335,41 @@ mod tests {
         Arc::new(
             check_inputs(
                 InputSources::from_bytes(
-                    vec![fixture::D.as_bytes().to_vec()],
+                    vec![definition.as_bytes().to_vec()],
                     law.into_bytes(),
-                    fixture::A.replace("@DIGEST@", digest).into_bytes(),
+                    map.replace("@DIGEST@", digest).into_bytes(),
                 ),
                 &mut Control::unlimited(),
             )
             .unwrap(),
         )
+    }
+    #[test]
+    fn observed_numeric_cancellation_keeps_source_slots_without_observed_generalization() {
+        for ty in ["Z", "Q"] {
+            for missing in [false, true] {
+                let definition = fixture::D.replace("\"type\":\"Z\"", &format!("\"type\":\"{ty}\""));
+                let mut map = fixture::A.to_owned();
+                if missing {
+                    map = map.replace(",\n{\"id\":\"quantity-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.quantity\",\"value\":\"2\",\"origin\":\"model\"}", "");
+                } else if ty == "Q" {
+                    map = map.replace("\"value\":\"2\"", "\"value\":[\"2\",\"1\"]");
+                }
+                let inputs = inputs_from(&format!("view plus(c:Part,x:{ty}):{ty}=c.quantity+x;law required balanced(c:Part,n:{ty}):let a=plus(c,n) in a=n+c.quantity+1;"), &definition, &map);
+                let mut c = Control::unlimited();
+                let presentation = object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c).unwrap();
+                assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
+                assert_eq!(presentation.rings[0].symbols.len(), 1);
+                assert_eq!(presentation.rings[0].symbols[0].value.is_none(), missing);
+                for occurrence in &presentation.occurrences {
+                    let expected = NumericTransportValue::observed(if ty == "Z" { Scalar::Z((-1).into()) } else { Scalar::Q((-1).into(), 1.into()) });
+                    assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
+                    assert_eq!(occurrence.nu.as_ref().unwrap().evaluate(&[], &mut c).unwrap(), Some(expected));
+                    assert_eq!(occurrence.component_holds, Some(false));
+                }
+                presentation.recheck(inputs, &mut c).unwrap();
+            }
+        }
     }
     #[test]
     fn uniform_numeric_difference_retains_full_parameters_and_rejects_changed_residual() {

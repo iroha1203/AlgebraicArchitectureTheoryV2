@@ -218,6 +218,35 @@ fn mixed_numeric_view_family_feeds_public_build_and_evaluate() {
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
+#[test]
+fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
+    for (offset, missing) in [(0, false), (1, false), (1, true)] {
+        let body = if missing { "view plus(c:Part,x:Z):Z=c.quantity+x;law required balanced(c:Part,n:Z):let a=plus(c,n) in a=n+c.quantity+1;".to_owned() }
+            else { format!("law required balanced(c:Part,n:Z):c.quantity+n=n+c.quantity+{offset};") };
+        let dir = files(&format!("observed-numeric-law-{offset}-{missing}"), &body, missing);
+        let code = if missing { 2 } else { offset };
+        let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/q)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, code, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        assert!(!has(&normal.receipt, "nodes"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!("observed numeric law {offset}: stdout {} bytes", normal.stdout.len());
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, if missing { "partial" } else { "complete" }, code);
+        assert!(has(get(answer(&result, "b"), "outputs"), if missing { "object" } else { "algebra" }));
+        assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
+        eprintln!("observed numeric law {offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =
