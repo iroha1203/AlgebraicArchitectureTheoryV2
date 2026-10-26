@@ -236,6 +236,7 @@ fn compute(
         let parameters = row
             .parameters()
             .iter()
+            .filter(|p| !original.finite.iter().any(|(name, _)| name == &p.name))
             .map(|p| (p.name.clone(), p.ty.erase()))
             .collect::<Vec<_>>();
         if parameters != original.parameters {

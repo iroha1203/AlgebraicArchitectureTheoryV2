@@ -832,3 +832,70 @@ fn shared_polynomial_family_rejects_foreign_root_request_input_and_cached_witnes
     assert_eq!(g.nodes.len(), before);
     replay(&p, &g, &g.nodes).unwrap();
 }
+
+#[test]
+fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z,b:Bool) when b:n*c.quantity=0;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    {
+        let diagram = &ds[0];
+        assert_eq!(diagram.originals.len(), 4);
+        assert_eq!(diagram.coordinates.len(), 4);
+        for (ordinal, original) in diagram.originals.iter().enumerate() {
+            let value = ordinal % 2 == 1;
+            assert_eq!(original.finite, vec![("b".into(), value)]);
+            assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+            assert_eq!(original.quantifiers.len(), 1);
+            assert_eq!(original.quantifiers[0].name, "n");
+            let binding = original.bindings.iter().find(|b| b.name == "b").unwrap();
+            assert_eq!(g.scalar(binding.value).unwrap(), &Scalar::Bool(value));
+            let coordinate = &diagram.coordinates[ordinal];
+            assert_eq!(coordinate.guard, if value { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+            if !value {
+                assert_eq!(coordinate.status, EquationPresentationStatus::NotApplicable);
+                assert!(coordinate.epsilon.is_none());
+                assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+            }
+            let Part::Polynomial { parameters, .. } = data(&g, coordinate.nu.unwrap()).part() else { panic!("polynomial") };
+            assert_eq!(parameters, &vec![("n".into(), Type::Z)]);
+        }
+    }
+    replay(&p, &g, &g.nodes).unwrap();
+    let d = data(&g, ds[0].coordinates[0].nu.unwrap());
+    let mut source = (*d.source).clone();
+    source.outputs.originals[0].finite[0].1 = true;
+    let altered = Arc::new(source);
+    let mut nodes = g.nodes.clone();
+    for node in &mut nodes {
+        if let Some(Payload::Construction(value)) = &mut node.payload {
+            if let D::PolynomialLaw(data) = &mut value.data {
+                if Arc::ptr_eq(&data.source, &d.source) { data.source = altered.clone(); }
+            }
+        }
+    }
+    assert!(replay(&p, &g, &nodes).is_err());
+}
+
+#[test]
+fn boolean_case_products_cover_joint_guards_and_keep_inactive_ideals_empty() {
+    for (guard, active) in [("b and d", 2usize), ("b and false", 0), ("b and n=n", 4)] {
+        let p = prepared(false, false, &format!("law required zero(c:Part,n:Z,b:Bool,d:Bool) when {guard}:n*c.quantity=0;"), "root");
+        let (mut g, a) = built(&p);
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagram = &ds[0];
+        assert_eq!(diagram.originals.len(), 8);
+        assert_eq!(diagram.coordinates.iter().filter(|q| q.guard == EquationGuard::AlwaysTrue).count(), active);
+        for original in &diagram.originals {
+            assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+            assert_eq!(original.finite.len(), 2);
+        }
+        if active == 0 {
+            for &ideal in &diagram.required {
+                let Part::Ideal { generators, .. } = data(&g, ideal).part() else { panic!("ideal") };
+                assert!(generators.is_empty());
+            }
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}

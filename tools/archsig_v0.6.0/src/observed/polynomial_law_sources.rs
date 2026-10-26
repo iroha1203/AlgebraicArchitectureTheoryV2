@@ -234,6 +234,13 @@ fn original(
     base: usize,
     c: &mut Control,
 ) -> Result<Original, ValidationFailure> {
+    original_bound(readings, inputs, actual, instance, row, &[], parts, base, c)
+}
+fn original_bound(
+    readings: &crate::construction::readings::ObjectReadingInstances, inputs: &CheckedInputs,
+    actual: Option<&super::super::object_law_transport::LawReadingRow>, instance: usize, row: Option<usize>,
+    finite: &[(String, bool)], parts: &mut Vec<Part>, base: usize, c: &mut Control,
+) -> Result<Original, ValidationFailure> {
     tick(c)?;
     let original = readings
         .instances()
@@ -270,7 +277,10 @@ fn original(
                     .collect::<Vec<_>>()
             })
             .unwrap_or_default();
-        let (value, ty) = match (refs.as_slice(), values.as_slice()) {
+        let (value, ty) = if let Some((_, value)) = finite.iter().find(|(name, _)| name == &parameter.name) {
+            if parameter.ty != Type::Bool || !refs.is_empty() || !values.is_empty() { return Err("有限ケースの束縛型または重複が不正".into()); }
+            (Some(Scalar::Bool(*value)), Type::Bool)
+        } else { match (refs.as_slice(), values.as_slice()) {
             ([binding], []) => {
                 let entity = match &parameter.ty {
                     Type::Ref(t) | Type::Owned(t, _) => t.clone(),
@@ -301,7 +311,7 @@ fn original(
                 (None, ty)
             }
             _ => return Err("多項式Lawの束縛が重複した".into()),
-        };
+        }};
         if let Some(value) = value {
             let value = super::super::finite_law_diagram::canonical_value(&value, c)?;
             let value = push(parts, base, Part::Scalar(value), c)?;
@@ -318,6 +328,7 @@ fn original(
     if row.is_none() {
         for parameter in original.parameters() {
             tick(c)?;
+            if finite.iter().any(|(name, _)| name == &parameter.name) { continue; }
             quantifiers.push(Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
                 name: parameter.name.clone(),
@@ -375,6 +386,7 @@ fn original(
         c,
     )?;
     let mut result = Original {
+        finite: finite.to_vec(),
         instance,
         row,
         bindings,
@@ -527,5 +539,18 @@ pub(super) fn symbolic(
         }
     }
     tick(c)?;
+    Ok(result)
+}
+
+pub(super) fn symbolic_bound(
+    inputs: &CheckedInputs, readings: &crate::construction::readings::ObjectReadingInstances,
+    equations: &[(usize, crate::observed::object_equation_presentation::ParameterEquation)],
+    parts: &mut Vec<Part>, base: usize, c: &mut Control,
+) -> Result<Vec<Original>, ValidationFailure> {
+    let mut result = vec![];
+    for (instance, equation) in equations {
+        tick(c)?;
+        result.push(original_bound(readings, inputs, None, *instance, None, &equation.finite, parts, base, c)?);
+    }
     Ok(result)
 }

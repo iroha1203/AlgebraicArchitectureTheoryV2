@@ -2,7 +2,7 @@
 use super::*;
 use crate::construction::readings::{InstanceApplication, ObjectEvaluationPosition};
 use crate::observed::object_equation_presentation::{
-    ParameterEquation, parameter_source_difference,
+    ParameterEquation, parameter_source_difference_bound,
 };
 
 fn observation_free_difference(source: &ParameterEquation) -> bool {
@@ -47,29 +47,40 @@ pub(super) fn sources(
         if instance.declaration().kind != "law" {
             continue;
         }
-        if instance
-            .parameters()
-            .iter()
-            .any(|p| !matches!(p.ty, Type::Z | Type::Q))
-        {
-            return Ok(None);
-        }
-        let Some(source) = parameter_source_difference(inputs, instance, c)
-            .map_err(|e| construction_failure(&e))?
-        else {
-            return Ok(None);
-        };
-        if source.ring.symbols.iter().any(|s| s.value.is_none()) {
-            return Ok(None);
-        }
         if instance.applications().iter().any(|a| match a {
             InstanceApplication::NotApplicable => false,
             InstanceApplication::Applicable { conditions } => !conditions.is_empty(),
         }) {
             return Ok(None);
         }
-        varying |= !source.difference.parameters.is_empty();
-        equations.push((i, source));
+        let mut cases: Vec<Vec<(String, bool)>> = vec![vec![]];
+        for parameter in instance.parameters() {
+            tick(c)?;
+            match parameter.ty {
+                Type::Z | Type::Q => (),
+                Type::Bool => {
+                    let mut next = vec![];
+                    for case in cases {
+                        for value in [false, true] {
+                            tick(c)?;
+                            let mut case = case.clone();
+                            case.push((parameter.name.clone(), value));
+                            next.push(case);
+                        }
+                    }
+                    cases = next;
+                }
+                _ => return Ok(None),
+            }
+        }
+        for finite in cases {
+            tick(c)?;
+            let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
+                .map_err(|e| construction_failure(&e))? else { return Ok(None) };
+            if source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
+            varying |= !source.difference.parameters.is_empty();
+            equations.push((i, source));
+        }
     }
     Ok(varying.then_some(equations))
 }
@@ -105,7 +116,7 @@ pub(super) fn plans(
     let mut result = vec![];
     for object in 0..a.readings().objects().len() {
         tick(c)?;
-        let originals = super::sources::symbolic(inputs, a.readings(), parts, base, c)?;
+        let originals = super::sources::symbolic_bound(inputs, a.readings(), equations, parts, base, c)?;
         let mut out = Diagram {
             unavailable: None,
             context: None,
@@ -121,11 +132,7 @@ pub(super) fn plans(
             status: EquationPresentationStatus::Ready,
         };
         for (ordinal, (instance, source)) in equations.iter().enumerate() {
-            let original = out
-                .originals
-                .iter()
-                .find(|o| o.instance == *instance)
-                .ok_or("数値族の元Lawがない")?;
+            let original = out.originals.get(ordinal).ok_or("数値族の元Lawがない")?;
             let ((lhs, ty), (rhs, _)) = original.operands.clone().ok_or("数値族の左右式がない")?;
             let (_, _, ring, _, _) = bases
                 .iter()
