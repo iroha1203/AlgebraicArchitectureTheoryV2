@@ -239,7 +239,7 @@ fn original(
 fn original_bound(
     readings: &crate::construction::readings::ObjectReadingInstances, inputs: &CheckedInputs,
     actual: Option<&super::super::object_law_transport::LawReadingRow>, instance: usize, row: Option<usize>,
-    finite: &[(String, bool)], parts: &mut Vec<Part>, base: usize, c: &mut Control,
+    finite: &[(String, Scalar)], parts: &mut Vec<Part>, base: usize, c: &mut Control,
 ) -> Result<Original, ValidationFailure> {
     tick(c)?;
     let original = readings
@@ -278,8 +278,8 @@ fn original_bound(
             })
             .unwrap_or_default();
         let (value, ty) = if let Some((_, value)) = finite.iter().find(|(name, _)| name == &parameter.name) {
-            if parameter.ty != Type::Bool || !refs.is_empty() || !values.is_empty() { return Err("有限ケースの束縛型または重複が不正".into()); }
-            (Some(Scalar::Bool(*value)), Type::Bool)
+            if parameter.ty.erase() != value.ty() || !refs.is_empty() || !values.is_empty() { return Err("有限ケースの束縛型または重複が不正".into()); }
+            (Some(value.clone()), value.ty())
         } else { match (refs.as_slice(), values.as_slice()) {
             ([binding], []) => {
                 let entity = match &parameter.ty {

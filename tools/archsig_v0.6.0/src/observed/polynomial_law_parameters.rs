@@ -53,18 +53,20 @@ pub(super) fn sources(
         }) {
             return Ok(None);
         }
-        let mut cases: Vec<Vec<(String, bool)>> = vec![vec![]];
+        let mut cases: Vec<Vec<(String, Scalar)>> = vec![vec![]];
         for parameter in instance.parameters() {
             tick(c)?;
             match parameter.ty {
                 Type::Z | Type::Q => (),
-                Type::Bool => {
+                Type::Bool | Type::Fp(_) => {
+                    let values = super::super::finite::values(&parameter.ty, inputs.law(), c,
+                        &mut |_| Err("原始有限型に参照rosterはない".into()), &mut |_| {})?;
                     let mut next = vec![];
                     for case in cases {
-                        for value in [false, true] {
+                        for value in &values.values {
                             tick(c)?;
                             let mut case = case.clone();
-                            case.push((parameter.name.clone(), value));
+                            case.push((parameter.name.clone(), value.clone()));
                             next.push(case);
                         }
                     }
@@ -78,7 +80,7 @@ pub(super) fn sources(
             let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
                 .map_err(|e| construction_failure(&e))? else { return Ok(None) };
             if source.ring.symbols.iter().any(|s| s.value.is_none()) { return Ok(None); }
-            // 正規化で数値軸が消えても、Boolで固定した各ケースの元量化を保持する。
+            // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
             symbolic |= !source.difference.parameters.is_empty()
                 || (!source.finite.is_empty() && instance.parameters().iter().any(|p| matches!(p.ty, Type::Z | Type::Q)));
             equations.push((i, source));

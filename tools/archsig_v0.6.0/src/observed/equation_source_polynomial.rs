@@ -7,6 +7,7 @@ use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone)]
 enum Binding {
     Boolean(bool),
+    FiniteScalar(Scalar),
     Reference {
         snapshot: String,
         subject: String,
@@ -32,6 +33,9 @@ impl Binding {
         }
     }
     fn binary(&self, op: BinOp, rhs: &Self, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+        if let (Self::FiniteScalar(left), Self::FiniteScalar(right)) = (self, rhs) {
+            return Ok(Some(Self::FiniteScalar(numeric::binary(op, left, right, c).map_err(invalid)?)));
+        }
         if let (Self::Polynomial(left), Self::Polynomial(right)) = (self, rhs) {
             return Ok(Some(Self::Polynomial(left.binary(op, right, c)?)));
         }
@@ -233,7 +237,9 @@ impl Compiler<'_> {
                         .expr_type(id)
                         .ok_or_else(|| bad("原式の数値型がない"))?;
                     if ty != &self.ring.ty {
-                        return Ok(None);
+                        return if matches!(ty, Type::Fp(_)) {
+                            Ok(Some(Binding::FiniteScalar(numeric::literal(n, ty, c).map_err(invalid)?)))
+                        } else { Ok(None) };
                     }
                     Some(Binding::Polynomial(EquationPolynomial::constant(
                         numeric::literal(n, ty, c).map_err(invalid)?,
@@ -250,6 +256,7 @@ impl Compiler<'_> {
                     let right = self.expression(*rhs, &[], c)?;
                     match (left, right) {
                         (Some(Binding::Boolean(left)), Some(Binding::Boolean(right))) => Some(Binding::Boolean(match op { BinOp::And => left && right, BinOp::Or => left || right, _ => left == right })),
+                        (Some(Binding::FiniteScalar(left)), Some(Binding::FiniteScalar(right))) if *op == BinOp::Eq => Some(Binding::Boolean(left == right)),
                         (Some(left), Some(right)) if *op == BinOp::Eq => {
                             let family = match left.binary(BinOp::Sub, &right, c)? {
                                 Some(value) => PolynomialFamily::from_binding(&value, c)?,
@@ -328,6 +335,9 @@ impl Compiler<'_> {
                     else {
                         return Ok(None);
                     };
+                    if let Binding::FiniteScalar(value) = value {
+                        return Ok(Some(Binding::FiniteScalar(numeric::unary(UnOp::Neg, &value, c).map_err(invalid)?)));
+                    }
                     let zero = EquationPolynomial::constant(
                         numeric::zero(&self.ring.ty, c).map_err(invalid)?,
                         c,
@@ -522,7 +532,7 @@ pub(super) fn family_operands(
 }
 pub(super) fn family_operands_bound(
     inputs: &CheckedInputs, instance: &ObjectInstance, left: usize, right: usize, path: &[usize],
-    ring: &mut EquationRing, finite: &[(String, bool)], c: &mut Control,
+    ring: &mut EquationRing, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("原式のLaw宣言がない"))?.signature
@@ -534,7 +544,7 @@ pub(super) fn family_operands_bound(
 pub(super) fn guard_value(inputs: &CheckedInputs, instance: &ObjectInstance, c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
     guard_value_bound(inputs, instance, &[], c)
 }
-pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstance, finite: &[(String, bool)], c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
+pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstance, finite: &[(String, Scalar)], c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
     let Signature::Law { guard, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
     else { return Ok(None) };
@@ -567,7 +577,7 @@ pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstanc
 }
 
 fn variables_for(
-    instance: &ObjectInstance, finite: &[(String, bool)], c: &mut Control,
+    instance: &ObjectInstance, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<BTreeMap<String, Binding>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
@@ -597,13 +607,16 @@ fn variables_for(
             variables.insert(parameter.name.clone(), Binding::ParameterForm(value));
         }
     }
-    for (name, value) in finite { variables.insert(name.clone(), Binding::Boolean(*value)); }
+    for (name, value) in finite {
+        let binding = match value { Scalar::Bool(value) => Binding::Boolean(*value), _ => Binding::FiniteScalar(value.clone()) };
+        variables.insert(name.clone(), binding);
+    }
     Ok(variables)
 }
 
 fn family_operands_from_root(
     inputs: &CheckedInputs, instance: &ObjectInstance, root: usize,
-    left: usize, right: usize, path: &[usize], ring: &mut EquationRing, finite: &[(String, bool)], c: &mut Control,
+    left: usize, right: usize, path: &[usize], ring: &mut EquationRing, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let variables = variables_for(instance, finite, c)?;
     let mut candidate = ring.clone();

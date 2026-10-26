@@ -39,7 +39,7 @@ pub(in crate::observed) use source_polynomial::PolynomialFamily;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
     pub guard: bool,
-    pub finite: Vec<(String, bool)>,
+    pub finite: Vec<(String, Scalar)>,
     pub ring: EquationRing,
     pub difference: PolynomialFamily,
 }
@@ -50,7 +50,7 @@ pub(in crate::observed) fn parameter_source_difference(
 }
 pub(in crate::observed) fn parameter_source_difference_bound(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance,
-    finite: &[(String, bool)], c: &mut Control,
+    finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };

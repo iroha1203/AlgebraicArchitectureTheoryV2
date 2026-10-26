@@ -107,7 +107,7 @@ pub(super) struct FamilyInputs {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Original {
-    pub finite: Vec<(String, bool)>,
+    pub finite: Vec<(String, Scalar)>,
     pub instance: usize,
     pub row: Option<usize>,
     pub bindings: Vec<Binding>,
