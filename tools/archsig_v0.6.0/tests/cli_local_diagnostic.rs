@@ -823,9 +823,13 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
                 .iter()
                 .any(|slot| s(get(slot, "field")) == "Fixed.State.flag")
         );
-        assert!(has(instance, "guard"));
+        assert!(!has(instance, "guard"));
+        let internal = internal_graph(&dir, &result);
+        let system = get(output(&internal, 1, "system"), "value");
+        let context = get(node(&internal, &arr(get(system, "contexts"))[0]), "value");
+        let instance = get(node(&internal, &arr(get(context, "law_coordinates"))[0]), "value");
         assert_eq!(
-            s(get(node(&result, get(instance, "guard")), "type")),
+            s(get(node(&internal, get(instance, "guard")), "type")),
             "Expression"
         );
     }
