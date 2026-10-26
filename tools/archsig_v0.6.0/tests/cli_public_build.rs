@@ -9,6 +9,15 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn explicit_list_aggregate_guards_preserve_numeric_products() {
+    for (name, guard) in [
+        ("list-count-sum", "count(list<Bool>[true,false,true])=3 and sum(list<Z>[1,1])=2"),
+        ("list-rational-sum", "sum(list<Q>[rat(1,2),rat(1,2)])=1"),
+    ] {
+        known_numeric_product(name, "", guard);
+    }
+}
+#[test]
 fn finite_aggregates_preserve_known_numeric_products() {
     for (name, finite_type, guard) in [
         ("count-known", "Set<Bool>", "count(b)>0 and count(b)<=2"),
@@ -675,7 +684,14 @@ fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, gu
 #[test]
 fn active_parameter_product_keeps_missing_observation_undetermined() {
     for ty in ["Z", "Q"] {
-        for (extra, guard) in [("", ""), ("", " when true"), (",u:Unit", " when u=unit"), ("", " when false implies n*n=1"), ("", " when true or n*n=1")] {
+        for (extra, guard) in [
+            ("", ""),
+            ("", " when true"),
+            (",u:Unit", " when u=unit"),
+            ("", " when false implies n*n=1"),
+            ("", " when true or n*n=1"),
+            ("", " when sum(list<Q>[rat(1,2),rat(1,2)])=1"),
+        ] {
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
             let body = format!("law required zero(c:Part,n:{ty}{extra}){guard}:n*c.quantity=0;");
             let dir = files_with_definition("active-product-missing", &body, true, &definition);
@@ -797,7 +813,13 @@ fn missing_coefficient_does_not_hide_unsupported_integer_existential() {
 #[test]
 fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
     for ty in ["Z", "Q"] {
-        for guard in ["false", "inactive(n)", "false and n*n=1"] {
+        for guard in [
+            "false",
+            "inactive(n)",
+            "false and n*n=1",
+            "count(list<Bool>[])>0",
+            "sum(list<Q>[])!=0",
+        ] {
             for read_missing in [false, true] {
                 let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
                 let view = if read_missing {
