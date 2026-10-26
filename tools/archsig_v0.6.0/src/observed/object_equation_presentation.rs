@@ -1433,6 +1433,23 @@ mod tests {
         }
     }
     #[test]
+    fn order_guard_uses_operand_type_in_mixed_parameter_context() {
+        for (guard, expected) in [
+            ("c.quantity+1>c.quantity", Some(true)),
+            ("c.quantity+1<=c.quantity", Some(false)),
+            ("c.quantity>1", None),
+            ("n+rat(1,2)>n and c.quantity+1>c.quantity", Some(true)),
+            ("let x=c.quantity in x+1>x", Some(true)),
+        ] {
+            let inputs = inputs_with(&format!("law required equal(c:Part,n:Q,m:Z) when {guard}:m=0;"));
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
+            assert_eq!(source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(), expected);
+        }
+    }
+    #[test]
     fn parameter_guard_requires_uniform_truth_without_observation() {
         for (guard, expected) in [
             ("n=m", None), ("n=n", Some(true)), ("false", Some(false)),
@@ -1443,6 +1460,12 @@ mod tests {
             ("n=0 implies true", Some(true)), ("n=0 and true", None),
             ("n=0 or false", None), ("n=0 implies false", None),
             ("c.quantity=2 or true", Some(true)), ("c.quantity=2 and false", Some(false)),
+            ("n<n+1", Some(true)), ("n+1<n", Some(false)),
+            ("n<=n", Some(true)), ("n+1<=n", Some(false)),
+            ("n+1>n", Some(true)), ("n>n", Some(false)),
+            ("n>=n", Some(true)), ("n>=n+1", Some(false)),
+            ("n>m", None), ("c.quantity>1", None),
+            ("c.quantity+1>c.quantity", Some(true)),
         ] {
             let inputs = inputs_with(&format!("view active(x:Z,y:Z):Bool=x=y;view nested(x:Z):Bool=active(x,x);law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
             let mut c = Control::unlimited();

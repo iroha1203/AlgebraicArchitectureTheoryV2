@@ -638,8 +638,17 @@ pub(crate) fn equality(
     right: Option<&Form>,
     control: &Control,
 ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
+    if !matches!(op, BinOp::Eq | BinOp::Ne) { return Ok(None) }
+    comparison(op, left, right, control)
+}
+pub(crate) fn comparison(
+    op: BinOp,
+    left: Option<&Form>,
+    right: Option<&Form>,
+    control: &Control,
+) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
     controlled(control, || {
-        if !matches!(op, BinOp::Eq | BinOp::Ne) {
+        if !matches!(op, BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge) {
             return Ok(None);
         }
         let Some(difference) = binary(BinOp::Sub, left, right, control)? else {
@@ -1344,6 +1353,26 @@ mod tests {
             .unwrap()
     }
 
+    #[test]
+    fn order_comparison_requires_constant_difference() {
+        let control = control();
+        for (ty, kind, offset) in [
+            (Type::Z, NumberType::Z, z(1)),
+            (Type::Q, NumberType::Q, Scalar::Q(1.into(), 2.into())),
+        ] {
+            let p = parameter(&ty, &binder(kind), &control).unwrap().unwrap();
+            let h = missing(&ty, &slot("h"), &control).unwrap().unwrap();
+            let k = missing(&ty, &slot("k"), &control).unwrap().unwrap();
+            for base in [&p, &h] {
+                let shifted = add(base, &c(offset.clone(), &control), &control);
+                for (op, expected) in [(BinOp::Lt, false), (BinOp::Le, false), (BinOp::Gt, true), (BinOp::Ge, true)] {
+                    assert_eq!(comparison(op, Some(&shifted), Some(base), &control).unwrap(), Some((Scalar::Bool(expected), offset.clone())));
+                    assert!(comparison(op, Some(&p), Some(&h), &control).unwrap().is_none());
+                    assert!(comparison(op, Some(&h), Some(&k), &control).unwrap().is_none());
+                }
+            }
+        }
+    }
     #[test]
     fn universal_parameter_identity_is_distinct_from_missing() {
         let control = control();
