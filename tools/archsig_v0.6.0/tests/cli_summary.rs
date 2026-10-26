@@ -50,6 +50,127 @@ fn no_saved_proofs(result: &archsig::json::JNode) {
     }
 }
 #[test]
+fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
+    let dir = counter("summary-known-with-missing", None);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace("view amount", "view cancelled(s:State):Z=s.count-s.count;law required same(s:State):s.count=s.count;law required different(s:State):s.count=s.count+1;view amount");
+    std::fs::write(path, law).unwrap();
+    let asks = [
+        "z=evaluate(CountCheck.cancelled,s=@v/s)",
+        "i=check(CountCheck.same,s=@v/s)",
+        "c=check(CountCheck.different,s=@v/s)",
+        "m=evaluate(CountCheck.amount,s=@v/s)",
+    ];
+    let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+    let brief = execute(&dir, &asks, &[]);
+    eprintln!("confirmed answers: {} stdout bytes", brief.stdout.len());
+    assert_eq!(brief.code, 2);
+    assert!(brief.stderr.is_empty());
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+        assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+    }
+    let answers = arr(get(&brief.receipt, "answers"));
+    assert_eq!(answers.len(), 4);
+    for (answer, status) in
+        answers
+            .iter()
+            .zip(["established", "established", "refuted", "undetermined"])
+    {
+        assert_eq!(s(get(answer, "status")), status);
+    }
+    assert_eq!(
+        s(get(get(get(&answers[0], "outputs"), "value"), "value")),
+        "0"
+    );
+    for answer in &answers[..3] {
+        assert!(!has(answer, "reasons"));
+    }
+    assert!(arr(get(&answers[3], "reasons")).iter().any(|r| {
+        s(get(r, "code")) == "missing_observation"
+            && arr(get(r, "missing"))
+                .iter()
+                .any(|f| s(get(f, "field")) == "Counter.State.count")
+    }));
+    let mut saved_asks = asks.to_vec();
+    saved_asks.extend(["k=needed($z)", "u=needed($m)"]);
+    let full = execute(&dir, &saved_asks, &["--out", "saved"]);
+    assert_eq!(full.code, 2);
+    assert!(full.stderr.is_empty());
+    let result = result_json(&dir, &full);
+    no_saved_proofs(&result);
+    let full_answers = arr(get(&result, "answers"));
+    for (brief, full) in answers.iter().zip(full_answers) {
+        assert_eq!(get(brief, "status").value, get(full, "status").value);
+    }
+    for answer in &full_answers[..3] {
+        assert!(
+            arr(get(answer, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "missing_observation")
+        );
+    }
+    for (index, empty) in [(4, true), (5, false)] {
+        let id = s(get(
+            get(get(&full_answers[index], "outputs"), "plan"),
+            "node",
+        ));
+        let node = arr(get(&result, "nodes"))
+            .iter()
+            .find(|node| s(get(node, "id")) == id)
+            .unwrap();
+        let requirements = arr(get(get(node, "value"), "requirements"));
+        assert_eq!(requirements.is_empty(), empty);
+        if !empty {
+            assert!(
+                requirements
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Counter.State.count")
+            );
+        }
+    }
+    let reused = execute(&dir, &saved_asks, &["--out", "again", "--reuse", "saved"]);
+    assert_eq!(reused.code, 2);
+    assert!(reused.stderr.is_empty());
+    let again = result_json(&dir, &reused);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&result, field).value, get(&again, field).value);
+    }
+    let normal_reuse = execute(&dir, &saved_asks, &["--reuse", "saved"]);
+    assert_eq!(normal_reuse.code, 2);
+    assert!(normal_reuse.stderr.is_empty());
+    assert!(!has(&normal_reuse.receipt, "warnings"));
+    for (original, reused) in answers
+        .iter()
+        .zip(arr(get(&normal_reuse.receipt, "answers")))
+    {
+        assert_eq!(original.value, reused.value);
+    }
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 5);
+}
+#[test]
+fn confirmed_repair_failure_keeps_its_actionable_reason_in_daily_summary() {
+    let dir = counter("summary-nonunique-repair", Some("2"));
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap().replace("view amount","change choose(s:State,a:Z,b:Z)=s with{count=a+b};law optional zero(s:State):s.count=0;view amount");
+    std::fs::write(path, law).unwrap();
+    let brief = execute(
+        &dir,
+        &["r=repair(CountCheck.zero,on=@v/s,using=CountCheck.choose,s=@v/s)"],
+        &[],
+    );
+    assert_eq!(brief.code, 1, "{}", brief.stdout);
+    assert!(brief.stderr.is_empty());
+    let answer = &arr(get(&brief.receipt, "answers"))[0];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    assert!(
+        arr(get(answer, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "condition_failed")
+    );
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+}
+#[test]
 fn empty_integer_solutions_are_saved_without_smith_certificates() {
     let dir = counter("summary-empty-integer", Some("2"));
     let path = dir.join("l.law");

@@ -1,5 +1,5 @@
 //! 保存を依頼していないrunの回答表示。計算・後続参照には元の型付き結果を使う。
-use super::result::{NodeRef, NodeType, ObservedEvaluation};
+use super::result::{Decision, NodeRef, NodeType, ObservedEvaluation, ReasonKind};
 use crate::canonical::Json;
 use std::collections::BTreeMap;
 
@@ -69,13 +69,18 @@ impl ObservedEvaluation {
                         row.insert("applicability".into(), Json::str(*applicability));
                     }
                 }
-                if !answer.reasons.is_empty() {
-                    let mut reasons = answer.reasons.iter().map(|reason| notice(&reason.wire())).collect();
-                    super::result::concise_reasons(&mut reasons);
-                    row.insert(
-                        "reasons".into(),
-                        Json::Arr(reasons),
-                    );
+                let mut reasons = answer
+                    .reasons
+                    .iter()
+                    .filter(|reason| {
+                        answer.status == Decision::Undetermined
+                            || !matches!(reason.kind, ReasonKind::Missing)
+                    })
+                    .map(|reason| notice(&reason.wire()))
+                    .collect::<Vec<_>>();
+                super::result::concise_reasons(&mut reasons);
+                if !reasons.is_empty() {
+                    row.insert("reasons".into(), Json::Arr(reasons));
                 }
                 Json::Obj(row)
             })
