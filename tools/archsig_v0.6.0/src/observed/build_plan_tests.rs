@@ -46,6 +46,13 @@ fn universal_numeric_build_laws_preserve_parameter_functions() {
             let mut g = graph(&p);
             let plan = prepare(&env, &mut g, p.shared_inputs(), &p.requests().requests()[0], &mut quiet()).unwrap();
             let table = plan.laws.as_ref().unwrap();
+            let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet()).unwrap().unwrap();
+            assert_eq!(circuits.len(), 1);
+            assert_eq!(circuits[0].parameters.len(), 1);
+            assert!(!circuits[0].cases.is_empty());
+            for case in &circuits[0].cases {
+                assert_eq!(case.when, if body == "n=0" { None } else { Some(!truth) });
+            }
             assert!(!table.objects.is_empty());
             for row in &table.objects {
                 assert_eq!(g.get(row.holds[0]).unwrap().judgment.as_ref().unwrap().status,
@@ -166,8 +173,8 @@ fn closed_circuits_use_the_actual_component_residual_and_keep_reject_cases() {
     assert_eq!(circuits.len(), 2);
     assert_eq!(circuits[0].cases.len(), 2);
     assert_eq!(circuits[1].cases.len(), 2);
-    assert!(circuits[0].cases.iter().all(|c| !c.when));
-    assert!(circuits[1].cases.iter().all(|c| c.when));
+    assert!(circuits[0].cases.iter().all(|c| c.when == Some(false)));
+    assert!(circuits[1].cases.iter().all(|c| c.when == Some(true)));
     assert_eq!(
         circuits[0].cases[0].object,
         plan.objects.as_ref().unwrap().base
