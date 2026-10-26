@@ -1434,14 +1434,18 @@ mod tests {
     }
     #[test]
     fn parameter_guard_requires_uniform_truth_without_observation() {
-        for (guard, expected) in [("n=m", false), ("n=n", true), ("false", false), ("c.quantity=c.quantity", false),
-            ("active(n,m)",false), ("active(n,n)",true), ("active(c.quantity,c.quantity)",false), ("nested(n)",true)] {
+        for (guard, expected) in [
+            ("n=m", None), ("n=n", Some(true)), ("false", Some(false)),
+            ("c.quantity=c.quantity", Some(true)), ("c.quantity+1=c.quantity", Some(false)),
+            ("c.quantity=2", None), ("active(n,m)",None), ("active(n,n)",Some(true)),
+            ("active(c.quantity,c.quantity)",Some(true)), ("nested(n)",Some(true)),
+        ] {
             let inputs = inputs_with(&format!("view active(x:Z,y:Z):Bool=x=y;view nested(x:Z):Bool=active(x,x);law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"));
             let mut c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
             let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
             let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
-            assert_eq!(source_polynomial::guard_value(&inputs, instance, &mut c).unwrap() == Some(true), expected);
+            assert_eq!(source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(), expected);
         }
     }
     #[test]

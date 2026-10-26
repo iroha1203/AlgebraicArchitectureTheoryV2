@@ -191,7 +191,8 @@ impl Compiler<'_> {
                     };
                     Ok(match family {
                         Some(value)
-                            if self.ring.symbols.is_empty() && value.parameters.is_empty() =>
+                            if value.parameters.is_empty()
+                                && value.constant.terms.iter().all(|term| term.variables.is_empty()) =>
                         {
                             Some(value.constant.terms.is_empty())
                         }
