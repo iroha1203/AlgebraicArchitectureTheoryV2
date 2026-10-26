@@ -92,6 +92,19 @@ impl Environment<'_> {
         plan: &UniversalPlan,
         bindings: &[Binding],
     ) -> Result<bool, ValidationFailure> {
+        Ok(self
+            .universal_parameter_equation(graph, plan, bindings)?
+            .is_some_and(|s| s.ring.symbols.iter().any(|s| s.value.is_none())))
+    }
+    fn universal_parameter_equation(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        bindings: &[Binding],
+    ) -> Result<
+        Option<crate::observed::object_equation_presentation::ParameterEquation>,
+        ValidationFailure,
+    > {
         if !plan.family
             || self.universal_has_exists(plan)?
             || plan
@@ -99,7 +112,7 @@ impl Environment<'_> {
                 .iter()
                 .any(|p| p.affine_parameter().is_none())
         {
-            return Ok(false);
+            return Ok(None);
         }
         let native = if let Some(index) = self.current_context(graph).instance {
             crate::observed::law_evaluation::instance_inputs(
@@ -112,19 +125,19 @@ impl Environment<'_> {
         };
         let (architecture, name) = if let Some(native) = native {
             if native.origin.body != plan.body {
-                return Ok(false);
+                return Ok(None);
             }
             (native.origin.architecture, native.origin.declaration)
         } else {
             let Some(reference) = self.architecture_ref() else {
-                return Ok(false);
+                return Ok(None);
             };
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
                 .ok_or("欠測係数の元Requestがない")?;
             if request.kind != QuestionKind::Check {
-                return Ok(false);
+                return Ok(None);
             }
             let name = request.declaration().ok_or("欠測係数の元宣言がない")?;
             let declaration = self
@@ -134,10 +147,10 @@ impl Environment<'_> {
                 .get(name)
                 .ok_or("欠測係数の元Lawがない")?;
             let Signature::Law { body, .. } = &declaration.signature else {
-                return Ok(false);
+                return Ok(None);
             };
             if *body != plan.body {
-                return Ok(false);
+                return Ok(None);
             }
             (
                 crate::observed::construction_result::architecture_origin(graph, reference, 0)?
@@ -180,10 +193,10 @@ impl Environment<'_> {
                         &mut self.control.clone(),
                     )?
                 {
-                    return Ok(false);
+                    return Ok(None);
                 }
                 let Some(binding) = bindings.iter().find(|b| b.name == parameter.name) else {
-                    return Ok(false);
+                    return Ok(None);
                 };
                 graph.expect(binding.value, &NodeType::Value(parameter.ty.clone()))?;
                 finite.push((parameter.name.clone(), graph.scalar(binding.value)?.clone()));
@@ -201,11 +214,9 @@ impl Environment<'_> {
                     }
                     other => ValidationFailure::Internal(format!("欠測係数の元式照合: {other:?}")),
                 })?;
-            return Ok(
-                source.is_some_and(|s| s.guard && s.ring.symbols.iter().any(|s| s.value.is_none()))
-            );
+            return Ok(source.filter(|s| s.guard));
         }
-        Ok(false)
+        Ok(None)
     }
     // Parameterの数値型と、元ASTのforall/existsは別の情報として保つ。
     // Law自由parameterは全代入だが、明示existsを全称軸へ変えない。
@@ -1538,7 +1549,47 @@ impl Environment<'_> {
             if let Some(case) = context.case {
                 *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
             }
-            self.analyze_source_uncached(graph, span, bindings)
+            let mut analysis = self.analyze_source_uncached(graph, span, bindings)?;
+            // 同じslotの相関を既存族で消去できた場合だけ元bodyの値を確定する。
+            // 元の読取り・欠測・Scopeは保持し、観測値は補わない。
+            let plan = self
+                .universal_context
+                .borrow()
+                .as_ref()
+                .map(|c| c.plan.clone());
+            if analysis.known_value.is_none()
+                && !analysis.condition_failed
+                && !analysis.condition_pending
+                && let Some(plan) = plan
+                && span == self.inputs.law().exprs[plan.body].span
+                && let Some(source) = self.universal_parameter_equation(graph, &plan, bindings)?
+                && source.ring.symbols.iter().any(|s| s.value.is_none())
+                && source.difference.parameters.is_empty()
+                && source
+                    .difference
+                    .constant
+                    .terms
+                    .iter()
+                    .all(|t| t.variables.is_empty())
+            {
+                let value = source
+                    .difference
+                    .constant
+                    .evaluate(&[], &mut self.control.clone())
+                    .map_err(|e| match e {
+                        crate::construction::ConstructionFailure::Stopped(stop) => {
+                            ValidationFailure::Stop(stop)
+                        }
+                        other => {
+                            ValidationFailure::Internal(format!("相関消去の定数差: {other:?}"))
+                        }
+                    })?
+                    .ok_or("相関消去した定数差の値がない")?;
+                let zero = crate::observed::numeric::zero(&source.ring.ty, &self.control)?;
+                analysis.known_value = Some(Scalar::Bool(value.scalar() == &zero));
+                analysis.scalar_scope = Some(analysis.scope.clone());
+            }
+            Ok(analysis)
         })();
         self.completion_values.replace(previous_completion);
         self.scoped_context.set(previous);
