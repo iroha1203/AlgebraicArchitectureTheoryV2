@@ -112,6 +112,7 @@ fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
         assert!(source.recheck(&p.inputs, &original.architecture, &mut quiet()).is_err());
     }
     original.recheck(&p.inputs, &original.architecture, &mut quiet()).unwrap();
+    replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
 fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {

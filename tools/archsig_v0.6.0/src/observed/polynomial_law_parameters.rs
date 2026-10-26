@@ -345,11 +345,15 @@ pub(super) fn plans(
                 },
             });
         }
-        let quantifiers = out
-            .originals
-            .iter()
-            .flat_map(|o| o.quantifiers.iter().cloned())
-            .collect::<Vec<_>>();
+        let mut quantifiers = vec![];
+        for original in &out.originals {
+            for quantifier in &original.quantifiers {
+                tick(c)?;
+                if !quantifiers.contains(quantifier) {
+                    quantifiers.push(quantifier.clone());
+                }
+            }
+        }
         let mut positions = shared
             .iter()
             .flat_map(|b| b.variables.iter().map(|v| v.field.clone()))
