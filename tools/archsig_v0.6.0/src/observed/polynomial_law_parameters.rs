@@ -17,11 +17,10 @@ pub(super) fn sources(
         if instance.declaration().kind != "law" {
             continue;
         }
-        if instance.parameters().is_empty()
-            || instance
-                .parameters()
-                .iter()
-                .any(|p| !matches!(p.ty, Type::Z | Type::Q))
+        if instance
+            .parameters()
+            .iter()
+            .any(|p| !matches!(p.ty, Type::Z | Type::Q))
         {
             return Ok(None);
         }

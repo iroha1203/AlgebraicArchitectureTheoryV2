@@ -661,7 +661,6 @@ impl Data {
             .and_then(|instance| instance.applications().get(object))
             .ok_or("元Lawの対象適用がない")?;
         let numeric_family = guard.is_none() && original.row.is_none()
-            && !original.parameters.is_empty()
             && original.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {

@@ -294,6 +294,27 @@ fn parameter_dependent_numeric_law_builds_without_constant_residual() {
     assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
 }
 #[test]
+fn parameter_families_coexist_with_closed_numeric_laws() {
+    for ty in ["Z", "Q"] {
+        let dir = files(&format!("parameter-closed-{ty}"), &format!(
+            "law required zero(c:Part,n:{ty}):n=0;law required plain(c:Part):0=0;"
+        ), false);
+        let requests = ["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)", "p=check(R.plain,on=$b.object,c=@v/p)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+    }
+}
+#[test]
 fn parameter_family_build_compares_identical_patterns() {
     let dir = files("parameter-identical-patterns", "law required zero(c:Part,n:Z):n=0;", false);
     let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
