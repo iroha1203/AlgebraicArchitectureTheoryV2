@@ -431,15 +431,24 @@ pub(in crate::observed) fn constant_numeric_family(
                 inner.insert(name.name.clone());
                 pending.push((*body, Arc::new(inner)));
             },
-            ExprKind::Call { callee, args } if args.len() == 2 => {
+            ExprKind::Call { callee, args } => {
                 let mut callee = *callee;
                 while let ExprKind::Group(inner) = law.exprs[callee].kind {
                     tick(c)?;
                     callee = inner;
                 }
-                if !matches!(&law.exprs[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat")
-                    || !args.iter().all(|arg| matches!(law.exprs[*arg].kind, ExprKind::Int(_))) {
-                    return Ok(None);
+                if matches!(&law.exprs[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat") {
+                    if args.len() != 2 || !args.iter().all(|arg| matches!(law.exprs[*arg].kind, ExprKind::Int(_))) { return Ok(None); }
+                } else {
+                    let span = law.exprs[callee].span;
+                    let target = law.infos.iter().flat_map(|info| &info.references).find_map(|(at, name)| (*at == span).then_some(name));
+                    let Some(target) = target else { return Ok(None) };
+                    let Some(term) = super::super::term::Term::from_numeric_view(law, g.prepared().inputs().sources().law().bytes(), target, c).map_err(|failure| match failure {
+                        ValidationFailure::Stop(reason) => ConstructionFailure::Stopped(reason),
+                        other => inconsistent(&format!("数値view関数の構成: {other:?}")),
+                    })? else { return Ok(None) };
+                    if term.params.len() != args.len() { return Ok(None); }
+                    pending.extend(args.iter().map(|arg| (*arg, names.clone())));
                 }
             },
             _ => return Ok(None),
