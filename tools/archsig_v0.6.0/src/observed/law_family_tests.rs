@@ -673,7 +673,28 @@ fn unbounded_parameter_is_retained_without_a_finite_family_claim() {
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     for (object, d) in ds.iter().enumerate() {
-        assert!(d.unavailable.is_some());
+        assert!(d.unavailable.is_none());
+        assert!(!d.coordinates.is_empty());
+        for coordinate in &d.coordinates {
+            assert!(coordinate.row.is_none());
+            let Some(Payload::Construction(value)) = &g.nodes[coordinate.nu.unwrap().0].payload
+            else {
+                panic!("numeric polynomial")
+            };
+            let D::PolynomialLaw(data) = &value.data else {
+                panic!("polynomial source")
+            };
+            let Json::Obj(ref polynomial) = data.wire() else {
+                panic!("polynomial")
+            };
+            assert_eq!(
+                polynomial.get("parameters"),
+                Some(&Json::Arr(vec![Json::obj([
+                    ("name", Json::str("k")),
+                    ("type", Type::Z.wire())
+                ])]))
+            );
+        }
         for t in d.originals.iter().filter(|o| o.row.is_none()) {
             let before = g.nodes.len();
             assert!(
