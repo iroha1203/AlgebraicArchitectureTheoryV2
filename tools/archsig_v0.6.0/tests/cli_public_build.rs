@@ -9,6 +9,125 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
+    for ty in ["Z", "Q"] {
+        for guard in ["false", "inactive(n)"] {
+            for read_missing in [false, true] {
+                let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+                let view = if read_missing {
+                    format!("view amount(c:Part):{ty}=c.quantity;")
+                } else {
+                    String::new()
+                };
+                let body = format!(
+                    "view inactive(n:{ty}):Bool=n+1=n;{view}law required zero(c:Part,n:{ty}) when {guard}:n*c.quantity=0;"
+                );
+                let dir =
+                    files_with_definition("inactive-product-missing", &body, true, &definition);
+                if ty == "Q" {
+                    let map = std::fs::read_to_string(dir.join("a.json"))
+                        .unwrap()
+                        .replace(r#""value":"0""#, r#""value":["0","1"]"#);
+                    std::fs::write(dir.join("a.json"), map).unwrap();
+                }
+                let mut requests = vec![
+                    "b=build(R,on=@v/root)",
+                    "p=check(R.zero,on=$b.object,c=@v/p)",
+                    "q=check(R.zero,on=$b.object,c=@v/q)",
+                ];
+                if read_missing {
+                    requests.extend(["v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"]);
+                }
+                let code = if read_missing { 2 } else { 0 };
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                ];
+                for request in &requests {
+                    args.extend(["--ask", request]);
+                }
+                let before: Vec<_> = ["d.json", "l.law", "a.json"]
+                    .map(|name| std::fs::read(dir.join(name)).unwrap())
+                    .into();
+                let normal = cli::run(&dir, &args);
+                assert_eq!(normal.code, code, "{ty}/{guard}: {}", normal.stdout);
+                assert!(normal.stderr.is_empty());
+                assert!(!has(&normal.receipt, "nodes"));
+                assert!(!has(&normal.receipt, "result"));
+                assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+                for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+                    assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+                }
+                for id in ["p", "q"] {
+                    assert_eq!(
+                        s(get(answer(&normal.receipt, id), "applicability")),
+                        "not_applicable"
+                    );
+                }
+                eprintln!(
+                    "inactive product {ty}/{guard}: stdout {} bytes",
+                    normal.stdout.len()
+                );
+                // 同じ未観測値を実際に求めれば未決。適用外は値の捏造ではない。
+                let r = asks(&dir, &requests);
+                let j = saved(
+                    &dir,
+                    &r,
+                    if read_missing { "partial" } else { "complete" },
+                    code,
+                );
+                assert_eq!(
+                    has(get(answer(&j, "b"), "outputs"), "algebra"),
+                    !read_missing
+                );
+                for id in ["p", "q"] {
+                    assert_eq!(s(get(answer(&j, id), "status")), "established");
+                    assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
+                }
+                if read_missing {
+                    assert_eq!(s(get(answer(&j, "v"), "status")), "undetermined");
+                    assert!(!has(get(answer(&j, "v"), "outputs"), "value"));
+                    let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+                    assert!(
+                        arr(get(plan, "requirements"))
+                            .iter()
+                            .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
+                    );
+                }
+                let mut reuse_args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                ];
+                for request in requests {
+                    reuse_args.extend(["--ask", request]);
+                }
+                let reused = cli::run(&dir, &reuse_args);
+                assert_eq!(reused.code, code, "{}", reused.stdout);
+                assert!(reused.stderr.is_empty());
+                let again = result_json(&dir, &reused);
+                assert!(warnings(&again).is_empty());
+                for field in ["answers", "nodes"] {
+                    assert_eq!(get(&j, field).value, get(&again, field).value);
+                }
+            }
+        }
+    }
+}
+#[test]
 fn observed_parameter_products_feed_public_build() {
     let dir=files("observed-parameter-product","law required zero(c:Part,n:Z):n*c.quantity=0;",false);
     let r=asks(&dir,&["b=build(R,on=@v/root)","p=check(R.zero,on=$b.object,c=@v/p)","q=check(R.zero,on=$b.object,c=@v/q)"]);

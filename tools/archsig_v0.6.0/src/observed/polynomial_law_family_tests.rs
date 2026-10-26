@@ -88,6 +88,53 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values() {
+    for guard in ["false", "true"] {
+        let p = prepared(
+            true,
+            false,
+            &format!("law required zero(c:Part,n:Z) when {guard}:n*c.quantity=0;"),
+            "root",
+        );
+        let (mut g, a) = built(&p);
+        let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else {
+            panic!("architecture")
+        };
+        let Witness::Architecture(architecture) = &value.witness else {
+            panic!("architecture witness")
+        };
+        let equations =
+            parameters::sources(&p.shared_inputs(), architecture, &mut quiet()).unwrap();
+        if guard == "true" {
+            // 適用される欠測本体には、この完全観測parameter経路を使わない。
+            assert!(equations.is_none());
+            continue;
+        }
+        let equations = equations.unwrap();
+        assert!(
+            equations
+                .iter()
+                .any(|(_, e)| e.ring.symbols.iter().any(|s| s.value.is_none()))
+        );
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        for diagram in diagrams {
+            assert_eq!(diagram.evaluations, [None]);
+            for coordinate in diagram.coordinates {
+                assert_eq!(coordinate.status, EquationPresentationStatus::NotApplicable);
+                assert!(coordinate.epsilon.is_none());
+                assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+            }
+            for required in diagram.required {
+                let Part::Ideal { generators, .. } = data(&g, required).part() else {
+                    panic!("ideal")
+                };
+                assert!(generators.is_empty());
+            }
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+#[test]
 fn inactive_parameter_families_keep_original_difference_without_required_generators() {
     let p=prepared(false,false,"view active(n:Z):Bool=n+1=n;law required zero(c:Part,n:Z) when active(n):n=0;","root");
     let (mut g,a)=built(&p);
