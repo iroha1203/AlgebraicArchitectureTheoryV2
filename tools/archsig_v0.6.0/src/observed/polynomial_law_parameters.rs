@@ -58,9 +58,10 @@ pub(super) fn sources(
             tick(c)?;
             match parameter.ty {
                 Type::Z | Type::Q => (),
-                Type::Bool | Type::Fp(_) => {
+                Type::Bool | Type::Fp(_) | Type::Tuple(_) => {
+                    if !super::super::finite::completion_supported(&parameter.ty, inputs.law(), c)? { return Ok(None); }
                     let values = super::super::finite::values(&parameter.ty, inputs.law(), c,
-                        &mut |_| Err("原始有限型に参照rosterはない".into()), &mut |_| {})?;
+                        &mut |_| Err("有限値型に参照rosterはない".into()), &mut |_| {})?;
                     let mut next = vec![];
                     for case in cases {
                         for value in &values.values {
