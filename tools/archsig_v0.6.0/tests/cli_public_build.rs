@@ -9,6 +9,41 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn mixed_type_order_guards_preserve_numeric_products() {
+    for (ty, other, zero) in [("Z", "Q", r#"["0","1"]"#), ("Q", "Z", r#""0""#)] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#))
+            .replace(r#""meaning":"数量。"}"#, &format!(r#""meaning":"数量。"}},{{"name":"guardValue","type":"{other}","meaning":"比較する値。"}}"#));
+        let offset = if other == "Q" { "rat(1,2)" } else { "1" };
+        let dir = files_with_definition(&format!("mixed-order-{ty}"), &format!(
+            "law required zero(c:Part,n:{ty}) when c.guardValue+{offset}>c.guardValue and n+1>n:n*c.quantity=0;"
+        ), false, &definition);
+        let mut map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+        if ty == "Q" { map = map.replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#); }
+        let atoms = format!(r#"{{"id":"gp","subject":"p","field":"Build.Part.guardValue","value":{zero},"origin":"model"}},{{"id":"gq","subject":"q","field":"Build.Part.guardValue","value":{zero},"origin":"model"}},"#);
+        std::fs::write(dir.join("a.json"), map.replace(r#""atoms":["#, &format!(r#""atoms":[{atoms}"#))).unwrap();
+        let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert!(!has(&normal.receipt, "nodes"));
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "complete", 1);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
+#[test]
 fn constant_order_guards_preserve_numeric_products() {
     for (name, guard) in [
         ("order-lt", "n<n+1"), ("order-le", "n+n<=2*n"),

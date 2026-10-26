@@ -497,6 +497,15 @@ impl Compiler<'_> {
                     lhs,
                     rhs,
                 } if path.is_empty() => {
+                    // 順序の係数型は当該operandの型。別のLaw引数の型へ合わせない。
+                    if matches!(op, BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge)
+                        && let Some(ty @ (Type::Z | Type::Q)) = self.inputs.law().expr_type(*lhs)
+                        && ty != &self.ring.ty
+                    {
+                        let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+                        let mut compiler = Compiler { inputs: self.inputs, ring: &mut ring, variables: self.variables.clone() };
+                        return compiler.expression(id, &[], c);
+                    }
                     let left = self.expression(*lhs, &[], c)?;
                     match (&left, op) {
                         (Some(Binding::Boolean(false)), BinOp::And) => return Ok(left),
