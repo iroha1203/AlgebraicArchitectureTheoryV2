@@ -107,7 +107,15 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     }
     replay(&p, &g, &g.nodes).unwrap();
     // 別の観測位置は実際の値が一致する場合でも相殺しない。
-    let p = prepared(false, false, "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;", "root");
+    let mut p = prepared(false, false, "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;", "root");
+    let sources = p.inputs.sources();
+    let map = std::str::from_utf8(sources.archmap().bytes()).unwrap();
+    let inputs = crate::observed::input::InputSources::new(
+        sources.definitions().to_vec(), sources.law().clone(),
+        crate::observed::input::InputBytes::new(sources.archmap().id(), map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes()),
+    );
+    p.inputs = Arc::new(crate::observed::input::check_inputs(inputs, &mut quiet()).unwrap());
+    p.requests = resolve_native_for_test(p.inputs.law(), p.inputs.archmap(), &["b=build(Selected,on=@v/root)"], &mut quiet()).unwrap();
     let (g, a) = built(&p);
     let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else { panic!("architecture") };
     let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
