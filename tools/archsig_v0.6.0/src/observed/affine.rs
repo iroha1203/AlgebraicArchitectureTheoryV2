@@ -186,6 +186,17 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    /// 元のparameter軸だけを持つ数値関数を、値へ潰さず取り出す。
+    pub(in crate::observed) fn parameter_coordinates(&self, c: &Control) -> Result<Option<(Scalar, Vec<(Parameter, Scalar)>)>, ValidationFailure> {
+        self.check(c)?;
+        let mut coefficients = Vec::new();
+        for (symbol, coefficient) in &self.coefficients {
+            tick(c)?;
+            let Symbol::Parameter(parameter) = symbol else { return Ok(None) };
+            coefficients.push((parameter.clone(), coefficient.clone()));
+        }
+        Ok(Some((self.constant.clone(), coefficients)))
+    }
     /// 正規化後に全称parameterの非零係数が残れば、全域での等式は成立しない。
     pub(in crate::observed) fn varies_over(&self, parameters: &[Parameter], c: &Control) -> Result<bool, ValidationFailure> {
         self.check(c)?;

@@ -47,6 +47,7 @@ fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
             let reused = cli::run(&dir, &args);
             assert_eq!(reused.code, run.code, "{}", reused.stdout);
             let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
             for field in ["answers", "nodes"] {
                 assert_eq!(get(&again, field).value, get(&result, field).value);
             }
@@ -283,6 +284,137 @@ fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     assert_eq!(reused.code, 1, "{}", reused.stdout);
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+}
+#[test]
+fn parameter_dependent_numeric_law_builds_without_constant_residual() {
+    let dir = files("parameter-dependent-law", "law required zero(c:Part,n:Z):n=0;", false);
+    let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)"]);
+    let result = saved(&dir, &run, "complete", 1);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+}
+#[test]
+fn parameter_families_coexist_with_closed_numeric_laws() {
+    for ty in ["Z", "Q"] {
+        let dir = files(&format!("parameter-closed-{ty}"), &format!(
+            "law required zero(c:Part,n:{ty}):n=0;law required plain(c:Part):0=0;"
+        ), false);
+        let requests = ["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)", "p=check(R.plain,on=$b.object,c=@v/p)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+    }
+}
+#[test]
+fn parameter_family_build_compares_identical_patterns() {
+    let dir = files("parameter-identical-patterns", "law required zero(c:Part,n:Z):n=0;", false);
+    let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
+        .replace(r#",{"id":"q","type":"Build.Part","origin":"model"}"#, "")
+        .replace(r#",{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}"#, "")
+        .replace(r#",{"id":"xq","subject":"q","field":"Build.Part.quantity","value":"1","origin":"model"}"#, "");
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/p)"]);
+    let result = saved(&dir, &run, "complete", 1);
+    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
+}
+#[test]
+fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
+    for ty in ["Z", "Q"] {
+        let dir = files(&format!("parameter-circuit-{ty}"), &format!(
+            "view zero():{ty}=0;view one():{ty}=1;view difference(n:{ty},m:{ty}):{ty}=n-m;law required balanced(c:Part,n:{ty},m:{ty}):2*difference(n,m)=0;"
+        ), false);
+        let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "i=evaluate(R.one,on=$b.object)", "all=check(R.balanced,on=$b.object,c=@v/q)",
+            "zero=check(R.balanced,on=$b.object,c=@v/q,n=$z.value,m=$z.value)",
+            "one=check(R.balanced,on=$b.object,c=@v/q,n=$i.value,m=$z.value)",
+            "equal=check(R.balanced,on=$b.object,c=@v/q,n=$i.value,m=$i.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 1);
+        for (id, status) in [("all", "refuted"), ("zero", "established"), ("one", "refuted"), ("equal", "established")] {
+            assert_eq!(s(get(answer(&result, id), "status")), status);
+        }
+        let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
+        let equations = value(&result, get(algebra, "equations"));
+        let base_row = &arr(get(equations, "objects"))[0];
+        let presentation = value(&result, &arr(get(base_row, "presentations"))[0]);
+        let ring = value(&result, get(presentation, "ring"));
+        assert!(arr(get(ring, "variables")).is_empty());
+        assert_eq!(s(get(value(&result, get(ring, "base")), "scalar")), ty);
+        let ideal = value(&result, get(presentation, "required_ideal"));
+        assert!(!has(ideal, "parameters"));
+        for coordinate in arr(get(presentation, "coordinates")) {
+            for key in ["nu", "epsilon"] {
+                let polynomial = value(&result, get(coordinate, key));
+                assert_eq!(arr(get(polynomial, "parameters")).len(), 2);
+                for term in arr(get(polynomial, "terms")) {
+                    let coefficient = node(&result, get(term, "coefficient"));
+                    assert_eq!(s(get(coefficient, "type")), "Expression");
+                    assert_eq!(get(get(coefficient, "value"), "parameters").value, get(polynomial, "parameters").value);
+                }
+            }
+        }
+        for witness in arr(get(presentation, "witness_ideals")) {
+            assert_eq!(arr(get(value(&result, witness), "parameters")).len(), 2);
+        }
+        let coefficients = arr(get(ideal, "generators")).iter().flat_map(|r| arr(get(value(&result, r), "terms")))
+            .map(|term| value(&result, get(term, "coefficient"))).collect::<Vec<_>>();
+        assert!(!coefficients.is_empty());
+        for coefficient in coefficients {
+            let numerator = if ty == "Q" { &arr(coefficient)[0] } else { coefficient };
+            assert!(matches!(s(numerator), "2" | "-2"));
+        }
+        let detectors = arr(get(algebra, "circuits"));
+        assert!(!detectors.is_empty());
+        for detector in detectors {
+            let detector = value(&result, detector);
+            assert_eq!(arr(get(detector, "parameters")).len(), 2);
+            let cases = arr(get(detector, "cases"));
+            assert!(!cases.is_empty());
+            for case in cases {
+                let case = value(&result, case);
+                assert_eq!(arr(get(value(&result, get(case, "when")), "parameters")).len(), 2);
+                assert!(!has(value(&result, get(case, "refutation")), "value"));
+            }
+        }
+        eprintln!("parameter family {ty}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        let original = std::fs::read_to_string(dir.join(s(get(&run.receipt, "result")))).unwrap();
+        let prefix = format!("\"type\":\"Polynomial\",\"value\":{{\"parameters\":[{{\"name\":\"n\",\"type\":\"{ty}\"}},{{\"name\":\"m\",\"type\":\"{ty}\"}}],");
+        let tampered = original.replacen(&prefix, "\"type\":\"Polynomial\",\"value\":{", 1);
+        assert_ne!(tampered, original);
+        std::fs::create_dir(dir.join("tampered")).unwrap();
+        std::fs::write(dir.join("tampered/result.json"), tampered).unwrap();
+        let out_at = args.iter().position(|s| *s == "--out").unwrap() + 1;
+        let reuse_at = args.iter().position(|s| *s == "--reuse").unwrap() + 1;
+        args[out_at] = "rejected";
+        args[reuse_at] = "tampered";
+        let rejected = cli::run(&dir, &args);
+        assert_eq!(rejected.code, 1, "{}", rejected.stdout);
+        let checked = result_json(&dir, &rejected);
+        assert!(!warnings(&checked).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&checked, field).value, get(&result, field).value); }
+    }
 }
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);

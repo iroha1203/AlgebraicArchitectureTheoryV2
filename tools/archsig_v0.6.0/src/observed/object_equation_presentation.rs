@@ -29,6 +29,22 @@ fn bad(s: &str) -> ConstructionFailure {
 pub(super) fn parameter_constant_source_value(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
+    let Some(source) = parameter_source_difference(inputs, instance, c)? else { return Ok(None) };
+    if !source.difference.parameters.is_empty() { return Ok(None) }
+    let values: Vec<_> = source.ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
+    Ok(source.difference.constant.evaluate(&values, c)?.map(|value| value.scalar().clone()))
+}
+pub(in crate::observed) use source_polynomial::PolynomialFamily;
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct ParameterEquation {
+    pub ring: EquationRing,
+    pub left: PolynomialFamily,
+    pub right: PolynomialFamily,
+    pub difference: PolynomialFamily,
+}
+pub(in crate::observed) fn parameter_source_difference(
+    inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
+) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, guard: None, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
     let mut cursor = *body;
@@ -42,9 +58,8 @@ pub(super) fn parameter_constant_source_value(
     };
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-    let Some(source) = source_polynomial::operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
-    let values: Vec<_> = ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
-    Ok(source.difference.evaluate(&values, c)?.map(|value| value.scalar().clone()))
+    let Some(source) = source_polynomial::family_operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
+    Ok(Some(ParameterEquation { ring, left: source.left, right: source.right, difference: source.difference }))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
@@ -1402,6 +1417,30 @@ mod tests {
             presentation.recheck(inputs.clone(), &mut c).unwrap();
             presentation.occurrences[0].nu = Some(EquationPolynomial::constant(numeric::zero(&ty, &c).unwrap(), &mut c).unwrap());
             assert!(presentation.recheck(inputs, &mut c).is_err());
+        }
+    }
+    #[test]
+    fn parameter_difference_keeps_independent_binders_and_state_slots() {
+        for ty in ["Z", "Q"] {
+            let definition = fixture::D.replace("\"type\":\"Z\"", &format!("\"type\":\"{ty}\""));
+            let map = if ty == "Q" { fixture::A.replace("\"value\":\"2\"", "\"value\":[\"2\",\"1\"]") } else { fixture::A.to_owned() };
+            let inputs = inputs_from(&format!("law required balanced(c:Part,n:{ty},m:{ty}):n-m=c.quantity;"), &definition, &map);
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
+            let source = parameter_source_difference(&inputs, instance, &mut c).unwrap().unwrap();
+            assert_eq!(source.ring.symbols.len(), 1);
+            assert_eq!(source.difference.parameters.len(), 2);
+            assert!(parameter_constant_source_value(&inputs, instance, &mut c).unwrap().is_none());
+            let number = |value: i64| if ty == "Z" { Scalar::Z(value.into()) } else { Scalar::Q(value.into(), 1.into()) };
+            for (n, m, expected) in [(0, 0, -2), (1, 0, -1), (0, 1, -3)] {
+                let arguments: Vec<_> = source.difference.parameters.iter().map(|(parameter, _)| (parameter.clone(), number(if parameter.name == "n" { n } else { m }))).collect();
+                let polynomial = source.difference.at(&arguments, &mut c).unwrap();
+                assert!(polynomial.evaluate(&[], &mut c).unwrap().is_none());
+                assert_eq!(polynomial.evaluate(&[Some(NumericTransportValue::observed(number(2)))], &mut c).unwrap(), Some(NumericTransportValue::observed(number(expected))));
+            }
+            assert!(source.difference.at(&[], &mut c).is_err());
         }
     }
     #[test]

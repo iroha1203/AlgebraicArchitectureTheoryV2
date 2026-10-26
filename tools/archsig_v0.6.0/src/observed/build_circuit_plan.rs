@@ -23,13 +23,14 @@ pub(super) struct Case {
     pub bindings: Vec<Binding>,
     pub location: crate::issue::Location,
     pub epsilon: NodeRef,
-    pub when: bool,
+    pub when: Option<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Detector {
     pub index: NodeRef,
     pub component: Vec<usize>,
+    pub parameters: Vec<(String, crate::types::Type)>,
     pub cases: Vec<Case>,
 }
 
@@ -76,6 +77,7 @@ fn constant_nonzero(
         if powers.iter().any(|n| *n != 0) {
             return Ok(None);
         }
+        if matches!(g.get(*coefficient)?.ty, NodeType::Expression(_)) { return Ok(None); }
         let coefficient = g.scalar(*coefficient)?;
         if coefficient.ty() != *ty {
             return Err("circuitの成分残差の係数型が違う".into());
@@ -111,6 +113,7 @@ pub(super) fn closed(
         return Err("circuitのbase座標がない".into());
     };
     let mut detectors = vec![];
+    let diagrams = table.diagrams()?;
     for (ordinal, coordinate) in first.coordinates.iter().enumerate() {
         tick(c)?;
         let (index, component) = match &coordinate.source {
@@ -123,6 +126,14 @@ pub(super) fn closed(
             .position(|r| *r == coordinate.index)
             .ok_or("circuitの元Law添字がない")?;
         let mut cases = vec![];
+        let parameters = if let Source::Polynomial(q) = &coordinate.source && q.row.is_none() {
+            let parameters = &diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
+                .ok_or("circuitの元parameter宣言がない")?.parameters;
+            if let Some(reference) = q.nu
+                && let Some(Payload::Construction(value)) = &g.get(reference)?.payload
+                && let D::PolynomialLaw(data) = &value.data
+                && data.parameter_family(parameters) { parameters.clone() } else { vec![] }
+        } else { vec![] };
         for (object, row) in layout.data.objects.iter().enumerate() {
             tick(c)?;
             let current = row
@@ -168,8 +179,14 @@ pub(super) fn closed(
             let Some(epsilon) = current.value(Reading::Epsilon) else {
                 return Ok(None);
             };
-            let Some(when) = constant_nonzero(g, epsilon, &ty, c)? else {
-                return Ok(None);
+            let when = if !parameters.is_empty() {
+                let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
+                let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
+                if !data.parameter_family(&parameters) { return Ok(None); }
+                None
+            } else {
+                let Some(value) = constant_nonzero(g, epsilon, &ty, c)? else { return Ok(None) };
+                Some(value)
             };
             let pattern = patterns
                 .rows
@@ -226,6 +243,7 @@ pub(super) fn closed(
         detectors.push(Detector {
             index,
             component,
+            parameters,
             cases,
         });
     }

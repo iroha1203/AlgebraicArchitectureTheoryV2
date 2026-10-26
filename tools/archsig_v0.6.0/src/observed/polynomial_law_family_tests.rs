@@ -75,15 +75,44 @@ fn data(g: &Graph, r: NodeRef) -> &Data {
     d
 }
 fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
-    let Part::Polynomial { terms, .. } = data(g, r).part() else {
+    let Part::Polynomial { terms, parameters, .. } = data(g, r).part() else {
         panic!("polynomial")
     };
+    assert!(parameters.is_empty());
+    let Json::Obj(ref wire) = data(g, r).wire() else { panic!() };
+    assert!(!wire.contains_key("parameters"));
     terms
         .iter()
         .map(|(coefficient, powers)| (g.scalar(*coefficient).unwrap().wire(), powers.clone()))
         .collect()
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
+#[test]
+fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z):n=0;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let nu = ds[0].coordinates[0].nu.unwrap();
+    let d = data(&g, nu);
+    assert!(d.polynomial().is_none());
+    let (ring, family) = d.parameter_difference(&mut quiet()).unwrap().unwrap();
+    assert_eq!(Some(ring), ds[0].coordinates[0].ring);
+    assert_eq!(family.parameters.len(), 1);
+    let original = d.source.clone();
+    for change in 0..4 {
+        let mut source = original.as_ref().clone();
+        let Part::Polynomial { parameters, terms, .. } = &mut source.parts[d.index] else { panic!() };
+        match change {
+            0 => parameters.clear(),
+            1 => parameters[0].1 = Type::Q,
+            2 => parameters[0].0 = "other".into(),
+            3 => terms[0].1.push(1),
+            _ => unreachable!(),
+        }
+        assert!(source.recheck(&p.inputs, &original.architecture, &mut quiet()).is_err());
+    }
+    original.recheck(&p.inputs, &original.architecture, &mut quiet()).unwrap();
+}
 #[test]
 fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
     let p = prepared(false, false, BODY, "root");
@@ -133,17 +162,19 @@ fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
         assert_eq!(d.domains, ds[0].domains);
         assert_eq!(d.evaluations, ds[0].evaluations);
         assert_eq!(d.status, EquationPresentationStatus::Ready);
-        assert_eq!(d.presentations.iter().all(Option::is_some), object == 0);
+        assert!(d.presentations.iter().all(Option::is_some));
         assert_eq!(d.coordinates.len(), 4);
         let Part::Ideal {
             ring,
             generators,
             required,
+            parameters,
         } = data(&g, d.required[0]).part()
         else {
             panic!("required")
         };
         assert!(*required);
+        assert!(parameters.is_empty());
         assert_eq!(*ring, d.rings[0]);
         assert_eq!(
             *generators,
@@ -167,7 +198,7 @@ fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
                 assert!(object > 0 && subject != if object == 1 { "p" } else { "q" });
                 assert_eq!(q.status, EquationPresentationStatus::NotApplicable);
                 assert!(
-                    q.left.is_none() && q.right.is_none() && q.nu.is_none() && q.epsilon.is_none()
+                    q.left.is_some() && q.right.is_some() && q.nu.is_some() && q.epsilon.is_none()
                 );
                 assert!(terms(&g, q.residual.unwrap()).is_empty());
                 continue;
@@ -257,7 +288,7 @@ fn shared_polynomial_tuple_components_keep_z_and_q_separate_across_all_objects()
                 panic!("binding")
             };
             if q.guard == EquationGuard::OutsideObject {
-                assert!(q.nu.is_none() && q.epsilon.is_none());
+                assert!(q.nu.is_some() && q.epsilon.is_none());
                 assert!(terms(&g, q.residual.unwrap()).is_empty());
                 continue;
             }
@@ -308,10 +339,7 @@ fn missing_shared_slot_omits_global_evaluation_but_keeps_known_original_epsilon(
             .collect::<Vec<_>>();
         quantity_subjects.sort();
         assert_eq!(quantity_subjects, ["p", "q"]);
-        assert_eq!(
-            d.presentations.iter().all(Option::is_some),
-            d.context == ds[0].context
-        );
+        assert!(d.presentations.iter().all(Option::is_some));
         for r in d.presentations.iter().flatten() {
             let Part::Equation(crate::observed::equation_presentation_node::Part::Presentation {
                 coordinates,
@@ -340,7 +368,8 @@ fn missing_shared_slot_omits_global_evaluation_but_keeps_known_original_epsilon(
                 let Scalar::Subject { subject, .. } = g.scalar(o.bindings[0].value).unwrap() else {
                     panic!("binding")
                 };
-                assert_eq!(q.epsilon.is_some(), subject == "p");
+                let applicable = d.coordinates.iter().any(|coordinate| coordinate.instance == q.instance && coordinate.guard == EquationGuard::AlwaysTrue);
+                assert_eq!(q.epsilon.is_some(), subject == "p" && applicable);
             }
         }
     }
@@ -440,8 +469,8 @@ fn finite_parameter_rows_and_symbolic_unimplemented_parameters_are_preserved() {
     );
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
-    for (object, d) in ds.iter().enumerate() {
-        assert_eq!(d.coordinates.len(), if object == 0 { 4 } else { 3 });
+    for d in &ds {
+        assert_eq!(d.coordinates.len(), 4);
         assert_eq!(d.rings, ds[0].rings);
         let mut rows = vec![];
         for original in d.originals.iter().filter(|o| o.row.is_some()) {
@@ -456,36 +485,23 @@ fn finite_parameter_rows_and_symbolic_unimplemented_parameters_are_preserved() {
             rows.push((subject.as_str(), *value));
         }
         rows.sort();
-        let expected = match object {
-            0 => vec![("p", false), ("p", true), ("q", false), ("q", true)],
-            1 => vec![("p", false), ("p", true)],
-            _ => vec![("q", false), ("q", true)],
-        };
+        let expected = vec![("p", false), ("p", true), ("q", false), ("q", true)];
         assert_eq!(rows, expected);
         for q in d
             .coordinates
             .iter()
             .filter(|q| q.guard == EquationGuard::OutsideObject)
         {
-            assert!(q.row.is_none() && q.nu.is_none() && q.epsilon.is_none());
+            // 有限rowは残るが、適用外では条件式を評価して原式を補わない。
+            assert!(q.row.is_some() && q.nu.is_none() && q.epsilon.is_none());
+            assert!(terms(&g, q.residual.unwrap()).is_empty());
             let original = d
                 .originals
                 .iter()
                 .find(|o| o.reference == q.instance)
                 .unwrap();
-            assert!(
-                original
-                    .parameters
-                    .iter()
-                    .any(|(n, t)| n == "b" && t == &Type::Bool)
-            );
-            assert!(
-                g.nodes[original.reference.0]
-                    .scope
-                    .quantifiers
-                    .iter()
-                    .any(|q| q.name == "b" && q.ty == Type::Bool)
-            );
+            assert!(original.parameters.is_empty());
+            assert!(original.bindings.iter().any(|b| b.name == "b" && b.ty == Type::Bool));
         }
     }
     replay(&p, &g, &g.nodes).unwrap();

@@ -115,6 +115,21 @@ fn residual(
     };
     match (&l.data, &r.data) {
         (D::PolynomialLaw(l), D::PolynomialLaw(r)) => {
+            match (l.parameter_difference(c)?, r.parameter_difference(c)?) {
+                (Some((lr, left)), Some((rr, right))) => {
+                    if lr != rr { return Err("build互換性の数値族が別環に属する".into()); }
+                    return Ok(Some(left == right));
+                }
+                (Some((ring, _)), None) => {
+                    if r.polynomial().map(|p| p.0) != Some(ring) { return Err("build互換性の残差が別環に属する".into()); }
+                    return Ok(Some(false));
+                }
+                (None, Some((ring, _))) => {
+                    if l.polynomial().map(|p| p.0) != Some(ring) { return Err("build互換性の残差が別環に属する".into()); }
+                    return Ok(Some(false));
+                }
+                (None, None) => (),
+            }
             let ((lr, ls), (rr, rs)) = (
                 l.polynomial().ok_or("左残差が多項式でない")?,
                 r.polynomial().ok_or("右残差が多項式でない")?,

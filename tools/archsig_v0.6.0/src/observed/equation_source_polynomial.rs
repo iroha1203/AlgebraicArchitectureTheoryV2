@@ -20,18 +20,6 @@ enum Binding {
     },
 }
 impl Binding {
-    fn polynomial(&self, c: &mut Control) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
-        match self {
-            Self::Polynomial(value) => Ok(Some(value.clone())),
-            Self::ParameterForm(value) => value.value(c).map_err(invalid)?
-                .map(|value| EquationPolynomial::constant(value, c)).transpose(),
-            Self::Sum { polynomial, parameters } => {
-                let Some(value) = parameters.value(c).map_err(invalid)? else { return Ok(None) };
-                Ok(Some(polynomial.binary(BinOp::Add, &EquationPolynomial::constant(value, c)?, c)?))
-            }
-            _ => Ok(None),
-        }
-    }
     fn affine(&self, c: &mut Control) -> Result<Option<affine::Form>, ConstructionFailure> {
         match self {
             Self::ParameterForm(value) => Ok(Some(value.clone())),
@@ -420,6 +408,44 @@ pub(super) struct SourceDifference {
     pub right: Option<EquationPolynomial>,
     pub difference: EquationPolynomial,
 }
+/// 各parameter代入でK[X]の元を返す。parameterを観測slotへ混ぜない。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct PolynomialFamily {
+    pub constant: EquationPolynomial,
+    pub parameters: Vec<(affine::Parameter, Scalar)>,
+}
+impl PolynomialFamily {
+    pub(super) fn at(&self, values: &[(affine::Parameter, Scalar)], c: &mut Control) -> Result<EquationPolynomial, ConstructionFailure> {
+        let mut assignments = BTreeMap::new();
+        for (parameter, value) in values {
+            tick(c)?;
+            if value.ty() != parameter.kind.ty() || assignments.insert(parameter, value).is_some() {
+                return Err(bad("数値関数族の引数型または重複が不正"));
+            }
+        }
+        let mut result = self.constant.clone();
+        for (parameter, coefficient) in &self.parameters {
+            tick(c)?;
+            let value = assignments.get(parameter).ok_or_else(|| bad("数値関数族の元parameter代入がない"))?;
+            let term = numeric::binary(BinOp::Mul, coefficient, value, c).map_err(invalid)?;
+            result = result.binary(BinOp::Add, &EquationPolynomial::constant(term, c)?, c)?;
+        }
+        Ok(result)
+    }
+    fn from_binding(value: &Binding, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+        let Some((polynomial, form)) = value.split(c)? else { return Ok(None) };
+        let Some((constant, parameters)) = form.parameter_coordinates(c).map_err(invalid)? else { return Ok(None) };
+        Ok(Some(Self { constant: polynomial.binary(BinOp::Add, &EquationPolynomial::constant(constant, c)?, c)?, parameters }))
+    }
+    fn constant_polynomial(self) -> Option<EquationPolynomial> {
+        self.parameters.is_empty().then_some(self.constant)
+    }
+}
+pub(super) struct SourceFamilyDifference {
+    pub left: PolynomialFamily,
+    pub right: PolynomialFamily,
+    pub difference: PolynomialFamily,
+}
 pub(super) fn operands(
     inputs: &CheckedInputs,
     instance: &ObjectInstance,
@@ -429,6 +455,21 @@ pub(super) fn operands(
     ring: &mut EquationRing,
     c: &mut Control,
 ) -> Result<Option<SourceDifference>, ConstructionFailure> {
+    let mut candidate = ring.clone();
+    let Some(source) = family_operands(inputs, instance, left, right, path, &mut candidate, c)? else { return Ok(None) };
+    let Some(difference) = source.difference.constant_polynomial() else { return Ok(None) };
+    *ring = candidate;
+    Ok(Some(SourceDifference { left: source.left.constant_polynomial(), right: source.right.constant_polynomial(), difference }))
+}
+pub(super) fn family_operands(
+    inputs: &CheckedInputs,
+    instance: &ObjectInstance,
+    left: usize,
+    right: usize,
+    path: &[usize],
+    ring: &mut EquationRing,
+    c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
         .iter()
@@ -500,8 +541,12 @@ pub(super) fn operands(
         return Ok(None);
     };
     let Some(difference) = left.binary(BinOp::Sub, &right, c)? else { return Ok(None) };
-    let Some(difference) = difference.polynomial(c)? else { return Ok(None) };
-    let result = SourceDifference { left: left.polynomial(c)?, right: right.polynomial(c)?, difference };
+    let (Some(left), Some(right), Some(difference)) = (
+        PolynomialFamily::from_binding(&left, c)?,
+        PolynomialFamily::from_binding(&right, c)?,
+        PolynomialFamily::from_binding(&difference, c)?,
+    ) else { return Ok(None) };
+    let result = SourceFamilyDifference { left, right, difference };
     *ring = candidate;
     Ok(Some(result))
 }

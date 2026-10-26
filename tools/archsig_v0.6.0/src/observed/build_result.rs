@@ -30,6 +30,9 @@ fn bindings(v: &[Binding]) -> Json {
             .collect(),
     )
 }
+fn parameters(v: &[(String, Type)]) -> Json {
+    Json::Arr(v.iter().map(|(name, ty)| Json::obj([("name", Json::str(name)), ("type", ty.wire())])).collect())
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Part {
@@ -167,6 +170,7 @@ impl Builder<'_> {
         operation: &str,
         operands: Vec<NodeRef>,
         bs: &[Binding],
+        ps: &[(String, Type)],
     ) -> Result<NodeRef, ValidationFailure> {
         let mut args = operands.clone();
         args.extend(bs.iter().map(|b| b.value));
@@ -177,7 +181,7 @@ impl Builder<'_> {
                 ("kind", Json::str("transform")),
                 ("operation", Json::str(operation)),
                 ("operands", refs(&operands)),
-                ("parameters", Json::Arr(vec![])),
+                ("parameters", parameters(ps)),
                 ("bindings", bindings(bs)),
             ]),
             args,
@@ -399,24 +403,20 @@ fn compute_inner(
             tick(c)?;
             let mut cases = vec![];
             for case in detector.cases {
-                let equal = b.expression("equal", vec![case.lhs, case.rhs], &case.bindings)?;
-                let when = b.expression("not", vec![equal], &case.bindings)?;
-                let value = b.push(
+                let equal = b.expression("equal", vec![case.lhs, case.rhs], &case.bindings, &detector.parameters)?;
+                let when = b.expression("not", vec![equal], &case.bindings, &detector.parameters)?;
+                let value = case.when.map(|value| b.push(
                     NodeType::Value(Type::Bool),
                     "binding",
-                    Json::Bool(case.when),
+                    Json::Bool(value),
                     vec![case.epsilon, case.evaluation],
-                    Some(Scalar::Bool(case.when)),
+                    Some(Scalar::Bool(value)),
                     None,
-                )?;
-                let evaluation = b.push(
-                    NodeType::Evaluation(Type::Bool),
-                    "evaluation",
-                    Json::obj([
+                )).transpose()?;
+                let mut evaluation_wire = Json::obj([
                         ("expression", when.wire()),
                         ("bindings", bindings(&case.bindings)),
                         ("environment", case.architecture.wire()),
-                        ("value", value.wire()),
                         ("applicability", Json::str("applicable")),
                         (
                             "parts",
@@ -426,14 +426,20 @@ fn compute_inner(
                                 ("residual", case.epsilon.wire()),
                             ])]),
                         ),
-                    ]),
-                    vec![
+                    ]);
+                if let (Some(value), Json::Obj(fields)) = (value, &mut evaluation_wire) {
+                    fields.insert("value".into(), value.wire());
+                }
+                let evaluation = b.push(
+                    NodeType::Evaluation(Type::Bool),
+                    "evaluation",
+                    evaluation_wire,
+                    [
                         when,
-                        value,
                         case.architecture,
                         case.evaluation,
                         case.epsilon,
-                    ],
+                    ].into_iter().chain(value).collect(),
                     None,
                     None,
                 )?;
@@ -475,7 +481,7 @@ fn compute_inner(
                 Json::obj([
                     ("index", detector.index.wire()),
                     ("component", path(&detector.component)),
-                    ("parameters", Json::Arr(vec![])),
+                    ("parameters", parameters(&detector.parameters)),
                     ("cases", refs(&cases)),
                 ]),
                 args,
