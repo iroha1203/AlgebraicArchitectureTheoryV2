@@ -42,6 +42,18 @@ impl Binding {
         if let Some(value) = affine::binary(op, self.affine(c)?.as_ref(), rhs.affine(c)?.as_ref(), c).map_err(invalid)? {
             return Ok(Some(Self::ParameterForm(value)));
         }
+        if op == BinOp::Mul {
+            for (value, factor) in [(self, rhs), (rhs, self)] {
+                let Some(factor) = factor.affine(c)? else { continue };
+                let Some(scalar) = factor.value(c).map_err(invalid)? else { continue };
+                let Some((polynomial, parameters)) = value.split(c)? else { continue };
+                let scalar = EquationPolynomial::constant(scalar, c)?;
+                let polynomial = polynomial.binary(BinOp::Mul, &scalar, c)?;
+                let Some(parameters) = affine::binary(BinOp::Mul, Some(&parameters), Some(&factor), c).map_err(invalid)? else { return Ok(None) };
+                return Ok(Some(Self::Sum { polynomial, parameters }));
+            }
+            return Ok(None);
+        }
         if !matches!(op, BinOp::Add | BinOp::Sub) { return Ok(None); }
         let (Some((left, a)), Some((right, b))) = (self.split(c)?, rhs.split(c)?) else { return Ok(None) };
         let Some(parameters) = affine::binary(op, Some(&a), Some(&b), c).map_err(invalid)? else { return Ok(None) };
