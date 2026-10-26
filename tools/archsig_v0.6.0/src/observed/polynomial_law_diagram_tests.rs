@@ -428,7 +428,7 @@ fn owned_architecture_keeps_containing_root_and_outside_object_residual_without_
                 let expected = if index == 1 {
                     vec![]
                 } else {
-                    vec![(Json::str("1"), vec![0])]
+                    vec![(Json::str("1"), vec![0, 0])]
                 };
                 assert_eq!(terms(&g, q.epsilon.unwrap()), expected);
             }
