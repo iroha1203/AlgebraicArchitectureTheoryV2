@@ -82,13 +82,12 @@ pub struct UsageError {
     pub message: String,
 }
 
-/// 実行の結果。stdout の receipt と終了コード、stderr の自然文。
+/// 実行の結果。stdout の receipt と終了コード。
 #[derive(Debug)]
 pub struct Outcome {
     pub status: Status,
     pub exit_code: u8,
     pub result: Option<PathBuf>,
-    pub stderr: Vec<String>,
     pub issues: Vec<Json>,
 }
 
@@ -129,14 +128,12 @@ pub fn usage_outcome(
     err: UsageError,
     _started: Instant,
 ) -> Outcome {
-    let stderr = vec![format!("archsig: {}: {}", err.argument, err.message)];
     usage_without_result(
         signals,
         ResultIssue::Usage {
             message: format!("{}: {}", err.argument, err.message),
             argument: err.argument,
         },
-        stderr,
     )
 }
 
@@ -154,7 +151,6 @@ pub fn internal_outcome(
             operation: "check".to_owned(),
             message: "検査の途中で内部障害が起きた".to_owned(),
         }],
-        vec!["archsig: 検査の途中で内部障害が起きた".to_owned()],
     )
 }
 
@@ -177,14 +173,12 @@ pub fn run_check(
             started,
         );
     }
-    let mut stderr = Vec::new();
     if let Err(m) = out_ok(&args.out) {
         let issue = ResultIssue::Usage {
             argument: "--out".to_owned(),
             message: format!("{}: {m}", args.out.display()),
         };
-        stderr.push(format!("archsig: {}: {m}", args.out.display()));
-        return usage_without_result(signals, issue, stderr);
+        return usage_without_result(signals, issue);
     }
     // 開始時に明示された全入力を読み切る。検査中に再読しない。
     let mut issues = Vec::new();
@@ -312,7 +306,7 @@ pub fn run_check(
         owned_copies.push(("inputs/archmap.json".to_owned(), bytes.as_slice()));
     }
     let copies: Vec<_> = owned_copies.iter().map(|(p, b)| (p.as_str(), *b)).collect();
-    finalize(io, signals, &args.out, result, &copies, started, stderr)
+    finalize(io, signals, &args.out, result, &copies, started)
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
@@ -349,5 +343,5 @@ fn stopped(signals: &mut dyn Signals, reason: StopReason) -> Outcome {
             observed,
         },
     };
-    output::without_result(signals, Status::Interrupted, vec![issue], Vec::new())
+    output::without_result(signals, Status::Interrupted, vec![issue])
 }

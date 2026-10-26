@@ -27,7 +27,6 @@ fn failure(signals: &mut dyn Signals, operation: &str, message: String) -> Outco
             operation: operation.to_owned(),
             message,
         }],
-        Vec::new(),
     )
 }
 
@@ -53,14 +52,12 @@ pub fn run_requests(
         return output::usage_without_result(
             signals,
             usage("--out", format!("{}: {message}", args.inputs.out.display())),
-            Vec::new(),
         );
     }
     let Some(map_path) = &args.inputs.archmap else {
         return output::usage_without_result(
             signals,
             usage("--archmap", "run は --archmap が必要".into()),
-            Vec::new(),
         );
     };
     if args.inputs.atom_definitions.is_empty() || args.asks.is_empty() {
@@ -72,7 +69,6 @@ pub fn run_requests(
         return output::usage_without_result(
             signals,
             usage(argument, format!("{argument} が一つ以上必要")),
-            Vec::new(),
         );
     }
     let mut issues = Vec::new();
@@ -85,7 +81,7 @@ pub fn run_requests(
     let law = read(&args.inputs.law, &mut issues);
     let map = read(map_path, &mut issues);
     if !issues.is_empty() {
-        return output::without_result(signals, Status::Error, issues, Vec::new());
+        return output::without_result(signals, Status::Error, issues);
     }
     let sources = InputSources::from_bytes(
         definitions.into_iter().flatten().collect(),
@@ -108,7 +104,6 @@ pub fn run_requests(
                 code,
                 prior_signal(control),
                 failure.issues().to_vec(),
-                Vec::new(),
             );
         }
         Err(PrepareFailure::Requests {
@@ -130,7 +125,6 @@ pub fn run_requests(
                     64,
                     prior_signal(control),
                     issues,
-                    Vec::new(),
                 );
             }
             ResolveFailure::Interrupted { reason } => {
@@ -140,7 +134,6 @@ pub fn run_requests(
                     75,
                     prior_signal(control),
                     vec![reason.wire()],
-                    Vec::new(),
                 );
             }
             ResolveFailure::NotApplicable {
@@ -172,7 +165,6 @@ pub fn run_requests(
                 75,
                 prior_signal(control),
                 vec![reason.wire()],
-                Vec::new(),
             );
         }
     };
@@ -227,14 +219,15 @@ fn deliver(
         }
         issues.push(reason.wire());
     }
-    if matches!(status, Status::Interrupted | Status::Error) && evaluation.nodes.is_empty() {
+    if status == Status::Error
+        || (status == Status::Interrupted && evaluation.nodes.is_empty())
+    {
         return output::notify(
             signals,
             status,
             code,
             prior_signal(control),
             issues,
-            Vec::new(),
         );
     }
     let frozen = signals.freeze();
@@ -342,7 +335,6 @@ fn deliver(
             status,
             exit_code: code,
             result: Some(args.inputs.out.join("result.json")),
-            stderr: Vec::new(),
             issues: receipt_issues,
         },
     )

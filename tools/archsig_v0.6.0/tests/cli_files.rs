@@ -384,11 +384,6 @@ fn failures_before_publication_leave_the_output_untouched() {
         assert_eq!(s(get(issue, "code")), "io");
         assert_eq!(s(get(get(issue, "details"), "operation")), fail_word(fail));
         assert!(!s(get(issue, "message")).is_empty());
-        assert!(
-            out.stderr.iter().any(|m| m.contains(fail_word(fail))),
-            "{fail}: {:?}",
-            out.stderr
-        );
     }
     // signal を受けていても、公開前の書込みの失敗は error/74 へ退避する。
     let dir = input_dir("fault-signal");
@@ -491,8 +486,8 @@ fn cleanup_preserves_unowned_paths_and_reports_remnants() {
             );
         } else {
             assert!(
-                outcome.stderr.iter().any(|m| m.contains("片付けられない")
-                    && m.contains(&temporary[0].display().to_string()))
+                outcome.receipt().contains("片付けられない")
+                    && outcome.receipt().contains(&temporary[0].display().to_string())
             );
         }
         std::fs::remove_dir_all(&temporary[0]).unwrap();
