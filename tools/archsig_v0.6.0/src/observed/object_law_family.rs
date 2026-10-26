@@ -407,17 +407,18 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else { return Ok(None) };
     let law = g.prepared().inputs().law();
-    let Signature::Law { body, guard: None, .. } = &law.declarations
+    let Signature::Law { body, guard, .. } = &law.declarations
         .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
     else { return Ok(None) };
     // この共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
     // 観測時の定数へ畳んで記号的な差と取り違えない。
     let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
-    let mut pending = vec![(*body, names)];
+    let mut pending = vec![(*body, names.clone())];
+    if let Some(guard) = guard { pending.push((*guard, names)); }
     while let Some((id, names)) = pending.pop() {
         tick(c)?;
         match &law.exprs[id].kind {
-            ExprKind::Int(_) => {},
+            ExprKind::Int(_) | ExprKind::Bool(_) => {},
             ExprKind::Dotted(path) if path.len() == 1 && names.contains(&path[0].name) => {},
             ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push((*child, names)),
             ExprKind::Binary { lhs, rhs, .. } => {
@@ -457,7 +458,11 @@ pub(in crate::observed) fn constant_numeric_family(
     let node = g.nodes.get(root.0).ok_or_else(|| inconsistent("元数値族の評価がない"))?;
     if node.support.iter().any(|f| f.field.is_some()) || !node.reasons.is_empty() { return Ok(None) }
     let Some(Payload::Evaluation { parts, applicability: "applicable", .. }) = &node.payload else { return Ok(None) };
-    let [part] = parts.as_slice() else { return Ok(None) };
+    let part = match (guard, parts.as_slice()) {
+        (None, [body]) => body,
+        (Some(_), [guard, body]) if matches!(guard.value.and_then(|value| g.nodes.get(value.0)).and_then(|node| node.payload.as_ref()), Some(Payload::Scalar(Scalar::Bool(true)))) => body,
+        _ => return Ok(None),
+    };
     let Some(residual) = part.residual else { return Ok(None) };
     let Some(Payload::Evaluation { expression, value: Some(value), .. }) = g.nodes.get(residual.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
     if !matches!(g.nodes.get(expression.0).and_then(|n| n.payload.as_ref()),

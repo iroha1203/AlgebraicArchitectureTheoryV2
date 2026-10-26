@@ -32,6 +32,30 @@ impl Environment<'_> {
         index: usize,
         span: (usize, usize),
     ) -> Result<bool, ValidationFailure> {
+        // 全域関数のSourceは通常のguard評価より先に構成される。
+        // 真であることを入力式から全parameter上で再計算できる場合に限り、
+        // その本文を構成できる。観測値から得た真を全域の真へ昇格しない。
+        if let Some(inputs) = frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+            && inputs.origin.body_allowed
+            && let Some(guard) = inputs.origin.guard
+        {
+            let law = self.inputs.law();
+            let body = law.exprs.get(inputs.origin.body).ok_or("元Law body式がない")?.span;
+            let guard_span = law.exprs.get(guard).ok_or("元Law guard式がない")?.span;
+            if body.0 <= span.0 && span.1 <= body.1 {
+                let request = graph.requests.get(self.current_context(graph).request).ok_or("元Law要求がない")?;
+                if let Some(plan) = self.universal_family_plan(graph, request, &inputs.bindings)?
+                    && plan.guard == Some(guard)
+                    && plan.parameters.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                {
+                    let guard = self.universal_template_source_analysis(graph, &plan, guard_span, &inputs.bindings)?;
+                    if guard.analysis.known_value == Some(Scalar::Bool(true))
+                        && !guard.analysis.support.iter().any(|fact| fact.field.is_some()) {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
         let (allowed, guard) =
             frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
         if let Some(guard) = guard {

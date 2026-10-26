@@ -65,6 +65,26 @@ fn rational_literals_in_universal_laws_feed_public_build_and_checks() {
         assert_eq!(s(get(answer(&result, "c"), "status")), if code == 0 { "established" } else { "refuted" });
     }
 }
+#[test]
+fn universal_true_guards_feed_public_build_and_checks() {
+    for (ty, guard, offset) in [("Z", "true", 0), ("Q", "n=n", 1)] {
+        let dir = files(&format!("true-guard-{ty}"), &format!(
+            "law required balanced(c:Part,n:{ty}) when {guard}:n=n+{offset};"
+        ), false);
+        let normal = cli::run(&dir, &["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json",
+            "--ask", "b=build(R,on=@v/root)", "--ask", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
+        assert_eq!(normal.code, offset, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+        assert!(!has(&normal.receipt, "nodes"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!("true guard {ty}: stdout {} bytes", normal.stdout.len());
+        let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
+        let result = saved(&dir, &run, "complete", offset);
+        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
+    }
+}
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
     let dir = workdir(name);
     let defs =
