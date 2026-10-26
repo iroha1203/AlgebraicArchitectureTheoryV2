@@ -167,10 +167,32 @@ impl Environment<'_> {
             if !matching {
                 continue;
             }
+            let mut finite = Vec::new();
+            for parameter in instance.parameters() {
+                self.tick()?;
+                if matches!(parameter.ty, Type::Z | Type::Q) {
+                    continue;
+                }
+                if !matches!(parameter.ty, Type::Bool | Type::Fp(_) | Type::Tuple(_))
+                    || !crate::observed::finite::completion_supported(
+                        &parameter.ty,
+                        self.inputs.law(),
+                        &mut self.control.clone(),
+                    )?
+                {
+                    return Ok(false);
+                }
+                let Some(binding) = bindings.iter().find(|b| b.name == parameter.name) else {
+                    return Ok(false);
+                };
+                graph.expect(binding.value, &NodeType::Value(parameter.ty.clone()))?;
+                finite.push((parameter.name.clone(), graph.scalar(binding.value)?.clone()));
+            }
             let source =
-                crate::observed::object_equation_presentation::parameter_source_difference(
+                crate::observed::object_equation_presentation::parameter_source_difference_bound(
                     self.inputs,
                     instance,
+                    &finite,
                     &mut self.control.clone(),
                 )
                 .map_err(|e| match e {

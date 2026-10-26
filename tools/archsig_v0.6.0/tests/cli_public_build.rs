@@ -9,6 +9,134 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn boolean_numeric_products_keep_missing_coefficients_separate_from_applicability() {
+    finite_missing_product("bool", "Bool", "false", "true", "b");
+}
+#[test]
+fn field_numeric_products_keep_missing_coefficients_separate_from_applicability() {
+    finite_missing_product("field", "Fp(2)", "0", "1", "b=1");
+}
+#[test]
+fn tuple_numeric_products_keep_missing_coefficients_separate_from_applicability() {
+    finite_missing_product(
+        "tuple",
+        "(Fp(2),Bool)",
+        "(0,false)",
+        "(1,true)",
+        "b.1 and b.0=1",
+    );
+}
+fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, guard: &str) {
+    for ty in ["Z", "Q"] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let body = format!(
+            "view off():{finite_type}={off};view on():{finite_type}={on};law required zero(c:Part,n:{ty},b:{finite_type}) when {guard}:n*c.quantity=0;"
+        );
+        let dir = files_with_definition(
+            &format!("finite-product-missing-{name}-{ty}"),
+            &body,
+            true,
+            &definition,
+        );
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(r#""value":"0""#, r#""value":["0","1"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let mut requests = vec![
+            "a=build(R,on=@v/root)",
+            "f=evaluate(R.off,on=$a.object)",
+            "t=evaluate(R.on,on=$a.object)",
+            "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)",
+            "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let before =
+            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 2, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(!has(&normal.receipt, "nodes"));
+        assert!(!has(&normal.receipt, "result"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+        }
+        assert_eq!(
+            s(get(answer(&normal.receipt, "off"), "applicability")),
+            "not_applicable"
+        );
+        for id in ["a", "on"] {
+            let answer = answer(&normal.receipt, id);
+            assert_eq!(s(get(answer, "status")), "undetermined");
+            assert!(!arr(get(answer, "reasons")).is_empty());
+            assert!(
+                arr(get(answer, "reasons"))
+                    .iter()
+                    .all(|r| s(get(r, "code")) == "missing_observation")
+            );
+        }
+        eprintln!(
+            "finite missing product {name}/{ty}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        requests.extend([
+            "p=check(R.zero,on=$a.object,c=@v/p,b=$t.value)",
+            "n=needed($on)",
+        ]);
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "partial", 2);
+        assert!(has(get(answer(&j, "a"), "outputs"), "object"));
+        assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+        assert_eq!(s(get(answer(&j, "off"), "applicability")), "not_applicable");
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        assert!(
+            arr(get(plan, "requirements"))
+                .iter()
+                .any(
+                    |r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"
+                        && s(get(get(r, "field"), "subject")) == "q"
+                )
+        );
+        let mut reuse_args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        for request in requests {
+            reuse_args.extend(["--ask", request]);
+        }
+        let reused = cli::run(&dir, &reuse_args);
+        assert_eq!(reused.code, 2, "{}", reused.stdout);
+        assert!(reused.stderr.is_empty());
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] {
+            assert_eq!(get(&j, field).value, get(&again, field).value);
+        }
+    }
+}
+#[test]
 fn active_parameter_product_keeps_missing_observation_undetermined() {
     for ty in ["Z", "Q"] {
         for guard in ["", " when true"] {
