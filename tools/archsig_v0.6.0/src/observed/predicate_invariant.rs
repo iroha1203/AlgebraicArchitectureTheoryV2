@@ -159,10 +159,12 @@ fn evaluation_parts(
             applicability,
             ..
         }) if !parameters => (*value, *applicability, vec![e]),
+        Some(Payload::Evaluation { applicability, .. }) if parameters =>
+            (None, *applicability, vec![e]),
         Some(Payload::Construction(v)) => match &v.data {
-            D::OutsideLaw(d) if !parameters => match &d.kind {
+            D::OutsideLaw(d) => match &d.kind {
                 super::law_inapplicable::Kind::Evaluation { value } => {
-                    (Some(*value), "not_applicable", vec![e])
+                    ((!parameters).then_some(*value), "not_applicable", vec![e])
                 }
                 _ => return Err("述語読取りの非適用評価が別種".into()),
             },

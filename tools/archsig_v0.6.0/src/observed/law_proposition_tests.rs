@@ -581,7 +581,7 @@ fn native_propositions_reject_forged_truth_evidence_role_binding_and_environment
     replay(&p, &g).unwrap();
 }
 #[test]
-fn native_unbounded_parameter_has_no_false_finite_law_proposition() {
+fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples() {
     let p = prepared("law required unbounded(c:Part,k:Z):c.quantity=k;");
     let (mut g, a, objects) = start(&p);
     let ds = crate::observed::polynomial_law_diagram::retain_family(
@@ -598,8 +598,16 @@ fn native_unbounded_parameter_has_no_false_finite_law_proposition() {
             assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
             let before = g.nodes.len();
             let r = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
-            assert!(r.answer.is_none() && r.instance.is_none());
-            assert_eq!(g.nodes.len(), before);
+            if frames::origin(&g, o.reference).unwrap().unwrap().outside {
+                assert!(r.answer.is_none() && r.instance.is_none());
+                assert_eq!(g.nodes.len(), before);
+            } else {
+                let answer = r.answer.unwrap();
+                assert!(r.instance.is_some());
+                assert_eq!(g.get(answer.claim.unwrap()).unwrap().judgment.as_ref().unwrap().status,
+                    Decision::Refuted);
+                assert!(g.nodes.len() > before);
+            }
         }
     }
     replay(&p, &g).unwrap();

@@ -1059,14 +1059,21 @@ impl Environment<'_> {
         request: &Request,
         bindings: &[Binding],
     ) -> Result<Option<UniversalPlan>, ValidationFailure> {
-        if request.kind != QuestionKind::Check {
+        let native = if let Some(index) = self.current_context(graph).instance {
+            crate::observed::law_evaluation::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+        } else { None };
+        let name = if let Some(inputs) = &native {
+            inputs.origin.declaration.as_str()
+        } else if request.kind == QuestionKind::Check {
+            request.declaration().ok_or("元要求に宣言がない")?
+        } else {
             return Ok(None);
-        }
+        };
         let declaration = self
             .inputs
             .law()
             .declarations
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
+            .get(name)
             .ok_or("全域の元Lawがない")?;
         let Signature::Law {
             params,

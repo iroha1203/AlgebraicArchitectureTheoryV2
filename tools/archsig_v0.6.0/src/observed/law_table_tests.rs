@@ -316,21 +316,22 @@ fn guarded_unread_bodies_and_tuple_values_keep_the_original_whole_judgments() {
     }
 }
 #[test]
-fn an_uncomputed_numeric_family_never_becomes_a_completed_table_or_mathematical_false() {
+fn numeric_family_table_uses_full_domain_and_preserves_object_applicability() {
     let p = prepared(
         fixture::inputs(false, false, "law required later(c:Part,k:Z):c.quantity=k;"),
         "root",
     );
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let before = g.nodes.len();
-    assert!(
-        retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
-            .unwrap()
-            .is_none()
-    );
-    assert!(g.nodes.len() > before);
-    assert!(!g.nodes[before..].iter().any(|n| n.judgment.is_some()));
+    let table = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet()).unwrap().unwrap();
+    for row in &table.objects {
+        for (i, origin) in row.origins.iter().enumerate() {
+            let origin = frames::origin(&g, *origin).unwrap().unwrap();
+            assert_eq!(g.get(row.holds[i]).unwrap().judgment.as_ref().unwrap().status,
+                if origin.outside { Decision::Established } else { Decision::Refuted });
+        }
+    }
+    table.recheck(&env, &g, &mut quiet()).unwrap();
     assert_eq!(g.active, g.context_at(a.0));
     replay(&p, &g).unwrap();
 }

@@ -157,7 +157,9 @@ pub(in crate::observed) fn instance_law<'a>(
             answer_evaluation:None,verified_observed:None,completing:false,
             finite_universal:None,sources:BTreeMap::new(),
         };
-        let plan = if guard.is_none()
+        let plan = if let Some(plan) = environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)? {
+            Some(plan)
+        } else if guard.is_none()
             && matches!(
                 environment.inputs.law().exprs[*body].kind,
                 ExprKind::Quant { .. }

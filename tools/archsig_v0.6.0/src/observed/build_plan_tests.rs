@@ -36,6 +36,45 @@ fn graph(p: &PreparedObserved) -> Graph {
     g
 }
 
+#[test]
+fn universal_numeric_build_laws_preserve_parameter_functions() {
+    use crate::canonical::Json;
+    for ty in ["Z", "Q"] {
+        for (body, truth) in [("n=n", true), ("n=n+1", false), ("n=0", false)] {
+            let p = single_part(&format!("law required reflexive(c:Part,n:{ty}):{body};"));
+            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let mut g = graph(&p);
+            let plan = prepare(&env, &mut g, p.shared_inputs(), &p.requests().requests()[0], &mut quiet()).unwrap();
+            let table = plan.laws.as_ref().unwrap();
+            assert!(!table.objects.is_empty());
+            for row in &table.objects {
+                assert_eq!(g.get(row.holds[0]).unwrap().judgment.as_ref().unwrap().status,
+                    if truth { Decision::Established } else { Decision::Refuted });
+            }
+            assert_eq!(plan.predicates.len(), 1);
+            let predicate = &plan.predicates[0];
+            for reference in &predicate.evaluations {
+                let node = g.get(*reference).unwrap();
+                env.recheck_node(&g, node, reference.0).unwrap();
+                let Some(Payload::Construction(value)) = &node.payload else { panic!() };
+                let Json::Obj(ref wire) = value.wire() else { panic!() };
+                // The function n=0 is not the constant false function, although its
+                // universal closure is false. Retain the expression, not that Bool.
+                assert!(!wire.contains_key("value"));
+                assert!(wire.contains_key("expression"));
+            }
+            let node = g.get(predicate.invariant).unwrap();
+            env.recheck_node(&g, node, predicate.invariant.0).unwrap();
+            let Some(Payload::Construction(value)) = &node.payload else { panic!() };
+            let Json::Obj(ref wire) = value.wire() else { panic!() };
+            assert_eq!(wire["parameters"], Json::Arr(vec![Json::obj([
+                ("name", Json::str("n")),
+                ("type", if ty == "Z" { crate::types::Type::Z } else { crate::types::Type::Q }.wire()),
+            ])]));
+        }
+    }
+}
+
 fn single_part(body: &str) -> PreparedObserved {
     use crate::observed::input::{InputSources, check_inputs};
     let initial = fixture::inputs(false, false, body);

@@ -612,6 +612,15 @@ impl Data {
             .find(|(_, d)| d.originals.iter().any(|o| o.reference == reference))
             .ok_or("元多項式Law行が出力表にない")?;
         let reading = diagram.readings.iter().find(|r| r.instance == reference);
+        let original = diagram.originals.iter().find(|o| o.reference == reference)
+            .ok_or("元Lawの出現がない")?;
+        let application = self.source.architecture.readings().instances().get(original.instance)
+            .and_then(|instance| instance.applications().get(object))
+            .ok_or("元Lawの対象適用がない")?;
+        let numeric_family = guard.is_none() && original.row.is_none()
+            && !original.parameters.is_empty()
+            && original.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
+            && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
             match self
                 .source
@@ -630,14 +639,14 @@ impl Data {
             body: expr(*body)?,
             body_reference: *body,
             guard: guard.map(expr).transpose()?,
-            ready: reading.is_some_and(|r| {
+            ready: numeric_family || reading.is_some_and(|r| {
                 matches!(
                     r.application,
                     Some(super::object_law_transport::LawApplication::Guard(_))
                 )
             }),
-            outside: reading.is_some_and(|r| matches!(r.application, Some(super::object_law_transport::LawApplication::OutsideObject))),
-            body_allowed: reading
+            outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
+            body_allowed: numeric_family || reading
                 .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))
