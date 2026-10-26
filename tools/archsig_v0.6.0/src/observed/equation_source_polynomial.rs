@@ -411,6 +411,11 @@ impl Compiler<'_> {
                         return Ok(Some(Binding::Boolean(value)));
                     }
                     match (left, right) {
+                        (Some(Binding::Reference { snapshot: left_snapshot, subject: left_subject }),
+                         Some(Binding::Reference { snapshot: right_snapshot, subject: right_subject }))
+                            if matches!(op, BinOp::Eq | BinOp::Ne) => Some(Binding::Boolean(
+                                (left_snapshot == right_snapshot && left_subject == right_subject) == (*op == BinOp::Eq),
+                            )),
                         (Some(left), Some(right)) if matches!(op, BinOp::Eq | BinOp::Ne) => {
                             let family = match left.binary(BinOp::Sub, &right, c)? {
                                 Some(value) => PolynomialFamily::from_binding(&value, c)?,
@@ -793,21 +798,129 @@ fn family_operands_from_root(
     left: usize, right: usize, path: &[usize], ring: &mut EquationRing, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let variables = variables_for(instance, finite, c)?;
+    family_operands_from_variables(inputs, root, left, right, path, ring, variables, c)
+}
+
+/// 現在の束縛を使い、既存の原式正規化から全称数値引数の係数を得る。
+pub(in crate::observed) fn parameter_differences_with_bindings(
+    inputs: &CheckedInputs,
+    root: usize,
+    ty: &Type,
+    context: crate::observed::call::Context,
+    values: &[(String, Scalar)],
+    parameters: &[(String, affine::Form)],
+    c: &mut Control,
+) -> Result<
+    Option<(EquationRing, Vec<PolynomialFamily>, Vec<affine::Parameter>)>,
+    ConstructionFailure,
+> {
+    if !matches!(ty, Type::Z | Type::Q) {
+        return Ok(None);
+    }
+    let mut ring = EquationRing {
+        ty: ty.clone(),
+        symbols: vec![],
+        evaluation_images: Some(vec![]),
+        required_generators: vec![],
+    };
+    let mut variables = BTreeMap::new();
+    for (name, value) in values {
+        tick(c)?;
+        let binding = match value {
+            Scalar::Subject {
+                snapshot, subject, ..
+            } => Binding::Reference {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+            },
+            Scalar::Bool(value) => Binding::Boolean(*value),
+            value if value.ty() == *ty => {
+                Binding::Polynomial(EquationPolynomial::constant(value.clone(), c)?)
+            }
+            value => Binding::FiniteScalar(value.clone()),
+        };
+        if variables.insert(name.clone(), binding).is_some() {
+            return Err(bad("係数の束縛名が重複"));
+        }
+    }
+    for (name, form) in parameters {
+        tick(c)?;
+        if variables
+            .insert(name.clone(), Binding::ParameterForm(form.clone()))
+            .is_some()
+        {
+            return Err(bad("係数の引数名が重複"));
+        }
+    }
+    let mut compiler = Compiler {
+        inputs,
+        ring: &mut ring,
+        variables,
+    };
+    let mut differences = vec![];
+    let mut local_parameters = vec![];
+    if collect_parameter_equations(
+        &mut compiler,
+        root,
+        &mut differences,
+        context,
+        &mut local_parameters,
+        c,
+    )?
+    .is_none()
+    {
+        return Ok(None);
+    }
+    Ok(Some((ring, differences, local_parameters)))
+}
+fn family_operands_from_variables(
+    inputs: &CheckedInputs,
+    root: usize,
+    left: usize,
+    right: usize,
+    path: &[usize],
+    ring: &mut EquationRing,
+    variables: BTreeMap<String, Binding>,
+    c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let mut candidate = ring.clone();
     let mut compiler = Compiler {
         inputs,
         ring: &mut candidate,
         variables,
     };
-    // guardとbodyそれぞれの元rootからlexical束縛を復元し、互いのletを捕獲しない。
+    if bind_root(&mut compiler, root, c)?.is_none() {
+        return Ok(None);
+    }
+    let Some(result) = family_difference(&mut compiler, left, right, path, c)? else {
+        return Ok(None);
+    };
+    *ring = candidate;
+    Ok(Some(result))
+}
+
+// guardとbodyそれぞれの元rootからlexical束縛を復元し、互いのletを捕獲しない。
+fn bind_root(
+    compiler: &mut Compiler<'_>,
+    root: usize,
+    c: &mut Control,
+) -> Result<Option<usize>, ConstructionFailure> {
     let mut cursor = root;
     loop {
         tick(c)?;
-        match &inputs.law().exprs[cursor].kind {
+        match &compiler.inputs.law().exprs[cursor].kind {
             ExprKind::Group(child) => cursor = *child,
             ExprKind::Call { .. } => {
-                let Some((params, body, args)) = crate::observed::object_law_residuals::predicate_call(inputs,cursor) else { return Ok(None) };
-                let bindings = params.iter().zip(args).map(|(p,a)| (p.name.clone(),compiler.lexical(*a))).collect();
+                let Some((params, body, args)) =
+                    crate::observed::object_law_residuals::predicate_call(compiler.inputs, cursor)
+                else {
+                    return Ok(None);
+                };
+                let bindings = params
+                    .iter()
+                    .zip(args)
+                    .map(|(p, a)| (p.name.clone(), compiler.lexical(*a)))
+                    .collect();
                 compiler.variables = bindings;
                 cursor = body;
             }
@@ -822,22 +935,141 @@ fn family_operands_from_root(
                 };
                 cursor = body;
             }
-            _ => break,
+            _ => return Ok(Some(cursor)),
         }
     }
+}
+
+fn collect_parameter_equations(
+    compiler: &mut Compiler<'_>,
+    root: usize,
+    out: &mut Vec<PolynomialFamily>,
+    context: crate::observed::call::Context,
+    local_parameters: &mut Vec<affine::Parameter>,
+    c: &mut Control,
+) -> Result<Option<()>, ConstructionFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        tick(c)?;
+        let Some(cursor) = bind_root(compiler, root, c)? else {
+            return Ok(None);
+        };
+        match &compiler.inputs.law().exprs[cursor].kind {
+            ExprKind::Quant {
+                kind: crate::law::ast::QuantKind::Forall,
+                var,
+                split:
+                    crate::law::ast::QuantSplit::Fixed {
+                        domain: crate::law::ast::QuantDomain::Type(_),
+                        body,
+                    },
+            } => {
+                let Some(ty) = compiler
+                    .inputs
+                    .law()
+                    .quantifier_types
+                    .get(cursor)
+                    .and_then(Option::as_ref)
+                else {
+                    return Err(bad("全称係数の元binder型がない"));
+                };
+                let kind = match ty {
+                    Type::Z => affine::NumberType::Z,
+                    Type::Q => affine::NumberType::Q,
+                    _ => return Ok(None),
+                };
+                if ty != &compiler.ring.ty {
+                    return Ok(None);
+                }
+                let parameter = affine::Parameter {
+                    binder: var.span,
+                    name: var.name.clone(),
+                    context,
+                    kind,
+                };
+                let Some(form) = affine::parameter(ty, &parameter, c).map_err(invalid)? else {
+                    return Ok(None);
+                };
+                let previous = compiler.variables.clone();
+                compiler
+                    .variables
+                    .insert(var.name.clone(), Binding::ParameterForm(form));
+                local_parameters.push(parameter);
+                let result =
+                    collect_parameter_equations(compiler, *body, out, context, local_parameters, c);
+                compiler.variables = previous;
+                result
+            }
+            ExprKind::Binary {
+                op: BinOp::And,
+                lhs,
+                rhs,
+            } => {
+                let previous = compiler.variables.clone();
+                if collect_parameter_equations(compiler, *lhs, out, context, local_parameters, c)?
+                    .is_none()
+                {
+                    return Ok(None);
+                }
+                compiler.variables = previous.clone();
+                let result =
+                    collect_parameter_equations(compiler, *rhs, out, context, local_parameters, c);
+                compiler.variables = previous;
+                result
+            }
+            ExprKind::Binary {
+                op: BinOp::Eq,
+                lhs,
+                rhs,
+            } if compiler.inputs.law().expr_type(*lhs) == Some(&compiler.ring.ty) => {
+                let Some(source) = family_difference(compiler, *lhs, *rhs, &[], c)? else {
+                    return Ok(None);
+                };
+                out.push(source.difference);
+                Ok(Some(()))
+            }
+            _ => match compiler.expression(cursor, &[], c)? {
+                Some(Binding::Boolean(value)) => {
+                    if !value {
+                        let one = numeric::literal("1", &compiler.ring.ty, c).map_err(invalid)?;
+                        out.push(PolynomialFamily {
+                            constant: EquationPolynomial::constant(one, c)?,
+                            parameters: vec![],
+                        });
+                    }
+                    Ok(Some(()))
+                }
+                _ => Ok(None),
+            },
+        }
+    })
+}
+
+fn family_difference(
+    compiler: &mut Compiler<'_>,
+    left: usize,
+    right: usize,
+    path: &[usize],
+    c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let Some(left) = compiler.expression(left, path, c)? else {
         return Ok(None);
     };
     let Some(right) = compiler.expression(right, path, c)? else {
         return Ok(None);
     };
-    let Some(difference) = left.binary(BinOp::Sub, &right, c)? else { return Ok(None) };
+    let Some(difference) = left.binary(BinOp::Sub, &right, c)? else {
+        return Ok(None);
+    };
     let (Some(left), Some(right), Some(difference)) = (
         PolynomialFamily::from_binding(&left, c)?,
         PolynomialFamily::from_binding(&right, c)?,
         PolynomialFamily::from_binding(&difference, c)?,
-    ) else { return Ok(None) };
-    let result = SourceFamilyDifference { left, right, difference };
-    *ring = candidate;
-    Ok(Some(result))
+    ) else {
+        return Ok(None);
+    };
+    Ok(Some(SourceFamilyDifference {
+        left,
+        right,
+        difference,
+    }))
 }
