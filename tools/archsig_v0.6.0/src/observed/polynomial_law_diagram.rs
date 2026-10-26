@@ -107,6 +107,7 @@ pub(super) struct FamilyInputs {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Original {
+    pub finite: Vec<(String, bool)>,
     pub instance: usize,
     pub row: Option<usize>,
     pub bindings: Vec<Binding>,
@@ -528,7 +529,7 @@ impl Data {
                 let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance).ok_or("数値族の元出現がない")?;
                 if !self.parameter_family(&original.parameters) { return Ok(None); }
                 let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
-                let mut source = super::object_equation_presentation::parameter_source_difference(&self.source.inputs, instance, c)
+                let mut source = super::object_equation_presentation::parameter_source_difference_bound(&self.source.inputs, instance, &original.finite, c)
                     .map_err(|e| construction_failure(&e))?.ok_or("数値族の原式差がない")?;
                 if !source.ring.symbols.is_empty() {
                     let values = source.ring.symbols.iter().map(|s| s.value.clone()).collect::<Vec<_>>();

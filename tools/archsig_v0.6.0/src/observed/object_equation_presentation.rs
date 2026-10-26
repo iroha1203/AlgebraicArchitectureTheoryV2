@@ -39,21 +39,28 @@ pub(in crate::observed) use source_polynomial::PolynomialFamily;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
     pub guard: bool,
+    pub finite: Vec<(String, bool)>,
     pub ring: EquationRing,
     pub difference: PolynomialFamily,
 }
 pub(in crate::observed) fn parameter_source_difference(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
+    parameter_source_difference_bound(inputs, instance, &[], c)
+}
+pub(in crate::observed) fn parameter_source_difference_bound(
+    inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance,
+    finite: &[(String, bool)], c: &mut Control,
+) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
-    let Some(guard) = source_polynomial::guard_value(inputs, instance, c)? else { return Ok(None) };
+    let Some(guard) = source_polynomial::guard_value_bound(inputs, instance, finite, c)? else { return Ok(None) };
     let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? else { return Ok(None) };
     let ExprKind::Binary { lhs: left, rhs: right, .. } = inputs.law().exprs[eq].kind else { return Ok(None) };
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-    let Some(source) = source_polynomial::family_operands(inputs, instance, left, right, &[], &mut ring, c)? else { return Ok(None) };
-    Ok(Some(ParameterEquation { guard, ring, difference: source.difference }))
+    let Some(source) = source_polynomial::family_operands_bound(inputs, instance, left, right, &[], &mut ring, finite, c)? else { return Ok(None) };
+    Ok(Some(ParameterEquation { guard, finite: finite.to_vec(), ring, difference: source.difference }))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {

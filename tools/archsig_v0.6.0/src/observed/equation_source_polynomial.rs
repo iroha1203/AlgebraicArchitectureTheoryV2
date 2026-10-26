@@ -6,6 +6,7 @@ use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Clone)]
 enum Binding {
+    Boolean(bool),
     Reference {
         snapshot: String,
         subject: String,
@@ -238,6 +239,35 @@ impl Compiler<'_> {
                         numeric::literal(n, ty, c).map_err(invalid)?,
                         c,
                     )?))
+                }
+                ExprKind::Bool(value) if path.is_empty() => Some(Binding::Boolean(*value)),
+                ExprKind::Unary { op: UnOp::Not, operand } if path.is_empty() => {
+                    match self.expression(*operand, &[], c)? { Some(Binding::Boolean(value)) => Some(Binding::Boolean(!value)), _ => None }
+                }
+                ExprKind::Binary { op: op @ (BinOp::And | BinOp::Or | BinOp::Eq), lhs, rhs } if path.is_empty() => {
+                    let left = self.expression(*lhs, &[], c)?;
+                    if matches!((&left, op), (Some(Binding::Boolean(false)), BinOp::And) | (Some(Binding::Boolean(true)), BinOp::Or)) { return Ok(left); }
+                    let right = self.expression(*rhs, &[], c)?;
+                    match (left, right) {
+                        (Some(Binding::Boolean(left)), Some(Binding::Boolean(right))) => Some(Binding::Boolean(match op { BinOp::And => left && right, BinOp::Or => left || right, _ => left == right })),
+                        (Some(left), Some(right)) if *op == BinOp::Eq => {
+                            let family = match left.binary(BinOp::Sub, &right, c)? {
+                                Some(value) => PolynomialFamily::from_binding(&value, c)?,
+                                None => None,
+                            };
+                            match family {
+                                Some(value) if self.ring.symbols.is_empty() && value.parameters.is_empty() => Some(Binding::Boolean(value.constant.terms.is_empty())),
+                                _ => None,
+                            }
+                        }
+                        _ => None,
+                    }
+                }
+                ExprKind::If { cond, then_branch, else_branch } => {
+                    match self.expression(*cond, &[], c)? {
+                        Some(Binding::Boolean(value)) => self.expression(if value { *then_branch } else { *else_branch }, path, c)?,
+                        _ => None,
+                    }
                 }
                 ExprKind::Dotted(names) => {
                     let Some(first) = names.first() else {
@@ -488,17 +518,34 @@ pub(super) fn family_operands(
     ring: &mut EquationRing,
     c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
+    family_operands_bound(inputs, instance, left, right, path, ring, &[], c)
+}
+pub(super) fn family_operands_bound(
+    inputs: &CheckedInputs, instance: &ObjectInstance, left: usize, right: usize, path: &[usize],
+    ring: &mut EquationRing, finite: &[(String, bool)], c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let Signature::Law { body, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("原式のLaw宣言がない"))?.signature
     else { return Err(bad("原式の宣言がLawでない")) };
-    family_operands_from_root(inputs, instance, *body, left, right, path, ring, c)
+    family_operands_from_root(inputs, instance, *body, left, right, path, ring, finite, c)
 }
 
+#[cfg(test)]
 pub(super) fn guard_value(inputs: &CheckedInputs, instance: &ObjectInstance, c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
+    guard_value_bound(inputs, instance, &[], c)
+}
+pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstance, finite: &[(String, bool)], c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
     let Signature::Law { guard, .. } = &inputs.law().declarations
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
     else { return Ok(None) };
     let Some(root) = *guard else { return Ok(Some(true)) };
+    if !finite.is_empty() {
+        let ty = instance.parameters().iter().find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone()).unwrap_or(Type::Z);
+        let mut ring = EquationRing { ty, symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+        let variables = variables_for(instance, finite, c)?;
+        let mut compiler = Compiler { inputs, ring: &mut ring, variables };
+        if let Some(Binding::Boolean(value)) = compiler.expression(root, &[], c)? { return Ok(Some(value)); }
+    }
     let mut cursor = root;
     let (left, right) = loop {
         tick(c)?;
@@ -515,14 +562,13 @@ pub(super) fn guard_value(inputs: &CheckedInputs, instance: &ObjectInstance, c: 
     };
     let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
     let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-    let Some(source) = family_operands_from_root(inputs, instance, root, left, right, &[], &mut ring, c)? else { return Ok(None) };
+    let Some(source) = family_operands_from_root(inputs, instance, root, left, right, &[], &mut ring, finite, c)? else { return Ok(None) };
     Ok((ring.symbols.is_empty() && source.difference.parameters.is_empty()).then_some(source.difference.constant.terms.is_empty()))
 }
 
-fn family_operands_from_root(
-    inputs: &CheckedInputs, instance: &ObjectInstance, root: usize,
-    left: usize, right: usize, path: &[usize], ring: &mut EquationRing, c: &mut Control,
-) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
+fn variables_for(
+    instance: &ObjectInstance, finite: &[(String, bool)], c: &mut Control,
+) -> Result<BTreeMap<String, Binding>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
         .iter()
@@ -551,6 +597,15 @@ fn family_operands_from_root(
             variables.insert(parameter.name.clone(), Binding::ParameterForm(value));
         }
     }
+    for (name, value) in finite { variables.insert(name.clone(), Binding::Boolean(*value)); }
+    Ok(variables)
+}
+
+fn family_operands_from_root(
+    inputs: &CheckedInputs, instance: &ObjectInstance, root: usize,
+    left: usize, right: usize, path: &[usize], ring: &mut EquationRing, finite: &[(String, bool)], c: &mut Control,
+) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
+    let variables = variables_for(instance, finite, c)?;
     let mut candidate = ring.clone();
     let mut compiler = Compiler {
         inputs,
