@@ -9,6 +9,35 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn finite_aggregates_preserve_known_numeric_products() {
+    for (name, finite_type, guard) in [
+        ("count-known", "Set<Bool>", "count(b)>0 and count(b)<=2"),
+        ("sum-known", "Set<Fp(2)>", "sum(b)=1"),
+    ] {
+        known_numeric_product(name, &format!(",b:{finite_type}"), guard);
+    }
+}
+#[test]
+fn finite_count_keeps_missing_and_applicability() {
+    finite_missing_product(
+        "count",
+        "Set<Bool>",
+        "set<Bool>{}",
+        "set<Bool>{true,false,true}",
+        "count(b)>0 and count(b)<=2",
+    );
+}
+#[test]
+fn finite_sum_keeps_missing_and_applicability() {
+    finite_missing_product(
+        "sum",
+        "Set<Fp(2)>",
+        "set<Fp(2)>{}",
+        "set<Fp(2)>{1,1}",
+        "sum(b)=1",
+    );
+}
+#[test]
 fn finite_set_guards_preserve_known_numeric_products() {
     finite_set_known_product("set-equality", "b=set<Bool>{false,true}");
 }

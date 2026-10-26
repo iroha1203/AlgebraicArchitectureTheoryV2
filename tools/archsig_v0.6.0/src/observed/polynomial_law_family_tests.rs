@@ -1077,6 +1077,70 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
 }
 
 #[test]
+fn finite_aggregates_keep_typed_cases_and_numeric_axes() {
+    for (ty, guard, active) in [
+        (
+            "Set<Bool>",
+            "count(tag)>0 and count(tag)<=2",
+            [false, true, true, true],
+        ),
+        ("Set<Fp(2)>", "sum(tag)=1", [false, false, true, true]),
+    ] {
+        let p = prepared(
+            false,
+            false,
+            &format!("law required zero(c:Part,n:Z,tag:{ty}) when {guard}:n*c.quantity=0;"),
+            "root",
+        );
+        let (mut g, a) = built(&p);
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagram = &diagrams[0];
+        assert_eq!(diagram.coordinates.len(), 8);
+        for (index, coordinate) in diagram.coordinates.iter().enumerate() {
+            assert_eq!(
+                coordinate.guard,
+                if active[index % 4] {
+                    EquationGuard::AlwaysTrue
+                } else {
+                    EquationGuard::AlwaysFalse
+                }
+            );
+            assert_eq!(
+                diagram.originals[index].parameters,
+                vec![("n".into(), Type::Z)]
+            );
+            assert_eq!(diagram.originals[index].quantifiers[0].name, "n");
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+
+#[test]
+fn finite_aggregate_comparisons_do_not_replace_free_numeric_values() {
+    for rhs in ["n", "c.quantity"] {
+        let p = prepared(
+            false,
+            false,
+            &format!(
+                "law required zero(c:Part,n:Z,tag:Set<Bool>) when count(tag)>{rhs}:n*c.quantity=0;"
+            ),
+            "root",
+        );
+        let (g, a) = built(&p);
+        let Some(Payload::Construction(value)) = &g.get(a).unwrap().payload else {
+            panic!("architecture")
+        };
+        let Witness::Architecture(a) = &value.witness else {
+            panic!("architecture witness")
+        };
+        assert!(
+            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+                .unwrap()
+                .is_none()
+        );
+    }
+}
+#[test]
 fn finite_predicates_and_short_circuits_keep_numeric_axes() {
     for (extra, guard, active) in [
         (
