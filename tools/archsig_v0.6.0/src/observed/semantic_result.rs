@@ -65,6 +65,49 @@ fn retain_examples(fields: &mut BTreeMap<String, Json>, examples: &BTreeSet<Stri
         fields.insert("counterexamples".into(), evidence);
     }
 }
+/// 同じ観測要求を使用箇所ごとに繰り返さない。補う対象は missing に残す。
+pub(in crate::observed) fn concise_reasons(reasons: &mut Vec<Json>) {
+    let mut seen = BTreeSet::new();
+    reasons.retain_mut(|reason| {
+        if let Json::Obj(fields) = reason
+            && matches!(fields.get("code"), Some(Json::Str(code)) if code == "missing_observation")
+            && let Some(Json::Arr(missing)) = fields.get_mut("missing")
+            && !missing.is_empty()
+        {
+            missing.sort_by_cached_key(Json::canonical);
+            missing.dedup();
+            fields.remove("location");
+        }
+        seen.insert(reason.canonical())
+    });
+}
+#[cfg(test)]
+mod notice_tests {
+    use super::*;
+    #[test]
+    fn repeated_missing_uses_keep_distinct_targets_and_other_reasons() {
+        let reason = |subject: &str, field: &str, location: u64| Json::obj([
+            ("code", Json::str("missing_observation")),
+            ("missing", Json::Arr(vec![Json::obj([
+                ("subject", Json::str(subject)), ("field", Json::str(field)),
+            ])])),
+            ("location", Json::Nat(location)),
+        ]);
+        let other = Json::obj([("code", Json::str("condition_failed")), ("location", Json::Nat(3))]);
+        let empty = Json::obj([("code", Json::str("missing_observation")), ("missing", Json::Arr(vec![])), ("location", Json::Nat(4))]);
+        let mut reasons = vec![reason("p", "x", 1), reason("p", "x", 2), reason("q", "x", 1), reason("p", "y", 1), other.clone(), empty.clone()];
+        concise_reasons(&mut reasons);
+        assert_eq!(reasons.len(), 5);
+        assert_eq!(reasons[3], other);
+        assert_eq!(reasons[4], empty);
+        let targets: Vec<_> = reasons[..3].iter().map(|reason| {
+            let Json::Obj(fields) = reason else { panic!() };
+            assert!(!fields.contains_key("location"));
+            fields["missing"].canonical()
+        }).collect();
+        assert_eq!(targets.iter().collect::<BTreeSet<_>>().len(), 3);
+    }
+}
 fn clean_reasons(value: &mut Json) {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
         Json::Obj(fields) => {
@@ -80,6 +123,9 @@ fn clean_reasons(value: &mut Json) {
             }
             for value in fields.values_mut() {
                 clean_reasons(value);
+            }
+            if let Some(Json::Arr(reasons)) = fields.get_mut("reasons") {
+                concise_reasons(reasons);
             }
         }
         Json::Arr(items) => {

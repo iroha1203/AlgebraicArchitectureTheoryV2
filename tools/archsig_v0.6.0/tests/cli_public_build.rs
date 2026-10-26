@@ -235,8 +235,10 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
         assert!(!has(&normal.receipt, "nodes"));
         assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
         eprintln!("observed numeric law {offset}: stdout {} bytes", normal.stdout.len());
+        if missing { assert_missing_quantity_once(&normal.receipt); }
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, if missing { "partial" } else { "complete" }, code);
+        if missing { assert_missing_quantity_once(&result); }
         assert!(has(get(answer(&result, "b"), "outputs"), if missing { "object" } else { "algebra" }));
         assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
         eprintln!("observed numeric law {offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
@@ -245,6 +247,17 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
         assert_eq!(reused.code, code, "{}", reused.stdout);
         let again = result_json(&dir, &reused);
         for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }
+}
+fn assert_missing_quantity_once(result: &JNode) {
+    for id in ["b", "c"] {
+        let reasons = arr(get(answer(result, id), "reasons"));
+        assert_eq!(reasons.len(), 1);
+        assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+        let missing = arr(get(&reasons[0], "missing"));
+        assert_eq!(missing.len(), 1);
+        assert_eq!(s(get(&missing[0], "subject")), "q");
+        assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
     }
 }
 fn files(name: &str, body: &str, missing: bool) -> PathBuf {
