@@ -1746,3 +1746,48 @@ fn boolean_cases_keep_laws_after_numeric_parameter_cancellation() {
         for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
     }}
 }
+
+#[test]
+fn finite_field_cases_keep_numeric_parameter_laws() {
+    let dir = files("finite-field-parameter", "law required zero(c:Part,n:Z,k:Fp(2)) when k=0:n*c.quantity=0;", false);
+    let r = asks(&dir, &["a=build(R,on=@v/root)", "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)"]);
+    let j = saved(&dir, &r, "complete", 1);
+    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
+    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
+}
+
+#[test]
+fn finite_field_guards_keep_numeric_products_and_explicit_reuse() {
+    for ty in ["Z", "Q"] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+        let body = format!("view off():Fp(3)=0;view on():Fp(3)=2;view active(k:Fp(3)):Bool=k+1=0;law required zero(c:Part,n:{ty},k:Fp(3)) when active(k):n*c.quantity=0;");
+        let dir = files_with_definition("finite-field-product-reuse", &body, false, &definition);
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
+            "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
+            "off=check(R.zero,on=$a.object,c=@v/q,k=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,k=$t.value)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        assert!(!has(&normal.receipt, "nodes"));
+        eprintln!("finite field product {ty}: stdout {} bytes", normal.stdout.len());
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "complete", 1);
+        for (id, status) in [("p", "established"), ("q", "refuted"), ("off", "established"), ("on", "refuted")] {
+            assert_eq!(s(get(answer(&j,id),"status")), status);
+        }
+        assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
+    }
+}

@@ -844,7 +844,7 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
         assert_eq!(diagram.coordinates.len(), 4);
         for (ordinal, original) in diagram.originals.iter().enumerate() {
             let value = ordinal % 2 == 1;
-            assert_eq!(original.finite, vec![("b".into(), value)]);
+            assert_eq!(original.finite, vec![("b".into(), Scalar::Bool(value))]);
             assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
             assert_eq!(original.quantifiers.len(), 1);
             assert_eq!(original.quantifiers[0].name, "n");
@@ -864,7 +864,7 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
     replay(&p, &g, &g.nodes).unwrap();
     let d = data(&g, ds[0].coordinates[0].nu.unwrap());
     let mut source = (*d.source).clone();
-    source.outputs.originals[0].finite[0].1 = true;
+    source.outputs.originals[0].finite[0].1 = Scalar::Bool(true);
     let altered = Arc::new(source);
     let mut nodes = g.nodes.clone();
     for node in &mut nodes {
@@ -911,7 +911,7 @@ fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
         assert_eq!(diagram.coordinates.len(), 4);
         for (ordinal, original) in diagram.originals.iter().enumerate() {
             let active = ordinal % 2 == 1;
-            assert_eq!(original.finite, vec![("b".into(), active)]);
+            assert_eq!(original.finite, vec![("b".into(), Scalar::Bool(active))]);
             assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
             assert_eq!(original.quantifiers.len(), 1);
             assert_eq!(original.quantifiers[0].name, "n");
@@ -927,4 +927,33 @@ fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
         }
         replay(&p, &g, &g.nodes).unwrap();
     }
+}
+
+#[test]
+fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
+    let p = prepared(false, false, "law required zero(c:Part,n:Z,k:Fp(3),b:Bool) when b and k+1=0:n*c.quantity=0;", "root");
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let diagram = &ds[0];
+    assert_eq!(diagram.originals.len(), 12);
+    assert_eq!(diagram.coordinates.len(), 12);
+    for (index, original) in diagram.originals.iter().enumerate() {
+        let residue = (index % 6) / 2;
+        let flag = index % 2 == 1;
+        assert_eq!(original.finite, vec![("k".into(), Scalar::Fp { modulus: "3".into(), value: residue.into() }), ("b".into(), Scalar::Bool(flag))]);
+        assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
+        assert_eq!(original.quantifiers.len(), 1);
+        assert_eq!(original.quantifiers[0].name, "n");
+        let binding = original.bindings.iter().find(|b| b.name == "k").unwrap();
+        assert_eq!(binding.ty, Type::Fp("3".into()));
+        assert_eq!(g.scalar(binding.value).unwrap(), &original.finite[0].1);
+        let coordinate = &diagram.coordinates[index];
+        let active = residue == 2 && flag;
+        assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+        if !active {
+            assert!(coordinate.epsilon.is_none());
+            assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+        }
+    }
+    replay(&p, &g, &g.nodes).unwrap();
 }
