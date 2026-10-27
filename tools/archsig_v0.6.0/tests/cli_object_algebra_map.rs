@@ -131,7 +131,6 @@ reading After {{{vocabulary} local here(t:State,world:System,u:State) reads worl
     assert_json(get(transport,"parameters"), r#"[["s","t"],["root","world"],["other","u"]]"#);
     let clauses=arr(get(transport,"clauses"));
     assert_eq!(clauses.len(),4);
-    assert_eq!(get(&clauses[0],"arguments").value,get(&clauses[1],"arguments").value);
     assert_eq!(get(&clauses[0],"values").value,get(&clauses[3],"values").value);
     assert_eq!(get(&clauses[1],"values").value,get(&clauses[2],"values").value);
     assert_ne!(get(&clauses[0],"values").value,get(&clauses[1],"values").value);
@@ -142,6 +141,7 @@ reading After {{{vocabulary} local here(t:State,world:System,u:State) reads worl
     assert_reference_pairs(&result, arguments, &[("A","B"),("B","B"),("p","r"),("q","s"),("r","r"),("s","s")]);
     for (index, (source,target,ty)) in [("root","world","Reservations.System"),("s","(t)","Reservations.State"),("other","u","Reservations.State"),("root","world","Reservations.System")].iter().enumerate() {
         let clause = &clauses[index];
+        assert_eq!(get(clause,"arguments").value,get(&clauses[0],"arguments").value);
         let values=value(&result,get(clause,"values"));
         for key in ["source_type","target_type"] {assert_json(get(values,key), &format!(r#"["Ref","{ty}"]"#));}
         if *ty == "Reservations.System" {
