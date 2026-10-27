@@ -3795,3 +3795,267 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,j:Z,keep:Bool,last:Z)
         }
     }
 }
+#[test]
+fn change_transport_let_if_updates_keep_whole_sources_and_simultaneous_values() {
+    for (case, parameter, left, right, missing, code, status) in [
+        (
+            "finite",
+            "Bool",
+            "let old=s.free in if n then s with {free=old+s.held,held=old} else s with {held=old,free=old}",
+            "let prior=t.free in if not k then t with {held=prior,free=prior} else t with {held=prior,free=prior+t.held}",
+            false,
+            0,
+            "established",
+        ),
+        (
+            "finite_refuted",
+            "Bool",
+            "let old=s.free in if n then s with {free=old+s.held,held=old} else s with {held=old,free=old}",
+            "let prior=t.free in if not k then t with {held=prior,free=prior} else t with {held=prior,free=prior+t.held+1}",
+            false,
+            1,
+            "refuted",
+        ),
+        (
+            "integer_let",
+            "Z",
+            "let delta=n+1 in s with {free=s.free+delta,held=s.free}",
+            "t with {held=t.free,free=t.free+(k+1)}",
+            false,
+            0,
+            "established",
+        ),
+        (
+            "integer_if",
+            "Z",
+            "let delta=n+1 in if s.free=2 then s with {free=s.free+delta,held=s.free} else s with {free=s.free+n-1,held=s.free}",
+            "let amount=k+1 in if not (t.free=2) then t with {held=t.free,free=t.free+k-1} else t with {held=t.free,free=t.free+amount}",
+            false,
+            0,
+            "established",
+        ),
+        (
+            "integer_parameter_if",
+            "Z",
+            "if n>0 then s with {free=s.free+n,held=s.free} else s with {free=s.free-n,held=s.free}",
+            "if k>0 then t with {held=t.free,free=t.free+k} else t with {held=t.free,free=t.free-k}",
+            false,
+            2,
+            "undetermined",
+        ),
+        (
+            "missing",
+            "Bool",
+            "let old=s.free in if n then s with {free=old+1,held=s.held} else s with {free=old,held=s.held}",
+            "let prior=t.free in if k then t with {held=t.held,free=prior+1} else t with {held=t.held,free=prior}",
+            true,
+            2,
+            "undetermined",
+        ),
+        (
+            "missing_refuted",
+            "Bool",
+            "let old=s.free in if n then s with {free=old+1,held=s.held} else s with {free=old,held=s.held}",
+            "let prior=t.free in if k then t with {held=t.held+1,free=prior+1} else t with {held=t.held+1,free=prior}",
+            true,
+            1,
+            "refuted",
+        ),
+        (
+            "unknown_condition",
+            "Bool",
+            "if s.free>0 then s with {free=1,held=2} else s with {free=3,held=4}",
+            "if t.free>0 then t with {held=2,free=1} else t with {held=4,free=3}",
+            true,
+            2,
+            "undetermined",
+        ),
+        (
+            "unused_missing",
+            "Bool",
+            "let unused=s.free in s with {free=1,held=2}",
+            "let unused=t.free in t with {held=2,free=1}",
+            true,
+            0,
+            "established",
+        ),
+        (
+            "different_fields",
+            "Bool",
+            "if n then s with {free=1} else s with {held=2}",
+            "if k then t with {free=1} else t with {held=2}",
+            false,
+            2,
+            "undetermined",
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("change-lexical-{case}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} change tune(s:State,n:{parameter})={left}; }}
+reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
+        );
+        std::fs::write(dir.join("l.law"), &law).unwrap();
+        if missing {
+            let data = std::fs::read_to_string(dir.join("a.json")).unwrap();
+            std::fs::write(
+                dir.join("a.json"),
+                data.lines()
+                    .filter(|line| !line.contains(r#""id":"p-free""#))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            )
+            .unwrap();
+        }
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--time-ms",
+            "120000",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(
+            normal.code, code,
+            "{case}: {} {}",
+            normal.stdout, normal.stderr
+        );
+        assert!(normal.stderr.is_empty());
+        assert!(normal.stdout.len() < 1500);
+        eprintln!(
+            "change lexical {case}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let map_answer = answer(&result, "m");
+        assert_eq!(s(get(map_answer, "status")), status, "{case}");
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert_eq!(has(get(map_answer, "outputs"), "map"), code == 0);
+        if code == 0 {
+            let map = value(&result, get(get(map_answer, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            let clauses = arr(get(transport, "clauses"));
+            assert_eq!(clauses.len(), 3);
+            assert_ne!(
+                s(get(value(&result, get(&clauses[0], "source")), "kind")),
+                "change_update"
+            );
+            for (clause, field) in clauses[1..].iter().zip(["free", "held"]) {
+                for (side, body) in [("source", left), ("target", right)] {
+                    let expression = value(&result, get(clause, side));
+                    if case == "integer_let" && side == "target" {
+                        assert_eq!(s(get(expression, "kind")), "source");
+                        let span = arr(get(get(expression, "location"), "span"));
+                        let expected = if field == "free" {
+                            "t.free+(k+1)"
+                        } else {
+                            "t.free"
+                        };
+                        assert_eq!(
+                            &law.as_bytes()[num(&span[0]) as usize..num(&span[1]) as usize],
+                            expected.as_bytes()
+                        );
+                        continue;
+                    }
+                    assert_eq!(s(get(expression, "kind")), "change_update");
+                    assert_eq!(
+                        s(get(expression, "field")),
+                        format!("Reservations.State.{field}")
+                    );
+                    let original = value(&result, get(expression, "source"));
+                    assert_eq!(s(get(original, "kind")), "source");
+                    assert_eq!(
+                        get(expression, "parameters").value,
+                        get(original, "parameters").value
+                    );
+                    assert_eq!(
+                        get(expression, "bindings").value,
+                        get(original, "bindings").value
+                    );
+                    let span = arr(get(get(original, "location"), "span"));
+                    assert_eq!(
+                        &law.as_bytes()[num(&span[0]) as usize..num(&span[1]) as usize],
+                        body.as_bytes()
+                    );
+                }
+            }
+        }
+        if code == 1 {
+            let examples = arr(get(map_answer, "counterexamples"));
+            assert!(!examples.is_empty());
+            if case == "finite_refuted" {
+                let data = get(value(&result, &examples[0]), "data");
+                let bindings = arr(get(data, "bindings"));
+                assert!(matches!(
+                    value(&result, get(&bindings[1], "value")).value,
+                    archsig::json::JValue::Bool(true)
+                ));
+            }
+        }
+        if code == 2 {
+            assert!(!has(map_answer, "counterexamples"));
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            if missing {
+                assert!(
+                    arr(get(plan, "requirements"))
+                        .iter()
+                        .any(|r| s(get(get(r, "field"), "subject")) == "p")
+                );
+            } else {
+                assert!(!arr(get(plan, "blockers")).is_empty());
+            }
+        }
+        let mut reuse = args.clone();
+        reuse.extend(["--out", "again", "--reuse", "out"]);
+        let again = cli::run(&dir, &reuse);
+        assert_eq!(again.code, code, "{case}: {}", again.stdout);
+        let again = result_json(&dir, &again);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{case}: {key}"
+            );
+        }
+        if case == "finite" {
+            let file = dir.join("out/result.json");
+            let saved = std::fs::read_to_string(&file).unwrap();
+            let needle = r#""field":"Reservations.State.free","kind":"change_update""#;
+            assert!(saved.contains(needle));
+            std::fs::write(
+                file,
+                saved.replacen(
+                    needle,
+                    r#""field":"Reservations.State.held","kind":"change_update""#,
+                    1,
+                ),
+            )
+            .unwrap();
+            let mut rejected = args.clone();
+            rejected.extend(["--out", "rejected", "--reuse", "out"]);
+            let run = cli::run(&dir, &rejected);
+            assert_eq!(run.code, 0, "{}", run.stdout);
+            let correct = result_json(&dir, &run);
+            assert!(!warnings(&correct).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&correct, key).value);
+            }
+        }
+    }
+}

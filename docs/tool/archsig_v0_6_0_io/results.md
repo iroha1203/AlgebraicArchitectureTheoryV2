@@ -318,7 +318,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 
 | Type | Payload |
 | --- | --- |
-| Expression | `{kind:"source",location:Location,parameters:Parameter[],bindings:Binding[]}` / `{kind:"transform",operation:"difference"\|"multiply"\|"substitute"\|"compose"\|"project"\|"equal"\|"not"\|"and",operands:Ref[],parameters:Parameter[],bindings:Binding[],position?:Nat}` / `{kind:"object_reading",object:ObjectComponent,declaration:QName,parameters:Parameter[],bindings:Binding[],returns:T}` |
+| Expression | `{kind:"source",location:Location,parameters:Parameter[],bindings:Binding[]}` / `{kind:"transform",operation:"difference"\|"multiply"\|"substitute"\|"compose"\|"project"\|"equal"\|"not"\|"and",operands:Ref[],parameters:Parameter[],bindings:Binding[],position?:Nat}` / `{kind:"change_update",source:Expression,field:QName,parameters:Parameter[],bindings:Binding[]}` / `{kind:"object_reading",object:ObjectComponent,declaration:QName,parameters:Parameter[],bindings:Binding[],returns:T}` |
 | Evaluation | `{expression:Expression,bindings:Binding[],environment?:Architecture,parts:{location:Location,value?:Ref,residual?:Ref,children:Ref[]}[],value?:Ref,applicability:"applicable"\|"not_applicable"\|"undetermined"}` |
 | LawInstance | `{name:QName,role:Role,bindings:Binding[],guard?:Expression,body:Expression,occurrence:Location}` |
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
@@ -356,6 +356,12 @@ Evaluation.environment省略は原始観測、指定時はそのArchitectureのo
 Expressionのsource型は参照先の型、differenceは同じ数値型二項の差、substituteは第1項へbindingsの
 型を保つ同時代入、composeは二項の順序合成、projectはpositionにおけるtuple成分である。
 equalは同じ型の二項のLawの等値、notはBool一項の否定、andはBool二項の連言。positionはprojectだけ必須。
+change_updateは、sourceが指す元change body全体の文脈で選択されたfieldの更新値を表す。
+sourceは同じchangeのbody全体を指すsource型Expressionとし、parameters/bindingsはsourceと一致させる。
+fieldは第1参照引数の型の更新可能fieldの完全名で、返り型はそのfieldの型とする。
+let束縛、ifの実選択、同時更新前の値、guardと適合条件を元changeから再評価する。
+guardが偽なら更新値を作らず、必要な条件・値が未知なら未決を保持する。
+分岐間の更新field集合が同じ場合を扱い、plain withの右辺Sourceは従来の形式を保つ。
 object_readingは標準適用域上の宣言読取りで、viewでは非適用をnone、適用をsome(value)とする
 Option返り型、Lawでは適用時の原式成立・非適用時trueを返すBool型を持つ。
 parametersは残るscalar等の値parameterで、bindingsの参照を保ってその型の全域を動く。

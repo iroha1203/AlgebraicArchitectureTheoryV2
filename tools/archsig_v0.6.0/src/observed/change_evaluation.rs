@@ -247,11 +247,19 @@ pub(in crate::observed) fn update_fields(
     environment: &Environment<'_>,
     declaration: &Declaration,
 ) -> Result<Vec<String>, ValidationFailure> {
+    update_shape(environment, declaration).map(|(_, fields)| fields)
+}
+/// 元withの実base出現と、既存状態表の共通更新座標を返す。式評価は行わない。
+pub(in crate::observed) fn update_shape(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+) -> Result<(usize, Vec<String>), ValidationFailure> {
     let Signature::Change { body, .. } = &declaration.signature else {
         return Err("更新座標の宣言がchangeでない".into());
     };
     let mut pending = vec![*body];
     let mut fields: Option<Vec<String>> = None;
+    let mut base = None;
     while let Some(id) = pending.pop() {
         environment.tick()?;
         match &environment.inputs.law().exprs[id].kind {
@@ -262,7 +270,11 @@ pub(in crate::observed) fn update_fields(
                 else_branch,
                 ..
             } => pending.extend([*then_branch, *else_branch]),
-            ExprKind::With { updates, .. } => {
+            ExprKind::With {
+                base: target,
+                updates,
+            } => {
+                base.get_or_insert(*target);
                 let mut names = updates
                     .iter()
                     .map(|(f, _)| f.name.clone())
@@ -281,7 +293,10 @@ pub(in crate::observed) fn update_fields(
             _ => return Err("検査済みchangeの更新座標がない".into()),
         }
     }
-    fields.ok_or_else(|| "changeの更新座標がない".into())
+    Ok((
+        base.ok_or("changeの更新先出現がない")?,
+        fields.ok_or("changeの更新座標がない")?,
+    ))
 }
 
 #[derive(Debug)]
