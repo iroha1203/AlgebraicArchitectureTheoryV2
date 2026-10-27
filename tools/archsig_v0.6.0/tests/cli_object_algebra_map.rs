@@ -4061,3 +4061,197 @@ reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
         }
     }
 }
+
+#[test]
+fn local_integer_expression_reads_use_all_source_rows_and_actual_images() {
+    for (case, source_guard, target_guard, target_read, missing, code) in [
+        ("preserved", "", "", "1+t.free", false, 0),
+        (
+            "late-refutation",
+            "true",
+            "true",
+            "if t.free=19 then 2+t.free else 1+t.free",
+            false,
+            1,
+        ),
+        ("expanded", "s.free=2", "t.free>0", "1+t.free", false, 0),
+        ("missing-read", "true", "true", "1+t.free", true, 2),
+        (
+            "inactive-target-unknown",
+            "s.held=1",
+            "t.free>0",
+            "1+t.free",
+            true,
+            0,
+        ),
+        ("observed-zero", "true", "true", "1+t.free", false, 0),
+        (
+            "observed-zero-refuted",
+            "true",
+            "true",
+            "1+t.free",
+            false,
+            1,
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("local-integer-expression-{case}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let source_read = if case.starts_with("observed-zero") {
+            "s.free+0"
+        } else {
+            "s.free+1"
+        };
+        let target_read = if case == "observed-zero" {
+            "0+t.free"
+        } else {
+            target_read
+        };
+        let source_guard = if source_guard.is_empty() {
+            String::new()
+        } else {
+            format!("when {source_guard}")
+        };
+        let target_guard = if target_guard.is_empty() {
+            String::new()
+        } else {
+            format!("when {target_guard}")
+        };
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(s:State) {source_guard} reads {source_read};}}
+reading After {{{vocabulary} local here(t:State) {target_guard} reads {target_read};}}"#
+            ),
+        )
+        .unwrap();
+        let mut map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+        if missing {
+            // 元と実像の両方を欠測にし、base mapの既知値保存と切り分ける。
+            map = map
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+        }
+        if case.starts_with("observed-zero") {
+            for subject in ["p", "r"] {
+                map = map.replace(&format!(r#""id":"{subject}-free","subject":"{subject}","field":"Reservations.State.free","value":"2""#),
+                    &format!(r#""id":"{subject}-free","subject":"{subject}","field":"Reservations.State.free","value":"0""#));
+            }
+        }
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        let mut requests = vec![
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        if case == "preserved" {
+            requests.push("b=build(After,on=$m.map.target.base.subject)");
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let delivery = matches!(case, "preserved" | "late-refutation" | "missing-read");
+        if delivery {
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert!(
+                normal.stdout.len() < 2000,
+                "{case}: {}",
+                normal.stdout.len()
+            );
+        }
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        if code == 0 {
+            if case == "preserved" {
+                assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+            }
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            let clause = &arr(get(transport, "clauses"))[0];
+            assert_local_clause(
+                &dir,
+                &result,
+                clause,
+                source_read,
+                target_read,
+                &[("s", "Reservations.State")],
+            );
+            let values = value(&result, get(clause, "values"));
+            assert_json(get(values, "source_type"), r#""Z""#);
+            assert_json(get(values, "target_type"), r#""Z""#);
+        }
+        if case == "late-refutation" {
+            let examples = arr(get(m, "counterexamples"));
+            assert_eq!(examples.len(), 1);
+            let data = get(value(&result, &examples[0]), "data");
+            assert_eq!(s(value(&result, get(data, "left"))), "20");
+            assert_eq!(s(value(&result, get(data, "right"))), "21");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 1);
+            assert_eq!(s(get(&bindings[0], "name")), "s");
+            assert_json(value(&result, get(&bindings[0], "value")), r#"["v","u"]"#);
+            let subjects = arr(get(data, "facts"))
+                .iter()
+                .map(|fact| s(get(fact, "subject")))
+                .collect::<Vec<_>>();
+            assert_eq!(subjects, ["u", "w"]);
+        }
+        if case == "observed-zero-refuted" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            assert_eq!(s(value(&result, get(data, "left"))), "0");
+            assert_eq!(s(value(&result, get(data, "right"))), "1");
+        }
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let field = get(r, "field");
+                s(get(field, "subject")) == "p"
+                    && s(get(field, "field")) == "Reservations.State.free"
+            }));
+        }
+        if !delivery {
+            continue;
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{case}: {key}"
+            );
+        }
+    }
+}
