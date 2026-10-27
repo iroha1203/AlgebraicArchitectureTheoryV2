@@ -58,6 +58,9 @@ Lawの結果型Tの構造射影に限る。List/Tupleの`[index]`は0始まり�
 Set、Map、意味上の集合表はindexで選べない。原始dataはAtom 定義で宣言したconstructorの引数を
 `[index]`で選ぶ。別constructorの位置を選べない。
 生のnode ID、過去の出力path、JSON PointerをHandleとして受け付けない。
+Handleを取る位置が空、または`.` / `[`から始まる問いには、シェルが`$id`を展開した可能性と、
+`--ask 'n=needed($ok)'`のように単一引用符で囲む案内をmessageへ加える。
+宣言名や固定語の位置、通常の未知宣言にはこの案内を加えない。
 表外の欄はresult.jsonに表示・検査用として保持し、CLIからの射影は`usage`とする。
 途中の欄にも同じ規則を適用し、表示用特解をVector全体として取り出す経路も許可しない。
 解集合、類、写像等は型付き結果全体として渡し、その数学的な意味とownerを保つ。

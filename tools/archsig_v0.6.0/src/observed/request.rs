@@ -1801,7 +1801,7 @@ impl<'a> Parser<'a> {
         self.tick()?;
         Ok(name)
     }
-    fn selector(&mut self) -> Result<Selector, ResolveFailure> {
+    fn selector(&mut self, expects_handle: bool) -> Result<Selector, ResolveFailure> {
         self.tick()?;
         if self.take(b'@')? {
             let snapshot = self.name(true)?;
@@ -1853,7 +1853,18 @@ impl<'a> Parser<'a> {
             self.tick()?;
             return Ok(Selector::Answer { id, path });
         }
-        let mut name = self.user_name()?;
+        let missing_handle = expects_handle
+            && matches!(self.src.as_bytes().get(self.at), None | Some(b')' | b',' | b'.' | b'['));
+        let mut name = self.user_name().map_err(|mut failure| {
+            if missing_handle && let ResolveFailure::Invalid { issues, .. } = &mut failure {
+                for issue in issues {
+                    issue.message.push_str(
+                        "; the shell may have expanded $id; enclose the --ask expression in single quotes",
+                    );
+                }
+            }
+            failure
+        })?;
         while self.take(b'.')? {
             self.tick()?;
             name.push('.');
@@ -1882,7 +1893,9 @@ impl<'a> Parser<'a> {
         self.expect(b'=')?;
         let kind = self.name(false)?;
         self.expect(b'(')?;
-        let head = self.selector()?;
+        let head = self.selector(matches!(
+            kind.as_str(), "needed" | "compose" | "compare" | "localize" | "diagnose"
+        ))?;
         let mut arguments = Vec::new();
         let mut keys = BTreeSet::new();
         while self.take(b',')? {
@@ -1916,7 +1929,17 @@ impl<'a> Parser<'a> {
                 // relationはLawの予約語でも、ここでは比較kindの固定語である。
                 Selector::Declaration { name: self.name(false)? }
             } else {
-                self.selector()?
+                let expects_handle = match kind.as_str() {
+                    "build" | "map" => key == "on",
+                    "compose" => key == "then",
+                    "compare" => matches!(key.as_str(), "to" | "along"),
+                    "localize" => !matches!(key.as_str(), "law" | "using"),
+                    "evaluate" | "check" => true,
+                    "solve" | "repair" => key != "using",
+                    "quotient" => key != "law",
+                    _ => false,
+                };
+                self.selector(expects_handle)?
             };
             arguments.push((key, value));
             self.tick()?;
