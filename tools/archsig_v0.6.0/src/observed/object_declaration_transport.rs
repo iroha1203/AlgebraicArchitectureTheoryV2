@@ -94,6 +94,25 @@ fn counterexample(
         None,
     )
 }
+fn parameter_rows(
+    maps: &[Arc<ParameterMap>],
+    c: &mut Control,
+) -> Result<Vec<Vec<usize>>, ValidationFailure> {
+    let mut tuples = vec![vec![]];
+    for map in maps {
+        let mut next = vec![];
+        for row in tuples {
+            for i in 0..map.subjects.len() {
+                tick(c)?;
+                let mut row = row.clone();
+                row.push(i);
+                next.push(row);
+            }
+        }
+        tuples = next;
+    }
+    Ok(tuples)
+}
 fn applicable(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
@@ -113,19 +132,6 @@ fn applicable(
     if signatures.iter().all(|(_, guard)| guard.is_none()) {
         return Ok(None);
     }
-    let mut tuples = vec![vec![]];
-    for map in maps {
-        let mut next = vec![];
-        for row in tuples {
-            for i in 0..map.subjects.len() {
-                tick(c)?;
-                let mut row = row.clone();
-                row.push(i);
-                next.push(row);
-            }
-        }
-        tuples = next;
-    }
     let mut out = Applicable {
         rows: vec![],
         status: Decision::Established,
@@ -134,7 +140,7 @@ fn applicable(
         reasons: vec![],
         evidence: vec![],
     };
-    for row in tuples {
+    for row in parameter_rows(maps, c)? {
         tick(c)?;
         let mut values = [Some(true); 2];
         let mut missing = vec![];
@@ -517,7 +523,7 @@ pub(super) fn retain(
                     position: a,
                     names: [source, target],
                 });
-            } else if sp.len() == 1
+            } else if !sp.is_empty()
                 && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
                 && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z)
             {

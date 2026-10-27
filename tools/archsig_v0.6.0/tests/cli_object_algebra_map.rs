@@ -4393,3 +4393,223 @@ reading After {{{vocabulary} local here(t:State) {target_guard} reads {target_re
         }
     }
 }
+
+#[test]
+fn local_multiple_reference_integer_reads_check_cartesian_rows_in_parameter_order() {
+    let source_read = "z.free+2*a.free";
+    for (case, source_guard, target_guard, target_read, missing, code) in [
+        ("preserved", "", "", "2*x.free+y.free", false, 0),
+        (
+            "off-diagonal",
+            "",
+            "",
+            "if y.held=1 and x.free=2 then 1+2*x.free+y.free else 2*x.free+y.free",
+            false,
+            1,
+        ),
+        (
+            "expanded",
+            "z.free=2 and a.held=1",
+            "y.free>0",
+            "2*x.free+y.free",
+            false,
+            0,
+        ),
+        (
+            "guard-refuted",
+            "z.held=1 and a.held=1",
+            "y.free>1",
+            "2*x.free+y.free",
+            false,
+            1,
+        ),
+        ("missing", "", "", "2*x.free+y.free", true, 2),
+        (
+            "inactive-target-unknown",
+            "z.held=1 and a.held=1",
+            "y.free>0 and x.free>0",
+            "2*x.free+y.free",
+            true,
+            0,
+        ),
+        ("zero-refuted", "", "", "1+2*x.free+y.free", false, 1),
+    ] {
+        let dir = finite_view_inputs(&format!("local-multiple-integer-{case}"), true);
+        let mut map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .lines()
+            .filter(|line| {
+                !line.contains(r#""id":"u","type":"#)
+                    && !line.contains(r#""id":"w","type":"#)
+                    && !line.contains(r#""subject":"u""#)
+                    && !line.contains(r#""subject":"w""#)
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+            .replace(r#",[["v","u"],["v","w"]]"#, "")
+            .replace(",\n]", "\n]");
+        if missing {
+            map = map
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+        }
+        if case == "zero-refuted" {
+            for subject in ["p", "r"] {
+                map = map.replace(&format!(r#""id":"{subject}-free","subject":"{subject}","field":"Reservations.State.free","value":"2""#),
+                    &format!(r#""id":"{subject}-free","subject":"{subject}","field":"Reservations.State.free","value":"0""#));
+            }
+        }
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let source_guard = if source_guard.is_empty() {
+            String::new()
+        } else {
+            format!("when {source_guard}")
+        };
+        let target_guard = if target_guard.is_empty() {
+            String::new()
+        } else {
+            format!("when {target_guard}")
+        };
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(z:State,a:State) {source_guard} reads {source_read};}}
+reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {target_read};}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let delivery = matches!(case, "preserved" | "off-diagonal" | "missing");
+        let normal = delivery.then(|| without_file_changes(&dir, || cli::run(&dir, &args)));
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        if let Some(normal) = &normal {
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert_map_summary(normal, &result);
+            assert!(normal.stderr.is_empty());
+        }
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 0 {
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            assert_json(get(transport, "parameters"), r#"[["z","y"],["a","x"]]"#);
+            let clause = &arr(get(transport, "clauses"))[0];
+            assert_local_clause(
+                &dir,
+                &result,
+                clause,
+                source_read,
+                target_read,
+                &[("z", "Reservations.State"), ("a", "Reservations.State")],
+            );
+            let arguments = value(&result, get(clause, "arguments"));
+            assert_json(
+                get(arguments, "source_type"),
+                r#"["Tuple",["Ref","Reservations.State"],["Ref","Reservations.State"]]"#,
+            );
+            assert_reference_pairs(
+                &result,
+                arguments,
+                &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+            );
+        }
+        if case == "off-diagonal" || case == "zero-refuted" {
+            let examples = arr(get(m, "counterexamples"));
+            assert_eq!(examples.len(), 1);
+            let data = get(value(&result, &examples[0]), "data");
+            let (left, right, subjects) = if case == "off-diagonal" {
+                ("5", "6", ["q", "p"])
+            } else {
+                ("0", "1", ["p", "p"])
+            };
+            assert_eq!(s(value(&result, get(data, "left"))), left);
+            assert_eq!(s(value(&result, get(data, "right"))), right);
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2);
+            for ((binding, name), subject) in bindings.iter().zip(["z", "a"]).zip(subjects) {
+                assert_eq!(s(get(binding, "name")), name);
+                assert_json(
+                    value(&result, get(binding, "value")),
+                    &format!(r#"["v","{subject}"]"#),
+                );
+            }
+            if case == "off-diagonal" {
+                let facts = arr(get(data, "facts"));
+                for subject in ["p", "q", "r", "s"] {
+                    assert!(facts.iter().any(|fact| s(get(fact, "subject")) == subject
+                        && s(get(fact, "field")) == "Reservations.State.free"));
+                }
+            }
+        }
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let field = get(r, "field");
+                s(get(field, "subject")) == "p"
+                    && s(get(field, "field")) == "Reservations.State.free"
+            }));
+        }
+        if delivery {
+            let mut reuse = args.clone();
+            reuse.extend(["--out", "again", "--reuse", "out"]);
+            let run = cli::run(&dir, &reuse);
+            assert_eq!(run.code, code, "{case}: {}", run.stdout);
+            let again = result_json(&dir, &run);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{case}: {key}"
+                );
+            }
+        }
+        if case == "preserved" {
+            args.extend([
+                "--ask",
+                "b=build(After,on=$m.map.target.base.subject)",
+                "--out",
+                "consumed",
+            ]);
+            let run = cli::run(&dir, &args);
+            assert_eq!(run.code, 0, "{}", run.stdout);
+            let consumed = result_json(&dir, &run);
+            assert_eq!(s(get(answer(&consumed, "b"), "status")), "established");
+        }
+    }
+}
