@@ -87,6 +87,9 @@ impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()
     }
+    pub(super) fn answer(&self) -> &Answer {
+        &self.source.answer
+    }
     pub(super) fn plan(&self) -> &Plan {
         &self.source.plan
     }
