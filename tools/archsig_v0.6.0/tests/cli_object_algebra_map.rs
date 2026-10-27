@@ -3271,3 +3271,126 @@ reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path
         }
     }
 }
+
+#[test]
+fn unknown_path_condition_preserves_program_identity_instead_of_action_equality() {
+    for same_word in [false, true] {
+        let dir = finite_view_inputs(
+            if same_word {
+                "path-conditional-same-word"
+            } else {
+                "path-conditional-different-word"
+            },
+            true,
+        );
+        let path = dir.join("a.json");
+        let data=std::fs::read_to_string(&path).unwrap()
+            .replace(r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","q"]"#,r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","p"]"#)
+            .replace(r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","s"]"#,r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","r"]"#)
+            .replace(r#""subjects":["#,r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"x","type":"Reservations.State","origin":"model"},"#)
+            .replace(r#""atoms":["#,r#""atoms":[{"id":"x-owner","subject":"x","field":"Reservations.State.owner","value":["v","C"],"origin":"model"},{"id":"x-held","subject":"x","field":"Reservations.State.held","value":"0","origin":"model"},"#);
+        std::fs::write(path, data).unwrap();
+        let alternative = if same_word {
+            "then(identity(source(path(e))),path(e))"
+        } else {
+            "identity(source(path(e)))"
+        };
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(e:Reserve,s:State):
+(if s.free>0 then path(e) else {alternative})=(if s.free>0 then path(e) else {alternative}); }}
+reading After {{ {vocabulary} relation paths(t:Reserve,u:State):path(t)=path(t); }}
+reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(source(path(e))); }}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+            "action=evaluate(Helpers.same,e=@v/e)",
+        ];
+        let mut normal_args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+        ];
+        for request in &requests {
+            normal_args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &normal_args);
+        assert_eq!(
+            normal.code,
+            if same_word { 0 } else { 2 },
+            "{}",
+            normal.stdout
+        );
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!(
+            "Path conditional same_word={same_word}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, if same_word { 0 } else { 2 }, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(
+            s(get(answer(&result, "m"), "status")),
+            if same_word {
+                "established"
+            } else {
+                "undetermined"
+            }
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert!(matches!(
+            value(
+                &result,
+                get(get(answer(&result, "action"), "outputs"), "value")
+            )
+            .value,
+            archsig::json::JValue::Bool(true)
+        ));
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        if same_word {
+            assert!(arr(get(plan, "requirements")).is_empty());
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "subject"
+            )) == "x"
+                && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, run.code, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}
