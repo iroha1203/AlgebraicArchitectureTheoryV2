@@ -44,6 +44,17 @@ pub enum Details {
         found_format: String,
         found_semantics: Option<String>,
     },
+    Vocabulary {
+        namespace: String,
+        version: String,
+        found_digest: Option<String>,
+        expected_digest: String,
+    },
+    VocabularyUnavailable {
+        namespace: String,
+        version: String,
+        available: Vec<(String, String)>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

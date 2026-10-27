@@ -119,6 +119,29 @@ impl ResultIssue {
                     Details::Type { expected, actual } => {
                         Json::obj([("expected", expected.wire()), ("actual", actual.wire())])
                     }
+                    Details::Vocabulary {
+                        namespace, version, found_digest, expected_digest,
+                    } => {
+                        let mut details = BTreeMap::from([
+                            ("namespace".into(), Json::str(namespace)),
+                            ("version".into(), Json::str(version)),
+                            ("expected_digest".into(), Json::str(expected_digest)),
+                        ]);
+                        if let Some(digest) = found_digest {
+                            details.insert("found_digest".into(), Json::str(digest));
+                        }
+                        Json::Obj(details)
+                    }
+                    Details::VocabularyUnavailable { namespace, version, available } => Json::obj([
+                        ("namespace", Json::str(namespace)),
+                        ("version", Json::str(version)),
+                        ("available", Json::Arr(available.iter().map(|(namespace, version)| {
+                            Json::obj([
+                                ("namespace", Json::str(namespace)),
+                                ("version", Json::str(version)),
+                            ])
+                        }).collect())),
+                    ]),
                     Details::Version {
                         found_format,
                         found_semantics,
@@ -132,7 +155,7 @@ impl ResultIssue {
                     }
                 };
                 let message = match &i.details {
-                    Details::Empty => i.message.clone(),
+                    Details::Empty | Details::Vocabulary { .. } | Details::VocabularyUnavailable { .. } => i.message.clone(),
                     Details::Type { expected, actual } => format!(
                         "{}: expected {}, found {}", i.message,
                         expected.wire().canonical(), actual.wire().canonical()
