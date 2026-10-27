@@ -494,6 +494,10 @@ operation_mapsはsourceの全generatorを覆う。naturalityは対応generator�
 二つの総写像をU全域で比較する。この対応を語へ延長して全Op上の恒等・合成保存を得る。
 transportsは対応するlocal/change/relationの全宣言を覆う。clausesはlocalの全read・公開参照、
 changeのguard・全更新項、relationの左右の語を宣言順に保持し、arguments/valuesとの可換性を検査する。
+relation の arguments は型全域のまま、各 commutes は source guard が真の全割当てについて、
+実像での target guard の成立と当該辺の名前付き語・端点・作用の運搬を表す。
+適用は guard の真偽で決め、関係自体の成立とは区別する。target の追加適用行は許し、
+必要な guard が未知なら理由付き未決とする。左右の clause は対応する宣言式のまま保持する。
 local の arguments は型全域のまま、commutes は source guard が真の全割当てについて、
 実像での target guard の成立と公開 read の値の可換性を表す。target の追加適用行は許し、
 未確定の適用条件は理由付き未決として保持する。

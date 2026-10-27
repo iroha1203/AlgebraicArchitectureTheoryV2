@@ -363,7 +363,7 @@ fn reading_scopes_do_not_merge_same_named_relations() {
 fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
     let i = inputs("normal", "relation same(e:Hop):path(e)=path(e);");
     let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
-    for mode in 0..9 {
+    for mode in 0..10 {
         let mut forged = r.clone();
         match mode {
             0 => forged.declarations[0].span.0 += 1,
@@ -381,7 +381,8 @@ fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
             7 => forged.instances[0]
                 .missing
                 .push(slot("Paths.Hop", "e", "to")),
-            _ => forged.enumeration_complete = false,
+            8 => forged.enumeration_complete = false,
+            _ => forged.instances[0].guard_checked = false,
         }
         assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
     }

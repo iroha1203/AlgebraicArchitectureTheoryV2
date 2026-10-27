@@ -2427,13 +2427,8 @@ reading After {{ {vocabulary} relation paths(t:Reserve): path(t)=path(t); }}"#
 }
 
 #[test]
-fn relation_transport_reports_guarded_and_infinite_parameter_cases_as_pending() {
+fn relation_transport_reports_infinite_parameter_cases_as_pending() {
     for (name, source, target) in [
-        (
-            "guard",
-            "relation paths(e:Reserve) when true:path(e)=path(e);",
-            "relation paths(t:Reserve) when true:path(t)=path(t);",
-        ),
         (
             "infinite",
             "relation paths(e:Reserve,n:Z):path(e)=path(e);",
@@ -2466,5 +2461,291 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         assert!(arr(get(plan, "requirements")).is_empty());
         assert!(!arr(get(plan, "blockers")).is_empty());
+    }
+}
+
+#[test]
+fn relation_guard_transport_preserves_active_rows_and_keeps_termwise_witnesses() {
+    for (case, source, target, code, status) in [
+        (
+            "false_relation_preserved",
+            "relation paths(e:Reserve,take:Bool) when take:path(e)=identity(source(path(e)));",
+            "relation paths(t:Reserve,keep:Bool) when keep:path(t)=identity(source(path(t)));",
+            0,
+            "established",
+        ),
+        (
+            "expanded",
+            "relation paths(e:Reserve,take:Bool) when take:path(e)=(if take then path(e) else identity(source(path(e))));",
+            "relation paths(t:Reserve,keep:Bool):path(t)=path(t);",
+            0,
+            "established",
+        ),
+        (
+            "observed",
+            "relation paths(e:Reserve) when source(path(e)).free>0:path(e)=path(e);",
+            "relation paths(t:Reserve) when source(path(t)).free>0:path(t)=path(t);",
+            0,
+            "established",
+        ),
+        (
+            "contracted",
+            "relation paths(e:Reserve,take:Bool):path(e)=path(e);",
+            "relation paths(t:Reserve,keep:Bool) when keep:path(t)=path(t);",
+            1,
+            "refuted",
+        ),
+        (
+            "inactive",
+            "relation paths(e:Reserve) when false:path(e)=identity(source(path(e)));",
+            "relation paths(t:Reserve) when false:identity(source(path(t)))=path(t);",
+            0,
+            "established",
+        ),
+        (
+            "word",
+            "relation paths(e:Reserve,take:Bool) when take:identity(source(path(e)))=identity(source(path(e)));",
+            "relation paths(t:Reserve,keep:Bool) when keep:path(t)=path(t);",
+            1,
+            "refuted",
+        ),
+        (
+            "relation_refuted",
+            "relation paths(e:Reserve,take:Bool) when take:path(e)=identity(source(path(e)));",
+            "relation paths(t:Reserve,keep:Bool) when keep:path(t)=path(t);",
+            1,
+            "refuted",
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("relation-guard-{case}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target} }}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ];
+        if case == "expanded" || case == "contracted" {
+            let normal = cli::run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                    "--ask",
+                    requests[0],
+                    "--ask",
+                    requests[1],
+                ],
+            );
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            eprintln!(
+                "relation guard {case}: stdout {} bytes",
+                normal.stdout.len()
+            );
+        }
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 0 {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            let clauses = arr(get(transport, "clauses"));
+            assert_eq!(clauses.len(), 2);
+            for clause in clauses {
+                let arguments = value(&result, get(clause, "arguments"));
+                let params = arr(get(arguments, "source_type"));
+                assert_eq!(s(&params[0]), "Tuple");
+                assert_eq!(
+                    params.len(),
+                    if matches!(case, "expanded" | "false_relation_preserved") {
+                        3
+                    } else {
+                        2
+                    }
+                );
+                assert_eq!(
+                    arr(get(value(&result, get(clause, "commutes")), "quantifiers")).len(),
+                    params.len() - 1
+                );
+            }
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+            let witnesses = arr(get(answer(&result, "m"), "counterexamples"));
+            assert!(!witnesses.is_empty());
+            for witness in witnesses {
+                let data = get(value(&result, witness), "data");
+                let bindings = arr(get(data, "bindings"));
+                let take = value(
+                    &result,
+                    get(
+                        bindings
+                            .iter()
+                            .find(|p| s(get(p, "name")) == "take")
+                            .unwrap(),
+                        "value",
+                    ),
+                );
+                assert!(
+                    matches!(take.value,archsig::json::JValue::Bool(v) if v==(case=="word"||case=="relation_refuted"))
+                );
+                if case == "contracted" {
+                    assert!(matches!(
+                        value(&result, get(data, "left")).value,
+                        archsig::json::JValue::Bool(true)
+                    ));
+                    assert!(matches!(
+                        value(&result, get(data, "right")).value,
+                        archsig::json::JValue::Bool(false)
+                    ));
+                } else {
+                    assert!(arr(get(value(&result, get(data, "left")), "generators")).is_empty());
+                    assert_eq!(
+                        arr(get(value(&result, get(data, "right")), "generators")).len(),
+                        1
+                    );
+                }
+            }
+        }
+        if case == "expanded" || case == "contracted" {
+            let reused = cli::run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--ask",
+                    requests[0],
+                    "--ask",
+                    requests[1],
+                ],
+            );
+            assert_eq!(reused.code, code, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&again, key).value);
+            }
+        }
+    }
+}
+
+#[test]
+fn relation_guard_transport_keeps_required_unknowns_and_ignores_target_extra_unknowns() {
+    for case in ["source", "target", "extra", "conditional"] {
+        let dir = finite_view_inputs(&format!("relation-guard-missing-{case}"), true);
+        let path = dir.join("a.json");
+        let data=std::fs::read_to_string(&path).unwrap()
+            .replace(r#""subjects":["#,r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"x","type":"Reservations.State","origin":"model"},"#)
+            .replace(r#""atoms":["#,r#""atoms":[{"id":"x-owner","subject":"x","field":"Reservations.State.owner","value":["v","C"],"origin":"model"},{"id":"x-held","subject":"x","field":"Reservations.State.held","value":"0","origin":"model"},"#);
+        let data = if case == "conditional" {
+            data.replace(r#""subjects":["#,r#""subjects":[{"id":"h","type":"Reservations.Reserve","origin":"model"},"#).replace(r#""atoms":["#,r#""atoms":[{"id":"h-owner","subject":"h","field":"Reservations.Reserve.owner","value":["v","C"],"origin":"model"},{"id":"h-from","subject":"h","field":"Reservations.Reserve.from","value":["v","x"],"origin":"model"},{"id":"h-to","subject":"h","field":"Reservations.Reserve.to","value":["v","x"],"origin":"model"},"#)
+        } else {
+            data
+        };
+        std::fs::write(path, data).unwrap();
+        let (sg, tg) = match case {
+            "source" => ("when s.free>0", ""),
+            "target" => ("", "when u.free>0"),
+            "conditional" => (
+                "when if e.from=e.to then (let p=path(e) in true) else false",
+                "when false",
+            ),
+            _ => ("when take", "when if keep then true else u.free>0"),
+        };
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(e:Reserve,s:State,take:Bool) {sg}:path(e)=path(e); }}
+reading After {{ {vocabulary} relation paths(t:Reserve,u:State,keep:Bool) {tg}:path(t)=path(t); }}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(
+            run.code,
+            if case == "extra" { 0 } else { 2 },
+            "{case}: {}",
+            run.stdout
+        );
+        let result = result_json(&dir, &run);
+        assert_eq!(
+            s(get(answer(&result, "m"), "status")),
+            if case == "extra" {
+                "established"
+            } else {
+                "undetermined"
+            }
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        if case == "extra" {
+            assert!(arr(get(plan, "requirements")).is_empty());
+        } else {
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "subject"
+            )) == "x"
+                && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+        }
+        if case == "target" {
+            let reused = cli::run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--out",
+                    "again",
+                    "--reuse",
+                    "out",
+                    "--ask",
+                    requests[0],
+                    "--ask",
+                    requests[1],
+                    "--ask",
+                    requests[2],
+                ],
+            );
+            assert_eq!(reused.code, 2, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&again, key).value);
+            }
+        }
     }
 }

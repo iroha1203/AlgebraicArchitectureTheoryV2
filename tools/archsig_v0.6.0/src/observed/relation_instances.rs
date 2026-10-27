@@ -22,6 +22,8 @@ pub(in crate::observed) struct RelationInstance {
     pub declaration: String,
     pub bindings: Vec<(String, Scalar)>,
     pub guard: Option<bool>,
+    // guard自身の適合条件を、左右の語の成立状態から区別する。
+    pub guard_checked: bool,
     pub left: Option<Scalar>,
     pub right: Option<Scalar>,
     pub state: RelationState,
@@ -246,6 +248,7 @@ fn row_value(
         declaration: declaration.name.clone(),
         bindings: bindings.clone(),
         guard: None,
+        guard_checked: false,
         left: None,
         right: None,
         state: RelationState::Pending,
@@ -293,6 +296,7 @@ fn row_value(
     if g.as_ref().is_some_and(|g| g.condition_pending) || out.guard.is_none() {
         return Ok(out);
     }
+    out.guard_checked = true;
     if out.guard == Some(false) {
         out.state = RelationState::Inactive;
         return Ok(out);
