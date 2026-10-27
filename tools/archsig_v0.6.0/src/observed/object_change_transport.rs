@@ -7,6 +7,7 @@ use crate::observed::{
 };
 use num_bigint::BigInt as Z;
 use num_traits::Zero;
+use std::collections::BTreeSet;
 
 fn unsupported(
     inputs: &super::super::super::input::CheckedInputs,
@@ -167,7 +168,7 @@ fn point(
     guards: [Option<usize>; 2],
     subjects: [Scalar; 2],
     values: &[Scalar],
-    names: &[String],
+    names: &[[String; 2]],
     checks: &mut [field::Comparison],
     origins: &[NodeRef],
     request: &Request,
@@ -244,28 +245,37 @@ fn point(
         check.scope.merge(&left.scope);
         check.scope.merge(&right.scope);
     }
-    if left.state != change_evaluation::State::Ready
-        || right.state != change_evaluation::State::Ready
-    {
-        let mut missing = left.missing;
-        missing.extend(right.missing);
-        missing.sort();
-        missing.dedup();
+    if matches!(
+        left.state,
+        change_evaluation::State::ConditionFailed | change_evaluation::State::Excluded
+    ) || matches!(
+        right.state,
+        change_evaluation::State::ConditionFailed | change_evaluation::State::Excluded
+    ) {
         for check in &mut checks[1..] {
-            pending(
-                check,
-                missing.clone(),
-                request,
-                origins,
-                declarations[0].span,
-            );
+            pending(check, vec![], request, origins, declarations[0].span);
         }
         return Ok(());
     }
     for (i, name) in names.iter().enumerate() {
         tick(c)?;
-        let (lf, lv) = update_value(&left.values, name)?;
-        let (rf, rv) = update_value(&right.values, name)?;
+        let (Ok((lf, lv)), Ok((rf, rv))) = (
+            update_value(&left.values, &name[0]),
+            update_value(&right.values, &name[1]),
+        ) else {
+            let mut missing = left.missing.clone();
+            missing.extend(right.missing.iter().cloned());
+            missing.sort();
+            missing.dedup();
+            pending(
+                &mut checks[i + 1],
+                missing,
+                request,
+                origins,
+                declarations[0].span,
+            );
+            continue;
+        };
         let equal = super::super::super::value_equality::equal(lv, rv, env.inputs.law(), c)?;
         if equal.is_none() {
             pending(
@@ -381,31 +391,38 @@ pub(super) fn retain(
     if params[0].is_empty() || params[0].len() != params[1].len() {
         return Err("change移送の引数数が違う".into());
     }
-    let names = items[0]
-        .1
-        .iter()
-        .map(|(name, _)| name.clone())
-        .collect::<Vec<_>>();
-    let mut other = items[1]
-        .1
-        .iter()
-        .map(|(name, _)| name.clone())
-        .collect::<Vec<_>>();
-    let mut sorted = names.clone();
-    sorted.sort();
-    other.sort();
-    if sorted != other {
-        return Err(unsupported(
-            inputs,
-            bodies[0],
-            "更新先集合が異なるchange移送は未実装",
-        ));
-    }
     let (Type::Ref(st), Type::Ref(tt)) = (&params[0][0].ty.erase(), &params[1][0].ty.erase())
     else {
         return Err("change第1引数が参照でない".into());
     };
-    let reference = reference_map(b, inputs, correspondence, &st, &tt, dependencies, c)?;
+    let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
+    let mut names = vec![];
+    for (name, _) in &items[0].1 {
+        let moved = correspondence
+            .field_target(inputs, &format!("{st}.{name}"), c)
+            .map_err(failure)?
+            .ok_or_else(|| unsupported(inputs, bodies[0], "change更新先のfield対応がない"))?;
+        let target = moved
+            .strip_prefix(&format!("{tt}."))
+            .ok_or("change更新先の型対応が違う")?
+            .to_owned();
+        names.push([name.clone(), target]);
+    }
+    let mut expected = names.iter().map(|n| n[1].clone()).collect::<Vec<_>>();
+    expected.sort();
+    let mut actual = items[1]
+        .1
+        .iter()
+        .map(|(n, _)| n.clone())
+        .collect::<Vec<_>>();
+    actual.sort();
+    if expected != actual {
+        return Err(unsupported(
+            inputs,
+            bodies[0],
+            "更新先集合が対応しないchange移送は未実装",
+        ));
+    }
     let mut identity = vec![];
     for (s, t) in params[0][1..].iter().zip(&params[1][1..]) {
         if s.ty != t.ty {
@@ -440,13 +457,13 @@ pub(super) fn retain(
             items[0]
                 .1
                 .iter()
-                .find(|(n, _)| n == name)
+                .find(|(n, _)| n == &name[0])
                 .ok_or("元更新句がない")?
                 .1,
             items[1]
                 .1
                 .iter()
-                .find(|(n, _)| n == name)
+                .find(|(n, _)| n == &name[1])
                 .ok_or("先更新句がない")?
                 .1,
         ];
@@ -472,7 +489,7 @@ pub(super) fn retain(
             let id = items[1]
                 .1
                 .iter()
-                .find(|(n, _)| n == &names[i - 1])
+                .find(|(n, _)| n == &names[i - 1][1])
                 .ok_or("先更新句がない")?
                 .1;
             inputs
@@ -502,6 +519,60 @@ pub(super) fn retain(
             scope: Scope::default(),
         });
     }
+    // changeの第1binderは元対象内のinstance。固定外部参照を更新対象へ追加しない。
+    let map = correspondence.operation().map().candidate();
+    let instances = reference
+        .transport
+        .source()
+        .iter()
+        .enumerate()
+        .filter(|(_, fact)| map.source_configuration().family().contains(fact))
+        .map(|(i, _)| i)
+        .collect::<Vec<_>>();
+    let targets = reference
+        .transport
+        .target()
+        .iter()
+        .filter(|fact| map.target_configuration().family().contains(fact))
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let images = instances
+        .iter()
+        .map(|&i| reference.transport.images()[i].clone())
+        .collect::<BTreeSet<_>>();
+    // 独立なinstanceのparameter直積を運べる場合だけ組み立てる。合流や未到達域を既定値で埋めない。
+    let instance_bijection = images.len() == instances.len() && images == targets;
+    let first_values = instances
+        .iter()
+        .map(|&i| reference.subjects[i].0)
+        .collect::<Vec<_>>();
+    let first_domain = b.push(
+        NodeType::Domain,
+        "domain",
+        Json::obj([
+            ("kind", Json::str("finite")),
+            ("type", params[0][0].ty.erase().wire()),
+            (
+                "elements",
+                Json::Arr(first_values.iter().map(|r| r.wire()).collect()),
+            ),
+        ]),
+        first_values,
+        None,
+        None,
+    )?;
+    b.parts[first_domain.0 - b.base].domain_type = Some(params[0][0].ty.erase());
+    if !instance_bijection {
+        for check in &mut checks {
+            pending(
+                check,
+                vec![],
+                request,
+                &expressions[0],
+                declarations[0].span,
+            );
+        }
+    }
     let ps = [params[0], params[1]];
     let gs = [guards[0], guards[1]];
     let affine = !params[0][1..].is_empty() && params[0][1..].iter().all(|p| p.ty == Type::Z);
@@ -513,12 +584,9 @@ pub(super) fn retain(
             &mut |_, _| {},
         )?)
     };
-    for (source, target) in reference
-        .transport
-        .source()
-        .iter()
-        .zip(reference.transport.images())
-    {
+    for &instance in instances.iter().filter(|_| instance_bijection) {
+        let source = &reference.transport.source()[instance];
+        let target = &reference.transport.images()[instance];
         tick(c)?;
         let subjects = [
             Scalar::Subject {
@@ -609,63 +677,46 @@ pub(super) fn retain(
             if domains[0].fiber.particular.is_none() {
                 continue;
             }
-            let mut linears = vec![];
-            for side in 0..2 {
-                let mut metadata = change_affine::Pending::default();
-                let result = change_affine::compute(
-                    env,
-                    declarations[side],
-                    &[subjects[side].clone()],
-                    &[],
-                    &mut metadata,
-                );
-                for check in &mut checks[1..] {
-                    check.support.extend(metadata.support.iter().cloned());
-                    check.scope.merge(&metadata.scope);
-                }
-                match result {
-                    Ok(linear) => linears.push(linear),
-                    Err(ValidationFailure::UnsupportedExpression { .. }) => {
-                        metadata.facts.sort();
-                        metadata.facts.dedup();
-                        for check in &mut checks[1..] {
+            for (index, name) in names.iter().enumerate() {
+                let mut linears = vec![];
+                for side in 0..2 {
+                    let mut metadata = change_affine::Pending::default();
+                    let result = change_affine::compute_update(
+                        env,
+                        declarations[side],
+                        &subjects[side],
+                        &name[side],
+                        &mut metadata,
+                    );
+                    checks[index + 1].support.extend(metadata.support);
+                    checks[index + 1].scope.merge(&metadata.scope);
+                    match result {
+                        Ok(linear) => linears.push(linear),
+                        Err(ValidationFailure::UnsupportedExpression { .. }) => {
+                            metadata.facts.sort();
+                            metadata.facts.dedup();
                             pending(
-                                check,
-                                metadata.facts.clone(),
+                                &mut checks[index + 1],
+                                metadata.facts,
                                 request,
-                                &expressions[0],
+                                &expressions[index + 1],
                                 declarations[side].span,
                             );
+                            break;
                         }
-                        break;
+                        Err(error) => return Err(error),
                     }
-                    Err(error) => return Err(error),
                 }
-            }
-            if linears.len() != 2 {
-                continue;
-            }
-            let (left, right) = (&linears[0], &linears[1]);
-            for name in &names {
-                let find = |linear: &change_affine::Linear| {
-                    linear
-                        .slots
-                        .iter()
-                        .position(|f| {
-                            f.field
-                                .as_ref()
-                                .is_some_and(|f| f.rsplit('.').next() == Some(name.as_str()))
-                        })
-                        .ok_or_else(|| ValidationFailure::from("change整数作用の更新先がない"))
-                };
-                let i = find(left)?;
-                let j = find(right)?;
-                let row = left.action[i]
+                if linears.len() != 2 {
+                    continue;
+                }
+                let (left, right) = (&linears[0], &linears[1]);
+                let row = left.action[0]
                     .iter()
-                    .zip(&right.action[j])
+                    .zip(&right.action[0])
                     .map(|(a, b)| a - b)
                     .collect::<Vec<_>>();
-                let rhs = &right.offset[j] - &left.offset[i];
+                let rhs = &right.offset[0] - &left.offset[0];
                 if let Some(witness) = violation(&domains[0].fiber, &row, &rhs, c)? {
                     let values = witness.into_iter().map(Scalar::Z).collect::<Vec<_>>();
                     point(
@@ -697,7 +748,7 @@ pub(super) fn retain(
     };
     let mut clauses = vec![];
     let mut all = dependencies.to_vec();
-    all.push(arguments);
+    all.extend([arguments, first_domain]);
     for (index, (origins, mut check)) in expressions.into_iter().zip(checks).enumerate() {
         if index > 0 {
             check.status = merge_status(check.status, guard_status);
@@ -705,6 +756,7 @@ pub(super) fn retain(
             check.evidence.extend(guard_evidence.iter().copied());
             check.arguments.extend(guard_evidence.iter().copied());
         }
+        check.arguments.push(first_domain);
         let commutes = b.proposition(
             "declaration_transport",
             vec![origins[0], origins[1], arguments, check.values],
@@ -719,11 +771,12 @@ pub(super) fn retain(
         part.scope.assignments = true;
         let quantifiers = params[0]
             .iter()
-            .map(|p| Quantifier {
+            .enumerate()
+            .map(|(index, p)| Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
                 name: p.name.clone(),
                 ty: p.ty.clone(),
-                domain: None,
+                domain: if index == 0 { Some(first_domain) } else { None },
                 occurrence: p.span,
                 context: None,
             })

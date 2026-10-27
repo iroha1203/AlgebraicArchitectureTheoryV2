@@ -361,6 +361,11 @@ pub(in crate::observed) fn guard_domain(
         fiber,
     })
 }
+pub(in crate::observed) fn compute_update(
+    env: &Environment<'_>, change: &Declaration, subject: &Scalar, field: &str, missing: &mut Pending,
+) -> Result<Linear, ValidationFailure> {
+    compute_fields(env,change,&[subject.clone()],&[],missing,Some(field))
+}
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
     change: &Declaration,
@@ -368,6 +373,12 @@ pub(in crate::observed) fn compute(
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
+    compute_fields(env,change,subjects,requirements,missing,None)
+}
+fn compute_fields(
+    env: &Environment<'_>, change: &Declaration, subjects: &[Scalar],
+    requirements: &[(String,Vec<(String,Scalar)>)], missing: &mut Pending, selected: Option<&str>,
+) -> Result<Linear,ValidationFailure> {
     let Signature::Change {
         params,
         guard,
@@ -440,7 +451,8 @@ pub(in crate::observed) fn compute(
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
                     let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(v.support.iter().cloned()); missing.scope.merge(&v.scope);
+                    missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                     usable(env, *value, &v)?;
                     vars.insert(name.name.clone(), v);
                     current = *body;
@@ -451,7 +463,8 @@ pub(in crate::observed) fn compute(
                     else_branch,
                 } => {
                     let v = env.scoped_ast(*cond, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(v.support.iter().cloned()); missing.scope.merge(&v.scope);
+                    missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                     usable(env, *cond, &v)?;
                     current = match v.known_value {
                         Some(Scalar::Bool(true)) => *then_branch,
@@ -471,7 +484,8 @@ pub(in crate::observed) fn compute(
                 } => {
                     let target =
                         env.scoped_ast(*base, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(target.support.iter().cloned()); missing.scope.merge(&target.scope);
+                    missing.support.extend(target.support.iter().cloned());
+                    missing.scope.merge(&target.scope);
                     usable(env, *base, &target)?;
                     let Some(Scalar::Subject {
                         snapshot,
@@ -482,8 +496,12 @@ pub(in crate::observed) fn compute(
                         return Err(unsupported(env, *base, "整数changeの更新先が未確定"));
                     };
                     for (field, id) in fields {
+                        if selected.is_some_and(|name| name != field.name) {
+                            continue;
+                        }
                         let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
-                        missing.support.extend(v.support.iter().cloned()); missing.scope.merge(&v.scope);
+                        missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
                             unsupported(env, *id, "整数changeの更新式がZアフィンでない")

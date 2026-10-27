@@ -64,6 +64,9 @@ impl Data {
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&crate::types::Type> {
+        if self.part().ty == NodeType::Domain { self.part().domain_type.as_ref() } else { None }
+    }
     pub(super) fn construction(&self) -> &'static str {
         self.part().construction
     }
