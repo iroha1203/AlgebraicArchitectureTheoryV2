@@ -293,7 +293,7 @@ fn check_document_inner<E: InputError>(
                 return Err((issue(
                     Code::Reference,
                     &format!("{ptr}/locations/{i}/source"),
-                    format!("source `{}` がない", l.source),
+                    format!("source `{}` does not exist", l.source),
                 ))
                 .into());
             }
@@ -311,7 +311,7 @@ fn check_document_inner<E: InputError>(
         origins
             .get(id)
             .map(|o| o.mode)
-            .ok_or_else(|| issue(Code::Reference, ptr, format!("origin `{id}` がない")))
+            .ok_or_else(|| issue(Code::Reference, ptr, format!("origin `{id}` does not exist")))
     };
     // subject の型と、語彙 binding。
     let mut subject_types = BTreeSet::new();
@@ -325,7 +325,7 @@ fn check_document_inner<E: InputError>(
                 return Err((issue(
                     Code::Reference,
                     &format!("{}/origin", s.pointer),
-                    "subject の origin.mode が snapshot と異なる",
+                    "subject origin.mode differs from snapshot",
                 ))
                 .into());
             }
@@ -339,7 +339,7 @@ fn check_document_inner<E: InputError>(
                     return Err((issue(
                         Code::Reference,
                         &format!("{}/type", s.pointer),
-                        format!("`{}` は entity・arrow・correspondence の宣言ではない", s.ty),
+                        format!("`{}` is not an entity, arrow, or correspondence declaration", s.ty),
                     ))
                     .into());
                 }
@@ -354,7 +354,7 @@ fn check_document_inner<E: InputError>(
                 return Err((issue(
                     Code::Reference,
                     &format!("{}/origin", a.pointer),
-                    "Atom の origin.mode が snapshot と異なる",
+                    "Atom origin.mode differs from snapshot",
                 ))
                 .into());
             }

@@ -58,7 +58,7 @@ pub(super) fn resolve(
 fn reading(r: &Request, key: &str) -> Result<String, ResolveFailure> {
     match r.arguments.iter().find(|a| a.name == key).map(|a| &a.value) {
         Some(Selector::Declaration { name }) => Ok(name.clone()),
-        _ => Err(error(&r.id, key, "mapの解決済みreadingがない")),
+        _ => Err(error(&r.id, key, "missing reading for resolved map")),
     }
 }
 pub(super) fn selected(
@@ -83,7 +83,7 @@ pub(super) fn selected(
     match plan.ty {
         ProjectionType::Operation(s) => {
             let Selector::Answer { id, .. } = value else {
-                return Err(error(&request.id, key, "Operationの元要求がない"));
+                return Err(error(&request.id, key, "missing source request for Operation"));
             };
             let producer = &requests[names[id]];
             Ok(Shape::Operation(OperationProjection {
@@ -209,7 +209,7 @@ pub(super) fn constraints(
             (&request.id, key),
         )?;
         let ProjectionType::Law(expected @ Type::Path(..)) = &plan.ty else {
-            return Err(error(&request.id, key, "Pathの参照型がない"));
+            return Err(error(&request.id, key, "missing Path reference type"));
         };
         out.push(BindingConstraint {
             parameter: key.into(),

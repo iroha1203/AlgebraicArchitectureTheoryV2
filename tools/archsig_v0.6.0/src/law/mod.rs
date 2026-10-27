@@ -162,7 +162,7 @@ pub(crate) fn check_reading_term_body<E: InputError>(
         E::from(Box::new(Issue::law(
             Code::Reference,
             (0, body.len()),
-            "Termの元readingがない",
+            "missing source reading for Term",
         )))
     })?;
     let tokens = lexer::lex_inner::<E>(body.as_bytes(), usize::MAX, control, point)?;

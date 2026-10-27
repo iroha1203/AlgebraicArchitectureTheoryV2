@@ -815,7 +815,7 @@ impl<E: InputError> Checker<'_, E> {
             }
             Callee::Value(t) => match &t {
                 Type::Map(a, b) => {
-                    self.arity(span, args, 1, "Map の適用")?;
+                    self.arity(span, args, 1, "Map application")?;
                     self.check(args[0], Some(a), env, ctx)?;
                     Ok((**b).clone())
                 }
@@ -823,7 +823,7 @@ impl<E: InputError> Checker<'_, E> {
                     if ctx.term {
                         return reference(name_span, "Term body cannot call a Term");
                     }
-                    self.arity(span, args, ps.len(), "Term の適用")?;
+                    self.arity(span, args, ps.len(), "Term application")?;
                     for (a, p) in args.iter().zip(ps.iter()) {
                         self.cooperate()?;
                         self.check(*a, Some(p), env, ctx)?;

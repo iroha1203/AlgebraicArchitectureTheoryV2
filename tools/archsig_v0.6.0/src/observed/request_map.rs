@@ -155,7 +155,7 @@ pub(super) fn resolve(
     let kind = kind.clone();
     let selected = args
         .get_mut("kind")
-        .ok_or_else(|| error(&raw.id, "kind", "解決済みkindがない"))?;
+        .ok_or_else(|| error(&raw.id, "kind", "missing resolved kind"))?;
     selected.value = Selector::Enum { value: kind };
     phase(control, Checkpoint::RequestBinding)?;
     Ok(Request {
