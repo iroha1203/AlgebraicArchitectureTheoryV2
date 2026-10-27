@@ -827,3 +827,23 @@ Atom 定義と Law の循環は該当入力の location を持つ。
 型構成前でexpected/actualを表せない不正表記はsyntaxを使う。
 issues/reasonsはcode、location.input、pointerまたはspan開始、requestの辞書順に並べる。
 同じ原因を再掲する場合も依存元の位置を残す。messageの自然文を機械の分岐に使わない。
+
+## 7. 保存を省略したrunの反証要約
+
+`--out` を省略した `archsig.summary/1` では、refuted回答の既存反例を
+`counterexamples` に値として表示し、`counterexamples_total` に反例の総数を記す。
+表示は既存の反例順で先頭3件まで。反例がない回答には両欄を付けない。
+established・undetermined回答の表示と、`--out` 指定時のresult.jsonの形は維持する。
+
+各反例は `bindings`（nameと型付きvalue）、型付きの `left` / `right`、
+`facts`（snapshot/subjectと存在するfield/atom）を持つ。
+`bindings` と `facts` はそれぞれ先頭3件までで、実際の総数を
+`bindings_total` / `facts_total` に記す。ノード参照と導出過程は表示しない。
+左右値が直接のLaw比較に対応するguardなしの反例では、比較演算子を `operator` に付ける。
+`separating_pair` は kindと候補値の `first` / `second`、Law値の `left` / `right` を示す。
+そこに保存されていないbindings/factsを空欄として補わない。
+
+値は既存の短い型付き表示を使い、JSON表示が256 byteを超える値は `value_bytes` のみで大きさを示す。
+型を含む短い表示自体が512 byteを超える場合は `summary_bytes` のみを示す。
+束縛名とAtom位置の各識別子が256 byteを超える場合は、その欄の代わりに
+`name_bytes` / `snapshot_bytes` / `subject_bytes` / `field_bytes` / `atom_bytes` で元のbyte数を示す。
