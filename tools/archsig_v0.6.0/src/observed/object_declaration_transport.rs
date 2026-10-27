@@ -94,6 +94,25 @@ fn counterexample(
         None,
     )
 }
+fn parameter_rows(
+    maps: &[Arc<ParameterMap>],
+    c: &mut Control,
+) -> Result<Vec<Vec<usize>>, ValidationFailure> {
+    let mut tuples = vec![vec![]];
+    for map in maps {
+        let mut next = vec![];
+        for row in tuples {
+            for i in 0..map.subjects.len() {
+                tick(c)?;
+                let mut row = row.clone();
+                row.push(i);
+                next.push(row);
+            }
+        }
+        tuples = next;
+    }
+    Ok(tuples)
+}
 fn applicable(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
@@ -113,19 +132,6 @@ fn applicable(
     if signatures.iter().all(|(_, guard)| guard.is_none()) {
         return Ok(None);
     }
-    let mut tuples = vec![vec![]];
-    for map in maps {
-        let mut next = vec![];
-        for row in tuples {
-            for i in 0..map.subjects.len() {
-                tick(c)?;
-                let mut row = row.clone();
-                row.push(i);
-                next.push(row);
-            }
-        }
-        tuples = next;
-    }
     let mut out = Applicable {
         rows: vec![],
         status: Decision::Established,
@@ -134,7 +140,7 @@ fn applicable(
         reasons: vec![],
         evidence: vec![],
     };
-    for row in tuples {
+    for row in parameter_rows(maps, c)? {
         tick(c)?;
         let mut values = [Some(true); 2];
         let mut missing = vec![];
@@ -502,6 +508,9 @@ pub(super) fn retain(
         }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
+            let integer_read = !sp.is_empty()
+                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
+                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z);
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
@@ -510,17 +519,17 @@ pub(super) fn retain(
             } else if let (Some((a, source)), Some((z, target))) =
                 (field_read(inputs, s, sp, c)?, field_read(inputs, t, tp, c)?)
             {
-                if a != z {
+                if a == z {
+                    reads.push(Read::Field {
+                        position: a,
+                        names: [source, target],
+                    });
+                } else if integer_read {
+                    reads.push(Read::IntegerExpression);
+                } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
-                reads.push(Read::Field {
-                    position: a,
-                    names: [source, target],
-                });
-            } else if sp.len() == 1
-                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
-                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z)
-            {
+            } else if integer_read {
                 reads.push(Read::IntegerExpression);
             } else {
                 return Err("local readの式移送は未実装".into());

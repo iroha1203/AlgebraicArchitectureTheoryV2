@@ -280,7 +280,7 @@ pub(super) fn compare(
     Ok(result)
 }
 
-/// 単一参照引数の全域を列挙し、source適用域上の整数readを実像で比較する。
+/// 参照引数の全組を列挙し、source適用域上の整数readを実像で比較する。
 pub(super) fn compare_integer_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
@@ -294,9 +294,6 @@ pub(super) fn compare_integer_expression(
     request: &Request,
     c: &mut Control,
 ) -> Result<Comparison, ValidationFailure> {
-    let [map] = maps else {
-        return Err("local整数readの引数が単一参照でない".into());
-    };
     let Signature::Local {
         params: source_params,
         ..
@@ -324,7 +321,7 @@ pub(super) fn compare_integer_expression(
     let rows = if let Some(rows) = applicable {
         rows
     } else {
-        all_rows = (0..map.subjects.len()).map(|i| vec![i]).collect::<Vec<_>>();
+        all_rows = parameter_rows(maps, c)?;
         &all_rows
     };
     for row in rows {
@@ -333,19 +330,28 @@ pub(super) fn compare_integer_expression(
         let mut missing = vec![];
         let mut facts = vec![];
         for side in 0..2 {
-            let (params, point, entity) = if side == 0 {
-                (source_params, &map.transport.source()[row[0]], &map.source)
+            let params = if side == 0 {
+                source_params
             } else {
-                (target_params, &map.transport.images()[row[0]], &map.target)
+                target_params
             };
-            let bindings = [(
-                params[0].name.clone(),
-                Scalar::Subject {
-                    snapshot: point.snapshot.clone(),
-                    subject: point.subject.clone(),
-                    entity: entity.clone(),
-                },
-            )];
+            let mut bindings = vec![];
+            for ((param, map), &index) in params.iter().zip(maps).zip(row) {
+                tick(c)?;
+                let (point, entity) = if side == 0 {
+                    (&map.transport.source()[index], &map.source)
+                } else {
+                    (&map.transport.images()[index], &map.target)
+                };
+                bindings.push((
+                    param.name.clone(),
+                    Scalar::Subject {
+                        snapshot: point.snapshot.clone(),
+                        subject: point.subject.clone(),
+                        entity: entity.clone(),
+                    },
+                ));
+            }
             let (value, support, scope, absent) =
                 super::super::super::environment::local_read::integer_value(
                     env,
