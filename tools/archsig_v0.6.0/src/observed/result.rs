@@ -1666,6 +1666,7 @@ impl ObservedEvaluation {
         if !inspection {
             semantic_result::compact(&mut result, &self.nodes, control, point)?;
         }
+        self.prepared.inputs().sources().add_location_positions(&mut result);
         Ok(result)
     }
 }
