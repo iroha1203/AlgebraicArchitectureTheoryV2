@@ -96,15 +96,16 @@ pub(super) fn compare(
             .erase(),
     ];
     let reference = if let (Type::Ref(source), Type::Ref(target)) = (&types[0], &types[1]) {
-        Some(reference_map(
-            b,
-            inputs,
-            correspondence,
-            source,
-            target,
-            dependencies,
-            c,
-        )?)
+        // mapsは同じ宣言対応・入力・依存から構成した型全域の写像。
+        // 引数位置は保持したまま、戻り値と同じ参照型の写像だけを共有する。
+        Some(if let Some(map) = maps
+            .iter()
+            .find(|map| &map.source == source && &map.target == target)
+        {
+            map.clone()
+        } else {
+            reference_map(b, inputs, correspondence, source, target, dependencies, c)?
+        })
     } else {
         None
     };
