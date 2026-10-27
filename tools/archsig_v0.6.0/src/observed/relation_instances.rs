@@ -1,6 +1,6 @@
 //! 元readingのrelation instanceと、語を保った全域作用の検査。
 use super::*;
-use crate::law::model::{Declaration, Signature};
+use crate::law::model::{Declaration, Param, Signature};
 use crate::observed::{input::InputSources, path_value::PathValue};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -21,11 +21,15 @@ pub(in crate::observed) enum RelationDifference {
 pub(in crate::observed) struct RelationInstance {
     pub declaration: String,
     pub bindings: Vec<(String, Scalar)>,
+    // bindingsに具体値を置かず、元binderのまま全称評価した数値軸。
+    pub numeric_parameters: Vec<Param>,
     pub guard: Option<bool>,
     // guard自身の適合条件を、左右の語の成立状態から区別する。
     pub guard_checked: bool,
     pub left: Option<Scalar>,
     pub right: Option<Scalar>,
+    pub left_checked: bool,
+    pub right_checked: bool,
     pub state: RelationState,
     pub difference: Option<RelationDifference>,
     pub missing: Vec<Fact>,
@@ -56,6 +60,7 @@ pub(in crate::observed) struct RelationInstances {
     pub support: Vec<Fact>,
     pub scope: Scope,
     enumeration_complete: bool,
+    numeric_families: bool,
 }
 pub(in crate::observed) struct RelationInstancesFailure {
     pub cause: ValidationFailure,
@@ -74,7 +79,9 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
     Ok(())
 }
 impl RelationInstances {
-    pub fn reading(&self) -> &str { &self.reading }
+    pub fn reading(&self) -> &str {
+        &self.reading
+    }
     pub fn enumeration_complete(&self) -> bool {
         self.enumeration_complete
     }
@@ -108,7 +115,7 @@ impl RelationInstances {
                 partial: Box::new(self.clone()),
             });
         }
-        let expected = relation_instances(inputs, &self.reading, c)?;
+        let expected = instances(inputs, &self.reading, c, self.numeric_families)?;
         tick(c).map_err(|cause| RelationInstancesFailure {
             cause,
             partial: Box::new(expected.clone()),
@@ -220,6 +227,7 @@ fn row_value(
     e: &Environment<'_>,
     declaration: &Declaration,
     bindings: Vec<(String, Scalar)>,
+    numeric_families: bool,
 ) -> Result<RelationInstance, ValidationFailure> {
     let Signature::Relation {
         params,
@@ -232,7 +240,13 @@ fn row_value(
     };
     let mut checks = owned_call::Checks::default();
     let mut values = BTreeMap::new();
-    for (p, (_, v)) in params.iter().zip(&bindings) {
+    for p in params {
+        let Some((_, v)) = bindings.iter().find(|(name, _)| name == &p.name) else {
+            if numeric_families && matches!(p.ty, Type::Z | Type::Q) {
+                continue;
+            }
+            return Err("relation parameterの束縛がない".into());
+        };
         e.tick()?;
         e.owned_call_value_check(
             &p.ty,
@@ -247,10 +261,17 @@ fn row_value(
     let mut out = RelationInstance {
         declaration: declaration.name.clone(),
         bindings: bindings.clone(),
+        numeric_parameters: params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(name, _)| name == &p.name))
+            .cloned()
+            .collect(),
         guard: None,
         guard_checked: false,
         left: None,
         right: None,
+        left_checked: false,
+        right_checked: false,
         state: RelationState::Pending,
         difference: None,
         missing: checks.missing,
@@ -265,10 +286,21 @@ fn row_value(
     if checks.blocked {
         return Ok(out);
     }
-    let variables = bindings
-        .into_iter()
+    let mut variables = bindings
+        .iter()
+        .cloned()
         .map(|(n, v)| known(e, v, &declaration.reading).map(|v| (n, v)))
         .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
+    if numeric_families {
+        let (mut symbolic, _) = change_affine::law_variables(e, params, &bindings)?;
+        for (name, value) in variables {
+            let entry = symbolic.get_mut(&name).ok_or("relationの記号束縛がない")?;
+            entry.scope = value.scope;
+            entry.scalar_scope = value.scalar_scope;
+            entry.support = value.support;
+        }
+        variables = symbolic;
+    }
     for value in variables.values() {
         out.support.extend(value.support.iter().cloned());
         out.scope.merge(&value.scope);
@@ -309,6 +341,8 @@ fn row_value(
     }
     out.left = a.known_value.clone();
     out.right = b.known_value.clone();
+    out.left_checked = !a.condition_failed && !a.condition_pending;
+    out.right_checked = !b.condition_failed && !b.condition_pending;
     if a.condition_failed || b.condition_failed {
         out.state = RelationState::ConditionFailed;
         return Ok(out);
@@ -335,9 +369,10 @@ fn row(
     e: &Environment<'_>,
     d: &Declaration,
     bindings: Vec<(String, Scalar)>,
+    numeric_families: bool,
 ) -> Result<RelationInstance, ValidationFailure> {
     *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
-    let result = row_value(e, d, bindings);
+    let result = row_value(e, d, bindings, numeric_families);
     let missing = e
         .missing_slot_reads
         .borrow_mut()
@@ -383,6 +418,22 @@ pub(in crate::observed) fn relation_instances(
     reading: &str,
     c: &mut Control,
 ) -> Result<RelationInstances, RelationInstancesFailure> {
+    instances(inputs, reading, c, false)
+}
+// 通常の有限relation照会を変えず、宣言移送だけで厳密な数値族を使う。
+pub(in crate::observed) fn relation_transport_instances(
+    inputs: &CheckedInputs,
+    reading: &str,
+    c: &mut Control,
+) -> Result<RelationInstances, RelationInstancesFailure> {
+    instances(inputs, reading, c, true)
+}
+fn instances(
+    inputs: &CheckedInputs,
+    reading: &str,
+    c: &mut Control,
+    numeric_families: bool,
+) -> Result<RelationInstances, RelationInstancesFailure> {
     let mut out = RelationInstances {
         sources: inputs.sources().clone(),
         reading: reading.into(),
@@ -393,6 +444,7 @@ pub(in crate::observed) fn relation_instances(
         support: vec![],
         scope: Scope::default(),
         enumeration_complete: false,
+        numeric_families,
     };
     let result = (|| -> Result<(), ValidationFailure> {
         tick(c)?;
@@ -437,6 +489,9 @@ pub(in crate::observed) fn relation_instances(
             }
             let mut bindings = vec![vec![]];
             for p in params {
+                if numeric_families && matches!(p.ty, Type::Z | Type::Q) {
+                    continue;
+                }
                 let mut next = vec![];
                 for prefix in bindings {
                     tick(c)?;
@@ -473,7 +528,7 @@ pub(in crate::observed) fn relation_instances(
             }
             for bindings in bindings {
                 tick(c)?;
-                let r = row(&e, d, bindings)?;
+                let r = row(&e, d, bindings, numeric_families)?;
                 out.support.extend(r.support.iter().cloned());
                 out.scope.merge(&r.scope);
                 out.instances.push(r);

@@ -2431,8 +2431,8 @@ fn relation_transport_reports_infinite_parameter_cases_as_pending() {
     for (name, source, target) in [
         (
             "infinite",
-            "relation paths(e:Reserve,n:Z):path(e)=path(e);",
-            "relation paths(t:Reserve,k:Z):path(t)=path(t);",
+            "relation paths(e:Reserve,n:Z) when n=0:path(e)=path(e);",
+            "relation paths(t:Reserve,k:Z) when k=0:path(t)=path(t);",
         ),
     ] {
         let dir = finite_view_inputs(&format!("relation-unsupported-{name}"), true);
@@ -3397,6 +3397,190 @@ reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(sourc
         assert!(warnings(&again).is_empty());
         for key in ["answers", "nodes"] {
             assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}
+#[test]
+fn relation_transport_quantifies_numeric_families_without_sampling() {
+    for (case, guard, left, target_guard, target_left, code, status) in [
+        (
+            "constant",
+            "when (n+1=1+n) and (q-q=rat(0,1)) and (m-m=0)",
+            "if take then path(e) else identity(source(path(e)))",
+            "when (k-k=0) and (r+rat(1,2)=rat(1,2)+r)",
+            "if keep then path(t) else identity(source(path(t)))",
+            0,
+            "established",
+        ),
+        (
+            "expanded",
+            "when false",
+            "path(e)",
+            "",
+            "path(t)",
+            0,
+            "established",
+        ),
+        (
+            "guard_refuted",
+            "when n-n=0",
+            "path(e)",
+            "when false",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        (
+            "word_refuted",
+            "when n-n=0",
+            "identity(source(path(e)))",
+            "",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        (
+            "condition_failed",
+            "",
+            "let unused=then(path(e),path(e)) in identity(source(path(e)))",
+            "",
+            "path(t)",
+            2,
+            "undetermined",
+        ),
+        (
+            "separate_axes",
+            "when n=m",
+            "path(e)",
+            "",
+            "path(t)",
+            2,
+            "undetermined",
+        ),
+        (
+            "varying_word",
+            "",
+            "if n=0 then path(e) else identity(source(path(e)))",
+            "",
+            "path(t)",
+            2,
+            "undetermined",
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("relation-numeric-{case}"), true);
+        if case == "varying_word" {
+            let path = dir.join("a.json");
+            let data = std::fs::read_to_string(&path).unwrap()
+                .replace(r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","q"]"#,r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","p"]"#)
+                .replace(r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","s"]"#,r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","r"]"#);
+            std::fs::write(path, data).unwrap();
+        }
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(n:Z,e:Reserve,q:Q,take:Bool,m:Z) {guard}:({left})=path(e); }}
+reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,r:Q,keep:Bool,l:Z) {target_guard}:({target_left})=path(t); }}"#)).unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(
+            normal.code, code,
+            "{case}: {} {}",
+            normal.stdout, normal.stderr
+        );
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!(
+            "numeric relation {case}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 0 {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            for clause in arr(get(transport, "clauses")) {
+                let arguments = value(&result, get(clause, "arguments"));
+                let types = arr(get(arguments, "source_type"));
+                assert_eq!(types.len(), 6);
+                assert_eq!(s(&types[1]), "Z");
+                assert_eq!(s(&types[3]), "Q");
+                assert_eq!(s(&types[5]), "Z");
+                let proof = value(&result, get(clause, "commutes"));
+                let qs = arr(get(proof, "quantifiers"));
+                assert_eq!(qs.len(), 5);
+                assert_eq!(
+                    qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
+                    ["n", "e", "q", "take", "m"]
+                );
+                for index in [0, 2, 4] {
+                    assert_eq!(s(get(&qs[index], "kind")), "forall");
+                    assert!(!has(&qs[index], "domain"));
+                }
+            }
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+            if code == 1 {
+                let examples = arr(get(answer(&result, "m"), "counterexamples"));
+                assert!(!examples.is_empty());
+                for example in examples {
+                    let data = get(value(&result, example), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(
+                        bindings
+                            .iter()
+                            .map(|b| s(get(b, "name")))
+                            .collect::<Vec<_>>(),
+                        ["n", "e", "q", "take", "m"]
+                    );
+                    for index in [0, 4] {
+                        assert_eq!(s(value(&result, get(&bindings[index], "value"))), "0");
+                    }
+                    if case == "word_refuted" {
+                        assert!(
+                            arr(get(value(&result, get(data, "left")), "generators")).is_empty()
+                        );
+                        assert_eq!(
+                            arr(get(value(&result, get(data, "right")), "generators")).len(),
+                            1
+                        );
+                    }
+                }
+            } else {
+                assert!(!has(answer(&result, "m"), "counterexamples"));
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                assert!(arr(get(plan, "requirements")).is_empty());
+                assert!(!arr(get(plan, "blockers")).is_empty());
+            }
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{case}: {key}"
+            );
         }
     }
 }

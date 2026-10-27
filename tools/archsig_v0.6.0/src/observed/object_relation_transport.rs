@@ -127,6 +127,28 @@ fn path_binding(
         None,
     )
 }
+// 族全体で適用条件と比較する語が確定した後にだけ、実際の反例割当てを作る。
+fn witness_bindings(
+    params: &[Param],
+    row: &relation_instances::RelationInstance,
+    c: &mut Control,
+) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
+    params
+        .iter()
+        .map(|p| {
+            tick(c)?;
+            let value =
+                if let Some((_, value)) = row.bindings.iter().find(|(name, _)| name == &p.name) {
+                    value.clone()
+                } else if row.numeric_parameters.contains(p) && matches!(p.ty, Type::Z | Type::Q) {
+                    crate::observed::numeric::zero(&p.ty, c)?
+                } else {
+                    return Err("relation反例の元parameter束縛がない".into());
+                };
+            Ok((p.name.clone(), value))
+        })
+        .collect()
+}
 fn example(
     b: &mut Builder<'_>,
     params: &[Param],
@@ -613,8 +635,12 @@ pub(super) fn retain(
                 .is_some_and(|table| table.reading() == declarations[side].reading)
             {
                 instance_tables[side] = Some(
-                    relation_instances::relation_instances(inputs, &declarations[side].reading, c)
-                        .map_err(|e| e.cause)?,
+                    relation_instances::relation_transport_instances(
+                        inputs,
+                        &declarations[side].reading,
+                        c,
+                    )
+                    .map_err(|e| e.cause)?,
                 );
             }
         }
@@ -679,8 +705,11 @@ pub(super) fn retain(
                 continue;
             }
             let mut target_bindings = vec![];
-            for (p, (_, v)) in tp.iter().zip(&row.bindings) {
-                target_bindings.push((p.name.clone(), moved(v, &maps, c)?));
+            for (source, target) in sp.iter().zip(tp) {
+                if let Some((_, value)) = row.bindings.iter().find(|(name, _)| name == &source.name)
+                {
+                    target_bindings.push((target.name.clone(), moved(value, &maps, c)?));
+                }
             }
             let Some(target) = tables[1]
                 .instances
@@ -714,10 +743,11 @@ pub(super) fn retain(
             support.extend(target.support.iter().cloned());
             scope.merge(&target.scope);
             if target.guard_checked && target.guard == Some(false) {
+                let bindings = witness_bindings(sp, row, c)?;
                 let witness = example(
                     b,
                     sp,
-                    &row.bindings,
+                    &bindings,
                     &Scalar::Bool(true),
                     &Scalar::Bool(false),
                     &origin_deps,
@@ -753,10 +783,25 @@ pub(super) fn retain(
                     );
                 }
             }
-            for (index, (sv, tv)) in [(&row.left, &target.left), (&row.right, &target.right)]
-                .into_iter()
-                .enumerate()
+            for (index, (sv, tv, checked)) in [
+                (
+                    &row.left,
+                    &target.left,
+                    row.left_checked && target.left_checked,
+                ),
+                (
+                    &row.right,
+                    &target.right,
+                    row.right_checked && target.right_checked,
+                ),
+            ]
+            .into_iter()
+            .enumerate()
             {
+                if !checked {
+                    statuses[index] = merge_status(statuses[index], Decision::Undetermined);
+                    continue;
+                }
                 let (Some(Scalar::Path(s)), Some(Scalar::Path(t))) = (sv, tv) else {
                     statuses[index] = merge_status(statuses[index], Decision::Undetermined);
                     continue;
@@ -768,10 +813,11 @@ pub(super) fn retain(
                 };
                 if !expected.same_program(t, c)? {
                     statuses[index] = Decision::Refuted;
+                    let bindings = witness_bindings(sp, row, c)?;
                     let witness = example(
                         b,
                         sp,
-                        &row.bindings,
+                        &bindings,
                         &Scalar::Path(Box::new(expected)),
                         &Scalar::Path(t.clone()),
                         &origin_deps,

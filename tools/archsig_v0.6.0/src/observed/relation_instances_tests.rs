@@ -363,7 +363,7 @@ fn reading_scopes_do_not_merge_same_named_relations() {
 fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
     let i = inputs("normal", "relation same(e:Hop):path(e)=path(e);");
     let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
-    for mode in 0..10 {
+    for mode in 0..13 {
         let mut forged = r.clone();
         match mode {
             0 => forged.declarations[0].span.0 += 1,
@@ -382,7 +382,13 @@ fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
                 .missing
                 .push(slot("Paths.Hop", "e", "to")),
             8 => forged.enumeration_complete = false,
-            _ => forged.instances[0].guard_checked = false,
+            9 => forged.instances[0].guard_checked = false,
+            10 => forged.instances[0].left_checked = false,
+            11 => forged.instances[0].right_checked = false,
+            _ => {
+                let Signature::Relation { params, .. } = &forged.declarations[0].signature else { panic!() };
+                forged.instances[0].numeric_parameters.push(params[0].clone());
+            }
         }
         assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
     }
@@ -726,4 +732,59 @@ fn cached_guard_replays_only_its_own_missing_after_an_untraced_initial_call() {
         e.missing_slot_reads.borrow().as_ref().unwrap(),
         &BTreeSet::from([original])
     );
+}
+
+#[test]
+fn numeric_transport_families_recheck_symbols_and_keep_finite_queries_separate() {
+    let i = inputs(
+        "normal",
+        "relation same(n:Z,e:Hop,q:Q) when (n-n=0) and (q-q=rat(0,1)):path(e)=path(e);",
+    );
+    let finite = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    assert!(finite.instances.is_empty());
+    assert!(!finite.outside_finite.is_empty());
+    let family = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    assert_eq!(family.instances.len(), 4);
+    assert!(family.conditions_verified());
+    for row in &family.instances {
+        assert_eq!(row.bindings.len(), 1);
+        assert_eq!(row.bindings[0].0, "e");
+        assert_eq!(
+            row.numeric_parameters
+                .iter()
+                .map(|p| p.name.as_str())
+                .collect::<Vec<_>>(),
+            ["n", "q"]
+        );
+        assert!(row.guard_checked && row.left_checked && row.right_checked);
+    }
+    family.recheck(&i, &mut quiet()).unwrap();
+    let mut forged = family.clone();
+    forged.numeric_families = false;
+    assert!(forged.recheck(&i, &mut quiet()).is_err());
+    let mut forged = family.clone();
+    forged.instances[0].numeric_parameters[0].span.0 += 1;
+    assert!(forged.recheck(&i, &mut quiet()).is_err());
+}
+
+#[test]
+fn numeric_transport_families_keep_missing_guard_slots() {
+    let i = inputs(
+        "missing_source",
+        "relation guarded(k:Z,n:Node,q:Q) when (k-k=0) and (n.mark>0):identity(n)=identity(n);",
+    );
+    let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    assert_eq!(r.instances.len(), 4);
+    let row = r
+        .instances
+        .iter()
+        .find(|r| subject(&r.bindings[0].1) == "p")
+        .unwrap();
+    assert_eq!(row.guard, None);
+    assert!(!row.guard_checked);
+    assert_eq!(row.state, RelationState::Pending);
+    assert!(row.missing.contains(&slot("Paths.Node", "p", "mark")));
+    assert!(row.left.is_none() && row.right.is_none());
+    assert!(!r.conditions_verified());
+    r.recheck(&i, &mut quiet()).unwrap();
 }
