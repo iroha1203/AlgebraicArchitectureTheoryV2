@@ -366,35 +366,18 @@ fn check_document_inner<E: InputError>(
     for (i, binding) in raw.vocabularies.iter().enumerate() {
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let ptr = format!("/vocabularies/{i}");
-        let Some(vocabulary) = definitions.vocabularies.get(&binding.namespace) else {
-            return Err((issue(
-                Code::Reference,
-                &format!("{ptr}/namespace"),
-                format!("namespace `{}` の定義がない", binding.namespace),
-            ))
-            .into());
-        };
-        if vocabulary.version != binding.version {
-            return Err((issue(
-                Code::VocabularyMismatch,
-                &format!("{ptr}/version"),
-                format!(
-                    "namespace `{}` の語彙 version が定義と異なる",
-                    binding.namespace
-                ),
-            ))
-            .into());
-        }
-        if vocabulary.digest != binding.digest {
-            return Err((issue(
-                Code::VocabularyMismatch,
-                &format!("{ptr}/digest"),
-                format!(
-                    "namespace `{}` の語彙 digest が定義と異なる",
-                    binding.namespace
-                ),
-            ))
-            .into());
+        if let Err(mut error) = definitions.check_binding(binding) {
+            let field = if error.code == Code::Reference {
+                "namespace"
+            } else if matches!(&error.details, Details::VocabularyUnavailable { .. }) {
+                "version"
+            } else {
+                "digest"
+            };
+            error.location = Location::ArchMap {
+                pointer: format!("{ptr}/{field}"), span: None,
+            };
+            return Err(error.into());
         }
         bound.insert(binding.namespace.clone(), binding.clone());
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
@@ -402,12 +385,23 @@ fn check_document_inner<E: InputError>(
     for namespace in required_namespaces::<E>(definitions, &subject_types, control)? {
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         if !bound.contains_key(&namespace) {
-            return Err((issue(
-                Code::VocabularyMismatch,
-                "/vocabularies",
-                format!("namespace `{namespace}` の binding がない"),
-            ))
-            .into());
+            let vocabulary = &definitions.vocabularies[&namespace];
+            return Err(Box::new(Issue {
+                code: Code::VocabularyMismatch,
+                message: format!(
+                    "missing binding for vocabulary `{namespace}` version `{}`; expected digest {}",
+                    vocabulary.version, vocabulary.digest
+                ),
+                location: Location::ArchMap {
+                    pointer: "/vocabularies".into(), span: None,
+                },
+                details: Details::Vocabulary {
+                    namespace,
+                    version: vocabulary.version.clone(),
+                    found_digest: None,
+                    expected_digest: vocabulary.digest.clone(),
+                },
+            }).into());
         }
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }

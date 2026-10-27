@@ -117,16 +117,47 @@ fn check_definitions_inner<E: InputError>(
 
 impl CheckedDefinitions {
     pub fn check_binding(&self, binding: &Binding) -> Result<(), Box<Issue>> {
-        let code = match self.vocabularies.get(&binding.namespace) {
-            None => Code::Reference,
+        let (code, message, details) = match self.vocabularies.get(&binding.namespace) {
             Some(v) if v.version == binding.version && v.digest == binding.digest => return Ok(()),
-            Some(_) => Code::VocabularyMismatch,
+            Some(v) if v.version == binding.version => (
+                Code::VocabularyMismatch,
+                format!(
+                    "vocabulary `{}` version `{}` digest mismatch: expected {}, found {}",
+                    binding.namespace, binding.version, v.digest, binding.digest
+                ),
+                Details::Vocabulary {
+                    namespace: binding.namespace.clone(),
+                    version: binding.version.clone(),
+                    found_digest: Some(binding.digest.clone()),
+                    expected_digest: v.digest.clone(),
+                },
+            ),
+            vocabulary => {
+                let available: Vec<_> = self.vocabularies.values()
+                    .map(|v| (v.namespace.clone(), v.version.clone()))
+                    .collect();
+                let names = available.iter()
+                    .map(|(namespace, version)| format!("{namespace}@{version}"))
+                    .collect::<Vec<_>>().join(", ");
+                (
+                    if vocabulary.is_some() { Code::VocabularyMismatch } else { Code::Reference },
+                    format!(
+                        "vocabulary `{}` version `{}` is not defined; available: {}",
+                        binding.namespace, binding.version, if names.is_empty() { "none" } else { &names }
+                    ),
+                    Details::VocabularyUnavailable {
+                        namespace: binding.namespace.clone(),
+                        version: binding.version.clone(),
+                        available,
+                    },
+                )
+            }
         };
         Err(Box::new(Issue {
             code,
-            message: format!("cannot resolve binding for vocabulary `{}`", binding.namespace),
+            message,
             location: binding.location.clone(),
-            details: Details::Empty,
+            details,
         }))
     }
 }

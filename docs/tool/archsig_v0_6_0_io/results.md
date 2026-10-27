@@ -801,11 +801,17 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
 | dependency_blocked | `{request:String}`。dependenciesと元理由を推移的に保持 |
 | budget_exhausted | `{resource:"time_ms"\|"memory_mib",limit:DecimalNat,observed:DecimalNat}` |
 | cancelled | `{signal:"SIGINT"\|"SIGTERM"}` |
-| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle, vocabulary_mismatch | typeだけ`{expected:Type,actual:Type}`、他は`{}`。入力の位置を必須 |
+| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceはLaw/ArchMapの語彙namespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須 |
+| vocabulary_mismatch | digest不一致は`{namespace:String,version:String,found_digest:Digest,expected_digest:Digest}`。binding自体がない場合はfound_digestを省略。指定version未登録は`{namespace:String,version:String,available:{namespace:String,version:String}[]}`。入力の位置を必須 |
 | unsupported_version | `{found_format:String,found_semantics?:String}` |
 | usage | `{argument:String}` |
 | io | `{operation:"read"\|"create"\|"write"\|"flush"\|"rename",path:String}` |
 | internal | `{operation:String}`。内部障害が起きた処理名を英語で示す |
+
+語彙診断のexpected_digestは、指定されたAtom定義から計算したdigestである。
+Law/ArchMapのbindingが指定するnamespace/versionがない場合はexpected_digestを返さず、availableにAtom定義内のnamespace/versionをnamespace順で示す。
+LawとArchMapで同じ欄を使い、messageにも修正先のdigestまたは利用可能な組を示す。
+bindingや入力ファイルを自動で書き換えない。
 
 構成条件が未決なら、その条件のmissing/visibility/unsupported/dependency理由を伝播する。
 cycleがCLIの問いの依存による場合だけ、locationを省略し、循環に属する問いごとにrequestを必須とする。
