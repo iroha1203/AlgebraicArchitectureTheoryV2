@@ -267,7 +267,7 @@ fn word(
     path: &PathValue,
     reading: &str,
     maps: &[Arc<ParameterMap>],
-    generators: &[Generator],
+    generators: &[&Generator],
     c: &mut Control,
 ) -> Result<Option<PathValue>, ValidationFailure> {
     let Scalar::Subject {
@@ -319,6 +319,7 @@ pub(super) fn retain(
         reasons: vec![],
         evidence: vec![],
     };
+    let mut instance_tables: [Option<relation_instances::RelationInstances>; 2] = [None, None];
     for candidate in correspondence
         .candidates()
         .iter()
@@ -604,19 +605,26 @@ pub(super) fn retain(
                 continue;
             }
             generator_refs.push(g.subjects);
-            generators.push(Generator {
-                source: g.source.clone(),
-                path: g.path.clone(),
-                target: g.target.clone(),
-                subjects: g.subjects,
-                missing: g.missing.clone(),
-            });
+            generators.push(g);
+        }
+        for side in 0..2 {
+            if !instance_tables[side]
+                .as_ref()
+                .is_some_and(|table| table.reading() == declarations[side].reading)
+            {
+                instance_tables[side] = Some(
+                    relation_instances::relation_instances(inputs, &declarations[side].reading, c)
+                        .map_err(|e| e.cause)?,
+                );
+            }
         }
         let tables = [
-            relation_instances::relation_instances(inputs, &declarations[0].reading, c)
-                .map_err(|e| e.cause)?,
-            relation_instances::relation_instances(inputs, &declarations[1].reading, c)
-                .map_err(|e| e.cause)?,
+            instance_tables[0]
+                .as_ref()
+                .ok_or("source relation表がない")?,
+            instance_tables[1]
+                .as_ref()
+                .ok_or("target relation表がない")?,
         ];
         if tables[0]
             .outside_finite
