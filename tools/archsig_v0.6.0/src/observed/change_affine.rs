@@ -31,6 +31,8 @@ pub(in crate::observed) struct Linear {
 }
 #[derive(Default)]
 pub(in crate::observed) struct Pending {
+    pub support: Vec<Fact>,
+    pub scope: Scope,
     pub universal: Vec<Parameter>,
     pub coefficient_type: Option<Type>,
     pub facts: Vec<Fact>,
@@ -136,6 +138,8 @@ fn equations(
         env.tick()?;
         let base = Scope::default();
         let v = env.scoped_ast(id, vars, &base, reading)?;
+        missing.support.extend(v.support.iter().cloned());
+        missing.scope.merge(&v.scope);
         usable(env, id, &v)?;
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
@@ -316,6 +320,52 @@ fn parameter_coefficient_forms(
     }
     Ok(Some(forms))
 }
+/// 更新値を読む前に、元guardが許す整数parameterの全fiberを構成する。
+pub(in crate::observed) fn guard_domain(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subject: &Scalar,
+    missing: &mut Pending,
+) -> Result<Guard, ValidationFailure> {
+    let Signature::Change { params, guard, .. } = &change.signature else {
+        return Err("guardの元宣言がchangeでない".into());
+    };
+    let first = params.first().ok_or("changeの第1引数がない")?;
+    let (vars, axes) = law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
+    if axes.iter().any(|axis| axis.kind != NumberType::Z) {
+        return Err("整数guardのparameter型が違う".into());
+    }
+    let mut matrix = vec![];
+    let mut rhs = vec![];
+    if let Some(id) = guard {
+        missing.expression = Some(*id);
+        equations(
+            env,
+            *id,
+            &vars,
+            &change.reading,
+            Axes::Parameters(&axes),
+            &mut matrix,
+            &mut rhs,
+            missing,
+        )?;
+    }
+    let rhs = rhs
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("guard固定項が未確定")?;
+    let fiber = integer_fiber::solve(&matrix, axes.len(), &rhs, &env.control)?;
+    Ok(Guard {
+        equations: matrix,
+        rhs,
+        fiber,
+    })
+}
+pub(in crate::observed) fn compute_update(
+    env: &Environment<'_>, change: &Declaration, subject: &Scalar, field: &str, missing: &mut Pending,
+) -> Result<Linear, ValidationFailure> {
+    compute_fields(env,change,&[subject.clone()],&[],missing,Some(field))
+}
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
     change: &Declaration,
@@ -323,6 +373,12 @@ pub(in crate::observed) fn compute(
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
+    compute_fields(env,change,subjects,requirements,missing,None)
+}
+fn compute_fields(
+    env: &Environment<'_>, change: &Declaration, subjects: &[Scalar],
+    requirements: &[(String,Vec<(String,Scalar)>)], missing: &mut Pending, selected: Option<&str>,
+) -> Result<Linear,ValidationFailure> {
     let Signature::Change {
         params,
         guard,
@@ -395,6 +451,8 @@ pub(in crate::observed) fn compute(
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
                     let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
+                    missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                     usable(env, *value, &v)?;
                     vars.insert(name.name.clone(), v);
                     current = *body;
@@ -405,6 +463,8 @@ pub(in crate::observed) fn compute(
                     else_branch,
                 } => {
                     let v = env.scoped_ast(*cond, &vars, &Scope::default(), &change.reading)?;
+                    missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                     usable(env, *cond, &v)?;
                     current = match v.known_value {
                         Some(Scalar::Bool(true)) => *then_branch,
@@ -424,6 +484,8 @@ pub(in crate::observed) fn compute(
                 } => {
                     let target =
                         env.scoped_ast(*base, &vars, &Scope::default(), &change.reading)?;
+                    missing.support.extend(target.support.iter().cloned());
+                    missing.scope.merge(&target.scope);
                     usable(env, *base, &target)?;
                     let Some(Scalar::Subject {
                         snapshot,
@@ -434,7 +496,12 @@ pub(in crate::observed) fn compute(
                         return Err(unsupported(env, *base, "整数changeの更新先が未確定"));
                     };
                     for (field, id) in fields {
+                        if selected.is_some_and(|name| name != field.name) {
+                            continue;
+                        }
                         let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
+                        missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
                             unsupported(env, *id, "整数changeの更新式がZアフィンでない")

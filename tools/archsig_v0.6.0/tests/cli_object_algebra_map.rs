@@ -107,6 +107,110 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 }
 
 #[test]
+fn change_transport_preserves_candidate_domains_and_simultaneous_updates() {
+    for (mode, parameter, sg, tg, left, right, missing, code, status) in [
+        ("finite", "Bool", "", " when k or not k", "if n then s.free+1 else s.free", "if k then t.free+1 else t.free", false, 0, "established"),
+        ("finite-refuted", "Bool", "", "", "if n then s.free+1 else s.free", "if k then t.free+2 else t.free", false, 1, "refuted"),
+        ("integer", "Z", "", "", "s.free+n", "t.free+k", false, 0, "established"),
+        ("integer-refuted", "Z", "", "", "s.free+n", "t.free+2*k", false, 1, "refuted"),
+        ("integer-restricted", "Z", " when n=0", " when k=0", "s.free+n", "t.free+2*k", false, 0, "established"),
+        ("integer-guard-refuted", "Z", " when n=0", " when k=1", "s.free+n", "t.free+k", false, 1, "refuted"),
+        ("finite-missing", "Bool", "", "", "if n then s.free+1 else s.free", "if k then t.free+1 else t.free", true, 2, "undetermined"),
+        ("integer-empty", "Z", " when false", " when false", "s.free+n", "t.free+k", true, 0, "established"),
+        ("missing", "Z", "", "", "s.free+n", "t.free+k", true, 2, "undetermined"),
+    ] {
+        let dir = finite_view_inputs(&format!("change-transport-{mode}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} change tune(s:State,n:{parameter}){sg}=s with {{free={left},held=s.free}};}}
+reading After {{{vocabulary} change tune(t:State,k:{parameter}){tg}=t with {{held=t.free,free={right}}};}}"#)).unwrap();
+        if missing {
+            let text=std::fs::read_to_string(dir.join("a.json")).unwrap();
+            std::fs::write(dir.join("a.json"),text.lines().filter(|line|!line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
+        }
+        let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
+        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
+        for request in requests {args.extend(["--ask",request]);}
+        let normal=without_file_changes(&dir,||cli::run(&dir,&args));
+        assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());assert!(normal.stdout.len()<1500);
+        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);
+        let result=result_json(&dir,&run);let m=answer(&result,"m");
+        assert_eq!(s(get(m,"status")),status,"{mode}");assert_eq!(s(get(answer(&result,"same"),"status")),"established");
+        assert_eq!(has(get(m,"outputs"),"map"),code==0);
+        if code==0 {
+            let map=value(&result,get(get(m,"outputs"),"map"));let transport=value(&result,&arr(get(map,"transports"))[0]);
+            assert_eq!(s(get(transport,"kind")),"change");assert_json(get(transport,"parameters"),r#"[["s","t"],["n","k"]]"#);
+            let clauses=arr(get(transport,"clauses"));assert_eq!(clauses.len(),3);
+            assert_eq!(reference_pairs(&result,value(&result,get(&clauses[0],"arguments"))).len(),6);
+            let law=std::fs::read(dir.join("l.law")).unwrap();
+            for (clause,expected) in [(&clauses[1],left),(&clauses[2],"s.free")] {
+                let expression=value(&result,get(clause,"source"));let span=arr(get(get(expression,"location"),"span"));
+                assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],expected.as_bytes());
+                assert_eq!(arr(get(value(&result,get(clause,"commutes")),"quantifiers")).len(),2);
+            }
+        }
+        if code==1 {let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());
+            let data=get(value(&result,&examples[0]),"data");let bindings=arr(get(data,"bindings"));assert_eq!(bindings.len(),2);
+            assert_eq!(s(get(&bindings[1],"name")),"n");
+            if mode=="integer-refuted" {assert_eq!(s(value(&result,get(&bindings[1],"value"))),"1");}
+        }
+        if code==2 {let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"subject"))=="p"));}
+        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
+        let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
+    }
+}
+
+#[test]
+fn change_transport_uses_field_alignments_and_keeps_known_refutations_with_missing_updates() {
+    for (mode, integer, aligned, preserve, missing, collision, code) in [
+        ("finite-align", false, true, true, false, false, 0),
+        ("integer-align", true, true, true, false, false, 0),
+        ("finite-align-refuted", false, true, false, false, false, 1),
+        ("integer-align-refuted", true, true, false, false, false, 1),
+        ("finite-partial", false, false, false, true, false, 1),
+        ("integer-partial", true, false, false, true, false, 1),
+        ("instance-collision", false, false, true, false, true, 2),
+    ] {
+        let dir=finite_view_inputs(&format!("change-fix-{mode}"),true);
+        let old="sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+        let mut digest=old.to_string();
+        let mut archmap=std::fs::read_to_string(dir.join("a.json")).unwrap();
+        if aligned {
+            let definition=std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1);
+            let checked=archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();digest=checked.vocabularies["Reservations"].digest.clone();
+            std::fs::write(dir.join("d.json"),definition).unwrap();archmap=archmap.replace(old,&digest);
+        }
+        if collision {
+            archmap=archmap.lines().filter(|line|!line.contains(r#""type":"Reservations.Reserve""#)&&!line.contains(r#""subject":"e""#)&&!line.contains(r#""subject":"f""#)).collect::<Vec<_>>().join("\n")
+                .replace(r#"[[["v","e"],["v","f"]]]"#,"[]")
+                .replace(r#"[["v","q"],["v","s"]]"#,r#"[["v","q"],["v","r"]]"#);
+        }
+        archmap=archmap.lines().filter(|line|!(missing&&line.contains("Reservations.State.free"))).map(|line|{
+            let mut text=line.to_string();if line.contains("Reservations.State.free")||line.contains("Reservations.State.held") {for n in ["1","2","3","4","19"] {text=text.replace(&format!(r#""value":"{n}""#),r#""value":"0""#);}}text
+        }).collect::<Vec<_>>().join("\n");std::fs::write(dir.join("a.json"),archmap).unwrap();
+        let ty=if integer {"Z"} else {"Bool"};let left=if integer {"n"} else {"if n then 1 else 0"};let right=if integer {"k"} else {"if k then 1 else 0"};
+        let (sf,sh,tf,th)=if missing {("s.free","0","t.free","1")} else if collision {("0","0","0","0")} else if preserve {(left,"0","0",right)} else {(left,"0",right,"0")};
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:{ty})=s with {{free={sf},held={sh}}};}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:{ty})=t with {{free={tf},held={th}}};}}"#)).unwrap();
+        let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
+        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
+        for request in requests {args.extend(["--ask",request]);}
+        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stdout.len()<1500);assert!(normal.stderr.is_empty());
+        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
+        assert_eq!(s(get(m,"status")),if code==0 {"established"} else if code==1 {"refuted"} else {"undetermined"});assert_eq!(s(get(answer(&result,"same"),"status")),"established");assert_eq!(has(get(m,"outputs"),"map"),code==0);
+        if code==0 {let map=value(&result,get(get(m,"outputs"),"map"));let transport=value(&result,&arr(get(map,"transports"))[0]);let clause=&arr(get(transport,"clauses"))[1];
+            let target=value(&result,get(clause,"target"));let span=arr(get(get(target,"location"),"span"));let law=std::fs::read(dir.join("l.law")).unwrap();assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],th.as_bytes());
+            let q=&arr(get(value(&result,get(clause,"commutes")),"quantifiers"))[0];let domain=value(&result,get(q,"domain"));assert_eq!(arr(get(domain,"elements")).len(),3);
+        }
+        if code==1 {let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());if missing {assert!(examples.iter().any(|e|{let data=get(value(&result,e),"data");s(value(&result,get(data,"left")))=="0"&&s(value(&result,get(data,"right")))=="1"}));}}
+        if missing {assert!(arr(get(m,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"&&!arr(get(r,"missing")).is_empty()));}
+        if collision {assert!(arr(get(m,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));}
+        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
+    }
+}
+
+#[test]
 fn unconditional_local_guards_preserve_reads_and_following_operations() {
     for (mode, source_guard, target_guard) in [
         ("source", " when true", ""),

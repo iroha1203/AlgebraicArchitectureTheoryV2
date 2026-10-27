@@ -15,6 +15,8 @@ pub(in crate::observed) struct Update {
     pub state: State,
     pub values: Vec<(Fact, Scalar)>,
     pub missing: Vec<Fact>,
+    pub support: Vec<Fact>,
+    pub scope: Scope,
 }
 
 fn known(value: Scalar) -> SourceValue {
@@ -33,6 +35,8 @@ fn known(value: Scalar) -> SourceValue {
 
 impl Update {
     fn retain(&mut self, value: &SourceValue) {
+        self.support.extend(value.support.iter().cloned());
+        self.scope.merge(&value.scope);
         if value.condition_failed {
             self.state = State::ConditionFailed;
         } else if (value.condition_pending || value.known_value.is_none())
@@ -71,6 +75,8 @@ pub(in crate::observed) fn evaluate(
         result.missing.sort();
         result.missing.dedup();
     }
+    result.support.sort();
+    result.support.dedup();
     Ok(result)
 }
 fn evaluate_inner(
@@ -119,6 +125,8 @@ fn evaluate_inner(
             State::Ready
         },
         values: vec![],
+        support: checks.support,
+        scope: checks.scope.clone(),
         missing: checks.missing,
     };
     let mut base = checks.scope;
@@ -372,6 +380,8 @@ pub(in crate::observed) fn candidate(
                 state: State::Ready,
                 values: vec![],
                 missing: vec![],
+                support: vec![],
+                scope: Scope::default(),
             };
             let mut values = BTreeMap::<Fact, Scalar>::new();
             for (index, subject) in subjects.iter().enumerate() {
@@ -386,6 +396,8 @@ pub(in crate::observed) fn candidate(
                     )
                     .collect::<Vec<_>>();
                 let item = evaluate(environment, declaration, &bindings)?;
+                update.support.extend(item.support.iter().cloned());
+                update.scope.merge(&item.scope);
                 update.missing.extend(item.missing);
                 update.state = match (&update.state, &item.state) {
                     (State::ConditionFailed, _) | (_, State::ConditionFailed) => {

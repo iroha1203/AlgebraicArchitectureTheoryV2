@@ -46,6 +46,7 @@ pub(super) struct Part {
     pub(super) judgment: Option<Judgment>,
     pub(super) evidence: Vec<NodeRef>,
     pub(super) scalar: Option<Scalar>,
+    pub(super) domain_type: Option<Type>,
 }
 #[derive(Debug)]
 pub(super) struct Source {
@@ -165,6 +166,7 @@ impl Builder<'_> {
             judgment,
             evidence: vec![],
             scalar,
+            domain_type: None,
         });
         Ok(r)
     }

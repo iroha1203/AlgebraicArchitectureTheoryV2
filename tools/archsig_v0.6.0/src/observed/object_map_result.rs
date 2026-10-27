@@ -64,6 +64,9 @@ impl Data {
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&crate::types::Type> {
+        if self.part().ty == NodeType::Domain { self.part().domain_type.as_ref() } else { None }
+    }
     pub(super) fn construction(&self) -> &'static str {
         self.part().construction
     }
@@ -199,7 +202,7 @@ pub(super) fn extend(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
         {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
@@ -372,7 +375,7 @@ fn compute_inner(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
         {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
