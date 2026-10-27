@@ -206,39 +206,87 @@ reading After {{{vocabulary} local here(t:State){target_guard} reads t,(t.free);
 }
 
 #[test]
-fn false_and_conditional_local_guards_remain_explicitly_unsupported() {
-    for (mode, guard) in [("false", "false"), ("field", "s.free=2")] {
-        let dir = finite_view_inputs(&format!("local-unsupported-guard-{mode}"), true);
+fn local_guard_domains_preserve_source_rows_and_keep_unknown_distinct() {
+    for (mode, source, target, read, preserve, missing, code, status) in [
+        ("expansion", "s.free=2", "t.free>0", "field", true, "", 0, "established"),
+        ("reference-expansion", "s.free=2", "t.free>0", "reference", false, "", 0, "established"),
+        ("empty", "false", "false", "field", false, "", 0, "established"),
+        ("guard-refuted", "s.free=2", "t.free=1", "reference", true, "", 1, "refuted"),
+        ("value-refuted", "s.free=2", "t.free>0", "field", false, "", 1, "refuted"),
+        ("source-missing", "s.free=2", "true", "reference", true, "p", 2, "undetermined"),
+        ("target-missing", "true", "t.free>0", "reference", true, "r", 2, "undetermined"),
+        ("inactive-missing", "false", "t.free>0", "field", true, "r", 0, "established"),
+        ("tuple-refuted", "a.free=1 and s.free=2", "b.free>0 and t.free>0", "field", false, "", 1, "refuted"),
+    ] {
+        let dir = finite_view_inputs(&format!("local-domain-{mode}"), preserve);
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-        std::fs::write(
-            dir.join("l.law"),
-            format!(
-                r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(s:State) when {guard} reads s;}}
-reading After {{{vocabulary} local here(s:State) when {guard} reads s;}}"#
-            ),
-        )
-        .unwrap();
-        let result = without_file_changes(&dir, || {
-            cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--ask",
-                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                ],
-            )
-        });
-        assert_eq!(result.code, 70, "{}", result.stdout);
-        assert!(result.stderr.is_empty());
-        assert!(result.stdout.contains("local guard"), "{}", result.stdout);
-        assert!(!has(&result.receipt, "result"));
+        let (sp, tp) = if mode == "tuple-refuted" { ("a:State,s:State", "b:State,t:State") } else { ("s:State", "t:State") };
+        let (sr, tr) = if read == "reference" { ("s", "t") } else { ("s.free", "t.free") };
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here({sp}) when {source} reads {sr};}}
+reading After {{{vocabulary} local here({tp}) when {target} reads {tr};}}"#)).unwrap();
+        if !missing.is_empty() {
+            let text = std::fs::read_to_string(dir.join("a.json")).unwrap();
+            // target欠測の前像に既知Atomを残すと、localより前のConfigurationMapが未決になる。
+            let text = text.lines().filter(|line| !line.contains(&format!(r#""id":"{missing}-free""#))
+                && !(missing == "r" && line.contains(r#""id":"p-free""#))).collect::<Vec<_>>().join("\n");
+            std::fs::write(dir.join("a.json"), text).unwrap();
+        }
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(normal.stdout.len() < 1500);
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{mode}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), status, "{mode}");
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established", "{mode}");
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        if code == 0 {
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            let clause = &arr(get(transport, "clauses"))[0];
+            let arguments = value(&result, get(clause, "arguments"));
+            assert_eq!(reference_pairs(&result, arguments).len(), 6);
+        }
+        if code == 1 {
+            let examples = arr(get(m, "counterexamples"));
+            assert!(!examples.is_empty());
+            let data = get(value(&result, &examples[0]), "data");
+            if mode == "guard-refuted" {
+                assert_json(value(&result, get(data, "left")), "true");
+                assert_json(value(&result, get(data, "right")), "false");
+            } else {
+                assert_eq!(s(value(&result, get(data, "left"))), "2");
+                assert_eq!(s(value(&result, get(data, "right"))), "4");
+            }
+            if mode == "tuple-refuted" {
+                let bindings = arr(get(data, "bindings"));
+                assert_eq!(bindings.len(), 2);
+                for (binding, name, subject) in [(&bindings[0], "a", "q"), (&bindings[1], "s", "p")] {
+                    assert_eq!(s(get(binding, "name")), name);
+                    assert_eq!(s(&arr(value(&result, get(binding, "value")))[1]), subject);
+                }
+            }
+        }
+        if code == 2 {
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "subject")) == missing));
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{mode}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] { assert_eq!(get(&result, key).value, get(&again, key).value, "{mode}: {key}"); }
     }
 }
 

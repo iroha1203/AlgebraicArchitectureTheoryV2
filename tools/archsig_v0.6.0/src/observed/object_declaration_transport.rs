@@ -35,51 +35,206 @@ fn merge_status(current: Decision, next: Decision) -> Decision {
         Decision::Established
     }
 }
-fn unconditional_guards(
+// guardがある場合だけ全tupleを保持する。各readの反例もこの実割当てを使う。
+struct Applicable {
+    rows: Vec<Vec<usize>>,
+    status: Decision,
+    support: Vec<Fact>,
+    scope: Scope,
+    reasons: Vec<Reason>,
+    evidence: Vec<NodeRef>,
+}
+fn counterexample(
+    b: &mut Builder<'_>,
+    params: &[Param],
+    maps: &[Arc<ParameterMap>],
+    row: &[usize],
+    left: NodeRef,
+    right: NodeRef,
+    facts: &[Fact],
+) -> Result<NodeRef, ValidationFailure> {
+    let mut args = vec![left, right];
+    let bindings = params
+        .iter()
+        .zip(maps)
+        .zip(row)
+        .map(|((p, map), &i)| {
+            let value = map.subjects[i].0;
+            args.push(value);
+            Json::obj([
+                ("name", Json::str(&p.name)),
+                ("type", p.ty.wire()),
+                ("value", value.wire()),
+            ])
+        })
+        .collect();
+    b.push(
+        NodeType::Evidence,
+        "evidence",
+        Json::obj([
+            ("kind", Json::str("counterexample")),
+            (
+                "data",
+                Json::obj([
+                    ("bindings", Json::Arr(bindings)),
+                    ("paths", Json::Arr(vec![])),
+                    ("left", left.wire()),
+                    ("right", right.wire()),
+                    ("facts", Json::Arr(facts.iter().map(Fact::wire).collect())),
+                ]),
+            ),
+        ]),
+        args,
+        None,
+        None,
+    )
+}
+fn applicable(
+    b: &mut Builder<'_>,
     env: &Environment<'_>,
     declarations: [&crate::law::model::Declaration; 2],
+    maps: &[Arc<ParameterMap>],
+    origins: &[NodeRef],
+    request: &Request,
     c: &mut Control,
-) -> Result<[(Vec<Fact>, Scope); 2], ValidationFailure> {
-    let mut metadata = [(vec![], Scope::default()), (vec![], Scope::default())];
-    for (side, declaration) in declarations.into_iter().enumerate() {
+) -> Result<Option<Applicable>, ValidationFailure> {
+    let mut signatures = vec![];
+    for declaration in declarations {
         let Signature::Local { params, guard, .. } = &declaration.signature else {
             return Err("guardの元宣言がlocalでない".into());
         };
-        let Some(id) = guard else {
-            continue;
-        };
-        let tuple = Type::Tuple(params.iter().map(|p| p.ty.clone()).collect());
-        let domain = env.finite_values(&tuple, &mut |_, _| {})?;
-        metadata[side].0.extend(domain.support.iter().cloned());
-        metadata[side].1.merge(&domain.scope);
-        for tuple in domain.values {
-            tick(c)?;
-            let Scalar::Tuple(values) = &tuple else {
-                return Err("guardの引数域がTupleでない".into());
-            };
-            let bindings = params
-                .iter()
-                .zip(values)
-                .map(|(parameter, value)| (parameter.name.clone(), value.clone()))
-                .collect::<Vec<_>>();
-            let (value, facts, reading_scope) = super::super::environment::local_read::guard_value(
-                env,
-                *id,
-                &bindings,
-                &declaration.reading,
-            )?;
-            if value != Some(true) {
-                return Err("全域trueと確認できないlocal guard移送は未実装".into());
+        signatures.push((params, guard));
+    }
+    if signatures.iter().all(|(_, guard)| guard.is_none()) {
+        return Ok(None);
+    }
+    let mut tuples = vec![vec![]];
+    for map in maps {
+        let mut next = vec![];
+        for row in tuples {
+            for i in 0..map.subjects.len() {
+                tick(c)?;
+                let mut row = row.clone();
+                row.push(i);
+                next.push(row);
             }
-            metadata[side].0.extend(facts);
-            metadata[side].1.merge(&reading_scope);
+        }
+        tuples = next;
+    }
+    let mut out = Applicable {
+        rows: vec![],
+        status: Decision::Established,
+        support: vec![],
+        scope: Scope::default(),
+        reasons: vec![],
+        evidence: vec![],
+    };
+    for row in tuples {
+        tick(c)?;
+        let mut values = [Some(true); 2];
+        let mut missing = vec![];
+        let mut facts = vec![];
+        for side in 0..2 {
+            if side == 1 && values[0] != Some(true) {
+                break;
+            }
+            let (params, guard) = signatures[side];
+            let Some(id) = guard else {
+                continue;
+            };
+            let mut bindings = vec![];
+            for ((p, map), &i) in params.iter().zip(maps).zip(&row) {
+                let fact = if side == 0 {
+                    &map.transport.source()[i]
+                } else {
+                    &map.transport.images()[i]
+                };
+                bindings.push((
+                    p.name.clone(),
+                    Scalar::Subject {
+                        snapshot: fact.snapshot.clone(),
+                        subject: fact.subject.clone(),
+                        entity: if side == 0 {
+                            map.source.clone()
+                        } else {
+                            map.target.clone()
+                        },
+                    },
+                ));
+            }
+            let (value, support, scope, absent) =
+                super::super::environment::local_read::guard_value(
+                    env,
+                    *id,
+                    &bindings,
+                    &declarations[side].reading,
+                )?;
+            values[side] = value;
+            facts.extend(support.iter().cloned());
+            out.support.extend(support);
+            out.scope.merge(&scope);
+            missing.extend(absent);
+        }
+        if values[0] == Some(false) {
+            continue;
+        }
+        if values.iter().any(Option::is_none) {
+            out.status = merge_status(out.status, Decision::Undetermined);
+            missing.sort();
+            missing.dedup();
+            out.reasons.push(Reason {
+                kind: if missing.is_empty() {
+                    ReasonKind::UnsupportedAlgorithm {
+                        question: request.kind,
+                        operand_types: vec![Type::Bool],
+                        method: "local_guard_applicability".into(),
+                    }
+                } else {
+                    ReasonKind::Missing
+                },
+                request: request.id.clone(),
+                dependencies: origins.to_vec(),
+                missing,
+                location: Some(crate::issue::Location::Law {
+                    span: declarations[if values[0].is_none() { 0 } else { 1 }].span,
+                }),
+            });
+            continue;
+        }
+        if values[1] == Some(false) {
+            out.status = Decision::Refuted;
+            let left = b.push(
+                NodeType::Value(Type::Bool),
+                "binding",
+                Scalar::Bool(true).wire(),
+                origins.to_vec(),
+                Some(Scalar::Bool(true)),
+                None,
+            )?;
+            let right = b.push(
+                NodeType::Value(Type::Bool),
+                "binding",
+                Scalar::Bool(false).wire(),
+                origins.to_vec(),
+                Some(Scalar::Bool(false)),
+                None,
+            )?;
+            out.evidence.push(counterexample(
+                b,
+                signatures[0].0,
+                maps,
+                &row,
+                left,
+                right,
+                &facts,
+            )?);
+        } else {
+            out.rows.push(row);
         }
     }
-    for (support, _) in &mut metadata {
-        support.sort();
-        support.dedup();
-    }
-    Ok(metadata)
+    out.support.sort();
+    out.support.dedup();
+    Ok(Some(out))
 }
 
 fn field_read(
@@ -369,16 +524,10 @@ pub(super) fn retain(
             type_maps.push(map.clone());
             parameter_maps.push(map);
         }
-        let guard_metadata = unconditional_guards(env, [source, target], c)?;
         let mut guard_expressions = vec![];
-        for (side, (guard, params)) in [(*sg, sp), (*tg, tp)].into_iter().enumerate() {
+        for (guard, params) in [(*sg, sp), (*tg, tp)] {
             if let Some(id) = guard {
                 let r = expression(b, inputs, id, params, dependencies)?;
-                let part = &mut b.parts[r.0 - b.base];
-                part.support.extend(guard_metadata[side].0.iter().cloned());
-                part.support.sort();
-                part.support.dedup();
-                part.scope.merge(&guard_metadata[side].1);
                 guard_expressions.push(r);
             }
         }
@@ -393,6 +542,15 @@ pub(super) fn retain(
             declarations.types(),
             dependencies,
         )?;
+        let applicable = applicable(
+            b,
+            env,
+            [source, target],
+            &parameter_maps,
+            &guard_expressions,
+            request,
+            c,
+        )?;
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
         all.extend(guard_expressions.iter().copied());
@@ -400,7 +558,7 @@ pub(super) fn retain(
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
-            let comparison = match read {
+            let mut comparison = match read {
                 Read::Projection(position) => field::Comparison {
                     values: parameter_maps[position].values,
                     status: Decision::Established,
@@ -417,6 +575,7 @@ pub(super) fn retain(
                     [source, target],
                     declarations,
                     &parameter_maps,
+                    applicable.as_ref().map(|domain| domain.rows.as_slice()),
                     position,
                     &names,
                     [s, t],
@@ -426,6 +585,14 @@ pub(super) fn retain(
                     c,
                 )?,
             };
+            if let Some(domain) = &applicable {
+                comparison.status = merge_status(comparison.status, domain.status);
+                comparison.support.extend(domain.support.iter().cloned());
+                comparison.scope.merge(&domain.scope);
+                comparison.reasons.extend(domain.reasons.iter().cloned());
+                comparison.evidence.extend(domain.evidence.iter().copied());
+                comparison.arguments.extend(domain.evidence.iter().copied());
+            }
             let values = comparison.values;
             let mut comparison_arguments = comparison.arguments;
             comparison_arguments.extend(guard_expressions.iter().copied());

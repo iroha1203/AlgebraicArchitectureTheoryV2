@@ -75,6 +75,7 @@ pub(super) fn compare(
     declarations: [&Declaration; 2],
     correspondence: &construction::DeclarationCorrespondence,
     maps: &[Arc<ParameterMap>],
+    applicable: Option<&[Vec<usize>]>,
     position: usize,
     names: &[String; 2],
     expressions: [usize; 2],
@@ -98,14 +99,16 @@ pub(super) fn compare(
     let reference = if let (Type::Ref(source), Type::Ref(target)) = (&types[0], &types[1]) {
         // mapsは同じ宣言対応・入力・依存から構成した型全域の写像。
         // 引数位置は保持したまま、戻り値と同じ参照型の写像だけを共有する。
-        Some(if let Some(map) = maps
-            .iter()
-            .find(|map| &map.source == source && &map.target == target)
-        {
-            map.clone()
-        } else {
-            reference_map(b, inputs, correspondence, source, target, dependencies, c)?
-        })
+        Some(
+            if let Some(map) = maps
+                .iter()
+                .find(|map| &map.source == source && &map.target == target)
+            {
+                map.clone()
+            } else {
+                reference_map(b, inputs, correspondence, source, target, dependencies, c)?
+            },
+        )
     } else {
         None
     };
@@ -153,13 +156,22 @@ pub(super) fn compare(
         format!("{}.{}", map.source, names[0]),
         format!("{}.{}", map.target, names[1]),
     ];
-    for (index, (source, target)) in map
-        .transport
-        .source()
-        .iter()
-        .zip(map.transport.images())
-        .enumerate()
-    {
+    let rows;
+    let rows = if let Some(rows) = applicable {
+        rows
+    } else {
+        rows = (0..map.subjects.len())
+            .map(|i| {
+                let mut row = vec![0; maps.len()];
+                row[position] = i;
+                row
+            })
+            .collect::<Vec<_>>();
+        &rows
+    };
+    for row in rows {
+        let source = &map.transport.source()[row[position]];
+        let target = &map.transport.images()[row[position]];
         tick(c)?;
         // 恒等移送の同じ元slotは全補完で同じ値。参照値には実写像を適用する。
         if identity_values && source == target && fields[0] == fields[1] {
@@ -259,39 +271,7 @@ pub(super) fn compare(
             let Signature::Local { params, .. } = &declarations[0].signature else {
                 return Err("local元宣言がない".into());
             };
-            let mut bindings = vec![];
-            let mut args = vec![left, right];
-            for (at, (parameter, parameter_map)) in params.iter().zip(maps).enumerate() {
-                tick(c)?;
-                let point = if at == position { index } else { 0 };
-                let value = parameter_map.subjects[point].0;
-                args.push(value);
-                bindings.push(Json::obj([
-                    ("name", Json::str(&parameter.name)),
-                    ("type", parameter.ty.wire()),
-                    ("value", value.wire()),
-                ]));
-            }
-            let evidence = b.push(
-                NodeType::Evidence,
-                "evidence",
-                Json::obj([
-                    ("kind", Json::str("counterexample")),
-                    (
-                        "data",
-                        Json::obj([
-                            ("bindings", Json::Arr(bindings)),
-                            ("paths", Json::Arr(vec![])),
-                            ("left", left.wire()),
-                            ("right", right.wire()),
-                            ("facts", Json::Arr(vec![lf.wire(), rf.wire()])),
-                        ]),
-                    ),
-                ]),
-                args,
-                None,
-                None,
-            )?;
+            let evidence = counterexample(b, params, maps, row, left, right, &[lf, rf])?;
             result.arguments.push(evidence);
             result.evidence.push(evidence);
             break;
