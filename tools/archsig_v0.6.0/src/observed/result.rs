@@ -709,7 +709,7 @@ impl Reason {
                 condition,
                 construction,
             } => (
-                format!("actual value does not satisfy the construction condition: {construction}, condition {}", condition.wire().canonical()),
+                format!("actual value does not satisfy the construction condition: {construction}"),
                 Json::obj([
                     ("condition", condition.wire()),
                     ("construction", Json::str(*construction)),
