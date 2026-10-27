@@ -65,6 +65,52 @@ fn value<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
 }
 
 #[test]
+fn local_multiple_reference_parameters_keep_read_order_and_value_types() {
+    let dir = inputs("local-multiple-reference-transport");
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(s:State,root:System,other:State) reads root,s,other,root;}}
+reading After {{{vocabulary} local here(t:State,world:System,u:State) reads world,(t),u,world;}}"#)).unwrap();
+    let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+    let before=["d.json","l.law","a.json"].map(|name|std::fs::read(dir.join(name)).unwrap());
+    let normal=cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--ask",request]);
+    assert_eq!(normal.code,0,"{}",normal.stdout);
+    assert!(normal.stderr.is_empty());
+    assert!(!has(&normal.receipt,"nodes"));
+    assert!(!has(&normal.receipt,"result"));
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
+    for (name,bytes) in ["d.json","l.law","a.json"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
+    eprintln!("multiple local map stdout {} bytes",normal.stdout.len());
+    let run=asks(&dir,&[request]);
+    assert_eq!(run.code,0,"{}",run.stdout);
+    let result=result_json(&dir,&run);
+    let map=value(&result,get(get(answer(&result,"m"),"outputs"),"map"));
+    let transport=value(&result,&arr(get(map,"transports"))[0]);
+    assert_eq!(arr(get(transport,"parameters")).len(),3);
+    let clauses=arr(get(transport,"clauses"));
+    assert_eq!(clauses.len(),4);
+    assert_eq!(get(&clauses[0],"arguments").value,get(&clauses[1],"arguments").value);
+    assert_eq!(get(&clauses[0],"values").value,get(&clauses[3],"values").value);
+    assert_eq!(get(&clauses[1],"values").value,get(&clauses[2],"values").value);
+    assert_ne!(get(&clauses[0],"values").value,get(&clauses[1],"values").value);
+    let arguments=value(&result,get(&clauses[0],"arguments"));
+    assert_eq!(arr(get(arguments,"source_type")).len(),4);
+    let subjects=arr(get(arguments,"subjects"));
+    for (i,pair) in subjects.iter().enumerate() {assert!(!subjects[..i].iter().any(|old|value(&result,&arr(old)[0]).value==value(&result,&arr(pair)[0]).value));}
+    for (clause,expected) in clauses.iter().zip(["Reservations.System","Reservations.State","Reservations.State","Reservations.System"]) {
+        let values=value(&result,get(clause,"values"));
+        assert_eq!(s(&arr(get(values,"source_type"))[1]),expected);
+        let commutes=value(&result,get(clause,"commutes"));
+        assert_eq!(arr(get(commutes,"quantifiers")).len(),3);
+    }
+    let reused=cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
+    assert_eq!(reused.code,0,"{}",reused.stdout);
+    let again=result_json(&dir,&reused);
+    assert!(warnings(&again).is_empty());
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value);}
+}
+
+#[test]
 fn local_reference_reads_are_transported_by_the_actual_configuration_map() {
     let dir = inputs("local-reference-transport");
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
