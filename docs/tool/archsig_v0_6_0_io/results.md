@@ -805,7 +805,7 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
 | unsupported_version | `{found_format:String,found_semantics?:String}` |
 | usage | `{argument:String}` |
 | io | `{operation:"read"\|"create"\|"write"\|"flush"\|"rename",path:String}` |
-| internal | `{operation:String}` |
+| internal | `{operation:String}`。内部障害が起きた処理名を英語で示す |
 
 構成条件が未決なら、その条件のmissing/visibility/unsupported/dependency理由を伝播する。
 cycleがCLIの問いの依存による場合だけ、locationを省略し、循環に属する問いごとにrequestを必須とする。

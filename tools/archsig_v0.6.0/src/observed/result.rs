@@ -720,7 +720,7 @@ impl Reason {
                 operand_types,
                 method,
             } => (
-                format!("no algorithm supports {} for operand types {}", question.wire(), Json::Arr(operand_types.iter().map(Type::wire).collect()).canonical()),
+                format!("unsupported algorithm {method} for {} with operand types {}", question.wire(), Json::Arr(operand_types.iter().map(Type::wire).collect()).canonical()),
                 Json::obj([
                     ("question", Json::str(question.wire())),
                     (
@@ -731,7 +731,7 @@ impl Reason {
                 ]),
             ),
             ReasonKind::Internal(op) => (
-                "internal derivation verification failed".to_owned(),
+                format!("internal failure during {op}"),
                 Json::obj([("operation", Json::str(op))]),
             ),
             ReasonKind::Stop(r) => {
