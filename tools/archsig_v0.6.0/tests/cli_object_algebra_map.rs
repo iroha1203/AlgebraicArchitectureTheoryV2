@@ -108,7 +108,11 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 
 #[test]
 fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
-    for (mode, code, status) in [("preserved", 0, "established"), ("changed", 1, "refuted")] {
+    for (mode, code, status) in [
+        ("preserved", 0, "established"),
+        ("changed", 1, "refuted"),
+        ("identity-missing", 0, "established"),
+    ] {
         let dir = finite_view_inputs(&format!("local-reference-field-{mode}"), true);
         let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
         let definition = old.replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"other","type":["Ref","Reservations.State"],"meaning":"別の参照先。"}, {"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
@@ -149,6 +153,12 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
             .collect::<Vec<_>>()
             .join("\n")
             .replace("[[[\"v\",\"e\"],[\"v\",\"f\"]]]", "[]");
+        if mode == "identity-missing" {
+            a = a.replace("[[[\"v\",\"p\"],[\"v\",\"r\"]],[[\"v\",\"q\"],[\"v\",\"s\"]],[[\"v\",\"u\"],[\"v\",\"w\"]]]", "[[[\"v\",\"p\"],[\"v\",\"p\"]],[[\"v\",\"q\"],[\"v\",\"q\"]],[[\"v\",\"u\"],[\"v\",\"u\"]]]")
+                .replace(r#""id":"m-to","subject":"m","field":"Reservations.Migration.to","value":["v","B"]"#, r#""id":"m-to","subject":"m","field":"Reservations.Migration.to","value":["v","A"]"#)
+                .replace("\"subjects\":[", r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"x","type":"Reservations.State","origin":"model"},"#)
+                .replace("\"atoms\":[", r#""atoms":[{"id":"x-owner","subject":"x","field":"Reservations.State.owner","value":["v","C"],"origin":"model"},"#);
+        }
         std::fs::write(dir.join("a.json"), a).unwrap();
         let target_field = if mode == "changed" { "other" } else { "peer" };
         std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -182,8 +192,8 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
         assert_eq!(s(get(answer(&result, "m"), "status")), status);
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         let outputs = get(answer(&result, "m"), "outputs");
-        assert_eq!(has(outputs, "map"), mode == "preserved");
-        if mode == "preserved" {
+        assert_eq!(has(outputs, "map"), mode != "changed");
+        if mode != "changed" {
             let map = value(&result, get(outputs, "map"));
             let transport = value(&result, &arr(get(map, "transports"))[0]);
             let clause = &arr(get(transport, "clauses"))[0];
@@ -195,18 +205,36 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
                 "(t.peer)",
                 &[("s", "Reservations.State")],
             );
-            assert_reference_pairs(
-                &result,
-                value(&result, get(clause, "values")),
-                &[
-                    ("p", "r"),
-                    ("q", "s"),
-                    ("r", "r"),
-                    ("s", "s"),
-                    ("u", "w"),
-                    ("w", "w"),
-                ],
-            );
+            if mode == "identity-missing" {
+                assert_reference_pairs(
+                    &result,
+                    value(&result, get(clause, "values")),
+                    &[
+                        ("p", "p"),
+                        ("q", "q"),
+                        ("r", "r"),
+                        ("s", "s"),
+                        ("u", "u"),
+                        ("w", "w"),
+                        ("x", "x"),
+                    ],
+                );
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                assert!(arr(get(plan, "requirements")).is_empty());
+            } else {
+                assert_reference_pairs(
+                    &result,
+                    value(&result, get(clause, "values")),
+                    &[
+                        ("p", "r"),
+                        ("q", "s"),
+                        ("r", "r"),
+                        ("s", "s"),
+                        ("u", "w"),
+                        ("w", "w"),
+                    ],
+                );
+            }
         } else if mode == "changed" {
             let examples = arr(get(answer(&result, "m"), "counterexamples"));
             let data = get(value(&result, &examples[0]), "data");

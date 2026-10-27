@@ -122,6 +122,16 @@ pub(super) fn compare(
         .ok_or("参照を含むlocal field値の移送は未実装")?;
         value_map(b, [&types[0], &types[1]], &[], &identity, dependencies)?
     };
+    let identity_values = if let Some(map) = &reference {
+        let mut identity = map.source == map.target;
+        for (source, target) in map.transport.source().iter().zip(map.transport.images()) {
+            tick(c)?;
+            identity &= source == target;
+        }
+        identity
+    } else {
+        true
+    };
     let mut result = Comparison {
         values,
         status: Decision::Established,
@@ -151,7 +161,7 @@ pub(super) fn compare(
     {
         tick(c)?;
         // 恒等移送の同じ元slotは全補完で同じ値。参照値には実写像を適用する。
-        if reference.is_none() && source == target && fields[0] == fields[1] {
+        if identity_values && source == target && fields[0] == fields[1] {
             continue;
         }
         let (left, lf, ls) = read_scalar(
