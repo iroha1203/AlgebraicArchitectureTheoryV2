@@ -8,18 +8,26 @@ use crate::{
     types::Type,
 };
 
-fn identity_read(
+fn read_parameter(
     inputs: &super::super::input::CheckedInputs,
     mut id: usize,
-    name: &str,
+    parameters: &[Param],
     c: &mut Control,
-) -> Result<bool, ValidationFailure> {
+) -> Result<Option<usize>, ValidationFailure> {
     loop {
         tick(c)?;
         match &inputs.law().exprs[id].kind {
             ExprKind::Group(inner) => id = *inner,
-            ExprKind::Dotted(parts) => return Ok(parts.len() == 1 && parts[0].name == name),
-            _ => return Ok(false),
+            ExprKind::Dotted(parts) if parts.len() == 1 => {
+                for (position, parameter) in parameters.iter().enumerate() {
+                    tick(c)?;
+                    if parts[0].name == parameter.name {
+                        return Ok(Some(position));
+                    }
+                }
+                return Ok(None);
+            }
+            _ => return Ok(None),
         }
     }
 }
@@ -152,74 +160,91 @@ pub(super) fn retain(
         else {
             return Err("guard付きlocal宣言移送は未実装".into());
         };
-        if sp.len() != 1 || tp.len() != 1 || sr.len() != tr.len() {
+        if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
-        let (Type::Ref(st), Type::Ref(tt)) = (&sp[0].ty, &tp[0].ty) else {
-            return Err("非参照local引数の移送は未実装".into());
-        };
+        let mut projections = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
-            if !identity_read(inputs, s, &sp[0].name, c)?
-                || !identity_read(inputs, t, &tp[0].name, c)?
-            {
+            let Some(position) = read_parameter(inputs, s, sp, c)? else {
                 return Err("参照射影以外のlocal read移送は未実装".into());
+            };
+            if read_parameter(inputs, t, tp, c)? != Some(position) {
+                return Err("異なる引数射影のlocal read移送は未実装".into());
             }
+            projections.push(position);
         }
-        let transport =
-            construction::reference_type_transport(inputs, declarations, st, c).map_err(failure)?;
-        if transport.target_type() != tt
-            || transport
-                .failures()
-                .iter()
-                .any(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
-        {
-            return Err("local参照写像の像型が違う".into());
-        }
-        let mut subjects = vec![];
-        for (s, t) in transport.source().iter().zip(transport.images()) {
+        let mut parameter_values = vec![];
+        let mut type_maps = vec![];
+        let mut argument_subjects = vec![];
+        for (source, target) in sp.iter().zip(tp) {
             tick(c)?;
-            let mut refs = vec![];
-            for (fact, entity) in [(s, st), (t, tt)] {
-                let scalar = Scalar::Subject {
-                    snapshot: fact.snapshot.clone(),
-                    subject: fact.subject.clone(),
-                    entity: entity.clone(),
-                };
-                refs.push(b.push(
-                    NodeType::Value(scalar.ty()),
-                    "binding",
-                    scalar.wire(),
-                    dependencies.to_vec(),
-                    Some(scalar),
-                    None,
-                )?);
+            let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
+                return Err("非参照local引数の移送は未実装".into());
+            };
+            if let Some((_, _, values)) = type_maps.iter().find(|(s, t, _)| s == st && t == tt) {
+                parameter_values.push(*values);
+                continue;
             }
-            subjects.push((refs[0], refs[1]));
+            let transport = construction::reference_type_transport(inputs, declarations, st, c)
+                .map_err(failure)?;
+            if transport.target_type() != tt
+                || transport
+                    .failures()
+                    .iter()
+                    .any(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
+            {
+                return Err("local参照写像の像型が違う".into());
+            }
+            let mut subjects = vec![];
+            for (s, t) in transport.source().iter().zip(transport.images()) {
+                tick(c)?;
+                let mut refs = vec![];
+                for (fact, entity) in [(s, st), (t, tt)] {
+                    let scalar = Scalar::Subject {
+                        snapshot: fact.snapshot.clone(),
+                        subject: fact.subject.clone(),
+                        entity: entity.clone(),
+                    };
+                    refs.push(b.push(
+                        NodeType::Value(scalar.ty()),
+                        "binding",
+                        scalar.wire(),
+                        dependencies.to_vec(),
+                        Some(scalar),
+                        None,
+                    )?);
+                }
+                subjects.push((refs[0], refs[1]));
+            }
+            let values = value_map(
+                b,
+                [&source.ty, &target.ty],
+                &subjects,
+                declarations.types(),
+                dependencies,
+            )?;
+            argument_subjects.extend(subjects);
+            type_maps.push((st.clone(), tt.clone(), values));
+            parameter_values.push(values);
         }
-        let values = value_map(
-            b,
-            [&sp[0].ty, &tp[0].ty],
-            &subjects,
-            declarations.types(),
-            dependencies,
-        )?;
         let args = [
-            Type::Tuple(vec![sp[0].ty.clone()]),
-            Type::Tuple(vec![tp[0].ty.clone()]),
+            Type::Tuple(sp.iter().map(|p| p.ty.clone()).collect()),
+            Type::Tuple(tp.iter().map(|p| p.ty.clone()).collect()),
         ];
         let arguments = value_map(
             b,
             [&args[0], &args[1]],
-            &subjects,
+            &argument_subjects,
             declarations.types(),
             dependencies,
         )?;
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
-        for (&s, &t) in sr.iter().zip(tr) {
+        for ((&s, &t), position) in sr.iter().zip(tr).zip(projections) {
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
+            let values = parameter_values[position];
             // 両句は対応する引数の射影。全source参照の像を両経路で同じ実写像から得る。
             let commutes = b.proposition(
                 "declaration_transport",
@@ -229,17 +254,23 @@ pub(super) fn retain(
             )?;
             let p = &mut b.parts[commutes.0 - b.base];
             p.scope.assignments = true;
-            let q = Quantifier {
-                kind: crate::law::ast::QuantKind::Forall,
-                name: sp[0].name.clone(),
-                ty: sp[0].ty.clone(),
-                domain: None,
-                occurrence: sp[0].span,
-                context: None,
-            };
-            p.scope.quantifiers.push(q.clone());
+            let quantifiers: Vec<_> = sp
+                .iter()
+                .map(|parameter| Quantifier {
+                    kind: crate::law::ast::QuantKind::Forall,
+                    name: parameter.name.clone(),
+                    ty: parameter.ty.clone(),
+                    domain: None,
+                    occurrence: parameter.span,
+                    context: None,
+                })
+                .collect();
+            p.scope.quantifiers.extend(quantifiers.iter().cloned());
             if let Json::Obj(wire) = &mut p.wire {
-                wire.insert("quantifiers".into(), Json::Arr(vec![q.wire()]));
+                wire.insert(
+                    "quantifiers".into(),
+                    Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
+                );
             }
             all.extend([se, te, arguments, values, commutes]);
             clauses.push(Json::obj([
