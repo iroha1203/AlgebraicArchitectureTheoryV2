@@ -107,6 +107,135 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 }
 
 #[test]
+fn literal_true_local_guards_preserve_reads_and_following_operations() {
+    for (mode, source_guard, target_guard) in [
+        ("source", " when true", ""),
+        ("target", "", " when (true)"),
+        ("both", " when (true)", " when ((true))"),
+    ] {
+        let dir = finite_view_inputs(&format!("local-true-guard-{mode}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(s:State){source_guard} reads (s),s.free;}}
+reading After {{{vocabulary} local here(t:State){target_guard} reads t,(t.free);}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 0, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(normal.stdout.len() < 1000);
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 0, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        for id in ["m", "same", "n"] {
+            assert_eq!(s(get(answer(&result, id), "status")), "established");
+        }
+        let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+        let transport = value(&result, &arr(get(map, "transports"))[0]);
+        let clauses = arr(get(transport, "clauses"));
+        assert_eq!(clauses.len(), 2);
+        assert_local_clause(
+            &dir,
+            &result,
+            &clauses[0],
+            "(s)",
+            "t",
+            &[("s", "Reservations.State")],
+        );
+        assert_local_clause(
+            &dir,
+            &result,
+            &clauses[1],
+            "s.free",
+            "(t.free)",
+            &[("s", "Reservations.State")],
+        );
+        assert_reference_pairs(
+            &result,
+            value(&result, get(&clauses[0], "values")),
+            &[
+                ("p", "r"),
+                ("q", "s"),
+                ("r", "r"),
+                ("s", "s"),
+                ("u", "w"),
+                ("w", "w"),
+            ],
+        );
+        assert_json(
+            get(value(&result, get(&clauses[1], "values")), "source_type"),
+            r#""Z""#,
+        );
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 0, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
+        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
+    }
+}
+
+#[test]
+fn nontrivial_local_guards_are_not_silently_treated_as_true() {
+    for (mode, guard) in [("false", "false"), ("field", "s.free=2")] {
+        let dir = finite_view_inputs(&format!("local-unsupported-guard-{mode}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(s:State) when {guard} reads s;}}
+reading After {{{vocabulary} local here(s:State) when {guard} reads s;}}"#
+            ),
+        )
+        .unwrap();
+        let result = without_file_changes(&dir, || {
+            cli::run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--ask",
+                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                ],
+            )
+        });
+        assert_eq!(result.code, 70, "{}", result.stdout);
+        assert!(result.stderr.is_empty());
+        assert!(result.stdout.contains("local guard"), "{}", result.stdout);
+        assert!(!has(&result.receipt, "result"));
+    }
+}
+
+#[test]
 fn incomplete_endpoint_algebras_keep_configuration_operation_and_original_reasons() {
     for (mode, code, status) in [
         ("refuted", 1, "refuted"),

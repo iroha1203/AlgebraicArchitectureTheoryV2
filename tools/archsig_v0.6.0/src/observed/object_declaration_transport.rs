@@ -35,6 +35,21 @@ fn merge_status(current: Decision, next: Decision) -> Decision {
         Decision::Established
     }
 }
+fn unconditional_guard(
+    inputs: &super::super::input::CheckedInputs,
+    mut guard: Option<usize>,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    while let Some(id) = guard {
+        tick(c)?;
+        match &inputs.law().exprs[id].kind {
+            ExprKind::Group(inner) => guard = Some(*inner),
+            ExprKind::Bool(value) => return Ok(*value),
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
 fn field_read(
     inputs: &super::super::input::CheckedInputs,
     mut id: usize,
@@ -266,18 +281,21 @@ pub(super) fn retain(
         let (
             Signature::Local {
                 params: sp,
-                guard: None,
+                guard: sg,
                 reads: sr,
             },
             Signature::Local {
                 params: tp,
-                guard: None,
+                guard: tg,
                 reads: tr,
             },
         ) = (&source.signature, &target.signature)
         else {
-            return Err("guard付きlocal宣言移送は未実装".into());
+            return Err("localの対応宣言がlocalでない".into());
         };
+        if !unconditional_guard(inputs, *sg, c)? || !unconditional_guard(inputs, *tg, c)? {
+            return Err("true以外のlocal guard移送は未実装".into());
+        }
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
