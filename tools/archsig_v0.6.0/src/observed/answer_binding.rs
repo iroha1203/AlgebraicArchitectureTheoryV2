@@ -38,7 +38,43 @@ impl Environment<'_> {
                         crate::observed::construction_result::ConstructionData::Architecture { .. })
                 )
             });
-        if answer.status == Decision::Undetermined && !environment && !built_object {
+        // 追加の代数保存が未決でも、既にconfiguration保存を確認した実Operationは使える。
+        let mapped_operation = if matches!(path.first(),Some(ProjectionStep::Field(output)) if output=="operation")
+            && graph
+                .requests
+                .iter()
+                .any(|r| r.id == *id && r.kind == QuestionKind::Map)
+        {
+            match answer
+                .outputs
+                .get("operation")
+                .map(|r| graph.get(*r))
+                .transpose()?
+            {
+                Some(Node {
+                    payload: Some(Payload::Construction(value)),
+                    ..
+                }) => match &value.data {
+                    crate::observed::construction_result::ConstructionData::Operation {
+                        preservation,
+                        ..
+                    } => graph
+                        .get(*preservation)?
+                        .judgment
+                        .as_ref()
+                        .is_some_and(|j| j.status == Decision::Established),
+                    _ => false,
+                },
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if answer.status == Decision::Undetermined
+            && !environment
+            && !built_object
+            && !mapped_operation
+        {
             return Err(self.answer_projection_unprovided(span));
         }
         let Some(ProjectionStep::Field(output)) = path.first() else {
