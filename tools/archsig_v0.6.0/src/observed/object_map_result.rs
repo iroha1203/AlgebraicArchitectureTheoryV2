@@ -40,6 +40,7 @@ pub(super) struct Source {
     witness: Arc<MapWitness>,
     configuration: Answer,
     algebras: Option<[NodeRef; 2]>,
+    pending: Option<[NodeRef; 2]>,
     boundary: Boundary,
     base: usize,
     parts: Vec<Part>,
@@ -191,6 +192,7 @@ pub(super) fn extend(
         c,
     )
     .map_err(failure)?;
+    let mut pending = None;
     let algebras = if declarations.all_signatures_compatible() {
         // local/change/relationには句の移送配送も必要。
         // 未対応の宣言を空の表へ置換しない。
@@ -202,6 +204,7 @@ pub(super) fn extend(
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
         let mut result = vec![];
+        let mut claims = vec![];
         for endpoint in [source, target] {
             tick(c)?;
             let architecture = retained_architecture(g, endpoint)?;
@@ -213,26 +216,31 @@ pub(super) fn extend(
                 c,
             )?;
             let answer = build_result::retain_plan(env, g, plan, request, c)?;
-            result.push(
-                *answer
-                    .outputs
-                    .get("algebra")
-                    .ok_or("ObjectAlgebra mapの端点algebra未完成配送は未実装")?,
-            );
+            claims.push(answer.claim.ok_or("端点buildの構成命題がない")?);
+            result.extend(answer.outputs.get("algebra").copied());
         }
-        Some([result[0], result[1]])
+        if result.len() == 2 {
+            Some([result[0], result[1]])
+        } else {
+            pending = Some([claims[0], claims[1]]);
+            None
+        }
     } else {
         None
     };
     let mut dependencies = configuration.outputs.values().copied().collect::<Vec<_>>();
     dependencies.extend(algebras.into_iter().flatten());
+    dependencies.extend(pending.into_iter().flatten());
     let boundary = Boundary::capture(env, g, source, dependencies, c)?;
     let base = g.nodes.len();
-    let (parts, answer) = compute(env, g, &witness, &configuration, algebras, base, request, c)?;
+    let (parts, answer) = compute(
+        env, g, &witness, &configuration, algebras, pending, base, request, c,
+    )?;
     let source = Arc::new(Source {
         witness,
         configuration,
         algebras,
+        pending,
         boundary,
         base,
         parts,
@@ -264,12 +272,15 @@ fn compute(
     witness: &Arc<MapWitness>,
     configuration: &Answer,
     algebras: Option<[NodeRef; 2]>,
+    pending: Option<[NodeRef; 2]>,
     base: usize,
     request: &Request,
     c: &mut Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     env.validation_graph_session(g, || {
-        compute_inner(env, g, witness, configuration, algebras, base, request, c)
+        compute_inner(
+            env, g, witness, configuration, algebras, pending, base, request, c,
+        )
     })
 }
 
@@ -279,6 +290,7 @@ fn compute_inner(
     witness: &Arc<MapWitness>,
     configuration: &Answer,
     algebras: Option<[NodeRef; 2]>,
+    pending: Option<[NodeRef; 2]>,
     base: usize,
     request: &Request,
     c: &mut Control,
@@ -313,7 +325,50 @@ fn compute_inner(
     let mut declaration_reasons = vec![];
     let mut declaration_evidence = vec![];
     let mut preserved = declarations.all_signatures_compatible();
-    if preserved {
+    if let Some(claims) = pending {
+        let Some(Payload::Construction(candidate)) = &g.get(candidate)?.payload else {
+            return Err("元候補がnativeでない".into());
+        };
+        let D::MapCandidate { source, target, .. } = candidate.data else {
+            return Err("元候補の端点がない".into());
+        };
+        let mut incomplete = false;
+        for (claim, expected) in claims.into_iter().zip([source, target]) {
+            tick(c)?;
+            let Some(Payload::Construction(value)) = &g.get(claim)?.payload else {
+                return Err("端点buildの命題がnativeでない".into());
+            };
+            let D::Build(data) = &value.data else {
+                return Err("端点buildの命題が別種".into());
+            };
+            if data.plan().architecture.reference != expected || data.answer().claim != Some(claim) {
+                return Err("端点buildの元Architectureまたは命題が違う".into());
+            }
+            env.recheck_build(g, value, claim.0)?;
+            let endpoint = data.answer();
+            incomplete |= !endpoint.outputs.contains_key("algebra");
+            declaration_status = if declaration_status == Decision::Refuted
+                || endpoint.status == Decision::Refuted
+            {
+                Decision::Refuted
+            } else if endpoint.status == Decision::Undetermined {
+                Decision::Undetermined
+            } else {
+                declaration_status
+            };
+            dependencies.extend(endpoint.outputs.values().copied());
+            dependencies.push(claim);
+            declaration_reasons.extend(endpoint.reasons.iter().cloned());
+            declaration_evidence.extend(endpoint.evidence.iter().copied());
+        }
+        if !incomplete || declaration_status == Decision::Established || algebras.is_some() {
+            return Err("未完成端点の判断が違う".into());
+        }
+        sort_reasons(&mut declaration_reasons);
+        declaration_evidence.sort_by_key(|r| r.0);
+        declaration_evidence.dedup();
+    }
+    if preserved && pending.is_none() {
         if declarations
             .candidates()
             .iter()
@@ -624,6 +679,7 @@ fn compute_inner(
             missing: vec![],
             location: None,
         });
+        sort_reasons(&mut reasons);
         dependencies.push(claim);
         claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
         let part = &mut b.parts[claim.0 - base];
@@ -745,6 +801,7 @@ impl Environment<'_> {
             &d.source.witness,
             &d.source.configuration,
             d.source.algebras,
+            d.source.pending,
             d.source.base,
             request,
             &mut c,

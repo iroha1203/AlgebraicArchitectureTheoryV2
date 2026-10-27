@@ -107,6 +107,122 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 }
 
 #[test]
+fn incomplete_endpoint_algebras_keep_configuration_operation_and_original_reasons() {
+    for (mode, code, status) in [
+        ("refuted", 1, "refuted"),
+        ("unsupported", 2, "undetermined"),
+    ] {
+        let dir = finite_view_inputs(&format!("endpoint-algebra-{mode}"), true);
+        let old_digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+        let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies["Reservations"].digest;
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        let mut a = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(old_digest, digest);
+        let mut facts = String::new();
+        for (subject, peer) in [
+            ("p", "q"),
+            ("q", "p"),
+            ("r", "s"),
+            ("s", "r"),
+            ("u", "u"),
+            ("w", "w"),
+        ] {
+            facts.push_str(&format!(r#"{{"id":"{subject}-peer","subject":"{subject}","field":"Reservations.State.peer","value":["v","{peer}"],"origin":"model"}},"#));
+        }
+        a = a.replace("\"atoms\":[", &format!("\"atoms\":[{facts}"));
+        std::fs::write(dir.join("a.json"), a).unwrap();
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}"; local here(s:State) reads s.peer;}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}"; local here(t:State) reads t.peer;}}"#)).unwrap();
+        if mode == "unsupported" {
+            std::fs::write(
+                dir.join("d.json"),
+                include_bytes!("fixtures/reservations.atoms.json"),
+            )
+            .unwrap();
+            let original = include_str!("fixtures/object-configuration-map.archmap.json");
+            std::fs::write(dir.join("a.json"), original).unwrap();
+            let digest = old_digest;
+            std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}"; law required positive(s:State):s.free>0;}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}"; law required positive(t:State):t.free>0;}}"#)).unwrap();
+        }
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, code, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(normal.stdout.len() < 1500, "{mode}: {}", normal.stdout);
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        let map = answer(&result, "m");
+        assert_eq!(s(get(map, "status")), status);
+        assert!(!has(get(map, "outputs"), "map"));
+        assert!(
+            has(get(map, "outputs"), "operation"),
+            "{mode}: {}",
+            run.stdout
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert!(!arr(get(map, "reasons")).is_empty());
+        if mode == "refuted" {
+            let examples = arr(get(map, "counterexamples"));
+            for subject in ["p", "q", "r", "s"] {
+                assert!(examples.iter().any(|example| {
+                    arr(get(get(value(&result, example), "data"), "facts"))
+                        .iter()
+                        .any(|fact| {
+                            s(get(fact, "subject")) == subject
+                                && has(fact, "field")
+                                && s(get(fact, "field")) == "Reservations.State.peer"
+                        })
+                }));
+            }
+            assert!(
+                arr(get(map, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "condition_failed"
+                        && s(get(get(r, "details"), "construction")) == "object_algebra")
+            );
+        } else {
+            assert!(arr(get(map, "reasons")).iter().any(|r| s(get(r, "code"))
+                == "unsupported_algorithm"
+                && s(get(get(r, "details"), "method")) == "integer_order_equation_presentation"));
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).is_empty());
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
+        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
+    }
+}
+
+#[test]
 fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
     for (mode, code, status) in [
         ("preserved", 0, "established"),
