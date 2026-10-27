@@ -19,7 +19,7 @@ fn namespaces(
         other => error(
             id,
             "head",
-            &format!("buildのreadingが適合しない: {other:?}"),
+            &format!("incompatible build reading: {other:?}"),
         ),
     })
 }
@@ -31,7 +31,7 @@ pub(super) fn resolve(
 ) -> Result<Request, ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     let Selector::Declaration { name } = &raw.head else {
-        return Err(error(&raw.id, "head", "buildのheadはreadingの完全名"));
+        return Err(error(&raw.id, "head", "build head must be a fully qualified reading name"));
     };
     namespaces(law, name, &raw.id, c)?;
     let mut dependencies = vec![];
@@ -39,7 +39,7 @@ pub(super) fn resolve(
     for (key, value) in raw.arguments {
         phase(c, Checkpoint::RequestBinding)?;
         if key != "on" {
-            return Err(error(&raw.id, &key, "buildの固定引数はonだけ"));
+            return Err(error(&raw.id, &key, "build only accepts the fixed argument on"));
         }
         match &value {
             Selector::Subject { .. } => {}
@@ -48,7 +48,7 @@ pub(super) fn resolve(
                 return Err(error(
                     &raw.id,
                     &key,
-                    "buildのonは原始root参照か出力fieldまで指定したHandle",
+                    "build on must be a primitive root reference or a Handle with an output field",
                 ));
             }
         }
@@ -59,7 +59,7 @@ pub(super) fn resolve(
         });
     }
     if arguments.len() != 1 {
-        return Err(error(&raw.id, "on", "buildのonが必要"));
+        return Err(error(&raw.id, "on", "build requires on"));
     }
     Ok(Request {
         id: raw.id,
@@ -115,14 +115,14 @@ pub(super) fn root_types(
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         phase(c, Checkpoint::RequestBinding)?;
         let Selector::Declaration { name: reading } = &r.head else {
-            return Err(error(&r.id, "head", "buildのreadingがない"));
+            return Err(error(&r.id, "head", "missing build reading"));
         };
         let visible = namespaces(law, reading, &r.id, c)?;
         let on = r
             .arguments
             .iter()
             .find(|a| a.name == "on")
-            .ok_or_else(|| error(&r.id, "on", "buildのonがない"))?;
+            .ok_or_else(|| error(&r.id, "on", "missing build on"))?;
         let (plan, _) = selector_type(law, map, requests, names, &on.value, c, (&r.id, "on"))?;
         let mut found = BTreeSet::new();
         roots(law, &plan.ty, &visible, c, &mut found,matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair))?;
@@ -130,7 +130,7 @@ pub(super) fn root_types(
             return Err(error(
                 &r.id,
                 "on",
-                "buildのonはreadingの語彙内にあるownerを持たないentityの参照",
+                "build on must reference an entity without an owner in the reading vocabulary",
             ));
         }
         Ok(found)
@@ -159,7 +159,7 @@ pub(super) fn output_type(
         return Ok(ProjectionType::Proposition);
     }
     if !matches!(field, "object" | "algebra") {
-        return Err(error(&r.id, field, "buildの非公開出力"));
+        return Err(error(&r.id, field, "build output is not public"));
     }
     let types = root_types(law, map, requests, names, r, c)?
         .into_iter()

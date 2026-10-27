@@ -119,7 +119,7 @@ impl<E: InputError> Parser<E> {
             self.pos += 1;
             Ok(self.toks[self.pos - 1].span)
         } else {
-            self.err(format!("`{s}` が必要"))
+            self.err(format!("expected `{s}`"))
         }
     }
 
@@ -128,7 +128,7 @@ impl<E: InputError> Parser<E> {
             self.pos += 1;
             Ok(self.toks[self.pos - 1].span)
         } else {
-            self.err(format!("`{s}` が必要"))
+            self.err(format!("expected `{s}`"))
         }
     }
 
@@ -144,9 +144,9 @@ impl<E: InputError> Parser<E> {
                 Ok(id)
             }
             Some(t) if t.kind == TokenKind::Name => {
-                self.err(format!("予約語 `{}` は名前に使えない", t.text))
+                self.err(format!("reserved word `{}` cannot be used as a name", t.text))
             }
-            _ => self.err("名前が必要"),
+            _ => self.err("expected a name"),
         }
     }
 
@@ -157,7 +157,7 @@ impl<E: InputError> Parser<E> {
                 self.pos += 1;
                 Ok(s)
             }
-            _ => self.err("文字列が必要"),
+            _ => self.err("expected a string"),
         }
     }
 
@@ -194,7 +194,7 @@ impl<E: InputError> Parser<E> {
     /// 字句列を読み切ったことを確かめる。
     pub fn expect_end(&self) -> PResult<(), E> {
         if self.peek().is_some() {
-            self.err("式の後に余分な字句がある")
+            self.err("unexpected tokens after expression")
         } else {
             Ok(())
         }
@@ -253,7 +253,7 @@ impl<E: InputError> Parser<E> {
                             return Err((Box::new(Issue::law(
                                 Code::Syntax,
                                 version_span,
-                                "語彙の version は空文字列にできない",
+                                "vocabulary version cannot be empty",
                             )))
                             .into());
                         }
@@ -269,7 +269,7 @@ impl<E: InputError> Parser<E> {
                             return Err((Box::new(Issue::law(
                                 Code::Syntax,
                                 digest_span,
-                                "digest は sha256: と小文字16進64桁",
+                                "digest must be sha256: followed by 64 lowercase hexadecimal digits",
                             )))
                             .into());
                         }
@@ -308,7 +308,7 @@ impl<E: InputError> Parser<E> {
         self.checked(|parser| {
             let start = parser.here().0;
             let Some(t) = parser.peek() else {
-                return parser.err("宣言または `}` が必要");
+                return parser.err("expected a declaration or `}`");
             };
             let keyword = if t.kind == TokenKind::Name {
                 t.text.clone()
@@ -317,7 +317,7 @@ impl<E: InputError> Parser<E> {
             };
             let (name, kind) = match keyword.as_str() {
                 "entity" | "arrow" | "correspondence" | "data" => {
-                    return parser.err("原始宣言は Atom 定義ファイルに置く");
+                    return parser.err("primitive declarations belong in an Atom definition file");
                 }
                 "view" => {
                     parser.pos += 1;
@@ -344,7 +344,7 @@ impl<E: InputError> Parser<E> {
                     } else if parser.eat_kw("optional") {
                         Role::Optional
                     } else {
-                        return parser.err("`required` または `optional` が必要");
+                        return parser.err("expected `required` or `optional`");
                     };
                     let name = parser.ident()?;
                     let params = parser.fields()?;
@@ -417,7 +417,7 @@ impl<E: InputError> Parser<E> {
                         },
                     )
                 }
-                _ => return parser.err("宣言または `}` が必要"),
+                _ => return parser.err("expected a declaration or `}`"),
             };
             Ok(Decl {
                 name,
@@ -477,7 +477,7 @@ impl<E: InputError> Parser<E> {
                 E::checkpoint(&mut parser.control, parser.point)?;
             }
             let Some(end) = end else {
-                return parser.err("change の guard の後に `=` と body が必要");
+                return parser.err("expected `=` and body after change guard");
             };
             // 最上位の `=` を後ろから順に試し、guard と body がどちらも読める位置で区切る。
             let mut first_error = None;
@@ -518,7 +518,7 @@ impl<E: InputError> Parser<E> {
                 Box::new(Issue::law(
                     Code::Syntax,
                     parser.here(),
-                    "change の guard の後に `=` と body が必要",
+                    "expected `=` and body after change guard",
                 ))
                 .into()
             }))
@@ -537,7 +537,7 @@ impl<E: InputError> Parser<E> {
             if self.pos == limit {
                 Ok(v)
             } else {
-                self.err("式の終わりが必要")
+                self.err("expected end of expression")
             }
         });
         self.limit = saved;
@@ -578,7 +578,7 @@ impl<E: InputError> Parser<E> {
         self.checked(|parser| {
             let start = parser.here().0;
             let Some(t) = parser.peek().cloned() else {
-                return parser.err("型が必要");
+                return parser.err("expected a type");
             };
             let builtin = |b| Ok(TypeAst::Builtin(b, t.span));
             if t.kind == TokenKind::Name {
@@ -608,7 +608,7 @@ impl<E: InputError> Parser<E> {
                         parser.expect_sym("(")?;
                         let modulus = match parser.peek() {
                             Some(t) if t.kind == TokenKind::Int => t.text.clone(),
-                            _ => return parser.err("Fp の法は10進整数"),
+                            _ => return parser.err("Fp modulus must be a decimal integer"),
                         };
                         parser.pos += 1;
                         parser.expect_sym(")")?;
@@ -687,7 +687,7 @@ impl<E: InputError> Parser<E> {
                     return Err((Box::new(Issue::law(
                         Code::Syntax,
                         (start, parser.prev_end()),
-                        "組の型は二つ以上の成分を持つ",
+                        "tuple type requires at least two components",
                     )))
                     .into());
                 }
@@ -860,7 +860,7 @@ impl<E: InputError> Parser<E> {
                         if e == c {
                             Ok(QuantDomain::In(d))
                         } else {
-                            Err(parser.err_at(e, "量化の域の終わりが必要"))
+                            Err(parser.err_at(e, "expected end of quantifier domain"))
                         }
                     })
                 };
@@ -914,7 +914,7 @@ impl<E: InputError> Parser<E> {
                     Box::new(Issue::law(
                         Code::Syntax,
                         parser.here(),
-                        "量化の域と本体を区切る `.` が必要",
+                        "expected `.` between quantifier domain and body",
                     ))
                     .into()
                 }));
@@ -951,7 +951,7 @@ impl<E: InputError> Parser<E> {
             if self.pos == limit {
                 Ok(t)
             } else {
-                self.err("量化の型の終わりが必要")
+                self.err("expected end of quantifier type")
             }
         });
         self.pos = saved_pos;
@@ -992,7 +992,7 @@ impl<E: InputError> Parser<E> {
                         break;
                     }
                     if prec == 3 && compared {
-                        return parser.err("比較は連鎖できない");
+                        return parser.err("comparisons cannot be chained");
                     }
                     parser.pos += 1;
                     let rhs = if op == BinOp::Implies {
@@ -1044,7 +1044,7 @@ impl<E: InputError> Parser<E> {
                                 Box::new(Issue::law(
                                     Code::Syntax,
                                     index_span,
-                                    "組の位置が大きすぎる",
+                                    "tuple index is too large",
                                 ))
                             })?;
                             parser.pos += 2;
@@ -1123,7 +1123,7 @@ impl<E: InputError> Parser<E> {
         self.checked(|parser| {
             let start = parser.here().0;
             let Some(t) = parser.peek().cloned() else {
-                return parser.err("式が必要");
+                return parser.err("expected an expression");
             };
             match t.kind {
                 TokenKind::Int => {
@@ -1155,7 +1155,7 @@ impl<E: InputError> Parser<E> {
                     parser.expect_sym(")")?;
                     return Ok(parser.push(ExprKind::Group(first), (start, parser.prev_end())));
                 }
-                TokenKind::Sym => return parser.err("式が必要"),
+                TokenKind::Sym => return parser.err("expected an expression"),
                 TokenKind::Name => {}
             }
             match t.text.as_str() {
@@ -1172,7 +1172,7 @@ impl<E: InputError> Parser<E> {
                         .peek_at(1)
                         .is_some_and(|n| n.kind == TokenKind::Sym && n.text == "(")
                     {
-                        return parser.err("予約語 `then` は合成演算の適用位置だけで使える");
+                        return parser.err("reserved word `then` is only allowed in composition applications");
                     }
                     parser.pos += 1;
                     Ok(parser.push(ExprKind::ThenOp, t.span))

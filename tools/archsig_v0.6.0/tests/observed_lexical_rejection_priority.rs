@@ -164,7 +164,7 @@ fn required_field_exhaustion_keeps_invalid_without_promoting_an_earlier_mismatch
         .unwrap_err()
         .issue;
     assert_eq!(issue.code, Code::Syntax);
-    assert_eq!(issue.message, "欄 `format` が必要");
+    assert_eq!(issue.message, "missing required field `format`");
     // Last find post, then read's enclosing schema post.
     assert_priority(
         || {
@@ -299,22 +299,22 @@ fn required_data_and_term_fields_keep_the_exact_outer_value_diagnostic() {
         (
             true,
             r#"{"bad":"A","args":[]}"#,
-            "data の値は {\"tag\":...,\"args\":[...]}",
+            "data value must be {\"tag\":...,\"args\":[...]}",
         ),
         (
             true,
             r#"{"tag":"A","bad":[]}"#,
-            "data の値は {\"tag\":...,\"args\":[...]}",
+            "data value must be {\"tag\":...,\"args\":[...]}",
         ),
         (
             false,
             r#"{"bad":["x"],"body":"0"}"#,
-            "Term は {\"params\":[...],\"body\":\"...\"}",
+            "Term must be {\"params\":[...],\"body\":\"...\"}",
         ),
         (
             false,
             r#"{"params":["x"],"bad":"0"}"#,
-            "Term は {\"params\":[...],\"body\":\"...\"}",
+            "Term must be {\"params\":[...],\"body\":\"...\"}",
         ),
     ] {
         let definition = if data {

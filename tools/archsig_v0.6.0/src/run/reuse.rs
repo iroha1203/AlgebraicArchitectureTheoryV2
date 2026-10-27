@@ -22,7 +22,7 @@ impl Candidate {
         self.rejected.push(
             ResultIssue::Usage {
                 argument: "--reuse".into(),
-                message: format!("再利用候補 {}: {message}", self.path.display()),
+                message: format!("--reuse candidate {}: {message}", self.path.display()),
             }
             .wire(),
         );
@@ -74,7 +74,7 @@ pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Cand
         )?;
         let mut file = std::fs::File::from(file);
         if !file.metadata()?.is_file() {
-            return Err(std::io::Error::other("result.jsonは通常ファイルではない"));
+            return Err(std::io::Error::other("result.json is not a regular file"));
         }
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes)?;
@@ -85,7 +85,7 @@ pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Cand
     let bytes = match read {
         Ok(bytes) => bytes,
         Err(error) => {
-            candidate.reject(format!("result.jsonを読めない: {error}"));
+            candidate.reject(format!("cannot read result.json: {error}"));
             return Ok(candidate);
         }
     };
@@ -97,7 +97,7 @@ pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Cand
         Ok(document) => document,
         Err(CheckFailure::Stopped(reason)) => return Err(reason),
         Err(CheckFailure::Input(issue)) => {
-            candidate.reject(format!("JSONが不正: {}", issue.message));
+            candidate.reject(format!("invalid JSON: {}", issue.message));
             return Ok(candidate);
         }
     };
@@ -124,7 +124,7 @@ fn invalid(message: impl Into<String>) -> Failure {
 fn fields(node: &JNode) -> Checked<&[(String, JNode)]> {
     match &node.value {
         JValue::Obj(fields) => Ok(fields),
-        _ => Err(invalid("objectが必要")),
+        _ => Err(invalid("expected an object")),
     }
 }
 fn field<'a>(node: &'a JNode, name: &str) -> Checked<&'a JNode> {
@@ -132,18 +132,18 @@ fn field<'a>(node: &'a JNode, name: &str) -> Checked<&'a JNode> {
         .iter()
         .find(|(key, _)| key == name)
         .map(|(_, v)| v)
-        .ok_or_else(|| invalid(format!("{name}が必要")))
+        .ok_or_else(|| invalid(format!("missing {name}")))
 }
 fn text(node: &JNode) -> Checked<&str> {
     match &node.value {
         JValue::Str(s) => Ok(s),
-        _ => Err(invalid("文字列が必要")),
+        _ => Err(invalid("expected a string")),
     }
 }
 fn array(node: &JNode) -> Checked<&[JNode]> {
     match &node.value {
         JValue::Arr(a) => Ok(a),
-        _ => Err(invalid("arrayが必要")),
+        _ => Err(invalid("expected an array")),
     }
 }
 fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
@@ -152,7 +152,7 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
     }
     for (name, _) in fields(node)? {
         if !required.contains(&name.as_str()) && !optional.contains(&name.as_str()) {
-            return Err(invalid(format!("未知の欄: {name}")));
+            return Err(invalid(format!("unknown field: {name}")));
         }
     }
     Ok(())
@@ -160,7 +160,7 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
 fn nat(node: &JNode) -> Checked<()> {
     match &node.value {
         JValue::Num(s) if crate::archmap::nat_value(s).is_some() => Ok(()),
-        _ => Err(invalid("Natは0..9007199254740991の整数")),
+        _ => Err(invalid("Nat must be an integer in 0..9007199254740991")),
     }
 }
 fn header(document: &JNode, control: &mut Control) -> Checked<()> {
@@ -168,10 +168,10 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     if text(field(document, "format")?)? != crate::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != crate::law::SEMANTICS
     {
-        return Err(invalid("format/semanticsが対応版と異なる"));
+        return Err(invalid("format/semantics does not match the supported version"));
     }
     if text(field(document, "command")?)? != "run" {
-        return Err(invalid("再利用候補にはrunの保存結果が必要"));
+        return Err(invalid("reuse candidate must be a saved run result"));
     }
     record(
         document,
@@ -203,7 +203,7 @@ fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
         &["request", "location"],
     )?;
     if text(field(issue, "message")?)?.is_empty() {
-        return Err(invalid("Issue.messageが空"));
+        return Err(invalid("Issue.message is empty"));
     }
     array(field(issue, "dependencies")?)?;
     array(field(issue, "missing")?)?;
@@ -211,20 +211,20 @@ fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
     // 旧候補の補助通知は意味上の入力にしない。現行の候補拒否通知はusageだけを生成する。
     // それ以外の旧通知を含む候補は採用対象へ広げず、全再計算する。
     if text(field(issue, "code")?)? != "usage" {
-        return Err(invalid("候補の以前の拒否通知を照合できない"));
+        return Err(invalid("cannot verify the candidate's previous rejection notice"));
     }
     record(details, &["argument"], &[])?;
     text(field(details, "argument")?)?;
     if !array(field(issue, "dependencies")?)?.is_empty()
         || !array(field(issue, "missing")?)?.is_empty()
     {
-        return Err(invalid("候補usageの依存は空"));
+        return Err(invalid("candidate usage dependencies must be empty"));
     }
     if fields(issue)?
         .iter()
         .any(|(name, _)| name == "location" || name == "request")
     {
-        return Err(invalid("候補usageの位置が不正"));
+        return Err(invalid("invalid candidate usage location"));
     }
     Ok(())
 }
@@ -232,8 +232,8 @@ fn wire_field<'a>(node: &'a Json, name: &str) -> Checked<&'a Json> {
     match node {
         Json::Obj(fields) => fields
             .get(name)
-            .ok_or_else(|| invalid(format!("再計算した{name}がない"))),
-        _ => Err(invalid("再計算表示がobjectでない")),
+            .ok_or_else(|| invalid(format!("missing recomputed {name}"))),
+        _ => Err(invalid("recomputed output is not an object")),
     }
 }
 fn normalized_candidate(
@@ -246,7 +246,7 @@ fn normalized_candidate(
         Ok(match &node.value {
             JValue::Bool(b) => Json::Bool(*b),
             JValue::Num(s) => Json::Nat(
-                crate::archmap::nat_value(s).ok_or_else(|| invalid("Natの範囲外または非整数"))?,
+                crate::archmap::nat_value(s).ok_or_else(|| invalid("value is outside the Nat range or is not an integer"))?,
             ),
             JValue::Str(s) => Json::str(s),
             JValue::Arr(items) => Json::Arr(
@@ -260,7 +260,7 @@ fn normalized_candidate(
                 let id = text(field(node, "node")?)?;
                 let key = ids
                     .get(id)
-                    .ok_or_else(|| invalid(format!("未定義または先行していないRef: {id}")))?;
+                    .ok_or_else(|| invalid(format!("undefined or nonpreceding Ref: {id}")))?;
                 Json::obj([("node", Json::str(key))])
             }
             JValue::Obj(items) => Json::Obj(
@@ -271,7 +271,7 @@ fn normalized_candidate(
                     })
                     .collect::<Checked<_>>()?,
             ),
-            JValue::Null => return Err(invalid("nullは使えない")),
+            JValue::Null => return Err(invalid("null is not allowed")),
         })
     })
 }
@@ -295,13 +295,13 @@ fn normalized_wire(
             Json::Obj(items) if items.contains_key("node") => {
                 let Json::Str(id) = items
                     .get("node")
-                    .ok_or_else(|| invalid("再計算Refがない"))?
+                    .ok_or_else(|| invalid("missing recomputed Ref"))?
                 else {
-                    return Err(invalid("再計算Refが文字列でない"));
+                    return Err(invalid("recomputed Ref is not a string"));
                 };
                 let key = ids
                     .get(id)
-                    .ok_or_else(|| invalid("再計算Refが先行していない"))?;
+                    .ok_or_else(|| invalid("recomputed Ref does not precede its use"))?;
                 Json::obj([("node", Json::str(key))])
             }
             Json::Obj(items) => Json::Obj(
@@ -324,7 +324,7 @@ fn encoding(json: &Json, control: &mut Control) -> Checked<String> {
 }
 fn node_content(mut node: Json, control: &mut Control) -> Checked<String> {
     let Json::Obj(fields) = &mut node else {
-        return Err(invalid("nodeはobject"));
+        return Err(invalid("node must be an object"));
     };
     fields.remove("id");
     encoding(&node, control)
@@ -337,15 +337,15 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
     let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
     let Json::Arr(identities) = &mut inputs else {
-        return Err(invalid("inputsはarray"));
+        return Err(invalid("inputs must be an array"));
     };
     for identity in identities {
         control.checkpoint(Checkpoint::Reuse)?;
         let Json::Obj(fields) = identity else {
-            return Err(invalid("InputIdentityはobject"));
+            return Err(invalid("InputIdentity must be an object"));
         };
         let Some(Json::Str(id)) = fields.get("id") else {
-            return Err(invalid("InputIdentity.idが必要"));
+            return Err(invalid("missing InputIdentity.id"));
         };
         let expected = match id.as_str() {
             "law" => "inputs/law.law".to_owned(),
@@ -353,27 +353,27 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
             id => format!(
                 "inputs/definitions/{}.json",
                 id.strip_prefix("definition")
-                    .ok_or_else(|| invalid("未知の入力id"))?
+                    .ok_or_else(|| invalid("unknown input id"))?
             ),
         };
         if fields.get("path") != Some(&Json::str(expected)) {
-            return Err(invalid("入力copyの固定pathが不正"));
+            return Err(invalid("invalid fixed path for input copy"));
         }
         fields.remove("path");
     }
     if inputs != *wire_field(&replay, "inputs")? {
-        return Err(invalid("現在の入力identityと一致しない"));
+        return Err(invalid("current input identity does not match"));
     }
     for name in ["requests", "status"] {
         let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
         if candidate != *wire_field(&replay, name)? {
-            return Err(invalid(format!("{name}を現在の検査済み結果へ照合できない")));
+            return Err(invalid(format!("cannot verify {name} against the current checked result")));
         }
     }
     let mut native_ids = BTreeMap::new();
     let mut verified = BTreeMap::new();
     let Json::Arr(nodes) = wire_field(&replay, "nodes")? else {
-        return Err(invalid("再計算nodesがない"));
+        return Err(invalid("missing recomputed nodes"));
     };
     for (index, node) in nodes.iter().enumerate() {
         control.checkpoint(Checkpoint::Reuse)?;
@@ -387,7 +387,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
         control.checkpoint(Checkpoint::Reuse)?;
         let id = text(field(node, "id")?)?;
         if id != format!("n{index}") {
-            return Err(invalid(format!("node.idはn{index}が必要")));
+            return Err(invalid(format!("node.id must be n{index}")));
         }
         let content = node_content(
             normalized_candidate(node, &candidate_ids, control)?,
@@ -395,7 +395,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
         )?;
         let key = verified.get(&content).ok_or_else(|| {
             invalid(format!(
-                "nodes[{index}]の型・payload・由来・条件・証拠を現在の導出へ照合できない"
+                "cannot verify nodes[{index}] type, payload, provenance, conditions, or evidence against the current derivation"
             ))
         })?;
         candidate_ids.insert(id.to_owned(), key.clone());
@@ -404,11 +404,11 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
     let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
     if answers != normalized_wire(wire_field(&replay, "answers")?, &native_ids, control)? {
-        return Err(invalid("回答を現在の検査済み導出へ照合できない"));
+        return Err(invalid("cannot verify answers against the current checked derivation"));
     }
     let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
     if issues != normalized_wire(wire_field(&replay, "issues")?, &native_ids, control)? {
-        return Err(invalid("issuesを現在の検査済み導出へ照合できない"));
+        return Err(invalid("cannot verify issues against the current checked derivation"));
     }
     let code = match evaluation.status() {
         "partial" => 2,
@@ -418,10 +418,10 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
                 .iter()
                 .any(|a| a.status == crate::observed::result::Decision::Refuted),
         ),
-        _ => return Err(invalid("確定していない候補照合")),
+        _ => return Err(invalid("candidate verification is not finalized")),
     };
     if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {
-        return Err(invalid("exit_codeを計算結果へ照合できない"));
+        return Err(invalid("cannot verify exit_code against the computation result"));
     }
     control.checkpoint(Checkpoint::Reuse)?;
     Ok(())

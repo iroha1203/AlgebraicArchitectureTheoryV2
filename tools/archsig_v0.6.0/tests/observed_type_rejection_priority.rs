@@ -190,7 +190,7 @@ fn negative_data_self_occurrence_keeps_constructor_argument_location_above_budge
     );
     assert_eq!(
         issue.message,
-        "data の自己参照は直接または Tuple・List・Option を通る"
+        "data self-reference must be direct or through Tuple, List, or Option"
     );
     let (_, total) = baseline(&input, false, Checkpoint::DefinitionData);
     let (mut control, _) = probe(Checkpoint::DefinitionData, total - 2, 1);
@@ -205,27 +205,27 @@ fn law_set_term_path_and_reference_free_parameters_keep_original_spans_above_bud
         (
             "view bad(x: Set<Term<()->Z>>): Bool = true;",
             "Set<Term<()->Z>>",
-            "Set の要素型は Term・Path を含まない",
+            "Set element types cannot contain Term or Path",
         ),
         (
             "view bad(x: Set<Path<State,State>>): Bool = true;",
             "Set<Path<State,State>>",
-            "Set の要素型は Term・Path を含まない",
+            "Set element types cannot contain Term or Path",
         ),
         (
             "view bad(x: Term<()->State>): Bool = true;",
             "Term<()->State>",
-            "Term の引数・戻り型は参照・Map・Path を含まない値型",
+            "Term parameters and return type must be value types containing no references, Map, or Path",
         ),
         (
             "view bad(x: Term<(State)->Z>): Bool = true;",
             "Term<(State)->Z>",
-            "Term の引数・戻り型は参照・Map・Path を含まない値型",
+            "Term parameters and return type must be value types containing no references, Map, or Path",
         ),
         (
             "change bad(s: State, x: State) = s with {count = 0};",
             "State",
-            "ここには参照・Map・Path を含まない値型が必要",
+            "expected a value type containing no references, Map, or Path",
         ),
     ] {
         let input = source(DEFINITIONS.into(), body, true);
@@ -244,23 +244,23 @@ fn law_expression_set_term_and_numeric_rejections_keep_original_diagnostics_abov
     for (body, message) in [
         (
             "view bad(): Bool = set<Term<()->Z>>{} = set<Term<()->Z>>{};",
-            "Set の要素型は Term・Path を含まない",
+            "Set element types cannot contain Term or Path",
         ),
         (
             "view bad(): Bool = set { fn() => true | x in list<Bool>[true] } = set<Bool>{};",
-            "Set の要素型は Term・Path を含まない",
+            "Set element types cannot contain Term or Path",
         ),
         (
             "view bad(): Bool = -true = false;",
-            "単項 - は Z・Q・Fp とその組",
+            "unary - requires Z, Q, Fp, or tuples of these types",
         ),
         (
             "view bad(): Bool = true + false = false;",
-            "算術は Z・Q・Fp とその組",
+            "arithmetic requires Z, Q, Fp, or tuples of these types",
         ),
         (
             "view bad(): Bool = sum(list<Bool>[true]) = false;",
-            "sum の要素は数値",
+            "sum requires numeric elements",
         ),
     ] {
         let input = source(DEFINITIONS.into(), body, true);
@@ -283,7 +283,7 @@ fn reference_field_change_rejection_keeps_original_field_span_above_budget() {
     let issue = terminal_priority(input.clone(), true, Checkpoint::LawSemantics, 1);
     assert_eq!(
         issue.message,
-        "change は owner・参照・Map を含む field を更新しない"
+        "change cannot update owner fields or fields containing references or Map"
     );
     let Location::Law { span } = issue.location else {
         panic!("Law span expected")

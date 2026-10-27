@@ -33,7 +33,7 @@ impl<'a> Comparison<'a> {
         self.mismatched = true;
         Err(BundleError::Input(Box::new(Issue {
             code: Code::VocabularyMismatch,
-            message: "検査済み三表が同じ元入力・定義 identity を参照していない".into(),
+            message: "checked input tables do not reference the same source input and definition identities".into(),
             location: self.location.clone(),
             details: Details::Empty,
         })))

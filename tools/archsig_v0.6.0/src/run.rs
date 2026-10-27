@@ -121,7 +121,7 @@ impl Outcome {
 /// 入力を読む。symlink は開始時に解決し、通常ファイルだけを読む。
 fn read_input(path: &Path) -> std::io::Result<Vec<u8>> {
     if !std::fs::metadata(path)?.is_file() {
-        return Err(std::io::Error::other("通常ファイルではない"));
+        return Err(std::io::Error::other("not a regular file"));
     }
     std::fs::read(path)
 }
@@ -135,7 +135,11 @@ pub fn usage_outcome(
     usage_without_result(
         signals,
         ResultIssue::Usage {
-            message: format!("{}: {}", err.argument, err.message),
+            message: if err.argument.is_empty() {
+                err.message
+            } else {
+                format!("{}: {}", err.argument, err.message)
+            },
             argument: err.argument,
         },
     )
@@ -153,7 +157,7 @@ pub fn internal_outcome(
         Status::Error,
         vec![ResultIssue::Internal {
             operation: "check".to_owned(),
-            message: "検査の途中で内部障害が起きた".to_owned(),
+            message: "internal failure during input validation".to_owned(),
         }],
     )
 }
@@ -172,20 +176,20 @@ pub fn run_check(
             signals,
             UsageError {
                 argument: "--atom-definition".to_owned(),
-                message: "--atom-definition が一つ以上必要".to_owned(),
+                message: "at least one --atom-definition is required".to_owned(),
             },
             started,
         );
     }
     let Some(out) = &args.out else {
         return usage_without_result(signals, ResultIssue::Usage {
-            argument: "--out".into(), message: "check は --out が必要".into(),
+            argument: "--out".into(), message: "check requires --out".into(),
         });
     };
     if let Err(m) = out_ok(out) {
         let issue = ResultIssue::Usage {
             argument: "--out".to_owned(),
-            message: format!("{}: {m}", out.display()),
+            message: format!("--out {}: {m}", out.display()),
         };
         return usage_without_result(signals, issue);
     }
@@ -325,7 +329,7 @@ fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
             issues.push(ResultIssue::Io {
                 operation: "read",
                 path: path.to_string_lossy().into_owned(),
-                message: format!("入力を読めない: {e}"),
+                message: format!("cannot read input {}: {e}", path.display()),
             });
             None
         }

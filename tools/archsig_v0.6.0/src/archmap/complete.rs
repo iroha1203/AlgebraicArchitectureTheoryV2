@@ -517,7 +517,7 @@ fn collect_known_inner<E: InputError>(
             let mut keys = Vec::new();
             for (k, _) in pairs {
                 m.checkpoint()?;
-                let (s, id) = k.as_ref().expect("Map の key は参照");
+                let (s, id) = k.as_ref().expect("Map key must be a reference");
                 keys.push(m.index[&(s, id)]);
                 m.checkpoint()?;
             }
@@ -673,7 +673,7 @@ fn check_valuation_inner<E: InputError>(
     };
     for assignment in pinned {
         m.checkpoint()?;
-        let fail = || issue(Code::Reference, "", "補完値が元の欠測slotと違う");
+        let fail = || issue(Code::Reference, "", "completion value does not match the original missing slot");
         let Some(&g) = m
             .index
             .get(&(assignment.snapshot.as_str(), assignment.subject.as_str()))
@@ -780,7 +780,7 @@ fn check_valuation_inner<E: InputError>(
                 Err(issue(
                     Code::InconsistentObservation,
                     cons[end - 1].pointer(),
-                    "既知の値・参照・所属を保つ補完が一つもない",
+                    "no completion preserves known values, references, and ownership",
                 )
                 .into()),
                 control,

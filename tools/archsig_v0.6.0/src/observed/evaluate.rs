@@ -2874,8 +2874,9 @@ fn evaluate_observed_with_validator(
                 });
                 continue;
             }
+            // 公開する内部障害は失敗した処理名で示し、照合のdebug表現を出力へ渡さない。
             if internal {
-                let reason = Reason::internal(&request.id, "先行導出の内部照合失敗".into());
+                let reason = Reason::internal(&request.id, "previous derivation verification".into());
                 issues.push(reason.clone());
                 answers[index] = Some(Answer {
                     id: request.id.clone(),
@@ -2929,11 +2930,11 @@ fn evaluate_observed_with_validator(
                                     ValidationFailure::Stop(stop) => {
                                         Reason::stopped(&request.id, stop)
                                     }
-                                    other => {
+                                    _other => {
                                         internal = true;
                                         Reason::internal(
                                             &request.id,
-                                            format!("map回答の内部照合: {other:?}"),
+                                            format!("{} answer verification", request.kind.wire()),
                                         )
                                     }
                                 };
@@ -2970,13 +2971,13 @@ fn evaluate_observed_with_validator(
                                 if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose) => {
                                 not_implemented = Some((request.declaration().unwrap_or(request.kind.wire()).to_owned(), location, feature.clone()));
                                 internal = true;
-                                Reason::internal(&request.id, format!("未実装の評価経路: {feature}"))
+                                Reason::internal(&request.id, format!("{} evaluation (not implemented)", request.kind.wire()))
                             }
-                            other => {
+                            _other => {
                                 internal = true;
                                 Reason::internal(
                                     &request.id,
-                                    format!("map構成の内部照合: {other:?}"),
+                                    format!("{} construction", request.kind.wire()),
                                 )
                             }
                         };
@@ -3006,11 +3007,11 @@ fn evaluate_observed_with_validator(
                     Err(failure) => {
                         let reason = match failure {
                             ValidationFailure::Stop(reason) => Reason::stopped(&request.id, reason),
-                            other => {
+                            _other => {
                                 internal = true;
                                 Reason::internal(
                                     &request.id,
-                                    format!("ObservationPlanの内部照合: {other:?}"),
+                                    "observation plan verification".into(),
                                 )
                             }
                         };
@@ -3105,7 +3106,7 @@ fn evaluate_observed_with_validator(
             let result = match result {
                 Err(Failure::NotImplemented { location, feature }) => {
                     not_implemented = Some((declaration.name.clone(), location, feature.clone()));
-                    Err(Failure::Internal(format!("未実装の評価経路: {feature}")))
+                    Err(Failure::Internal(format!("{} evaluation (not implemented)", request.kind.wire())))
                 }
                 result => result,
             };
@@ -3128,9 +3129,9 @@ fn evaluate_observed_with_validator(
                     let stopped = matches!(&failure, Failure::Stop(_));
                     let reason = match failure {
                         Failure::Stop(reason) => Reason::stopped(&request.id, reason),
-                        Failure::Internal(operation) => {
+                        Failure::Internal(_operation) => {
                             internal = true;
-                            Reason::internal(&request.id, operation)
+                            Reason::internal(&request.id, format!("{} evaluation", request.kind.wire()))
                         }
                         _ => unreachable!(),
                     };
@@ -4798,8 +4799,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         };
         assert_eq!(failed_nodes, &normal_nodes[..failed_nodes.len()]);
         for (index, operation) in [
-            (2, "Answer ID が元Requestと違う"),
-            (3, "先行導出の内部照合失敗"),
+            (2, "check evaluation"),
+            (3, "previous derivation verification"),
         ] {
             let answer = &result.answers[index];
             assert_eq!(answer.status, Decision::Undetermined);
@@ -4809,6 +4810,12 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             assert_eq!(answer.reasons.len(), 1);
             let reason = &answer.reasons[0];
             assert!(matches!(&reason.kind, ReasonKind::Internal(value) if value == operation));
+            let wire = reason.wire();
+            let Json::Obj(wire) = &wire else { unreachable!() };
+            let Json::Str(message) = &wire["message"] else { unreachable!() };
+            assert!(message.is_ascii());
+            assert!(message.contains(operation));
+            assert_eq!(wire["details"], Json::obj([("operation", Json::str(operation))]));
             assert_eq!(reason.request, answer.id);
             assert!(reason.location.is_none());
             assert!(

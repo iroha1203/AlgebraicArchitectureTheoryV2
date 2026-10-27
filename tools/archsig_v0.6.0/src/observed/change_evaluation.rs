@@ -285,7 +285,7 @@ pub(in crate::observed) fn update_shape(
                         location: Location::Law {
                             span: declaration.span,
                         },
-                        feature: "分岐で更新slot集合が異なるchangeの状態表は未実装".into(),
+                        feature: "state tables for changes with different update slot sets across branches are not implemented".into(),
                     });
                 }
                 fields = Some(names);

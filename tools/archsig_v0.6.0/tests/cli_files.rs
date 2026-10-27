@@ -486,7 +486,7 @@ fn cleanup_preserves_unowned_paths_and_reports_remnants() {
             );
         } else {
             assert!(
-                outcome.receipt().contains("片付けられない")
+                outcome.receipt().contains("cannot clean up")
                     && outcome.receipt().contains(&temporary[0].display().to_string())
             );
         }

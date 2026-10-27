@@ -700,7 +700,7 @@ fn rational_quotient_composed_fixed_guards_keep_the_selected_domain() {
 #[test]
 fn rational_quotient_varying_guard_is_not_fixed_by_an_arbitrary_assignment() {
     let dir=input("rational-varying-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional indexed(s:State,b:Bool) when (s.x+s.y=1) and b:s.x=s.x;");
-    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("商の候補域で変化するLaw guard")));assert!(!has(&r.receipt,"result"));assert!(!dir.join("out").exists());
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("quotient evaluation (not implemented)")));assert!(!has(&r.receipt,"result"));assert!(!dir.join("out").exists());
 }
 
 #[test]

@@ -388,10 +388,10 @@ fn check_type_inner<E: InputError>(
         Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text => {}
         Type::Fp(modulus) => {
             let Ok(n) = modulus.parse::<BigUint>() else {
-                return fail(Code::Syntax, at, "Fp の法は正の10進整数文字列");
+                return fail(Code::Syntax, at, "Fp modulus must be a positive decimal integer string");
             };
             if !is_prime_controlled::<E>(&n, control, Checkpoint::DefinitionSemantics)? {
-                return fail(Code::Syntax, at, format!("Fp の法 {modulus} は素数でない"));
+                return fail(Code::Syntax, at, format!("Fp modulus {modulus} is not prime"));
             }
         }
         Type::Ref(name) | Type::Data(name) | Type::Owned(name, _) => {
@@ -399,7 +399,7 @@ fn check_type_inner<E: InputError>(
                 return fail(
                     Code::Reference,
                     &child(at, "1"),
-                    format!("型名 `{name}` を解決できない"),
+                    format!("cannot resolve type name `{name}`"),
                 );
             };
             if matches!(t, Type::Data(_)) != matches!(d.signature, PrimitiveSignature::Data { .. })
@@ -407,7 +407,7 @@ fn check_type_inner<E: InputError>(
                 return fail(
                     Code::Syntax,
                     &child(at, "1"),
-                    "Ref/Data の型タグと参照先の宣言種別が異なる",
+                    "Ref/Data type tag does not match the referenced declaration kind",
                 );
             }
             if let Type::Owned(_, index) = t {
@@ -416,7 +416,7 @@ fn check_type_inner<E: InputError>(
                         root.ok_or_else(|| {
                             E::from(Box::new(Issue {
                                 code: Code::Syntax,
-                                message: format!("`{name}` は所属先を持たない entity・arrow"),
+                                message: format!("`{name}` must be an entity or arrow without an owner"),
                                 location: at.clone(),
                                 details: Details::Empty,
                             }))
@@ -432,7 +432,7 @@ fn check_type_inner<E: InputError>(
                             fail(
                                 Code::Reference,
                                 &child(at, "2"),
-                                format!("添字 `{index}` は左にある parameter を指す"),
+                                format!("index `{index}` must refer to an earlier parameter"),
                             ),
                             control,
                             Checkpoint::DefinitionSemantics,
@@ -448,7 +448,7 @@ fn check_type_inner<E: InputError>(
                     return fail(
                         Code::Reference,
                         &child(at, "2"),
-                        format!("添字 `{index}` は左にある parameter を指す"),
+                        format!("index `{index}` must refer to an earlier parameter"),
                     );
                 };
                 let expected = Type::Ref(root.into());
@@ -459,7 +459,7 @@ fn check_type_inner<E: InputError>(
                         &child(at, "2"),
                         &expected,
                         param,
-                        "添字の parameter は所属先の根 entity の参照",
+                        "index parameter must reference the root entity of the owner",
                         control,
                     );
                 }
@@ -492,7 +492,7 @@ fn check_type_inner<E: InputError>(
                     _ => false,
                 },
                 at,
-                "Set の要素型は Term・Path を含まない",
+                "Set element types cannot contain Term or Path",
                 control,
             )?;
         }
@@ -500,7 +500,7 @@ fn check_type_inner<E: InputError>(
             check_type::<E>(defs, props, a, &child(at, "1"), earlier, control)?;
             check_type::<E>(defs, props, b, &child(at, "2"), earlier, control)?;
             if a.ref_target().is_none() || b.ref_target().is_none() {
-                return fail(Code::Syntax, at, "Map の定義域・値域は参照型");
+                return fail(Code::Syntax, at, "Map domain and codomain must be reference types");
             }
         }
         Type::Term(args, ret) => {
@@ -530,7 +530,7 @@ fn check_type_inner<E: InputError>(
                         _ => false,
                     },
                     at,
-                    "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                    "Term parameters and return type must be value types containing no references, Map, or Path",
                     control,
                 )?;
                 if i < args.len() {
@@ -542,7 +542,7 @@ fn check_type_inner<E: InputError>(
             return fail(
                 Code::Syntax,
                 at,
-                "Path は原始 field・data・Term の型に置けない",
+                "Path cannot be used as a primitive field, data, or Term type",
             );
         }
     }
@@ -623,7 +623,7 @@ pub(super) fn check<E: InputError>(
                                 defs,
                                 r,
                                 &child(&f.location, "name"),
-                                "owner の型は所属先を持たない entity",
+                                "owner type must be an entity without an owner",
                                 control,
                             )?;
                             Some(r.clone())
@@ -632,7 +632,7 @@ pub(super) fn check<E: InputError>(
                             return fail(
                                 Code::Syntax,
                                 &child(&f.location, "name"),
-                                "owner の型は所属先を持たない entity",
+                                "owner type must be an entity without an owner",
                             );
                         }
                     }
@@ -643,7 +643,7 @@ pub(super) fn check<E: InputError>(
             }
             PrimitiveSignature::Arrow { .. } => {
                 let at = child(&d.location, "name");
-                let message = "arrow は owner・from・to の field を持つ";
+                let message = "arrow requires owner, from, and to fields";
                 let owner = required_field::<E>(&d.signature, "owner", &at, message, control)?;
                 let from = required_field::<E>(&d.signature, "from", &at, message, control)?;
                 let to = required_field::<E>(&d.signature, "to", &at, message, control)?;
@@ -653,7 +653,7 @@ pub(super) fn check<E: InputError>(
                             defs,
                             r,
                             &child(&owner.location, "name"),
-                            "arrow の owner の型は根 entity",
+                            "arrow owner type must be a root entity",
                             control,
                         )?;
                         r.clone()
@@ -662,7 +662,7 @@ pub(super) fn check<E: InputError>(
                         return fail(
                             Code::Syntax,
                             &child(&owner.location, "name"),
-                            "arrow の owner の型は根 entity",
+                            "arrow owner type must be a root entity",
                         );
                     }
                 };
@@ -676,7 +676,7 @@ pub(super) fn check<E: InputError>(
                         return fail(
                             Code::Syntax,
                             &child(&from.location, "name"),
-                            "arrow の from・to は同じ entity の E[owner]",
+                            "arrow from and to must have type E[owner] for the same entity E",
                         );
                     }
                 };
@@ -688,7 +688,7 @@ pub(super) fn check<E: InputError>(
                     return fail(
                         Code::Syntax,
                         &child(&from.location, "name"),
-                        "arrow の端点は owner に所属する entity",
+                        "arrow endpoints must be entities belonging to owner",
                     );
                 }
                 required_owner::<E>(
@@ -696,7 +696,7 @@ pub(super) fn check<E: InputError>(
                     &endpoint,
                     &root,
                     &child(&from.location, "name"),
-                    "arrow の端点は owner に所属する entity",
+                    "arrow endpoints must be entities belonging to owner",
                     control,
                 )?;
                 Some((Some(root), Some(endpoint)))
@@ -775,7 +775,7 @@ fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -
         return fail(
             Code::Cycle,
             &child(&defs.declarations[&n].location, "name"),
-            format!("data `{n}` が相互再帰している"),
+            format!("mutually recursive data `{n}`"),
         );
     }
     let mut inhabited = BTreeSet::new();
@@ -825,7 +825,7 @@ fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -
             return fail(
                 Code::Syntax,
                 &child(&d.location, "name"),
-                format!("data `{name}` は有限の値を持たない"),
+                format!("data `{name}` has no finite value"),
             );
         }
         E::checkpoint(control, Checkpoint::DefinitionData)?;
@@ -865,7 +865,7 @@ fn check_correspondence<E: InputError>(
         unreachable!()
     };
     let at = child(&d.location, "name");
-    let message = "correspondence は parameters に from・to を持つ";
+    let message = "correspondence requires from and to parameters";
     let from = super::model::find_field_checked_controlled::<E, _>(
         parameters,
         "from",
@@ -893,7 +893,7 @@ fn check_correspondence<E: InputError>(
                     defs,
                     n,
                     &child(&p.location, "name"),
-                    "correspondence の from・to は根 entity",
+                    "correspondence from and to must be root entities",
                     control,
                 )?;
                 Ok(n.clone())
@@ -901,7 +901,7 @@ fn check_correspondence<E: InputError>(
             _ => fail(
                 Code::Syntax,
                 &child(&p.location, "name"),
-                "correspondence の from・to は根 entity",
+                "correspondence from and to must be root entities",
             ),
         }
     };
@@ -921,7 +921,7 @@ fn check_correspondence<E: InputError>(
                     return fail(
                         Code::Syntax,
                         &child(&m.location, "name"),
-                        "correspondence の field は Map<E[from], F[to]>",
+                        "correspondence field must have type Map<E[from], F[to]>",
                     );
                 }
             },
@@ -929,7 +929,7 @@ fn check_correspondence<E: InputError>(
                 return fail(
                     Code::Syntax,
                     &child(&m.location, "name"),
-                    "correspondence の field は Map<E[from], F[to]>",
+                    "correspondence field must have type Map<E[from], F[to]>",
                 );
             }
         };
@@ -939,7 +939,7 @@ fn check_correspondence<E: InputError>(
                 name,
                 root,
                 &child(&m.location, "name"),
-                "対応表の型は from・to の根に所属する",
+                "mapping types must belong to the from and to roots",
                 control,
             )?;
         }
@@ -947,7 +947,7 @@ fn check_correspondence<E: InputError>(
             return fail(
                 Code::DuplicateId,
                 &child(&m.location, "name"),
-                "同じ型の対応表が重複している",
+                "duplicate mapping for the same type",
             );
         }
         maps.push((m.name.clone(), e, f));
@@ -959,7 +959,7 @@ fn check_correspondence<E: InputError>(
         return fail(
             Code::Syntax,
             &child(&d.location, "name"),
-            "correspondence は from・to の根に所属する全ての entity・arrow を一度ずつ覆う",
+            "correspondence must cover every entity and arrow belonging to the from and to roots exactly once",
         );
     }
     let mut mu = domain.clone();
@@ -974,7 +974,7 @@ fn check_correspondence<E: InputError>(
             return fail(
                 Code::Reference,
                 &child(&a.location, "source"),
-                "align の両辺は同じ対応表の始域と終域の field",
+                "align must connect domain and codomain fields of the same mapping",
             );
         }
         if explicit
@@ -984,14 +984,14 @@ fn check_correspondence<E: InputError>(
             return fail(
                 Code::DuplicateId,
                 &child(&a.location, "source"),
-                "source の align が重複している",
+                "duplicate source alignment",
             );
         }
         if !targets.insert(a.target.clone()) {
             return fail(
                 Code::DuplicateId,
                 &child(&a.location, "target"),
-                "target への align が重複している",
+                "duplicate alignment to target",
             );
         }
         E::checkpoint(control, Checkpoint::DefinitionDependency)?;
@@ -1017,7 +1017,7 @@ fn check_correspondence<E: InputError>(
                     return fail(
                         Code::DuplicateId,
                         &child(&d.location, "name"),
-                        format!("`{t}` が同名の対応と align で重複している"),
+                        format!("`{t}` is duplicated by same-name mapping and align"),
                     );
                 }
                 implicit.push((s.clone(), t.clone()));
@@ -1026,7 +1026,7 @@ fn check_correspondence<E: InputError>(
                 return fail(
                     Code::Syntax,
                     &child(&d.location, "name"),
-                    format!("`{s}` の対応先を align で明記する"),
+                    format!("specify the target of `{s}` with align"),
                 );
             };
             alpha.insert(
@@ -1042,7 +1042,7 @@ fn check_correspondence<E: InputError>(
                 return fail(
                     Code::Syntax,
                     &child(&d.location, "name"),
-                    format!("`{t}` への対応元を align で明記する"),
+                    format!("specify the source of `{t}` with align"),
                 );
             }
             E::checkpoint(control, Checkpoint::DefinitionDependency)?;
@@ -1072,7 +1072,7 @@ fn check_correspondence<E: InputError>(
                                 &child(&tf.location, "name"),
                                 &moved,
                                 &tf.ty,
-                                format!("`{e}.{}` と `{f}.{}` の型が対応しない", sf.name, tf.name),
+                                format!("types of `{e}.{}` and `{f}.{}` do not correspond", sf.name, tf.name),
                                 &mut diagnostic_control,
                             );
                         }
@@ -1119,7 +1119,7 @@ fn check_correspondence<E: InputError>(
                     &moved,
                     &target_field.ty,
                     format!(
-                        "`{source}.{}` と `{target}.{}` の参照型が対応しない",
+                        "reference types of `{source}.{}` and `{target}.{}` do not correspond",
                         source_field.name, target_field.name
                     ),
                     control,
@@ -1166,7 +1166,7 @@ fn resolve_field<'a, E: InputError>(
                     None => fail(
                         Code::Reference,
                         at,
-                        format!("field `{name}` を解決できない"),
+                        format!("cannot resolve field `{name}`"),
                     ),
                 },
             )?;
@@ -1175,7 +1175,7 @@ fn resolve_field<'a, E: InputError>(
         fail(
             Code::Reference,
             at,
-            format!("field `{name}` を解決できない"),
+            format!("cannot resolve field `{name}`"),
         )
     })();
     E::finish(result, control, Checkpoint::DefinitionSemantics)
@@ -1196,7 +1196,7 @@ fn check_positive_self<E: InputError>(
                     return fail(
                         Code::Syntax,
                         at,
-                        "data の自己参照は直接または Tuple・List・Option を通る",
+                        "data self-reference must be direct or through Tuple, List, or Option",
                     );
                 }
                 Type::Tuple(items) => {

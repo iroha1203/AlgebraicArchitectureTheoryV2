@@ -77,7 +77,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         step::<E, _>(control, |control| {
             let JValue::Obj(entries) = &node.value else {
                 return Err(not_null(node, pointer)
-                    .unwrap_or_else(|| syntax(pointer, "object が必要"))
+                    .unwrap_or_else(|| syntax(pointer, "expected an object"))
                     .into());
             };
             for (k, v) in entries {
@@ -88,7 +88,7 @@ impl<'a, E: InputError> Obj<'a, E> {
                         if step::<E, _>(control, |_| {
                             let matches = *candidate == k;
                             if !matches && index + 1 == required.len() + optional.len() {
-                                return Err(syntax(&child, format!("未知の欄 `{k}`")).into());
+                                return Err(syntax(&child, format!("unknown field `{k}`")).into());
                             }
                             Ok(matches)
                         })? {
@@ -97,10 +97,10 @@ impl<'a, E: InputError> Obj<'a, E> {
                         }
                     }
                     if !allowed {
-                        return Err(syntax(&child, format!("未知の欄 `{k}`")).into());
+                        return Err(syntax(&child, format!("unknown field `{k}`")).into());
                     }
                     if let JValue::Null = v.value {
-                        return Err(syntax(&child, "null は使わない").into());
+                        return Err(syntax(&child, "null is not allowed").into());
                     }
                     Ok(())
                 })?;
@@ -110,7 +110,7 @@ impl<'a, E: InputError> Obj<'a, E> {
                     field_map::<E, _>(entries, r, control, |found| {
                         found
                             .map(|_| ())
-                            .ok_or_else(|| syntax(pointer, format!("欄 `{r}` が必要")).into())
+                            .ok_or_else(|| syntax(pointer, format!("missing required field `{r}`")).into())
                     })
                 })?;
             }
@@ -145,7 +145,7 @@ impl<'a, E: InputError> Obj<'a, E> {
                 &s,
                 true,
                 control,
-                Some(&|| syntax(&p, format!("`{s}` は Id の形式でない"))),
+                Some(&|| syntax(&p, format!("`{s}` is not a valid Id"))),
             )?;
             Ok(s)
         })
@@ -155,7 +155,7 @@ impl<'a, E: InputError> Obj<'a, E> {
             let (v, p) = self.req(key)?;
             match &v.value {
                 JValue::Arr(items) => Ok((items.as_slice(), p)),
-                _ => Err(syntax(&p, "array が必要").into()),
+                _ => Err(syntax(&p, "expected an array").into()),
             }
         })
     }
@@ -190,13 +190,13 @@ pub(crate) fn field<'a, E: InputError>(
 }
 
 fn not_null(node: &JNode, pointer: &str) -> Option<Box<Issue>> {
-    matches!(node.value, JValue::Null).then(|| syntax(pointer, "null は使わない"))
+    matches!(node.value, JValue::Null).then(|| syntax(pointer, "null is not allowed"))
 }
 
 pub fn as_string(node: &JNode, pointer: &str) -> AResult<String> {
     match &node.value {
         JValue::Str(s) => Ok(s.clone()),
-        _ => Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "文字列が必要"))),
+        _ => Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "expected a string"))),
     }
 }
 
@@ -278,9 +278,9 @@ fn is_digest(s: &str) -> bool {
 /// metadata の Nat。値が 0..=2^53−1 の整数である JSON number。
 fn as_nat(node: &JNode, pointer: &str) -> AResult<u64> {
     let JValue::Num(text) = &node.value else {
-        return Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "Nat が必要")));
+        return Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "expected a Nat")));
     };
-    nat_value(text).ok_or_else(|| syntax(pointer, "Nat は 0..9007199254740991 の整数"))
+    nat_value(text).ok_or_else(|| syntax(pointer, "Nat must be an integer in 0..9007199254740991"))
 }
 
 /// JSON number の綴りが表す数を丸めずに読み、0..2^53−1 の整数なら返す。
@@ -319,7 +319,7 @@ pub(crate) fn nat_value(text: &str) -> Option<u64> {
 fn unsupported_version(format: String, semantics: Option<String>) -> Box<Issue> {
     Box::new(Issue {
         code: Code::UnsupportedVersion,
-        message: "未対応の format または semantics".into(),
+        message: "unsupported format or semantics".into(),
         location: Location::ArchMap {
             pointer: if format != FORMAT {
                 "/format"
@@ -349,21 +349,21 @@ fn read_document_inner<'a, E: InputError>(
     control: &mut Control,
 ) -> Result<RawDocument<'a>, E> {
     let JValue::Obj(entries) = &root.value else {
-        return Err((syntax("", "ArchMap は object")).into());
+        return Err((syntax("", "ArchMap must be an object")).into());
     };
     let format_node = field_map::<E, _>(entries, "format", control, |found| {
-        found.ok_or_else(|| syntax("/format", "format の文字列が必要").into())
+        found.ok_or_else(|| syntax("/format", "format must be a string").into())
     })?;
     let format = match &format_node.value {
         JValue::Str(s) => s.clone(),
-        _ => return Err((syntax("/format", "format の文字列が必要")).into()),
+        _ => return Err((syntax("/format", "format must be a string")).into()),
     };
     let semantics_node = field_map::<E, _>(entries, "semantics", control, |found| {
         found.ok_or_else(|| unsupported_version(format.clone(), None).into())
     })?;
     let semantics = match &semantics_node.value {
         JValue::Str(s) => Some(s.clone()),
-        _ => return Err((syntax("/semantics", "semantics の文字列が必要")).into()),
+        _ => return Err((syntax("/semantics", "semantics must be a string")).into()),
     };
     if format != FORMAT || semantics.as_deref() != Some(SEMANTICS) {
         return Err(unsupported_version(format, semantics).into());
@@ -401,24 +401,24 @@ fn read_document_inner<'a, E: InputError>(
             &namespace,
             false,
             control,
-            Some(&|| syntax(&format!("{pointer}/namespace"), "namespace は名前")),
+            Some(&|| syntax(&format!("{pointer}/namespace"), "namespace must be a name")),
         )?;
         if crate::law::parser::is_reserved(&namespace) {
-            return Err((syntax(&format!("{pointer}/namespace"), "namespace は名前")).into());
+            return Err((syntax(&format!("{pointer}/namespace"), "namespace must be a name")).into());
         }
         let version = o.string("version")?;
         if version.is_empty() {
-            return Err((syntax(&format!("{pointer}/version"), "version は非空文字列")).into());
+            return Err((syntax(&format!("{pointer}/version"), "version must be a nonempty string")).into());
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
-            return Err((syntax(&format!("{pointer}/digest"), "Digest の形式でない")).into());
+            return Err((syntax(&format!("{pointer}/digest"), "invalid Digest format")).into());
         }
         if !namespaces.insert(namespace.clone()) {
             return Err((issue(
                 Code::DuplicateId,
                 &format!("{pointer}/namespace"),
-                format!("namespace `{namespace}` の binding が重複している"),
+                format!("duplicate binding for namespace `{namespace}`"),
             ))
             .into());
         }
@@ -445,18 +445,18 @@ fn read_document_inner<'a, E: InputError>(
             return Err((issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
-                format!("source `{id}` が重複している"),
+                format!("duplicate source `{id}`"),
             ))
             .into());
         }
         let uri = o.string("uri")?;
         let revision = o.string("revision")?;
         if uri.is_empty() || revision.is_empty() {
-            return Err((syntax(&p, "uri と revision は空でない文字列")).into());
+            return Err((syntax(&p, "uri and revision must be nonempty strings")).into());
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
-            return Err((syntax(&format!("{p}/digest"), "Digest の形式でない")).into());
+            return Err((syntax(&format!("{p}/digest"), "invalid Digest format")).into());
         }
         sources.push((
             Source {
@@ -487,7 +487,7 @@ fn read_document_inner<'a, E: InputError>(
             return Err((issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
-                format!("origin `{id}` が重複している"),
+                format!("duplicate origin `{id}`"),
             ))
             .into());
         }
@@ -498,14 +498,14 @@ fn read_document_inner<'a, E: InputError>(
             _ => {
                 return Err((syntax(
                     &format!("{p}/mode"),
-                    "mode は observed・proposed・specification",
+                    "mode must be observed, proposed, or specification",
                 ))
                 .into());
             }
         };
         let method = o.string("method")?;
         if method.is_empty() {
-            return Err((syntax(&format!("{p}/method"), "method は空でない文字列")).into());
+            return Err((syntax(&format!("{p}/method"), "method must be a nonempty string")).into());
         }
         let note = match o.get("note")? {
             Some((v, np)) => Some(as_string(v, &np)?),
@@ -519,7 +519,7 @@ fn read_document_inner<'a, E: InputError>(
         }
         if mode == Mode::Observed && locations.is_empty() {
             return Err(
-                (syntax(&format!("{p}/locations"), "observed の locations は1件以上")).into(),
+                (syntax(&format!("{p}/locations"), "observed requires at least one location")).into(),
             );
         }
         if mode != Mode::Observed
@@ -528,7 +528,7 @@ fn read_document_inner<'a, E: InputError>(
         {
             return Err((syntax(
                 &p,
-                "locations が空の proposed・specification は空でない note を持つ",
+                "proposed or specification with empty locations requires a nonempty note",
             ))
             .into());
         }
@@ -574,7 +574,7 @@ fn read_location_inner<E: InputError>(
     let path_error = || {
         syntax(
             &format!("{pointer}/path"),
-            "path は source root 相対で、空・絶対 path・`.`・`..` を含まない",
+            "path must be relative to source root and contain no empty, absolute, `.`, or `..` components",
         )
     };
     if path.is_empty() || path.starts_with('/') {
@@ -600,11 +600,11 @@ fn read_location_inner<E: InputError>(
                     as_nat(&items[1], &format!("{sp}/1")).map_err(E::from)
                 })?;
                 if s > e {
-                    return Err(syntax(&sp, "span は start ≤ end").into());
+                    return Err(syntax(&sp, "span must satisfy start <= end").into());
                 }
                 Some((s, e))
             }
-            _ => return Err(syntax(&sp, "span は二つの Nat").into()),
+            _ => return Err(syntax(&sp, "span must contain two Nat values").into()),
         },
     };
     Ok(SourceLocation { source, path, span })
@@ -750,7 +750,7 @@ mod required_identifier_priority_tests {
                         },
                     )
                 };
-                let original = || syntax("/snapshots/0/id", format!("`{text}` は Id の形式でない"));
+                let original = || syntax("/snapshots/0/id", format!("`{text}` is not a valid Id"));
                 let mut control = probe();
                 let result = identifier::<E>(text, true, &mut control, Some(&original));
                 if mode == 0 {

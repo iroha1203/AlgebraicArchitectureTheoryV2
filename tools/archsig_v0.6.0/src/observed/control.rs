@@ -172,7 +172,7 @@ impl StopReason {
                 limit,
                 observed,
             } => (
-                "計算予算を使い切った",
+                format!("computation budget exhausted: {} limit {limit}, observed {observed}", resource.wire()),
                 Json::obj([
                     ("resource", Json::str(resource.wire())),
                     ("limit", Json::str(limit.to_string())),
@@ -180,7 +180,7 @@ impl StopReason {
                 ]),
             ),
             Self::Cancelled(signal) => (
-                "シグナルを受けて中断した",
+                format!("interrupted by signal {}", signal.wire()),
                 Json::obj([("signal", Json::str(signal.wire()))]),
             ),
         };

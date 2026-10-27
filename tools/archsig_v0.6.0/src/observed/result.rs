@@ -693,23 +693,23 @@ impl Reason {
     }
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
-            ReasonKind::Missing => ("原始 slot の観測が必要", Json::obj([])),
+            ReasonKind::Missing => ("observation of a primitive slot is required".to_owned(), Json::obj([])),
             ReasonKind::VisibilityInsufficient { locals, coordinates } => (
-                "局所の読取り権限が不足する",
+                format!("insufficient local read permissions: locals {}, coordinates {}", Json::Arr(locals.iter().map(Json::str).collect()).canonical(), refs(coordinates).canonical()),
                 Json::obj([
                     ("locals", Json::Arr(locals.iter().map(Json::str).collect())),
                     ("coordinates", refs(coordinates)),
                 ]),
             ),
             ReasonKind::DependencyBlocked { request } => (
-                "選択した依存出力が通常値を提供しない",
+                format!("selected dependency output does not provide an ordinary value: {request}"),
                 Json::obj([("request", Json::str(request))]),
             ),
             ReasonKind::ConditionFailed {
                 condition,
                 construction,
             } => (
-                "実値が構成の適用条件を満たさない",
+                format!("actual value does not satisfy the construction condition: {construction}, condition {}", condition.wire().canonical()),
                 Json::obj([
                     ("condition", condition.wire()),
                     ("construction", Json::str(*construction)),
@@ -720,7 +720,7 @@ impl Reason {
                 operand_types,
                 method,
             } => (
-                "元の型付き問いに対応する算法がない",
+                format!("unsupported algorithm {method} for {} with operand types {}", question.wire(), Json::Arr(operand_types.iter().map(Type::wire).collect()).canonical()),
                 Json::obj([
                     ("question", Json::str(question.wire())),
                     (
@@ -731,7 +731,7 @@ impl Reason {
                 ]),
             ),
             ReasonKind::Internal(op) => (
-                "導出の内部照合に失敗した",
+                format!("internal failure during {op}"),
                 Json::obj([("operation", Json::str(op))]),
             ),
             ReasonKind::Stop(r) => {

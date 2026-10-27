@@ -41,7 +41,7 @@ fn subjects<E: InputError>(
             return Err(issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
-                format!("subject `{id}` が重複している"),
+                format!("duplicate subject `{id}`"),
             )
             .into());
         }
@@ -49,7 +49,7 @@ fn subjects<E: InputError>(
         qname::<E>(
             &ty,
             c,
-            Some(&|| syntax(&format!("{p}/type"), "type は宣言の完全名")),
+            Some(&|| syntax(&format!("{p}/type"), "type must be a fully qualified declaration name")),
         )?;
         result.push(RawSubject {
             id,
@@ -82,7 +82,7 @@ fn atoms<'a, E: InputError>(
             return Err(issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
-                format!("Atom `{id}` が重複している"),
+                format!("duplicate Atom `{id}`"),
             )
             .into());
         }
@@ -90,7 +90,7 @@ fn atoms<'a, E: InputError>(
         qname::<E>(
             &field,
             c,
-            Some(&|| syntax(&format!("{p}/field"), "field は完全名")),
+            Some(&|| syntax(&format!("{p}/field"), "field must be a fully qualified name")),
         )?;
         result.push(RawAtom {
             id,
@@ -135,9 +135,9 @@ fn patch<'a, T, E: InputError>(
             E::checkpoint(c, Checkpoint::ArchMapIteration)?;
             let p = format!("{ptr}/{i}");
             let name = as_string(node, &p)?;
-            identifier::<E>(&name, true, c, Some(&|| syntax(&p, "削除対象はId")))?;
+            identifier::<E>(&name, true, c, Some(&|| syntax(&p, "deletion target must be an Id")))?;
             if !seen.insert(name.clone()) {
-                return Err(issue(Code::DuplicateId, &p, "同じIDの変更・削除を重ねない").into());
+                return Err(issue(Code::DuplicateId, &p, "cannot modify or delete the same ID more than once").into());
             }
             remove.push(name);
         }
@@ -174,7 +174,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
             return Err(issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
-                format!("snapshot `{id}` が重複している"),
+                format!("duplicate snapshot `{id}`"),
             )
             .into());
         }
@@ -214,7 +214,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
                     E::from(issue(
                         Code::Reference,
                         &format!("{pointer}/base"),
-                        format!("基準snapshot `{base}` がない"),
+                        format!("base snapshot `{base}` does not exist"),
                     ))
                 })?;
                 children[*parent].push(i);
@@ -248,7 +248,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
                         return Err(issue(
                             Code::Reference,
                             &format!("{pointer}/subjects/remove"),
-                            format!("削除対象subject `{name}` がない"),
+                            format!("subject `{name}` to delete does not exist"),
                         )
                         .into());
                     }
@@ -274,7 +274,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
                         return Err(issue(
                             Code::Reference,
                             &format!("{pointer}/atoms/remove"),
-                            format!("削除対象Atom `{name}` がない"),
+                            format!("Atom `{name}` to delete does not exist"),
                         )
                         .into());
                     }
@@ -302,7 +302,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
         return Err(issue(
             Code::Reference,
             ptr,
-            format!("snapshot `{}` の基準参照が循環している", input.id()),
+            format!("cyclic base references involving snapshot `{}`", input.id()),
         )
         .into());
     }

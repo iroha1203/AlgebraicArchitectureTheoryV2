@@ -12,7 +12,7 @@ pub(in crate::observed) fn kind(request: &Request) -> Result<&str, ResolveFailur
         .map(|a| &a.value)
     {
         Some(Selector::Enum { value }) => Ok(value),
-        _ => Err(error(&request.id, "kind", "compareのkindが必要")),
+        _ => Err(error(&request.id, "kind", "compare requires kind")),
     }
 }
 pub(super) fn resolve(
@@ -25,17 +25,17 @@ pub(super) fn resolve(
     for (key, mut value) in raw.arguments {
         phase(control, Checkpoint::RequestBinding)?;
         if !matches!(key.as_str(), "to" | "kind" | "along") {
-            return Err(error(&raw.id, &key, "compareの固定引数はto/kind/along"));
+            return Err(error(&raw.id, &key, "compare fixed arguments must be to, kind, or along"));
         }
         if key == "kind" {
             let Selector::Declaration { name } = value else {
-                return Err(error(&raw.id, &key, "compareのkindは固定語を指定する"));
+                return Err(error(&raw.id, &key, "compare kind must be a fixed keyword"));
             };
             if !matches!(
                 name.as_str(),
                 "value" | "word" | "action" | "relation" | "diagnostics"
             ) {
-                return Err(error(&raw.id, &key, "compareの未知kind"));
+                return Err(error(&raw.id, &key, "unknown compare kind"));
             }
             value = Selector::Enum { value: name };
         }
@@ -61,10 +61,10 @@ pub(super) fn resolve(
         .arguments
         .iter()
         .find(|a| a.name == "to")
-        .ok_or_else(|| error(&request.id, "to", "compareのtoが必要"))?;
+        .ok_or_else(|| error(&request.id, "to", "compare requires to"))?;
     let along = request.arguments.iter().find(|a| a.name == "along");
     if (mode == "diagnostics") != along.is_some() {
-        return Err(error(&request.id, "along", "alongはdiagnosticsだけで必須"));
+        return Err(error(&request.id, "along", "along is required only for diagnostics"));
     }
     for (key, selector) in std::iter::once(("head", &request.head))
         .chain(std::iter::once(("to", &to.value)))
@@ -79,7 +79,7 @@ pub(super) fn resolve(
                 return Err(error(
                     &request.id,
                     key,
-                    "compareは型付きHandleを出力fieldまで指定する",
+                    "compare requires a typed Handle with an output field",
                 ))
             }
         }
@@ -115,7 +115,7 @@ pub(super) fn constraints(
         .arguments
         .iter()
         .find(|a| a.name == "to")
-        .ok_or_else(|| error(&request.id, "to", "toがない"))?
+        .ok_or_else(|| error(&request.id, "to", "missing to"))?
         .value;
     let left = composition::selected(
         law,
@@ -131,7 +131,7 @@ pub(super) fn constraints(
     match (&left, &right) {
         (Shape::Path(a, b), Shape::Path(c, d)) => {
             if matches!(mode, "action" | "relation") && (a != c || b != d) {
-                return Err(error(&request.id, "to", "作用比較のPathの始終型が違う"));
+                return Err(error(&request.id, "to", "action comparison Path endpoint types do not match"));
             }
         }
         (Shape::Operation(a), Shape::Operation(b)) => {
@@ -147,7 +147,7 @@ pub(super) fn constraints(
                 return Err(error(
                     &request.id,
                     "to",
-                    "作用比較のOperationの始終型・readingが違う",
+                    "action comparison Operation endpoint types or readings do not match",
                 ));
             }
         }
@@ -155,7 +155,7 @@ pub(super) fn constraints(
             return Err(error(
                 &request.id,
                 "to",
-                "OperationとPathを混在して比較できない",
+                "Operation and Path cannot be mixed in a comparison",
             ))
         }
     }
@@ -196,7 +196,7 @@ pub(super) fn output_type(
     match field {
         "comparison" => Ok(ProjectionType::Comparison),
         "proposition" => Ok(ProjectionType::Proposition),
-        _ => Err(error(&request.id, field, "compareの非公開出力")),
+        _ => Err(error(&request.id, field, "compare output is not public")),
     }
 }
 
@@ -212,7 +212,7 @@ fn value_constraints(
         .arguments
         .iter()
         .find(|a| a.name == "to")
-        .ok_or_else(|| error(&request.id, "to", "toがない"))?
+        .ok_or_else(|| error(&request.id, "to", "missing to"))?
         .value;
     let mut plans = vec![];
     for (key,selector) in [("head",&request.head),("to",to)] {
@@ -231,7 +231,7 @@ fn value_constraints(
             return Err(error(
                 &request.id,
                 key,
-                "value比較には同じ原始型Pの値が必要",
+                "value comparison requires values of the same primitive type P",
             ));
         }
         selections.push((key, selector, plan, owners, types));
@@ -247,7 +247,7 @@ fn value_constraints(
         }
     }
     if common.is_empty() {
-        return Err(error(&request.id, "to", "value比較の原始型Pが違う"));
+        return Err(error(&request.id, "to", "value comparison primitive types P do not match"));
     }
     let mut out = vec![];
     for (key, selector, plan, owners, _) in selections {
@@ -285,10 +285,10 @@ fn value_types(
             ProjectionType::Law(ty) => {
                 let ty=ty.erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(control,Checkpoint::RequestBinding)
                     .map_err(|e|match e {super::super::control::CheckFailure::Stopped(s)=>stopped(s),
-                        super::super::control::CheckFailure::Input(_)=>error("","type","原始型の解決に失敗した")})?;
+                        super::super::control::CheckFailure::Input(_)=>error("","type","cannot resolve primitive type")})?;
                 if super::super::data::primitive_type(&ty, control).map_err(|e| match e {
                     super::super::result::ValidationFailure::Stop(s) => stopped(s),
-                    _ => error("", "type", "原始型の定義が違う"),
+                    _ => error("", "type", "primitive type definitions do not match"),
                 })? {
                     let mut duplicate = false;
                     for existing in out.iter() {
@@ -333,26 +333,26 @@ fn diagnostic_constraints(
     law: &CheckedLaw, map: &CheckedArchMap, requests: &[Request],
     names: &BTreeMap<String, usize>, r: &Request, c: &mut Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
-    let to = &r.arguments.iter().find(|a|a.name=="to").ok_or_else(||error(&r.id,"to","toがない"))?.value;
-    let along = &r.arguments.iter().find(|a|a.name=="along").ok_or_else(||error(&r.id,"along","alongがない"))?.value;
+    let to = &r.arguments.iter().find(|a|a.name=="to").ok_or_else(||error(&r.id,"to","missing to"))?.value;
+    let along = &r.arguments.iter().find(|a|a.name=="along").ok_or_else(||error(&r.id,"along","missing along"))?.value;
     let mut shapes = vec![];
     let mut coefficients = vec![];
     for (key,selector) in [("head",&r.head),("to",to)] {
         let (plan,_) = selector_type(law,map,requests,names,selector,c,(&r.id,key))?;
-        if plan.ty != ProjectionType::Diagnostic { return Err(error(&r.id,key,"診断比較の対象はDiagnostic")); }
-        let Selector::Answer{id,..}=selector else{return Err(error(&r.id,key,"診断の元要求がない"))};
-        let producer=&requests[*names.get(id).ok_or_else(||error(&r.id,key,"診断の元要求がない"))?];
+        if plan.ty != ProjectionType::Diagnostic { return Err(error(&r.id,key,"diagnostic comparison requires Diagnostic targets")); }
+        let Selector::Answer{id,..}=selector else{return Err(error(&r.id,key,"missing diagnostic source request"))};
+        let producer=&requests[*names.get(id).ok_or_else(||error(&r.id,key,"missing diagnostic source request"))?];
         let degree=producer.arguments.iter().find(|a|a.name=="degree").map(|a|a.value.clone());
         let side=producer.arguments.iter().find(|a|a.name=="side").map(|a|a.value.clone());
-        if producer.kind!=QuestionKind::Diagnose || degree.is_none() || side.is_none() {return Err(error(&r.id,key,"診断の次数・sideがない"));}
+        if producer.kind!=QuestionKind::Diagnose || degree.is_none() || side.is_none() {return Err(error(&r.id,key,"missing diagnostic degree or side"));}
         coefficients.push(diagnostic_coefficient(law, requests, names, producer, c)?);
         shapes.push((degree,side));
     }
-    if shapes[0]!=shapes[1] {return Err(error(&r.id,"to","診断比較のdegree/sideが異なる"));}
+    if shapes[0]!=shapes[1] {return Err(error(&r.id,"to","diagnostic comparison degree/side does not match"));}
     if matches!((&coefficients[0], &coefficients[1]), (Some(a), Some(b)) if a != b) {
-        return Err(error(&r.id, "to", "診断比較の係数環が異なる"));
+        return Err(error(&r.id, "to", "diagnostic comparison coefficient rings do not match"));
     }
     let operation=composition::selected(law,map,requests,names,along,r,"along",c)?;
-    if !matches!(operation,Shape::Operation(_)) {return Err(error(&r.id,"along","alongは確認済みOperationを指定する"));}
+    if !matches!(operation,Shape::Operation(_)) {return Err(error(&r.id,"along","along must specify a checked Operation"));}
     Ok(vec![])
 }

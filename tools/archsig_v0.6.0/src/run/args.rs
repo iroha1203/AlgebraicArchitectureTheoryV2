@@ -19,13 +19,13 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         Some("version") => {
             return Err(usage(
                 &args[1].to_string_lossy(),
-                "version は引数を取らない",
+                "version takes no arguments",
             ));
         }
         Some("check") => false,
         Some("run") => true,
-        Some(other) => return Err(usage(other, "コマンドは check・run・version")),
-        None => return Err(usage("", "コマンドは check・run・version を指定する")),
+        Some(other) => return Err(usage(other, "expected command check, run, or version")),
+        None => return Err(usage("", "specify command check, run, or version")),
     };
     let mut singles = BTreeMap::new();
     let mut definitions = Vec::new();
@@ -42,34 +42,34 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
                 "--ask" | "--reuse" | "--time-ms" | "--memory-mib"
             ));
         if !known {
-            return Err(usage(&flag, format!("未知のflagまたは位置引数 `{flag}`")));
+            return Err(usage(&flag, format!("unknown flag or positional argument `{flag}`")));
         }
         let value = args
             .get(index + 1)
-            .ok_or_else(|| usage(&flag, "flag に値が必要"))?;
+            .ok_or_else(|| usage(&flag, "flag requires a value"))?;
         if flag == "--atom-definition" {
             definitions.push(PathBuf::from(value));
         } else if flag == "--ask" {
             asks.push(
                 value
                     .to_str()
-                    .ok_or_else(|| usage(&flag, "問いはUTF-8で指定する"))?
+                    .ok_or_else(|| usage(&flag, "request must be UTF-8"))?
                     .to_owned(),
             );
         } else {
             if singles.contains_key(flag.as_ref()) {
-                return Err(usage(&flag, "flag が重複している"));
+                return Err(usage(&flag, "duplicate flag"));
             }
             if matches!(flag.as_ref(), "--time-ms" | "--memory-mib") {
                 let text = value
                     .to_str()
-                    .ok_or_else(|| usage(&flag, "予算は [1-9][0-9]* の整数"))?;
+                    .ok_or_else(|| usage(&flag, "budget must be an integer matching [1-9][0-9]*"))?;
                 if !matches!(text.as_bytes().first(), Some(b'1'..=b'9'))
                     || !text.bytes().all(|b| b.is_ascii_digit())
                 {
                     return Err(usage(
                         &flag,
-                        format!("予算 `{text}` は [1-9][0-9]* の整数で指定する"),
+                        format!("budget `{text}` must be an integer matching [1-9][0-9]*"),
                     ));
                 }
             }
@@ -80,22 +80,22 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     if definitions.is_empty() {
         return Err(usage(
             "--atom-definition",
-            "--atom-definition が一つ以上必要",
+            "at least one --atom-definition is required",
         ));
     }
     let law = singles
         .remove("--law")
-        .ok_or_else(|| usage("--law", "--law が必要"))?;
+        .ok_or_else(|| usage("--law", "--law is required"))?;
     let archmap = singles.remove("--archmap").map(PathBuf::from);
     if running && archmap.is_none() {
-        return Err(usage("--archmap", "run は --archmap が必要"));
+        return Err(usage("--archmap", "run requires --archmap"));
     }
     if running && asks.is_empty() {
-        return Err(usage("--ask", "run は --ask が一つ以上必要"));
+        return Err(usage("--ask", "run requires at least one --ask"));
     }
     let out = singles.remove("--out").map(PathBuf::from);
     if !running && out.is_none() {
-        return Err(usage("--out", "check は --out が必要"));
+        return Err(usage("--out", "check requires --out"));
     }
     let inputs = CheckArgs {
         atom_definitions: definitions,

@@ -269,6 +269,11 @@ fn unsupported_nonlinear_equality_missing_terms_and_a_structural_refutation_rema
     assert!(reasons
         .iter()
         .any(|r| s(get(r, "code")) == "unsupported_algorithm"));
+    let reason = reasons.iter().find(|reason| s(get(reason, "code")) == "unsupported_algorithm").unwrap();
+    let method = s(get(get(reason, "details"), "method"));
+    assert_eq!(method, "term_extensional_equality");
+    assert!(s(get(reason, "message")).contains(method));
+    assert!(s(get(reason, "message")).is_ascii());
     assert!(has(get(answer(&j, "opaque"), "outputs"), "comparison"));
     assert!(arr(get(answer(&j, "known_difference"), "reasons")).is_empty());
     assert!(arr(get(answer(&j, "missing"), "reasons"))

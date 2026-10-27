@@ -1242,7 +1242,7 @@ impl<'a> Environment<'a> {
                     law.expr_type(*lhs).ok_or("Term左型がない")?.clone(),
                     law.expr_type(*rhs).ok_or("Term右型がない")?.clone(),
                 ]);
-                "Term外延等値の有限列挙またはZ/Qアフィン正規化"
+                "finite enumeration or Z/Q affine normalization for extensional Term equality"
             }
             ExprKind::Call { callee, args }
                 if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
@@ -1280,7 +1280,7 @@ impl<'a> Environment<'a> {
                 for arg in args {
                     types.push(law.expr_type(*arg).ok_or("Term実引数型がない")?.clone())
                 }
-                "元Termの実引数上のZ/Qアフィン正規化"
+                "Z/Q affine normalization over the original Term arguments"
             }
             _ => return Ok(None),
         };

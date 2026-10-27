@@ -15,7 +15,7 @@ use crate::result::{ResultIssue, Signal, Status, exit_code};
 use std::time::Instant;
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
-    failure(signals, "run", "計算の途中で内部障害が起きた".to_owned())
+    failure(signals, "run", "internal failure during computation".to_owned())
 }
 
 fn failure(signals: &mut dyn Signals, operation: &str, message: String) -> Outcome {
@@ -51,13 +51,13 @@ pub fn run_requests(
         && let Err(message) = output::out_ok(out) {
         return output::usage_without_result(
             signals,
-            usage("--out", format!("{}: {message}", out.display())),
+            usage("--out", format!("--out {}: {message}", out.display())),
         );
     }
     let Some(map_path) = &args.inputs.archmap else {
         return output::usage_without_result(
             signals,
-            usage("--archmap", "run は --archmap が必要".into()),
+            usage("--archmap", "run requires --archmap".into()),
         );
     };
     if args.inputs.atom_definitions.is_empty() || args.asks.is_empty() {
@@ -68,7 +68,7 @@ pub fn run_requests(
         };
         return output::usage_without_result(
             signals,
-            usage(argument, format!("{argument} が一つ以上必要")),
+            usage(argument, format!("at least one {argument} is required")),
         );
     }
     let mut issues = Vec::new();
@@ -145,9 +145,9 @@ pub fn run_requests(
                     signals,
                     "run",
                     format!(
-                        "問い `{request}` の `{kind}`{}の計算経路は未実装",
+                        "computation for request `{request}` of kind `{kind}`{} is not implemented",
                         if architecture_environment {
-                            "（Architecture環境）"
+                            " (Architecture environment)"
                         } else {
                             ""
                         }
@@ -175,7 +175,7 @@ pub fn run_requests(
             return failure(
                 signals,
                 "run",
-                "検査済み要求の評価中に入力準備が再実行された".into(),
+                "input preparation was repeated while evaluating checked requests".into(),
             );
         }
     };

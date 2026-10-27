@@ -488,7 +488,7 @@ pub(super) fn retain(
         let moved = correspondence
             .field_target(inputs, &format!("{st}.{name}"), c)
             .map_err(failure)?
-            .ok_or_else(|| unsupported(inputs, bodies[0], "change更新先のfield対応がない"))?;
+            .ok_or_else(|| unsupported(inputs, bodies[0], "missing field correspondence for the change update target"))?;
         let target = moved
             .strip_prefix(&format!("{tt}."))
             .ok_or("change更新先の型対応が違う")?
@@ -503,7 +503,7 @@ pub(super) fn retain(
         return Err(unsupported(
             inputs,
             bodies[0],
-            "更新先集合が対応しないchange移送は未実装",
+            "change transport with noncorresponding update target sets is not implemented",
         ));
     }
     let mut identity = vec![];
@@ -512,7 +512,7 @@ pub(super) fn retain(
             return Err(unsupported(
                 inputs,
                 bodies[0],
-                "異型change値parameter移送は未実装",
+                "transport of change value parameters with different types is not implemented",
             ));
         }
         identity.extend(
@@ -590,7 +590,7 @@ pub(super) fn retain(
             return Err(unsupported(
                 inputs,
                 bodies[0],
-                "異型change更新値の移送は未実装",
+                "transport of change update values with different types is not implemented",
             ));
         }
         let identity =

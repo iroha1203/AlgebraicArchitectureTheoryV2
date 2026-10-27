@@ -265,7 +265,7 @@ fn exhausted_dependency_candidates_keep_original_reference_above_budget() {
         Checkpoint::DefinitionDependency,
         0,
         Code::Reference,
-        "namespace `B` の dependency がない",
+        "missing dependency for namespace `B`",
         "/vocabularies/0/declarations/0/fields/0/type/1",
     );
 }
@@ -283,7 +283,7 @@ fn owned_index_final_mismatch_keeps_original_reference_above_budget() {
         Checkpoint::DefinitionSemantics,
         1,
         Code::Reference,
-        "添字 `missing` は左にある parameter を指す",
+        "index `missing` must refer to an earlier parameter",
         "/vocabularies/0/declarations/2/fields/0/type/2",
     );
 }
@@ -301,7 +301,7 @@ fn required_root_and_owned_target_keep_the_original_syntax_above_budget() {
         Checkpoint::DefinitionSemantics,
         3,
         Code::Syntax,
-        "owner の型は所属先を持たない entity",
+        "owner type must be an entity without an owner",
         "/vocabularies/0/declarations/2/parameters/0/name",
     );
     let record = record(
@@ -315,7 +315,7 @@ fn required_root_and_owned_target_keep_the_original_syntax_above_budget() {
         Checkpoint::DefinitionSemantics,
         3,
         Code::Syntax,
-        "`R.Root` は所属先を持たない entity・arrow",
+        "`R.Root` must be an entity or arrow without an owner",
         "/vocabularies/0/declarations/1/fields/0/type",
     );
 }
@@ -333,7 +333,7 @@ fn missing_arrow_and_correspondence_fields_keep_the_original_syntax_above_budget
         Checkpoint::DefinitionSemantics,
         2,
         Code::Syntax,
-        "arrow は owner・from・to の field を持つ",
+        "arrow requires owner, from, and to fields",
         "/vocabularies/0/declarations/1/name",
     );
     let correspondence = record(
@@ -347,7 +347,7 @@ fn missing_arrow_and_correspondence_fields_keep_the_original_syntax_above_budget
         Checkpoint::DefinitionSemantics,
         1,
         Code::Syntax,
-        "correspondence は parameters に from・to を持つ",
+        "correspondence requires from and to parameters",
         "/vocabularies/0/declarations/1/name",
     );
 }
@@ -368,7 +368,7 @@ fn correspondence_root_failure_keeps_original_parameter_location_above_budget() 
         Checkpoint::DefinitionSemantics,
         3,
         Code::Syntax,
-        "correspondence の from・to は根 entity",
+        "correspondence from and to must be root entities",
         "/vocabularies/0/declarations/2/parameters/0/name",
     );
 }
@@ -401,7 +401,7 @@ fn alignment_final_field_mismatch_keeps_original_reference_above_budget() {
         Checkpoint::DefinitionSemantics,
         3,
         Code::Reference,
-        "field `R.Child.missing` を解決できない",
+        "cannot resolve field `R.Child.missing`",
         "/vocabularies/0/declarations/2/alignments/0/source",
     );
 }

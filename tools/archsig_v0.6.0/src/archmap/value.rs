@@ -315,8 +315,8 @@ impl<E: InputError> Reader<'_, '_, E> {
         let arr = |n: usize| -> AResult<&[JNode]> {
             match &node.value {
                 JValue::Arr(items) if items.len() == n => Ok(items),
-                JValue::Arr(_) => Err(syntax(ptr, format!("{n} 個の要素を持つ array が必要"))),
-                _ => Err(syntax(ptr, "array が必要")),
+                JValue::Arr(_) => Err(syntax(ptr, format!("expected an array with {n} elements"))),
+                _ => Err(syntax(ptr, "expected an array")),
             }
         };
         let string = || as_string(node, ptr);
@@ -327,12 +327,12 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Bool => match node.value {
                 JValue::Bool(b) => Value::Bool(b),
-                _ => return Err((syntax(ptr, "Bool は true か false")).into()),
+                _ => return Err((syntax(ptr, "Bool must be true or false")).into()),
             },
             Type::Z => {
                 let s = string()?;
                 z_encoding::<E>(&s, &mut self.control, || {
-                    syntax(ptr, format!("`{s}` は Z の encoding でない"))
+                    syntax(ptr, format!("`{s}` is not a valid Z encoding"))
                 })?;
                 Value::Z(s.parse().expect("Z の形式"))
             }
@@ -341,32 +341,32 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let n = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 let d = as_string(&items[1], &pointer_push(ptr, "1"))?;
                 z_encoding::<E>(&n, &mut self.control, || {
-                    syntax(ptr, "Q の分子・分母は Z の encoding")
+                    syntax(ptr, "Q numerator and denominator must use Z encoding")
                 })?;
                 z_encoding::<E>(&d, &mut self.control, || {
-                    syntax(ptr, "Q の分子・分母は Z の encoding")
+                    syntax(ptr, "Q numerator and denominator must use Z encoding")
                 })?;
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
                 if !d.is_positive() {
-                    return Err((syntax(&pointer_push(ptr, "1"), "Q の分母は正")).into());
+                    return Err((syntax(&pointer_push(ptr, "1"), "Q denominator must be positive")).into());
                 }
                 if !n.gcd(&d).is_one() {
-                    return Err((syntax(ptr, "Q は既約分数で書く(零は [\"0\",\"1\"])")).into());
+                    return Err((syntax(ptr, "Q must be a reduced fraction (zero is [\"0\",\"1\"])")).into());
                 }
                 Value::Q(n, d)
             }
             Type::Fp(p) => {
                 let s = string()?;
                 if s.starts_with('-') {
-                    return Err((syntax(ptr, format!("`{s}` は Fp の encoding でない"))).into());
+                    return Err((syntax(ptr, format!("`{s}` is not a valid Fp encoding"))).into());
                 }
                 z_encoding::<E>(&s, &mut self.control, || {
-                    syntax(ptr, format!("`{s}` は Fp の encoding でない"))
+                    syntax(ptr, format!("`{s}` is not a valid Fp encoding"))
                 })?;
                 let v: BigUint = s.parse().expect("非負整数");
                 let p: BigUint = p.parse().expect("法");
                 if v >= p {
-                    return Err((syntax(ptr, format!("Fp の値は 0 以上 {p} 未満"))).into());
+                    return Err((syntax(ptr, format!("Fp value must be at least 0 and less than {p}"))).into());
                 }
                 Value::Fp(v)
             }
@@ -389,14 +389,14 @@ impl<E: InputError> Reader<'_, '_, E> {
                     return Err((issue(
                         Code::Reference,
                         ptr,
-                        format!("subject `{snapshot}/{subject}` がない"),
+                        format!("subject `{snapshot}/{subject}` does not exist"),
                     ))
                     .into());
                 };
                 if *actual != e {
                     return Err((Box::new(Issue {
                         code: Code::Type,
-                        message: format!("`{snapshot}/{subject}` は {e} ではない"),
+                        message: format!("`{snapshot}/{subject}` is not a {e}"),
                         location: Location::ArchMap {
                             pointer: ptr.to_owned(),
                             span: None,
@@ -422,7 +422,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::List(t) | Type::Set(t) => {
                 let JValue::Arr(items) = &node.value else {
-                    return Err((syntax(ptr, "array が必要")).into());
+                    return Err((syntax(ptr, "expected an array")).into());
                 };
                 let mut out = Vec::new();
                 for (i, n) in items.iter().enumerate() {
@@ -445,7 +445,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         } else {
                             Err((syntax(
                                 &pointer_push(ptr, &i.to_string()),
-                                "Set に同じ値が二度ある",
+                                "duplicate Set value",
                             ))
                             .into())
                         };
@@ -458,7 +458,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Option(t) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "Option は {\"none\":true} か {\"some\":v}")).into());
+                    return Err((syntax(ptr, "Option must be {\"none\":true} or {\"some\":v}")).into());
                 };
                 match entries.as_slice() {
                     [(k, v)] if k == "none" && v.value == JValue::Bool(true) => Value::Option(None),
@@ -469,37 +469,37 @@ impl<E: InputError> Reader<'_, '_, E> {
                     )?))),
                     _ => {
                         return Err(
-                            (syntax(ptr, "Option は {\"none\":true} か {\"some\":v}")).into()
+                            (syntax(ptr, "Option must be {\"none\":true} or {\"some\":v}")).into()
                         );
                     }
                 }
             }
             Type::Data(d) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
+                    return Err((syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}")).into());
                 };
                 if entries.len() != 2 {
                     return Err(
-                        (syntax(ptr, "data の値は tag と args の二つの欄だけを持つ")).into(),
+                        (syntax(ptr, "data value must contain only tag and args fields")).into(),
                     );
                 }
                 let tag =
                     super::schema::field_map::<E, _>(entries, "tag", &mut self.control, |node| {
                         node.ok_or_else(|| {
-                            syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}").into()
+                            syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}").into()
                         })
                     })?;
                 let args =
                     super::schema::field_map::<E, _>(entries, "args", &mut self.control, |node| {
                         node.ok_or_else(|| {
-                            syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}").into()
+                            syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}").into()
                         })
                     })?;
                 let tag = as_string(tag, &pointer_push(ptr, "tag"))?;
                 let Some(PrimitiveSignature::Data { constructors }) =
                     self.definitions.declarations.get(d).map(|x| &x.signature)
                 else {
-                    unreachable!("data 型は共通 Atom 定義の宣言")
+                    unreachable!("data type must be a shared Atom definition declaration")
                 };
                 let mut constructor = None;
                 for (index, candidate) in constructors.iter().enumerate() {
@@ -508,7 +508,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     let checked = if !matches && index + 1 == constructors.len() {
                         Err(syntax(
                             &pointer_push(ptr, "tag"),
-                            format!("`{d}` に constructor `{tag}` はない"),
+                            format!("`{d}` has no constructor `{tag}`"),
                         )
                         .into())
                     } else {
@@ -523,18 +523,18 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let Some(c) = constructor else {
                     return Err((syntax(
                         &pointer_push(ptr, "tag"),
-                        format!("`{d}` に constructor `{tag}` はない"),
+                        format!("`{d}` has no constructor `{tag}`"),
                     ))
                     .into());
                 };
                 let aptr = pointer_push(ptr, "args");
                 let JValue::Arr(items) = &args.value else {
-                    return Err((syntax(&aptr, "args は array")).into());
+                    return Err((syntax(&aptr, "args must be an array")).into());
                 };
                 if items.len() != c.arguments.len() {
                     return Err((syntax(
                         &aptr,
-                        format!("constructor `{tag}` の引数は {} 個", c.arguments.len()),
+                        format!("constructor `{tag}` requires {} arguments", c.arguments.len()),
                     ))
                     .into());
                 }
@@ -551,7 +551,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Map(a, b) => {
                 let JValue::Arr(items) = &node.value else {
-                    return Err((syntax(ptr, "Map は [key, value] の array")).into());
+                    return Err((syntax(ptr, "Map must be an array of [key, value] pairs")).into());
                 };
                 let mut pairs = Vec::new();
                 let mut keys = std::collections::HashSet::new();
@@ -561,10 +561,10 @@ impl<E: InputError> Reader<'_, '_, E> {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let ip = pointer_push(ptr, &i.to_string());
                     let JValue::Arr(kv) = &n.value else {
-                        return Err((syntax(&ip, "Map の行は [key, value]")).into());
+                        return Err((syntax(&ip, "Map row must be [key, value]")).into());
                     };
                     if kv.len() != 2 {
-                        return Err((syntax(&ip, "Map の行は [key, value]")).into());
+                        return Err((syntax(&ip, "Map row must be [key, value]")).into());
                     }
                     let k = self.read(&kv[0], a, &pointer_push(&ip, "0"))?;
                     let v = self.read(&kv[1], b, &pointer_push(&ip, "1"))?;
@@ -580,7 +580,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         Err((issue(
                             Code::DuplicateKey,
                             &pointer_push(&ip, "0"),
-                            "Map の key が重複している",
+                            "duplicate Map key",
                         ))
                         .into())
                     };
@@ -592,10 +592,10 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Term(args, ret) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
+                    return Err((syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}")).into());
                 };
                 if entries.len() != 2 {
-                    return Err((syntax(ptr, "Term は params と body の二つの欄だけを持つ")).into());
+                    return Err((syntax(ptr, "Term must contain only params and body fields")).into());
                 }
                 let params = super::schema::field_map::<E, _>(
                     entries,
@@ -603,23 +603,23 @@ impl<E: InputError> Reader<'_, '_, E> {
                     &mut self.control,
                     |node| {
                         node.ok_or_else(|| {
-                            syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}").into()
+                            syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}").into()
                         })
                     },
                 )?;
                 let body =
                     super::schema::field_map::<E, _>(entries, "body", &mut self.control, |node| {
                         node.ok_or_else(|| {
-                            syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}").into()
+                            syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}").into()
                         })
                     })?;
                 let pptr = pointer_push(ptr, "params");
                 let JValue::Arr(names) = &params.value else {
-                    return Err((syntax(&pptr, "params は array")).into());
+                    return Err((syntax(&pptr, "params must be an array")).into());
                 };
                 if names.len() != args.len() {
                     return Err(
-                        (syntax(&pptr, format!("Term の parameter は {} 個", args.len()))).into(),
+                        (syntax(&pptr, format!("Term requires {} parameters", args.len()))).into(),
                     );
                 }
                 let mut ps = Vec::new();
@@ -630,7 +630,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     let invalid = || {
                         syntax(
                             &pointer_push(&pptr, &i.to_string()),
-                            format!("`{name}` は parameter 名に使えない"),
+                            format!("`{name}` cannot be used as a parameter name"),
                         )
                     };
                     if !name.starts_with(|c: char| c.is_ascii_alphabetic()) {
@@ -652,7 +652,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         return Err((issue(
                             Code::DuplicateId,
                             &pointer_push(&pptr, &i.to_string()),
-                            format!("parameter `{name}` が重複している"),
+                            format!("duplicate parameter `{name}`"),
                         ))
                         .into());
                     }
@@ -690,7 +690,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     checked,
                 }))
             }
-            Type::Path(..) => unreachable!("Path は原始 field の型にならない"),
+            Type::Path(..) => unreachable!("Path cannot be a primitive field type"),
         })
     }
 }
@@ -788,7 +788,7 @@ fn check_snapshots_inner<E: InputError>(
                 return Err((issue(
                     Code::Reference,
                     &format!("{}/subject", a.pointer),
-                    format!("subject `{}` がない", a.subject),
+                    format!("subject `{}` does not exist", a.subject),
                 ))
                 .into());
             };
@@ -801,7 +801,7 @@ fn check_snapshots_inner<E: InputError>(
                     Err(issue(
                         Code::Reference,
                         &format!("{}/field", a.pointer),
-                        format!("`{subject_ty}` に field `{}` はない", a.field),
+                        format!("`{subject_ty}` has no field `{}`", a.field),
                     )
                     .into())
                 } else {
@@ -817,7 +817,7 @@ fn check_snapshots_inner<E: InputError>(
                 return Err((issue(
                     Code::Reference,
                     &format!("{}/field", a.pointer),
-                    format!("`{subject_ty}` に field `{}` はない", a.field),
+                    format!("`{subject_ty}` has no field `{}`", a.field),
                 ))
                 .into());
             };
@@ -826,7 +826,7 @@ fn check_snapshots_inner<E: InputError>(
                     Code::DuplicateFact,
                     &a.pointer,
                     format!(
-                        "`{}` の field `{}` が二度記録されている",
+                        "field of `{}` named `{}` is recorded twice",
                         a.subject, a.field
                     ),
                 ))

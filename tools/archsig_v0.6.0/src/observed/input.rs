@@ -381,7 +381,7 @@ pub fn check_inputs(
         };
         CheckFailure::Input(Box::new(Issue {
             code: Code::Reference,
-            message: "入力 ID は指定順の definition0,…、law、archmap でなければならない".into(),
+            message: "input IDs must be definition0, ... in argument order, law, and archmap".into(),
             location,
             details: Details::Empty,
         }))

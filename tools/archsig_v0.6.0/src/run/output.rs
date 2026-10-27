@@ -18,7 +18,7 @@ fn is_dir(path: &Path) -> bool {
 /// 出力先は存在しない path で、親は既存の directory。
 pub(super) fn out_ok(out: &Path) -> Result<(), String> {
     if out.as_os_str().is_empty() {
-        return Err("出力先が空".to_owned());
+        return Err("output path is empty".to_owned());
     }
     // `d/.` などは新しい名前を持たない。Path は末尾の `.` を正規化するので、綴りで見る。
     let last = out
@@ -29,17 +29,17 @@ pub(super) fn out_ok(out: &Path) -> Result<(), String> {
         .next()
         .map(str::to_owned);
     if matches!(last.as_deref(), Some("." | "..")) {
-        return Err("出力先は新しい名前で終わる".to_owned());
+        return Err("output path must end with a new name".to_owned());
     }
     if exists(out) {
-        return Err("出力先が既に存在する".to_owned());
+        return Err("output path already exists".to_owned());
     }
     let parent = match out.parent() {
         Some(p) if !p.as_os_str().is_empty() => p.to_path_buf(),
         _ => PathBuf::from("."),
     };
     if !is_dir(&parent) {
-        return Err("出力先の親 directory がない".to_owned());
+        return Err("output parent directory does not exist".to_owned());
     }
     Ok(())
 }
@@ -207,11 +207,11 @@ pub(super) fn publish(
     match written {
         Ok(()) => outcome,
         Err((op, path, e)) => {
-            let mut message = format!("出力の{op}に失敗した({}): {e}", path.display());
+            let mut message = format!("output {op} failed ({}): {e}", path.display());
             if created {
                 if let Err(cleanup) = io.remove_dir_all(&tmp) {
                     message.push_str(&format!(
-                        "; 未完成の一時 directory を片付けられない({}): {cleanup}",
+                        "; cannot clean up incomplete temporary directory ({}): {cleanup}",
                         tmp.display()
                     ));
                 }

@@ -212,7 +212,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             if self.reading_index.insert(r.name.name.clone(), ri).is_some() {
                 return duplicate(
                     r.name.span,
-                    format!("reading `{}` が重複している", r.name.name),
+                    format!("duplicate reading `{}`", r.name.name),
                 );
             }
         }
@@ -228,17 +228,17 @@ impl<'d, E: InputError> Checker<'d, E> {
                 if !scope.insert(u.alias.name.clone()) {
                     return duplicate(
                         u.alias.span,
-                        format!("名前 `{}` が重複している", u.alias.name),
+                        format!("duplicate name `{}`", u.alias.name),
                     );
                 }
                 let Some(&target) = self.reading_index.get(&u.reading.name) else {
                     return reference(
                         u.reading.span,
-                        format!("reading `{}` が同梱されていない", u.reading.name),
+                        format!("reading `{}` is not included", u.reading.name),
                     );
                 };
                 if target == ri {
-                    return cycle(u.reading.span, "reading が自分自身を use している");
+                    return cycle(u.reading.span, "a reading cannot use itself");
                 }
                 self.reading_edges.push((ri, target, u.reading.span));
                 aliases.insert(u.alias.name.clone(), u.reading.name.clone());
@@ -248,7 +248,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 self.cooperate()?;
                 E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !imports.insert(v.namespace.name.clone()) {
-                    return duplicate(v.namespace.span, "同じ namespace の import が重複している");
+                    return duplicate(v.namespace.span, "duplicate import of the same namespace");
                 }
                 self.definitions.check_binding(&Binding {
                     namespace: v.namespace.name.clone(),
@@ -265,7 +265,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 if !scope.insert(d.name.name.clone()) {
                     return duplicate(
                         d.name.span,
-                        format!("名前 `{}` が重複している", d.name.name),
+                        format!("duplicate name `{}`", d.name.name),
                     );
                 }
                 shorts.insert(d.name.name.clone());
@@ -273,7 +273,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 if self.primitive_identifier_exists(&name)? {
                     return duplicate(
                         d.name.span,
-                        format!("完全名 `{name}` は原始定義と衝突している"),
+                        format!("fully qualified name `{name}` conflicts with a primitive definition"),
                     );
                 }
                 self.decl_index.insert(name.clone(), (ri, di));
@@ -282,7 +282,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                     | DeclKind::Arrow { .. }
                     | DeclKind::Correspondence { .. }
                     | DeclKind::Data { .. } => {
-                        unreachable!("Law /2 の parser は原始宣言を受理しない")
+                        unreachable!("Law /2 does not accept primitive declarations")
                     }
                     DeclKind::View { params, .. }
                     | DeclKind::Law { params, .. }
@@ -297,7 +297,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                             if !seen.insert(f.name.name.clone()) {
                                 return duplicate(
                                     f.name.span,
-                                    format!("parameter `{}` が重複している", f.name.name),
+                                    format!("duplicate parameter `{}`", f.name.name),
                                 );
                             }
                         }
@@ -453,7 +453,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 .join(".");
             if !aliased && let Some(target) = self.target(&written) {
                 if !self.target_visible(reading, &target)? {
-                    return reference(span, format!("完全名 `{written}` をこの scope で使えない"));
+                    return reference(span, format!("fully qualified name `{written}` is not available in this scope"));
                 }
                 self.note_reading_edge(reading, &written, span);
                 return Ok(Some((target, k)));
@@ -468,7 +468,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 }
             }
             if hits.len() > 1 {
-                return reference(span, "短名の解決先が複数ある。完全名で明記する");
+                return reference(span, "ambiguous short name; specify a fully qualified name");
             }
             if let Some((name, target)) = hits.into_iter().next() {
                 self.note_reading_edge(reading, &name, span);
@@ -534,7 +534,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 self.reject_reference(
                     &t,
                     ast.span(),
-                    "ここには参照・Map・Path を含まない値型が必要",
+                    "expected a value type containing no references, Map, or Path",
                 )?;
             }
             Ok(t)
@@ -554,7 +554,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             TypeAst::Fp { modulus, span } => {
                 let n: BigUint = modulus.parse().expect("字句で10進整数を確認済み");
                 if !is_prime_controlled::<E>(&n, &mut self.control.clone(), self.semantic_point)? {
-                    return syntax(*span, format!("Fp の法 {modulus} は素数でない"));
+                    return syntax(*span, format!("Fp modulus {modulus} is not prime"));
                 }
                 Type::Fp(modulus.clone())
             }
@@ -580,7 +580,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 let a = self.resolve_type(a, ctx)?;
                 let b = self.resolve_type(b, ctx)?;
                 if ctx.validate && (a.ref_target().is_none() || b.ref_target().is_none()) {
-                    return syntax(*span, "Map の定義域・値域は参照型");
+                    return syntax(*span, "Map domain and codomain must be reference types");
                 }
                 Type::Map(Box::new(a), Box::new(b))
             }
@@ -601,14 +601,14 @@ impl<'d, E: InputError> Checker<'d, E> {
                     self.reject_reference(
                         &ret,
                         *span,
-                        "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                        "Term parameters and return type must be value types containing no references, Map, or Path",
                     )?;
                     for ty in &args {
                         self.cooperate()?;
                         self.reject_reference(
                             ty,
                             *span,
-                            "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                            "Term parameters and return type must be value types containing no references, Map, or Path",
                         )?;
                     }
                 } else {
@@ -623,7 +623,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             }
             TypeAst::Path(a, b, span) => {
                 if ctx.validate && !ctx.allow_path {
-                    return syntax(*span, "Path は原始 field・data・Term の型に置けない");
+                    return syntax(*span, "Path cannot be used as a primitive field, data, or Term type");
                 }
                 let a = self.resolve_entity_name(a, ctx.reading)?;
                 let b = self.resolve_entity_name(b, ctx.reading)?;
@@ -636,12 +636,12 @@ impl<'d, E: InputError> Checker<'d, E> {
         match self.resolve_prefix(reading, &q.parts)? {
             Some((Target::Decl(n), k)) if k == q.parts.len() => {
                 if self.decl_kind(&n) != Some("entity") {
-                    return syntax(q.span(), format!("Path の端点 `{}` は entity", q.text()));
+                    return syntax(q.span(), format!("Path endpoint `{}` must be an entity", q.text()));
                 }
                 self.record(q.span(), n.clone());
                 Ok(n)
             }
-            _ => reference(q.span(), format!("型名 `{}` を解決できない", q.text())),
+            _ => reference(q.span(), format!("cannot resolve type name `{}`", q.text())),
         }
     }
 
@@ -654,17 +654,17 @@ impl<'d, E: InputError> Checker<'d, E> {
     ) -> CResult<Type, E> {
         let target = match self.resolve_prefix(ctx.reading, &q.parts)? {
             Some((Target::Decl(n), k)) if k == q.parts.len() => n,
-            _ => return reference(q.span(), format!("型名 `{}` を解決できない", q.text())),
+            _ => return reference(q.span(), format!("cannot resolve type name `{}`", q.text())),
         };
         let kind = self.decl_kind(&target).expect("解決済みの宣言");
         self.record(q.span(), target.clone());
         match (kind, index) {
             ("data", None) => Ok(Type::Data(target)),
-            ("data", Some(_)) => syntax(span, "data 型に所属の添字は付けられない"),
+            ("data", Some(_)) => syntax(span, "data types cannot have ownership indices"),
             ("entity" | "arrow" | "correspondence", None) => Ok(Type::Ref(target)),
             ("entity" | "arrow", Some(i)) => {
                 let Some(root) = self.owner_root(&target) else {
-                    return syntax(span, format!("`{}` は所属先を持たない", q.text()));
+                    return syntax(span, format!("`{}` has no owner", q.text()));
                 };
                 let mut index_parameter = None;
                 for parameter in ctx.index {
@@ -677,7 +677,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 let Some(p) = index_parameter else {
                     return reference(
                         i.span,
-                        format!("添字 `{}` は左にある parameter を指す", i.name),
+                        format!("index `{}` must refer to an earlier parameter", i.name),
                     );
                 };
                 let expected = Type::Ref(root);
@@ -686,15 +686,15 @@ impl<'d, E: InputError> Checker<'d, E> {
                         i.span,
                         &expected,
                         &p.ty,
-                        "添字の parameter は所属先の根 entity の参照",
+                        "index parameter must reference the root entity of the owner",
                     );
                 }
                 Ok(Type::Owned(target, i.name.clone()))
             }
             ("correspondence", Some(_)) => {
-                syntax(span, "correspondence に所属の添字は付けられない")
+                syntax(span, "correspondence cannot have ownership indices")
             }
-            _ => reference(q.span(), format!("`{}` は型ではない", q.text())),
+            _ => reference(q.span(), format!("`{}` is not a type", q.text())),
         }
     }
 
@@ -790,7 +790,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 _ => false,
             },
             span,
-            "Set の要素型は Term・Path を含まない",
+            "Set element types cannot contain Term or Path",
         )
     }
     pub(super) fn signature_field(
@@ -822,7 +822,7 @@ pub fn check_decl_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
-            format!("組込み演算名 `{}` は宣言名に使えない", id.name),
+            format!("built-in operation name `{}` cannot be used as a declaration name", id.name),
         );
     }
     Ok(())
@@ -832,7 +832,7 @@ pub fn check_binding_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
-            format!("組込み演算名 `{}` は束縛名に使えない", id.name),
+            format!("built-in operation name `{}` cannot be used as a binding name", id.name),
         );
     }
     Ok(())
