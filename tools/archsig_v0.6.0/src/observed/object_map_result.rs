@@ -309,6 +309,9 @@ fn compute_inner(
     let mut circuit_maps = vec![];
     let mut invariant_maps = vec![];
     let mut declaration_transports = vec![];
+    let mut declaration_status = Decision::Established;
+    let mut declaration_reasons = vec![];
+    let mut declaration_evidence = vec![];
     let mut preserved = declarations.all_signatures_compatible();
     if preserved {
         if declarations
@@ -577,12 +580,17 @@ fn compute_inner(
             }
             dependencies.extend(equation_map);
             dependencies.extend(signature);
-            declaration_transports = declaration_transport::retain(&mut b, &inputs, &declarations, &[left,right], c)?;
+            let transported = declaration_transport::retain(env, &mut b, &inputs, &declarations, &[left,right], request, c)?;
+            declaration_transports = transported.transports;
+            declaration_status = transported.status;
+            declaration_reasons = transported.reasons;
+            declaration_evidence = transported.evidence;
             dependencies.extend(declaration_transports.iter().copied());
+            dependencies.extend(declaration_evidence.iter().copied());
         }
     }
     let status = if preserved {
-        Decision::Established
+        declaration_status
     } else {
         Decision::Refuted
     };
@@ -604,8 +612,8 @@ fn compute_inner(
         dependencies.clone(),
         status,
     )?;
-    let mut reasons = vec![];
-    if !preserved {
+    let mut reasons = declaration_reasons;
+    if status == Decision::Refuted {
         reasons.push(Reason {
             kind: ReasonKind::ConditionFailed {
                 condition: claim,
@@ -625,8 +633,11 @@ fn compute_inner(
             .ok_or("構成命題の判断がない")?
             .reasons = reasons.clone();
     }
+    let part = &mut b.parts[claim.0 - base];
+    part.evidence = declaration_evidence.clone();
+    part.judgment.as_mut().ok_or("ObjectAlgebra mapの判断がない")?.evidence = declaration_evidence.clone();
     outputs.insert("proposition".into(), claim);
-    if preserved {
+    if status == Decision::Established {
         let [left, right] = algebras.ok_or("構成済みalgebraがない")?;
         dependencies.push(claim);
         let r = b.push(
@@ -665,7 +676,7 @@ fn compute_inner(
             status,
             outputs,
             claim: Some(claim),
-            evidence: vec![],
+            evidence: declaration_evidence,
             reasons,
             scope,
         },

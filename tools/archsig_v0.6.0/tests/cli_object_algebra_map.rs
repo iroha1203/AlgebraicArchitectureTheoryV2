@@ -107,6 +107,141 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 }
 
 #[test]
+fn local_scalar_field_reads_keep_preservation_refutation_and_missing_distinct() {
+    for (mode, preserve, missing, code, status) in [
+        ("preserved", true, false, 0, "established"),
+        ("changed", false, false, 1, "refuted"),
+        ("missing", true, true, 2, "undetermined"),
+    ] {
+        let dir = finite_view_inputs(&format!("local-field-{mode}"), preserve);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(root:System,s:State) reads s.free;}}
+reading After {{{vocabulary} local here(world:System,t:State) reads (t.free);}}"#
+            ),
+        )
+        .unwrap();
+        if missing {
+            let a=std::fs::read_to_string(dir.join("a.json")).unwrap().replace("{\"id\":\"p-free\",\"subject\":\"p\",\"field\":\"Reservations.State.free\",\"value\":\"2\",\"origin\":\"model\"},\n","");
+            std::fs::write(dir.join("a.json"), a).unwrap();
+        }
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let before =
+            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let mut normal_args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in requests {
+            normal_args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &normal_args);
+        assert_eq!(normal.code, code, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(!has(&normal.receipt, "result"));
+        assert!(!has(&normal.receipt, "nodes"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+        }
+        eprintln!("scalar local {mode}: stdout {} bytes", normal.stdout.len());
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert_eq!(
+            has(get(answer(&result, "m"), "outputs"), "map"),
+            preserve && !missing
+        );
+        if preserve && !missing {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            assert_json(
+                get(transport, "parameters"),
+                r#"[["root","world"],["s","t"]]"#,
+            );
+            let clauses = arr(get(transport, "clauses"));
+            assert_eq!(clauses.len(), 1);
+            assert_local_clause(
+                &dir,
+                &result,
+                &clauses[0],
+                "s.free",
+                "(t.free)",
+                &[("root", "Reservations.System"), ("s", "Reservations.State")],
+            );
+            let values = value(&result, get(&clauses[0], "values"));
+            for key in ["source_type", "target_type"] {
+                assert_json(get(values, key), r#""Z""#);
+            }
+        }
+        if !preserve {
+            let examples = arr(get(answer(&result, "m"), "counterexamples"));
+            assert_eq!(examples.len(), 1);
+            let data = get(value(&result, &examples[0]), "data");
+            assert_eq!(s(value(&result, get(data, "left"))), "2");
+            assert_eq!(s(value(&result, get(data, "right"))), "4");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2);
+            for (binding, (name, subject)) in bindings.iter().zip([("root", "A"), ("s", "p")]) {
+                assert_eq!(s(get(binding, "name")), name);
+                assert_eq!(
+                    arr(value(&result, get(binding, "value")))
+                        .iter()
+                        .map(s)
+                        .collect::<Vec<_>>(),
+                    ["v", subject]
+                );
+            }
+        }
+        if missing {
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "subject"
+            )) == "p"
+                && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        for request in requests {
+            args.extend(["--ask", request]);
+        }
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}
+
+#[test]
 fn local_multiple_reference_parameters_keep_read_order_and_value_types() {
     let dir = inputs("local-multiple-reference-transport");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;

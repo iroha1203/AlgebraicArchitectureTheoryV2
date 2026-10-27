@@ -1,4 +1,4 @@
-//! 参照そのものを読むlocalの句を、実参照写像と可換な宣言式として保持する。
+//! localの参照・field readを、実参照写像と可換な宣言式として保持する。
 use super::*;
 use crate::{
     law::{
@@ -7,6 +7,61 @@ use crate::{
     },
     types::Type,
 };
+#[path = "object_local_field_transport.rs"]
+mod field;
+struct ParameterMap {
+    source: String,
+    target: String,
+    values: NodeRef,
+    transport: construction::ReferenceTypeTransport,
+    subjects: Vec<(NodeRef, NodeRef)>,
+}
+enum Read {
+    Projection(usize),
+    Field { position: usize, names: [String; 2] },
+}
+pub(super) struct Output {
+    pub transports: Vec<NodeRef>,
+    pub status: Decision,
+    pub reasons: Vec<Reason>,
+    pub evidence: Vec<NodeRef>,
+}
+fn merge_status(current: Decision, next: Decision) -> Decision {
+    if current == Decision::Refuted || next == Decision::Refuted {
+        Decision::Refuted
+    } else if current == Decision::Undetermined || next == Decision::Undetermined {
+        Decision::Undetermined
+    } else {
+        Decision::Established
+    }
+}
+fn field_read(
+    inputs: &super::super::input::CheckedInputs,
+    mut id: usize,
+    parameters: &[Param],
+    c: &mut Control,
+) -> Result<Option<(usize, String)>, ValidationFailure> {
+    loop {
+        tick(c)?;
+        match &inputs.law().exprs[id].kind {
+            ExprKind::Group(inner) => id = *inner,
+            ExprKind::Dotted(parts) if parts.len() == 2 => {
+                for (position, parameter) in parameters.iter().enumerate() {
+                    tick(c)?;
+                    if parameter.name == parts[0].name {
+                        return Ok(Some((position, parts[1].name.clone())));
+                    }
+                }
+                return Ok(None);
+            }
+            ExprKind::Field { base, name } => {
+                return Ok(read_parameter(inputs, *base, parameters, c)?
+                    .map(|position| (position, name.name.clone())));
+            }
+            _ => return Ok(None),
+        }
+    }
+}
 
 fn read_parameter(
     inputs: &super::super::input::CheckedInputs,
@@ -130,13 +185,20 @@ fn expression(
     )
 }
 pub(super) fn retain(
+    env: &Environment<'_>,
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
     dependencies: &[NodeRef],
+    request: &Request,
     c: &mut Control,
-) -> Result<Vec<NodeRef>, ValidationFailure> {
-    let mut result = vec![];
+) -> Result<Output, ValidationFailure> {
+    let mut result = Output {
+        transports: vec![],
+        status: Decision::Established,
+        reasons: vec![],
+        evidence: vec![],
+    };
     for candidate in declarations.candidates() {
         tick(c)?;
         if candidate.source().kind != "local" {
@@ -163,26 +225,40 @@ pub(super) fn retain(
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
-        let mut projections = vec![];
+        let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
-            let Some(position) = read_parameter(inputs, s, sp, c)? else {
-                return Err("参照射影以外のlocal read移送は未実装".into());
-            };
-            if read_parameter(inputs, t, tp, c)? != Some(position) {
-                return Err("異なる引数射影のlocal read移送は未実装".into());
+            if let Some(position) = read_parameter(inputs, s, sp, c)? {
+                if read_parameter(inputs, t, tp, c)? != Some(position) {
+                    return Err("異なる引数射影のlocal read移送は未実装".into());
+                }
+                reads.push(Read::Projection(position));
+            } else if let (Some((a, source)), Some((z, target))) =
+                (field_read(inputs, s, sp, c)?, field_read(inputs, t, tp, c)?)
+            {
+                if a != z {
+                    return Err("異なる引数のfield read移送は未実装".into());
+                }
+                reads.push(Read::Field {
+                    position: a,
+                    names: [source, target],
+                });
+            } else {
+                return Err("local readの式移送は未実装".into());
             }
-            projections.push(position);
         }
-        let mut parameter_values = vec![];
-        let mut type_maps = vec![];
+        let mut parameter_maps = vec![];
+        let mut type_maps: Vec<Arc<ParameterMap>> = vec![];
         let mut argument_subjects = vec![];
         for (source, target) in sp.iter().zip(tp) {
             tick(c)?;
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
                 return Err("非参照local引数の移送は未実装".into());
             };
-            if let Some((_, _, values)) = type_maps.iter().find(|(s, t, _)| s == st && t == tt) {
-                parameter_values.push(*values);
+            if let Some(map) = type_maps
+                .iter()
+                .find(|map| &map.source == st && &map.target == tt)
+            {
+                parameter_maps.push(map.clone());
                 continue;
             }
             let transport = construction::reference_type_transport(inputs, declarations, st, c)
@@ -223,9 +299,16 @@ pub(super) fn retain(
                 declarations.types(),
                 dependencies,
             )?;
-            argument_subjects.extend(subjects);
-            type_maps.push((st.clone(), tt.clone(), values));
-            parameter_values.push(values);
+            argument_subjects.extend(subjects.iter().copied());
+            let map = Arc::new(ParameterMap {
+                source: st.clone(),
+                target: tt.clone(),
+                values,
+                transport,
+                subjects,
+            });
+            type_maps.push(map.clone());
+            parameter_maps.push(map);
         }
         let args = [
             Type::Tuple(sp.iter().map(|p| p.ty.clone()).collect()),
@@ -240,19 +323,57 @@ pub(super) fn retain(
         )?;
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
-        for ((&s, &t), position) in sr.iter().zip(tr).zip(projections) {
+        for ((&s, &t), read) in sr.iter().zip(tr).zip(reads) {
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
-            let values = parameter_values[position];
-            // 両句は対応する引数の射影。全source参照の像を両経路で同じ実写像から得る。
+            let comparison = match read {
+                Read::Projection(position) => field::Comparison {
+                    values: parameter_maps[position].values,
+                    status: Decision::Established,
+                    arguments: vec![],
+                    reasons: vec![],
+                    evidence: vec![],
+                    support: vec![],
+                    scope: Scope::default(),
+                },
+                Read::Field { position, names } => field::compare(
+                    b,
+                    env,
+                    inputs,
+                    [source, target],
+                    &parameter_maps,
+                    position,
+                    &names,
+                    [s, t],
+                    [se, te],
+                    dependencies,
+                    request,
+                    c,
+                )?,
+            };
+            let values = comparison.values;
             let commutes = b.proposition(
                 "declaration_transport",
                 vec![se, te, arguments, values],
-                vec![],
-                Decision::Established,
+                comparison.arguments,
+                comparison.status,
             )?;
             let p = &mut b.parts[commutes.0 - b.base];
+            p.support.extend(comparison.support);
+            p.support.sort();
+            p.support.dedup();
+            p.scope.merge(&comparison.scope);
+            p.reasons.extend(comparison.reasons.iter().cloned());
+            sort_reasons(&mut p.reasons);
+            p.evidence.extend(comparison.evidence.iter().copied());
+            if let Some(judgment) = p.judgment.as_mut() {
+                judgment.reasons = p.reasons.clone();
+                judgment.evidence = p.evidence.clone();
+            }
+            result.status = merge_status(result.status, comparison.status);
+            result.reasons.extend(comparison.reasons);
+            result.evidence.extend(comparison.evidence);
             p.scope.assignments = true;
             let quantifiers: Vec<_> = sp
                 .iter()
@@ -281,7 +402,7 @@ pub(super) fn retain(
                 ("commutes", commutes.wire()),
             ]));
         }
-        result.push(
+        result.transports.push(
             b.push(
                 NodeType::Construction(T::DeclarationTransport),
                 "declaration_transport",
@@ -306,5 +427,6 @@ pub(super) fn retain(
             )?,
         );
     }
+    sort_reasons(&mut result.reasons);
     Ok(result)
 }
