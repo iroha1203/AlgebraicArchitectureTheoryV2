@@ -2951,3 +2951,323 @@ reading Helpers {{ {vocabulary} view same(a:Migration,b:Migration):Bool=path(a)=
         }
     }
 }
+
+#[test]
+fn heterogeneous_relation_words_use_actual_reachable_generators_and_full_path_witnesses() {
+    use archsig::canonical::Json;
+    for case in ["preserved", "alias", "cycle", "missing", "endpoints"] {
+        let dir = workdir(&format!("heterogeneous-relation-{case}"));
+        let mut declarations = vec![];
+        for name in ["X", "Y", "ZRoot"] {
+            declarations.push(Json::obj([
+                ("kind", Json::str("entity")),
+                ("name", Json::str(format!("Flow.{name}"))),
+                ("meaning", Json::str("有限経路の端点。")),
+                ("parameters", Json::Arr(vec![])),
+                ("fields", Json::Arr(vec![])),
+                ("alignments", Json::Arr(vec![])),
+            ]));
+        }
+        for (name, from, to) in [
+            ("Stay", "X", "X"),
+            ("XY", "X", "Y"),
+            ("YZ", "Y", "ZRoot"),
+            ("ZX", "ZRoot", "X"),
+            ("XZ", "X", "ZRoot"),
+            ("YX", "Y", "X"),
+        ] {
+            declarations.push(Json::obj([
+                ("kind", Json::str("correspondence")),
+                ("name", Json::str(format!("Flow.{name}"))),
+                ("meaning", Json::str("型付き経路の生成元。")),
+                (
+                    "parameters",
+                    Json::Arr(
+                        [("from", from), ("to", to)]
+                            .into_iter()
+                            .map(|(name, ty)| {
+                                Json::obj([
+                                    ("name", Json::str(name)),
+                                    (
+                                        "type",
+                                        Json::Arr(vec![
+                                            Json::str("Ref"),
+                                            Json::str(format!("Flow.{ty}")),
+                                        ]),
+                                    ),
+                                    ("meaning", Json::str("経路端点。")),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
+                ("fields", Json::Arr(vec![])),
+                ("alignments", Json::Arr(vec![])),
+            ]));
+        }
+        let definition = Json::obj([
+            ("format", Json::str("archsig.atom-definition/1")),
+            ("semantics", Json::str("archsig/0.6.0")),
+            (
+                "vocabularies",
+                Json::Arr(vec![Json::obj([
+                    ("namespace", Json::str("Flow")),
+                    ("version", Json::str("1")),
+                    ("semantics", Json::str("archsig/0.6.0")),
+                    ("dependencies", Json::Arr(vec![])),
+                    ("declarations", Json::Arr(declarations)),
+                ])]),
+            ),
+        ])
+        .canonical();
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies["Flow"].digest;
+        std::fs::write(dir.join("d.json"), definition.as_bytes()).unwrap();
+        let mut subjects = vec![];
+        let mut atoms = vec![];
+        for (name, ty) in [
+            ("x", "X"),
+            ("x2", "X"),
+            ("y", "Y"),
+            ("y2", "Y"),
+            ("z", "ZRoot"),
+            ("m", "Stay"),
+            ("a", "XY"),
+            ("b", "YZ"),
+            ("c", "ZX"),
+            ("d", "XZ"),
+            ("q", "YX"),
+        ] {
+            subjects.push(Json::obj([
+                ("id", Json::str(name)),
+                ("type", Json::str(format!("Flow.{ty}"))),
+                ("origin", Json::str("model")),
+            ]));
+        }
+        for (id, ty, from, to) in [
+            (
+                "m",
+                "Stay",
+                "x",
+                if case == "endpoints" { "x2" } else { "x" },
+            ),
+            ("a", "XY", "x", "y"),
+            ("b", "YZ", "y", "z"),
+            ("c", "ZX", "z", "x"),
+            ("d", "XZ", "x", "z"),
+            ("q", "YX", "y2", "x2"),
+        ] {
+            for (field, value) in [("from", from), ("to", to)] {
+                if case == "missing" && id == "b" && field == "to" {
+                    continue;
+                }
+                atoms.push(Json::obj([
+                    ("id", Json::str(format!("{id}-{field}"))),
+                    ("subject", Json::str(id)),
+                    ("field", Json::str(format!("Flow.{ty}.{field}"))),
+                    ("value", Json::Arr(vec![Json::str("v"), Json::str(value)])),
+                    ("origin", Json::str("model")),
+                ]));
+            }
+        }
+        let archmap = Json::obj([
+            ("format", Json::str("archsig.archmap/2")),
+            ("semantics", Json::str("archsig/0.6.0")),
+            (
+                "vocabularies",
+                Json::Arr(vec![Json::obj([
+                    ("namespace", Json::str("Flow")),
+                    ("version", Json::str("1")),
+                    ("digest", Json::str(digest)),
+                ])]),
+            ),
+            ("sources", Json::Arr(vec![])),
+            (
+                "origins",
+                Json::Arr(vec![Json::obj([
+                    ("id", Json::str("model")),
+                    ("mode", Json::str("specification")),
+                    ("method", Json::str("異種端点経由の有限生成元。")),
+                    ("locations", Json::Arr(vec![])),
+                    ("note", Json::str("実端点と名前付き語を検査する。")),
+                ])]),
+            ),
+            (
+                "snapshots",
+                Json::Arr(vec![Json::obj([
+                    ("id", Json::str("v")),
+                    ("origin", Json::str("model")),
+                    ("subjects", Json::Arr(subjects)),
+                    ("atoms", Json::Arr(atoms)),
+                ])]),
+            ),
+        ])
+        .canonical();
+        std::fs::write(dir.join("a.json"), archmap).unwrap();
+        let (source, target) = match case {
+            "alias" => (
+                "relation paths(a:XY,b:YZ,d:XZ):then(path(a),path(b))=then(path(a),path(b));",
+                "relation paths(u:XY,v:YZ,w:XZ):path(w)=path(w);",
+            ),
+            "cycle" => (
+                "relation paths(m:Stay,a:XY,b:YZ,c:ZX):then(path(m),then(path(a),then(path(b),path(c))))=then(path(m),then(path(a),then(path(b),path(c))));",
+                "relation paths(n:Stay,u:XY,v:YZ,w:ZX):then(then(path(u),then(path(v),path(w))),path(n))=then(then(path(u),then(path(v),path(w))),path(n));",
+            ),
+            _ => (
+                "relation paths(a:XY,b:YZ):then(path(a),path(b))=then(path(a),path(b));",
+                "relation paths(u:XY,v:YZ):then(identity(source(path(u))),then(path(u),path(v)))=then(path(u),path(v));",
+            ),
+        };
+        let vocabulary = format!(r#"use vocabulary Flow version "1" digest "{digest}";"#);
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target} }}
+reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path(b))=path(d); }}"#
+        );
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let mut requests = vec![
+            "m=map(Flow.Stay,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        if case == "alias" {
+            requests.push("action=evaluate(Helpers.same,a=@v/a,b=@v/b,d=@v/d)");
+        }
+        let code = match case {
+            "preserved" => 0,
+            "missing" => 2,
+            _ => 1,
+        };
+        if case == "preserved" || case == "missing" || case == "endpoints" {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = cli::run(&dir, &args);
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            eprintln!(
+                "heterogeneous relation {case}: stdout {} bytes",
+                normal.stdout.len()
+            );
+        }
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(
+            s(get(answer(&result, "m"), "status")),
+            match case {
+                "preserved" => "established",
+                "missing" => "undetermined",
+                _ => "refuted",
+            }
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if case == "preserved" {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            for clause in arr(get(transport, "clauses")) {
+                let values = value(&result, get(clause, "values"));
+                assert_json(
+                    get(values, "source_type"),
+                    r#"["Path","Flow.X","Flow.ZRoot"]"#,
+                );
+                let mut names = arr(get(values, "generators"))
+                    .iter()
+                    .map(|pair| s(&arr(value(&result, &arr(pair)[0]))[1]).to_owned())
+                    .collect::<Vec<_>>();
+                names.sort();
+                assert_eq!(names, ["a", "b", "c", "d", "m"]); // q:y2→x2はXから到達しない。
+            }
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+        }
+        if case == "missing" {
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "subject"
+            )) == "b"
+                && s(get(get(r, "field"), "field")) == "Flow.YZ.to"));
+        } else if code == 1 {
+            let examples = arr(get(answer(&result, "m"), "counterexamples"));
+            assert!(!examples.is_empty());
+            let data = get(value(&result, &examples[0]), "data");
+            if case == "endpoints" {
+                assert_eq!(s(&arr(value(&result, get(data, "left")))[1]), "x2");
+                assert_eq!(s(&arr(value(&result, get(data, "right")))[1]), "x");
+                let source = value(&result, &arr(get(data, "paths"))[0]);
+                assert_eq!(s(&arr(value(&result, get(source, "source")))[1]), "x");
+                assert_eq!(s(&arr(value(&result, get(source, "target")))[1]), "z");
+            } else {
+                let word = |side: &str| {
+                    arr(get(value(&result, get(data, side)), "generators"))
+                        .iter()
+                        .map(|r| s(&arr(value(&result, r))[1]).to_owned())
+                        .collect::<Vec<_>>()
+                };
+                assert_eq!(
+                    word("left"),
+                    if case == "cycle" {
+                        vec!["m", "a", "b", "c"]
+                    } else {
+                        vec!["a", "b"]
+                    }
+                );
+                assert_eq!(
+                    word("right"),
+                    if case == "cycle" {
+                        vec!["a", "b", "c", "m"]
+                    } else {
+                        vec!["d"]
+                    }
+                );
+            }
+        }
+        if case == "alias" {
+            assert!(matches!(
+                value(
+                    &result,
+                    get(get(answer(&result, "action"), "outputs"), "value")
+                )
+                .value,
+                archsig::json::JValue::Bool(true)
+            ));
+        }
+        if case == "preserved" || case == "missing" || case == "endpoints" {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&again, key).value);
+            }
+        }
+    }
+}
