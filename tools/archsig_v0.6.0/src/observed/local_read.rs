@@ -109,14 +109,14 @@ pub(in crate::observed) fn guard_value(
     id: usize,
     bindings: &[(String, Scalar)],
     reading: &str,
-) -> Result<(Option<bool>, Vec<Fact>, Scope), ValidationFailure> {
+) -> Result<(Option<bool>, Vec<Fact>, Scope, Vec<Fact>), ValidationFailure> {
     let variables = bindings
         .iter()
         .map(|(name, value)| (name.clone(), known(value.clone())))
         .collect();
     let mut scope = Scope::default();
     scope.readings.insert(reading.into());
-    let (value, _, _) = evaluate_read(env, id, &variables, &scope, reading)?;
+    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
             env.inputs.law().exprs[id].span,
@@ -136,7 +136,7 @@ pub(in crate::observed) fn guard_value(
     let mut support = value.support.clone();
     support.sort();
     support.dedup();
-    Ok((result, support, value.scope))
+    Ok((result, support, value.scope, missing))
 }
 
 /// 暗黙contextの公開読取りを、その式が実際に参照する位置へ制限する。

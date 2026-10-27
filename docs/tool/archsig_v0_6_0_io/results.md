@@ -494,6 +494,9 @@ operation_mapsはsourceの全generatorを覆う。naturalityは対応generator�
 二つの総写像をU全域で比較する。この対応を語へ延長して全Op上の恒等・合成保存を得る。
 transportsは対応するlocal/change/relationの全宣言を覆う。clausesはlocalの全read・公開参照、
 changeのguard・全更新項、relationの左右の語を宣言順に保持し、arguments/valuesとの可換性を検査する。
+local の arguments は型全域のまま、commutes は source guard が真の全割当てについて、
+実像での target guard の成立と公開 read の値の可換性を表す。target の追加適用行は許し、
+未確定の適用条件は理由付き未決として保持する。
 これらは宣言式の運搬であり、局所診断や候補探索の実行を追加しない。
 全条件が確認済みの場合だけObjectAlgebraMapを返す。対応名や型が揃わなければcondition_failed、
 型の合う保存条件が偽なら反証、必要な等値を決める算法がなければunsupported_algorithmを保持する。
