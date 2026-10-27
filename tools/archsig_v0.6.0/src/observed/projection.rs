@@ -200,10 +200,10 @@ fn project_inner(
     match (ty, &path[0]) {
         (ProjectionType::FixedSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::FixedCandidateSpace),
         (ProjectionType::EquationSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::EquationSpace),
-        (ProjectionType::FixedCandidateSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),"states"=>exact(ProjectionType::FixedStateSpace),"action"=>exact(ProjectionType::StateMap),_=>Err("CandidateSpaceの非公開射影".into())},
-        (ProjectionType::EquationSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),_=>Err("EquationSpaceの非公開射影".into())},
+        (ProjectionType::FixedCandidateSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),"states"=>exact(ProjectionType::FixedStateSpace),"action"=>exact(ProjectionType::StateMap),_=>Err("CandidateSpace projection is not public".into())},
+        (ProjectionType::EquationSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),_=>Err("EquationSpace projection is not public".into())},
         (ProjectionType::LocalSystem,Field(f)) => match f.as_str() {
-            "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystemの非公開射影".into()),
+            "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystem projection is not public".into()),
         },
         (ProjectionType::Comparison,Field(f)) if f=="finite_map" => conditional(ProjectionType::StateMap),
         (ProjectionType::Comparison,Field(f)) if f=="cohomology_map" => conditional(ProjectionType::ModuleMap),
@@ -212,29 +212,29 @@ fn project_inner(
         (ProjectionType::ModuleMap,Field(f)) if matches!(f.as_str(),"source"|"target") => exact(ProjectionType::Module),
         (ProjectionType::Module,Field(f)) => match f.as_str() {
             "ring"=>exact(ProjectionType::Ring), "free_rank"=>exact(ProjectionType::Law(Type::Z)),
-            "torsion"=>exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))), _=>Err("Moduleの非公開射影".into()),
+            "torsion"=>exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))), _=>Err("Module projection is not public".into()),
         },
         (ProjectionType::Vector,Field(f)) if f=="module"=>exact(ProjectionType::Module),
         (ProjectionType::Cohomology,Field(f)) if f=="module"=>exact(ProjectionType::Module),
         (ProjectionType::Class,Field(f)) if f=="cohomology"=>exact(ProjectionType::Cohomology),
         (ProjectionType::Class,Field(f)) if f=="coordinates"=>exact(ProjectionType::Vector),
         (ProjectionType::Diagnostic,Field(f)) => match f.as_str() {
-            "space"=>conditional(ProjectionType::Cohomology), "class"=>conditional(ProjectionType::Class), "system"=>exact(ProjectionType::LocalSystem), "global"=>exact(ProjectionType::Dynamic(vec![ProjectionType::FixedSolutionSet,ProjectionType::EquationSolutionSet])), "matching"=>exact(ProjectionType::Domain), "restriction"=>exact(ProjectionType::StateMap),_=>Err("Diagnosticの未実装射影".into()),
+            "space"=>conditional(ProjectionType::Cohomology), "class"=>conditional(ProjectionType::Class), "system"=>exact(ProjectionType::LocalSystem), "global"=>exact(ProjectionType::Dynamic(vec![ProjectionType::FixedSolutionSet,ProjectionType::EquationSolutionSet])), "matching"=>exact(ProjectionType::Domain), "restriction"=>exact(ProjectionType::StateMap),_=>Err("Diagnostic projection is not implemented".into()),
         },
         (ProjectionType::Quotient(domain),Field(f)) => match f.as_str() {
             "domain"=>exact((**domain).clone()),
             "classes"=>exact(ProjectionType::Domain),
             "projection"|"descent"=>exact(ProjectionType::StateMap),
-            _=>Err("Quotientの非公開射影".into()),
+            _=>Err("Quotient projection is not public".into()),
         },
-        (ProjectionType::Repair(root),Field(f))=>match f.as_str(){"domain"=>exact(ProjectionType::CandidateSpace(root.clone())),"solutions"=>exact(ProjectionType::SolutionSet(root.clone())),"parameters"=>exact(ProjectionType::Assignment(root.clone())),"object"=>exact(ProjectionType::ArchitectureRoot(root.clone())),_=>Err("Repairの非公開射影".into())},
+        (ProjectionType::Repair(root),Field(f))=>match f.as_str(){"domain"=>exact(ProjectionType::CandidateSpace(root.clone())),"solutions"=>exact(ProjectionType::SolutionSet(root.clone())),"parameters"=>exact(ProjectionType::Assignment(root.clone())),"object"=>exact(ProjectionType::ArchitectureRoot(root.clone())),_=>Err("Repair projection is not public".into())},
         (ProjectionType::Assignment(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
         (ProjectionType::CandidateSpace(root),Field(f)) => match f.as_str() {
             "base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
             "parameters"=>exact(ProjectionType::Domain),
             "states"=>exact(ProjectionType::StateSpace(root.clone())),
             "action"=>exact(ProjectionType::StateMap),
-            _=>Err("CandidateSpaceの非公開射影".into()),
+            _=>Err("CandidateSpace projection is not public".into()),
         },
         (ProjectionType::SolutionSet(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
         (ProjectionType::StateSpace(root),Field(f)) if f=="base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
@@ -248,12 +248,12 @@ fn project_inner(
             "action" => exact(ProjectionType::AtomMap),
             "word" => {
                 let Some(Index(index)) = path.get(1) else {
-                    return Err("wordはindexまで指定する".into());
+                    return Err("specify an index for word".into());
                 };
                 let item = usize::try_from(*index)
                     .ok()
                     .and_then(|i| shape.word.get(i))
-                    .ok_or("合成Operationのwordのindexが範囲外")?;
+                    .ok_or("composed Operation word index is out of range")?;
                 Ok((
                     ProjectionPlan {
                         ty: Law(Type::Ref(item.clone())),
@@ -262,7 +262,7 @@ fn project_inner(
                     2,
                 ))
             }
-            _ => Err("合成Operationの非公開射影".into()),
+            _ => Err("composed Operation projection is not public".into()),
         },
         (ProjectionType::ComposedCandidate(shape), Field(f)) => match f.as_str() {
             "subject" => {
@@ -286,7 +286,7 @@ fn project_inner(
             "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
             "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
             "action" => exact(ProjectionType::AtomMap),
-            _ => Err("合成MapCandidateの非公開射影".into()),
+            _ => Err("composed MapCandidate projection is not public".into()),
         },
         (ProjectionType::ComposedMap(shape), Field(f)) if f == "candidate" => {
             exact(ProjectionType::ComposedCandidate(shape.clone()))
@@ -299,13 +299,13 @@ fn project_inner(
             "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
             "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
             "action" => exact(ProjectionType::AtomMap),
-            _ => Err("MapCandidateの非公開射影".into()),
+            _ => Err("MapCandidate projection is not public".into()),
         },
         (ProjectionType::ObjectAlgebraMap(shape), Field(f)) => match f.as_str() {
             "source" => exact(ProjectionType::ObjectAlgebraRoot(shape.source.clone())),
             "target" => exact(ProjectionType::ObjectAlgebraRoot(shape.target.clone())),
             "configuration_map" => exact(ProjectionType::ConfigurationMap(shape.clone())),
-            _ => Err("ObjectAlgebraMapの非公開射影".into()),
+            _ => Err("ObjectAlgebraMap projection is not public".into()),
         },
         (ProjectionType::ObjectAlgebraRoot(root), Field(f)) if f == "base" => {
             exact(ProjectionType::ObjectComponentRoot(root.clone()))
@@ -313,7 +313,7 @@ fn project_inner(
         (ProjectionType::ObjectComponentRoot(root), Field(f)) => match f.as_str() {
             "object" => exact(ProjectionType::ArchitectureRoot(root.clone())),
             "subject" => exact(Law(Type::Ref(root.clone()))),
-            _ => Err("ObjectComponentの非公開射影".into()),
+            _ => Err("ObjectComponent projection is not public".into()),
         },
         (ProjectionType::ConfigurationMap(shape), Field(f)) if f == "candidate" => {
             exact(ProjectionType::MapCandidate(shape.clone()))
@@ -326,10 +326,10 @@ fn project_inner(
             "action" => exact(ProjectionType::AtomMap),
             "word" => {
                 let Some(Index(index)) = path.get(1) else {
-                    return Err("wordはindexまで指定する".into());
+                    return Err("specify an index for word".into());
                 };
                 if *index != 0 {
-                    return Err("原始mapのwordのindexが範囲外".into());
+                    return Err("primitive map word index is out of range".into());
                 }
                 Ok((
                     ProjectionPlan {
@@ -339,7 +339,7 @@ fn project_inner(
                     2,
                 ))
             }
-            _ => Err("Operationの非公開射影".into()),
+            _ => Err("Operation projection is not public".into()),
         },
         (Evaluation(t), Field(f)) if f == "value" => conditional(Law(t.clone())),
         (Evaluation(_), Field(f)) if f == "environment" => conditional(Architecture),
@@ -358,17 +358,17 @@ fn project_inner(
             let t = usize::try_from(*i)
                 .ok()
                 .and_then(|i| ts.get(i))
-                .ok_or("Tuple の index が範囲外")?;
+                .ok_or("Tuple index is out of range")?;
             exact(Law(t.clone()))
         }
         (Law(Type::List(t)), Index(_)) => conditional(Law((**t).clone())),
         (Law(Type::Option(t)), Field(f)) if f == "some" => conditional(Law((**t).clone())),
         (Law(Type::Data(name)), Index(i)) => {
             let Some(d) = law.definitions.declarations.get(name) else {
-                return Err("data 宣言がない".into());
+                return Err("missing data declaration".into());
             };
             let PrimitiveSignature::Data { constructors } = &d.signature else {
-                return Err("data 型でない".into());
+                return Err("not a data type".into());
             };
             let mut ts = Vec::new();
             for (index, c) in constructors.iter().enumerate() {
@@ -378,14 +378,14 @@ fn project_inner(
                 }
                 if index + 1 == constructors.len() && ts.is_empty() {
                     return finish_projection(
-                        Err("全 constructor で index が範囲外".into()),
+                        Err("index is out of range for all constructors".into()),
                         control,
                     );
                 }
                 tick(control)?;
             }
             if ts.is_empty() {
-                return Err("全 constructor で index が範囲外".into());
+                return Err("index is out of range for all constructors".into());
             }
             conditional(if ts.len() == 1 {
                 ts.remove(0)
@@ -397,7 +397,7 @@ fn project_inner(
         (Law(Type::Path(_, b)), Field(f)) if f == "target" => exact(Law(Type::Ref(b.clone()))),
         (Law(Type::Path(_, _)), Field(f)) if f == "generators" => {
             if !matches!(path.get(1), Some(Index(_))) {
-                return Err("generators は index まで指定する".into());
+                return Err("specify an index for generators".into());
             }
             let mut ts = Vec::new();
             for d in law.definitions.declarations.values() {
@@ -426,7 +426,7 @@ fn project_inner(
                 match project(law, t, path, control) {
                     Ok((p, n)) => {
                         if used.is_some_and(|u| u != n) {
-                            return Err("射影の構造が型候補間で異なる".into());
+                            return Err("projection structure differs across type candidates".into());
                         }
                         used = Some(n);
                         push_unique(&mut out, p.ty, control)?;
@@ -438,12 +438,12 @@ fn project_inner(
                     // Every candidate has now rejected this step. Form that
                     // conclusion before the final iteration's post checkpoint,
                     // including a budget latched by the last candidate's post.
-                    return finish_projection(Err("公開された射影が型候補にない".into()), control);
+                    return finish_projection(Err("no type candidate exposes this projection".into()), control);
                 }
                 tick(control)?;
             }
             if out.is_empty() {
-                return Err("公開された射影が型候補にない".into());
+                return Err("no type candidate exposes this projection".into());
             }
             Ok((
                 ProjectionPlan {
@@ -457,7 +457,7 @@ fn project_inner(
                 used.unwrap(),
             ))
         }
-        _ => Err("この型で公開されていない射影".into()),
+        _ => Err("this type does not expose this projection".into()),
     }
 }
 

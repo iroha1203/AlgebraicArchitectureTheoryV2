@@ -174,7 +174,7 @@ pub(super) fn constraints(
             (&request.id, key),
         )?;
         let ProjectionType::Law(expected @ Type::Path(..)) = &plan.ty else {
-            return Err(error(&request.id, key, "Pathの参照型がない"));
+            return Err(error(&request.id, key, "missing Path reference type"));
         };
         out.push(BindingConstraint {
             parameter: key.into(),

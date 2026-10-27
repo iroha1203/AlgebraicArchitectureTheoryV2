@@ -124,22 +124,22 @@ fn known_projection_errors_preserve_usage_and_budget_while_cancellation_wins() {
         (
             "bad=evaluate(R.echo,s=$choice.value.some)",
             "choice=evaluate(R.choice)",
-            "この型で公開されていない射影",
+            "this type does not expose this projection",
         ),
         (
             "bad=evaluate(R.echo,s=$pair.value[2])",
             "pair=evaluate(R.pair)",
-            "Tuple の index が範囲外",
+            "Tuple index is out of range",
         ),
         (
             "bad=evaluate(R.echo,s=$choice.value[1])",
             "choice=evaluate(R.choice)",
-            "全 constructor で index が範囲外",
+            "index is out of range for all constructors",
         ),
         (
             "bad=evaluate(R.echo,s=$choice.value[0].missing)",
             "choice=evaluate(R.choice)",
-            "公開された射影が型候補にない",
+            "no type candidate exposes this projection",
         ),
     ] {
         let asks = [bad, producer];
@@ -223,22 +223,22 @@ fn early_projection_errors_use_the_same_priority_policy() {
         (
             ProjectionType::Law(Type::Data("W.Absent".into())),
             vec![ProjectionStep::Index(0)],
-            "data 宣言がない",
+            "missing data declaration",
         ),
         (
             ProjectionType::Law(Type::Data("W.Root".into())),
             vec![ProjectionStep::Index(0)],
-            "data 型でない",
+            "not a data type",
         ),
         (
             ProjectionType::Law(Type::Path("W.Root".into(), "W.Root".into())),
             vec![ProjectionStep::Field("generators".into())],
-            "generators は index まで指定する",
+            "specify an index for generators",
         ),
         (
             ProjectionType::Dynamic(vec![]),
             vec![ProjectionStep::Field("some".into())],
-            "公開された射影が型候補にない",
+            "no type candidate exposes this projection",
         ),
     ] {
         let (mut baseline, total, _) = probe(None, Stop::Time);
@@ -271,7 +271,7 @@ fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
         ProjectionType::Law(Type::Z),
     ]);
     let path = [ProjectionStep::Field("some".into())];
-    let invalid = ProjectionFailure::Invalid("公開された射影が型候補にない".into());
+    let invalid = ProjectionFailure::Invalid("no type candidate exposes this projection".into());
     let (mut baseline, total, _) = probe(None, Stop::Time);
     assert_eq!(
         resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline),
@@ -307,7 +307,7 @@ fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results
         "choice=evaluate(R.choice)",
     ];
     // .value[0] produces Option<Z> / List<Z>; .missing rejects both.
-    assert_exhausted_projection_from_bytes(&asks, "公開された射影が型候補にない", 3);
+    assert_exhausted_projection_from_bytes(&asks, "no type candidate exposes this projection", 3);
 }
 
 #[test]
@@ -317,7 +317,7 @@ fn final_constructor_rejection_from_bytes_keeps_both_post_results() {
         "choice=evaluate(R.choice)",
     ];
     // Both constructors have exactly one argument, so index 1 is out of range.
-    assert_exhausted_projection_from_bytes(&asks, "全 constructor で index が範囲外", 2);
+    assert_exhausted_projection_from_bytes(&asks, "index is out of range for all constructors", 2);
 }
 
 #[test]
