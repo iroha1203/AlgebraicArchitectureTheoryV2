@@ -336,7 +336,7 @@ fn violation(
     }
     Ok(None)
 }
-fn outside(
+pub(super) fn outside(
     left: &change_affine::Guard,
     right: &change_affine::Guard,
     c: &mut Control,

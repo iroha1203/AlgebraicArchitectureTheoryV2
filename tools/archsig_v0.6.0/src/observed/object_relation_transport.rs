@@ -131,8 +131,17 @@ fn path_binding(
 fn witness_bindings(
     params: &[Param],
     row: &relation_instances::RelationInstance,
+    numeric_point: Option<&[num_bigint::BigInt]>,
     c: &mut Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
+    if numeric_point.is_none()
+        && row
+            .numeric_domain
+            .as_ref()
+            .is_some_and(|domain| domain.fiber.particular.is_none())
+    {
+        return Err("空のrelation適用域に反例はない".into());
+    }
     params
         .iter()
         .map(|p| {
@@ -141,7 +150,25 @@ fn witness_bindings(
                 if let Some((_, value)) = row.bindings.iter().find(|(name, _)| name == &p.name) {
                     value.clone()
                 } else if row.numeric_parameters.contains(p) && matches!(p.ty, Type::Z | Type::Q) {
-                    crate::observed::numeric::zero(&p.ty, c)?
+                    if let Some(point) = numeric_point.or_else(|| {
+                        row.numeric_domain
+                            .as_ref()
+                            .and_then(|domain| domain.fiber.particular.as_deref())
+                    }) {
+                        let index = row
+                            .numeric_parameters
+                            .iter()
+                            .position(|axis| axis == p)
+                            .ok_or("relation反例の数値軸がない")?;
+                        Scalar::Z(
+                            point
+                                .get(index)
+                                .ok_or("relation反例の特解座標がない")?
+                                .clone(),
+                        )
+                    } else {
+                        crate::observed::numeric::zero(&p.ty, c)?
+                    }
                 } else {
                     return Err("relation反例の元parameter束縛がない".into());
                 };
@@ -740,10 +767,33 @@ pub(super) fn retain(
                 );
                 continue;
             };
+            let guard_point = match (&row.numeric_domain, &target.numeric_domain) {
+                (Some(source), Some(target)) => super::change::outside(source, target, c)?,
+                _ => None,
+            };
+            let restricted;
+            let target = if let Some(point) = &guard_point {
+                let bindings = witness_bindings(tp, target, Some(point), c)?;
+                restricted = relation_instances::at_numeric_point(env, declarations[1], bindings)?;
+                if !restricted.guard_checked || restricted.guard != Some(false) {
+                    return Err("relation適用域の反例が元guardを反証しない".into());
+                }
+                &restricted
+            } else if let Some(domain) = &row.numeric_domain {
+                restricted = relation_instances::on_numeric_domain(
+                    env,
+                    declarations[1],
+                    target_bindings,
+                    domain,
+                )?;
+                &restricted
+            } else {
+                target
+            };
             support.extend(target.support.iter().cloned());
             scope.merge(&target.scope);
             if target.guard_checked && target.guard == Some(false) {
-                let bindings = witness_bindings(sp, row, c)?;
+                let bindings = witness_bindings(sp, row, guard_point.as_deref(), c)?;
                 let witness = example(
                     b,
                     sp,
@@ -813,7 +863,7 @@ pub(super) fn retain(
                 };
                 if !expected.same_program(t, c)? {
                     statuses[index] = Decision::Refuted;
-                    let bindings = witness_bindings(sp, row, c)?;
+                    let bindings = witness_bindings(sp, row, None, c)?;
                     let witness = example(
                         b,
                         sp,

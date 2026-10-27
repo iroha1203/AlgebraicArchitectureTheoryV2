@@ -8,7 +8,7 @@ use crate::observed::{
 use num_bigint::BigInt as Z;
 use num_traits::{One, Zero};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct Guard {
     pub equations: Matrix,
     pub rhs: Vec<Z>,
@@ -332,19 +332,30 @@ pub(in crate::observed) fn guard_domain(
     };
     let first = params.first().ok_or("changeの第1引数がない")?;
     let (vars, axes) = law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
+    parameter_guard_domain(env, *guard, &vars, &axes, &change.reading, missing)
+}
+/// 既存の整数等式guardを、元parameter座標の全解として読む。
+pub(super) fn parameter_guard_domain(
+    env: &Environment<'_>,
+    guard: Option<usize>,
+    vars: &BTreeMap<String, SourceValue>,
+    axes: &[Parameter],
+    reading: &str,
+    missing: &mut Pending,
+) -> Result<Guard, ValidationFailure> {
     if axes.iter().any(|axis| axis.kind != NumberType::Z) {
         return Err("整数guardのparameter型が違う".into());
     }
     let mut matrix = vec![];
     let mut rhs = vec![];
     if let Some(id) = guard {
-        missing.expression = Some(*id);
+        missing.expression = Some(id);
         equations(
             env,
-            *id,
-            &vars,
-            &change.reading,
-            Axes::Parameters(&axes),
+            id,
+            vars,
+            reading,
+            Axes::Parameters(axes),
             &mut matrix,
             &mut rhs,
             missing,
