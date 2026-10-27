@@ -3,6 +3,29 @@ use super::result::{Decision, NodeRef, NodeType, ObservedEvaluation, Payload, Re
 use crate::canonical::Json;
 use std::collections::BTreeMap;
 
+const EXAMPLE_LIMIT: usize = 3;
+const ITEM_LIMIT: usize = 3;
+
+fn node_reference(value: &Json) -> NodeRef {
+    let Json::Str(id) = &fields(value).expect("counterexample reference")["node"] else {
+        unreachable!("counterexample node ID")
+    };
+    NodeRef(
+        id.strip_prefix('n')
+            .expect("counterexample node prefix")
+            .parse()
+            .expect("counterexample node number"),
+    )
+}
+
+fn brief_text(fields: &mut BTreeMap<String, Json>, key: &str, value: &str) {
+    if value.len() <= 256 {
+        fields.insert(key.into(), Json::str(value));
+    } else {
+        fields.insert(format!("{key}_bytes"), Json::Nat(value.len() as u64));
+    }
+}
+
 fn fields(value: &Json) -> Option<&BTreeMap<String, Json>> {
     match value {
         Json::Obj(fields) => Some(fields),
@@ -82,6 +105,33 @@ impl ObservedEvaluation {
                 if !reasons.is_empty() {
                     row.insert("reasons".into(), Json::Arr(reasons));
                 }
+                if answer.status == Decision::Refuted {
+                    // 各構成器が既に使う共通の反例表示を読む。導出グラフは辿らない。
+                    let examples: Vec<_> = answer.evidence.iter().filter_map(|reference| {
+                        let node = &self.nodes[reference.0];
+                        if node.ty != NodeType::Evidence { return None; }
+                        let mut wire = node.payload.as_ref()?.wire();
+                        let Json::Obj(wire) = &mut wire else { return None; };
+                        if !matches!(wire.get("kind"), Some(Json::Str(kind)) if matches!(kind.as_str(), "counterexample" | "separating_pair")) { return None; }
+                        Some((*reference, wire.remove("data").expect("counterexample data")))
+                    }).collect();
+                    if !examples.is_empty() {
+                        row.insert(
+                            "counterexamples_total".into(),
+                            Json::Nat(examples.len() as u64),
+                        );
+                        row.insert(
+                            "counterexamples".into(),
+                            Json::Arr(
+                                examples
+                                    .into_iter()
+                                    .take(EXAMPLE_LIMIT)
+                                    .map(|(reference, data)| self.summary_counterexample(reference, &data))
+                                    .collect(),
+                            ),
+                        );
+                    }
+                }
                 Json::Obj(row)
             })
             .collect();
@@ -98,6 +148,125 @@ impl ObservedEvaluation {
             );
         }
         Json::Obj(result)
+    }
+
+    fn summary_counterexample(&self, reference: NodeRef, data: &Json) -> Json {
+        let node = &self.nodes[reference.0];
+        let data = fields(data).expect("counterexample data object");
+        if let Some(Json::Arr(values)) = data.get("law_values") {
+            return Json::obj([
+                ("kind", Json::str("separating_pair")),
+                ("first", self.summary_value(node_reference(&data["first"]))),
+                (
+                    "second",
+                    self.summary_value(node_reference(&data["second"])),
+                ),
+                ("left", self.summary_value(node_reference(&values[0]))),
+                ("right", self.summary_value(node_reference(&values[1]))),
+            ]);
+        }
+        let Json::Arr(bindings) = &data["bindings"] else {
+            unreachable!("counterexample bindings")
+        };
+        let Json::Arr(facts) = &data["facts"] else {
+            unreachable!("counterexample facts")
+        };
+        let mut row = BTreeMap::from([
+            ("bindings_total".into(), Json::Nat(bindings.len() as u64)),
+            (
+                "bindings".into(),
+                Json::Arr(
+                    bindings
+                        .iter()
+                        .take(ITEM_LIMIT)
+                        .map(|binding| {
+                            let binding = fields(binding).expect("counterexample binding");
+                            let Json::Str(name) = &binding["name"] else {
+                                unreachable!("binding name")
+                            };
+                            let mut row = BTreeMap::from([(
+                                "value".into(),
+                                self.summary_value(node_reference(&binding["value"])),
+                            )]);
+                            brief_text(&mut row, "name", name);
+                            Json::Obj(row)
+                        })
+                        .collect(),
+                ),
+            ),
+            (
+                "left".into(),
+                self.summary_value(node_reference(&data["left"])),
+            ),
+            (
+                "right".into(),
+                self.summary_value(node_reference(&data["right"])),
+            ),
+            ("facts_total".into(), Json::Nat(facts.len() as u64)),
+            (
+                "facts".into(),
+                Json::Arr(
+                    facts
+                        .iter()
+                        .take(ITEM_LIMIT)
+                        .map(|fact| {
+                            let mut row = BTreeMap::new();
+                            for (key, value) in fields(fact).expect("counterexample fact") {
+                                let Json::Str(value) = value else {
+                                    unreachable!("fact identifier")
+                                };
+                                brief_text(&mut row, key, value);
+                            }
+                            Json::Obj(row)
+                        })
+                        .collect(),
+                ),
+            ),
+        ]);
+        // 比較の左右がそのまま採られる、guardなしの直接のLaw比較だけを表示する。
+        for argument in &node.arguments {
+            if let Some(Payload::LawInstance {
+                name, guard: None, ..
+            }) = &self.nodes[argument.0].payload
+                && let Some(declaration) = self.prepared.inputs().law().declarations.get(name)
+                && let crate::law::model::Signature::Law {
+                    body, guard: None, ..
+                } = &declaration.signature
+                && let crate::law::ast::ExprKind::Binary { op, .. } =
+                    self.prepared.inputs().law().exprs[*body].kind
+            {
+                use crate::law::ast::BinOp;
+                let operator = match op {
+                    BinOp::Eq => Some("="),
+                    BinOp::Ne => Some("!="),
+                    BinOp::Lt => Some("<"),
+                    BinOp::Le => Some("<="),
+                    BinOp::Gt => Some(">"),
+                    BinOp::Ge => Some(">="),
+                    _ => None,
+                };
+                if let Some(operator) = operator {
+                    row.insert("operator".into(), Json::str(operator));
+                }
+            }
+        }
+        Json::Obj(row)
+    }
+
+    fn summary_value(&self, mut reference: NodeRef) -> Json {
+        while let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &self.nodes[reference.0].payload
+        {
+            reference = *value;
+        }
+        let value = self.summary_node(reference, 0);
+        let bytes = value.canonical().len();
+        if bytes <= 512 {
+            value
+        } else {
+            Json::obj([("summary_bytes", Json::Nat(bytes as u64))])
+        }
     }
     fn summary_node(&self, reference: NodeRef, depth: usize) -> Json {
         let node = &self.nodes[reference.0];

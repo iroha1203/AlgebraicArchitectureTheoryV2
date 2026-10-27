@@ -132,7 +132,9 @@ reading After {{{vocabulary} change tune(t:State,k:{parameter}){tg}=t with {{hel
         let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
         for request in requests {args.extend(["--ask",request]);}
         let normal=without_file_changes(&dir,||cli::run(&dir,&args));
-        assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());assert!(normal.stdout.len()<1500);
+        assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
+        // 反証時は先頭3件の値も含む。確定・未決の上限は維持する。
+        assert!(normal.stdout.len()<if code==1 {4000} else {1500});
         let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);
         let result=result_json(&dir,&run);let m=answer(&result,"m");
         assert_eq!(s(get(m,"status")),status,"{mode}");assert_eq!(s(get(answer(&result,"same"),"status")),"established");
