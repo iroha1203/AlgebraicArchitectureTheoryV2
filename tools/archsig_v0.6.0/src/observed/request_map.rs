@@ -20,9 +20,9 @@ fn shape(
         .definitions
         .declarations
         .get(name)
-        .ok_or_else(|| error(id, "head", "correspondenceの宣言がない"))?;
+        .ok_or_else(|| error(id, "head", "missing correspondence declaration"))?;
     let PrimitiveSignature::Correspondence { from, to, .. } = &d.signature else {
-        return Err(error(id, "head", "mapは原始correspondenceの宣言を指定する"));
+        return Err(error(id, "head", "map requires a primitive correspondence declaration"));
     };
     Ok(MapProjection {
         declaration: name.into(),
@@ -49,7 +49,7 @@ pub(super) fn resolve(
     control: &mut Control,
 ) -> Result<Request, ResolveFailure> {
     let Selector::Declaration { name } = &raw.head else {
-        return Err(error(&raw.id, "head", "mapのheadはcorrespondence宣言"));
+        return Err(error(&raw.id, "head", "map head must be a correspondence declaration"));
     };
     let mut found = Vec::new();
     for (candidate, d) in &law.definitions.declarations {
@@ -64,7 +64,7 @@ pub(super) fn resolve(
         return Err(error(
             &raw.id,
             "head",
-            "correspondenceの宣言名が存在しないか曖昧",
+            "correspondence declaration name does not exist or is ambiguous",
         ));
     }
     let name = found[0].0.clone();
@@ -73,7 +73,7 @@ pub(super) fn resolve(
     for (key, value) in raw.arguments {
         phase(control, Checkpoint::RequestBinding)?;
         if !matches!(key.as_str(), "on" | "reading" | "to_reading" | "kind") {
-            return Err(error(&raw.id, &key, "mapの未知の引数"));
+            return Err(error(&raw.id, &key, "unknown map argument"));
         }
         args.insert(
             key.clone(),
@@ -86,23 +86,23 @@ pub(super) fn resolve(
     }
     let on = args
         .get("on")
-        .ok_or_else(|| error(&raw.id, "on", "mapのonが必要"))?;
+        .ok_or_else(|| error(&raw.id, "on", "map requires on"))?;
     if !matches!(on.value, Selector::Subject { .. } | Selector::Answer { .. }) {
-        return Err(error(&raw.id, "on", "onはcorrespondence instanceのHandle"));
+        return Err(error(&raw.id, "on", "on must be a correspondence instance Handle"));
     }
     let mut dependencies = vec![];
     if let Selector::Answer { id, path } = &on.value {
         if path.is_empty() {
-            return Err(error(&raw.id, "on", "出力fieldまで指定する"));
+            return Err(error(&raw.id, "on", "specify an output field"));
         }
         dependencies.push(id.clone());
     }
     let Selector::Declaration { name: reading } = &args
         .get("reading")
-        .ok_or_else(|| error(&raw.id, "reading", "mapのreadingが必要"))?
+        .ok_or_else(|| error(&raw.id, "reading", "map requires reading"))?
         .value
     else {
-        return Err(error(&raw.id, "reading", "readingの完全名を指定する"));
+        return Err(error(&raw.id, "reading", "specify a fully qualified reading name"));
     };
     let reading = reading.clone();
     args.entry("to_reading".into())
@@ -122,7 +122,7 @@ pub(super) fn resolve(
             origin: ArgumentOrigin::Defaulted,
         });
     let Selector::Declaration { name: to } = &args["to_reading"].value else {
-        return Err(error(&raw.id, "to_reading", "to_readingの完全名を指定する"));
+        return Err(error(&raw.id, "to_reading", "specify a fully qualified to_reading name"));
     };
     for (key, r, ty) in [
         ("reading", reading.as_str(), signature.source.as_str()),
@@ -134,7 +134,7 @@ pub(super) fn resolve(
             return Err(error(
                 &raw.id,
                 key,
-                "readingの語彙にcorrespondenceの根型がない",
+                "reading vocabulary does not contain the correspondence root types",
             ));
         }
     }
@@ -142,14 +142,14 @@ pub(super) fn resolve(
         return Err(error(
             &raw.id,
             "kind",
-            "mapのkindはconfigurationまたはobject_algebra",
+            "map kind must be configuration or object_algebra",
         ));
     };
     if !matches!(kind.as_str(), "configuration" | "object_algebra") {
         return Err(error(
             &raw.id,
             "kind",
-            "mapのkindはconfigurationまたはobject_algebra",
+            "map kind must be configuration or object_algebra",
         ));
     }
     let kind = kind.clone();
@@ -176,7 +176,7 @@ pub(super) fn output_type(
     control: &mut Control,
 ) -> Result<ProjectionType, ResolveFailure> {
     let Selector::Declaration { name } = &r.head else {
-        return Err(error(&r.id, "head", "mapのheadが宣言でない"));
+        return Err(error(&r.id, "head", "map head is not a declaration"));
     };
     let s = shape(law, name, &r.id, control)?;
     match field {
@@ -192,7 +192,7 @@ pub(super) fn output_type(
         "map" => Ok(ProjectionType::ConfigurationMap(s)),
         "operation" => Ok(ProjectionType::Operation(s)),
         "proposition" => Ok(ProjectionType::Proposition),
-        _ => Err(error(&r.id, field, "mapの非公開出力")),
+        _ => Err(error(&r.id, field, "map output is not public")),
     }
 }
 pub(super) fn constraints(
@@ -204,18 +204,18 @@ pub(super) fn constraints(
     control: &mut Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let Selector::Declaration { name } = &r.head else {
-        return Err(error(&r.id, "head", "mapのheadが宣言でない"));
+        return Err(error(&r.id, "head", "map head is not a declaration"));
     };
     let on = r
         .arguments
         .iter()
         .find(|a| a.name == "on")
-        .ok_or_else(|| error(&r.id, "on", "onがない"))?;
+        .ok_or_else(|| error(&r.id, "on", "missing on"))?;
     let (plan, projection_owners) =
         selector_type(law, map, requests, names, &on.value, control, (&r.id, "on"))?;
     let ty = Type::Ref(name.clone());
     if !projection::can_bind_controlled(&plan.ty, &ty, control).map_err(stopped)? {
-        return Err(error(&r.id, "on", "onの型がcorrespondence宣言と違う"));
+        return Err(error(&r.id, "on", "on type does not match the correspondence declaration"));
     }
     let dynamic = plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_));
     Ok(vec![BindingConstraint {

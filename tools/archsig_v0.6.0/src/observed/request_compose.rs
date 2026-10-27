@@ -20,7 +20,7 @@ pub(super) fn resolve(
     for (key, value) in raw.arguments {
         phase(control, Checkpoint::RequestBinding)?;
         if key != "then" {
-            return Err(error(&raw.id, &key, "composeの固定引数はthenだけ"));
+            return Err(error(&raw.id, &key, "compose only accepts the fixed argument then"));
         }
         arguments.push(RequestArgument {
             name: key,
@@ -29,18 +29,18 @@ pub(super) fn resolve(
         });
     }
     if arguments.len() != 1 {
-        return Err(error(&raw.id, "then", "composeのthenが必要"));
+        return Err(error(&raw.id, "then", "compose requires then"));
     }
     for (key, value) in [("head", &raw.head), ("then", &arguments[0].value)] {
         let Selector::Answer { id, path } = value else {
             return Err(error(
                 &raw.id,
                 key,
-                "composeは結果のOperationまたはPathを指定する",
+                "compose requires a result Operation or Path",
             ));
         };
         if path.is_empty() {
-            return Err(error(&raw.id, key, "composeは出力fieldまで指定する"));
+            return Err(error(&raw.id, key, "compose requires an output field"));
         }
         dependencies.insert(id.clone());
     }
@@ -99,7 +99,7 @@ pub(super) fn selected(
         _ => Err(error(
             &request.id,
             key,
-            "composeは二つのOperationまたは二つのPathを要求する",
+            "compose requires two Operations or two Paths",
         )),
     }
 }
@@ -117,7 +117,7 @@ pub(super) fn shape(
             .arguments
             .iter()
             .find(|a| a.name == "then")
-            .ok_or_else(|| error(&request.id, "then", "thenがない"))?;
+            .ok_or_else(|| error(&request.id, "then", "missing then"))?;
         let left = selected(
             law,
             map,
@@ -154,7 +154,7 @@ pub(super) fn shape(
             _ => Err(error(
                 &request.id,
                 "then",
-                "composeの型・reading・中間型が合わない（OperationとPathの混在も不可）",
+                "compose types, readings, or intermediate types do not match; Operation and Path cannot be mixed",
             )),
         }
     })
@@ -174,7 +174,7 @@ pub(super) fn output_type(
         ("operation", Shape::Operation(s)) => Ok(ProjectionType::ComposedOperation(s)),
         ("map", Shape::Operation(s)) => Ok(ProjectionType::ComposedMap(s)),
         ("operation", Shape::Path(a, b)) => Ok(ProjectionType::Law(Type::Path(a, b))),
-        _ => Err(error(&request.id, field, "composeの非公開出力")),
+        _ => Err(error(&request.id, field, "compose output is not public")),
     }
 }
 
@@ -196,7 +196,7 @@ pub(super) fn constraints(
         .arguments
         .iter()
         .find(|a| a.name == "then")
-        .ok_or_else(|| error(&request.id, "then", "thenがない"))?;
+        .ok_or_else(|| error(&request.id, "then", "missing then"))?;
     let mut out = vec![];
     for (key, selector) in [("head", &request.head), ("then", &then.value)] {
         let (plan, owners) = selector_type(

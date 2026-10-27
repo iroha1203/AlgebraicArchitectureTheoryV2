@@ -87,7 +87,7 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
         return Err(Box::new(Issue::law(
             Code::Reference,
             (0, body.len()),
-            format!("namespace `{namespace}` が登録されていない"),
+            format!("namespace `{namespace}` is not registered"),
         ))
         .into());
     }
@@ -323,7 +323,7 @@ fn check_law_processing<E: InputError>(
     if header.format != FORMAT || header.semantics != SEMANTICS {
         let issue = Issue {
             code: Code::UnsupportedVersion,
-            message: "未対応の format または semantics".into(),
+            message: "unsupported format or semantics".into(),
             location: Location::Law { span: header.span },
             details: Details::Version {
                 found_format: header.format.clone(),

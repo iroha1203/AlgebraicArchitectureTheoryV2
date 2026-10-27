@@ -57,12 +57,12 @@ pub(super) fn lex_inner<E: InputError>(
     let result = (|| {
         E::checkpoint(control, point)?;
         if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-            return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない"))).into());
+            return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM is not allowed"))).into());
         }
         let text = std::str::from_utf8(bytes).map_err(|e| {
             let at = e.valid_up_to();
             let end = at + e.error_len().unwrap_or(bytes.len() - at);
-            Box::new(Issue::law(Code::Syntax, (at, end), "不正な UTF-8"))
+            Box::new(Issue::law(Code::Syntax, (at, end), "invalid UTF-8"))
         })?;
         let src = text.as_bytes();
         let mut tokens = Vec::new();
@@ -98,7 +98,7 @@ pub(super) fn lex_inner<E: InputError>(
                     return Err((Box::new(Issue::law(
                         Code::Syntax,
                         (start, i),
-                        "整数に先頭の0は置けない",
+                        "integer cannot have a leading zero",
                     )))
                     .into());
                 }
@@ -134,7 +134,7 @@ pub(super) fn lex_inner<E: InputError>(
                 return Err((Box::new(Issue::law(
                     Code::Syntax,
                     (i, i + len),
-                    "字句として読めない文字",
+                    "invalid token character",
                 )))
                 .into());
             }
@@ -160,7 +160,7 @@ fn lex_string<E: InputError>(
             return Err((Box::new(Issue::law(
                 Code::Syntax,
                 (start, src.len()),
-                "文字列が閉じていない",
+                "unterminated string",
             )))
             .into());
         };
@@ -171,7 +171,7 @@ fn lex_string<E: InputError>(
                     Box::new(Issue::law(
                         Code::Syntax,
                         (i, src.len()),
-                        "文字列が閉じていない",
+                        "unterminated string",
                     ))
                 })?;
                 match esc {
@@ -188,7 +188,7 @@ fn lex_string<E: InputError>(
                             Box::new(Issue::law(
                                 Code::Syntax,
                                 (i, (i + 6).min(src.len())),
-                                "不正な \\u escape",
+                                "invalid \\u escape",
                             ))
                         })?;
                         if (0xDC00..0xE000).contains(&hi) {
@@ -221,7 +221,7 @@ fn lex_string<E: InputError>(
                         return Err((Box::new(Issue::law(
                             Code::Syntax,
                             (i, i + 2),
-                            "不正な escape",
+                            "invalid escape",
                         )))
                         .into());
                     }
@@ -232,7 +232,7 @@ fn lex_string<E: InputError>(
                 return Err((Box::new(Issue::law(
                     Code::Syntax,
                     (i, i + 1),
-                    "文字列内の制御文字は escape する",
+                    "control characters in strings must be escaped",
                 )))
                 .into());
             }

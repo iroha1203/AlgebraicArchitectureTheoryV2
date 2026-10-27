@@ -507,7 +507,7 @@ fn assert_binding_priority(asks: &[&str], at: usize, kind: Stop, known_mismatch:
         assert_eq!(issues[0].code, RequestIssueCode::Type);
         assert_eq!(issues[0].request, "bad");
         assert_eq!(issues[0].argument, "bind.s");
-        assert_eq!(issues[0].message, "Handle の型が parameter 型と合わない");
+        assert_eq!(issues[0].message, "Handle type does not match parameter type");
         assert_eq!(
             wire["issues"],
             Json::Arr(vec![reason.wire(), issues[0].wire()])

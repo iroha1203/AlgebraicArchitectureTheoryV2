@@ -133,13 +133,13 @@ pub(crate) fn parse_inner<E: InputError>(
     E::checkpoint(control, point)?;
     let result = (|| -> Result<JNode, E> {
         if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-            return Err((syntax((0, 3), "BOM は使えない")).into());
+            return Err((syntax((0, 3), "BOM is not allowed")).into());
         }
         let text = std::str::from_utf8(bytes).map_err(|e| {
             let at = e.valid_up_to();
             syntax(
                 (at, at + e.error_len().unwrap_or(bytes.len() - at)),
-                "不正な UTF-8",
+                "invalid UTF-8",
             )
         })?;
         let mut p = P {
@@ -154,7 +154,7 @@ pub(crate) fn parse_inner<E: InputError>(
         let v = p.value("")?;
         p.ws()?;
         if p.i != p.s.len() {
-            return Err((syntax((p.i, p.s.len()), "JSON 値の後に余分な文字がある")).into());
+            return Err((syntax((p.i, p.s.len()), "unexpected characters after JSON value")).into());
         }
         Ok(v)
     })();
@@ -198,7 +198,7 @@ impl<E: InputError> P<'_, '_, E> {
 
     fn value_inner(&mut self, pointer: &str) -> Result<JNode, E> {
         let Some(&c) = self.s.get(self.i) else {
-            return Err((syntax(self.here(), "JSON 値が必要")).into());
+            return Err((syntax(self.here(), "expected a JSON value")).into());
         };
         let value = match c {
             b'{' => {
@@ -212,14 +212,14 @@ impl<E: InputError> P<'_, '_, E> {
                     loop {
                         self.ws()?;
                         if self.s.get(self.i) != Some(&b'"') {
-                            return Err((syntax(self.here(), "object の key は文字列")).into());
+                            return Err((syntax(self.here(), "object key must be a string")).into());
                         }
                         let key = self.string()?;
                         let child = pointer_push(pointer, &key);
                         if !keys.insert(key.clone()) {
                             return Err((Box::new(Issue {
                                 code: Code::DuplicateKey,
-                                message: format!("key `{key}` が重複している"),
+                                message: format!("duplicate key `{key}`"),
                                 location: Location::ArchMap {
                                     pointer: child,
                                     span: None,
@@ -230,7 +230,7 @@ impl<E: InputError> P<'_, '_, E> {
                         }
                         self.ws()?;
                         if self.s.get(self.i) != Some(&b':') {
-                            return Err((syntax(self.here(), "`:` が必要")).into());
+                            return Err((syntax(self.here(), "expected `:`")).into());
                         }
                         self.i += 1;
                         self.ws()?;
@@ -243,7 +243,7 @@ impl<E: InputError> P<'_, '_, E> {
                                 self.i += 1;
                                 break;
                             }
-                            _ => return Err((syntax(self.here(), "`,` か `}` が必要")).into()),
+                            _ => return Err((syntax(self.here(), "expected `,` or `}`")).into()),
                         }
                     }
                 }
@@ -267,7 +267,7 @@ impl<E: InputError> P<'_, '_, E> {
                                 self.i += 1;
                                 break;
                             }
-                            _ => return Err((syntax(self.here(), "`,` か `]` が必要")).into()),
+                            _ => return Err((syntax(self.here(), "expected `,` or `]`")).into()),
                         }
                     }
                 }
@@ -287,7 +287,7 @@ impl<E: InputError> P<'_, '_, E> {
                 JValue::Null
             }
             b'-' | b'0'..=b'9' => JValue::Num(self.number()?),
-            _ => return Err((syntax(self.here(), "JSON 値が必要")).into()),
+            _ => return Err((syntax(self.here(), "expected a JSON value")).into()),
         };
         Ok(JNode { value })
     }
@@ -308,12 +308,12 @@ impl<E: InputError> P<'_, '_, E> {
         if self.s.get(self.i) == Some(&b'0') {
             self.i += 1;
         } else if !digits(self)? {
-            return Err((syntax((start, self.i), "不正な number")).into());
+            return Err((syntax((start, self.i), "invalid number")).into());
         }
         if self.s.get(self.i) == Some(&b'.') {
             self.i += 1;
             if !digits(self)? {
-                return Err((syntax((start, self.i), "不正な number")).into());
+                return Err((syntax((start, self.i), "invalid number")).into());
             }
         }
         if matches!(self.s.get(self.i), Some(b'e' | b'E')) {
@@ -322,12 +322,12 @@ impl<E: InputError> P<'_, '_, E> {
                 self.i += 1;
             }
             if !digits(self)? {
-                return Err((syntax((start, self.i), "不正な number")).into());
+                return Err((syntax((start, self.i), "invalid number")).into());
             }
         }
         let text = self.text[start..self.i].to_owned();
         if !text.parse::<f64>().is_ok_and(f64::is_finite) {
-            return Err((syntax((start, self.i), "非有限の number")).into());
+            return Err((syntax((start, self.i), "nonfinite number")).into());
         }
         Ok(text)
     }
@@ -339,7 +339,7 @@ impl<E: InputError> P<'_, '_, E> {
         loop {
             self.checkpoint()?;
             let Some(&c) = self.s.get(self.i) else {
-                return Err((syntax((start, self.s.len()), "文字列が閉じていない")).into());
+                return Err((syntax((start, self.s.len()), "unterminated string")).into());
             };
             match c {
                 b'"' => {
@@ -349,7 +349,7 @@ impl<E: InputError> P<'_, '_, E> {
                 b'\\' => {
                     let at = self.i;
                     let Some(&e) = self.s.get(self.i + 1) else {
-                        return Err((syntax((at, self.s.len()), "文字列が閉じていない")).into());
+                        return Err((syntax((at, self.s.len()), "unterminated string")).into());
                     };
                     self.i += 2;
                     match e {
@@ -363,7 +363,7 @@ impl<E: InputError> P<'_, '_, E> {
                         b't' => out.push('\t'),
                         b'u' => {
                             let hi = self.hex4().ok_or_else(|| {
-                                syntax((at, self.i.min(self.s.len())), "不正な \\u escape")
+                                syntax((at, self.i.min(self.s.len())), "invalid \\u escape")
                             })?;
                             if (0xDC00..0xE000).contains(&hi) {
                                 return Err((syntax((at, self.i), "unpaired surrogate")).into());
@@ -386,12 +386,12 @@ impl<E: InputError> P<'_, '_, E> {
                                 out.push(char::from_u32(hi).expect("surrogate 以外は scalar"));
                             }
                         }
-                        _ => return Err((syntax((at, at + 2), "不正な escape")).into()),
+                        _ => return Err((syntax((at, at + 2), "invalid escape")).into()),
                     }
                 }
                 c if c < 0x20 => {
                     return Err(
-                        (syntax((self.i, self.i + 1), "文字列内の制御文字は escape する")).into(),
+                        (syntax((self.i, self.i + 1), "control characters in strings must be escaped")).into(),
                     );
                 }
                 _ => {

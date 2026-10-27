@@ -131,7 +131,18 @@ impl ResultIssue {
                         Json::Obj(d)
                     }
                 };
-                (i.message.clone(), details)
+                let message = match &i.details {
+                    Details::Empty => i.message.clone(),
+                    Details::Type { expected, actual } => format!(
+                        "{}: expected {}, found {}", i.message,
+                        expected.wire().canonical(), actual.wire().canonical()
+                    ),
+                    Details::Version { found_format, found_semantics } => match found_semantics {
+                        Some(semantics) => format!("{}: format {found_format}, semantics {semantics}", i.message),
+                        None => format!("{}: format {found_format}", i.message),
+                    },
+                };
+                (message, details)
             }
             ResultIssue::Usage { argument, message } => (
                 message.clone(),
@@ -149,7 +160,7 @@ impl ResultIssue {
                 ]),
             ),
             ResultIssue::Internal { operation, message } => (
-                message.clone(),
+                format!("{message}: {operation}"),
                 Json::obj([("operation", Json::str(operation.clone()))]),
             ),
             ResultIssue::BudgetExhausted {
@@ -157,7 +168,7 @@ impl ResultIssue {
                 limit,
                 observed,
             } => (
-                "計算予算を使い切った".to_owned(),
+                format!("computation budget exhausted: {} limit {limit}, observed {observed}", resource.wire()),
                 Json::obj([
                     ("resource", Json::str(resource.wire())),
                     ("limit", Json::str(limit.to_string())),
@@ -165,7 +176,7 @@ impl ResultIssue {
                 ]),
             ),
             ResultIssue::Cancelled(s) => (
-                "シグナルを受けて中断した".to_owned(),
+                format!("interrupted by signal {}", s.wire()),
                 Json::obj([("signal", Json::str(s.wire()))]),
             ),
         };

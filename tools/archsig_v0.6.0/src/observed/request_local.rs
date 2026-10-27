@@ -15,10 +15,10 @@ pub(super) fn resolve(
         QuestionKind::Diagnose
     };
     let Selector::Answer { id, path } = &raw.head else {
-        return Err(err(&raw.id, "head", "対象は公開結果のHandle"));
+        return Err(err(&raw.id, "head", "target must be a public result Handle"));
     };
     if path.is_empty() {
-        return Err(err(&raw.id, "head", "出力fieldまで指定する"));
+        return Err(err(&raw.id, "head", "specify an output field"));
     }
     let mut dependencies = BTreeSet::from([id.clone()]);
     let mut arguments = BTreeMap::new();
@@ -28,14 +28,14 @@ pub(super) fn resolve(
         for (key, value) in &raw.arguments {
             if matches!(key.as_str(), "law" | "using") {
                 let Selector::Declaration { name } = value else {
-                    return Err(err(&raw.id, key, "宣言名を指定する"));
+                    return Err(err(&raw.id, key, "specify a declaration name"));
                 };
                 let full = declaration(law, name, c, &raw.id)?;
                 if !matches!(
                     (&law.declarations[&full].signature, key.as_str()),
                     (Signature::Law { .. }, "law") | (Signature::Change { .. }, "using")
                 ) {
-                    return Err(err(&raw.id, key, "宣言の種類が違う"));
+                    return Err(err(&raw.id, key, "declaration kind does not match"));
                 }
                 if key == "law" {
                     selected = Some(full.clone());
@@ -67,22 +67,22 @@ pub(super) fn resolve(
                 ("degree", Selector::Degree { .. }) => {}
                 ("side", Selector::Enum { value })
                     if matches!(value.as_str(), "equation" | "semantic") => {}
-                _ => return Err(err(&raw.id, &key, "diagnoseの引数はdegreeとside")),
+                _ => return Err(err(&raw.id, &key, "diagnose arguments must be degree and side")),
             }
             key.clone()
         } else {
             let Some(name) = &selected else {
-                return Err(err(&raw.id, &key, "law省略時に束縛は指定しない"));
+                return Err(err(&raw.id, &key, "bindings cannot be specified when law is omitted"));
             };
             let Signature::Law { params, .. } = &law.declarations[name].signature else {
                 unreachable!()
             };
             let short = key.strip_prefix("bind.").unwrap_or(&key);
             if !params.iter().any(|p| p.name == short) {
-                return Err(err(&raw.id, &key, "Lawにないparameter"));
+                return Err(err(&raw.id, &key, "parameter is not declared in Law"));
             }
             if !matches!(value, Selector::Subject { .. } | Selector::Answer { .. }) {
-                return Err(err(&raw.id, &key, "束縛はHandle"));
+                return Err(err(&raw.id, &key, "binding must be a Handle"));
             }
             format!("bind.{short}")
         };
@@ -95,7 +95,7 @@ pub(super) fn resolve(
             origin: ArgumentOrigin::Explicit,
         };
         if arguments.insert(canonical, a).is_some() {
-            return Err(err(&raw.id, &key, "引数が重複する"));
+            return Err(err(&raw.id, &key, "duplicate argument"));
         }
     }
     if kind == QuestionKind::Diagnose {
@@ -159,7 +159,7 @@ pub(super) fn check(
             ProjectionType::Architecture | ProjectionType::ArchitectureRoot(_)
         ) | (QuestionKind::Diagnose, ProjectionType::LocalSystem)
     ) {
-        return Err(err(&r.id, "head", "対象の結果型が違う"));
+        return Err(err(&r.id, "head", "target result type does not match"));
     }
     if let Some(RequestArgument {
         value: Selector::Declaration { name },
@@ -187,6 +187,6 @@ pub(super) fn output_type(r: &Request, field: &str) -> Result<ProjectionType, Re
         {
             Ok(ProjectionType::Proposition)
         }
-        _ => Err(err(&r.id, field, "局所化・診断の非公開出力")),
+        _ => Err(err(&r.id, field, "localization or diagnostic output is not public")),
     }
 }

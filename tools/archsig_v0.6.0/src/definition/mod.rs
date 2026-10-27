@@ -95,7 +95,7 @@ fn check_definitions_inner<E: InputError>(
                         Code::DuplicateId,
                         input,
                         "",
-                        format!("namespace `{}` が重複している", v.namespace),
+                        format!("duplicate namespace `{}`", v.namespace),
                     );
                     issue.location = v.location;
                     return Err(issue.into());
@@ -124,7 +124,7 @@ impl CheckedDefinitions {
         };
         Err(Box::new(Issue {
             code,
-            message: format!("語彙 `{}` の binding を解決できない", binding.namespace),
+            message: format!("cannot resolve binding for vocabulary `{}`", binding.namespace),
             location: binding.location.clone(),
             details: Details::Empty,
         }))

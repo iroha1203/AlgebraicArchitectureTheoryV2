@@ -36,7 +36,7 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     let expected = check_law(law.as_bytes(), &definitions).unwrap_err().issue;
     assert_eq!(expected.code, Code::Cycle);
     let Location::Law { span } = expected.location else {
-        panic!("Lawの元位置が必要");
+        panic!("missing Lawの元位置");
     };
     // Span must identify the original reference, rather than a fallback position.
     assert_eq!(

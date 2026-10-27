@@ -222,6 +222,19 @@ fn law_rejections_report_locations_without_files() {
         let (c, i, at) = only_issue(&res);
         assert_eq!((c.as_str(), i.as_str()), (code, input), "{name}");
         assert!(at.parse::<usize>().is_ok(), "Law の位置は span");
+        let issue = &arr(get(&res, "issues"))[0];
+        let message = s(get(issue, "message"));
+        assert!(message.is_ascii(), "{message}");
+        if name == "law-type" {
+            let details = get(issue, "details");
+            assert!(message.contains("expected"));
+            assert!(message.contains("found"));
+            assert!(message.contains(s(get(details, "actual"))));
+        }
+        if name == "law-version" {
+            assert!(message.contains("archsig.law/1"));
+            assert!(message.contains("archsig/0.6.0"));
+        }
         if name == "law-surrogate" {
             let text = String::from_utf8(law.clone()).unwrap();
             assert_eq!(at, text.find("\\ud800").unwrap().to_string());

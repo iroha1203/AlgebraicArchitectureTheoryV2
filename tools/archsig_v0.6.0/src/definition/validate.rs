@@ -39,7 +39,7 @@ pub(super) fn check<E: InputError>(
                         return E::finish(
                             Err(Box::new(Issue {
                                 code: Code::Reference,
-                                message: format!("namespace `{ns}` の dependency がない"),
+                                message: format!("missing dependency for namespace `{ns}`"),
                                 location: at.clone(),
                                 details: Details::Empty,
                             })
@@ -57,7 +57,7 @@ pub(super) fn check<E: InputError>(
             if !declared_dependency {
                 return Err((Box::new(Issue {
                     code: Code::Reference,
-                    message: format!("namespace `{ns}` の dependency がない"),
+                    message: format!("missing dependency for namespace `{ns}`"),
                     location: at.clone(),
                     details: Details::Empty,
                 }))
@@ -102,7 +102,7 @@ fn dag_inner<E: InputError>(
         if active.contains(&b.namespace) {
             return Err((Box::new(Issue {
                 code: Code::Cycle,
-                message: "Atom 定義の依存が循環している".into(),
+                message: "cyclic Atom definition dependencies".into(),
                 location: b.location.clone(),
                 details: Details::Empty,
             }))

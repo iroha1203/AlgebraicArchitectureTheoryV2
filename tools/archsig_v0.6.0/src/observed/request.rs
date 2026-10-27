@@ -258,7 +258,11 @@ impl RequestIssue {
         Json::obj([
             ("code", Json::str(if cycle { "cycle" } else { "usage" })),
             ("request", Json::str(&self.request)),
-            ("message", Json::str(&self.message)),
+            ("message", Json::str(if cycle || self.argument.is_empty() {
+                self.message.clone()
+            } else {
+                format!("{}: {}", self.message, self.argument)
+            })),
             ("dependencies", Json::Arr(vec![])),
             ("missing", Json::Arr(vec![])),
             (
@@ -369,7 +373,7 @@ fn resolve_inner(
                 RequestIssueCode::DuplicateId,
                 &raw.id,
                 &raw.id,
-                "問い ID が重複している",
+                "duplicate request ID",
             )));
         }
         let kind = match raw.kind.as_str() {
@@ -390,7 +394,7 @@ fn resolve_inner(
                     RequestIssueCode::Syntax,
                     &raw.id,
                     &raw.kind,
-                    "未知の問い kind",
+                    "unknown request kind",
                 )));
             }
         };
@@ -430,7 +434,7 @@ fn resolve_inner(
                     RequestIssueCode::Reference,
                     &raw.id,
                     "head",
-                    "neededは問いIDを $Id で指定する",
+                    "needed requires a request ID as $Id",
                 )));
             };
             if !path.is_empty() || !raw.arguments.is_empty() {
@@ -438,7 +442,7 @@ fn resolve_inner(
                     RequestIssueCode::Syntax,
                     &raw.id,
                     "head",
-                    "neededは出力fieldや追加引数を取らない",
+                    "needed does not accept an output field or additional arguments",
                 )));
             }
             names.insert(raw.id.clone(), requests.len());
@@ -460,7 +464,7 @@ fn resolve_inner(
                 RequestIssueCode::Reference,
                 &raw.id,
                 "head",
-                "宣言名を指定する",
+                "specify a declaration name",
             )));
         };
         let full = declaration(law, name, control, &raw.id)?;
@@ -469,14 +473,14 @@ fn resolve_inner(
                 RequestIssueCode::Type,
                 &raw.id,
                 name,
-                "問いと宣言の種類が合わない",
+                "request and declaration kinds do not match",
             ))
         })?;
         let view_params = params;
         let selected_law = if kind == QuestionKind::Quotient {
             raw.arguments.iter().find(|(key, _)| key == "law").map(|(_, value)| {
                 let Selector::Declaration { name } = value else {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "lawはLaw宣言名を指定する")));
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "law must specify a Law declaration name")));
                 };
                 declaration(law, name, control, &raw.id)
             }).transpose()?
@@ -484,12 +488,12 @@ fn resolve_inner(
         let mut all_params = params.to_vec();
         if let Some(name) = &selected_law {
             let Signature::Law { params, .. } = &law.declarations[name].signature else {
-                return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "lawはLaw宣言を指定する")));
+                return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "law must specify a Law declaration")));
             };
             for param in params {
                 if let Some(shared) = all_params.iter().find(|p| p.name == param.name) {
                     if shared.ty != param.ty {
-                        return Err(invalid(problem(RequestIssueCode::Type, &raw.id, &param.name, "viewとLawの同名parameter型が異なる")));
+                        return Err(invalid(problem(RequestIssueCode::Type, &raw.id, &param.name, "view and Law parameter types with the same name do not match")));
                     }
                 } else { all_params.push(param.clone()); }
             }
@@ -501,21 +505,21 @@ fn resolve_inner(
             phase(control, Checkpoint::RequestBinding)?;
             if key == "law" && kind == QuestionKind::Quotient {
                 if arguments.insert("law".into(), RequestArgument {
-                    name: "law".into(), value: Selector::Declaration { name: selected_law.clone().ok_or_else(|| invalid(problem(RequestIssueCode::Reference, &raw.id, "law", "Lawがない")))? },
+                    name: "law".into(), value: Selector::Declaration { name: selected_law.clone().ok_or_else(|| invalid(problem(RequestIssueCode::Reference, &raw.id, "law", "missing Law")))? },
                     origin: ArgumentOrigin::Explicit,
                 }).is_some() {
-                    return Err(invalid(problem(RequestIssueCode::DuplicateArgument, &raw.id, "law", "lawが重複している")));
+                    return Err(invalid(problem(RequestIssueCode::DuplicateArgument, &raw.id, "law", "duplicate law")));
                 }
                 continue;
             }
             if key == "using" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair) {
                 let Selector::Declaration { name } = &value else {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "usingはchangeの完全名")));
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "using must be a fully qualified change name")));
                 };
                 let change = declaration(law, name, control, &raw.id)?;
                 if !matches!(law.declarations[&change].signature, Signature::Change { .. })
                     || law.declarations[&change].reading != law.declarations[&full].reading {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "同じreadingのchangeを指定する")));
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "specify a change from the same reading")));
                 }
                 arguments.insert("using".into(), RequestArgument {name:"using".into(), value:Selector::Declaration {name:change}, origin:ArgumentOrigin::Explicit});
                 continue;
@@ -531,7 +535,7 @@ fn resolve_inner(
                         RequestIssueCode::Type,
                         &raw.id,
                         "on",
-                        if kind == QuestionKind::Quotient { "onはCandidateSpace/SolutionSetの公開Handleを指定する" } else { "onはArchitectureの公開Handleを指定する" },
+                        if kind == QuestionKind::Quotient { "on must specify a public CandidateSpace/SolutionSet Handle" } else { "on must specify a public Architecture Handle" },
                     )));
                 };
                 if path.is_empty() {
@@ -539,7 +543,7 @@ fn resolve_inner(
                         RequestIssueCode::Projection,
                         &raw.id,
                         "on",
-                        if kind == QuestionKind::Quotient { "onはCandidateSpace/SolutionSetの出力fieldまで指定する" } else { "onはArchitectureの出力fieldまで指定する" },
+                        if kind == QuestionKind::Quotient { "on must specify a CandidateSpace/SolutionSet output field" } else { "on must specify an Architecture output field" },
                     )));
                 }
                 dependencies.insert(id.clone());
@@ -558,7 +562,7 @@ fn resolve_inner(
                         RequestIssueCode::DuplicateArgument,
                         &raw.id,
                         "on",
-                        "onが重複している",
+                        "duplicate on",
                     )));
                 }
                 continue;
@@ -574,7 +578,7 @@ fn resolve_inner(
                         RequestIssueCode::Reference,
                         &raw.id,
                         &key,
-                        "未知の parameter",
+                        "unknown parameter",
                     ))
                 },
             )?;
@@ -583,7 +587,7 @@ fn resolve_inner(
                     RequestIssueCode::Type,
                     &raw.id,
                     &key,
-                    "parameter には Handle を指定する",
+                    "parameter requires a Handle",
                 )));
             }
             if let Selector::Answer { id, path } = &value {
@@ -593,7 +597,7 @@ fn resolve_inner(
                         RequestIssueCode::Projection,
                         &raw.id,
                         &key,
-                        "出力 field を指定する",
+                        "specify an output field",
                     )));
                 }
                 dependencies.insert(id.clone());
@@ -615,7 +619,7 @@ fn resolve_inner(
                     RequestIssueCode::DuplicateArgument,
                     &raw.id,
                     &key,
-                    "同じ parameter の束縛が重複している",
+                    "duplicate binding for the same parameter",
                 )))
             } else {
                 Ok(())
@@ -624,10 +628,10 @@ fn resolve_inner(
         }
         if matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
             && (!arguments.contains_key("on") || !arguments.contains_key("using")) {
-            return Err(invalid(problem(RequestIssueCode::MissingBinding, &raw.id, "on/using", "solve/repairはonとusingを指定する")));
+            return Err(invalid(problem(RequestIssueCode::MissingBinding, &raw.id, "on/using", "solve/repair requires on and using")));
         }
         if kind == QuestionKind::Quotient && !arguments.contains_key("on") {
-            return Err(invalid(problem(RequestIssueCode::MissingBinding,&raw.id,"on","quotientはonを指定する")));
+            return Err(invalid(problem(RequestIssueCode::MissingBinding,&raw.id,"on","quotient requires on")));
         }
         let mut unbound = Vec::new();
         for param in params {
@@ -645,7 +649,7 @@ fn resolve_inner(
                             RequestIssueCode::MissingBinding,
                             &raw.id,
                             &param.name,
-                            "view の全 parameter を束縛する",
+                            "bind all view parameters",
                         ))),
                         control,
                         Checkpoint::RequestBinding,
@@ -715,7 +719,7 @@ fn resolve_inner(
                         RequestIssueCode::Reference,
                         &request.id,
                         dependency,
-                        "依存する問いIDが存在しない",
+                        "dependency request ID does not exist",
                     )));
                 }
             }
@@ -767,7 +771,7 @@ fn resolve_inner(
                     RequestIssueCode::Reference,
                     &req.id,
                     "head",
-                    "問いIDが存在しない",
+                    "request ID does not exist",
                 )));
             }
             phase(control, Checkpoint::RequestDependency)?;
@@ -829,14 +833,14 @@ fn resolve_inner(
             } else {false};
             let quotient = req.kind == QuestionKind::Quotient;
             if quotient && !matches!(plan.ty, ProjectionType::CandidateSpace(_) | ProjectionType::SolutionSet(_)) {
-                return Err(invalid(problem(RequestIssueCode::Type,&req.id,"on","quotientのonはCandidateSpaceまたはSolutionSet")));
+                return Err(invalid(problem(RequestIssueCode::Type,&req.id,"on","quotient on must be a CandidateSpace or SolutionSet")));
             }
             if !quotient && !change_root && !architecture(&plan.ty, control)? {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
                     &req.id,
                     "on",
-                    "onのHandleはArchitectureである必要がある",
+                    "on Handle must be an Architecture",
                 )));
             }
         }
@@ -972,7 +976,7 @@ fn declaration(
             RequestIssueCode::Reference,
             request,
             name,
-            "宣言名が存在しないか曖昧",
+            "declaration name does not exist or is ambiguous",
         ))
     };
     phase(control, Checkpoint::RequestBinding)?;
@@ -1033,7 +1037,7 @@ fn binding_constraints(law:&CheckedLaw,map:&CheckedArchMap,requests:&[Request],n
                 RequestIssueCode::Type,
                 &req.id,
                 &arg.name,
-                "Handle の型が parameter 型と合わない",
+                "Handle type does not match parameter type",
             )));
         }
         let owner = match &param.ty {
@@ -1065,7 +1069,7 @@ fn binding_constraints(law:&CheckedLaw,map:&CheckedArchMap,requests:&[Request],n
                             RequestIssueCode::Type,
                             &req.id,
                             &arg.name,
-                            "依存 parameter の owner が合わない",
+                            "dependent parameter owner does not match",
                         ))),
                         control,
                         Checkpoint::RequestBinding,
@@ -1121,7 +1125,7 @@ fn subject<'a>(
             RequestIssueCode::Reference,
             context.0,
             context.1,
-            "subject が存在しない",
+            "subject does not exist",
         ))
     };
     let snapshot = checked_require(
@@ -1167,18 +1171,18 @@ fn selector_type(
             phase(control, Checkpoint::RequestDependency)?;
             let r = &requests[*names
                 .get(id)
-                .ok_or_else(|| failure(RequestIssueCode::Reference, "問い ID が存在しない"))?];
+                .ok_or_else(|| failure(RequestIssueCode::Reference, "request ID does not exist"))?];
             if r.kind == QuestionKind::Needed {
                 return Err(failure(
                     RequestIssueCode::Projection,
-                    "ObservationPlanはLawへ束縛できる公開射影を持たない",
+                    "ObservationPlan has no public projection that can bind to Law",
                 ));
             }
             phase(control, Checkpoint::RequestDependency)?;
             let Some(ProjectionStep::Field(field)) = path.first() else {
                 return Err(failure(
                     RequestIssueCode::Projection,
-                    "出力 field を指定する",
+                    "specify an output field",
                 ));
             };
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
@@ -1196,7 +1200,7 @@ fn selector_type(
                         "solutions"=>Ok(ProjectionType::SolutionSet(root)),
                         "object" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::ArchitectureRoot(root)),
                         "repair" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::Repair(root)),
-                        _=>Err(failure(RequestIssueCode::Projection,"このchange問いの非公開出力")),
+                        _=>Err(failure(RequestIssueCode::Projection,"output of this change request is not public")),
                     }).collect::<Result<Vec<_>,_>>()?;
                     if types.len()==1 {types.into_iter().next().expect("一件")}else{ProjectionType::Dynamic(types)}
                 }
@@ -1204,8 +1208,8 @@ fn selector_type(
                 if field == "proposition" && r.arguments.iter().any(|a| a.name == "law") {
                     ProjectionType::Proposition
                 } else {
-                if field != "quotient" { return Err(failure(RequestIssueCode::Projection,"quotientの非公開出力")); }
-                let on=&r.arguments.iter().find(|a|a.name=="on").ok_or_else(||failure(RequestIssueCode::MissingBinding,"quotientのonがない"))?.value;
+                if field != "quotient" { return Err(failure(RequestIssueCode::Projection,"quotient output is not public")); }
+                let on=&r.arguments.iter().find(|a|a.name=="on").ok_or_else(||failure(RequestIssueCode::MissingBinding,"missing quotient on"))?.value;
                 let (plan,_)=selector_type(law,map,requests,names,on,control,(request,"on"))?;
                 ProjectionType::Quotient(Box::new(plan.ty))
                 }
@@ -1237,7 +1241,7 @@ fn selector_type(
                     _ => {
                         return Err(failure(
                             RequestIssueCode::Projection,
-                            "この問いで公開されていない出力",
+                            "output is not public for this request",
                         ));
                     }
                 }
@@ -1252,7 +1256,7 @@ fn selector_type(
                 }
             }
         }
-        _ => return Err(failure(RequestIssueCode::Type, "Handle を指定する")),
+        _ => return Err(failure(RequestIssueCode::Type, "specify a Handle")),
     };
     phase(control, Checkpoint::RequestBinding)?;
     Ok((plan, owners))
@@ -1501,7 +1505,7 @@ fn owner_check(
             RequestIssueCode::Type,
             request,
             argument,
-            "依存 parameter の owner と subject は同じ snapshot に属する",
+            "dependent parameter owner and subject must belong to the same snapshot",
         )));
         return finish_request(result, control, Checkpoint::RequestBinding);
     }
@@ -1524,7 +1528,7 @@ fn owner_check(
                     RequestIssueCode::Type,
                     request,
                     argument,
-                    "依存 parameter の owner が合わない",
+                    "dependent parameter owner does not match",
                 )))
             }
         }
@@ -1544,7 +1548,7 @@ fn cycle_failure(requests: &[Request], cyclic: &[usize]) -> ResolveFailure {
                 &requests[i].id,
                 &requests[i].id,
                 &format!(
-                    "問いの依存に循環がある: {}。{} の依存辺: {}",
+                    "cyclic request dependencies: {}; dependency edges of {}: {}",
                     cyclic
                         .iter()
                         .map(|&j| requests[j].id.as_str())
@@ -1757,7 +1761,7 @@ impl<'a> Parser<'a> {
                 RequestIssueCode::Syntax,
                 &self.id,
                 self.src,
-                "要求の区切りが不正",
+                "invalid request separator",
             )))
         };
         finish_request(result, &mut self.control, Checkpoint::RequestSyntax)
@@ -1772,7 +1776,7 @@ impl<'a> Parser<'a> {
             .get(self.at)
             .is_some_and(u8::is_ascii_alphabetic)
         {
-            return Err(self.error("識別子を指定する"));
+            return Err(self.error("specify an identifier"));
         }
         self.at += 1;
         self.tick()?;
@@ -1792,7 +1796,7 @@ impl<'a> Parser<'a> {
         let name = self.name(false)?;
         let is_reserved = crate::law::parser::is_reserved(&name);
         if is_reserved {
-            return Err(self.error("予約語は識別子に使えない"));
+            return Err(self.error("reserved word cannot be used as an identifier"));
         }
         self.tick()?;
         Ok(name)
@@ -1833,11 +1837,11 @@ impl<'a> Parser<'a> {
                     }
                     let digits = &self.src[start..self.at];
                     if digits.is_empty() || (digits.len() > 1 && digits.starts_with('0')) {
-                        return Err(self.error("index は正規化した非負整数で指定する"));
+                        return Err(self.error("index must be a normalized nonnegative integer"));
                     }
                     let n = n
                         .filter(|n| *n <= 9_007_199_254_740_991)
-                        .ok_or_else(|| self.error("index が Nat の上限を超える"))?;
+                        .ok_or_else(|| self.error("index exceeds the Nat limit"))?;
                     self.expect(b']')?;
                     path.push(ProjectionStep::Index(n));
                 } else {
@@ -1866,10 +1870,10 @@ impl<'a> Parser<'a> {
         while let Some(digit) = self.src.as_bytes().get(self.at).copied().filter(u8::is_ascii_digit) {
             self.tick()?;
             value = value.checked_mul(10).and_then(|n| n.checked_add(u64::from(digit-b'0')))
-                .filter(|n| *n <= 9_007_199_254_740_991).ok_or_else(||self.error("degreeがNatの上限を超える"))?;
+                .filter(|n| *n <= 9_007_199_254_740_991).ok_or_else(||self.error("degree exceeds the Nat limit"))?;
             self.at += 1;
         }
-        if start == self.at || (self.at-start>1 && self.src.as_bytes()[start]==b'0') {return Err(self.error("degreeは正規化した非負整数"));}
+        if start == self.at || (self.at-start>1 && self.src.as_bytes()[start]==b'0') {return Err(self.error("degree must be a normalized nonnegative integer"));}
         Ok(value)
     }
     fn parse(mut self) -> Result<RawRequest, ResolveFailure> {
@@ -1886,7 +1890,7 @@ impl<'a> Parser<'a> {
             let mut key = self.name(false)?;
             if self.take(b'.')? {
                 if key != "bind" {
-                    return Err(self.error("束縛 key の接頭辞は bind"));
+                    return Err(self.error("binding key prefix must be bind"));
                 }
                 key.push('.');
                 key.push_str(&self.name(false)?);
@@ -1897,7 +1901,7 @@ impl<'a> Parser<'a> {
                     RequestIssueCode::DuplicateArgument,
                     &self.id,
                     &key,
-                    "引数名が重複している",
+                    "duplicate argument name",
                 )))
             } else {
                 Ok(())
@@ -1920,7 +1924,7 @@ impl<'a> Parser<'a> {
         self.expect(b')')?;
         self.ws()?;
         if self.at != self.src.len() {
-            return Err(self.error("要求の末尾に余分な字句がある"));
+            return Err(self.error("unexpected tokens after request"));
         }
         self.tick()?;
         Ok(RawRequest {
@@ -1978,7 +1982,7 @@ mod required_predicate_priority_tests {
             } else {
                 assert!(
                     matches!(result, ResolveFailure::Invalid { issues, stop_reason: Some(StopReason::BudgetExhausted { .. }), .. }
-                    if issues == [problem(RequestIssueCode::Syntax, "a", "!", "要求の区切りが不正")])
+                    if issues == [problem(RequestIssueCode::Syntax, "a", "!", "invalid request separator")])
                 );
             }
         }

@@ -283,7 +283,7 @@ stdoutは完了時に一行だけ出力する。
 
 resultは作成したresult.jsonの呼出しcwdからのpath。作成できなければ欄を省略する。
 実行失敗・中断の通知には非空のissuesを必須とする。Issueの型・並びは[型付き結果](results.md)を使う。
-messageには原因と、問題の引数または入力をその場で理解できる説明を入れる。
+messageは英語で、原因と問題の引数または入力をその場で理解できる説明を入れる。入力者が指定した名前・文字列はそのまま保持する。
 位置を特定できる入力エラーはlocationに元入力のIDとpointer/spanを、usageはdetails.argumentを保持する。
 入力IDはlaw、archmap、指定順のdefinition0、definition1、…であり、ファイルコピーがなくてもCLIの指定と対応する。
 成果物のない通知のIssueはノード参照を持たず、dependencies/missingを空とする。
@@ -294,7 +294,7 @@ stderrは進捗と障害の補助説明に使い、エラーの具体的な内�
 例えば、出力先を省略したcheckはファイルを作らず、次の一行と終了コード64を返す。
 
 ```json
-{"format":"archsig.receipt/1","status":"invalid","exit_code":64,"issues":[{"code":"usage","message":"--out が必要","dependencies":[],"missing":[],"details":{"argument":"--out"}}]}
+{"format":"archsig.receipt/1","status":"invalid","exit_code":64,"issues":[{"code":"usage","message":"--out: check requires --out","dependencies":[],"missing":[],"details":{"argument":"--out"}}]}
 ```
 `version`は次の一行を出し0で終了する。
 

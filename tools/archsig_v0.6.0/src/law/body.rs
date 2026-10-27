@@ -97,7 +97,7 @@ impl<E: InputError> Checker<'_, E> {
                     Some("entity")
                 )
             {
-                return syntax(f.ty.span(), "change の第1引数は entity の参照");
+                return syntax(f.ty.span(), "the first change argument must be an entity reference");
             }
             ps.push(Param {
                 name: f.name.name.clone(),
@@ -218,7 +218,7 @@ impl<E: InputError> Checker<'_, E> {
                 body,
             } => {
                 if params.is_empty() {
-                    return syntax(d.name.span, "change は第1引数に entity の参照を持つ");
+                    return syntax(d.name.span, "change requires an entity reference as its first argument");
                 }
                 let params = self.params(ri, params, true)?;
                 let mut env = self.env_for(&params)?;
@@ -254,13 +254,13 @@ impl<E: InputError> Checker<'_, E> {
                     _ => {
                         return syntax(
                             self.parser.exprs[*body].span,
-                            "relation の body は最上位の `=` の二項式",
+                            "relation body must be a binary expression with top-level `=`",
                         );
                     }
                 };
                 let lt = self.check(left, None, &mut env, &ctx)?;
                 if !matches!(lt, Type::Path(..)) {
-                    return syntax(self.parser.exprs[left].span, "relation の両辺は Path");
+                    return syntax(self.parser.exprs[left].span, "both sides of a relation must be Path values");
                 }
                 let rt = self.check(right, Some(&lt), &mut env, &ctx)?;
                 record(self, ExpressionKind::RelationLeft, left, lt);
@@ -339,7 +339,7 @@ impl<E: InputError> Checker<'_, E> {
             return Ok(t);
         }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
-            return syntax(span, "change の body の結果は第1引数の `with` 更新");
+            return syntax(span, "change body must return a `with` update of its first argument");
         };
         let first = &params[0];
         let mut target = base;
@@ -353,7 +353,7 @@ impl<E: InputError> Checker<'_, E> {
         if !is_first {
             return syntax(
                 self.parser.exprs[base].span,
-                "change の `with` は第1引数を更新する",
+                "change `with` must update its first argument",
             );
         }
         let entity = first.ty.ref_target().expect("entity の参照").to_owned();
@@ -366,25 +366,25 @@ impl<E: InputError> Checker<'_, E> {
             let Some(f) = self.signature_field(&sig, &field.name)? else {
                 return reference(
                     field.span,
-                    format!("`{entity}` に field `{}` はない", field.name),
+                    format!("entity `{entity}` has no field `{}`", field.name),
                 );
             };
             if !seen.insert(field.name.clone()) {
                 return duplicate(
                     field.span,
-                    format!("field `{}` の更新が重複している", field.name),
+                    format!("duplicate update of field `{}`", field.name),
                 );
             }
             if field.name == "owner" {
                 return syntax(
                     field.span,
-                    "change は owner・参照・Map を含む field を更新しない",
+                    "change cannot update owner fields or fields containing references or Map",
                 );
             }
             self.reject_reference(
                 &f.ty,
                 field.span,
-                "change は owner・参照・Map を含む field を更新しない",
+                "change cannot update owner fields or fields containing references or Map",
             )?;
             self.record(field.span, full(&entity, &[&field.name]));
             self.check(*value, Some(&f.ty), env, ctx)?;
@@ -412,7 +412,7 @@ impl<E: InputError> Checker<'_, E> {
             // Source spans are indexed before DFS, so no new search is needed
             // after detection. A later budget retains this issue; cancellation wins.
             let span = first_spans[&n];
-            let failure = cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
+            let failure = cycle(span, format!("cyclic view calls involving `{n}`"));
             return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);
         }
         Ok(())
@@ -435,7 +435,7 @@ impl<E: InputError> Checker<'_, E> {
             let failure = cycle(
                 span,
                 format!(
-                    "reading `{}` を含む参照が循環している",
+                    "cyclic reading references involving `{}`",
                     self.reading_name(i)
                 ),
             );

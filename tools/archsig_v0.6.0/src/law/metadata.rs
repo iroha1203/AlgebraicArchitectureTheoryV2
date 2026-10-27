@@ -88,7 +88,7 @@ impl<E: InputError> Checker<'_, E> {
                     | Signature::Arrow { .. }
                     | Signature::Correspondence { .. }
                     | Signature::Data { .. } => {
-                        unreachable!("Law /2 の原始 metadata は共通定義側が保持する")
+                        unreachable!("primitive metadata for Law /2 belongs in the shared definitions")
                     }
                     Signature::View {
                         params, returns, ..

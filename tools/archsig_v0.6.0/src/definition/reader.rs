@@ -111,7 +111,7 @@ impl<'a, E: InputError> Obj<'a, E> {
     ) -> R<Self, E> {
         step::<E, _>(control, |control| {
             let JValue::Obj(es) = &n.value else {
-                return Err(error(Code::Syntax, input, p, "object が必要").into());
+                return Err(error(Code::Syntax, input, p, "expected an object").into());
             };
             for (k, v) in es {
                 step::<E, _>(control, |_| {
@@ -120,7 +120,7 @@ impl<'a, E: InputError> Obj<'a, E> {
                             Code::Syntax,
                             input,
                             &pointer_push(p, k),
-                            "未知欄または null",
+                            "unknown field or null value",
                         )
                         .into());
                     }
@@ -133,12 +133,12 @@ impl<'a, E: InputError> Obj<'a, E> {
                         es,
                         k,
                         control,
-                        Some(error(Code::Syntax, input, p, format!("欄 `{k}` が必要"))),
+                        Some(error(Code::Syntax, input, p, format!("missing required field `{k}`"))),
                     )?
                     .is_none()
                     {
                         return Err(
-                            error(Code::Syntax, input, p, format!("欄 `{k}` が必要")).into()
+                            error(Code::Syntax, input, p, format!("missing required field `{k}`")).into()
                         );
                     }
                     Ok(())
@@ -170,7 +170,7 @@ impl<'a, E: InputError> Obj<'a, E> {
                 Code::Syntax,
                 self.input,
                 &pointer_push(&self.pointer, k),
-                "非空文字列が必要",
+                "expected a nonempty string",
             )
             .into());
         }
@@ -195,20 +195,20 @@ fn string<E: InputError>(n: &JNode, input: &str, p: &str) -> R<String, E> {
     if let JValue::Str(s) = &n.value {
         Ok(s.clone())
     } else {
-        Err(error(Code::Syntax, input, p, "文字列が必要").into())
+        Err(error(Code::Syntax, input, p, "expected a string").into())
     }
 }
 fn array<'a, E: InputError>(n: &'a JNode, input: &str, p: &str) -> R<&'a [JNode], E> {
     if let JValue::Arr(a) = &n.value {
         Ok(a)
     } else {
-        Err(error(Code::Syntax, input, p, "array が必要").into())
+        Err(error(Code::Syntax, input, p, "expected an array").into())
     }
 }
 fn name<E: InputError>(control: &mut Control, s: &str, input: &str, p: &str) -> R<(), E> {
     step::<E, _>(control, |control| {
         let mut chars = s.chars();
-        let invalid = || error(Code::Syntax, input, p, "Name の字句が不正または予約済み");
+        let invalid = || error(Code::Syntax, input, p, "invalid or reserved Name");
         if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
             return Err(invalid().into());
         }
@@ -222,7 +222,7 @@ fn name<E: InputError>(control: &mut Control, s: &str, input: &str, p: &str) -> 
             })?;
         }
         if crate::names::is_reserved(s) || ["vocabulary", "version", "digest"].contains(&s) {
-            return Err(error(Code::Syntax, input, p, "Name の字句が不正または予約済み").into());
+            return Err(error(Code::Syntax, input, p, "invalid or reserved Name").into());
         }
         Ok(())
     })
@@ -244,7 +244,7 @@ fn qname<E: InputError>(
             })?;
         }
         if parts.len() != count {
-            return Err(error(Code::Syntax, input, p, "完全名の段数が不正").into());
+            return Err(error(Code::Syntax, input, p, "invalid number of fully qualified name components").into());
         }
         for part in parts {
             name::<E>(control, part, input, p)?;
@@ -255,7 +255,7 @@ fn qname<E: InputError>(
 
 fn unique<E: InputError>(seen: &mut BTreeSet<String>, s: &str, input: &str, p: &str) -> R<(), E> {
     if !seen.insert(s.into()) {
-        return Err(error(Code::DuplicateId, input, p, format!("`{s}` が重複している")).into());
+        return Err(error(Code::DuplicateId, input, p, format!("duplicate `{s}`")).into());
     }
     Ok(())
 }
@@ -272,7 +272,7 @@ fn binding<E: InputError>(control: &mut Control, n: &JNode, input: &str, p: &str
                 Code::Syntax,
                 input,
                 &pointer_push(p, "digest"),
-                "Digest の形式が不正",
+                "invalid Digest format",
             )
             .into());
         }
@@ -291,16 +291,16 @@ pub(super) fn read<E: InputError>(
 ) -> Result<(Vec<Vocabulary>, Vec<PrimitiveDeclaration>, Json), E> {
     step::<E, _>(control, |control| {
         let JValue::Obj(entries) = &n.value else {
-            return Err((error(Code::Syntax, input, "", "object が必要")).into());
+            return Err((error(Code::Syntax, input, "", "expected an object")).into());
         };
         let format = string(
             find::<E>(
                 entries,
                 "format",
                 control,
-                Some(error(Code::Syntax, input, "", "欄 `format` が必要")),
+                Some(error(Code::Syntax, input, "", "missing required field `format`")),
             )?
-            .ok_or_else(|| error(Code::Syntax, input, "", "欄 `format` が必要"))?,
+            .ok_or_else(|| error(Code::Syntax, input, "", "missing required field `format`"))?,
             input,
             "/format",
         )?;
@@ -312,7 +312,7 @@ pub(super) fn read<E: InputError>(
             } else {
                 "/semantics"
             },
-            "未対応の format または semantics",
+            "unsupported format or semantics",
         );
         missing_semantics.details = Details::Version {
             found_format: format.clone(),
@@ -330,7 +330,7 @@ pub(super) fn read<E: InputError>(
                 } else {
                     "/semantics"
                 },
-                "未対応の format または semantics",
+                "unsupported format or semantics",
             );
             e.details = Details::Version {
                 found_format: format,
@@ -347,7 +347,7 @@ pub(super) fn read<E: InputError>(
         )?;
         let (nodes, p) = o.array("vocabularies")?;
         if nodes.is_empty() {
-            return Err((error(Code::Syntax, input, &p, "一つ以上の Vocabulary が必要")).into());
+            return Err((error(Code::Syntax, input, &p, "at least one Vocabulary is required")).into());
         }
         let mut vs = Vec::new();
         let mut ds = Vec::new();
@@ -358,22 +358,22 @@ pub(super) fn read<E: InputError>(
                 let vp = pointer_push(&p, &i.to_string());
                 // 語彙の意味の版を、対応版の schema 検査より先に読む。
                 let JValue::Obj(entries) = &n.value else {
-                    return Err((error(Code::Syntax, input, &vp, "object が必要")).into());
+                    return Err((error(Code::Syntax, input, &vp, "expected an object")).into());
                 };
                 let semantics_node = find::<E>(
                     entries,
                     "semantics",
                     control,
-                    Some(error(Code::Syntax, input, &vp, "欄 `semantics` が必要")),
+                    Some(error(Code::Syntax, input, &vp, "missing required field `semantics`")),
                 )?
-                .ok_or_else(|| error(Code::Syntax, input, &vp, "欄 `semantics` が必要"))?;
+                .ok_or_else(|| error(Code::Syntax, input, &vp, "missing required field `semantics`"))?;
                 let semantics = string(semantics_node, input, &pointer_push(&vp, "semantics"))?;
                 if semantics != SEMANTICS {
                     let mut e = error(
                         Code::UnsupportedVersion,
                         input,
                         &pointer_push(&vp, "semantics"),
-                        "未対応の semantics",
+                        "unsupported semantics",
                     );
                     e.details = Details::Version {
                         found_format: FORMAT.into(),
@@ -486,15 +486,15 @@ fn declaration<E: InputError>(
     step::<E, _>(control, |control| {
         // kind を読んでから、variant ごとに全必須欄・未知欄を検査する。
         let JValue::Obj(es) = &n.value else {
-            return Err(error(Code::Syntax, input, p, "object が必要").into());
+            return Err(error(Code::Syntax, input, p, "expected an object").into());
         };
         let kind = find::<E>(
             es,
             "kind",
             control,
-            Some(error(Code::Syntax, input, p, "kind が必要")),
+            Some(error(Code::Syntax, input, p, "missing kind")),
         )?
-        .ok_or_else(|| error(Code::Syntax, input, p, "kind が必要"))?;
+        .ok_or_else(|| error(Code::Syntax, input, p, "missing kind"))?;
         let kind = string(kind, input, &pointer_push(p, "kind"))?;
         let keys = match kind.as_str() {
             "data" => vec!["kind", "name", "meaning", "constructors"],
@@ -511,7 +511,7 @@ fn declaration<E: InputError>(
                     Code::Syntax,
                     input,
                     &pointer_push(p, "kind"),
-                    "原始宣言 kind が必要",
+                    "expected a primitive declaration kind",
                 )
                 .into());
             }
@@ -524,7 +524,7 @@ fn declaration<E: InputError>(
                 Code::Syntax,
                 input,
                 &pointer_push(p, "name"),
-                "宣言の namespace が異なる",
+                "declaration namespace does not match",
             )
             .into());
         }
@@ -534,7 +534,7 @@ fn declaration<E: InputError>(
                 Code::Syntax,
                 input,
                 &pointer_push(p, "name"),
-                "組込み演算名は宣言名に使えない",
+                "built-in operation name cannot be used as a declaration name",
             )
             .into());
         }
@@ -635,7 +635,7 @@ fn declaration<E: InputError>(
                     Code::Syntax,
                     input,
                     &ap,
-                    "entity と arrow の alignments は空",
+                    "entity and arrow alignments must be empty",
                 )
                 .into());
             }
@@ -779,12 +779,12 @@ fn ty_inner<E: InputError>(
             "Z" => Ok(Type::Z),
             "Q" => Ok(Type::Q),
             "Text" => Ok(Type::Text),
-            _ => Err(error(Code::Syntax, input, p, "型表記が不正").into()),
+            _ => Err(error(Code::Syntax, input, p, "invalid type syntax").into()),
         };
     }
     let a = array(n, input, p)?;
     let Some(first) = a.first() else {
-        return Err(error(Code::Syntax, input, p, "型 constructor が必要").into());
+        return Err(error(Code::Syntax, input, p, "expected a type constructor").into());
     };
     let tag = string(first, input, &pointer_push(p, "0"))?;
     let child = |i: usize| pointer_push(p, &i.to_string());
@@ -793,7 +793,7 @@ fn ty_inner<E: InputError>(
             let v = string(&a[1], input, &child(1))?;
             if v.starts_with('0') || v.is_empty() {
                 return Err(
-                    error(Code::Syntax, input, &child(1), "正の10進整数文字列が必要").into(),
+                    error(Code::Syntax, input, &child(1), "expected a positive decimal integer string").into(),
                 );
             }
             for b in v.bytes() {
@@ -802,7 +802,7 @@ fn ty_inner<E: InputError>(
                         Ok(())
                     } else {
                         Err(
-                            error(Code::Syntax, input, &child(1), "正の10進整数文字列が必要")
+                            error(Code::Syntax, input, &child(1), "expected a positive decimal integer string")
                                 .into(),
                         )
                     }
@@ -859,7 +859,7 @@ fn ty_inner<E: InputError>(
                 Box::new(ty::<E>(control, &a[2], input, &child(2), refs)?),
             ))
         }
-        _ => Err(error(Code::Syntax, input, p, "型表記または arity が不正").into()),
+        _ => Err(error(Code::Syntax, input, p, "invalid type syntax or arity").into()),
     }
 }
 
@@ -1068,7 +1068,7 @@ mod interruption_tests {
                                 Code::Syntax,
                                 "definition0",
                                 "",
-                                "欄 `missing` が必要",
+                                "missing required field `missing`",
                             )),
                         )
                         .map(|_| ()),

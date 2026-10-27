@@ -131,7 +131,7 @@ impl<E: InputError> Checker<'_, E> {
         if !matches!(self.lookup(env, &id.name)?, Lookup::Missing) {
             return duplicate(
                 id.span,
-                format!("束縛名 `{}` が外側の束縛と重なる", id.name),
+                format!("binding name `{}` shadows an outer binding", id.name),
             );
         }
         env.vars.push(Binding {
@@ -177,7 +177,7 @@ impl<E: InputError> Checker<'_, E> {
             if let Some(e) = expected
                 && self.erase_type(e)? != t
             {
-                return self.type_error(self.span(id), e, &t, "式の型が合わない");
+                return self.type_error(self.span(id), e, &t, "expression type mismatch");
             }
             if self.expr_types.len() < self.parser.exprs.len() {
                 self.expr_types.resize(self.parser.exprs.len(), None);
@@ -293,12 +293,12 @@ impl<E: InputError> Checker<'_, E> {
                     let v: BigUint = text.parse().expect("10進整数");
                     let p_val: BigUint = p.parse().expect("10進整数");
                     if v >= p_val {
-                        return syntax(span, format!("整数 {text} は Fp({p}) の範囲 0..{p} の外"));
+                        return syntax(span, format!("integer {text} is outside the Fp({p}) range 0..{p}"));
                     }
                     Ok(Type::Fp(p.clone()))
                 }
                 Some(other) => {
-                    self.type_error(span, other, &Type::Z, "整数 literal の型が合わない")
+                    self.type_error(span, other, &Type::Z, "integer literal type mismatch")
                 }
             },
             ExprKind::Str(_) => Ok(Type::Text),
@@ -331,7 +331,7 @@ impl<E: InputError> Checker<'_, E> {
                 operand,
             } => {
                 let t = self.check(operand, expected, env, ctx)?;
-                self.require_numeric(&t, span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組")?;
+                self.require_numeric(&t, span, &Type::Z, &t, "unary - requires Z, Q, Fp, or tuples of these types")?;
                 Ok(t)
             }
             ExprKind::Binary { op, lhs, rhs } => {
@@ -383,20 +383,20 @@ impl<E: InputError> Checker<'_, E> {
                 let t = self.check(base, None, env, ctx)?;
                 match &t {
                     Type::Tuple(items) if index < items.len() => Ok(items[index].clone()),
-                    Type::Tuple(_) => syntax(index_span, "組の位置が範囲外"),
+                    Type::Tuple(_) => syntax(index_span, "tuple index is out of range"),
                     other => self.type_error(
                         self.span(base),
                         &Type::Tuple(vec![]),
                         other,
-                        "数値射影は組だけに使える",
+                        "numeric projection requires a tuple",
                     ),
                 }
             }
             ExprKind::Call { callee, args } => {
                 self.check_call(callee, &args, span, expected, env, ctx)
             }
-            ExprKind::With { .. } => syntax(span, "`with` は change の body だけに置ける"),
-            ExprKind::ThenOp => syntax(span, "`then` は適用して使う"),
+            ExprKind::With { .. } => syntax(span, "`with` is only allowed in a change body"),
+            ExprKind::ThenOp => syntax(span, "`then` must be applied to arguments"),
             ExprKind::ListLit { ty, items } => {
                 let t = self.resolve_type_in(&ty, env, ctx)?;
                 for i in items {
@@ -426,7 +426,7 @@ impl<E: InputError> Checker<'_, E> {
                         self.span(domain),
                         &Type::List(Box::new(d.clone())),
                         &d,
-                        "内包の域は List か Set",
+                        "comprehension domain must be a List or Set",
                     );
                 };
                 let mark = env.vars.len();
@@ -456,19 +456,19 @@ impl<E: InputError> Checker<'_, E> {
             ExprKind::Fn { params, body } => self.check_fn(&params, body, expected, env, ctx),
             ExprKind::Family { name, owner } => {
                 if ctx.term {
-                    return reference(span, "Term の本体は観測族を読めない");
+                    return reference(span, "Term body cannot read observed families");
                 }
                 let target = match self.resolve_prefix(ctx.reading, &name.parts)? {
                     Some((Target::Decl(n), k)) if k == name.parts.len() => n,
                     _ => {
-                        return reference(name.span(), format!("`{}` を解決できない", name.text()));
+                        return reference(name.span(), format!("cannot resolve `{}`", name.text()));
                     }
                 };
                 if !matches!(self.decl_kind(&target), Some("entity" | "arrow")) {
-                    return syntax(name.span(), "観測族は所属を持つ entity・arrow の名前");
+                    return syntax(name.span(), "observed family must name an owned entity or arrow");
                 }
                 let Some(root) = self.owner_root(&target) else {
-                    return syntax(name.span(), format!("`{}` は所属先を持たない", name.text()));
+                    return syntax(name.span(), format!("`{}` has no owner", name.text()));
                 };
                 self.record(name.span(), target.clone());
                 self.check(owner, Some(&Type::Ref(root)), env, ctx)?;
@@ -501,7 +501,7 @@ impl<E: InputError> Checker<'_, E> {
                 } else {
                     self.pair_type(lhs, rhs, env, ctx)?
                 };
-                self.require_numeric(&t, span, &Type::Z, &t, "算術は Z・Q・Fp とその組")?;
+                self.require_numeric(&t, span, &Type::Z, &t, "arithmetic requires Z, Q, Fp, or tuples of these types")?;
                 Ok(t)
             }
             BinOp::Eq | BinOp::Ne => {
@@ -511,7 +511,7 @@ impl<E: InputError> Checker<'_, E> {
             BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
                 let t = self.pair_type(lhs, rhs, env, ctx)?;
                 if t != Type::Z && t != Type::Q {
-                    return self.type_error(span, &Type::Z, &t, "順序は Z と Q だけ");
+                    return self.type_error(span, &Type::Z, &t, "ordering requires Z or Q");
                 }
                 Ok(Type::Bool)
             }
@@ -522,7 +522,7 @@ impl<E: InputError> Checker<'_, E> {
                         self.span(rhs),
                         &Type::List(Box::new(c.clone())),
                         &c,
-                        "`in` の右辺は List か Set",
+                        "right operand of `in` must be a List or Set",
                     );
                 };
                 self.check(lhs, Some(&e), env, ctx)?;
@@ -533,12 +533,12 @@ impl<E: InputError> Checker<'_, E> {
 
     fn project_field(&mut self, base: &Type, name: &Ident, ctx: &Ctx) -> CResult<Type, E> {
         if ctx.term {
-            return reference(name.span, "Term の本体は field を読めない");
+            return reference(name.span, "Term body cannot read fields");
         }
         let Some(decl) = base.ref_target().map(str::to_owned) else {
             return syntax(
                 name.span,
-                format!("field `{}` は参照型の値から読む", name.name),
+                format!("field `{}` must be read from a reference value", name.name),
             );
         };
         let field = match self.sigs.get(&decl) {
@@ -548,7 +548,7 @@ impl<E: InputError> Checker<'_, E> {
         let Some(field) = field else {
             return reference(
                 name.span,
-                format!("`{decl}` に field `{}` はない", name.name),
+                format!("`{decl}` has no field `{}`", name.name),
             );
         };
         self.record(name.span, full(&decl, &[&name.name]));
@@ -575,7 +575,7 @@ impl<E: InputError> Checker<'_, E> {
             Lookup::Captured => {
                 return reference(
                     head.span,
-                    format!("Term は外側の束縛 `{}` を捕獲できない", head.name),
+                    format!("Term cannot capture outer binding `{}`", head.name),
                 );
             }
             Lookup::Missing => {}
@@ -590,7 +590,7 @@ impl<E: InputError> Checker<'_, E> {
             if BUILTIN_OPS.contains(&head.name.as_str()) {
                 return syntax(
                     head.span,
-                    format!("組込み演算 `{}` は適用して使う", head.name),
+                    format!("built-in operation `{}` must be applied to arguments", head.name),
                 );
             }
         }
@@ -601,7 +601,7 @@ impl<E: InputError> Checker<'_, E> {
             Some((Target::Decl(n), k))
                 if k == parts.len() && self.decl_kind(&n) == Some("view") =>
             {
-                syntax(whole, format!("view `{n}` は適用して使う"))
+                syntax(whole, format!("view `{n}` must be applied to arguments"))
             }
             Some((target, k)) => {
                 let shown = match target {
@@ -611,16 +611,16 @@ impl<E: InputError> Checker<'_, E> {
                 if k < parts.len() {
                     reference(
                         parts[k].span,
-                        format!("`{shown}` の後の `{}` を解決できない", parts[k].name),
+                        format!("cannot resolve `{}` after `{shown}`", parts[k].name),
                     )
                 } else {
-                    reference(whole, format!("宣言 `{shown}` は値として使えない"))
+                    reference(whole, format!("declaration `{shown}` cannot be used as a value"))
                 }
             }
             None => reference(
                 whole,
                 format!(
-                    "名前 `{}` を解決できない",
+                    "cannot resolve name `{}`",
                     parts
                         .iter()
                         .map(|p| p.name.as_str())
@@ -659,7 +659,7 @@ impl<E: InputError> Checker<'_, E> {
         if !self.primitive_visible(reading, d, true)? {
             return reference(
                 span,
-                format!("constructor `{name}` の短名をこの scope で使えない"),
+                format!("constructor short name `{name}` is not available in this scope"),
             );
         }
         Ok(Some((d.clone(), i)))
@@ -681,7 +681,7 @@ impl<E: InputError> Checker<'_, E> {
         if c.args.len() != args.len() {
             return syntax(
                 span,
-                format!("constructor `{}` の引数は {} 個", c.name, c.args.len()),
+                format!("constructor `{}` requires {} arguments", c.name, c.args.len()),
             );
         }
         self.record(span, full(data, &[&c.name]));
@@ -720,7 +720,7 @@ impl<E: InputError> Checker<'_, E> {
                     Lookup::Captured => {
                         return reference(
                             head.span,
-                            format!("Term は外側の束縛 `{}` を捕獲できない", head.name),
+                            format!("Term cannot capture outer binding `{}`", head.name),
                         );
                     }
                     Lookup::Missing => {}
@@ -746,16 +746,16 @@ impl<E: InputError> Checker<'_, E> {
                         Ok((Callee::View(n), span))
                     }
                     Some((_, k)) if k < parts.len() => {
-                        reference(parts[k].span, format!("`{}` を解決できない", parts[k].name))
+                        reference(parts[k].span, format!("cannot resolve `{}`", parts[k].name))
                     }
                     Some(_) => syntax(
                         span,
-                        "適用できるのは view・Map・Term・constructor・固定演算",
+                        "only view, Map, Term, constructor, or built-in operations can be applied",
                     ),
                     None => reference(
                         span,
                         format!(
-                            "名前 `{}` を解決できない",
+                            "cannot resolve name `{}`",
                             parts
                                 .iter()
                                 .map(|p| p.name.as_str())
@@ -771,7 +771,7 @@ impl<E: InputError> Checker<'_, E> {
 
     fn arity(&self, span: Span, args: &[ExprId], n: usize, what: &str) -> CResult<(), E> {
         if args.len() != n {
-            return syntax(span, format!("{what} の引数は {n} 個"));
+            return syntax(span, format!("{what} requires {n} arguments"));
         }
         Ok(())
     }
@@ -791,7 +791,7 @@ impl<E: InputError> Checker<'_, E> {
             Callee::Ctor(data, index) => self.ctor_value(&data, index, name_span, args, env, ctx),
             Callee::View(view) => {
                 if ctx.term {
-                    return reference(name_span, "Term の本体は view を呼べない");
+                    return reference(name_span, "Term body cannot call a view");
                 }
                 let Some(Signature::View {
                     params, returns, ..
@@ -821,7 +821,7 @@ impl<E: InputError> Checker<'_, E> {
                 }
                 Type::Term(ps, r) => {
                     if ctx.term {
-                        return reference(name_span, "Term の本体は Term を呼べない");
+                        return reference(name_span, "Term body cannot call a Term");
                     }
                     self.arity(span, args, ps.len(), "Term の適用")?;
                     for (a, p) in args.iter().zip(ps.iter()) {
@@ -842,10 +842,10 @@ impl<E: InputError> Checker<'_, E> {
             wire.canonical_controlled::<E>(&mut self.control.clone(), self.semantic_point)
         })();
         match diagnostic {
-            Ok(text) => syntax(span, format!("型 {text} の値は適用できない")),
+            Ok(text) => syntax(span, format!("value of type {text} cannot be applied")),
             // Applicability was already rejected. A display budget cannot
             // replace this known input failure or start a new derivation.
-            Err(stop) if stop.is_budget_stop() => syntax(span, "この型の値は適用できない"),
+            Err(stop) if stop.is_budget_stop() => syntax(span, "value of this type cannot be applied"),
             Err(stop) => Err(stop),
         }
     }
@@ -859,7 +859,7 @@ impl<E: InputError> Checker<'_, E> {
     ) -> CResult<(), E> {
         let rec = ctx.rec.clone();
         let Some((index, data)) = rec else {
-            return cycle(span, "view の自己再帰には左端の data parameter が要る");
+            return cycle(span, "view self-recursion requires a data parameter in the first position");
         };
         let arg = self.strip_groups(args[index])?;
         if let ExprKind::Dotted(parts) = &self.parser.exprs[arg].kind
@@ -872,7 +872,7 @@ impl<E: InputError> Checker<'_, E> {
         }
         cycle(
             self.span(args[index]),
-            "自己再帰の左端の data 引数は、その parameter の match で得た直接の subterm",
+            "the first data argument in self-recursion must be a direct subterm obtained by matching that parameter",
         )
     }
 
@@ -889,7 +889,7 @@ impl<E: InputError> Checker<'_, E> {
     ) -> CResult<Type, E> {
         let path_op = matches!(b, "path" | "identity" | "then" | "source" | "target");
         if ctx.term && path_op {
-            return reference(name_span, format!("Term の本体は `{b}` を呼べない"));
+            return reference(name_span, format!("Term body cannot call `{b}`"));
         }
         match b {
             "rat" => {
@@ -898,7 +898,7 @@ impl<E: InputError> Checker<'_, E> {
                 let n_ok = matches!(&self.parser.exprs[args[0]].kind, ExprKind::Int(_));
                 let d_ok = matches!(&self.parser.exprs[args[1]].kind, ExprKind::Int(t) if t != "0");
                 if !n_ok || !d_ok {
-                    return syntax(span, "rat の引数は整数 literal で、分母は正");
+                    return syntax(span, "rat requires integer literals and a positive denominator");
                 }
                 self.check(args[0], Some(&Type::Z), env, ctx)?;
                 self.check(args[1], Some(&Type::Z), env, ctx)?;
@@ -912,7 +912,7 @@ impl<E: InputError> Checker<'_, E> {
                         self.span(args[0]),
                         &Type::List(Box::new(c.clone())),
                         &c,
-                        format!("{b} の引数は List か Set"),
+                        format!("{b} requires a List or Set argument"),
                     );
                 };
                 if b == "count" {
@@ -923,7 +923,7 @@ impl<E: InputError> Checker<'_, E> {
                     self.span(args[0]),
                     &Type::List(Box::new(Type::Z)),
                     &c,
-                    "sum の要素は数値",
+                    "sum requires numeric elements",
                 )?;
                 Ok(e)
             }
@@ -940,7 +940,7 @@ impl<E: InputError> Checker<'_, E> {
                     }
                     _ => syntax(
                         self.span(args[0]),
-                        "path の引数は arrow か correspondence の参照",
+                        "path requires an arrow or correspondence reference",
                     ),
                 }
             }
@@ -951,14 +951,14 @@ impl<E: InputError> Checker<'_, E> {
                     Some(n) if self.decl_kind(n) == Some("entity") => {
                         Ok(Type::Path(n.to_owned(), n.to_owned()))
                     }
-                    _ => syntax(self.span(args[0]), "identity の引数は entity の参照"),
+                    _ => syntax(self.span(args[0]), "identity requires an entity reference"),
                 }
             }
             "then" => {
                 self.arity(span, args, 2, "then")?;
                 let p = self.check(args[0], None, env, ctx)?;
                 let Type::Path(a, mid) = &p else {
-                    return syntax(self.span(args[0]), "then の引数は Path");
+                    return syntax(self.span(args[0]), "then requires Path arguments");
                 };
                 let (a, mid) = (a.clone(), mid.clone());
                 let q = self.check(args[1], None, env, ctx)?;
@@ -968,9 +968,9 @@ impl<E: InputError> Checker<'_, E> {
                         self.span(args[1]),
                         &Type::Path(mid, c.clone()),
                         &q,
-                        "then の端点が合わない",
+                        "then endpoint types do not match",
                     ),
-                    _ => syntax(self.span(args[1]), "then の引数は Path"),
+                    _ => syntax(self.span(args[1]), "then requires Path arguments"),
                 }
             }
             "source" | "target" => {
@@ -979,7 +979,7 @@ impl<E: InputError> Checker<'_, E> {
                     Type::Path(a, c) => {
                         Ok(Type::Ref(if b == "source" { a.clone() } else { c.clone() }))
                     }
-                    _ => syntax(self.span(args[0]), format!("{b} の引数は Path")),
+                    _ => syntax(self.span(args[0]), format!("{b} requires a Path argument")),
                 }
             }
             _ => {
@@ -1024,7 +1024,7 @@ impl<E: InputError> Checker<'_, E> {
         self.reject_reference(
             &ret,
             self.span(body),
-            "Term の戻り型は参照・Map・Path を含まない値型",
+            "Term return type must be a value type containing no references, Map, or Path",
         )?;
         Ok(Type::Term(types, Box::new(ret)))
     }
@@ -1068,13 +1068,13 @@ impl<E: InputError> Checker<'_, E> {
         for arm in arms {
             self.cooperate()?;
             if catch_all {
-                return syntax(arm.pattern.span(), "到達できない分岐");
+                return syntax(arm.pattern.span(), "unreachable branch");
             }
             let mark = env.vars.len();
             match self.check_pattern(&arm.pattern, &st, env, ctx, rec_scrutinee, true)? {
                 None => {
                     if is_data && plainly_covered.len() == constructors {
-                        return syntax(arm.pattern.span(), "到達できない分岐");
+                        return syntax(arm.pattern.span(), "unreachable branch");
                     }
                     catch_all = true;
                 }
@@ -1084,7 +1084,7 @@ impl<E: InputError> Checker<'_, E> {
                     plain,
                 }) => {
                     if !seen.insert(index) {
-                        return syntax(arm.pattern.span(), "同じ constructor の分岐が重複している");
+                        return syntax(arm.pattern.span(), "duplicate branch for the same constructor");
                     }
                     if covers {
                         covered.insert(index);
@@ -1109,7 +1109,7 @@ impl<E: InputError> Checker<'_, E> {
         if !catch_all && (!is_data || covered.len() != constructors) {
             return syntax(
                 span,
-                "match は全 constructor を一度ずつ覆うか、末尾に `_` を置く",
+                "match must cover every constructor exactly once or end with `_`",
             );
         }
         for (body, vars) in pending {
@@ -1120,7 +1120,7 @@ impl<E: InputError> Checker<'_, E> {
             env.vars.truncate(mark);
             result.get_or_insert(t);
         }
-        Ok(result.expect("分岐は一つ以上"))
+        Ok(result.expect("at least one branch is required"))
     }
 
     /// pattern を検査して束縛を加える。constructor pattern なら (位置, 引数がすべて既約でない) を返す。
@@ -1143,7 +1143,7 @@ impl<E: InputError> Checker<'_, E> {
                         return syntax(
                             id.span,
                             format!(
-                                "変数名と衝突する constructor の短名 `{}` は修飾する",
+                                "qualify constructor short name `{}` that conflicts with a variable name",
                                 id.name
                             ),
                         );
@@ -1173,7 +1173,7 @@ impl<E: InputError> Checker<'_, E> {
                         return syntax(
                             name.span(),
                             format!(
-                                "変数名と衝突する constructor の短名 `{}` は修飾する",
+                                "qualify constructor short name `{}` that conflicts with a variable name",
                                 name.parts[0].name
                             ),
                         );
@@ -1191,7 +1191,7 @@ impl<E: InputError> Checker<'_, E> {
                         _ => {
                             return reference(
                                 name.span(),
-                                format!("constructor `{}` を解決できない", name.text()),
+                                format!("cannot resolve constructor `{}`", name.text()),
                             );
                         }
                     },
@@ -1201,7 +1201,7 @@ impl<E: InputError> Checker<'_, E> {
                         name.span(),
                         ty,
                         &Type::Data(data),
-                        "pattern の constructor の型が合わない",
+                        "pattern constructor type mismatch",
                     );
                 }
                 let child_rec = rec_scrutinee && top;
@@ -1254,7 +1254,7 @@ impl<E: InputError> Checker<'_, E> {
         if c.args.len() != args.len() {
             return syntax(
                 span,
-                format!("constructor `{}` の引数は {} 個", c.name, c.args.len()),
+                format!("constructor `{}` requires {} arguments", c.name, c.args.len()),
             );
         }
         let name = full(data, &[&c.name]);
@@ -1304,7 +1304,7 @@ impl<E: InputError> Checker<'_, E> {
                         if let Some(error) = first_error {
                             return Err(error);
                         }
-                        return syntax(span, "量化の域と本体の区切りが決まらない");
+                        return syntax(span, "cannot determine the separator between quantifier domain and body");
                     }
                     _ => valid.pop().expect("一つ以上の候補"),
                 }
@@ -1334,7 +1334,7 @@ impl<E: InputError> Checker<'_, E> {
                 self.span(d),
                 &Type::List(Box::new(t.clone())),
                 &t,
-                "量化の域は List か Set",
+                "quantifier domain must be a List or Set",
             ),
         }
     }
@@ -1661,7 +1661,7 @@ mod semantic_finish_tests {
         };
         assert_eq!(
             issue.message,
-            format!("型 {} の値は適用できない", ty.wire().canonical())
+            format!("value of type {} cannot be applied", ty.wire().canonical())
         );
         assert!(count.get() > 20);
         for at in 1..=count.get() {
@@ -1777,7 +1777,7 @@ mod semantic_finish_tests {
             );
             if !typed {
                 assert_eq!(expected.code, Code::Type);
-                assert_eq!(expected.message, "量化の域は List か Set");
+                assert_eq!(expected.message, "quantifier domain must be a List or Set");
                 assert_eq!(
                     expected.details,
                     Details::Type {
