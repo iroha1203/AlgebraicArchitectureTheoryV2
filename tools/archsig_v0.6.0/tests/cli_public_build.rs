@@ -9,13 +9,98 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn known_data_payload_match_preserves_numeric_products() {
+    for ty in ["Z", "Q"] {
+        let definition = numeric_data_definition(ty);
+        for (name, helper, expression) in [
+            ("data-payload", "", "(match Payload.Packed(n){Empty=>0;Packed(x)=>x;})"),
+            ("data-nested", "", "(match Wrapper.Wrapped(Payload.Packed(n)){Wrapped(inner)=>match inner{Empty=>0;Packed(x)=>x;};})"),
+            ("data-helper", "view unpack(p:Payload):Number=match p{Empty=>0;Packed(x)=>x;};", "unpack(Payload.Packed(n))"),
+            ("data-constant-payload", "", "(match Payload.Packed(n-n){Empty=>0;Packed(x)=>x+n;})"),
+            ("data-literal-payload", "", "(match Payload.Packed(0){Empty=>0;Packed(x)=>x+n;})"),
+        ] {
+            let helper = helper.replace("Number", ty);
+            let body = format!("{helper}law required zero(c:Part,n:{ty}):{expression}*c.quantity=0;");
+            known_numeric_product_case(name, ty, &body, &definition);
+        }
+        let chain_definition = definition.replace(r#""declarations":["#, &format!(r#""declarations":[{{"kind":"data","name":"Build.Chain","meaning":"有限の包装列。","constructors":[{{"name":"Leaf","arguments":["{ty}"],"meaning":"数値。"}},{{"name":"Next","arguments":[["Data","Build.Chain"]],"meaning":"次。"}}]}},"#));
+        let mut expression = "Chain.Leaf(n)".to_owned();
+        let mut pattern = "Leaf(x)".to_owned();
+        for _ in 0..12 { expression = format!("Chain.Next({expression})"); pattern = format!("Next({pattern})"); }
+        let body = format!("law required zero(c:Part,n:{ty}):(match {expression}{{{pattern}=>x;_=>0;}})*c.quantity=0;");
+        known_numeric_product_case("data-chain", ty, &body, &chain_definition);
+    }
+}
+fn numeric_data_definition(ty: &str) -> String {
+    DEFINITION.replace(r#""declarations":["#, &format!(r#""declarations":[{{"kind":"data","name":"Build.Payload","meaning":"数値を包む。","constructors":[{{"name":"Empty","arguments":[],"meaning":"空。"}},{{"name":"Packed","arguments":["{ty}"],"meaning":"数値。"}}]}},{{"kind":"data","name":"Build.Wrapper","meaning":"包装。","constructors":[{{"name":"Wrapped","arguments":[["Data","Build.Payload"]],"meaning":"包装。"}}]}},"#))
+        .replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#))
+}
+#[test]
+fn data_payload_guards_keep_missing_and_applicability() {
+    for ty in ["Z", "Q"] { for active in [true, false] {
+        let condition = if active { "x=x" } else { "x+1=x" };
+        let body = format!("view amount(c:Part):{ty}=c.quantity;law required zero(c:Part,n:{ty}) when match Payload.Packed(n){{Empty=>false;Packed(x)=>{condition};}}:n*c.quantity=0;");
+        let dir = files_with_definition(&format!("data-guard-{ty}-{active}"), &body, true, &numeric_data_definition(ty));
+        if ty == "Q" {
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#);
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)", "v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+        let normal = cli::run(&dir, &args);
+        assert_eq!(normal.code, 2, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert!(!has(&normal.receipt, "nodes"));
+        assert!(!has(&normal.receipt, "result"));
+        eprintln!("data guard {ty}/{active}: stdout {} bytes", normal.stdout.len());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "partial", 2);
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "q"), "status")), if active { "undetermined" } else { "established" });
+        if !active { for id in ["p", "q"] { assert_eq!(s(get(answer(&result, id), "applicability")), "not_applicable"); } }
+        assert_eq!(s(get(answer(&result, "v"), "status")), "undetermined");
+        assert!(!has(get(answer(&result, "v"), "outputs"), "value"));
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"));
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "partial", 2);
+        assert!(warnings(&again).is_empty());
+        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+    }}
+}
+#[test]
+fn unknown_data_constructor_does_not_choose_match_branch() {
+    let definition = numeric_data_definition("Z").replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"payload","type":["Data","Build.Payload"],"meaning":"未観測の包装。"}"#);
+    let dir = files_with_definition("data-unknown-constructor", "law required zero(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};", false, &definition);
+    let requests = ["c=check(R.zero,c=@v/q)", "n=needed($c)"];
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "partial", 2);
+    assert_eq!(s(get(answer(&result, "c"), "status")), "undetermined");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload"));
+}
+#[test]
 fn mixed_type_order_guards_preserve_numeric_products() {
+    mixed_numeric_guard_product("order", "c.guardValue+Offset>c.guardValue and n+1>n");
+}
+#[test]
+fn mixed_type_data_payload_guards_preserve_numeric_products() {
+    mixed_numeric_guard_product("data", "match Payload.Packed(c.guardValue){Packed(x)=>x=x and x+Offset>x;}");
+}
+fn mixed_numeric_guard_product(name: &str, guard: &str) {
     for (ty, other, zero) in [("Z", "Q", r#"["0","1"]"#), ("Q", "Z", r#""0""#)] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#))
-            .replace(r#""meaning":"数量。"}"#, &format!(r#""meaning":"数量。"}},{{"name":"guardValue","type":"{other}","meaning":"比較する値。"}}"#));
+            .replace(r#""meaning":"数量。"}"#, &format!(r#""meaning":"数量。"}},{{"name":"guardValue","type":"{other}","meaning":"比較する値。"}}"#))
+            .replace(r#""declarations":["#, &format!(r#""declarations":[{{"kind":"data","name":"Build.Payload","meaning":"数値を包む。","constructors":[{{"name":"Packed","arguments":["{other}"],"meaning":"数値。"}}]}},"#));
         let offset = if other == "Q" { "rat(1,2)" } else { "1" };
-        let dir = files_with_definition(&format!("mixed-order-{ty}"), &format!(
-            "law required zero(c:Part,n:{ty}) when c.guardValue+{offset}>c.guardValue and n+1>n:n*c.quantity=0;"
+        let guard = guard.replace("Offset", offset);
+        let dir = files_with_definition(&format!("mixed-{name}-{ty}"), &format!(
+            "law required zero(c:Part,n:{ty}) when {guard}:n*c.quantity=0;"
         ), false, &definition);
         let mut map = std::fs::read_to_string(dir.join("a.json")).unwrap();
         if ty == "Q" { map = map.replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#); }
@@ -232,7 +317,11 @@ fn known_numeric_product(name: &str, extra: &str, guard: &str) {
         let body = format!(
             "law required zero(c:Part,n:{ty}{extra}) when {guard}:n*c.quantity=0;"
         );
-        let dir = files_with_definition(&format!("known-product-{name}-{ty}"), &body, false, &definition);
+        known_numeric_product_case(name, ty, &body, &definition);
+    }
+}
+fn known_numeric_product_case(name: &str, ty: &str, body: &str, definition: &str) {
+        let dir = files_with_definition(&format!("known-product-{name}-{ty}"), body, false, definition);
         if ty == "Q" {
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
@@ -285,7 +374,6 @@ fn known_numeric_product(name: &str, extra: &str, guard: &str) {
         for field in ["answers", "nodes"] {
             assert_eq!(get(&j, field).value, get(&again, field).value);
         }
-    }
 }
 #[test]
 fn finite_set_numeric_products_keep_missing_and_applicability() {

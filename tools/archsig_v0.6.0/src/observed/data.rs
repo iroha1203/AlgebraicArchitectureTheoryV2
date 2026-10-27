@@ -593,6 +593,58 @@ pub(super) fn select(
     }
     Err("既知matchに選択armがない".into())
 }
+/// constructorだけが既知でも、payloadを元の記号値として束縛する。
+/// 枝の一致が未確定なら後続armを勝手に選ばない。
+pub(super) fn select_partial<T: Clone>(
+    arms: &[crate::law::ast::Arm],
+    value: &T,
+    control: &Control,
+    parts: &impl Fn(&T, &Control) -> Result<Option<(String, Vec<T>)>, ValidationFailure>,
+    resolve: &impl Fn(Span, &Control) -> Result<Option<String>, ValidationFailure>,
+) -> Result<Option<(usize, BTreeMap<String, T>)>, ValidationFailure> {
+    fn walk<T: Clone>(
+        pattern: &Pattern, value: &T, control: &Control,
+        parts: &impl Fn(&T, &Control) -> Result<Option<(String, Vec<T>)>, ValidationFailure>,
+        resolve: &impl Fn(Span, &Control) -> Result<Option<String>, ValidationFailure>,
+        bound: &mut BTreeMap<String, T>,
+    ) -> Result<Option<bool>, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(control)?;
+            let (span, patterns) = match pattern {
+                Pattern::Wild(_) => return Ok(Some(true)),
+                Pattern::Name(name) if resolve(name.span, control)?.is_none() => {
+                    if bound.insert(name.name.clone(), value.clone()).is_some() { return Err("部分matchの束縛名が重複する".into()) }
+                    return Ok(Some(true));
+                }
+                Pattern::Name(name) => (name.span, &[][..]),
+                Pattern::Ctor { name, args, .. } => (name.span(), args.as_slice()),
+            };
+            let target = resolve(span, control)?.ok_or("部分matchのconstructor参照がない")?;
+            let Some((constructor, values)) = parts(value, control)? else { return Ok(None) };
+            if constructor != target { return Ok(Some(false)) }
+            if patterns.len() != values.len() { return Err("部分matchのconstructor arityが違う".into()) }
+            let mut known = true;
+            for (pattern, value) in patterns.iter().zip(&values) {
+                match walk(pattern, value, control, parts, resolve, bound)? {
+                    Some(true) => (),
+                    Some(false) => return Ok(Some(false)),
+                    None => known = false,
+                }
+            }
+            Ok(known.then_some(true))
+        })
+    }
+    for (index, arm) in arms.iter().enumerate() {
+        tick(control)?;
+        let mut bound = BTreeMap::new();
+        match walk(&arm.pattern, value, control, parts, resolve, &mut bound)? {
+            Some(true) => return Ok(Some((index, bound))),
+            Some(false) => (),
+            None => return Ok(None),
+        }
+    }
+    Err("既知constructorのmatch枝がない".into())
+}
 pub(super) fn project(
     value: &Scalar,
     path: &[usize],

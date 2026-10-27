@@ -7623,12 +7623,18 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Match { scrutinee, arms } => {
                     let input = self.scoped_ast(*scrutinee, variables, base, reading)?;
-                    let Some(arm) = data::select(
-                        self.inputs.law(),
-                        id,
-                        input.known_value.as_ref(),
-                        &self.control,
-                    )?
+                    use super::term::affine::Value;
+                    let selection = if let Some(value) = &input.known_value {
+                        match data::select(self.inputs.law(), id, Some(value), &self.control)? {
+                            Some(arm) => Some((arm, data::bindings(self.inputs.law(), id, arm, value, &self.control)?.into_iter().map(|(name, value)| (name, Value::Known(value))).collect())),
+                            None => None,
+                        }
+                    } else {
+                        let ty = self.inputs.law().expr_type(*scrutinee).ok_or("検査済matchの元型がない")?;
+                        let value = input.symbolic.as_deref().cloned().unwrap_or_else(|| Value::Unsupported(ty.clone()));
+                        data::select_partial(arms, &value, &self.control, &Value::data_parts, &|span, c| data::resolved(self.inputs.law(), span, c))?
+                    };
+                    let Some((arm, bindings)) = selection
                     else {
                         return Ok(SourceValue {
                             symbolic: None,
@@ -7639,23 +7645,28 @@ impl<'a> Environment<'a> {
                         });
                     };
                     let mut local = self.copy_variables(variables)?;
-                    let value = input.known_value.as_ref().ok_or("選択済matchの値がない")?;
-                    for (name, value) in
-                        data::bindings(self.inputs.law(), id, arm, value, &self.control)?
-                    {
+                    for (name, value) in bindings {
+                        let (known, symbolic, affine) = match &value {
+                            Value::Known(value) => (Some(value.clone()), None, None),
+                            _ => {
+                                let known = value.known(&self.control)?;
+                                let affine = value.number(&self.control)?.map(Box::new);
+                                (known, Some(Box::new(value)), affine)
+                            }
+                        };
                         if local
                             .insert(
                                 name,
                                 SourceValue {
                                     condition_failed: false,
                                     condition_pending: false,
-                                    symbolic: None,
+                                    symbolic,
                                     comparison: None,
-                                    affine: None,
+                                    affine,
                                     scope: input.scope.clone(),
-                                    known_value: Some(value),
+                                    known_value: known.clone(),
                                     support: input.support.clone(),
-                                    scalar_scope: Some(input.scope.clone()),
+                                    scalar_scope: known.map(|_| input.scope.clone()),
                                 },
                             )
                             .is_some()
@@ -7911,6 +7922,12 @@ impl<'a> Environment<'a> {
                             feature: "数値組・射影・rat 以外の構成".into(),
                         }
                     })?;
+                    use super::term::affine::Value as SymbolicValue;
+                    let data_constructor = match self.inputs.law().expr_type(id) {
+                        Some(Type::Data(family)) => data::expression(self.inputs.law(), id, &self.control)?.map(|(constructor, _)| (family.clone(), constructor)),
+                        _ => None,
+                    };
+                    let mut symbolic_arguments: Option<Vec<SymbolicValue>> = None;
                     let mut scope = base.clone();
                     let mut support = Vec::new();
                     let mut values = Vec::new();
@@ -7919,15 +7936,27 @@ impl<'a> Environment<'a> {
                     let mut condition_pending = false;
                     for child in children {
                         self.tick()?;
+                        let child_id = child;
                         let child = self.scoped_ast(child, variables, base, reading)?;
                         condition_failed |= child.condition_failed;
                         condition_pending |= child.condition_pending;
                         scope.merge(&child.scope);
                         support.extend(child.support);
                         if let Some(value) = child.known_value {
-                            values.push(value)
+                            match &mut symbolic_arguments {
+                                Some(args) => args.push(SymbolicValue::Known(value)),
+                                None => values.push(value),
+                            }
                         } else {
-                            known = false
+                            known = false;
+                            if data_constructor.is_some() {
+                                let args = symbolic_arguments.get_or_insert_with(|| std::mem::take(&mut values).into_iter().map(SymbolicValue::Known).collect());
+                                args.push(if let Some(value) = child.symbolic { *value } else if let Some(form) = child.affine {
+                                    SymbolicValue::Number(*form)
+                                } else {
+                                    SymbolicValue::Unsupported(self.inputs.law().expr_type(child_id).ok_or("constructor引数の元型がない")?.clone())
+                                });
+                            }
                         }
                         self.tick()?;
                     }
@@ -7946,7 +7975,10 @@ impl<'a> Environment<'a> {
                         condition_failed |= path.failure.is_some();
                         condition_pending |= path.value.is_none() && path.failure.is_none();
                     }
-                    let symbolic = if matches!(&expression.kind,ExprKind::Call{callee,..} if matches!(self.inputs.law().expr_type(*callee),Some(Type::Term(..))))
+                    let partial_data = symbolic_arguments.is_some();
+                    let symbolic = if let (Some((family, constructor)), Some(args)) = (data_constructor, symbolic_arguments) {
+                        Some(SymbolicValue::Data { family, constructor, args: std::sync::Arc::new(args) })
+                    } else if matches!(&expression.kind,ExprKind::Call{callee,..} if matches!(self.inputs.law().expr_type(*callee),Some(Type::Term(..))))
                     {
                         Some(self.scoped_term_value(id, variables, base, reading)?)
                     } else if matches!(&expression.kind, ExprKind::Index { .. }) && !known {
@@ -7968,6 +8000,9 @@ impl<'a> Environment<'a> {
                     };
                     let known_value = if let Some(path) = &path {
                         path.value.clone()
+                    } else if partial_data {
+                        // 子の未確定は既に分かっている。入れ子のpayloadを再走査しない。
+                        None
                     } else if let Some(v) = &symbolic {
                         v.known(&self.control)?
                     } else if known {

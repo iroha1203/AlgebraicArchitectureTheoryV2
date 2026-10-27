@@ -3,10 +3,13 @@ use super::*;
 use crate::law::ast::UnOp;
 use crate::observed::result::Fact;
 use crate::observed::{affine as forms, finite, value_equality};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub(in crate::observed) enum Value {
     Known(Scalar),
+    // constructorが既知でpayloadは記号値の中間値。係数表示として公開しない。
+    Data { family: String, constructor: String, args: Arc<Vec<Value>> },
     Number(forms::Form),
     Tuple(Vec<Value>),
     List {
@@ -28,6 +31,7 @@ impl Clone for Value {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Known(v) => Self::Known(v.clone()),
+            Self::Data { family, constructor, args } => Self::Data { family: family.clone(), constructor: constructor.clone(), args: args.clone() },
             Self::Number(v) => Self::Number(v.clone()),
             Self::Tuple(v) => Self::Tuple(v.clone()),
             Self::List { element, items } => Self::List {
@@ -50,6 +54,7 @@ impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
             (Self::Known(a), Self::Known(b)) => a == b,
+            (Self::Data { family: a, constructor: ac, args: av }, Self::Data { family: b, constructor: bc, args: bv }) => a == b && ac == bc && av == bv,
             (Self::Number(a), Self::Number(b)) => a == b,
             (Self::Tuple(a), Self::Tuple(b)) => a == b,
             (
@@ -94,6 +99,7 @@ impl Drop for Value {
             Self::Tuple(v) | Self::List { items: v, .. } | Self::SetLiteral { items: v, .. } => {
                 std::mem::take(v)
             }
+            Self::Data { args, .. } => match Arc::get_mut(args) { Some(args) => std::mem::take(args), None => return },
             Self::Option { value, .. } => value.take().map(|v| vec![*v]).unwrap_or_default(),
             _ => return,
         };
@@ -102,6 +108,7 @@ impl Drop for Value {
                 Self::Tuple(v)
                 | Self::List { items: v, .. }
                 | Self::SetLiteral { items: v, .. } => pending.append(v),
+                Self::Data { args, .. } => { if let Some(args) = Arc::get_mut(args) { pending.append(args); } },
                 Self::Option { value, .. } => {
                     if let Some(v) = value.take() {
                         pending.push(*v);
@@ -113,6 +120,14 @@ impl Drop for Value {
     }
 }
 impl Value {
+    pub(in crate::observed) fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
+        tick(c)?;
+        Ok(match self {
+            Self::Data { constructor, args, .. } => Some((constructor.clone(), args.as_ref().clone())),
+            Self::Known(Scalar::Data { constructor, args, .. }) => Some((constructor.clone(), args.iter().cloned().map(Self::Known).collect())),
+            _ => None,
+        })
+    }
     pub(in crate::observed) fn list_aggregate(
         &self,
         name: &str,
@@ -170,6 +185,7 @@ impl Value {
             tick(c)?;
             match self {
                 Self::Unsupported(_) => Ok(true),
+                Self::Data { .. } => Ok(true),
                 Self::Tuple(v)
                 | Self::List { items: v, .. }
                 | Self::SetLiteral { items: v, .. } => {
@@ -190,6 +206,7 @@ impl Value {
             tick(c)?;
             Ok(match self {
                 Self::Known(v) => v.ty(),
+                Self::Data { family, .. } => Type::Data(family.clone()),
                 Self::Number(v) => v.ty(c)?,
                 Self::Tuple(v) => Type::Tuple(v.iter().map(|x| x.ty(c)).collect::<Result<_, _>>()?),
                 Self::List { element, .. } => Type::List(Box::new(element.clone())),
@@ -207,6 +224,7 @@ impl Value {
             tick(c)?;
             match self {
                 Self::Known(v) => Ok(Some(v.clone())),
+                Self::Data { .. } => Ok(None),
                 Self::Number(v) => v.value(c),
                 Self::Tuple(v) => {
                     let mut values = Vec::new();
@@ -280,6 +298,7 @@ impl Value {
             tick(c)?;
             match self {
                 Self::Known(v) => Ok(v.clone()),
+                Self::Data { .. } => Err("記号Data全体をTerm反例点にできない".into()),
                 Self::Number(f) => forms::term_point(f, unit, c),
                 Self::Tuple(v) => Ok(Scalar::Tuple(
                     v.iter().map(|x| x.at(unit, c)).collect::<Result<_, _>>()?,
@@ -623,6 +642,7 @@ impl Value {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
             let value = match self {
+                Self::Data { family, .. } => Self::Unsupported(Type::Data(family.clone())),
                 Self::Known(v) => {
                     if let Some(form) = forms::constant(v, c)? {
                         Self::Number(form)
@@ -942,22 +962,27 @@ impl Term {
                     _ => return Err("Term記号if条件がBoolでない".into()),
                 },
                 ExprKind::Match { scrutinee, arms } => {
-                    if let Some(v) = self.symbolic(*scrutinee, vars, law, c)?.known(c)? {
+                    let input = self.symbolic(*scrutinee, vars, law, c)?;
+                    if let Some(value) = input.known(c)? {
                         let mut answer = None;
                         for arm in arms {
                             tick(c)?;
                             let mut bound = BTreeMap::new();
-                            if self.pattern(&arm.pattern, &v, &mut bound, c)? {
+                            if self.pattern(&arm.pattern, &value, &mut bound, c)? {
                                 let mut local = vars.clone();
-                                for (n, v) in bound {
-                                    tick(c)?;
-                                    local.insert(n, Value::Known(v));
-                                }
+                                for (name, value) in bound { tick(c)?; local.insert(name, Value::Known(value)); }
                                 answer = Some(self.symbolic(arm.body, &local, law, c)?);
                                 break;
                             }
                         }
                         answer.ok_or("Term記号matchの元選択枝がない")?
+                    } else if let Some((arm, bound)) = data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| self.reference(span, c).map(|value| value.map(str::to_owned)))? {
+                        let mut local = vars.clone();
+                        for (name, value) in bound {
+                            tick(c)?;
+                            if local.insert(name, value).is_some() { return Err("Term記号matchの束縛名が重複する".into()) }
+                        }
+                        self.symbolic(arms[arm].body, &local, law, c)?
                     } else {
                         unknown()
                     }
@@ -1070,6 +1095,11 @@ impl Term {
                     {
                         // 一般evalへ未知変数の名前を渡さず、実引数の式ではなく既知化済み値を使う。
                         self.symbolic_known_call(id, &a, law, c)?
+                    } else if let Type::Data(family) = ty {
+                        let constructor = self.reference(self.nodes[&target].span, c)?.ok_or("Term記号constructorの元参照がない")?;
+                        let ctor = data::constructor(law, family, constructor, c)?;
+                        if ctor.arguments.len() != a.len() { return Err("Term記号constructorのarityが違う".into()) }
+                        Value::Data { family: family.clone(), constructor: constructor.into(), args: Arc::new(a) }
                     } else {
                         unknown()
                     }
@@ -1267,6 +1297,7 @@ impl Value {
             Ok(match self {
                 Self::Number(f) => f.term_coordinates(axes, c)?,
                 Self::Known(v) => v.clone(),
+                Self::Data { .. } => return Err("記号Data全体を正規形表示にできない".into()),
                 Self::Tuple(v) => Scalar::Tuple(
                     v.iter()
                         .map(|v| v.presentation(axes, c))
