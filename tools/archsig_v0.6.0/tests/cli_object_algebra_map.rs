@@ -2468,6 +2468,13 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
 fn relation_guard_transport_preserves_active_rows_and_keeps_termwise_witnesses() {
     for (case, source, target, code, status) in [
         (
+            "false_relation_preserved",
+            "relation paths(e:Reserve,take:Bool) when take:path(e)=identity(source(path(e)));",
+            "relation paths(t:Reserve,keep:Bool) when keep:path(t)=identity(source(path(t)));",
+            0,
+            "established",
+        ),
+        (
             "expanded",
             "relation paths(e:Reserve,take:Bool) when take:path(e)=(if take then path(e) else identity(source(path(e))));",
             "relation paths(t:Reserve,keep:Bool):path(t)=path(t);",
@@ -2563,7 +2570,14 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
                 let arguments = value(&result, get(clause, "arguments"));
                 let params = arr(get(arguments, "source_type"));
                 assert_eq!(s(&params[0]), "Tuple");
-                assert_eq!(params.len(), if case == "expanded" { 3 } else { 2 });
+                assert_eq!(
+                    params.len(),
+                    if matches!(case, "expanded" | "false_relation_preserved") {
+                        3
+                    } else {
+                        2
+                    }
+                );
                 assert_eq!(
                     arr(get(value(&result, get(clause, "commutes")), "quantifiers")).len(),
                     params.len() - 1

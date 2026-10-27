@@ -582,7 +582,7 @@ pub(super) fn retain(
                 continue;
             }
             for r in [row, target] {
-                if r.state != RelationState::Established {
+                if !matches!(r.state, RelationState::Established | RelationState::Refuted) {
                     pending(
                         &mut out,
                         request,
