@@ -106,6 +106,145 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
     }
 }
 
+// このfixtureの短い値を、保存結果の実値と照合する。
+fn assert_summary_value(summary: &JNode, saved: &JNode, reference: &JNode) {
+    let original = node(saved, reference);
+    assert_eq!(get(summary, "type").value, get(original, "type").value);
+    if get(original, "type").value == archsig::json::JValue::Str("Architecture".into()) {
+        assert_eq!(
+            num(get(summary, "laws_count")),
+            arr(get(get(original, "value"), "laws")).len() as u64
+        );
+    } else {
+        assert_eq!(get(summary, "value").value, get(original, "value").value);
+    }
+}
+
+fn assert_map_summary(normal: &Run, saved: &JNode) {
+    let summary = &normal.receipt;
+    let archsig::json::JValue::Obj(fields) = &summary.value else {
+        panic!("summary object");
+    };
+    assert_eq!(fields.len(), 4);
+    assert_eq!(s(get(summary, "format")), "archsig.summary/1");
+    assert_eq!(get(summary, "status").value, get(saved, "status").value);
+    assert_eq!(num(get(summary, "exit_code")), normal.code as u64);
+    assert_eq!(
+        get(summary, "exit_code").value,
+        get(saved, "exit_code").value
+    );
+    assert_eq!(arr(get(summary, "answers")).len(), 3);
+    for trace in [
+        r#""node":"#,
+        r#"\"node\":"#,
+        r#""evidence":"#,
+        r#""rule":"#,
+        r#""scope":"#,
+        r#""dependencies":"#,
+    ] {
+        assert!(
+            !normal.stdout.contains(trace),
+            "unexpected internal trace: {trace}"
+        );
+    }
+    for (id, question) in [("m", "map"), ("same", "compare"), ("n", "needed")] {
+        let brief = answer(summary, id);
+        let full = answer(saved, id);
+        assert_eq!(s(get(brief, "question")), question);
+        assert_eq!(get(brief, "status").value, get(full, "status").value);
+        let archsig::json::JValue::Obj(outputs) = &get(brief, "outputs").value else {
+            panic!("summary outputs");
+        };
+        assert_eq!(
+            outputs.len(),
+            ["candidate", "operation", "map", "comparison", "plan"]
+                .iter()
+                .filter(|field| has(get(full, "outputs"), field))
+                .count()
+        );
+        let expected_reasons = arr(get(full, "reasons"))
+            .iter()
+            .filter(|reason| {
+                s(get(brief, "status")) == "undetermined"
+                    || s(get(reason, "code")) != "missing_observation"
+            })
+            .map(|reason| s(get(reason, "code")))
+            .collect::<std::collections::BTreeSet<_>>();
+        let reasons = if has(brief, "reasons") {
+            arr(get(brief, "reasons"))
+        } else {
+            &[]
+        };
+        assert_eq!(
+            reasons
+                .iter()
+                .map(|reason| s(get(reason, "code")))
+                .collect::<std::collections::BTreeSet<_>>(),
+            expected_reasons
+        );
+        for reason in reasons {
+            assert!(!s(get(reason, "message")).is_empty());
+        }
+        for field in ["candidate", "operation", "map", "comparison", "plan"] {
+            assert_eq!(
+                has(get(brief, "outputs"), field),
+                has(get(full, "outputs"), field)
+            );
+            if has(get(brief, "outputs"), field) {
+                assert_eq!(
+                    get(get(get(brief, "outputs"), field), "type").value,
+                    get(node(saved, get(get(full, "outputs"), field)), "type").value
+                );
+            }
+        }
+        let expected = if has(full, "counterexamples") {
+            arr(get(full, "counterexamples"))
+        } else {
+            &[]
+        };
+        if expected.is_empty() {
+            assert!(!has(brief, "counterexamples"));
+            assert!(!has(brief, "counterexamples_total"));
+            continue;
+        }
+        assert_eq!(s(get(brief, "status")), "refuted");
+        assert_eq!(
+            num(get(brief, "counterexamples_total")),
+            expected.len() as u64
+        );
+        let shown = arr(get(brief, "counterexamples"));
+        assert_eq!(shown.len(), expected.len().min(3));
+        for (example, reference) in shown.iter().zip(expected) {
+            let data = get(value(saved, reference), "data");
+            for side in ["left", "right"] {
+                assert_summary_value(get(example, side), saved, get(data, side));
+            }
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(num(get(example, "bindings_total")), bindings.len() as u64);
+            let actual = arr(get(example, "bindings"));
+            assert_eq!(actual.len(), bindings.len().min(3));
+            for (actual, original) in actual.iter().zip(bindings) {
+                assert_eq!(get(actual, "name").value, get(original, "name").value);
+                assert_summary_value(get(actual, "value"), saved, get(original, "value"));
+            }
+            let facts = arr(get(data, "facts"));
+            assert_eq!(num(get(example, "facts_total")), facts.len() as u64);
+            let actual = arr(get(example, "facts"));
+            assert_eq!(actual.len(), facts.len().min(3));
+            for (actual, original) in actual.iter().zip(facts) {
+                assert_eq!(actual.value, original.value);
+            }
+        }
+    }
+    assert_eq!(
+        s(get(
+            get(get(answer(summary, "same"), "outputs"), "comparison"),
+            "kind"
+        )),
+        "action"
+    );
+}
+
 #[test]
 fn change_transport_preserves_candidate_domains_and_simultaneous_updates() {
     for (mode, parameter, sg, tg, left, right, missing, code, status) in [
@@ -198,8 +337,8 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
         let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
         for request in requests {args.extend(["--ask",request]);}
-        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stdout.len()<1500);assert!(normal.stderr.is_empty());
-        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
+        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
+        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);assert_map_summary(&normal,&result);let m=answer(&result,"m");
         assert_eq!(s(get(m,"status")),if code==0 {"established"} else if code==1 {"refuted"} else {"undetermined"});assert_eq!(s(get(answer(&result,"same"),"status")),"established");assert_eq!(has(get(m,"outputs"),"map"),code==0);
         if code==0 {let map=value(&result,get(get(m,"outputs"),"map"));let transport=value(&result,&arr(get(map,"transports"))[0]);let clause=&arr(get(transport,"clauses"))[1];
             let target=value(&result,get(clause,"target"));let span=arr(get(get(target,"location"),"span"));let law=std::fs::read(dir.join("l.law")).unwrap();assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],th.as_bytes());
@@ -227,8 +366,8 @@ reading After {{{vocabulary} change tune(t:State,{target_params})=t with {{free=
         let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
         let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
         for request in requests {args.extend(["--ask",request]);}
-        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,1,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());assert!(normal.stdout.len()<1500);
-        let run=asks(&dir,&requests);assert_eq!(run.code,1,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
+        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,1,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
+        let run=asks(&dir,&requests);assert_eq!(run.code,1,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);assert_map_summary(&normal,&result);let m=answer(&result,"m");
         assert_eq!(s(get(m,"status")),"refuted");assert!(!has(get(m,"outputs"),"map"));assert_eq!(s(get(answer(&result,"same"),"status")),"established");
         let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());let data=get(value(&result,&examples[0]),"data");let bindings=arr(get(data,"bindings"));
         assert_eq!(s(get(&bindings[1],"name")),"n");
@@ -486,14 +625,15 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; law r
         for request in requests {
             args.extend(["--ask", request]);
         }
-        let normal = cli::run(&dir, &args);
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
         assert_eq!(normal.code, code, "{}", normal.stdout);
         assert!(normal.stderr.is_empty());
-        assert!(normal.stdout.len() < 1500, "{mode}: {}", normal.stdout);
+
         assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{}", run.stdout);
         let result = result_json(&dir, &run);
+        assert_map_summary(&normal, &result);
         let map = answer(&result, "m");
         assert_eq!(s(get(map, "status")), status);
         assert!(!has(get(map, "outputs"), "map"));
@@ -615,14 +755,15 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
         for request in requests {
             args.extend(["--ask", request]);
         }
-        let normal = cli::run(&dir, &args);
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
         assert_eq!(normal.code, code, "{}", normal.stdout);
         assert!(normal.stderr.is_empty());
-        assert!(normal.stdout.len() < 1000);
+
         assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{}", run.stdout);
         let result = result_json(&dir, &run);
+        assert_map_summary(&normal, &result);
         assert_eq!(s(get(answer(&result, "m"), "status")), status);
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         let outputs = get(answer(&result, "m"), "outputs");
@@ -3936,14 +4077,11 @@ reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
             normal.stdout, normal.stderr
         );
         assert!(normal.stderr.is_empty());
-        assert!(normal.stdout.len() < 1500);
-        eprintln!(
-            "change lexical {case}: stdout {} bytes",
-            normal.stdout.len()
-        );
+
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
+        assert_map_summary(&normal, &result);
         let map_answer = answer(&result, "m");
         assert_eq!(s(get(map_answer, "status")), status, "{case}");
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
