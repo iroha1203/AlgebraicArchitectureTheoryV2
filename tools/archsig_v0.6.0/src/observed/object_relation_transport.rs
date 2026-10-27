@@ -131,14 +131,21 @@ fn example(
     b: &mut Builder<'_>,
     params: &[Param],
     bindings: &[(String, Scalar)],
-    left: &PathValue,
-    right: &PathValue,
+    left: &Scalar,
+    right: &Scalar,
     deps: &[NodeRef],
     facts: &[Fact],
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    let left = path_binding(b, left, deps, c)?;
-    let right = path_binding(b, right, deps, c)?;
+    let paths = matches!((left, right), (Scalar::Path(_), Scalar::Path(_)));
+    let left = match left {
+        Scalar::Path(path) => path_binding(b, path, deps, c)?,
+        value => change_result::value(b, value)?,
+    };
+    let right = match right {
+        Scalar::Path(path) => path_binding(b, path, deps, c)?,
+        value => change_result::value(b, value)?,
+    };
     let mut args = vec![left, right];
     let mut bound = vec![];
     for (p, (name, v)) in params.iter().zip(bindings) {
@@ -160,7 +167,14 @@ fn example(
                 "data",
                 Json::obj([
                     ("bindings", Json::Arr(bound)),
-                    ("paths", Json::Arr(vec![left.wire(), right.wire()])),
+                    (
+                        "paths",
+                        Json::Arr(if paths {
+                            vec![left.wire(), right.wire()]
+                        } else {
+                            vec![]
+                        }),
+                    ),
                     ("left", left.wire()),
                     ("right", right.wire()),
                     ("facts", Json::Arr(facts.iter().map(Fact::wire).collect())),
@@ -267,19 +281,14 @@ pub(super) fn retain(
             });
         let [left, right] = origins;
         let origins = [left?, right?];
-        let origin_deps = origins.iter().flatten().copied().collect::<Vec<_>>();
+        let mut origin_deps = origins.iter().flatten().copied().collect::<Vec<_>>();
+        for (guard, params) in [(*sg, sp), (*tg, tp)] {
+            if let Some(id) = guard {
+                origin_deps.push(expression(b, inputs, id, params, deps)?);
+            }
+        }
         let start_reasons = out.reasons.len();
         let start_evidence = out.evidence.len();
-        if sg.is_some() || tg.is_some() {
-            pending(
-                &mut out,
-                request,
-                &origin_deps,
-                declarations[0].span,
-                vec![],
-            );
-            continue;
-        }
         let (Some(Type::Path(sa, sb)), Some(Type::Path(ta, tb))) =
             (inputs.law().expr_type(*sl), inputs.law().expr_type(*tl))
         else {
@@ -456,33 +465,31 @@ pub(super) fn retain(
             relation_instances::relation_instances(inputs, &declarations[1].reading, c)
                 .map_err(|e| e.cause)?,
         ];
-        for side in 0..2 {
-            if tables[side]
-                .outside_finite
-                .iter()
-                .any(|r| r.declaration == declarations[side].name)
-            {
-                pending(
-                    &mut out,
-                    request,
-                    &origin_deps,
-                    declarations[side].span,
-                    vec![],
-                );
-            }
-            for absent in tables[side]
-                .pending_domains
-                .iter()
-                .filter(|r| r.declaration == declarations[side].name)
-            {
-                pending(
-                    &mut out,
-                    request,
-                    &origin_deps,
-                    declarations[side].span,
-                    absent.missing.clone(),
-                );
-            }
+        if tables[0]
+            .outside_finite
+            .iter()
+            .any(|r| r.declaration == declarations[0].name)
+        {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                vec![],
+            );
+        }
+        for absent in tables[0]
+            .pending_domains
+            .iter()
+            .filter(|r| r.declaration == declarations[0].name)
+        {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                absent.missing.clone(),
+            );
         }
         let mut statuses = [Decision::Established; 2];
         let mut evidence = [vec![], vec![]];
@@ -495,6 +502,21 @@ pub(super) fn retain(
             if row.state == RelationState::OutsideDomain {
                 continue;
             }
+            support.extend(row.support.iter().cloned());
+            scope.merge(&row.scope);
+            if row.guard_checked && row.guard == Some(false) {
+                continue;
+            }
+            if !row.guard_checked || row.guard != Some(true) {
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[0].span,
+                    row.missing.clone(),
+                );
+                continue;
+            }
             let mut target_bindings = vec![];
             for (p, (_, v)) in tp.iter().zip(&row.bindings) {
                 target_bindings.push((p.name.clone(), moved(v, &maps, c)?));
@@ -504,18 +526,62 @@ pub(super) fn retain(
                 .iter()
                 .find(|r| r.declaration == declarations[1].name && r.bindings == target_bindings)
             else {
+                let mut missing = vec![];
+                for absent in tables[1]
+                    .pending_domains
+                    .iter()
+                    .filter(|r| r.declaration == declarations[1].name)
+                {
+                    tick(c)?;
+                    if absent
+                        .bindings
+                        .iter()
+                        .all(|binding| target_bindings.contains(binding))
+                    {
+                        missing.extend(absent.missing.iter().cloned());
+                    }
+                }
                 pending(
                     &mut out,
                     request,
                     &origin_deps,
-                    declarations[0].span,
-                    vec![],
+                    declarations[1].span,
+                    missing,
                 );
                 continue;
             };
+            support.extend(target.support.iter().cloned());
+            scope.merge(&target.scope);
+            if target.guard_checked && target.guard == Some(false) {
+                let witness = example(
+                    b,
+                    sp,
+                    &row.bindings,
+                    &Scalar::Bool(true),
+                    &Scalar::Bool(false),
+                    &origin_deps,
+                    &support,
+                    c,
+                )?;
+                for index in 0..2 {
+                    statuses[index] = Decision::Refuted;
+                    evidence[index].push(witness);
+                }
+                out.evidence.push(witness);
+                out.status = Decision::Refuted;
+                continue;
+            }
+            if !target.guard_checked || target.guard != Some(true) {
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[1].span,
+                    target.missing.clone(),
+                );
+                continue;
+            }
             for r in [row, target] {
-                support.extend(r.support.iter().cloned());
-                scope.merge(&r.scope);
                 if r.state != RelationState::Established {
                     pending(
                         &mut out,
@@ -545,8 +611,8 @@ pub(super) fn retain(
                         b,
                         sp,
                         &row.bindings,
-                        &expected,
-                        t,
+                        &Scalar::Path(Box::new(expected)),
+                        &Scalar::Path(t.clone()),
                         &origin_deps,
                         &support,
                         c,
@@ -588,9 +654,11 @@ pub(super) fn retain(
         }
         part.arguments
             .extend(generator_refs.iter().flat_map(|(s, t)| [*s, *t]));
-        let reasons = out.reasons[start_reasons..].to_vec();
+        let mut reasons = out.reasons[start_reasons..].to_vec();
+        sort_reasons(&mut reasons);
         let mut clauses = vec![];
         let mut all = deps.to_vec();
+        all.extend(origin_deps.iter().copied());
         all.extend([arguments, values]);
         for (index, origin) in origins.iter().enumerate() {
             let status = if reasons.is_empty() {
@@ -601,7 +669,11 @@ pub(super) fn retain(
             let proposition = b.proposition(
                 "declaration_transport",
                 vec![origin[0], origin[1], arguments, values],
-                evidence[index].clone(),
+                evidence[index]
+                    .iter()
+                    .copied()
+                    .chain(origin_deps.iter().copied())
+                    .collect(),
                 status,
             )?;
             let part = &mut b.parts[proposition.0 - b.base];

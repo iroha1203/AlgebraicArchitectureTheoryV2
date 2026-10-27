@@ -178,6 +178,10 @@ scalar parameter の全域について必要な等値を有限の評価例で代
 
 local/change/relation の対応は、それぞれ reads の値と制限、候補域と実更新、
 両辺の名前付き語と作用へ延長し、型付きの対応と可換性を検査する。
+relation は arguments の型全域の写像を保ち、source guard が真の各割当てを、
+実像で target guard が真となる割当てへ写す。その範囲で左右それぞれの名前付き語・端点・作用を保存する。
+target の追加適用行の被覆や逆像は要求せず、必要な guard が未知なら理由付き未決とする。
+これは対応宣言の各辺の移送であり、別の関係からの導出や商での同値判定を追加しない。
 local は arguments の型全域の写像を保持し、source guard が真の全割当てを
 その実像で target guard が真となる割当てへ写す。この source 適用域上で公開 read と
 値写像の可換性を検査する。target の追加適用行の被覆や逆像は要求しない。
