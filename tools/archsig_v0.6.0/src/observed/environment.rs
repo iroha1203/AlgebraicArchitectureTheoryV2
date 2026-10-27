@@ -10425,7 +10425,11 @@ pub(crate) fn conditional_branch(
                 if left.ty() != right.ty() {
                     return Err("if の既知両枝の型が違う".into());
                 }
-                super::value_equality::equal(left, right, law, control)? == Some(true)
+                if super::path_value::contains_path(&left.ty(), control)? {
+                    same_scalar_identity(left, right, control)?
+                } else {
+                    super::value_equality::equal(left, right, law, control)? == Some(true)
+                }
             } else {
                 false
             };
