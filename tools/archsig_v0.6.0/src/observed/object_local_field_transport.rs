@@ -1,4 +1,4 @@
-//! 同じ型の原始field値を、全参照引数の実像で比較する。
+//! 原始値・参照field値を、全参照引数と戻り値の実像で比較する。
 use super::*;
 use crate::{archmap::Slot, construction::FactPointer, law::model::Declaration};
 
@@ -73,6 +73,7 @@ pub(super) fn compare(
     env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
     declarations: [&Declaration; 2],
+    correspondence: &construction::DeclarationCorrespondence,
     maps: &[Arc<ParameterMap>],
     position: usize,
     names: &[String; 2],
@@ -94,13 +95,43 @@ pub(super) fn compare(
             .ok_or("local fieldの先型がない")?
             .erase(),
     ];
-    if types[0] != types[1] {
-        return Err("異型local fieldの移送は未実装".into());
-    }
-    let identity =
-        super::super::super::value_transport::identity_declarations(&types[0], inputs.law(), c)?
-            .ok_or("参照を含むlocal field値の移送は未実装")?;
-    let values = value_map(b, [&types[0], &types[1]], &[], &identity, dependencies)?;
+    let reference = if let (Type::Ref(source), Type::Ref(target)) = (&types[0], &types[1]) {
+        Some(reference_map(
+            b,
+            inputs,
+            correspondence,
+            source,
+            target,
+            dependencies,
+            c,
+        )?)
+    } else {
+        None
+    };
+    let values = if let Some(map) = &reference {
+        map.values
+    } else {
+        if types[0] != types[1] {
+            return Err("異型local fieldの移送は未実装".into());
+        }
+        let identity = super::super::super::value_transport::identity_declarations(
+            &types[0],
+            inputs.law(),
+            c,
+        )?
+        .ok_or("参照を含むlocal field値の移送は未実装")?;
+        value_map(b, [&types[0], &types[1]], &[], &identity, dependencies)?
+    };
+    let identity_values = if let Some(map) = &reference {
+        let mut identity = map.source == map.target;
+        for (source, target) in map.transport.source().iter().zip(map.transport.images()) {
+            tick(c)?;
+            identity &= source == target;
+        }
+        identity
+    } else {
+        true
+    };
     let mut result = Comparison {
         values,
         status: Decision::Established,
@@ -129,8 +160,8 @@ pub(super) fn compare(
         .enumerate()
     {
         tick(c)?;
-        // 同じ元slotは全補完で同じ値。未観測値を零や任意値に置換しない。
-        if source == target && fields[0] == fields[1] {
+        // 恒等移送の同じ元slotは全補完で同じ値。参照値には実写像を適用する。
+        if identity_values && source == target && fields[0] == fields[1] {
             continue;
         }
         let (left, lf, ls) = read_scalar(
@@ -190,8 +221,33 @@ pub(super) fn compare(
                     .ok_or_else(|| "local field値がScalarでない".into())
             }
         };
+        let image;
+        let left_value = if let Some(map) = &reference {
+            let Scalar::Subject {
+                snapshot, subject, ..
+            } = scalar(left)?
+            else {
+                return Err("local参照field値が参照でない".into());
+            };
+            let mut mapped = None;
+            for (source, target) in map.transport.source().iter().zip(map.transport.images()) {
+                tick(c)?;
+                if &source.snapshot == snapshot && &source.subject == subject {
+                    mapped = Some(Scalar::Subject {
+                        snapshot: target.snapshot.clone(),
+                        subject: target.subject.clone(),
+                        entity: map.target.clone(),
+                    });
+                    break;
+                }
+            }
+            image = mapped.ok_or("local参照field値が元参照域にない")?;
+            &image
+        } else {
+            scalar(left)?
+        };
         let equal = super::super::super::value_equality::equal(
-            scalar(left)?,
+            left_value,
             scalar(right)?,
             inputs.law(),
             c,

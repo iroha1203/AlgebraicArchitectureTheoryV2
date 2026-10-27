@@ -145,6 +145,62 @@ fn value_map(
         None,
     )
 }
+fn reference_map(
+    b: &mut Builder<'_>,
+    inputs: &super::super::input::CheckedInputs,
+    declarations: &construction::DeclarationCorrespondence,
+    st: &str,
+    tt: &str,
+    dependencies: &[NodeRef],
+    c: &mut Control,
+) -> Result<Arc<ParameterMap>, ValidationFailure> {
+    let transport =
+        construction::reference_type_transport(inputs, declarations, st, c).map_err(failure)?;
+    if transport.target_type() != tt
+        || transport
+            .failures()
+            .iter()
+            .any(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
+    {
+        return Err("local参照写像の像型が違う".into());
+    }
+    let mut subjects = vec![];
+    for (s, t) in transport.source().iter().zip(transport.images()) {
+        tick(c)?;
+        let mut refs = vec![];
+        for (fact, entity) in [(s, st), (t, tt)] {
+            let scalar = Scalar::Subject {
+                snapshot: fact.snapshot.clone(),
+                subject: fact.subject.clone(),
+                entity: entity.into(),
+            };
+            refs.push(b.push(
+                NodeType::Value(scalar.ty()),
+                "binding",
+                scalar.wire(),
+                dependencies.to_vec(),
+                Some(scalar),
+                None,
+            )?);
+        }
+        subjects.push((refs[0], refs[1]));
+    }
+    let values = value_map(
+        b,
+        [&Type::Ref(st.into()), &Type::Ref(tt.into())],
+        &subjects,
+        declarations.types(),
+        dependencies,
+    )?;
+    let map = Arc::new(ParameterMap {
+        source: st.into(),
+        target: tt.into(),
+        values,
+        transport,
+        subjects,
+    });
+    Ok(map)
+}
 fn expression(
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
@@ -261,52 +317,8 @@ pub(super) fn retain(
                 parameter_maps.push(map.clone());
                 continue;
             }
-            let transport = construction::reference_type_transport(inputs, declarations, st, c)
-                .map_err(failure)?;
-            if transport.target_type() != tt
-                || transport
-                    .failures()
-                    .iter()
-                    .any(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
-            {
-                return Err("local参照写像の像型が違う".into());
-            }
-            let mut subjects = vec![];
-            for (s, t) in transport.source().iter().zip(transport.images()) {
-                tick(c)?;
-                let mut refs = vec![];
-                for (fact, entity) in [(s, st), (t, tt)] {
-                    let scalar = Scalar::Subject {
-                        snapshot: fact.snapshot.clone(),
-                        subject: fact.subject.clone(),
-                        entity: entity.clone(),
-                    };
-                    refs.push(b.push(
-                        NodeType::Value(scalar.ty()),
-                        "binding",
-                        scalar.wire(),
-                        dependencies.to_vec(),
-                        Some(scalar),
-                        None,
-                    )?);
-                }
-                subjects.push((refs[0], refs[1]));
-            }
-            let values = value_map(
-                b,
-                [&source.ty, &target.ty],
-                &subjects,
-                declarations.types(),
-                dependencies,
-            )?;
-            argument_subjects.extend(subjects.iter().copied());
-            let map = Arc::new(ParameterMap {
-                source: st.clone(),
-                target: tt.clone(),
-                values,
-                transport,
-                subjects,
-            });
+            let map = reference_map(b, inputs, declarations, st, tt, dependencies, c)?;
+            argument_subjects.extend(map.subjects.iter().copied());
             type_maps.push(map.clone());
             parameter_maps.push(map);
         }
@@ -342,6 +354,7 @@ pub(super) fn retain(
                     env,
                     inputs,
                     [source, target],
+                    declarations,
                     &parameter_maps,
                     position,
                     &names,
