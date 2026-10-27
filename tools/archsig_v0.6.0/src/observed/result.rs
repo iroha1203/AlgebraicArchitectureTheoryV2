@@ -70,7 +70,7 @@ pub(crate) enum NodeType {
     ObservationPlan,
 }
 impl NodeType {
-    fn wire(&self) -> Json {
+    pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(ty) => Json::str(ty.name()),
             Self::Vector(module) => Json::Arr(vec![Json::str("Vector"),module.wire()]),

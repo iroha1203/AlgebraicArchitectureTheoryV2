@@ -217,6 +217,7 @@ fn daily_answers_return_values_refutations_and_missing_without_files() {
         let brief = execute(&dir, &asks, &[]);
         assert_eq!(brief.code, code, "{}", brief.stdout);
         assert_eq!(s(get(&brief.receipt, "format")), "archsig.summary/1");
+        assert!(!has(&brief.receipt, "save"));
         assert!(brief.stderr.is_empty());
         assert!(!has(&brief.receipt, "nodes"));
         assert!(!brief.stdout.contains("\"node\":"));
