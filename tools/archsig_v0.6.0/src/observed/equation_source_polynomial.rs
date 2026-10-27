@@ -1,6 +1,7 @@
 //! 未実行の原式を同じ型付きASTから多項式へ翻訳する。原式の評価値は生成しない。
 use super::*;
 use crate::observed::affine;
+use crate::observed::result::ValidationFailure;
 use crate::{archmap::Slot, construction::readings::ObjectInstance, law::model::Signature};
 use std::{collections::BTreeMap, sync::Arc};
 
@@ -18,20 +19,55 @@ enum Binding {
     Tuple(Vec<Binding>),
     Option { element: Type, value: Option<Box<Binding>> },
     List { element: Type, items: Vec<Binding> },
+    Data(DataBinding),
     Lexical {
         expression: usize,
         variables: Arc<BTreeMap<String, Binding>>,
     },
 }
+struct DataBinding { family: String, constructor: String, args: Arc<Vec<Binding>> }
+impl Clone for DataBinding {
+    fn clone(&self) -> Self {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || Self { family: self.family.clone(), constructor: self.constructor.clone(), args: self.args.clone() })
+    }
+}
+impl Drop for DataBinding {
+    fn drop(&mut self) {
+        let Some(args) = Arc::get_mut(&mut self.args) else { return };
+        let mut pending = std::mem::take(args);
+        while let Some(value) = pending.pop() {
+            match value {
+                Binding::Data(mut value) => { if let Some(args) = Arc::get_mut(&mut value.args) { pending.append(args); } },
+                Binding::Tuple(mut values) | Binding::List { items: mut values, .. } => pending.append(&mut values),
+                Binding::Option { value: Some(value), .. } => pending.push(*value),
+                _ => (),
+            }
+        }
+    }
+}
 impl Binding {
+    fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
+        c.clone().checkpoint(Checkpoint::FiniteIteration).map_err(ValidationFailure::Stop)?;
+        Ok(match self {
+            Self::Data(value) => Some((value.constructor.clone(), value.args.as_ref().clone())),
+            Self::FiniteScalar(Scalar::Data { constructor, args, .. }) => Some((constructor.clone(), args.iter().map(|value| match value { Scalar::Bool(value) => Self::Boolean(*value), value => Self::FiniteScalar(value.clone()) }).collect())),
+            _ => None,
+        })
+    }
     fn finite_scalar(&self, c: &mut Control) -> Result<Option<Scalar>, ConstructionFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
             Ok(match self {
                 Self::Boolean(value) => Some(Scalar::Bool(*value)),
                 Self::FiniteScalar(value) => Some(value.clone()),
+                Self::ParameterForm(value) => value.value(c).map_err(invalid)?,
+                // Dataは記号payloadを含む中間値だけ。既知の場合はFiniteScalar。
+                Self::Data(_) => None,
                 Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
                     value.evaluate(&[], c)?.map(|value| value.scalar().clone())
+                }
+                Self::Family(value) if value.parameters.is_empty() && value.constant.terms.iter().all(|term| term.variables.is_empty()) => {
+                    value.constant.evaluate(&[], c)?.map(|value| value.scalar().clone())
                 }
                 Self::Option { element, value } => {
                     let value = match value {
@@ -70,6 +106,7 @@ impl Binding {
     fn affine(&self, c: &mut Control) -> Result<Option<affine::Form>, ConstructionFailure> {
         match self {
             Self::ParameterForm(value) => Ok(Some(value.clone())),
+            Self::FiniteScalar(value) => affine::constant(value, c).map_err(invalid),
             Self::Polynomial(value) if value.terms.iter().all(|term| term.variables.is_empty()) => {
                 let Some(value) = value.evaluate(&[], c)? else { return Ok(None) };
                 affine::constant(value.scalar(), c).map_err(invalid)
@@ -107,6 +144,11 @@ impl Binding {
             Self::ParameterForm(form) => {
                 let zero = numeric::zero(&form.ty(c).map_err(invalid)?, c).map_err(invalid)?;
                 Some((EquationPolynomial::constant(zero, c)?, form.clone()))
+            }
+            Self::FiniteScalar(value) => {
+                let Some(form) = affine::constant(value, c).map_err(invalid)? else { return Ok(None) };
+                let zero = numeric::zero(&value.ty(), c).map_err(invalid)?;
+                Some((EquationPolynomial::constant(zero, c)?, form))
             }
             _ => None,
         })
@@ -243,22 +285,20 @@ impl Compiler<'_> {
         let Some(input) = self.expression(scrutinee, &[], c)? else {
             return Ok(None);
         };
-        let Some(value) = input.finite_scalar(c)? else {
-            return Ok(None);
+        let selection = if let Some(value) = input.finite_scalar(c)? {
+            match super::super::data::select(self.inputs.law(), id, Some(&value), c).map_err(invalid)? {
+                Some(arm) => Some((arm, super::super::data::bindings(self.inputs.law(), id, arm, &value, c).map_err(invalid)?.into_iter().map(|(name, value)| (name, match value { Scalar::Bool(value) => Binding::Boolean(value), value => Binding::FiniteScalar(value) })).collect())),
+                None => None,
+            }
+        } else {
+            super::super::data::select_partial(arms, &input, c, &Binding::data_parts, &|span, c| super::super::data::resolved(self.inputs.law(), span, c)).map_err(invalid)?
         };
-        let Some(arm) = super::super::data::select(self.inputs.law(), id, Some(&value), c)
-            .map_err(invalid)?
+        let Some((arm, bindings)) = selection
         else {
             return Ok(None);
         };
-        for (name, value) in
-            super::super::data::bindings(self.inputs.law(), id, arm, &value, c).map_err(invalid)?
-        {
-            let binding = match value {
-                Scalar::Bool(value) => Binding::Boolean(value),
-                value => Binding::FiniteScalar(value),
-            };
-            self.variables.insert(name, binding);
+        for (name, value) in bindings {
+            self.variables.insert(name, value);
         }
         Ok(Some(
             arms.get(arm)
@@ -415,21 +455,32 @@ impl Compiler<'_> {
                     .clone();
                 let mut args = Vec::new();
                 for (argument, ty) in arguments.iter().zip(types) {
-                    let Some(binding) = self.expression(*argument, &[], c)? else {
+                    let numeric = matches!(ty, Type::Z | Type::Q);
+                    let result = if numeric && ty != self.ring.ty {
+                        let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
+                        Compiler { inputs: self.inputs, ring: &mut ring, variables: self.variables.clone() }.expression(*argument, &[], c)?
+                    } else { self.expression(*argument, &[], c)? };
+                    let Some(binding) = result else {
                         return Ok(None);
                     };
-                    let Some(value) = binding.finite_scalar(c)? else {
-                        return Ok(None);
-                    };
-                    if value.ty() != ty {
+                    if self.inputs.law().expr_type(*argument) != Some(&ty) {
                         return Ok(None);
                     }
-                    args.push(value);
+                    // 観測変数の添字を別の係数環へ運ばず、使用側で元式を再翻訳する。
+                    args.push(if numeric && binding.finite_scalar(c)?.is_none() { self.lexical(*argument) } else { binding });
                 }
-                return Ok(Some(Binding::FiniteScalar(Scalar::Data {
+                let mut values = Vec::new();
+                let mut known = true;
+                for argument in &args {
+                    match argument.finite_scalar(c)? { Some(value) => values.push(value), None => { known = false; break; } }
+                }
+                if known {
+                    return Ok(Some(Binding::FiniteScalar(Scalar::Data { family: family.clone(), constructor, args: values })));
+                }
+                return Ok(Some(Binding::Data(DataBinding {
                     family: family.clone(),
                     constructor,
-                    args,
+                    args: Arc::new(args),
                 })));
             }
             Ok(match &expression.kind {
@@ -497,8 +548,8 @@ impl Compiler<'_> {
                     lhs,
                     rhs,
                 } if path.is_empty() => {
-                    // 順序の係数型は当該operandの型。別のLaw引数の型へ合わせない。
-                    if matches!(op, BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge)
+                    // 数値比較の係数型は当該operandの型。別のLaw引数の型へ合わせない。
+                    if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge)
                         && let Some(ty @ (Type::Z | Type::Q)) = self.inputs.law().expr_type(*lhs)
                         && ty != &self.ring.ty
                     {

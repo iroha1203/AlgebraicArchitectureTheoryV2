@@ -1433,6 +1433,19 @@ mod tests {
         }
     }
     #[test]
+    fn data_payload_guard_keeps_lexical_slots_across_coefficient_types() {
+        let definition = fixture::D.replace(r#""declarations":["#, r#""declarations":[{"kind":"data","name":"Pattern.Payload","meaning":"数値を包む。","constructors":[{"name":"Packed","arguments":["Z"],"meaning":"数値。"}]},"#)
+            .replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"other","type":"Z","meaning":"別の数値。"}"#);
+        for (condition, expected) in [("x=x", Some(true)), ("x+1>x", Some(true)), ("x=c.other", None), ("x+1=c.other", None)] {
+            let inputs = inputs_from(&format!("law required equal(c:Part,n:Q,m:Z) when match Payload.Packed(c.quantity){{Packed(x)=>{condition};}}:m=0;"), &definition, fixture::A);
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().find(|instance| instance.declaration().kind == "law").unwrap();
+            assert_eq!(source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(), expected);
+        }
+    }
+    #[test]
     fn order_guard_uses_operand_type_in_mixed_parameter_context() {
         for (guard, expected) in [
             ("c.quantity+1>c.quantity", Some(true)),
