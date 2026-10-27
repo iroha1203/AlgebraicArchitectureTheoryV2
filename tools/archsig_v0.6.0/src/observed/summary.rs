@@ -1,5 +1,5 @@
 //! 保存を依頼していないrunの回答表示。計算・後続参照には元の型付き結果を使う。
-use super::result::{Decision, NodeRef, NodeType, ObservedEvaluation, ReasonKind};
+use super::result::{Decision, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind};
 use crate::canonical::Json;
 use std::collections::BTreeMap;
 
@@ -90,10 +90,6 @@ impl ObservedEvaluation {
             ("status".into(), Json::str(status)),
             ("exit_code".into(), Json::Nat(code.into())),
             ("answers".into(), Json::Arr(answers)),
-            (
-                "save".into(),
-                Json::str("値・写像・解集合を保存するには --out DIR を指定してください"),
-            ),
         ]);
         if code >= 64 && !issues.is_empty() {
             result.insert(
@@ -105,18 +101,29 @@ impl ObservedEvaluation {
     }
     fn summary_node(&self, reference: NodeRef, depth: usize) -> Json {
         let node = &self.nodes[reference.0];
-        let wire = node.wire(reference.0, &self.nodes[..reference.0]);
-        let source = fields(&wire).expect("型付きノードの表示");
         let ty = match &node.ty {
             NodeType::Vector(_) => Json::str("Vector"),
             NodeType::ModuleMap(_, _) => Json::str("ModuleMap"),
-            _ => source["type"].clone(),
+            _ => node.ty.wire(),
         };
         let mut brief = BTreeMap::from([("type".into(), ty)]);
         if let Some(judgment) = &node.judgment {
             brief.insert("status".into(), Json::str(judgment.status.wire()));
         }
-        let Some(value) = source.get("value") else {
+        let value = match &node.payload {
+            None => None,
+            Some(Payload::Construction(value)) if value.is_blocked() => None,
+            Some(Payload::Scalar(value)) => Some(super::path_value::wire(
+                value,
+                &self.nodes[..reference.0],
+                &node.arguments,
+                &super::control::Control::new(super::control::Limits::default(), |_| {
+                    super::control::Usage::default()
+                }),
+            ).expect("挿入時に検査した値の既出 Ref 表示")),
+            Some(payload) => Some(payload.wire()),
+        };
+        let Some(value) = value.as_ref() else {
             brief.insert("state".into(), Json::str("blocked"));
             return Json::Obj(brief);
         };

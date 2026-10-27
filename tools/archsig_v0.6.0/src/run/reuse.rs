@@ -157,14 +157,6 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
     }
     Ok(())
 }
-fn decimal(node: &JNode) -> Checked<()> {
-    let s = text(node)?;
-    if s.is_empty() || !s.bytes().all(|b| b.is_ascii_digit()) || (s.len() > 1 && s.starts_with('0'))
-    {
-        return Err(invalid("DecimalNatが必要"));
-    }
-    Ok(())
-}
 fn nat(node: &JNode) -> Checked<()> {
     match &node.value {
         JValue::Num(s) if crate::archmap::nat_value(s).is_some() => Ok(()),
@@ -178,23 +170,14 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     {
         return Err(invalid("format/semanticsが対応版と異なる"));
     }
-    if text(field(document, "command")?)? == "run" {
-        record(document, &[
-            "format", "semantics", "command", "status", "exit_code", "inputs",
-            "requests", "answers", "nodes", "issues",
-        ], &["warnings"])?;
-        nat(field(document, "exit_code")?)?;
-        if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
-            for issue in array(warnings)? { issue_shape(issue, control)?; }
-        }
-        return Ok(());
+    if text(field(document, "command")?)? != "run" {
+        return Err(invalid("再利用候補にはrunの保存結果が必要"));
     }
     record(
         document,
         &[
             "format",
             "semantics",
-            "producer",
             "command",
             "status",
             "exit_code",
@@ -203,66 +186,13 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
             "answers",
             "nodes",
             "issues",
-            "reuse",
-            "usage",
-            "limits",
         ],
-        if text(field(document, "command")?)? == "check" {
-            &["declarations", "vocabularies"]
-        } else {
-            &[]
-        },
+        &["warnings"],
     )?;
-    if text(field(document, "command")?)? != "run" && text(field(document, "command")?)? != "check"
-    {
-        return Err(invalid("commandが不正"));
-    }
-    if text(field(document, "command")?)? == "check" {
-        for name in ["requests", "answers", "nodes"] {
-            control.checkpoint(Checkpoint::Reuse)?;
-            if !array(field(document, name)?)?.is_empty() {
-                return Err(invalid(format!("checkの{name}は空arrayが必要")));
-            }
-        }
-    }
-    record(field(document, "producer")?, &["version", "build"], &[])?;
-    for name in ["version", "build"] {
-        text(field(field(document, "producer")?, name)?)?;
-    }
-    record(
-        field(document, "usage")?,
-        &["elapsed_ms", "peak_bytes"],
-        &[],
-    )?;
-    record(field(document, "limits")?, &[], &["time_ms", "memory_mib"])?;
-    for group in ["usage", "limits"] {
-        for (_, value) in fields(field(document, group)?)? {
-            control.checkpoint(Checkpoint::Reuse)?;
-            decimal(value)?;
-        }
-    }
-    let reuse = field(document, "reuse")?;
-    record(
-        reuse,
-        &[
-            "requested",
-            "accepted_nodes",
-            "recomputed_nodes",
-            "rejected",
-        ],
-        &[],
-    )?;
-    if !matches!(field(reuse, "requested")?.value, JValue::Bool(_)) {
-        return Err(invalid("reuse.requestedはBool"));
-    }
-    for name in ["accepted_nodes", "recomputed_nodes"] {
-        nat(field(reuse, name)?)?;
-    }
-    // 全再計算するため旧実行の性能や採用件数を証明には使わない。拒否理由の外形は検査する。
-    for issue in array(field(reuse, "rejected")?)? {
-        issue_shape(issue, control)?;
-    }
     nat(field(document, "exit_code")?)?;
+    if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
+        for issue in array(warnings)? { issue_shape(issue, control)?; }
+    }
     Ok(())
 }
 fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
