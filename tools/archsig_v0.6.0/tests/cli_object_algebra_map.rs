@@ -65,6 +65,47 @@ fn value<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
 }
 
 #[test]
+fn local_reference_reads_are_transported_by_the_actual_configuration_map() {
+    let dir = inputs("local-reference-transport");
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    let at = law.rfind('}').unwrap();
+    let mut law = law;
+    law.insert_str(at, "local here(s:State) reads s;\n");
+    law.push_str("reading Other {use vocabulary Reservations version \"1\" digest \"sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff\";local here(t:State) reads (t);}");
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let request = "m=map(Reservations.Migration,on=@v/m,reading=Alternative,to_reading=Other,kind=object_algebra)";
+    let before = ["d.json","l.law","a.json"].map(|name|std::fs::read(dir.join(name)).unwrap());
+    let normal = cli::run(&dir, &["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--ask",request]);
+    assert_eq!(normal.code, 0, "{}", normal.stdout);
+    assert!(normal.stderr.is_empty());
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    assert!(!has(&normal.receipt,"nodes"));
+    assert!(!has(&normal.receipt,"result"));
+    for (name,bytes) in ["d.json","l.law","a.json"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
+    eprintln!("local map stdout {} bytes",normal.stdout.len());
+    let run = asks(&dir, &[request]);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    assert_eq!(arr(get(map, "transports")).len(), 1);
+    let transport = value(&result,&arr(get(map,"transports"))[0]);
+    assert_eq!(s(get(transport,"kind")),"local");
+    assert_eq!(s(get(transport,"source")),"Alternative.here");
+    assert_eq!(s(get(transport,"target")),"Other.here");
+    assert_eq!(s(&arr(&arr(get(transport,"parameters"))[0])[0]),"s");
+    assert_eq!(s(&arr(&arr(get(transport,"parameters"))[0])[1]),"t");
+    let clauses = arr(get(transport,"clauses"));
+    assert_eq!(clauses.len(),1);
+    let values = value(&result,get(&clauses[0],"values"));
+    assert!(arr(get(values,"subjects")).iter().any(|pair|value(&result,&arr(pair)[0]).value != value(&result,&arr(pair)[1]).value));
+    let again = cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
+    assert_eq!(again.code,0,"{}",again.stdout);
+    let again = result_json(&dir,&again);
+    assert!(warnings(&again).is_empty());
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value);}
+}
+
+#[test]
 fn object_map_keeps_all_objects_generators_and_public_source_consumption() {
     let dir = inputs("public-object-map");
     let run = asks(
@@ -932,10 +973,7 @@ fn reference_containers_do_not_use_same_nominal_type_identity() {
 reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
 reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#)).unwrap();
     let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]);
-    assert_eq!(run.code, 70, "{}", run.stdout);
-    let result = result_json(&dir, &run);
-    assert_eq!(s(get(answer(&result, "m"), "status")), "undetermined");
-    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    notified(&dir, &run, "error", 70);
 }
 
 fn finite_container_parameter_inputs(name: &str, preserve: bool, kind: &str) -> PathBuf {
