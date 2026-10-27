@@ -4396,9 +4396,17 @@ reading After {{{vocabulary} local here(t:State) {target_guard} reads {target_re
 
 #[test]
 fn local_multiple_reference_integer_reads_check_cartesian_rows_in_parameter_order() {
-    let source_read = "z.free+2*a.free";
     for (case, source_guard, target_guard, target_read, missing, code) in [
         ("preserved", "", "", "2*x.free+y.free", false, 0),
+        (
+            "cross-field",
+            "z.free=a.free",
+            "y.free=x.free",
+            "x.free",
+            false,
+            0,
+        ),
+        ("cross-field-refuted", "", "", "x.free", false, 1),
         (
             "off-diagonal",
             "",
@@ -4434,6 +4442,11 @@ fn local_multiple_reference_integer_reads_check_cartesian_rows_in_parameter_orde
         ),
         ("zero-refuted", "", "", "1+2*x.free+y.free", false, 1),
     ] {
+        let source_read = if case.starts_with("cross-field") {
+            "z.free"
+        } else {
+            "z.free+2*a.free"
+        };
         let dir = finite_view_inputs(&format!("local-multiple-integer-{case}"), true);
         let mut map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
@@ -4547,12 +4560,17 @@ reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {t
                 &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
             );
         }
-        if case == "off-diagonal" || case == "zero-refuted" {
+        if matches!(
+            case,
+            "off-diagonal" | "zero-refuted" | "cross-field-refuted"
+        ) {
             let examples = arr(get(m, "counterexamples"));
             assert_eq!(examples.len(), 1);
             let data = get(value(&result, &examples[0]), "data");
             let (left, right, subjects) = if case == "off-diagonal" {
                 ("5", "6", ["q", "p"])
+            } else if case == "cross-field-refuted" {
+                ("2", "1", ["p", "q"])
             } else {
                 ("0", "1", ["p", "p"])
             };

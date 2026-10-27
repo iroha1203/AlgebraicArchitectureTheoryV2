@@ -508,6 +508,9 @@ pub(super) fn retain(
         }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
+            let integer_read = !sp.is_empty()
+                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
+                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z);
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
@@ -516,17 +519,17 @@ pub(super) fn retain(
             } else if let (Some((a, source)), Some((z, target))) =
                 (field_read(inputs, s, sp, c)?, field_read(inputs, t, tp, c)?)
             {
-                if a != z {
+                if a == z {
+                    reads.push(Read::Field {
+                        position: a,
+                        names: [source, target],
+                    });
+                } else if integer_read {
+                    reads.push(Read::IntegerExpression);
+                } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
-                reads.push(Read::Field {
-                    position: a,
-                    names: [source, target],
-                });
-            } else if !sp.is_empty()
-                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
-                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z)
-            {
+            } else if integer_read {
                 reads.push(Read::IntegerExpression);
             } else {
                 return Err("local readの式移送は未実装".into());
