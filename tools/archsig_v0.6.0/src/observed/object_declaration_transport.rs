@@ -22,6 +22,7 @@ struct ParameterMap {
 }
 enum Read {
     Projection(usize),
+    IntegerExpression,
     Field { position: usize, names: [String; 2] },
 }
 pub(super) struct Output {
@@ -516,6 +517,11 @@ pub(super) fn retain(
                     position: a,
                     names: [source, target],
                 });
+            } else if sp.len() == 1
+                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
+                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z)
+            {
+                reads.push(Read::IntegerExpression);
             } else {
                 return Err("local readの式移送は未実装".into());
             }
@@ -584,6 +590,11 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
+                Read::IntegerExpression => field::compare_integer_expression(
+                    b, env, inputs, [source, target], &parameter_maps,
+                    applicable.as_ref().map(|domain| domain.rows.as_slice()),
+                    [s, t], [se, te], dependencies, request, c,
+                )?,
                 Read::Field { position, names } => field::compare(
                     b,
                     env,

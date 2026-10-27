@@ -139,6 +139,43 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
+/// 参照を束縛したlocalの整数readを、通常Evaluatorで評価する。
+pub(in crate::observed) fn integer_value(
+    env: &Environment<'_>,
+    id: usize,
+    bindings: &[(String, Scalar)],
+    reading: &str,
+) -> Result<(Option<Scalar>, Vec<Fact>, Scope, Vec<Fact>), ValidationFailure> {
+    let variables = bindings
+        .iter()
+        .map(|(name, value)| (name.clone(), known(value.clone())))
+        .collect();
+    let mut scope = Scope::default();
+    scope.readings.insert(reading.into());
+    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
+    if value.condition_failed {
+        return Err(unsupported(
+            env.inputs.law().exprs[id].span,
+            "local readの式の適合条件が不成立",
+        ));
+    }
+    let result = if value.condition_pending {
+        None
+    } else {
+        value.known_value
+    };
+    if result
+        .as_ref()
+        .is_some_and(|value| !matches!(value, Scalar::Z(_)))
+    {
+        return Err("local整数readの評価値がZでない".into());
+    }
+    let mut support = value.support;
+    support.sort();
+    support.dedup();
+    Ok((result, support, value.scope, missing))
+}
+
 /// 暗黙contextの公開読取りを、その式が実際に参照する位置へ制限する。
 pub(in crate::observed) fn implicit_support(
     env: &Environment<'_>,

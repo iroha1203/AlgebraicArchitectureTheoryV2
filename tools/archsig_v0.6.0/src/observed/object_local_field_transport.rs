@@ -279,3 +279,120 @@ pub(super) fn compare(
     }
     Ok(result)
 }
+
+/// 単一参照引数の全域を列挙し、source適用域上の整数readを実像で比較する。
+pub(super) fn compare_integer_expression(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    inputs: &super::super::super::input::CheckedInputs,
+    declarations: [&Declaration; 2],
+    maps: &[Arc<ParameterMap>],
+    applicable: Option<&[Vec<usize>]>,
+    expressions: [usize; 2],
+    origins: [NodeRef; 2],
+    dependencies: &[NodeRef],
+    request: &Request,
+    c: &mut Control,
+) -> Result<Comparison, ValidationFailure> {
+    let [map] = maps else {
+        return Err("local整数readの引数が単一参照でない".into());
+    };
+    let Signature::Local {
+        params: source_params,
+        ..
+    } = &declarations[0].signature
+    else {
+        return Err("local整数readの元宣言がない".into());
+    };
+    let Signature::Local {
+        params: target_params,
+        ..
+    } = &declarations[1].signature
+    else {
+        return Err("local整数readの先宣言がない".into());
+    };
+    let mut result = Comparison {
+        values: value_map(b, [&Type::Z, &Type::Z], &[], &[], dependencies)?,
+        status: Decision::Established,
+        arguments: vec![],
+        reasons: vec![],
+        evidence: vec![],
+        support: vec![],
+        scope: Scope::default(),
+    };
+    let all_rows;
+    let rows = if let Some(rows) = applicable {
+        rows
+    } else {
+        all_rows = (0..map.subjects.len()).map(|i| vec![i]).collect::<Vec<_>>();
+        &all_rows
+    };
+    for row in rows {
+        tick(c)?;
+        let mut values = vec![];
+        let mut missing = vec![];
+        let mut facts = vec![];
+        for side in 0..2 {
+            let (params, point, entity) = if side == 0 {
+                (source_params, &map.transport.source()[row[0]], &map.source)
+            } else {
+                (target_params, &map.transport.images()[row[0]], &map.target)
+            };
+            let bindings = [(
+                params[0].name.clone(),
+                Scalar::Subject {
+                    snapshot: point.snapshot.clone(),
+                    subject: point.subject.clone(),
+                    entity: entity.clone(),
+                },
+            )];
+            let (value, support, scope, absent) =
+                super::super::super::environment::local_read::integer_value(
+                    env,
+                    expressions[side],
+                    &bindings,
+                    &declarations[side].reading,
+                )?;
+            facts.extend(support.iter().cloned());
+            result.support.extend(support);
+            result.scope.merge(&scope);
+            missing.extend(absent);
+            values.push(value);
+        }
+        let [Some(left), Some(right)] = values.as_slice() else {
+            result.status = merge_status(result.status, Decision::Undetermined);
+            missing.sort();
+            missing.dedup();
+            result.reasons.push(Reason {
+                kind: if missing.is_empty() {
+                    ReasonKind::UnsupportedAlgorithm {
+                        question: request.kind,
+                        operand_types: vec![Type::Z],
+                        method: "local_integer_read_transport".into(),
+                    }
+                } else {
+                    ReasonKind::Missing
+                },
+                request: request.id.clone(),
+                dependencies: origins.to_vec(),
+                missing,
+                location: Some(crate::issue::Location::Law {
+                    span: inputs.law().exprs[expressions[0]].span,
+                }),
+            });
+            continue;
+        };
+        if left != right {
+            let left = super::super::super::change_result::value(b, left)?;
+            let right = super::super::super::change_result::value(b, right)?;
+            facts.sort();
+            facts.dedup();
+            let evidence = counterexample(b, source_params, maps, row, left, right, &facts)?;
+            result.status = Decision::Refuted;
+            result.arguments.push(evidence);
+            result.evidence.push(evidence);
+            break;
+        }
+    }
+    Ok(result)
+}
