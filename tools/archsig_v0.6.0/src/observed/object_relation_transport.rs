@@ -188,7 +188,80 @@ fn example(
 }
 struct Generator {
     source: Scalar,
-    target: PathValue,
+    path: PathValue,
+    target: Option<PathValue>,
+    subjects: (NodeRef, NodeRef),
+    missing: Vec<Fact>,
+}
+type Point = (String, String);
+fn point(value: &Scalar) -> Result<Point, ValidationFailure> {
+    let Scalar::Subject {
+        snapshot, subject, ..
+    } = value
+    else {
+        return Err("relationの経路端点が原始参照でない".into());
+    };
+    Ok((snapshot.clone(), subject.clone()))
+}
+// 実端点の有限グラフ上で経路の存在と証人を構成する。語の長さで打ち切らない。
+fn reach(
+    generators: &[Generator],
+    seeds: Vec<Point>,
+    reverse: bool,
+    c: &mut Control,
+) -> Result<std::collections::BTreeMap<Point, Vec<usize>>, ValidationFailure> {
+    let mut paths = seeds
+        .into_iter()
+        .map(|p| (p, vec![]))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    loop {
+        let mut changed = false;
+        for (i, g) in generators.iter().enumerate() {
+            tick(c)?;
+            let a = point(&g.path.object())?;
+            let z = point(&g.path.target())?;
+            let (from, to) = if reverse { (z, a) } else { (a, z) };
+            if !paths.contains_key(&to) {
+                if let Some(path) = paths.get(&from) {
+                    let mut path = path.clone();
+                    if reverse {
+                        path.insert(0, i);
+                    } else {
+                        path.push(i);
+                    }
+                    paths.insert(to, path);
+                    changed = true;
+                }
+            }
+        }
+        if !changed {
+            return Ok(paths);
+        }
+    }
+}
+fn route(
+    generators: &[Generator],
+    edges: &[usize],
+    reading: &str,
+    c: &mut Control,
+) -> Result<PathValue, ValidationFailure> {
+    let (&first, rest) = edges.split_first().ok_or("生成元の経路証人が空")?;
+    let mut path = generators[first].path.clone();
+    for &i in rest {
+        tick(c)?;
+        path = path_compose::compose_retained(&path, &generators[i].path, reading, c, |_, _| {})
+            .map_err(|e| e.cause)?
+            .value
+            .ok_or("生成元の経路証人の端点が不整合")?;
+    }
+    Ok(path)
+}
+fn endpoints(signature: &PrimitiveSignature) -> Option<(&str, &str)> {
+    match signature {
+        PrimitiveSignature::Arrow { endpoint, .. } => Some((endpoint, endpoint)),
+        PrimitiveSignature::Correspondence { from, to, .. } => Some((from, to)),
+        _ => None,
+    }
 }
 fn word(
     path: &PathValue,
@@ -218,9 +291,11 @@ fn word(
             let Some(generator) = generators.iter().find(|g| g.source == *source) else {
                 return Ok(None);
             };
-            let composed =
-                path_compose::compose_retained(&result, &generator.target, reading, c, |_, _| {})
-                    .map_err(|e| e.cause)?;
+            let Some(target) = &generator.target else {
+                return Ok(None);
+            };
+            let composed = path_compose::compose_retained(&result, target, reading, c, |_, _| {})
+                .map_err(|e| e.cause)?;
             let Some(value) = composed.value else {
                 return Err("relationの生成元移送が合成端点を保存しない".into());
             };
@@ -294,19 +369,10 @@ pub(super) fn retain(
         else {
             return Err("relationの辺がPathでない".into());
         };
-        if sa != sb || ta != tb {
-            pending(
-                &mut out,
-                request,
-                &origin_deps,
-                declarations[0].span,
-                vec![],
-            );
-            continue;
-        }
         let mut maps = vec![];
         let mut identity = correspondence.types().to_vec();
-        ensure_map(b, inputs, correspondence, sa, ta, deps, &mut maps, c)?;
+        let start_map = ensure_map(b, inputs, correspondence, sa, ta, deps, &mut maps, c)?;
+        let end_map = ensure_map(b, inputs, correspondence, sb, tb, deps, &mut maps, c)?;
         let mut supported = true;
         for (s, t) in sp.iter().zip(tp) {
             match (&s.ty.erase(), &t.ty.erase()) {
@@ -341,49 +407,68 @@ pub(super) fn retain(
         let namespaces =
             crate::construction::reading_namespaces(inputs.law(), &declarations[0].reading, c)
                 .map_err(failure)?;
-        let mut generator_types = vec![];
-        for (name, def) in &inputs.definitions().declarations {
-            tick(c)?;
-            if !namespaces.contains(&def.namespace) {
-                continue;
+        let definitions = inputs
+            .definitions()
+            .declarations
+            .iter()
+            .filter(|(_, d)| namespaces.contains(&d.namespace))
+            .filter_map(|(name, d)| endpoints(&d.signature).map(|(from, to)| (name, d, from, to)))
+            .collect::<Vec<_>>();
+        let mut forward = std::collections::BTreeSet::from([sa.as_str()]);
+        let mut backward = std::collections::BTreeSet::from([sb.as_str()]);
+        loop {
+            let mut changed = false;
+            for (_, _, from, to) in &definitions {
+                tick(c)?;
+                if forward.contains(from) {
+                    changed |= forward.insert(to);
+                }
+                if backward.contains(to) {
+                    changed |= backward.insert(from);
+                }
             }
-            let (from, to) = match &def.signature {
-                PrimitiveSignature::Arrow { endpoint, .. } => (endpoint, endpoint),
-                PrimitiveSignature::Correspondence { from, to, .. } => (from, to),
-                _ => continue,
-            };
-            if from != sa && to != sa {
-                continue;
-            }
-            // 異なる端点型を経由する語の配送は未実装。
-            if from != sa || to != sa {
-                supported = false;
+            if !changed {
                 break;
             }
-            let target = correspondence
+        }
+        let map_type = |name: &str| {
+            correspondence
                 .types()
                 .iter()
                 .find(|(s, _)| s == name)
-                .map(|(_, t)| t.as_str())
-                .unwrap_or(name);
-            let Some(target_def) = inputs.definitions().declarations.get(target) else {
+                .map(|(_, t)| t.clone())
+                .unwrap_or_else(|| name.to_owned())
+        };
+        let mut generator_types = vec![];
+        for (name, def, from, to) in definitions {
+            tick(c)?;
+            if !forward.contains(from) || !backward.contains(to) {
+                continue;
+            }
+            let target = map_type(name);
+            let Some(target_def) = inputs.definitions().declarations.get(&target) else {
                 return Err("relation生成元の像宣言がない".into());
             };
-            let matches = match (&def.signature, &target_def.signature) {
-                (PrimitiveSignature::Arrow { .. }, PrimitiveSignature::Arrow { endpoint, .. }) => {
-                    endpoint == ta
-                }
+            let ft = map_type(from);
+            let tt = map_type(to);
+            let kind_matches = matches!(
+                (&def.signature, &target_def.signature),
                 (
+                    PrimitiveSignature::Arrow { .. },
+                    PrimitiveSignature::Arrow { .. }
+                ) | (
                     PrimitiveSignature::Correspondence { .. },
-                    PrimitiveSignature::Correspondence { from, to, .. },
-                ) => from == ta && to == ta,
-                _ => false,
-            };
-            if !matches {
+                    PrimitiveSignature::Correspondence { .. }
+                )
+            );
+            if !kind_matches || endpoints(&target_def.signature) != Some((ft.as_str(), tt.as_str()))
+            {
                 supported = false;
                 break;
             }
-            generator_types.push((name.clone(), target.to_owned()));
+            ensure_map(b, inputs, correspondence, from, &ft, deps, &mut maps, c)?;
+            ensure_map(b, inputs, correspondence, to, &tt, deps, &mut maps, c)?;
+            generator_types.push((name.clone(), target));
         }
         if !supported {
             pending(
@@ -434,9 +519,7 @@ pub(super) fn retain(
                 }
                 let mut absent = source.missing.clone();
                 absent.extend(target.missing.iter().cloned());
-                let (Some(Scalar::Path(source)), Some(Scalar::Path(target))) =
-                    (&source.value, &target.value)
-                else {
+                let Some(Scalar::Path(source)) = &source.value else {
                     complete = false;
                     pending(
                         &mut out,
@@ -447,37 +530,87 @@ pub(super) fn retain(
                     );
                     continue;
                 };
-                let points = [
-                    (moved(&source.object(), &maps, c)?, target.object()),
-                    (moved(&source.target(), &maps, c)?, target.target()),
-                ];
-                if let Some((left, right)) = points.iter().find(|(a, z)| a != z) {
-                    complete = false;
-                    let paths = [
-                        path_binding(b, source, &origin_deps, c)?,
-                        path_binding(b, target, &origin_deps, c)?,
-                    ];
-                    let witness = example(b, &[], &[], left, right, &origin_deps, &support, c)?;
-                    let part = &mut b.parts[witness.0 - b.base];
-                    part.arguments.extend(paths);
-                    if let Json::Obj(wire) = &mut part.wire {
-                        if let Some(Json::Obj(data)) = wire.get_mut("data") {
-                            data.insert(
-                                "paths".into(),
-                                Json::Arr(paths.iter().map(|r| r.wire()).collect()),
-                            );
-                        }
-                    }
-                    out.evidence.push(witness);
-                    out.status = Decision::Refuted;
-                    continue;
-                }
+                let target = match &target.value {
+                    Some(Scalar::Path(path)) => Some((**path).clone()),
+                    _ => None,
+                };
                 generators.push(Generator {
                     source: sv,
-                    target: (**target).clone(),
+                    path: (**source).clone(),
+                    target,
+                    subjects: (*sref, *tref),
+                    missing: absent,
                 });
-                generator_refs.push((*sref, *tref));
             }
+        }
+        let seeds = |index: usize| {
+            maps[index]
+                .transport
+                .source()
+                .iter()
+                .map(|p| (p.snapshot.clone(), p.subject.clone()))
+                .collect::<Vec<_>>()
+        };
+        let forward = reach(&generators, seeds(start_map), false, c)?;
+        let backward = reach(&generators, seeds(end_map), true, c)?;
+        let all_generators = generators;
+        let mut generators = vec![];
+        for (i, g) in all_generators.iter().enumerate() {
+            tick(c)?;
+            let (Some(prefix), Some(suffix)) = (
+                forward.get(&point(&g.path.object())?),
+                backward.get(&point(&g.path.target())?),
+            ) else {
+                continue;
+            };
+            let Some(target) = &g.target else {
+                complete = false;
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[0].span,
+                    g.missing.clone(),
+                );
+                continue;
+            };
+            let points = [
+                (moved(&g.path.object(), &maps, c)?, target.object()),
+                (moved(&g.path.target(), &maps, c)?, target.target()),
+            ];
+            if let Some((left, right)) = points.iter().find(|(a, z)| a != z) {
+                complete = false;
+                let mut edges = prefix.clone();
+                edges.push(i);
+                edges.extend(suffix);
+                let source = route(&all_generators, &edges, &declarations[0].reading, c)?;
+                let paths = [
+                    path_binding(b, &source, &origin_deps, c)?,
+                    path_binding(b, target, &origin_deps, c)?,
+                ];
+                let witness = example(b, &[], &[], left, right, &origin_deps, &support, c)?;
+                let part = &mut b.parts[witness.0 - b.base];
+                part.arguments.extend(paths);
+                if let Json::Obj(wire) = &mut part.wire {
+                    if let Some(Json::Obj(data)) = wire.get_mut("data") {
+                        data.insert(
+                            "paths".into(),
+                            Json::Arr(paths.iter().map(|r| r.wire()).collect()),
+                        );
+                    }
+                }
+                out.evidence.push(witness);
+                out.status = Decision::Refuted;
+                continue;
+            }
+            generator_refs.push(g.subjects);
+            generators.push(Generator {
+                source: g.source.clone(),
+                path: g.path.clone(),
+                target: g.target.clone(),
+                subjects: g.subjects,
+                missing: g.missing.clone(),
+            });
         }
         let tables = [
             relation_instances::relation_instances(inputs, &declarations[0].reading, c)
