@@ -364,6 +364,30 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
         let reading = self.path_reading(id)?;
+        let [generator @ Scalar::Subject { entity, .. }] = values else {
+            return Err("pathの元引数が原始参照1個でない".into());
+        };
+        let declaration = self
+            .inputs
+            .definitions()
+            .declarations
+            .get(entity)
+            .ok_or("pathの原始宣言がない")?;
+        if matches!(
+            &declaration.signature,
+            PrimitiveSignature::Correspondence { .. }
+        ) {
+            return self.correspondence_path(id, generator, &declaration.signature);
+        }
+        self.internal_arrow_path(reading, values, self.inputs.law().exprs[id].span)
+    }
+    pub(in crate::observed) fn internal_arrow_path(
+        &self,
+        reading: &str,
+        values: &[Scalar],
+        _span: (usize, usize),
+    ) -> Result<PathResult, ValidationFailure> {
+        self.tick()?;
         let mut out = PathResult {
             value: None,
             scope: Scope::default(),
@@ -389,12 +413,6 @@ impl Environment<'_> {
             .declarations
             .get(entity)
             .ok_or("pathの原始宣言がない")?;
-        if matches!(
-            &declaration.signature,
-            PrimitiveSignature::Correspondence { .. }
-        ) {
-            return self.correspondence_path(id, generator, &declaration.signature);
-        }
         let PrimitiveSignature::Arrow { endpoint, .. } = &declaration.signature else {
             return Err("pathの元宣言がarrow/correspondenceでない".into());
         };
@@ -569,7 +587,7 @@ impl Environment<'_> {
             action.push(image);
             #[cfg(test)]
             data::observe_actual(
-                self.inputs.law().exprs[id].span,
+                _span,
                 self.scoped_context
                     .get()
                     .or(self.context.get())

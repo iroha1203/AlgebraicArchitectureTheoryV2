@@ -11,6 +11,8 @@ use crate::{
 mod field;
 #[path = "object_change_transport.rs"]
 mod change;
+#[path = "object_relation_transport.rs"]
+mod relation;
 struct ParameterMap {
     source: String,
     target: String,
@@ -459,6 +461,11 @@ pub(super) fn retain(
         reasons: vec![],
         evidence: vec![],
     };
+    let related = relation::retain(env, b, inputs, declarations, dependencies, request, c)?;
+    result.transports.extend(related.transports);
+    result.status = merge_status(result.status, related.status);
+    result.reasons.extend(related.reasons);
+    result.evidence.extend(related.evidence);
     for candidate in declarations.candidates() {
         tick(c)?;
         if candidate.source().kind == "change" {

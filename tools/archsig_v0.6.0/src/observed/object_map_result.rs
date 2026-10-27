@@ -202,7 +202,7 @@ pub(super) fn extend(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change" | "relation"))
         {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
@@ -375,7 +375,7 @@ fn compute_inner(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change" | "relation"))
         {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
@@ -645,6 +645,7 @@ fn compute_inner(
             declaration_evidence = transported.evidence;
             dependencies.extend(declaration_transports.iter().copied());
             dependencies.extend(declaration_evidence.iter().copied());
+            dependencies.extend(declaration_reasons.iter().flat_map(|r| r.dependencies.iter().copied()));
         }
     }
     let status = if preserved {
@@ -671,6 +672,7 @@ fn compute_inner(
         status,
     )?;
     let mut reasons = declaration_reasons;
+    sort_reasons(&mut reasons);
     if status == Decision::Refuted {
         reasons.push(Reason {
             kind: ReasonKind::ConditionFailed {
@@ -685,14 +687,10 @@ fn compute_inner(
         sort_reasons(&mut reasons);
         dependencies.push(claim);
         claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
-        let part = &mut b.parts[claim.0 - base];
-        part.reasons = reasons.clone();
-        part.judgment
-            .as_mut()
-            .ok_or("構成命題の判断がない")?
-            .reasons = reasons.clone();
     }
     let part = &mut b.parts[claim.0 - base];
+    part.reasons = reasons.clone();
+    part.judgment.as_mut().ok_or("ObjectAlgebra mapの判断がない")?.reasons = reasons.clone();
     part.evidence = declaration_evidence.clone();
     part.judgment.as_mut().ok_or("ObjectAlgebra mapの判断がない")?.evidence = declaration_evidence.clone();
     outputs.insert("proposition".into(), claim);
