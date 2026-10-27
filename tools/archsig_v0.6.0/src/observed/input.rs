@@ -76,6 +76,17 @@ impl InputSources {
         &self.archmap
     }
 
+    pub(crate) fn add_location_positions(&self, wire: &mut Json) {
+        let definitions: Vec<_> = self.definitions.iter().enumerate()
+            .map(|(i, input)| (format!("definition{i}"), input.bytes()))
+            .collect();
+        crate::result::add_location_positions(
+            wire,
+            definitions.iter().map(|(id, bytes)| (id.as_str(), *bytes))
+                .chain([("law", self.law.bytes()), ("archmap", self.archmap.bytes())]),
+        );
+    }
+
     // 失敗表示にも必要な全 read 行を準備する。digest の計算・入力検査は含めない。
     fn identity_rows(&self) -> Vec<InputIdentity> {
         let mut ids: Vec<_> = self
@@ -177,6 +188,7 @@ impl InputFailure {
         for name in ["requests", "answers", "nodes"] {
             fields.insert(name.into(), Json::Arr(vec![]));
         }
+        self.sources.add_location_positions(&mut wire);
         wire
     }
 
@@ -193,7 +205,9 @@ impl InputFailure {
         } else {
             InputStatus::Invalid
         };
-        self.issues.push(ResultIssue::Input(issue).wire());
+        let mut wire = ResultIssue::Input(issue).wire();
+        self.sources.add_location_positions(&mut wire);
+        self.issues.push(wire);
         self
     }
     fn input_with_control(self, issue: Issue, control: &Control) -> Self {
@@ -252,12 +266,14 @@ impl CheckedInputs {
         &self.archmap
     }
     pub fn metadata_wire(&self) -> Json {
-        Json::Obj(metadata_wire(
+        let mut wire = Json::Obj(metadata_wire(
             &self.inputs,
             &self.law.infos,
             self.definitions.declarations.values(),
             self.definitions.vocabularies.values(),
-        ))
+        ));
+        self.sources.add_location_positions(&mut wire);
+        wire
     }
 
     fn into_failure(self, clear_law: bool) -> InputFailure {

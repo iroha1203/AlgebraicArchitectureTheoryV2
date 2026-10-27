@@ -139,7 +139,11 @@ pub(super) fn finalize(
     started: Instant,
 ) -> Outcome {
     if result.status != Status::Complete {
-        return without_result(signals, result.status, result.issues);
+        let mut outcome = without_result(signals, result.status, result.issues);
+        for issue in &mut outcome.issues {
+            input_positions(issue, copies);
+        }
+        return outcome;
     }
     if let Some(signal) = signals.freeze() {
         result.status = Status::Interrupted;
@@ -157,7 +161,31 @@ pub(super) fn finalize(
         summary: None,
         issues: result.issues.iter().map(ResultIssue::wire).collect(),
     };
-    publish(io, out, result.wire(), copies, outcome)
+    let mut document = result.wire();
+    input_positions(&mut document, copies);
+    publish(io, out, document, copies, outcome)
+}
+
+fn input_positions(document: &mut Json, copies: &[(&str, &[u8])]) {
+    let sources: Vec<_> = copies
+        .iter()
+        .filter_map(|(name, bytes)| {
+            let id = match *name {
+                "inputs/law.law" => "law".to_owned(),
+                "inputs/archmap.json" => "archmap".to_owned(),
+                name => format!(
+                    "definition{}",
+                    name.strip_prefix("inputs/definitions/")?
+                        .strip_suffix(".json")?
+                ),
+            };
+            Some((id, *bytes))
+        })
+        .collect();
+    crate::result::add_location_positions(
+        document,
+        sources.iter().map(|(id, bytes)| (id.as_str(), *bytes)),
+    );
 }
 
 /// 確定した成果物の配送だけを担う。表示JSONを意味計算へ戻さない。

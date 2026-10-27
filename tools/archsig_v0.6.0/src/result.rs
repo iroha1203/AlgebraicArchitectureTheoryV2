@@ -7,6 +7,9 @@ use crate::law::ast::Role;
 use crate::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use std::collections::{BTreeMap, BTreeSet};
 
+mod position;
+pub(crate) use position::add_location_positions;
+
 pub(crate) const RESULT_FORMAT: &str = "archsig.result/4";
 
 /// RunStatus と終了コード(実行仕様 §6)。

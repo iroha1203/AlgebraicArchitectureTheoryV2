@@ -63,7 +63,7 @@ Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specifica
          quantifiers:Quantifier[],assumptions:Ref[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
-Location = {input:Id,pointer?:String,span?:[Nat,Nat]}
+Location = {input:Id,pointer?:String,span?:[Nat,Nat],line?:Nat,column?:Nat}
 Issue = {code:IssueCode,message:String,location?:Location,request?:String,
          dependencies:Ref[],missing:FactPointer[],details:IssueDetails}
 ```
@@ -141,6 +141,11 @@ local_declared/local_supportはreadingごとにどちらか一つを持ち、loc
 
 Law の Location は元 byte 列の半開区間 span を必須とする。Atom 定義と ArchMap は JSON Pointer を必須とし、
 構文エラーでPointerが決まらない場合だけpointer=""とspanを使う。
+span を持つ Location は、receipt と result.json のどちらでも開始位置の line と column を必須とする。
+いずれも1始まりで、line は元入力の LF で区切り、column は行頭からの Unicode scalar 数に1を足す。
+CRLF は LF で次行へ進み、tab も1 scalar として数える。既存の UTF-8 byte 単位の span は保持する。
+UTF-8 不正時は不正 byte の直前までの有効な文字列から開始位置を計算する。
+span がなく JSON Pointer だけを持つ Location に行・列を補わない。
 DeclarationRule.location は、その規則を適用した元の宣言を指す。
 Law は宣言全体の span、Atom 定義は該当宣言 object の JSON Pointer とする。
 省略されたguardや生成した対応に架空の入力位置を与えず、補完の出所を規則名で区別する。
