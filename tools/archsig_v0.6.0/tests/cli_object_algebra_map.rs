@@ -3300,9 +3300,9 @@ fn unknown_path_condition_preserves_program_identity_instead_of_action_equality(
             dir.join("l.law"),
             format!(
                 r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{ {vocabulary} relation paths(e:Reserve,s:State):
+reading Before {{ {vocabulary} relation following(e:Reserve):path(e)=path(e); relation paths(e:Reserve,s:State):
 (if s.free>0 then path(e) else {alternative})=(if s.free>0 then path(e) else {alternative}); }}
-reading After {{ {vocabulary} relation paths(t:Reserve,u:State):path(t)=path(t); }}
+reading After {{ {vocabulary} relation following(t:Reserve):path(t)=path(t); relation paths(t:Reserve,u:State):path(t)=path(t); }}
 reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(source(path(e))); }}"#
             ),
         )
@@ -3361,6 +3361,12 @@ reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(sourc
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         if same_word {
             assert!(arr(get(plan, "requirements")).is_empty());
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let names = arr(get(map, "transports"))
+                .iter()
+                .map(|r| s(get(value(&result, r), "source")))
+                .collect::<Vec<_>>();
+            assert_eq!(names, ["Before.following", "Before.paths"]);
         } else {
             assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
             assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
