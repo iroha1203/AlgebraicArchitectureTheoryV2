@@ -1,0 +1,674 @@
+//! relationの各辺を、型域全体の名前付き生成元対応で運ぶ。
+use super::*;
+use crate::{
+    definition::model::PrimitiveSignature,
+    observed::{
+        change_result,
+        environment::relation_instances::{self, RelationState},
+        path_compose,
+        path_value::PathValue,
+    },
+};
+
+type Inputs = super::super::super::input::CheckedInputs;
+fn pending(
+    out: &mut Output,
+    request: &Request,
+    origins: &[NodeRef],
+    span: (usize, usize),
+    missing: Vec<Fact>,
+) {
+    out.status = merge_status(out.status, Decision::Undetermined);
+    out.reasons.push(Reason {
+        kind: if missing.is_empty() {
+            ReasonKind::UnsupportedAlgorithm {
+                question: request.kind,
+                operand_types: vec![],
+                method: "relation_transport".into(),
+            }
+        } else {
+            ReasonKind::Missing
+        },
+        request: request.id.clone(),
+        dependencies: origins.to_vec(),
+        missing,
+        location: Some(crate::issue::Location::Law { span }),
+    });
+}
+fn ensure_map(
+    b: &mut Builder<'_>,
+    inputs: &Inputs,
+    correspondence: &construction::DeclarationCorrespondence,
+    source: &str,
+    target: &str,
+    deps: &[NodeRef],
+    maps: &mut Vec<Arc<ParameterMap>>,
+    c: &mut Control,
+) -> Result<usize, ValidationFailure> {
+    if let Some(i) = maps
+        .iter()
+        .position(|m| m.source == source && m.target == target)
+    {
+        return Ok(i);
+    }
+    maps.push(reference_map(
+        b,
+        inputs,
+        correspondence,
+        source,
+        target,
+        deps,
+        c,
+    )?);
+    Ok(maps.len() - 1)
+}
+fn moved(
+    value: &Scalar,
+    maps: &[Arc<ParameterMap>],
+    c: &mut Control,
+) -> Result<Scalar, ValidationFailure> {
+    if let Scalar::Subject {
+        snapshot,
+        subject,
+        entity,
+    } = value
+    {
+        let map = maps
+            .iter()
+            .find(|m| m.source == *entity)
+            .ok_or("relationの元参照型写像がない")?;
+        for (s, t) in map.transport.source().iter().zip(map.transport.images()) {
+            tick(c)?;
+            if s.snapshot == *snapshot && s.subject == *subject {
+                return Ok(Scalar::Subject {
+                    snapshot: t.snapshot.clone(),
+                    subject: t.subject.clone(),
+                    entity: map.target.clone(),
+                });
+            }
+        }
+        return Err("relationの元参照が全型域写像にない".into());
+    }
+    Ok(value.clone())
+}
+// Pathのwireは既出の型付き参照を必要とする。作用はScalar自身から再検査される。
+fn path_binding(
+    b: &mut Builder<'_>,
+    path: &PathValue,
+    deps: &[NodeRef],
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    path.check(c)?;
+    let mut args = deps.to_vec();
+    let source = change_result::value(b, &path.object())?;
+    let target = change_result::value(b, &path.target())?;
+    args.extend([source, target]);
+    let mut generators = vec![];
+    if let Some(step) = &path.step {
+        for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
+            tick(c)?;
+            let reference = change_result::value(b, generator)?;
+            args.push(reference);
+            generators.push(reference.wire());
+        }
+    }
+    let scalar = Scalar::Path(Box::new(path.clone()));
+    b.push(
+        NodeType::Value(scalar.ty()),
+        "binding",
+        Json::obj([
+            ("reading", Json::str(&path.reading)),
+            ("source", source.wire()),
+            ("target", target.wire()),
+            ("generators", Json::Arr(generators)),
+        ]),
+        args,
+        Some(scalar),
+        None,
+    )
+}
+fn example(
+    b: &mut Builder<'_>,
+    params: &[Param],
+    bindings: &[(String, Scalar)],
+    left: &PathValue,
+    right: &PathValue,
+    deps: &[NodeRef],
+    facts: &[Fact],
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    let left = path_binding(b, left, deps, c)?;
+    let right = path_binding(b, right, deps, c)?;
+    let mut args = vec![left, right];
+    let mut bound = vec![];
+    for (p, (name, v)) in params.iter().zip(bindings) {
+        tick(c)?;
+        let value = change_result::value(b, v)?;
+        args.push(value);
+        bound.push(Json::obj([
+            ("name", Json::str(name)),
+            ("type", p.ty.wire()),
+            ("value", value.wire()),
+        ]));
+    }
+    b.push(
+        NodeType::Evidence,
+        "evidence",
+        Json::obj([
+            ("kind", Json::str("counterexample")),
+            (
+                "data",
+                Json::obj([
+                    ("bindings", Json::Arr(bound)),
+                    ("paths", Json::Arr(vec![left.wire(), right.wire()])),
+                    ("left", left.wire()),
+                    ("right", right.wire()),
+                    ("facts", Json::Arr(facts.iter().map(Fact::wire).collect())),
+                ]),
+            ),
+        ]),
+        args,
+        None,
+        None,
+    )
+}
+struct Generator {
+    source: Scalar,
+    target: PathValue,
+}
+fn word(
+    path: &PathValue,
+    reading: &str,
+    maps: &[Arc<ParameterMap>],
+    generators: &[Generator],
+    c: &mut Control,
+) -> Result<Option<PathValue>, ValidationFailure> {
+    let Scalar::Subject {
+        snapshot,
+        subject,
+        entity,
+    } = &moved(&path.object(), maps, c)?
+    else {
+        return Err("relationの移送端点が参照でない".into());
+    };
+    let mut result = PathValue {
+        reading: reading.into(),
+        snapshot: snapshot.clone(),
+        subject: subject.clone(),
+        entity: entity.clone(),
+        step: None,
+    };
+    if let Some(step) = &path.step {
+        for source in std::iter::once(&step.generator).chain(&step.word_tail) {
+            tick(c)?;
+            let Some(generator) = generators.iter().find(|g| g.source == *source) else {
+                return Ok(None);
+            };
+            let composed =
+                path_compose::compose_retained(&result, &generator.target, reading, c, |_, _| {})
+                    .map_err(|e| e.cause)?;
+            let Some(value) = composed.value else {
+                return Err("relationの生成元移送が合成端点を保存しない".into());
+            };
+            result = value;
+        }
+    }
+    Ok(Some(result))
+}
+pub(super) fn retain(
+    env: &Environment<'_>,
+    b: &mut Builder<'_>,
+    inputs: &Inputs,
+    correspondence: &construction::DeclarationCorrespondence,
+    deps: &[NodeRef],
+    request: &Request,
+    c: &mut Control,
+) -> Result<Output, ValidationFailure> {
+    let mut out = Output {
+        transports: vec![],
+        status: Decision::Established,
+        reasons: vec![],
+        evidence: vec![],
+    };
+    for candidate in correspondence
+        .candidates()
+        .iter()
+        .filter(|d| d.source().kind == "relation")
+    {
+        tick(c)?;
+        let pair = candidate.pair().ok_or("relationの対応署名がない")?;
+        let declarations = [
+            &inputs.law().declarations[pair.source()],
+            &inputs.law().declarations[pair.target()],
+        ];
+        let (
+            Signature::Relation {
+                params: sp,
+                guard: sg,
+                left: sl,
+                right: sr,
+            },
+            Signature::Relation {
+                params: tp,
+                guard: tg,
+                left: tl,
+                right: tr,
+            },
+        ) = (&declarations[0].signature, &declarations[1].signature)
+        else {
+            return Err("relation移送の元宣言が違う".into());
+        };
+        let origins =
+            [[*sl, *tl], [*sr, *tr]].map(|ids| -> Result<[NodeRef; 2], ValidationFailure> {
+                Ok([
+                    expression(b, inputs, ids[0], sp, deps)?,
+                    expression(b, inputs, ids[1], tp, deps)?,
+                ])
+            });
+        let [left, right] = origins;
+        let origins = [left?, right?];
+        let origin_deps = origins.iter().flatten().copied().collect::<Vec<_>>();
+        let start_reasons = out.reasons.len();
+        let start_evidence = out.evidence.len();
+        if sg.is_some() || tg.is_some() {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                vec![],
+            );
+            continue;
+        }
+        let (Some(Type::Path(sa, sb)), Some(Type::Path(ta, tb))) =
+            (inputs.law().expr_type(*sl), inputs.law().expr_type(*tl))
+        else {
+            return Err("relationの辺がPathでない".into());
+        };
+        if sa != sb
+            || ta != tb
+            || !matches!(
+                inputs
+                    .definitions()
+                    .declarations
+                    .get(sa)
+                    .map(|d| &d.signature),
+                Some(PrimitiveSignature::Entity { owner: Some(_), .. })
+            )
+        {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                vec![],
+            );
+            continue;
+        }
+        let mut maps = vec![];
+        let mut identity = correspondence.types().to_vec();
+        ensure_map(b, inputs, correspondence, sa, ta, deps, &mut maps, c)?;
+        let mut supported = true;
+        for (s, t) in sp.iter().zip(tp) {
+            match (&s.ty.erase(), &t.ty.erase()) {
+                (Type::Ref(a), Type::Ref(z)) => {
+                    ensure_map(b, inputs, correspondence, &a, &z, deps, &mut maps, c)?;
+                }
+                (a, z) if a == z => {
+                    if let Some(ds) = super::super::super::value_transport::identity_declarations(
+                        &a,
+                        inputs.law(),
+                        c,
+                    )? {
+                        identity.extend(ds);
+                    } else {
+                        supported = false;
+                    }
+                }
+                _ => supported = false,
+            }
+        }
+        if !supported {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                vec![],
+            );
+            continue;
+        }
+        // Path型域の全生成元を運ぶ。実際のrelationに現れた語だけに写像を狭めない。
+        let namespaces =
+            crate::construction::reading_namespaces(inputs.law(), &declarations[0].reading, c)
+                .map_err(failure)?;
+        let mut arrow_types = vec![];
+        for (name, def) in &inputs.definitions().declarations {
+            tick(c)?;
+            if !namespaces.contains(&def.namespace) {
+                continue;
+            }
+            if let PrimitiveSignature::Arrow { endpoint, .. } = &def.signature {
+                if endpoint == sa {
+                    let target = correspondence
+                        .types()
+                        .iter()
+                        .find(|(s, _)| s == name)
+                        .map(|(_, t)| t.as_str())
+                        .unwrap_or(name);
+                    let Some(target_def) = inputs.definitions().declarations.get(target) else {
+                        return Err("relation生成元の像宣言がない".into());
+                    };
+                    if !matches!(&target_def.signature,PrimitiveSignature::Arrow {endpoint,..} if endpoint==ta)
+                    {
+                        supported = false;
+                        break;
+                    }
+                    arrow_types.push((name.clone(), target.to_owned()));
+                }
+            }
+        }
+        if !supported {
+            pending(
+                &mut out,
+                request,
+                &origin_deps,
+                declarations[0].span,
+                vec![],
+            );
+            continue;
+        }
+        let mut generators = vec![];
+        let mut generator_refs = vec![];
+        let mut complete = true;
+        let mut support = vec![];
+        let mut scope = Scope::default();
+        for (s, t) in arrow_types {
+            let index = ensure_map(b, inputs, correspondence, &s, &t, deps, &mut maps, c)?;
+            let map = maps[index].clone();
+            for ((sf, tf), (sref, tref)) in map
+                .transport
+                .source()
+                .iter()
+                .zip(map.transport.images())
+                .zip(&map.subjects)
+            {
+                tick(c)?;
+                let sv = Scalar::Subject {
+                    snapshot: sf.snapshot.clone(),
+                    subject: sf.subject.clone(),
+                    entity: s.clone(),
+                };
+                let tv = Scalar::Subject {
+                    snapshot: tf.snapshot.clone(),
+                    subject: tf.subject.clone(),
+                    entity: t.clone(),
+                };
+                let source = env.internal_arrow_path(
+                    &declarations[0].reading,
+                    &[sv.clone()],
+                    declarations[0].span,
+                )?;
+                let target =
+                    env.internal_arrow_path(&declarations[1].reading, &[tv], declarations[1].span)?;
+                for result in [&source, &target] {
+                    support.extend(result.support.iter().cloned());
+                    scope.merge(&result.scope);
+                }
+                let mut absent = source.missing.clone();
+                absent.extend(target.missing.iter().cloned());
+                let (Some(Scalar::Path(source)), Some(Scalar::Path(target))) =
+                    (&source.value, &target.value)
+                else {
+                    complete = false;
+                    pending(
+                        &mut out,
+                        request,
+                        &origin_deps,
+                        declarations[0].span,
+                        absent,
+                    );
+                    continue;
+                };
+                if moved(&source.object(), &maps, c)? != target.object()
+                    || moved(&source.target(), &maps, c)? != target.target()
+                {
+                    complete = false;
+                    pending(
+                        &mut out,
+                        request,
+                        &origin_deps,
+                        declarations[0].span,
+                        vec![],
+                    );
+                    continue;
+                }
+                generators.push(Generator {
+                    source: sv,
+                    target: (**target).clone(),
+                });
+                generator_refs.push((*sref, *tref));
+            }
+        }
+        let tables = [
+            relation_instances::relation_instances(inputs, &declarations[0].reading, c)
+                .map_err(|e| e.cause)?,
+            relation_instances::relation_instances(inputs, &declarations[1].reading, c)
+                .map_err(|e| e.cause)?,
+        ];
+        for side in 0..2 {
+            if tables[side]
+                .outside_finite
+                .iter()
+                .any(|r| r.declaration == declarations[side].name)
+            {
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[side].span,
+                    vec![],
+                );
+            }
+            for absent in tables[side]
+                .pending_domains
+                .iter()
+                .filter(|r| r.declaration == declarations[side].name)
+            {
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[side].span,
+                    absent.missing.clone(),
+                );
+            }
+        }
+        let mut statuses = [Decision::Established; 2];
+        let mut evidence = [vec![], vec![]];
+        for row in tables[0]
+            .instances
+            .iter()
+            .filter(|r| r.declaration == declarations[0].name)
+        {
+            tick(c)?;
+            if row.state == RelationState::OutsideDomain {
+                continue;
+            }
+            let mut target_bindings = vec![];
+            for (p, (_, v)) in tp.iter().zip(&row.bindings) {
+                target_bindings.push((p.name.clone(), moved(v, &maps, c)?));
+            }
+            let Some(target) = tables[1]
+                .instances
+                .iter()
+                .find(|r| r.declaration == declarations[1].name && r.bindings == target_bindings)
+            else {
+                pending(
+                    &mut out,
+                    request,
+                    &origin_deps,
+                    declarations[0].span,
+                    vec![],
+                );
+                continue;
+            };
+            for r in [row, target] {
+                support.extend(r.support.iter().cloned());
+                scope.merge(&r.scope);
+                if r.state != RelationState::Established {
+                    pending(
+                        &mut out,
+                        request,
+                        &origin_deps,
+                        declarations[0].span,
+                        r.missing.clone(),
+                    );
+                }
+            }
+            for (index, (sv, tv)) in [(&row.left, &target.left), (&row.right, &target.right)]
+                .into_iter()
+                .enumerate()
+            {
+                let (Some(Scalar::Path(s)), Some(Scalar::Path(t))) = (sv, tv) else {
+                    statuses[index] = merge_status(statuses[index], Decision::Undetermined);
+                    continue;
+                };
+                let Some(expected) = word(s, &declarations[1].reading, &maps, &generators, c)?
+                else {
+                    statuses[index] = merge_status(statuses[index], Decision::Undetermined);
+                    continue;
+                };
+                if !expected.same_program(t, c)? {
+                    statuses[index] = Decision::Refuted;
+                    let witness = example(
+                        b,
+                        sp,
+                        &row.bindings,
+                        &expected,
+                        t,
+                        &origin_deps,
+                        &support,
+                        c,
+                    )?;
+                    evidence[index].push(witness);
+                    out.evidence.push(witness);
+                    out.status = Decision::Refuted;
+                }
+            }
+        }
+        if !complete {
+            continue;
+        }
+        identity.sort();
+        identity.dedup();
+        let subjects = maps
+            .iter()
+            .flat_map(|m| m.subjects.iter().copied())
+            .collect::<Vec<_>>();
+        let types = [
+            Type::Tuple(sp.iter().map(|p| p.ty.clone()).collect()),
+            Type::Tuple(tp.iter().map(|p| p.ty.clone()).collect()),
+        ];
+        let arguments = value_map(b, [&types[0], &types[1]], &subjects, &identity, deps)?;
+        let st = Type::Path(sa.clone(), sb.clone());
+        let tt = Type::Path(ta.clone(), tb.clone());
+        let values = value_map(b, [&st, &tt], &subjects, &identity, deps)?;
+        let part = &mut b.parts[values.0 - b.base];
+        if let Json::Obj(wire) = &mut part.wire {
+            wire.insert(
+                "generators".into(),
+                Json::Arr(
+                    generator_refs
+                        .iter()
+                        .map(|(s, t)| Json::Arr(vec![s.wire(), t.wire()]))
+                        .collect(),
+                ),
+            );
+        }
+        part.arguments
+            .extend(generator_refs.iter().flat_map(|(s, t)| [*s, *t]));
+        let reasons = out.reasons[start_reasons..].to_vec();
+        let mut clauses = vec![];
+        let mut all = deps.to_vec();
+        all.extend([arguments, values]);
+        for (index, origin) in origins.iter().enumerate() {
+            let status = if reasons.is_empty() {
+                statuses[index]
+            } else {
+                merge_status(statuses[index], Decision::Undetermined)
+            };
+            let proposition = b.proposition(
+                "declaration_transport",
+                vec![origin[0], origin[1], arguments, values],
+                evidence[index].clone(),
+                status,
+            )?;
+            let part = &mut b.parts[proposition.0 - b.base];
+            part.support = support.clone();
+            part.support.sort();
+            part.support.dedup();
+            part.scope.merge(&scope);
+            part.scope.assignments = true;
+            let quantifiers = sp
+                .iter()
+                .map(|p| Quantifier {
+                    kind: crate::law::ast::QuantKind::Forall,
+                    name: p.name.clone(),
+                    ty: p.ty.clone(),
+                    domain: None,
+                    occurrence: p.span,
+                    context: None,
+                })
+                .collect::<Vec<_>>();
+            part.scope.quantifiers.extend(quantifiers.iter().cloned());
+            if let Json::Obj(wire) = &mut part.wire {
+                wire.insert(
+                    "quantifiers".into(),
+                    Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
+                );
+            }
+            part.reasons = reasons.clone();
+            part.evidence = evidence[index].clone();
+            if let Some(j) = &mut part.judgment {
+                j.reasons = part.reasons.clone();
+                j.evidence = part.evidence.clone();
+            }
+            out.status = merge_status(out.status, status);
+            all.extend([origin[0], origin[1], proposition]);
+            all.extend(out.evidence[start_evidence..].iter().copied());
+            clauses.push(Json::obj([
+                ("source", origin[0].wire()),
+                ("target", origin[1].wire()),
+                ("arguments", arguments.wire()),
+                ("values", values.wire()),
+                ("commutes", proposition.wire()),
+            ]));
+        }
+        out.transports.push(
+            b.push(
+                NodeType::Construction(T::DeclarationTransport),
+                "declaration_transport",
+                Json::obj([
+                    ("kind", Json::str("relation")),
+                    ("source", Json::str(&declarations[0].name)),
+                    ("target", Json::str(&declarations[1].name)),
+                    (
+                        "parameters",
+                        Json::Arr(
+                            pair.parameters()
+                                .iter()
+                                .map(|(s, t)| Json::Arr(vec![Json::str(s), Json::str(t)]))
+                                .collect(),
+                        ),
+                    ),
+                    ("clauses", Json::Arr(clauses)),
+                ]),
+                all,
+                None,
+                None,
+            )?,
+        );
+    }
+    Ok(out)
+}

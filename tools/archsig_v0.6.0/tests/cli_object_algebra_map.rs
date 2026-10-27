@@ -2143,3 +2143,328 @@ fn a_changed_third_data_parameter_row_refutes_the_whole_map() {
     assert!(has(get(answer(&result, "m"), "outputs"), "operation"));
     assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
 }
+
+#[test]
+fn relation_transport_keeps_named_words_empty_words_and_parameter_positions() {
+    for case in ["unit", "empty", "alias", "order"] {
+        let dir = finite_view_inputs(&format!("relation-transport-{case}"), true);
+        if case != "unit" {
+            let path = dir.join("a.json");
+            let mut data=std::fs::read_to_string(&path).unwrap()
+                .replace(r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","q"]"#,r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","p"]"#)
+                .replace(r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","s"]"#,r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","r"]"#);
+            if case == "alias" || case == "order" {
+                data=data.replace(r#"{"id":"f","type":"Reservations.Reserve","origin":"model"},"#,r#"{"id":"f","type":"Reservations.Reserve","origin":"model"},{"id":"g","type":"Reservations.Reserve","origin":"model"},"#)
+                    .replace(r#""atoms":["#,r#""atoms":[{"id":"g-owner","subject":"g","field":"Reservations.Reserve.owner","value":["v","B"],"origin":"model"},{"id":"g-from","subject":"g","field":"Reservations.Reserve.from","value":["v","r"],"origin":"model"},{"id":"g-to","subject":"g","field":"Reservations.Reserve.to","value":["v","r"],"origin":"model"},"#);
+            }
+            std::fs::write(path, data).unwrap();
+        }
+        let (source, target) = match case {
+            "unit" => (
+                "relation paths(e:Reserve): path(e)=then(identity(source(path(e))),path(e));",
+                "relation paths(t:Reserve): then(path(t),identity(target(path(t))))=path(t);",
+            ),
+            "empty" => (
+                "relation paths(e:Reserve): identity(source(path(e)))=identity(source(path(e)));",
+                "relation paths(t:Reserve): path(t)=path(t);",
+            ),
+            "alias" => (
+                "relation paths(e:Reserve,f:Reserve): path(e)=path(e);",
+                "relation paths(u:Reserve,v:Reserve): path(v)=path(v);",
+            ),
+            _ => (
+                "relation paths(root:System,e:Reserve[root],f:Reserve[root]): then(path(e),path(f))=then(path(e),path(f));",
+                "relation paths(world:System,u:Reserve[world],v:Reserve[world]): then(path(v),path(u))=then(path(v),path(u));",
+            ),
+        };
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} {source} }}
+reading After {{ {vocabulary} {target} }}"#
+            ),
+        )
+        .unwrap();
+        let normal = cli::run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--ask",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "--ask",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(
+            normal.code,
+            if case == "unit" { 0 } else { 1 },
+            "{case}: {}",
+            normal.stdout
+        );
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!("relation {case}: stdout {} bytes", normal.stdout.len());
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(
+            run.code,
+            if case == "unit" { 0 } else { 1 },
+            "{case}: {}",
+            run.stdout
+        );
+        let result = result_json(&dir, &run);
+        assert_eq!(
+            s(get(answer(&result, "m"), "status")),
+            if case == "unit" {
+                "established"
+            } else {
+                "refuted"
+            },
+            "{case}: {}",
+            run.stdout
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if case == "unit" {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = arr(get(map, "transports"))
+                .iter()
+                .map(|r| value(&result, r))
+                .find(|t| s(get(t, "kind")) == "relation")
+                .unwrap();
+            assert_eq!(arr(get(transport, "clauses")).len(), 2);
+            for clause in arr(get(transport, "clauses")) {
+                let moved = value(&result, get(clause, "values"));
+                assert_reference_pairs(
+                    &result,
+                    moved,
+                    &[
+                        ("e", "f"),
+                        ("f", "f"),
+                        ("p", "r"),
+                        ("q", "s"),
+                        ("r", "r"),
+                        ("s", "s"),
+                        ("u", "w"),
+                        ("w", "w"),
+                    ],
+                );
+                assert_eq!(arr(get(moved, "generators")).len(), 2);
+                assert_eq!(
+                    s(get(value(&result, get(clause, "source")), "kind")),
+                    "source"
+                );
+                assert_eq!(
+                    s(get(value(&result, get(clause, "target")), "kind")),
+                    "source"
+                );
+            }
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+            let examples = arr(get(answer(&result, "m"), "counterexamples"));
+            assert!(!examples.is_empty());
+            let data = get(value(&result, &examples[0]), "data");
+            let names = |side: &str| {
+                arr(get(value(&result, get(data, side)), "generators"))
+                    .iter()
+                    .map(|r| s(&arr(value(&result, r))[1]).to_owned())
+                    .collect::<Vec<_>>()
+            };
+            let left = names("left");
+            let right = names("right");
+            match case {
+                "empty" => {
+                    assert!(left.is_empty());
+                    assert_eq!(right.len(), 1);
+                }
+                "alias" => {
+                    assert_eq!(left, ["f"]);
+                    assert_eq!(right, ["g"]);
+                }
+                "order" => {
+                    assert_eq!(left, ["f", "g"]);
+                    assert_eq!(right, ["g", "f"]);
+                }
+                _ => unreachable!(),
+            }
+        }
+        let reused = cli::run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+                "--ask",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "--ask",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(reused.code, run.code, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}
+
+#[test]
+fn relation_transport_keeps_missing_generator_actions_pending_and_independent_word_refutations() {
+    for changed in [false, true] {
+        let dir = finite_view_inputs(
+            if changed {
+                "relation-missing-and-refuted"
+            } else {
+                "relation-missing"
+            },
+            true,
+        );
+        let path = dir.join("a.json");
+        let mut data = std::fs::read_to_string(&path).unwrap();
+        if changed {
+            data=data.replace(r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","q"]"#,r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","p"]"#)
+                .replace(r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","s"]"#,r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","r"]"#);
+        }
+        data=data.replace(r#""subjects":["#,r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"x","type":"Reservations.State","origin":"model"},{"id":"h","type":"Reservations.Reserve","origin":"model"},"#)
+            .replace(r#""atoms":["#,r#""atoms":[{"id":"x-owner","subject":"x","field":"Reservations.State.owner","value":["v","C"],"origin":"model"},{"id":"x-held","subject":"x","field":"Reservations.State.held","value":"0","origin":"model"},{"id":"h-owner","subject":"h","field":"Reservations.Reserve.owner","value":["v","C"],"origin":"model"},{"id":"h-from","subject":"h","field":"Reservations.Reserve.from","value":["v","x"],"origin":"model"},{"id":"h-to","subject":"h","field":"Reservations.Reserve.to","value":["v","x"],"origin":"model"},"#);
+        std::fs::write(path, data).unwrap();
+        let before = if changed {
+            "identity(source(path(e)))"
+        } else {
+            "path(e)"
+        };
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(e:Reserve): {before}={before}; }}
+reading After {{ {vocabulary} relation paths(t:Reserve): path(t)=path(t); }}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ],
+        );
+        assert_eq!(run.code, if changed { 1 } else { 2 }, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(
+            s(get(answer(&result, "m"), "status")),
+            if changed { "refuted" } else { "undetermined" },
+            "{}",
+            run.stdout
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        if !changed {
+            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
+                get(r, "field"),
+                "subject"
+            )) == "x"
+                && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+        }
+        if changed {
+            assert!(!arr(get(answer(&result, "m"), "counterexamples")).is_empty());
+        } else {
+            assert!(!has(answer(&result, "m"), "counterexamples"));
+        }
+        let again = cli::run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+                "--ask",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "--ask",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "--ask",
+                "n=needed($m)",
+            ],
+        );
+        assert_eq!(again.code, run.code, "{}", again.stdout);
+        let again = result_json(&dir, &again);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}
+
+#[test]
+fn relation_transport_reports_guarded_and_infinite_parameter_cases_as_pending() {
+    for (name, source, target) in [
+        (
+            "guard",
+            "relation paths(e:Reserve) when true:path(e)=path(e);",
+            "relation paths(t:Reserve) when true:path(t)=path(t);",
+        ),
+        (
+            "infinite",
+            "relation paths(e:Reserve,n:Z):path(e)=path(e);",
+            "relation paths(t:Reserve,k:Z):path(t)=path(t);",
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("relation-unsupported-{name}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target} }}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ],
+        );
+        assert_eq!(run.code, 2, "{name}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), "undetermined");
+        assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        assert!(!arr(get(plan, "blockers")).is_empty());
+    }
+}
