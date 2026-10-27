@@ -199,7 +199,7 @@ pub(super) fn extend(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
         {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
@@ -372,7 +372,7 @@ fn compute_inner(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change"))
         {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }

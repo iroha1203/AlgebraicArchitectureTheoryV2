@@ -9,6 +9,8 @@ use crate::{
 };
 #[path = "object_local_field_transport.rs"]
 mod field;
+#[path = "object_change_transport.rs"]
+mod change;
 struct ParameterMap {
     source: String,
     target: String,
@@ -459,6 +461,13 @@ pub(super) fn retain(
     };
     for candidate in declarations.candidates() {
         tick(c)?;
+        if candidate.source().kind == "change" {
+            let out = change::retain(env, b, inputs, declarations, candidate, dependencies, request, c)?;
+            result.transports.extend(out.transports);
+            result.status = merge_status(result.status, out.status);
+            result.reasons.extend(out.reasons); result.evidence.extend(out.evidence);
+            continue;
+        }
         if candidate.source().kind != "local" {
             continue;
         }
