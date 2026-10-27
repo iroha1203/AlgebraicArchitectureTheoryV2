@@ -1,7 +1,7 @@
 //! 元readingのrelation instanceと、語を保った全域作用の検査。
 use super::*;
 use crate::law::model::{Declaration, Param, Signature};
-use crate::observed::{input::InputSources, path_value::PathValue};
+use crate::observed::{affine, input::InputSources, path_value::PathValue};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum RelationState {
@@ -23,6 +23,8 @@ pub(in crate::observed) struct RelationInstance {
     pub bindings: Vec<(String, Scalar)>,
     // bindingsに具体値を置かず、元binderのまま全称評価した数値軸。
     pub numeric_parameters: Vec<Param>,
+    // 元の整数parameter座標の適用域。guardと語はこの全解上で評価する。
+    pub numeric_domain: Option<change_affine::Guard>,
     pub guard: Option<bool>,
     // guard自身の適合条件を、左右の語の成立状態から区別する。
     pub guard_checked: bool,
@@ -223,11 +225,74 @@ fn difference(
     tick(c)?;
     Ok(None)
 }
+fn restrict_variables(
+    e: &Environment<'_>,
+    variables: &mut BTreeMap<String, SourceValue>,
+    axes: &[affine::Parameter],
+    domain: &change_affine::Guard,
+) -> Result<(), ValidationFailure> {
+    let particular = domain
+        .fiber
+        .particular
+        .as_ref()
+        .ok_or("空の整数域にrelationを適用できない")?;
+    let width = domain.fiber.kernel.first().map_or(0, Vec::len);
+    if particular.len() != axes.len()
+        || domain.fiber.kernel.len() != axes.len()
+        || width > axes.len()
+        || domain.fiber.kernel.iter().any(|row| row.len() != width)
+        || axes.iter().any(|axis| axis.kind != affine::NumberType::Z)
+    {
+        return Err("relation適用域の元parameter座標が違う".into());
+    }
+    for (index, axis) in axes.iter().enumerate() {
+        e.tick()?;
+        let mut form = affine::constant(&Scalar::Z(particular[index].clone()), &e.control)?
+            .ok_or("整数特解の式がない")?;
+        for (coefficient, free) in domain.fiber.kernel[index].iter().zip(axes) {
+            e.tick()?;
+            let coefficient = affine::constant(&Scalar::Z(coefficient.clone()), &e.control)?;
+            let parameter = affine::parameter(&Type::Z, free, &e.control)?;
+            let term = affine::binary(
+                BinOp::Mul,
+                coefficient.as_ref(),
+                parameter.as_ref(),
+                &e.control,
+            )?;
+            form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), &e.control)?
+                .ok_or("整数核の式がない")?;
+        }
+        let value = variables
+            .get_mut(&axis.name)
+            .ok_or("relation適用域の数値変数がない")?;
+        value.known_value = form.value(&e.control)?;
+        value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
+        value.affine = Some(Box::new(form));
+    }
+    Ok(())
+}
+// 移送先は自身のguardの解集合ではなく、sourceの適用域で読む。
+pub(in crate::observed) fn on_numeric_domain(
+    e: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: Vec<(String, Scalar)>,
+    domain: &change_affine::Guard,
+) -> Result<RelationInstance, ValidationFailure> {
+    row(e, declaration, bindings, true, Some(domain))
+}
+pub(in crate::observed) fn at_numeric_point(
+    e: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: Vec<(String, Scalar)>,
+) -> Result<RelationInstance, ValidationFailure> {
+    row(e, declaration, bindings, true, None)
+}
 fn row_value(
     e: &Environment<'_>,
     declaration: &Declaration,
     bindings: Vec<(String, Scalar)>,
     numeric_families: bool,
+    numeric_domain: Option<&change_affine::Guard>,
 ) -> Result<RelationInstance, ValidationFailure> {
     let Signature::Relation {
         params,
@@ -266,6 +331,7 @@ fn row_value(
             .filter(|p| !bindings.iter().any(|(name, _)| name == &p.name))
             .cloned()
             .collect(),
+        numeric_domain: numeric_domain.cloned(),
         guard: None,
         guard_checked: false,
         left: None,
@@ -291,8 +357,9 @@ fn row_value(
         .cloned()
         .map(|(n, v)| known(e, v, &declaration.reading).map(|v| (n, v)))
         .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
+    let mut axes = vec![];
     if numeric_families {
-        let (mut symbolic, _) = change_affine::law_variables(e, params, &bindings)?;
+        let (mut symbolic, parameters) = change_affine::law_variables(e, params, &bindings)?;
         for (name, value) in variables {
             let entry = symbolic.get_mut(&name).ok_or("relationの記号束縛がない")?;
             entry.scope = value.scope;
@@ -300,15 +367,60 @@ fn row_value(
             entry.support = value.support;
         }
         variables = symbolic;
+        axes = parameters;
     }
     for value in variables.values() {
         out.support.extend(value.support.iter().cloned());
         out.scope.merge(&value.scope);
     }
     let base = out.scope.clone();
-    let g = guard
+    if let Some(domain) = numeric_domain {
+        restrict_variables(e, &mut variables, &axes, domain)?;
+    }
+    let mut g = guard
         .map(|id| e.scoped_ast(id, &variables, &base, &declaration.reading))
         .transpose()?;
+    // 型全域で未知でも、整数等式の全解上で再評価できる。標本値は使わない。
+    if numeric_domain.is_none()
+        && numeric_families
+        && !axes.is_empty()
+        && axes.iter().all(|p| p.kind == affine::NumberType::Z)
+        && g.as_ref().is_none_or(|v| {
+            v.known_value != Some(Scalar::Bool(false))
+                && !v.condition_failed
+                && !v.condition_pending
+        })
+    {
+        let mut metadata = change_affine::Pending::default();
+        let domain = change_affine::parameter_guard_domain(
+            e,
+            *guard,
+            &variables,
+            &axes,
+            &declaration.reading,
+            &mut metadata,
+        );
+        out.support.extend(metadata.support);
+        out.scope.merge(&metadata.scope);
+        match domain {
+            Ok(domain) => {
+                if domain.fiber.particular.is_none() {
+                    out.guard = Some(false);
+                    out.guard_checked = true;
+                    out.state = RelationState::Inactive;
+                    out.numeric_domain = Some(domain);
+                    return Ok(out);
+                }
+                restrict_variables(e, &mut variables, &axes, &domain)?;
+                out.numeric_domain = Some(domain);
+                g = guard
+                    .map(|id| e.scoped_ast(id, &variables, &base, &declaration.reading))
+                    .transpose()?;
+            }
+            Err(ValidationFailure::UnsupportedExpression { .. }) => {}
+            Err(error) => return Err(error),
+        }
+    }
     out.guard = match &g {
         None => Some(true),
         Some(g) => match &g.known_value {
@@ -370,9 +482,10 @@ fn row(
     d: &Declaration,
     bindings: Vec<(String, Scalar)>,
     numeric_families: bool,
+    numeric_domain: Option<&change_affine::Guard>,
 ) -> Result<RelationInstance, ValidationFailure> {
     *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
-    let result = row_value(e, d, bindings, numeric_families);
+    let result = row_value(e, d, bindings, numeric_families, numeric_domain);
     let missing = e
         .missing_slot_reads
         .borrow_mut()
@@ -528,7 +641,7 @@ fn instances(
             }
             for bindings in bindings {
                 tick(c)?;
-                let r = row(&e, d, bindings, numeric_families)?;
+                let r = row(&e, d, bindings, numeric_families, None)?;
                 out.support.extend(r.support.iter().cloned());
                 out.scope.merge(&r.scope);
                 out.instances.push(r);

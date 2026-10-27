@@ -788,3 +788,50 @@ fn numeric_transport_families_keep_missing_guard_slots() {
     assert!(!r.conditions_verified());
     r.recheck(&i, &mut quiet()).unwrap();
 }
+
+#[test]
+fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coordinates() {
+    for (guard, body, state) in [
+        (
+            "n+m=3",
+            "if n+m=3 then path(e) else identity(source(path(e)))",
+            RelationState::Established,
+        ),
+        (
+            "n+m=3",
+            "if n=0 then path(e) else identity(source(path(e)))",
+            RelationState::Pending,
+        ),
+        (
+            "n=1",
+            "if extra=0 then path(e) else identity(source(path(e)))",
+            RelationState::Pending,
+        ),
+        ("2*n=1", "path(e)", RelationState::Inactive),
+    ] {
+        let i = inputs(
+            "normal",
+            &format!("relation keep(n:Z,e:Hop,m:Z,extra:Z) when {guard}:({body})=path(e);"),
+        );
+        let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+        assert_eq!(r.instances.len(), 4);
+        for row in &r.instances {
+            assert_eq!(row.state, state, "{guard}: {body}");
+            let domain = row.numeric_domain.as_ref().unwrap();
+            if guard == "n+m=3" {
+                let point = domain.fiber.particular.as_ref().unwrap();
+                assert_eq!(&point[0] + &point[1], 3.into());
+                for column in 0..domain.fiber.kernel[0].len() {
+                    assert_eq!(
+                        &domain.fiber.kernel[0][column] + &domain.fiber.kernel[1][column],
+                        0.into()
+                    );
+                }
+            }
+        }
+        r.recheck(&i, &mut quiet()).unwrap();
+        let mut forged = r.clone();
+        forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0] += 1;
+        assert!(forged.recheck(&i, &mut quiet()).is_err());
+    }
+}
