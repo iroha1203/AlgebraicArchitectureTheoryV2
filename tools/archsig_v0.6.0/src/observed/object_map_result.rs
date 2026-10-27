@@ -21,6 +21,8 @@ use crate::{
     definition::PrimitiveSignature,
 };
 use std::sync::Arc;
+#[path = "object_declaration_transport.rs"]
+mod declaration_transport;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ConfigurationTransport)?;
@@ -195,7 +197,7 @@ pub(super) fn extend(
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
         {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
@@ -306,12 +308,13 @@ fn compute_inner(
     let mut signature = None;
     let mut circuit_maps = vec![];
     let mut invariant_maps = vec![];
+    let mut declaration_transports = vec![];
     let mut preserved = declarations.all_signatures_compatible();
     if preserved {
         if declarations
             .candidates()
             .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view"))
+            .any(|d| !matches!(d.source().kind, "law" | "view" | "local"))
         {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
@@ -574,6 +577,8 @@ fn compute_inner(
             }
             dependencies.extend(equation_map);
             dependencies.extend(signature);
+            declaration_transports = declaration_transport::retain(&mut b, &inputs, &declarations, &[left,right], c)?;
+            dependencies.extend(declaration_transports.iter().copied());
         }
     }
     let status = if preserved {
@@ -644,7 +649,7 @@ fn compute_inner(
                     Json::Arr(invariant_maps.iter().map(|r| r.wire()).collect()),
                 ),
                 ("signature", signature.ok_or("SignatureMapがない")?.wire()),
-                ("transports", Json::Arr(vec![])),
+                ("transports", Json::Arr(declaration_transports.iter().map(|r|r.wire()).collect())),
             ]),
             dependencies,
             None,
