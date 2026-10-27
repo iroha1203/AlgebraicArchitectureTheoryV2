@@ -133,9 +133,8 @@ fn value_comparison_request_resolution_stops_notify_without_starting_output() {
     comparison_request_resolution_stops_notify_without_starting_output_case(1);
 }
 fn comparison_request_resolution_stops_notify_without_starting_output_case(kind: usize) {
-    let value = kind != 0;
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{value}-{mode}"), kind);
+        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{kind}-{mode}"), kind);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let mut control = Control::new(
@@ -222,10 +221,24 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     )
     .unwrap();
     assert_eq!(original.status(), "complete");
+    // 内部では同値検査の証拠も保持し、保存時は実値の反例だけを残す。
+    let internal = archsig::json::parse(original.wire().canonical().as_bytes()).unwrap();
+    let answer_index = if kind == 2 {
+        2
+    } else if value {
+        0
+    } else {
+        4
+    };
+    let internal_answer = &arr(get(&internal, "answers"))[answer_index];
+    assert_eq!(
+        arr(get(internal_answer, "evidence")).len(),
+        if kind == 2 { 3 } else { 1 }
+    );
     let total = count.get();
     assert!(total >= 2);
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-late-stop-{value}-{mode}"), kind);
+        let (dir, mut args) = setup(&format!("comparison-late-stop-{kind}-{mode}"), kind);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let count = Rc::new(Cell::new(0usize));
@@ -273,25 +286,17 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
             archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
         assert_eq!(s(get(&result, "status")), "interrupted");
         assert_eq!(num(get(&result, "exit_code")), code as u64);
-        let answer = &arr(get(&result, "answers"))[if kind == 2 {
-            2
-        } else if value {
-            0
-        } else {
-            4
-        }];
+        let answer = &arr(get(&result, "answers"))[answer_index];
         assert_eq!(s(get(answer, "status")), "refuted");
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "comparison"));
-        assert_eq!(
-            arr(get(answer, "counterexamples")).len(),
-            if kind == 2 { 3 } else { 1 }
-        );
+        assert_eq!(arr(get(answer, "counterexamples")).len(), 1);
         let proof = arr(get(answer, "counterexamples")).last().unwrap();
         let evidence = arr(get(&result, "nodes"))
             .iter()
             .find(|n| get(n, "id") == get(proof, "node"))
             .unwrap();
+        assert_eq!(s(get(get(evidence, "value"), "kind")), "counterexample");
         let facts = arr(get(get(get(evidence, "value"), "data"), "facts"));
         assert_eq!(
             facts
@@ -306,9 +311,11 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
                 vec!["q", "r", "q"]
             }
         );
-        assert!(arr(get(&result, "nodes"))
-            .iter()
-            .all(|n| s(get(n, "state")) == "value"));
+        assert!(
+            arr(get(&result, "nodes"))
+                .iter()
+                .all(|n| s(get(n, "state")) == "value")
+        );
         assert!(!dir.read_dir().unwrap().any(|e| {
             e.unwrap()
                 .file_name()
@@ -327,9 +334,8 @@ fn value_comparison_write_failures_remove_only_this_runs_temporary_directory() {
     comparison_write_failures_remove_only_this_runs_temporary_directory_case(1);
 }
 fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(kind: usize) {
-    let value = kind != 0;
     for race in [false, true] {
-        let (dir, args) = setup(&format!("comparison-write-failure-{value}-{race}"), kind);
+        let (dir, args) = setup(&format!("comparison-write-failure-{kind}-{race}"), kind);
         let older = dir.join(".out.archsig-older");
         std::fs::create_dir(&older).unwrap();
         std::fs::write(older.join("keep"), b"older bytes").unwrap();

@@ -1,6 +1,9 @@
 //! 原始三入力からの公開Operation合成。期待値は文書本文から取得しない。
 mod common;
-use archsig::json::JNode;
+use archsig::{
+    json::JNode,
+    observed::{control::Control, evaluate_observed_bytes, input::InputSources},
+};
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/reservations.atoms.json");
@@ -365,18 +368,24 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
         let read = format!("read=evaluate(Reservations.sourceOf,m=$c.{path})");
         let mapped =
             format!("mapped=map(Reservations.Migration,on=$c.{path},reading=Reservations)");
-        let r = asks(
-            &dir,
-            &[
-                M,
-                N,
-                C,
-                &read,
-                &mapped,
-                "readPlan=needed($read)",
-                "mapPlan=needed($mapped)",
-            ],
-        );
+        let questions = [
+            M,
+            N,
+            C,
+            &read,
+            &mapped,
+            "readPlan=needed($read)",
+            "mapPlan=needed($mapped)",
+        ];
+        // 内部の条件反証は保存用の値グラフとは独立に検査する。
+        let internal = evaluate_observed_bytes(
+            InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), A.as_bytes().to_vec()),
+            &questions,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let internal = archsig::json::parse(internal.wire().canonical().as_bytes()).unwrap();
+        let r = asks(&dir, &questions);
         let j = saved(&dir, &r, "partial", 2);
         for id in ["m", "n", "c"] {
             let a = answer(&j, id);
@@ -393,17 +402,27 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
                 .unwrap();
             let details = get(condition, "details");
             assert_eq!(s(get(details, "construction")), "projection");
-            let proposition = node(&j, get(details, "condition"));
-            assert_eq!(s(get(get(proposition, "judgment"), "status")), "refuted");
-            assert!(reasons
+            assert!(!has(details, "condition"));
+            assert!(arr(get(condition, "dependencies")).is_empty());
+            let internal_reason = arr(get(answer(&internal, id), "reasons"))
                 .iter()
-                .any(|r| s(get(r, "code")) == "dependency_blocked"));
+                .find(|r| s(get(r, "code")) == "condition_failed")
+                .unwrap();
+            let proposition = node(&internal, get(get(internal_reason, "details"), "condition"));
+            assert_eq!(s(get(get(proposition, "judgment"), "status")), "refuted");
+            assert!(
+                reasons
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "dependency_blocked")
+            );
             let plan_answer = answer(&j, plan_id);
             assert_eq!(s(get(plan_answer, "status")), "established");
             let plan = value(&j, get(get(plan_answer, "outputs"), "plan"));
-            assert!(arr(get(plan, "blockers"))
-                .iter()
-                .any(|r| s(get(r, "code")) == "condition_failed"));
+            assert!(
+                arr(get(plan, "blockers"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "condition_failed")
+            );
             assert!(!has(get(a, "outputs"), "operation"));
         }
         let op = value(&j, get(get(answer(&j, "c"), "outputs"), "operation"));
