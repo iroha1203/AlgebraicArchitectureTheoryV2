@@ -21,29 +21,83 @@ fn unsupported(
         feature: message.into(),
     }
 }
+struct Updates {
+    base: usize,
+    fields: Vec<String>,
+    plain: Option<Vec<(String, usize)>>,
+}
 fn updates(
+    env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
+    declaration: &crate::law::model::Declaration,
     mut id: usize,
     c: &mut Control,
-) -> Result<(usize, Vec<(String, usize)>), ValidationFailure> {
+) -> Result<Updates, ValidationFailure> {
     while let ExprKind::Group(inner) = inputs.law().exprs[id].kind {
         tick(c)?;
         id = inner;
     }
-    let ExprKind::With { base, updates } = &inputs.law().exprs[id].kind else {
-        return Err(unsupported(
-            inputs,
-            id,
-            "change移送の分岐・letを持つ更新句配送は未実装",
-        ));
-    };
-    Ok((
-        *base,
-        updates
+    if let ExprKind::With { base, updates } = &inputs.law().exprs[id].kind {
+        return Ok(Updates {
+            base: *base,
+            fields: updates.iter().map(|(name, _)| name.name.clone()).collect(),
+            plain: Some(
+                updates
+                    .iter()
+                    .map(|(name, id)| (name.name.clone(), *id))
+                    .collect(),
+            ),
+        });
+    }
+    let (base, fields) = change_evaluation::update_shape(env, declaration)?;
+    Ok(Updates {
+        base,
+        fields,
+        plain: None,
+    })
+}
+fn update_expression(
+    b: &mut Builder<'_>,
+    inputs: &super::super::super::input::CheckedInputs,
+    updates: &Updates,
+    body: Option<NodeRef>,
+    field: &str,
+    entity: &str,
+    ty: &Type,
+    params: &[Param],
+    dependencies: &[NodeRef],
+) -> Result<NodeRef, ValidationFailure> {
+    if let Some(plain) = &updates.plain {
+        let id = plain
             .iter()
-            .map(|(name, id)| (name.name.clone(), *id))
-            .collect(),
-    ))
+            .find(|(name, _)| name == field)
+            .ok_or("元更新句がない")?
+            .1;
+        return expression(b, inputs, id, params, dependencies);
+    }
+    let source = body.ok_or("change全体の元式がない")?;
+    b.push(
+        NodeType::Expression(ty.clone()),
+        "expression",
+        Json::obj([
+            ("kind", Json::str("change_update")),
+            ("source", source.wire()),
+            ("field", Json::str(format!("{entity}.{field}"))),
+            (
+                "parameters",
+                Json::Arr(
+                    params
+                        .iter()
+                        .map(|p| Json::obj([("name", Json::str(&p.name)), ("type", p.ty.wire())]))
+                        .collect(),
+                ),
+            ),
+            ("bindings", Json::Arr(vec![])),
+        ]),
+        vec![source],
+        None,
+        None,
+    )
 }
 fn guard_expression(
     b: &mut Builder<'_>,
@@ -386,7 +440,40 @@ pub(super) fn retain(
         params.push(ps.as_slice());
         guards.push(*guard);
         bodies.push(*body);
-        items.push(updates(inputs, *body, c)?);
+    }
+    for (side, declaration) in declarations.iter().enumerate() {
+        match updates(env, inputs, declaration, bodies[side], c) {
+            Ok(item) => items.push(item),
+            Err(ValidationFailure::UnsupportedExpression { location, feature }) => {
+                let mut origins = vec![];
+                for index in 0..2 {
+                    origins.push(expression(
+                        b,
+                        inputs,
+                        bodies[index],
+                        params[index],
+                        dependencies,
+                    )?);
+                }
+                return Ok(Output {
+                    transports: vec![],
+                    status: Decision::Undetermined,
+                    reasons: vec![Reason {
+                        kind: ReasonKind::UnsupportedAlgorithm {
+                            question: request.kind,
+                            operand_types: vec![],
+                            method: feature,
+                        },
+                        request: request.id.clone(),
+                        dependencies: origins,
+                        missing: vec![],
+                        location: Some(location),
+                    }],
+                    evidence: vec![],
+                });
+            }
+            Err(error) => return Err(error),
+        }
     }
     if params[0].is_empty() || params[0].len() != params[1].len() {
         return Err("change移送の引数数が違う".into());
@@ -397,7 +484,7 @@ pub(super) fn retain(
     };
     let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
     let mut names = vec![];
-    for (name, _) in &items[0].1 {
+    for name in &items[0].fields {
         let moved = correspondence
             .field_target(inputs, &format!("{st}.{name}"), c)
             .map_err(failure)?
@@ -410,11 +497,7 @@ pub(super) fn retain(
     }
     let mut expected = names.iter().map(|n| n[1].clone()).collect::<Vec<_>>();
     expected.sort();
-    let mut actual = items[1]
-        .1
-        .iter()
-        .map(|(n, _)| n.clone())
-        .collect::<Vec<_>>();
+    let mut actual = items[1].fields.clone();
     actual.sort();
     if expected != actual {
         return Err(unsupported(
@@ -449,54 +532,59 @@ pub(super) fn retain(
         dependencies,
     )?;
     let mut expressions = vec![[
-        guard_expression(b, inputs, guards[0], items[0].0, params[0], dependencies)?,
-        guard_expression(b, inputs, guards[1], items[1].0, params[1], dependencies)?,
+        guard_expression(b, inputs, guards[0], items[0].base, params[0], dependencies)?,
+        guard_expression(b, inputs, guards[1], items[1].base, params[1], dependencies)?,
     ]];
+    let mut body_sources = [None, None];
+    for side in 0..2 {
+        if items[side].plain.is_none() {
+            body_sources[side] = Some(expression(
+                b,
+                inputs,
+                bodies[side],
+                params[side],
+                dependencies,
+            )?);
+        }
+    }
+    let mut update_types = vec![];
     for name in &names {
-        let ids = [
-            items[0]
-                .1
-                .iter()
-                .find(|(n, _)| n == &name[0])
-                .ok_or("元更新句がない")?
-                .1,
-            items[1]
-                .1
-                .iter()
-                .find(|(n, _)| n == &name[1])
-                .ok_or("先更新句がない")?
-                .1,
-        ];
-        expressions.push([
-            expression(b, inputs, ids[0], params[0], dependencies)?,
-            expression(b, inputs, ids[1], params[1], dependencies)?,
-        ]);
+        let mut types = vec![];
+        let mut origins = vec![];
+        for (side, entity) in [st, tt].into_iter().enumerate() {
+            let ty = inputs
+                .definitions()
+                .declarations
+                .get(entity)
+                .and_then(|d| d.signature.field(&name[side]))
+                .ok_or("change更新fieldの宣言型がない")?
+                .ty
+                .erase();
+            origins.push(update_expression(
+                b,
+                inputs,
+                &items[side],
+                body_sources[side],
+                &name[side],
+                entity,
+                &ty,
+                params[side],
+                dependencies,
+            )?);
+            types.push(ty);
+        }
+        expressions.push([origins[0], origins[1]]);
+        update_types.push(types);
     }
     let mut checks = vec![];
     for (i, origins) in expressions.iter().enumerate() {
-        let ty = if i == 0 {
-            Type::Bool
+        let (ty, target_ty) = if i == 0 {
+            (Type::Bool, Type::Bool)
         } else {
-            inputs
-                .law()
-                .expr_type(items[0].1[i - 1].1)
-                .ok_or("change更新式型がない")?
-                .erase()
-        };
-        let target_ty = if i == 0 {
-            Type::Bool
-        } else {
-            let id = items[1]
-                .1
-                .iter()
-                .find(|(n, _)| n == &names[i - 1][1])
-                .ok_or("先更新句がない")?
-                .1;
-            inputs
-                .law()
-                .expr_type(id)
-                .ok_or("change先更新型がない")?
-                .erase()
+            (
+                update_types[i - 1][0].clone(),
+                update_types[i - 1][1].clone(),
+            )
         };
         if ty != target_ty {
             return Err(unsupported(
