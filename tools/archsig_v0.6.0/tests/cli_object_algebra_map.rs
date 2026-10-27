@@ -118,7 +118,7 @@ fn unconditional_local_guards_preserve_reads_and_following_operations() {
             " when let yes=true in yes",
             " when if true then true else false",
         ),
-        ("parameters", " when s.free=s.free", " when t=t"),
+        ("parameters", " when s.free>0", " when t.free>0"),
     ] {
         let dir = finite_view_inputs(&format!("local-true-guard-{mode}"), true);
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -250,38 +250,32 @@ fn incomplete_endpoint_algebras_keep_configuration_operation_and_original_reason
     ] {
         let dir = finite_view_inputs(&format!("endpoint-algebra-{mode}"), true);
         let old_digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
-        let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
-        let checked =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &checked.vocabularies["Reservations"].digest;
-        std::fs::write(dir.join("d.json"), definition).unwrap();
-        let mut a = std::fs::read_to_string(dir.join("a.json"))
-            .unwrap()
-            .replace(old_digest, digest);
-        let mut facts = String::new();
-        for (subject, peer) in [
-            ("p", "q"),
-            ("q", "p"),
-            ("r", "s"),
-            ("s", "r"),
-            ("u", "u"),
-            ("w", "w"),
-        ] {
-            facts.push_str(&format!(r#"{{"id":"{subject}-peer","subject":"{subject}","field":"Reservations.State.peer","value":["v","{peer}"],"origin":"model"}},"#));
-        }
-        a = a.replace("\"atoms\":[", &format!("\"atoms\":[{facts}"));
-        std::fs::write(dir.join("a.json"), a).unwrap();
-        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        if mode == "refuted" {
+            let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
+            let checked =
+                archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            let digest = &checked.vocabularies["Reservations"].digest;
+            std::fs::write(dir.join("d.json"), definition).unwrap();
+            let mut a = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(old_digest, digest);
+            let mut facts = String::new();
+            for (subject, peer) in [
+                ("p", "q"),
+                ("q", "p"),
+                ("r", "s"),
+                ("s", "r"),
+                ("u", "u"),
+                ("w", "w"),
+            ] {
+                facts.push_str(&format!(r#"{{"id":"{subject}-peer","subject":"{subject}","field":"Reservations.State.peer","value":["v","{peer}"],"origin":"model"}},"#));
+            }
+            a = a.replace("\"atoms\":[", &format!("\"atoms\":[{facts}"));
+            std::fs::write(dir.join("a.json"), a).unwrap();
+            std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{use vocabulary Reservations version "1" digest "{digest}"; local here(s:State) reads s.peer;}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}"; local here(t:State) reads t.peer;}}"#)).unwrap();
-        if mode == "unsupported" {
-            std::fs::write(
-                dir.join("d.json"),
-                include_bytes!("fixtures/reservations.atoms.json"),
-            )
-            .unwrap();
-            let original = include_str!("fixtures/object-configuration-map.archmap.json");
-            std::fs::write(dir.join("a.json"), original).unwrap();
+        } else {
             let digest = old_digest;
             std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{use vocabulary Reservations version "1" digest "{digest}"; law required positive(s:State):s.free>0;}}
