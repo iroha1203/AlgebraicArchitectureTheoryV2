@@ -973,10 +973,7 @@ fn reference_containers_do_not_use_same_nominal_type_identity() {
 reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
 reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#)).unwrap();
     let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]);
-    assert_eq!(run.code, 70, "{}", run.stdout);
-    let result = result_json(&dir, &run);
-    assert_eq!(s(get(answer(&result, "m"), "status")), "undetermined");
-    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    notified(&dir, &run, "error", 70);
 }
 
 fn finite_container_parameter_inputs(name: &str, preserve: bool, kind: &str) -> PathBuf {
