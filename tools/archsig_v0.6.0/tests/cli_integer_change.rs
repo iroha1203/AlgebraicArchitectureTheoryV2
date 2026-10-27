@@ -444,11 +444,11 @@ fn parameter_product_nonlinear_coefficients_are_not_linear_solutions() {
         "z*s.x*s.x=z",
         false,
     );
-    let result = execute(
+    let result = without_file_changes(&dir, || execute(
         &dir,
         "out",
         &["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"],
-    );
+    ));
     assert_eq!(result.code, 70, "{} {}", result.stdout, result.stderr);
     notified(&dir, &result, "error", 70);
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
@@ -725,28 +725,28 @@ fn nonlinear_change_is_not_misreported_as_an_integer_affine_solution() {
         "integer-nonlinear",
         "change setpair(s:State,a:Z,b:Z)=s with{x=a*a,y=b};",
     );
-    let r = execute(
+    let r = without_file_changes(&dir, || execute(
         &dir,
         "out",
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-    );
+    ));
     assert_eq!(r.code, 70, "{} {}", r.stdout, r.stderr);
     notified(&dir, &r, "error", 70);
     // 先行する回答があっても、実行エラーを保存成果物として公開しない。
-    let r = execute(&dir, "after-value", &[
+    let r = without_file_changes(&dir, || execute(&dir, "after-value", &[
         "v=evaluate(Pair.first,s=@pair/s)",
         "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-    ]);
+    ]));
     notified(&dir, &r, "error", 70);
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
     // 先行する欠測のノード参照も、成果物のないエラー通知へ漏らさない。
     let map = std::fs::read_to_string(dir.join("a.json")).unwrap();
     let map = map.replace(r#"{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},"#, "");
     std::fs::write(dir.join("a.json"), map).unwrap();
-    let r = execute(&dir, "after-missing", &[
+    let r = without_file_changes(&dir, || execute(&dir, "after-missing", &[
         "v=evaluate(Pair.first,s=@pair/s)",
         "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-    ]);
+    ]));
     let receipt = notified(&dir, &r, "error", 70);
     assert!(arr(get(&receipt, "issues")).iter().all(|issue| s(get(issue, "code")) == "internal"));
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);

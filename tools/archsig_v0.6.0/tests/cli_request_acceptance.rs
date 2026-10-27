@@ -273,7 +273,7 @@ fn static_duplicates_unknown_names_types_owners_indices_and_private_fields_are_u
         assert_eq!(issues.len(), 1);
         assert_eq!(issues[0].code, code, "{ts:?}");
         let d = files(&format!("request-static-{i}"));
-        let r = asks(&d, &ts);
+        let r = without_file_changes(&d, || asks(&d, &ts));
         let w = notified(&d, &r, "invalid", 64);
         no_artifacts(&d);
         assert!(
@@ -321,7 +321,7 @@ fn multiple_cycles_preserve_the_whole_internal_graph_and_report_only_cyclic_memb
         );
     }
     let d = files("request-cycles");
-    let r = asks(&d, &ts);
+    let r = without_file_changes(&d, || asks(&d, &ts));
     let cli = notified(&d, &r, "invalid", 64);
     no_artifacts(&d);
     for w in [w, cli] {

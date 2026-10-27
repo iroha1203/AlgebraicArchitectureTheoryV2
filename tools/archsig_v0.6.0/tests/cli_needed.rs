@@ -314,7 +314,7 @@ fn invalid_needed_references_arguments_cycles_and_plan_projections_are_usage_wit
     ];
     for (index, asks) in cases.iter().enumerate() {
         let dir = setup(&format!("needed-usage-{index}"), false);
-        let run = execute(&dir, "out", None, asks);
+        let run = without_file_changes(&dir, || execute(&dir, "out", None, asks));
         let receipt = notified(&dir, &run, "invalid", 64);
         assert!(
             arr(get(&receipt, "issues"))

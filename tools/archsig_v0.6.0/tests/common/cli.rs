@@ -21,6 +21,7 @@ pub struct Run {
     pub receipt: JNode,
     pub stdout: String,
     pub stderr: String,
+    files_unchanged: bool,
 }
 
 pub fn run(dir: &Path, args: &[&str]) -> Run {
@@ -32,7 +33,53 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
         stdout,
         stderr: String::from_utf8(out.stderr).unwrap(),
+        files_unchanged: false,
     }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum FixtureEntry {
+    File(Vec<u8>),
+    Directory,
+    Link(PathBuf),
+    Other,
+}
+fn fixture_entries(dir: &Path) -> std::collections::BTreeMap<PathBuf, FixtureEntry> {
+    fn visit(
+        root: &Path,
+        dir: &Path,
+        entries: &mut std::collections::BTreeMap<PathBuf, FixtureEntry>,
+    ) {
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let kind = entry.file_type().unwrap();
+            let value = if kind.is_file() {
+                FixtureEntry::File(std::fs::read(&path).unwrap())
+            } else if kind.is_dir() {
+                FixtureEntry::Directory
+            } else if kind.is_symlink() {
+                FixtureEntry::Link(std::fs::read_link(&path).unwrap())
+            } else {
+                FixtureEntry::Other
+            };
+            entries.insert(path.strip_prefix(root).unwrap().to_owned(), value);
+            if kind.is_dir() {
+                visit(root, &path, entries);
+            }
+        }
+    }
+    let mut entries = std::collections::BTreeMap::new();
+    visit(dir, dir, &mut entries);
+    entries
+}
+/// 失敗を期待する実行だけ、入力・既存出力を含むfixture全体の非変更を確認する。
+pub fn without_file_changes(dir: &Path, execute: impl FnOnce() -> Run) -> Run {
+    let before = fixture_entries(dir);
+    let mut result = execute();
+    assert_eq!(fixture_entries(dir), before, "失敗実行がfixtureを変更した");
+    result.files_unchanged = true;
+    result
 }
 
 pub fn get<'a>(n: &'a JNode, key: &str) -> &'a JNode {
@@ -96,7 +143,8 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
 }
 
 /// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
-pub fn notified(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+pub fn notified(_dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+    assert!(r.files_unchanged, "失敗実行はwithout_file_changesで囲む");
     assert!(r.stderr.is_empty(), "エラーは stdout のみ: {}", r.stderr);
     assert_eq!(r.code, code, "{}", r.stderr);
     assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
@@ -109,17 +157,6 @@ pub fn notified(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
         assert!(!s(get(issue, "message")).is_empty());
         assert!(arr(get(issue, "dependencies")).is_empty());
         assert!(arr(get(issue, "missing")).is_empty());
-    }
-    for entry in std::fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        assert!(!path.join("result.json").exists());
-        assert!(
-            !path
-                .file_name()
-                .unwrap()
-                .to_string_lossy()
-                .contains(".archsig-")
-        );
     }
     parse(r.stdout.trim_end().as_bytes()).unwrap()
 }
