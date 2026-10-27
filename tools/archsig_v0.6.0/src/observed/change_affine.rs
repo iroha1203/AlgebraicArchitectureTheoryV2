@@ -361,10 +361,143 @@ pub(in crate::observed) fn guard_domain(
         fiber,
     })
 }
+fn collect_updates(
+    env: &Environment<'_>,
+    body: usize,
+    reading: &str,
+    vars: &mut BTreeMap<String, SourceValue>,
+    axes: &[Parameter],
+    missing: &mut Pending,
+    selected: Option<&str>,
+    updates: &mut BTreeMap<Fact, Form>,
+) -> Result<(), ValidationFailure> {
+    let mut current = body;
+    loop {
+        env.tick()?;
+        match &env.inputs.law().exprs[current].kind {
+            ExprKind::Group(inner) => current = *inner,
+            ExprKind::Let { name, value, body } => {
+                let v = env.scoped_ast(*value, vars, &Scope::default(), reading)?;
+                missing.support.extend(v.support.iter().cloned());
+                missing.scope.merge(&v.scope);
+                usable(env, *value, &v)?;
+                vars.insert(name.name.clone(), v);
+                current = *body;
+            }
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
+                let v = env.scoped_ast(*cond, vars, &Scope::default(), reading)?;
+                missing.support.extend(v.support.iter().cloned());
+                missing.scope.merge(&v.scope);
+                usable(env, *cond, &v)?;
+                current = match v.known_value {
+                    Some(Scalar::Bool(true)) => *then_branch,
+                    Some(Scalar::Bool(false)) => *else_branch,
+                    _ => {
+                        return Err(unsupported(
+                            env,
+                            *cond,
+                            "整数changeのparameter依存分岐は未実装",
+                        ));
+                    }
+                };
+            }
+            ExprKind::With {
+                base,
+                updates: fields,
+            } => {
+                let target = env.scoped_ast(*base, vars, &Scope::default(), reading)?;
+                missing.support.extend(target.support.iter().cloned());
+                missing.scope.merge(&target.scope);
+                usable(env, *base, &target)?;
+                let Some(Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                }) = &target.known_value
+                else {
+                    return Err(unsupported(env, *base, "整数changeの更新先が未確定"));
+                };
+                for (field, id) in fields {
+                    if selected.is_some_and(|name| name != field.name) {
+                        continue;
+                    }
+                    let v = env.scoped_ast(*id, vars, &Scope::default(), reading)?;
+                    missing.support.extend(v.support.iter().cloned());
+                    missing.scope.merge(&v.scope);
+                    usable(env, *id, &v)?;
+                    let form = v.affine.ok_or_else(|| {
+                        unsupported(env, *id, "整数changeの更新式がZアフィンでない")
+                    })?;
+                    coordinates(env, *id, &form, Axes::Parameters(axes), missing)?;
+                    let position = Fact {
+                        snapshot: snapshot.clone(),
+                        subject: subject.clone(),
+                        field: Some(format!("{entity}.{}", field.name)),
+                        atom: None,
+                    };
+                    if let Some(prior) = updates.get(&position) {
+                        if prior != form.as_ref() {
+                            return Err(unsupported(
+                                env,
+                                *id,
+                                "整数changeの同時更新衝突のfiberは未実装",
+                            ));
+                        }
+                    } else {
+                        updates.insert(position, *form);
+                    }
+                }
+                break;
+            }
+            _ => return Err("整数changeのwithがない".into()),
+        }
+    }
+    Ok(())
+}
+/// guard域の確認後、選択した更新値の行と固定項だけを取り出す。
 pub(in crate::observed) fn compute_update(
-    env: &Environment<'_>, change: &Declaration, subject: &Scalar, field: &str, missing: &mut Pending,
-) -> Result<Linear, ValidationFailure> {
-    compute_fields(env,change,&[subject.clone()],&[],missing,Some(field))
+    env: &Environment<'_>,
+    change: &Declaration,
+    subject: &Scalar,
+    field: &str,
+    missing: &mut Pending,
+) -> Result<(Vec<Z>, Z), ValidationFailure> {
+    let Signature::Change { params, body, .. } = &change.signature else {
+        return Err("整数候補がchangeでない".into());
+    };
+    if params.is_empty() || params[1..].iter().any(|p| p.ty != Type::Z) {
+        return Err(unsupported(
+            env,
+            *body,
+            "整数changeの混合parameter型は未実装",
+        ));
+    }
+    let bindings = vec![(params[0].name.clone(), subject.clone())];
+    let (mut vars, axes) = law_variables(env, params, &bindings)?;
+    missing.bindings = bindings;
+    missing.parameters = params[1..]
+        .iter()
+        .map(|p| (p.name.clone(), p.ty.clone()))
+        .collect();
+    missing.expression = Some(*body);
+    let mut updates = BTreeMap::new();
+    collect_updates(
+        env,
+        *body,
+        &change.reading,
+        &mut vars,
+        &axes,
+        missing,
+        Some(field),
+        &mut updates,
+    )?;
+    let form = updates.values().next().ok_or("整数changeの更新先がない")?;
+    let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
+    Ok((row, constant.ok_or("作用の固定項が未確定")?))
 }
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
@@ -373,12 +506,6 @@ pub(in crate::observed) fn compute(
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
-    compute_fields(env,change,subjects,requirements,missing,None)
-}
-fn compute_fields(
-    env: &Environment<'_>, change: &Declaration, subjects: &[Scalar],
-    requirements: &[(String,Vec<(String,Scalar)>)], missing: &mut Pending, selected: Option<&str>,
-) -> Result<Linear,ValidationFailure> {
     let Signature::Change {
         params,
         guard,
@@ -444,92 +571,9 @@ fn compute_fields(
             )?;
         }
         missing.expression = Some(*body);
-        let mut current = *body;
-        loop {
-            env.tick()?;
-            match &env.inputs.law().exprs[current].kind {
-                ExprKind::Group(inner) => current = *inner,
-                ExprKind::Let { name, value, body } => {
-                    let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(v.support.iter().cloned());
-                    missing.scope.merge(&v.scope);
-                    usable(env, *value, &v)?;
-                    vars.insert(name.name.clone(), v);
-                    current = *body;
-                }
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => {
-                    let v = env.scoped_ast(*cond, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(v.support.iter().cloned());
-                    missing.scope.merge(&v.scope);
-                    usable(env, *cond, &v)?;
-                    current = match v.known_value {
-                        Some(Scalar::Bool(true)) => *then_branch,
-                        Some(Scalar::Bool(false)) => *else_branch,
-                        _ => {
-                            return Err(unsupported(
-                                env,
-                                *cond,
-                                "整数changeのparameter依存分岐は未実装",
-                            ));
-                        }
-                    };
-                }
-                ExprKind::With {
-                    base,
-                    updates: fields,
-                } => {
-                    let target =
-                        env.scoped_ast(*base, &vars, &Scope::default(), &change.reading)?;
-                    missing.support.extend(target.support.iter().cloned());
-                    missing.scope.merge(&target.scope);
-                    usable(env, *base, &target)?;
-                    let Some(Scalar::Subject {
-                        snapshot,
-                        subject,
-                        entity,
-                    }) = &target.known_value
-                    else {
-                        return Err(unsupported(env, *base, "整数changeの更新先が未確定"));
-                    };
-                    for (field, id) in fields {
-                        if selected.is_some_and(|name| name != field.name) {
-                            continue;
-                        }
-                        let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
-                        missing.support.extend(v.support.iter().cloned());
-                    missing.scope.merge(&v.scope);
-                        usable(env, *id, &v)?;
-                        let form = v.affine.ok_or_else(|| {
-                            unsupported(env, *id, "整数changeの更新式がZアフィンでない")
-                        })?;
-                        coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
-                        let position = Fact {
-                            snapshot: snapshot.clone(),
-                            subject: subject.clone(),
-                            field: Some(format!("{entity}.{}", field.name)),
-                            atom: None,
-                        };
-                        if let Some(prior) = updates.get(&position) {
-                            if prior != form.as_ref() {
-                                return Err(unsupported(
-                                    env,
-                                    *id,
-                                    "整数changeの同時更新衝突のfiberは未実装",
-                                ));
-                            }
-                        } else {
-                            updates.insert(position, *form);
-                        }
-                    }
-                    break;
-                }
-                _ => return Err("整数changeのwithがない".into()),
-            }
-        }
+        collect_updates(
+            env, *body, &change.reading, &mut vars, &axes, missing, None, &mut updates,
+        )?;
     }
     let mut slots = vec![];
     let mut action = vec![];

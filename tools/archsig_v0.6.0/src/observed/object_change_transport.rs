@@ -678,7 +678,7 @@ pub(super) fn retain(
                 continue;
             }
             for (index, name) in names.iter().enumerate() {
-                let mut linears = vec![];
+                let mut forms = vec![];
                 for side in 0..2 {
                     let mut metadata = change_affine::Pending::default();
                     let result = change_affine::compute_update(
@@ -691,7 +691,7 @@ pub(super) fn retain(
                     checks[index + 1].support.extend(metadata.support);
                     checks[index + 1].scope.merge(&metadata.scope);
                     match result {
-                        Ok(linear) => linears.push(linear),
+                        Ok(form) => forms.push(form),
                         Err(ValidationFailure::UnsupportedExpression { .. }) => {
                             metadata.facts.sort();
                             metadata.facts.dedup();
@@ -707,16 +707,16 @@ pub(super) fn retain(
                         Err(error) => return Err(error),
                     }
                 }
-                if linears.len() != 2 {
+                if forms.len() != 2 {
                     continue;
                 }
-                let (left, right) = (&linears[0], &linears[1]);
-                let row = left.action[0]
+                let ((left_row, left_offset), (right_row, right_offset)) = (&forms[0], &forms[1]);
+                let row = left_row
                     .iter()
-                    .zip(&right.action[0])
+                    .zip(right_row)
                     .map(|(a, b)| a - b)
                     .collect::<Vec<_>>();
-                let rhs = &right.offset[0] - &left.offset[0];
+                let rhs = right_offset - left_offset;
                 if let Some(witness) = violation(&domains[0].fiber, &row, &rhs, c)? {
                     let values = witness.into_iter().map(Scalar::Z).collect::<Vec<_>>();
                     point(

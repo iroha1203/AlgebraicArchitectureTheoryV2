@@ -211,6 +211,40 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
 }
 
 #[test]
+fn change_transport_checks_later_integer_directions_and_reverse_guard_inclusion() {
+    for (mode, source_params, target_params, guard, left, right, expected_parameter) in [
+        ("second-direction", "n:Z,m:Z", "k:Z,l:Z", "", "n", "k+l", "1"),
+        ("integer-reverse", "n:Z", "k:Z", " when n=0", "0", "0", "1"),
+        ("finite-reverse", "n:Bool", "k:Bool", " when n", "0", "0", "false"),
+    ] {
+        let dir=finite_view_inputs(&format!("change-audit-{mode}"),true);
+        let vocabulary=r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} change tune(s:State,{source_params}){guard}=s with {{free={left}}};}}
+reading After {{{vocabulary} change tune(t:State,{target_params})=t with {{free={right}}};}}"#)).unwrap();
+        let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
+        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
+        for request in requests {args.extend(["--ask",request]);}
+        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,1,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());assert!(normal.stdout.len()<1500);
+        let run=asks(&dir,&requests);assert_eq!(run.code,1,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
+        assert_eq!(s(get(m,"status")),"refuted");assert!(!has(get(m,"outputs"),"map"));assert_eq!(s(get(answer(&result,"same"),"status")),"established");
+        let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());let data=get(value(&result,&examples[0]),"data");let bindings=arr(get(data,"bindings"));
+        assert_eq!(s(get(&bindings[1],"name")),"n");
+        if mode=="second-direction" {
+            assert_eq!(bindings.len(),3);assert_eq!(s(value(&result,get(&bindings[1],"value"))),"0");assert_eq!(s(get(&bindings[2],"name")),"m");
+            assert_eq!(s(value(&result,get(&bindings[2],"value"))),expected_parameter);
+            assert_eq!(s(value(&result,get(data,"left"))),"0");assert_eq!(s(value(&result,get(data,"right"))),"1");
+        } else {
+            assert_eq!(bindings.len(),2);
+            if mode=="integer-reverse" {assert_eq!(s(value(&result,get(&bindings[1],"value"))),expected_parameter);} else {assert_json(value(&result,get(&bindings[1],"value")),expected_parameter);}
+            assert_json(value(&result,get(data,"left")),"false");assert_json(value(&result,get(data,"right")),"true");
+        }
+        let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).is_empty());
+        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,1,"{mode}: {}",reused.stdout);let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
+    }
+}
+
+#[test]
 fn unconditional_local_guards_preserve_reads_and_following_operations() {
     for (mode, source_guard, target_guard) in [
         ("source", " when true", ""),
