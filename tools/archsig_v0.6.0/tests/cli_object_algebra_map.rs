@@ -64,6 +64,48 @@ fn value<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
     get(node(result, reference), "value")
 }
 
+fn reference_pairs(result: &JNode, map: &JNode) -> Vec<(String, String)> {
+    let subject = |reference: &JNode| {
+        let scalar = value(result, reference);
+        let pair = arr(scalar);
+        assert_eq!(pair.len(), 2);
+        assert_eq!(s(&pair[0]), "v");
+        s(&pair[1]).to_owned()
+    };
+    let mut pairs: Vec<_> = arr(get(map, "subjects")).iter().map(|pair| {
+        let pair = arr(pair);
+        assert_eq!(pair.len(), 2);
+        (subject(&pair[0]), subject(&pair[1]))
+    }).collect();
+    pairs.sort();
+    pairs
+}
+fn assert_reference_pairs(result: &JNode, map: &JNode, expected: &[(&str, &str)]) {
+    let expected: Vec<_> = expected.iter().map(|(a,b)| (a.to_string(),b.to_string())).collect();
+    assert_eq!(reference_pairs(result, map), expected);
+}
+fn assert_json(actual: &JNode, expected: &str) {
+    assert_eq!(actual.value, archsig::json::parse(expected.as_bytes()).unwrap().value);
+}
+fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str, target: &str, quantifiers: &[(&str, &str)]) {
+    let law = std::fs::read(dir.join("l.law")).unwrap();
+    for (key, expected) in [("source", source), ("target", target)] {
+        let expression = value(result, get(clause, key));
+        let location = get(expression, "location");
+        assert_eq!(s(get(location, "input")), "law");
+        let span = arr(get(location, "span"));
+        assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], expected.as_bytes());
+    }
+    let commutes = value(result, get(clause, "commutes"));
+    let actual = arr(get(commutes, "quantifiers"));
+    assert_eq!(actual.len(), quantifiers.len());
+    for (q, (name, ty)) in actual.iter().zip(quantifiers) {
+        assert_eq!(s(get(q, "kind")), "forall");
+        assert_eq!(s(get(q, "name")), *name);
+        assert_json(get(q, "type"), &format!(r#"["Ref","{ty}"]"#));
+    }
+}
+
 #[test]
 fn local_multiple_reference_parameters_keep_read_order_and_value_types() {
     let dir = inputs("local-multiple-reference-transport");
@@ -86,7 +128,7 @@ reading After {{{vocabulary} local here(t:State,world:System,u:State) reads worl
     let result=result_json(&dir,&run);
     let map=value(&result,get(get(answer(&result,"m"),"outputs"),"map"));
     let transport=value(&result,&arr(get(map,"transports"))[0]);
-    assert_eq!(arr(get(transport,"parameters")).len(),3);
+    assert_json(get(transport,"parameters"), r#"[["s","t"],["root","world"],["other","u"]]"#);
     let clauses=arr(get(transport,"clauses"));
     assert_eq!(clauses.len(),4);
     assert_eq!(get(&clauses[0],"arguments").value,get(&clauses[1],"arguments").value);
@@ -94,14 +136,20 @@ reading After {{{vocabulary} local here(t:State,world:System,u:State) reads worl
     assert_eq!(get(&clauses[1],"values").value,get(&clauses[2],"values").value);
     assert_ne!(get(&clauses[0],"values").value,get(&clauses[1],"values").value);
     let arguments=value(&result,get(&clauses[0],"arguments"));
-    assert_eq!(arr(get(arguments,"source_type")).len(),4);
-    let subjects=arr(get(arguments,"subjects"));
-    for (i,pair) in subjects.iter().enumerate() {assert!(!subjects[..i].iter().any(|old|value(&result,&arr(old)[0]).value==value(&result,&arr(pair)[0]).value));}
-    for (clause,expected) in clauses.iter().zip(["Reservations.System","Reservations.State","Reservations.State","Reservations.System"]) {
+    for key in ["source_type", "target_type"] {
+        assert_json(get(arguments,key), r#"["Tuple",["Ref","Reservations.State"],["Ref","Reservations.System"],["Ref","Reservations.State"]]"#);
+    }
+    assert_reference_pairs(&result, arguments, &[("A","B"),("B","B"),("p","r"),("q","s"),("r","r"),("s","s")]);
+    for (index, (source,target,ty)) in [("root","world","Reservations.System"),("s","(t)","Reservations.State"),("other","u","Reservations.State"),("root","world","Reservations.System")].iter().enumerate() {
+        let clause = &clauses[index];
         let values=value(&result,get(clause,"values"));
-        assert_eq!(s(&arr(get(values,"source_type"))[1]),expected);
-        let commutes=value(&result,get(clause,"commutes"));
-        assert_eq!(arr(get(commutes,"quantifiers")).len(),3);
+        for key in ["source_type","target_type"] {assert_json(get(values,key), &format!(r#"["Ref","{ty}"]"#));}
+        if *ty == "Reservations.System" {
+            assert_reference_pairs(&result,values,&[("A","B"),("B","B")]);
+        } else {
+            assert_reference_pairs(&result,values,&[("p","r"),("q","s"),("r","r"),("s","s")]);
+        }
+        assert_local_clause(&dir,&result,clause,source,target,&[("s","Reservations.State"),("root","Reservations.System"),("other","Reservations.State")]);
     }
     let reused=cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
     assert_eq!(reused.code,0,"{}",reused.stdout);
@@ -138,12 +186,31 @@ fn local_reference_reads_are_transported_by_the_actual_configuration_map() {
     assert_eq!(s(get(transport,"kind")),"local");
     assert_eq!(s(get(transport,"source")),"Alternative.here");
     assert_eq!(s(get(transport,"target")),"Other.here");
-    assert_eq!(s(&arr(&arr(get(transport,"parameters"))[0])[0]),"s");
-    assert_eq!(s(&arr(&arr(get(transport,"parameters"))[0])[1]),"t");
+    assert_json(get(transport,"parameters"), r#"[["s","t"]]"#);
     let clauses = arr(get(transport,"clauses"));
     assert_eq!(clauses.len(),1);
     let values = value(&result,get(&clauses[0],"values"));
-    assert!(arr(get(values,"subjects")).iter().any(|pair|value(&result,&arr(pair)[0]).value != value(&result,&arr(pair)[1]).value));
+    assert_reference_pairs(&result,values,&[("p","r"),("q","s"),("r","r"),("s","s")]);
+    assert_local_clause(&dir,&result,&clauses[0],"s","(t)",&[("s","Reservations.State")]);
+    // 非恒等対が残っていても、pの誤った行き先は拒否する。
+    let pairs = arr(get(values,"subjects"));
+    let pair = pairs.iter().find(|pair| s(&arr(value(&result,&arr(pair)[0]))[1]) == "p").unwrap();
+    let target = s(get(&arr(pair)[1],"node")).to_owned();
+    let mut wrong = result_json(&dir,&run);
+    if let archsig::json::JValue::Obj(fields) = &mut wrong.value {
+        let nodes = &mut fields.iter_mut().find(|(key,_)| key == "nodes").unwrap().1;
+        if let archsig::json::JValue::Arr(nodes) = &mut nodes.value {
+            let target = nodes.iter_mut().find(|n| s(get(n,"id")) == target).unwrap();
+            if let archsig::json::JValue::Obj(fields) = &mut target.value {
+                let scalar = &mut fields.iter_mut().find(|(key,_)| key == "value").unwrap().1;
+                if let archsig::json::JValue::Arr(pair) = &mut scalar.value {
+                    pair[1].value = archsig::json::JValue::Str("q".into());
+                } else {panic!("参照値ではない");}
+            }
+        }
+    }
+    assert!(std::panic::catch_unwind(|| assert_reference_pairs(&wrong,values,&[("p","r"),("q","s"),("r","r"),("s","s")])).is_err());
+
     let again = cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
     assert_eq!(again.code,0,"{}",again.stdout);
     let again = result_json(&dir,&again);
@@ -1018,7 +1085,7 @@ fn reference_containers_do_not_use_same_nominal_type_identity() {
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
 reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#)).unwrap();
-    let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]);
+    let run = without_file_changes(&dir, || asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]));
     notified(&dir, &run, "error", 70);
 }
 

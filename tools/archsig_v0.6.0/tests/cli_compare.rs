@@ -292,20 +292,20 @@ fn static_compare_errors_notify_usage_without_artifacts() {
     .enumerate()
     {
         let dir = inputs(&format!("compare-usage-{i}"));
-        let r = asks(&dir, &[fixture::E, q]);
+        let r = without_file_changes(&dir, || asks(&dir, &[fixture::E, q]));
         notified(&dir, &r, "invalid", 64);
         assert!(!dir.join("out").exists());
         std::fs::remove_dir_all(dir).unwrap();
     }
     let dir = operation_inputs("compare-mixed-usage");
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &[
             M,
             "p=evaluate(Reservations.route,e=@v/e)",
             "bad=compare($m.operation,to=$p.value,kind=word)",
         ],
-    );
+    ));
     notified(&dir, &r, "invalid", 64);
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -314,10 +314,10 @@ fn comparison_records_have_no_public_subfields() {
     for field in ["left", "right", "kind", "word", "images"] {
         let dir = inputs(&format!("compare-private-{field}"));
         let q = format!("bad=compare($a.comparison.{field},to=$e.value,kind=word)");
-        let r = asks(
+        let r = without_file_changes(&dir, || asks(
             &dir,
             &[fixture::E, "a=compare($e.value,to=$e.value,kind=word)", &q],
-        );
+        ));
         notified(&dir, &r, "invalid", 64);
         std::fs::remove_dir_all(dir).unwrap();
     }
@@ -433,24 +433,24 @@ fn empty_words_across_snapshots_match_but_action_requires_actual_endpoints() {
 #[test]
 fn comparison_rejects_static_tuple_bounds_and_action_reading_mismatches() {
     let dir = inputs("compare-static-tuple");
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &[
             "e=evaluate(Walk.nested,e=@v/e)",
             "a=compare($e.value.some[0][9],to=$e.value.some[0][1],kind=word)",
         ],
-    );
+    ));
     notified(&dir, &r, "invalid", 64);
     std::fs::remove_dir_all(dir).unwrap();
     let dir = operation_inputs("compare-reading");
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &[
             M,
             "alt=map(Reservations.Migration,on=@v/m,reading=Alternative)",
             "a=compare($m.operation,to=$alt.operation,kind=action)",
         ],
-    );
+    ));
     notified(&dir, &r, "invalid", 64);
     std::fs::remove_dir_all(dir).unwrap();
 }

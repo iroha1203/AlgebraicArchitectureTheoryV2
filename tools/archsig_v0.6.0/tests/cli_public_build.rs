@@ -36,15 +36,17 @@ fn partial_data_known_component_selects_checked_arm() {
     let again = saved(&dir, &reused, "partial", 2);
     assert!(warnings(&again).is_empty());
     for field in ["answers", "nodes"] { assert_eq!(get(&result, field).value, get(&again, field).value); }
+    let copied_law = dir.join("again/inputs/law.law");
+    let original = std::fs::read(&copied_law).unwrap();
+    std::fs::write(&copied_law, "wrong saved input").unwrap();
+    assert!(std::panic::catch_unwind(|| saved(&dir, &reused, "partial", 2)).is_err());
+    std::fs::write(&copied_law, original).unwrap();
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("Flag.Off", "Flag.On");
     std::fs::write(dir.join("l.law"), law).unwrap();
     let out_at = args.iter().position(|arg| *arg == "--out").unwrap()+1;
     args[out_at] = "changed";
     let changed = cli::run(&dir, &args);
-    assert_eq!(changed.code, 2, "{}", changed.stdout);
-    let changed = result_json(&dir, &changed);
-    assert_eq!(s(get(&changed, "status")), "partial");
-    assert_eq!(std::fs::read(dir.join("l.law")).unwrap(), std::fs::read(dir.join("changed/inputs/law.law")).unwrap());
+    let changed = saved(&dir, &changed, "partial", 2);
     assert_eq!(s(get(answer(&changed, "b"), "status")), "undetermined");
 }
 #[test]
@@ -2100,6 +2102,8 @@ fn saved(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(s(get(&result, "command")), "run");
     assert_eq!(s(get(&result, "status")), status);
     assert_eq!(num(get(&result, "exit_code")), code as u64);
+    let result_path = dir.join(s(get(&run.receipt, "result")));
+    let saved_dir = result_path.parent().unwrap();
     for (src, dst) in [
         ("d.json", "inputs/definitions/0.json"),
         ("l.law", "inputs/law.law"),
@@ -2107,7 +2111,7 @@ fn saved(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     ] {
         assert_eq!(
             std::fs::read(dir.join(src)).unwrap(),
-            std::fs::read(dir.join("out").join(dst)).unwrap()
+            std::fs::read(saved_dir.join(dst)).unwrap()
         );
     }
     result

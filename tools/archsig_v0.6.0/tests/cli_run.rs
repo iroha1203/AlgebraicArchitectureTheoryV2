@@ -234,13 +234,13 @@ fn backward_references_keep_answer_order_and_cycles_explain_edges() {
         "2"
     );
     let dir = inputs("cycle", Some("2"), &law);
-    let r = requests(
+    let r = without_file_changes(&dir, || requests(
         &dir,
         &[
             "a=evaluate(CountCheck.relay,x=$b.value)",
             "b=evaluate(CountCheck.relay,x=$a.value)",
         ],
-    );
+    ));
     let res = notified(&dir, &r, "invalid", 64);
     let issues = arr(get(&res, "issues"));
     assert_eq!(issues.len(), 2);
@@ -269,7 +269,7 @@ fn invalid_run_requests_report_usage_without_files() {
         ),
     ] {
         let dir = inputs(name, Some("2"), L);
-        let r = requests(&dir, &asks);
+        let r = without_file_changes(&dir, || requests(&dir, &asks));
         let receipt = notified(&dir, &r, "invalid", 64);
         assert!(
             arr(get(&receipt, "issues"))
@@ -286,7 +286,7 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
         .enumerate()
     {
         let dir = inputs(&format!("budget-grammar-{index}"), Some("2"), L);
-        let r = run(
+        let r = without_file_changes(&dir, || run(
             &dir,
             &[
                 "run",
@@ -303,7 +303,7 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
                 "--time-ms",
                 n,
             ],
-        );
+        ));
         let receipt = notified(&dir, &r, "invalid", 64);
         assert_eq!(
             s(get(
@@ -363,7 +363,7 @@ fn run_argument_and_input_failures_never_create_failure_files() {
             "out",
         ];
         args.extend(extra);
-        let r = run(&dir, &args);
+        let r = without_file_changes(&dir, || run(&dir, &args));
         let receipt = notified(&dir, &r, "invalid", 64);
         assert_eq!(
             s(get(
@@ -406,13 +406,13 @@ fn run_argument_and_input_failures_never_create_failure_files() {
         for (file, bytes) in [("d.json", definition), ("l.law", law), ("a.json", map)] {
             std::fs::write(dir.join(file), bytes).unwrap();
         }
-        let r = requests(&dir, &ASKS);
+        let r = without_file_changes(&dir, || requests(&dir, &ASKS));
         let receipt = notified(&dir, &r, status, code);
         assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), issue);
     }
     let dir = inputs("run-read-error", Some("2"), L);
     std::fs::remove_file(dir.join("l.law")).unwrap();
-    let r = requests(&dir, &ASKS);
+    let r = without_file_changes(&dir, || requests(&dir, &ASKS));
     let receipt = notified(&dir, &r, "error", 74);
     assert_eq!(
         s(get(
@@ -638,7 +638,7 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
                 args.extend([flag, value]);
             }
         }
-        let r = run(&dir, &args);
+        let r = without_file_changes(&dir, || run(&dir, &args));
         let receipt = notified(&dir, &r, "invalid", 64);
         assert_eq!(
             s(get(
@@ -820,7 +820,7 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
     );
     std::fs::create_dir(dir.join("out")).unwrap();
     std::fs::write(dir.join("out/keep"), b"keep").unwrap();
-    let r = requests(&dir, &ASKS);
+    let r = without_file_changes(&dir, || requests(&dir, &ASKS));
     notified(&dir, &r, "invalid", 64);
     assert_eq!(std::fs::read(dir.join("out/keep")).unwrap(), b"keep");
 }

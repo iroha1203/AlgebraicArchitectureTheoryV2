@@ -37,7 +37,7 @@ fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
     write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
     write(&dir, "a.json", map);
-    let r = run(
+    let r = without_file_changes(&dir, || run(
         &dir,
         &[
             "check",
@@ -50,7 +50,7 @@ fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
             "--out",
             "o",
         ],
-    );
+    ));
     let res = notified(
         &dir,
         &r,
@@ -203,7 +203,7 @@ fn law_rejections_report_locations_without_files() {
         write(&dir, "d.json", DEFINITION.as_bytes());
         write(&dir, "l.law", &law);
         write(&dir, "a.json", MAP.as_bytes());
-        let r = run(
+        let r = without_file_changes(&dir, || run(
             &dir,
             &[
                 "check",
@@ -216,7 +216,7 @@ fn law_rejections_report_locations_without_files() {
                 "--out",
                 "o",
             ],
-        );
+        ));
         let status = if exit == 69 { "unsupported" } else { "invalid" };
         let res = notified(&dir, &r, status, exit);
         let (c, i, at) = only_issue(&res);
@@ -258,7 +258,7 @@ fn cli_misuse_is_usage() {
         if args.first() == Some(&"check") {
             args.splice(1..1, ["--atom-definition", "d.json"]);
         }
-        let r = run(&dir, &args);
+        let r = without_file_changes(&dir, || run(&dir, &args));
         assert_eq!(r.code, 64, "{args:?}");
         assert_eq!(s(get(&r.receipt, "status")), "invalid");
         let res = notified(&dir, &r, "invalid", 64);
@@ -287,7 +287,7 @@ fn cli_misuse_is_usage() {
             ],
         ),
     ] {
-        let r = run(&dir, &args);
+        let r = without_file_changes(&dir, || run(&dir, &args));
         let res = notified(&dir, &r, "invalid", 64);
         assert_eq!(only_issue(&res).0, "usage");
         assert!(!has(&res, "result"));
@@ -311,7 +311,7 @@ fn cli_misuse_is_usage() {
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o7").exists());
     // 未知の flag があれば、後の --out に失敗ファイルを保存しない。
-    let r = run(
+    let r = without_file_changes(&dir, || run(
         &dir,
         &[
             "check",
@@ -323,7 +323,7 @@ fn cli_misuse_is_usage() {
             "--out",
             "o10",
         ],
-    );
+    ));
     notified(&dir, &r, "invalid", 64);
     // --out が二つあれば出力先を決めず、出力を作らない。
     let r = run(
@@ -344,7 +344,7 @@ fn cli_misuse_is_usage() {
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o8").exists() && !dir.join("o9").exists());
     // 出力先の指定があっても、usage は stdout の issue に返す。
-    let r = run(
+    let r = without_file_changes(&dir, || run(
         &dir,
         &[
             "check",
@@ -357,7 +357,7 @@ fn cli_misuse_is_usage() {
             "--unknown",
             "x",
         ],
-    );
+    ));
     let res = notified(&dir, &r, "invalid", 64);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "--unknown");
@@ -370,7 +370,7 @@ fn definition_failure_precedes_law_and_archmap_without_files() {
     write(&dir, "d.json", definition.as_bytes());
     write(&dir, "l.law", b"invalid law");
     write(&dir, "a.json", b"invalid JSON");
-    let r = run(
+    let r = without_file_changes(&dir, || run(
         &dir,
         &[
             "check",
@@ -383,7 +383,7 @@ fn definition_failure_precedes_law_and_archmap_without_files() {
             "--out",
             "o",
         ],
-    );
+    ));
     let res = notified(&dir, &r, "invalid", 65);
     assert_eq!(
         only_issue(&res),
@@ -438,7 +438,7 @@ fn unsupported_json_versions_precede_unknown_fields() {
                     MAP.as_bytes()
                 },
             );
-            let r = run(
+            let r = without_file_changes(&dir, || run(
                 &dir,
                 &[
                     "check",
@@ -451,7 +451,7 @@ fn unsupported_json_versions_precede_unknown_fields() {
                     "--out",
                     "o",
                 ],
-            );
+            ));
             let res = notified(&dir, &r, "unsupported", 69);
             assert_eq!(
                 only_issue(&res),
@@ -489,7 +489,7 @@ fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
         let dir = workdir(name);
         write(&dir, "d.json", DEFINITION.as_bytes());
         write(&dir, "l.law", law.as_bytes());
-        let r = run(
+        let r = without_file_changes(&dir, || run(
             &dir,
             &[
                 "check",
@@ -500,7 +500,7 @@ fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
                 "--out",
                 "o",
             ],
-        );
+        ));
         let res = notified(
             &dir,
             &r,
@@ -536,7 +536,7 @@ fn invalid_arguments_do_not_read_inputs_or_recover_output_paths() {
         if let Some(out) = out {
             args.extend(["--out", out]);
         }
-        let r = run(&dir, &args);
+        let r = without_file_changes(&dir, || run(&dir, &args));
         let receipt = notified(&dir, &r, "invalid", 64);
         let issue = &arr(get(&receipt, "issues"))[0];
         assert_eq!(s(get(issue, "code")), "usage");

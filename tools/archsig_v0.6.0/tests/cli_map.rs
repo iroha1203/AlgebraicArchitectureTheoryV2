@@ -409,7 +409,7 @@ fn invalid_map_selectors_and_private_projections_fail_as_concrete_usage_errors()
     .enumerate()
     {
         let dir = inputs(&format!("map-usage-{i}"), A);
-        let r = asks(&dir, &[ask, ASK]);
+        let r = without_file_changes(&dir, || asks(&dir, &[ask, ASK]));
         let receipt = notified(&dir, &r, "invalid", 64);
         assert!(
             arr(get(&receipt, "issues"))
@@ -423,10 +423,10 @@ fn invalid_map_selectors_and_private_projections_fail_as_concrete_usage_errors()
 #[test]
 fn valid_object_algebra_kind_reports_internal_unimplemented_instead_of_math_uncertainty() {
     let dir = inputs("map-unimplemented-kind", A);
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
-    );
+    ));
     notified(&dir, &r, "error", 70);
     let receipt = &r.receipt;
     assert!(
@@ -562,13 +562,13 @@ fn map_and_architecture_projections_select_existing_typed_refs_through_nested_re
 #[test]
 fn map_dependency_cycles_report_edges_without_calculating_or_writing_results() {
     let dir = inputs("map-cycles", A);
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &[
             "a=map(Reservations.Migration,on=$b.candidate.subject,reading=Reservations)",
             "b=map(Reservations.Migration,on=$a.map.candidate.subject,reading=Reservations)",
         ],
-    );
+    ));
     let receipt = notified(&dir, &r, "invalid", 64);
     let issues = arr(get(&receipt, "issues"));
     assert_eq!(issues.len(), 2);
@@ -881,7 +881,7 @@ fn object_algebra_selection_checks_common_inputs_before_reporting_unimplemented(
         let ask = format!(
             "bad=map(Reservations.Migration,on={on},reading=Reservations,kind=object_algebra)"
         );
-        let receipt = notified(&dir, &asks(&dir, &[&ask, ASK]), "invalid", 64);
+        let receipt = notified(&dir, &without_file_changes(&dir, || asks(&dir, &[&ask, ASK])), "invalid", 64);
         assert!(
             arr(get(&receipt, "issues"))
                 .iter()
@@ -893,13 +893,13 @@ fn object_algebra_selection_checks_common_inputs_before_reporting_unimplemented(
     let dir = inputs("map-object-algebra-cycle", A);
     let receipt = notified(
         &dir,
-        &asks(
+        &without_file_changes(&dir, || asks(
             &dir,
             &[
                 "a=map(Reservations.Migration,on=$b.candidate.subject,reading=Reservations,kind=object_algebra)",
                 "b=map(Reservations.Migration,on=$a.candidate.subject,reading=Reservations)",
             ],
-        ),
+        )),
         "invalid",
         64,
     );
@@ -919,7 +919,7 @@ fn valid_unimplemented_map_dependencies_keep_their_declared_public_projection_ty
     ].iter().enumerate() {
         let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
         std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
-        let run=asks(&dir,requests);
+        let run=without_file_changes(&dir, || asks(&dir,requests));
         notified(&dir,&run,"error",70);
         let receipt=&run.receipt;
         assert!(arr(get(&receipt,"issues")).iter().all(|issue|s(get(issue,"code"))=="internal"));

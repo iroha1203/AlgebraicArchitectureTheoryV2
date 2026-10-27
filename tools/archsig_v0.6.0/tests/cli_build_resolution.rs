@@ -57,7 +57,7 @@ fn malformed_build_reports_concrete_usage_before_execution_support() {
     .enumerate()
     {
         let dir = files(&format!("build-usage-{index}"));
-        let run = ask(&dir, &asks);
+        let run = without_file_changes(&dir, || ask(&dir, &asks));
         notified(&dir, &run, "invalid", 64);
         assert!(!arr(get(&run.receipt, "issues")).is_empty());
         assert!(!run.stdout.contains("未実装"), "{}", run.stdout);
@@ -68,13 +68,13 @@ fn malformed_build_reports_concrete_usage_before_execution_support() {
 #[test]
 fn build_cycle_stdout_identifies_requests_and_dependency_edges() {
     let dir = files("build-cycle");
-    let run = ask(
+    let run = without_file_changes(&dir, || ask(
         &dir,
         &[
             "a=build(R,on=$b.object.root)",
             "b=build(R,on=$a.algebra.base.subject)",
         ],
-    );
+    ));
     notified(&dir, &run, "invalid", 64);
     let issues = arr(get(&run.receipt, "issues"));
     for id in ["a", "b"] {
@@ -111,7 +111,7 @@ fn invalid_build_preserves_existing_output_contents() {
     let dir = files("build-existing-out");
     std::fs::create_dir(dir.join("out")).unwrap();
     std::fs::write(dir.join("out/kept"), "existing-result").unwrap();
-    let run = ask(&dir, &["b=build(R,on=@v/i)"]);
+    let run = without_file_changes(&dir, || ask(&dir, &["b=build(R,on=@v/i)"]));
     notified(&dir, &run, "invalid", 64);
     assert_eq!(
         std::fs::read(dir.join("out/kept")).unwrap(),

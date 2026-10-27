@@ -276,7 +276,7 @@ fn path_private_fields_static_types_and_cycles_fail_without_artifacts() {
     .enumerate()
     {
         let d = inputs(&format!("path-usage-{i}"), false);
-        let r = asks(&d, &qs);
+        let r = without_file_changes(&d, || asks(&d, &qs));
         notified(&d, &r, "invalid", 64);
         assert!(!d.join("out").exists());
         if i == 2 {

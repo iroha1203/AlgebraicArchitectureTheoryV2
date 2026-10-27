@@ -211,7 +211,7 @@ fn static_compose_errors_are_usage_without_artifacts() {
     .enumerate()
     {
         let dir = inputs(&format!("compose-static-{i}"), A);
-        let r = asks(&dir, &qs);
+        let r = without_file_changes(&dir, || asks(&dir, &qs));
         notified(&dir, &r, "invalid", 64);
         assert!(!dir.join("out").exists());
         std::fs::remove_dir_all(dir).unwrap();
@@ -234,14 +234,14 @@ fn valid_paths_compose_without_operation_promotion_and_cycles_keep_edges() {
     assert!(arr(get(value(&j, get(outputs, "operation")), "generators")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
     let dir = inputs("compose-cycle", A);
-    let r = asks(
+    let r = without_file_changes(&dir, || asks(
         &dir,
         &[
             M,
             "a=compose($b.operation,then=$m.operation)",
             "b=compose($a.operation,then=$m.operation)",
         ],
-    );
+    ));
     notified(&dir, &r, "invalid", 64);
     assert!(r.stdout.contains("cycle") && r.stdout.contains("a") && r.stdout.contains("b"));
     std::fs::remove_dir_all(dir).unwrap();
