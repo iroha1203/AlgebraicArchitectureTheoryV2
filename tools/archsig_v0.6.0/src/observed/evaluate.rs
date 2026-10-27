@@ -1295,11 +1295,12 @@ impl Evaluator<'_, '_> {
             } => self.comprehension(*domain, *elem, *filter, span, ty),
             ExprKind::Match { scrutinee, arms } => {
                 let input = self.eval(*scrutinee)?;
-                let selected = data::select(
-                    self.environment.inputs.law(),
+                let selected = self.environment.select_match_arm(
+                    self.graph,
                     id,
+                    &self.bindings,
                     input.value.map(|v| self.graph.scalar(v)).transpose()?,
-                    self.control,
+                    input.expression,
                 )?;
                 let mut children = vec![input];
                 let known = if let Some(arm) = selected {

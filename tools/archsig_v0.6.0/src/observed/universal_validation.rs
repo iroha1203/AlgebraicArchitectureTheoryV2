@@ -3569,7 +3569,7 @@ impl Environment<'_> {
                     .2
                     .map(|r| graph.scalar(r))
                     .transpose()?;
-                let selected = data::select(law, id, value, &self.control)?;
+                let selected = self.select_match_arm(graph, id, bindings, value, self.evaluation(graph, input)?.0)?;
                 std::iter::once(*scrutinee)
                     .chain(selected.map(|arm| arms[arm].body))
                     .collect()
