@@ -364,6 +364,14 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
         let reading = self.path_reading(id)?;
+        self.generator_path(reading, values, self.inputs.law().exprs[id].span)
+    }
+    pub(in crate::observed) fn generator_path(
+        &self,
+        reading: &str,
+        values: &[Scalar],
+        span: (usize, usize),
+    ) -> Result<PathResult, ValidationFailure> {
         let [generator @ Scalar::Subject { entity, .. }] = values else {
             return Err("pathの元引数が原始参照1個でない".into());
         };
@@ -377,9 +385,9 @@ impl Environment<'_> {
             &declaration.signature,
             PrimitiveSignature::Correspondence { .. }
         ) {
-            return self.correspondence_path(id, generator, &declaration.signature);
+            return self.correspondence_path(reading, generator, &declaration.signature, span);
         }
-        self.internal_arrow_path(reading, values, self.inputs.law().exprs[id].span)
+        self.internal_arrow_path(reading, values, span)
     }
     pub(in crate::observed) fn internal_arrow_path(
         &self,

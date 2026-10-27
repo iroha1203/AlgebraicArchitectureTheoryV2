@@ -7,9 +7,10 @@ type Point = (String, String);
 impl Environment<'_> {
     pub(super) fn correspondence_path(
         &self,
-        id: usize,
+        reading: &str,
         generator: &Scalar,
         signature: &PrimitiveSignature,
+        _span: (usize, usize),
     ) -> Result<PathResult, ValidationFailure> {
         let PrimitiveSignature::Correspondence {
             from: ft,
@@ -30,7 +31,6 @@ impl Environment<'_> {
         else {
             return Err("correspondence生成元が原始参照でない".into());
         };
-        let reading = self.path_reading(id)?;
         let original = self.subject(snapshot, subject)?;
         if original.ty != *entity {
             return Err("correspondenceの元型が違う".into());
@@ -302,7 +302,7 @@ impl Environment<'_> {
             action.push(image);
             #[cfg(test)]
             data::observe_actual(
-                self.inputs.law().exprs[id].span,
+                _span,
                 self.scoped_context
                     .get()
                     .or(self.context.get())

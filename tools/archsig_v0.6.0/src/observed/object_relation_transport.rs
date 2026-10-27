@@ -294,17 +294,7 @@ pub(super) fn retain(
         else {
             return Err("relationの辺がPathでない".into());
         };
-        if sa != sb
-            || ta != tb
-            || !matches!(
-                inputs
-                    .definitions()
-                    .declarations
-                    .get(sa)
-                    .map(|d| &d.signature),
-                Some(PrimitiveSignature::Entity { owner: Some(_), .. })
-            )
-        {
+        if sa != sb || ta != tb {
             pending(
                 &mut out,
                 request,
@@ -351,31 +341,49 @@ pub(super) fn retain(
         let namespaces =
             crate::construction::reading_namespaces(inputs.law(), &declarations[0].reading, c)
                 .map_err(failure)?;
-        let mut arrow_types = vec![];
+        let mut generator_types = vec![];
         for (name, def) in &inputs.definitions().declarations {
             tick(c)?;
             if !namespaces.contains(&def.namespace) {
                 continue;
             }
-            if let PrimitiveSignature::Arrow { endpoint, .. } = &def.signature {
-                if endpoint == sa {
-                    let target = correspondence
-                        .types()
-                        .iter()
-                        .find(|(s, _)| s == name)
-                        .map(|(_, t)| t.as_str())
-                        .unwrap_or(name);
-                    let Some(target_def) = inputs.definitions().declarations.get(target) else {
-                        return Err("relation生成元の像宣言がない".into());
-                    };
-                    if !matches!(&target_def.signature,PrimitiveSignature::Arrow {endpoint,..} if endpoint==ta)
-                    {
-                        supported = false;
-                        break;
-                    }
-                    arrow_types.push((name.clone(), target.to_owned()));
-                }
+            let (from, to) = match &def.signature {
+                PrimitiveSignature::Arrow { endpoint, .. } => (endpoint, endpoint),
+                PrimitiveSignature::Correspondence { from, to, .. } => (from, to),
+                _ => continue,
+            };
+            if from != sa && to != sa {
+                continue;
             }
+            // 異なる端点型を経由する語の配送は未実装。
+            if from != sa || to != sa {
+                supported = false;
+                break;
+            }
+            let target = correspondence
+                .types()
+                .iter()
+                .find(|(s, _)| s == name)
+                .map(|(_, t)| t.as_str())
+                .unwrap_or(name);
+            let Some(target_def) = inputs.definitions().declarations.get(target) else {
+                return Err("relation生成元の像宣言がない".into());
+            };
+            let matches = match (&def.signature, &target_def.signature) {
+                (PrimitiveSignature::Arrow { .. }, PrimitiveSignature::Arrow { endpoint, .. }) => {
+                    endpoint == ta
+                }
+                (
+                    PrimitiveSignature::Correspondence { .. },
+                    PrimitiveSignature::Correspondence { from, to, .. },
+                ) => from == ta && to == ta,
+                _ => false,
+            };
+            if !matches {
+                supported = false;
+                break;
+            }
+            generator_types.push((name.clone(), target.to_owned()));
         }
         if !supported {
             pending(
@@ -392,7 +400,7 @@ pub(super) fn retain(
         let mut complete = true;
         let mut support = vec![];
         let mut scope = Scope::default();
-        for (s, t) in arrow_types {
+        for (s, t) in generator_types {
             let index = ensure_map(b, inputs, correspondence, &s, &t, deps, &mut maps, c)?;
             let map = maps[index].clone();
             for ((sf, tf), (sref, tref)) in map
@@ -413,13 +421,13 @@ pub(super) fn retain(
                     subject: tf.subject.clone(),
                     entity: t.clone(),
                 };
-                let source = env.internal_arrow_path(
+                let source = env.generator_path(
                     &declarations[0].reading,
                     &[sv.clone()],
                     declarations[0].span,
                 )?;
                 let target =
-                    env.internal_arrow_path(&declarations[1].reading, &[tv], declarations[1].span)?;
+                    env.generator_path(&declarations[1].reading, &[tv], declarations[1].span)?;
                 for result in [&source, &target] {
                     support.extend(result.support.iter().cloned());
                     scope.merge(&result.scope);
@@ -439,17 +447,29 @@ pub(super) fn retain(
                     );
                     continue;
                 };
-                if moved(&source.object(), &maps, c)? != target.object()
-                    || moved(&source.target(), &maps, c)? != target.target()
-                {
+                let points = [
+                    (moved(&source.object(), &maps, c)?, target.object()),
+                    (moved(&source.target(), &maps, c)?, target.target()),
+                ];
+                if let Some((left, right)) = points.iter().find(|(a, z)| a != z) {
                     complete = false;
-                    pending(
-                        &mut out,
-                        request,
-                        &origin_deps,
-                        declarations[0].span,
-                        vec![],
-                    );
+                    let paths = [
+                        path_binding(b, source, &origin_deps, c)?,
+                        path_binding(b, target, &origin_deps, c)?,
+                    ];
+                    let witness = example(b, &[], &[], left, right, &origin_deps, &support, c)?;
+                    let part = &mut b.parts[witness.0 - b.base];
+                    part.arguments.extend(paths);
+                    if let Json::Obj(wire) = &mut part.wire {
+                        if let Some(Json::Obj(data)) = wire.get_mut("data") {
+                            data.insert(
+                                "paths".into(),
+                                Json::Arr(paths.iter().map(|r| r.wire()).collect()),
+                            );
+                        }
+                    }
+                    out.evidence.push(witness);
+                    out.status = Decision::Refuted;
                     continue;
                 }
                 generators.push(Generator {
