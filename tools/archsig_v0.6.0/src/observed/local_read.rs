@@ -139,13 +139,22 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 参照を束縛したlocalの整数readを、通常Evaluatorで評価する。
-pub(in crate::observed) fn integer_value(
+/// 参照を束縛したlocalのZ/Bool readを、通常Evaluatorで評価する。
+pub(in crate::observed) fn scalar_value(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
     reading: &str,
 ) -> Result<(Option<Scalar>, Vec<Fact>, Scope, Vec<Fact>), ValidationFailure> {
+    let ty = env
+        .inputs
+        .law()
+        .expr_type(id)
+        .ok_or("local readの型がない")?
+        .erase();
+    if !matches!(ty, Type::Z | Type::Bool) {
+        return Err("localの一般readはZ/Boolだけに対応".into());
+    }
     let variables = bindings
         .iter()
         .map(|(name, value)| (name.clone(), known(value.clone())))
@@ -164,11 +173,8 @@ pub(in crate::observed) fn integer_value(
     } else {
         value.known_value
     };
-    if result
-        .as_ref()
-        .is_some_and(|value| !matches!(value, Scalar::Z(_)))
-    {
-        return Err("local整数readの評価値がZでない".into());
+    if result.as_ref().is_some_and(|value| value.ty() != ty) {
+        return Err("local readの評価値の型が元式と違う".into());
     }
     let mut support = value.support;
     support.sort();

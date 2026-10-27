@@ -22,7 +22,7 @@ struct ParameterMap {
 }
 enum Read {
     Projection(usize),
-    IntegerExpression,
+    ScalarExpression,
     Field { position: usize, names: [String; 2] },
 }
 pub(super) struct Output {
@@ -508,9 +508,10 @@ pub(super) fn retain(
         }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
-            let integer_read = !sp.is_empty()
-                && inputs.law().expr_type(s).map(|ty| ty.erase()) == Some(Type::Z)
-                && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(Type::Z);
+            let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
+            let scalar_read = !sp.is_empty()
+                && matches!(&read_type, Some(Type::Z | Type::Bool))
+                && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
@@ -524,13 +525,13 @@ pub(super) fn retain(
                         position: a,
                         names: [source, target],
                     });
-                } else if integer_read {
-                    reads.push(Read::IntegerExpression);
+                } else if scalar_read {
+                    reads.push(Read::ScalarExpression);
                 } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
-            } else if integer_read {
-                reads.push(Read::IntegerExpression);
+            } else if scalar_read {
+                reads.push(Read::ScalarExpression);
             } else {
                 return Err("local readの式移送は未実装".into());
             }
@@ -599,7 +600,7 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
-                Read::IntegerExpression => field::compare_integer_expression(
+                Read::ScalarExpression => field::compare_scalar_expression(
                     b, env, inputs, [source, target], &parameter_maps,
                     applicable.as_ref().map(|domain| domain.rows.as_slice()),
                     [s, t], [se, te], dependencies, request, c,

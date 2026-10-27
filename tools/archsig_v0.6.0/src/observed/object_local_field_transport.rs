@@ -280,8 +280,8 @@ pub(super) fn compare(
     Ok(result)
 }
 
-/// 参照引数の全組を列挙し、source適用域上の整数readを実像で比較する。
-pub(super) fn compare_integer_expression(
+/// 参照引数の全組を列挙し、source適用域上のZ/Bool readを実像で比較する。
+pub(super) fn compare_scalar_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
@@ -299,17 +299,27 @@ pub(super) fn compare_integer_expression(
         ..
     } = &declarations[0].signature
     else {
-        return Err("local整数readの元宣言がない".into());
+        return Err("local readの元宣言がない".into());
     };
     let Signature::Local {
         params: target_params,
         ..
     } = &declarations[1].signature
     else {
-        return Err("local整数readの先宣言がない".into());
+        return Err("local readの先宣言がない".into());
     };
+    let ty = inputs
+        .law()
+        .expr_type(expressions[0])
+        .ok_or("local readの元型がない")?
+        .erase();
+    if !matches!(ty, Type::Z | Type::Bool)
+        || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
+    {
+        return Err("localの一般readは同型のZ/Boolだけに対応".into());
+    }
     let mut result = Comparison {
-        values: value_map(b, [&Type::Z, &Type::Z], &[], &[], dependencies)?,
+        values: value_map(b, [&ty, &ty], &[], &[], dependencies)?,
         status: Decision::Established,
         arguments: vec![],
         reasons: vec![],
@@ -353,7 +363,7 @@ pub(super) fn compare_integer_expression(
                 ));
             }
             let (value, support, scope, absent) =
-                super::super::super::environment::local_read::integer_value(
+                super::super::super::environment::local_read::scalar_value(
                     env,
                     expressions[side],
                     &bindings,
@@ -373,8 +383,13 @@ pub(super) fn compare_integer_expression(
                 kind: if missing.is_empty() {
                     ReasonKind::UnsupportedAlgorithm {
                         question: request.kind,
-                        operand_types: vec![Type::Z],
-                        method: "local_integer_read_transport".into(),
+                        operand_types: vec![ty.clone()],
+                        method: if ty == Type::Bool {
+                            "local_boolean_read_transport"
+                        } else {
+                            "local_integer_read_transport"
+                        }
+                        .into(),
                     }
                 } else {
                     ReasonKind::Missing
@@ -388,7 +403,9 @@ pub(super) fn compare_integer_expression(
             });
             continue;
         };
-        if left != right {
+        let equal = super::super::super::value_equality::equal(left, right, inputs.law(), c)?
+            .ok_or("local read等値の算法は未実装")?;
+        if !equal {
             let left = super::super::super::change_result::value(b, left)?;
             let right = super::super::super::change_result::value(b, right)?;
             facts.sort();
