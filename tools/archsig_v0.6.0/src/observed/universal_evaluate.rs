@@ -1502,15 +1502,12 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Match { scrutinee, arms } => {
                 let input = self.universal_pointwise(plan, template, domains, *scrutinee)?;
-                let selected = data::select(
-                    self.environment.inputs.law(),
+                let selected = self.environment.select_match_arm(
+                    self.graph,
                     id,
-                    input
-                        .evaluated
-                        .value
-                        .map(|value| self.graph.scalar(value))
-                        .transpose()?,
-                    self.control,
+                    &self.bindings,
+                    input.evaluated.value.map(|value| self.graph.scalar(value)).transpose()?,
+                    input.evaluated.expression,
                 )?;
                 let mut children = vec![input];
                 if let Some(arm) = selected {

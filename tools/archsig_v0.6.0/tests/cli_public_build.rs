@@ -9,6 +9,45 @@ use std::path::{Path, PathBuf};
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
 const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
 #[test]
+fn partial_data_known_component_selects_checked_arm() {
+    let definition = numeric_data_definition("Z").replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"payload","type":["Data","Build.Payload"],"meaning":"未観測の包装。"}"#)
+        .replace(r#""declarations":["#, r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"偽。"},{"name":"On","arguments":[],"meaning":"真。"}]},{"kind":"data","name":"Build.Pair","meaning":"包装と選択。","constructors":[{"name":"Join","arguments":[["Data","Build.Payload"],["Data","Build.Flag"]],"meaning":"組。"}]},"#);
+    let dir = files_with_definition("partial-data-arm", "law required short(c:Part):match Pair.Join(c.payload,Flag.Off){Join(Packed(_),On)=>false;_=>true;};law required uncertain(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};", false, &definition);
+    let normal_args = ["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--ask", "b=check(R.short,c=@v/q)"];
+    let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+    let normal = cli::run(&dir, &normal_args);
+    assert_eq!(normal.code, 0, "{}", normal.stdout);
+    assert!(normal.stderr.is_empty());
+    eprintln!("partial Data check: stdout {} bytes", normal.stdout.len());
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    assert!(!has(&normal.receipt, "nodes"));
+    assert!(!has(&normal.receipt, "result"));
+    for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
+    let requests = ["b=check(R.short,c=@v/q)", "u=check(R.uncertain,c=@v/q)", "n=needed($u)"];
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "partial", 2);
+    assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "u"), "status")), "undetermined");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload"));
+    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "again", "--reuse", "out"];
+    for request in requests { args.extend(["--ask", request]); }
+    let reused = cli::run(&dir, &args);
+    let again = saved(&dir, &reused, "partial", 2);
+    assert!(warnings(&again).is_empty());
+    for field in ["answers", "nodes"] { assert_eq!(get(&result, field).value, get(&again, field).value); }
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("Flag.Off", "Flag.On");
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let out_at = args.iter().position(|arg| *arg == "--out").unwrap()+1;
+    args[out_at] = "changed";
+    let changed = cli::run(&dir, &args);
+    assert_eq!(changed.code, 2, "{}", changed.stdout);
+    let changed = result_json(&dir, &changed);
+    assert_eq!(s(get(&changed, "status")), "partial");
+    assert_eq!(std::fs::read(dir.join("l.law")).unwrap(), std::fs::read(dir.join("changed/inputs/law.law")).unwrap());
+    assert_eq!(s(get(answer(&changed, "b"), "status")), "undetermined");
+}
+#[test]
 fn known_data_payload_match_preserves_numeric_products() {
     for ty in ["Z", "Q"] {
         let definition = numeric_data_definition(ty);

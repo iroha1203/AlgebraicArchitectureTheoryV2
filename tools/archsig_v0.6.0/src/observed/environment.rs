@@ -2124,7 +2124,7 @@ impl<'a> Environment<'a> {
                         let id = *self.expressions.get(&span).ok_or("match元ASTがない")?;
                         let mut spans = vec![self.inputs.law().exprs[*scrutinee].span];
                         if let Some(arm) =
-                            data::select(self.inputs.law(), id, known, &self.control)?
+                            self.select_match_arm(graph, id, bindings, known, self.evaluation(graph, input)?.0)?
                         {
                             spans.push(self.inputs.law().exprs[arms[arm].body].span);
                         }
@@ -2898,7 +2898,8 @@ impl<'a> Environment<'a> {
                             .2
                             .map(|v| graph.scalar(v))
                             .transpose()?;
-                        let arm = data::select(self.inputs.law(), id, value, &self.control)?
+                        let bindings = self.evaluation(graph, input)?.1;
+                        let arm = self.select_match_arm(graph, id, bindings, value, self.evaluation(graph, input)?.0)?
                             .ok_or("未知matchに生成値がある")?;
                         vec![scrutinee, arms[arm].body]
                     }
@@ -5058,6 +5059,27 @@ impl<'a> Environment<'a> {
         }
         Ok(Some((input, value)))
     }
+    /// 実値がない場合も、現在入力の部分Dataから束縛不要の枝だけを確定する。
+    pub(crate) fn select_match_arm(
+        &self, graph: &Graph, id: usize, bindings: &[Binding], known: Option<&Scalar>, source: NodeRef,
+    ) -> Result<Option<usize>, ValidationFailure> {
+        if known.is_some() { return data::select(self.inputs.law(), id, known, &self.control) }
+        let ExprKind::Match { scrutinee, arms } = &self.inputs.law().exprs[id].kind else { return Err("選択元がmatchでない".into()) };
+        let analyze = || self.analyze_source(graph, self.inputs.law().exprs[*scrutinee].span, bindings);
+        let analysis = if self.universal_source_root(graph, source)?.is_some() {
+            self.with_universal(self.universal_source_context(graph, source)?, analyze)?
+        } else { analyze()? };
+        if analysis.condition_failed || analysis.condition_pending { return Ok(None) }
+        let selected = if let Some(value) = &analysis.known_value {
+            data::select(self.inputs.law(), id, Some(value), &self.control)?
+        } else if let Some(value) = &analysis.symbolic {
+            data::select_partial(arms, value.as_ref(), &self.control, &super::term::affine::Value::data_parts,
+                &|span, c| data::resolved(self.inputs.law(), span, c))?.map(|(arm, _)| arm)
+        } else { None };
+        let Some(arm) = selected else { return Ok(None) };
+        let ty = self.inputs.law().expr_type(*scrutinee).ok_or("matchの元型がない")?;
+        Ok(data::binders(&arms[arm].pattern, ty, self.inputs.law(), &self.control)?.is_empty().then_some(arm))
+    }
     // lexical scope は元 binder の body 範囲から復元する。右辺自身や同名の別出現を
     // 束縛としない。静的検査済みの shadowing 禁止により、外→内の順は一意になる。
     fn lexical_context(
@@ -6563,7 +6585,7 @@ impl<'a> Environment<'a> {
                 .2
                 .map(|r| graph.scalar(r))
                 .transpose()?;
-            if data::select(self.inputs.law(), matching, value, &self.control)? != Some(arm) {
+            if self.select_match_arm(graph, matching, bindings, value, self.evaluation(graph, input)?.0)? != Some(arm) {
                 return Err("Sourceが実選択armに属さない".into());
             }
             arguments.push(input);
