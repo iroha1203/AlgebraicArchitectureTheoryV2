@@ -103,6 +103,42 @@ fn evaluate_read(
             .collect(),
     ))
 }
+/// local移送でも、直接読取りと同じEvaluator・適合条件でguardを確認する。
+pub(in crate::observed) fn guard_value(
+    env: &Environment<'_>,
+    id: usize,
+    bindings: &[(String, Scalar)],
+    reading: &str,
+) -> Result<(Option<bool>, Vec<Fact>, Scope), ValidationFailure> {
+    let variables = bindings
+        .iter()
+        .map(|(name, value)| (name.clone(), known(value.clone())))
+        .collect();
+    let mut scope = Scope::default();
+    scope.readings.insert(reading.into());
+    let (value, _, _) = evaluate_read(env, id, &variables, &scope, reading)?;
+    if value.condition_failed {
+        return Err(unsupported(
+            env.inputs.law().exprs[id].span,
+            "local guardの式の適合条件が不成立",
+        ));
+    }
+    let result = if value.condition_pending {
+        None
+    } else {
+        match value.known_value.as_ref() {
+            Some(Scalar::Bool(value)) => Some(*value),
+            None => None,
+            _ => return Err("local guardがBoolでない".into()),
+        }
+    };
+    // 評価cacheの有無に依存しない、型付き結果の支持を保持する。
+    let mut support = value.support.clone();
+    support.sort();
+    support.dedup();
+    Ok((result, support, value.scope))
+}
+
 /// 暗黙contextの公開読取りを、その式が実際に参照する位置へ制限する。
 pub(in crate::observed) fn implicit_support(
     env: &Environment<'_>,

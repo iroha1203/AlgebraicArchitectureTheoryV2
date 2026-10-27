@@ -35,21 +35,53 @@ fn merge_status(current: Decision, next: Decision) -> Decision {
         Decision::Established
     }
 }
-fn unconditional_guard(
-    inputs: &super::super::input::CheckedInputs,
-    mut guard: Option<usize>,
+fn unconditional_guards(
+    env: &Environment<'_>,
+    declarations: [&crate::law::model::Declaration; 2],
     c: &mut Control,
-) -> Result<bool, ValidationFailure> {
-    while let Some(id) = guard {
-        tick(c)?;
-        match &inputs.law().exprs[id].kind {
-            ExprKind::Group(inner) => guard = Some(*inner),
-            ExprKind::Bool(value) => return Ok(*value),
-            _ => return Ok(false),
+) -> Result<[(Vec<Fact>, Scope); 2], ValidationFailure> {
+    let mut metadata = [(vec![], Scope::default()), (vec![], Scope::default())];
+    for (side, declaration) in declarations.into_iter().enumerate() {
+        let Signature::Local { params, guard, .. } = &declaration.signature else {
+            return Err("guardの元宣言がlocalでない".into());
+        };
+        let Some(id) = guard else {
+            continue;
+        };
+        let tuple = Type::Tuple(params.iter().map(|p| p.ty.clone()).collect());
+        let domain = env.finite_values(&tuple, &mut |_, _| {})?;
+        metadata[side].0.extend(domain.support.iter().cloned());
+        metadata[side].1.merge(&domain.scope);
+        for tuple in domain.values {
+            tick(c)?;
+            let Scalar::Tuple(values) = &tuple else {
+                return Err("guardの引数域がTupleでない".into());
+            };
+            let bindings = params
+                .iter()
+                .zip(values)
+                .map(|(parameter, value)| (parameter.name.clone(), value.clone()))
+                .collect::<Vec<_>>();
+            let (value, facts, reading_scope) = super::super::environment::local_read::guard_value(
+                env,
+                *id,
+                &bindings,
+                &declaration.reading,
+            )?;
+            if value != Some(true) {
+                return Err("全域trueと確認できないlocal guard移送は未実装".into());
+            }
+            metadata[side].0.extend(facts);
+            metadata[side].1.merge(&reading_scope);
         }
     }
-    Ok(true)
+    for (support, _) in &mut metadata {
+        support.sort();
+        support.dedup();
+    }
+    Ok(metadata)
 }
+
 fn field_read(
     inputs: &super::super::input::CheckedInputs,
     mut id: usize,
@@ -293,9 +325,6 @@ pub(super) fn retain(
         else {
             return Err("localの対応宣言がlocalでない".into());
         };
-        if !unconditional_guard(inputs, *sg, c)? || !unconditional_guard(inputs, *tg, c)? {
-            return Err("true以外のlocal guard移送は未実装".into());
-        }
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
@@ -340,6 +369,19 @@ pub(super) fn retain(
             type_maps.push(map.clone());
             parameter_maps.push(map);
         }
+        let guard_metadata = unconditional_guards(env, [source, target], c)?;
+        let mut guard_expressions = vec![];
+        for (side, (guard, params)) in [(*sg, sp), (*tg, tp)].into_iter().enumerate() {
+            if let Some(id) = guard {
+                let r = expression(b, inputs, id, params, dependencies)?;
+                let part = &mut b.parts[r.0 - b.base];
+                part.support.extend(guard_metadata[side].0.iter().cloned());
+                part.support.sort();
+                part.support.dedup();
+                part.scope.merge(&guard_metadata[side].1);
+                guard_expressions.push(r);
+            }
+        }
         let args = [
             Type::Tuple(sp.iter().map(|p| p.ty.clone()).collect()),
             Type::Tuple(tp.iter().map(|p| p.ty.clone()).collect()),
@@ -353,6 +395,7 @@ pub(super) fn retain(
         )?;
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
+        all.extend(guard_expressions.iter().copied());
         for ((&s, &t), read) in sr.iter().zip(tr).zip(reads) {
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
@@ -384,10 +427,12 @@ pub(super) fn retain(
                 )?,
             };
             let values = comparison.values;
+            let mut comparison_arguments = comparison.arguments;
+            comparison_arguments.extend(guard_expressions.iter().copied());
             let commutes = b.proposition(
                 "declaration_transport",
                 vec![se, te, arguments, values],
-                comparison.arguments,
+                comparison_arguments,
                 comparison.status,
             )?;
             let p = &mut b.parts[commutes.0 - b.base];

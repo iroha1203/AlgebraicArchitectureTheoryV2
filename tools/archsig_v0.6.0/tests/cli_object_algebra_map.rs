@@ -107,11 +107,18 @@ fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str,
 }
 
 #[test]
-fn literal_true_local_guards_preserve_reads_and_following_operations() {
+fn unconditional_local_guards_preserve_reads_and_following_operations() {
     for (mode, source_guard, target_guard) in [
         ("source", " when true", ""),
         ("target", "", " when (true)"),
         ("both", " when (true)", " when ((true))"),
+        ("boolean", " when not false", " when (true and true)"),
+        (
+            "let",
+            " when let yes=true in yes",
+            " when if true then true else false",
+        ),
+        ("parameters", " when s.free=s.free", " when t=t"),
     ] {
         let dir = finite_view_inputs(&format!("local-true-guard-{mode}"), true);
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -199,7 +206,7 @@ reading After {{{vocabulary} local here(t:State){target_guard} reads t,(t.free);
 }
 
 #[test]
-fn nontrivial_local_guards_are_not_silently_treated_as_true() {
+fn false_and_conditional_local_guards_remain_explicitly_unsupported() {
     for (mode, guard) in [("false", "false"), ("field", "s.free=2")] {
         let dir = finite_view_inputs(&format!("local-unsupported-guard-{mode}"), true);
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -509,8 +516,8 @@ fn local_scalar_field_reads_keep_preservation_refutation_and_missing_distinct() 
             dir.join("l.law"),
             format!(
                 r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(root:System,s:State) reads s.free;}}
-reading After {{{vocabulary} local here(world:System,t:State) reads (t.free);}}"#
+reading Before {{{vocabulary} local here(root:System,s:State) when (s.free=s.free) and (root=root) reads s.free;}}
+reading After {{{vocabulary} local here(world:System,t:State) when t.free=t.free reads (t.free);}}"#
             ),
         )
         .unwrap();
