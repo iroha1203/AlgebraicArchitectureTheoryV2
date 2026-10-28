@@ -8561,3 +8561,337 @@ reading After {{{vocabulary} local here(right:State) reads if right=right then {
         }
     }
 }
+
+fn without_reserve_instances(map: &str) -> String {
+    map.lines()
+        .filter(|l| {
+            !l.contains(r#""type":"Reservations.Reserve""#)
+                && !l.contains(r#""subject":"e""#)
+                && !l.contains(r#""subject":"f""#)
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(r#"[[["v","e"],["v","f"]]]"#, "[]")
+}
+
+#[test]
+fn local_direct_compound_fields_share_evaluation_transport_and_missing() {
+    for (shape, wire) in [
+        (
+            "tuple",
+            r#"["Tuple",["Ref","Reservations.State"],"Z","Bool",["Option","Bool"]]"#,
+        ),
+        (
+            "option",
+            r#"["Option",["Tuple",["Ref","Reservations.State"],"Z"]]"#,
+        ),
+        (
+            "list",
+            r#"["List",["Tuple",["Ref","Reservations.State"],"Z"]]"#,
+        ),
+        (
+            "set",
+            r#"["Set",["Tuple",["Ref","Reservations.State"],"Z"]]"#,
+        ),
+        ("data", r#"["Data","Reservations.Choice"]"#),
+        (
+            "map",
+            r#"["Map",["Ref","Reservations.Key"],["Ref","Reservations.State"]]"#,
+        ),
+    ] {
+        for (case, code) in [
+            ("preserved", 0),
+            ("refuted", 1),
+            ("missing", 2),
+            ("false-source", 0),
+            ("target-guard", 1),
+            ("identity-missing", 0),
+        ] {
+            for general in [false, true] {
+                if general && case == "identity-missing" {
+                    continue;
+                }
+                let name = format!("direct-compound-{shape}-{case}-{general}");
+                let (dir, _) = if shape == "map" {
+                    finite_local_map_inputs(&name)
+                } else {
+                    finite_local_parameter_inputs(&name)
+                };
+                let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+                let mut definition=old.replace(r#"{"name": "free", "type": "Z""#,
+                    &format!(r#"{{"name":"box","type":{wire},"meaning":"複合値"}},{{"name":"alternate","type":{wire},"meaning":"別の複合値"}},{{"name": "free", "type": "Z""#));
+                if shape == "data" {
+                    definition=definition.replace(r#""arguments":["Bool"]"#,r#""arguments":[["Ref","Reservations.State"],"Z",["Data","Reservations.Choice"]]"#);
+                }
+                let before =
+                    archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+                let checked =
+                    archsig::definition::check_definitions(&[("d", definition.as_bytes())])
+                        .unwrap();
+                let digest = &checked.vocabularies["Reservations"].digest;
+                let mut map = std::fs::read_to_string(dir.join("a.json"))
+                    .unwrap()
+                    .replace(&before.vocabularies["Reservations"].digest, digest);
+                let mut atoms = String::new();
+                for (subject, peer) in [("p", "q"), ("q", "p"), ("r", "s"), ("s", "r")] {
+                    let r = format!(r#"["v","{subject}"]"#);
+                    let other = format!(r#"["v","{peer}"]"#);
+                    let (value, alternate) = match shape {
+                        "tuple" => (
+                            format!(r#"[{r},"0",false,{{"none":true}}]"#),
+                            format!(r#"[{r},"1",false,{{"none":true}}]"#),
+                        ),
+                        "option" => (
+                            format!(r#"{{"some":[{r},"0"]}}"#),
+                            r#"{"none":true}"#.into(),
+                        ),
+                        "list" => (
+                            format!(r#"[[{r},"0"],[{other},"1"],[{r},"0"]]"#),
+                            format!(r#"[[{other},"1"],[{r},"0"],[{r},"0"]]"#),
+                        ),
+                        "set" => (
+                            format!(r#"[[{r},"0"],[{other},"1"]]"#),
+                            format!(r#"[[{r},"2"],[{other},"1"]]"#),
+                        ),
+                        "data" => (
+                            format!(
+                                r#"{{"tag":"Full","args":[{r},"0",{{"tag":"Empty","args":[]}}]}}"#
+                            ),
+                            format!(
+                                r#"{{"tag":"Full","args":[{other},"0",{{"tag":"Empty","args":[]}}]}}"#
+                            ),
+                        ),
+                        _ => (
+                            format!(r#"[[["v","k"],{r}]]"#),
+                            format!(r#"[[["v","k"],{other}]]"#),
+                        ),
+                    };
+                    for (field, value) in [("box", value), ("alternate", alternate)] {
+                        atoms.push_str(&format!(r#"{{"id":"{subject}-{field}","subject":"{subject}","field":"Reservations.State.{field}","value":{value},"origin":"model"}},
+"#));
+                    }
+                }
+                map = map.replacen("\"atoms\":[", &format!("\"atoms\":[\n{atoms}"), 1);
+
+                // 追加fieldの移送だけを検査し、別の内部Reserve作用を課さない。
+                map = without_reserve_instances(&map);
+                if matches!(case, "missing" | "identity-missing" | "false-source") {
+                    // baseの写像を確定したまま、型域中の外部subjectのreadだけを欠測にする。
+                    map=map.replacen("\"subjects\":[",r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"x","type":"Reservations.State","origin":"model"},"#,1)
+                        .replacen("\"atoms\":[",r#""atoms":[{"id":"x-owner","subject":"x","field":"Reservations.State.owner","value":["v","C"],"origin":"model"},"#,1);
+                }
+                if case == "identity-missing" {
+                    map=map.replace(r#"[[["v","p"],["v","r"]],[["v","q"],["v","s"]]]"#,r#"[[["v","p"],["v","p"]],[["v","q"],["v","q"]]]"#)
+                        .replace(r#""id":"m-to","subject":"m","field":"Reservations.Migration.to","value":["v","B"]"#,r#""id":"m-to","subject":"m","field":"Reservations.Migration.to","value":["v","A"]"#)
+;
+                }
+                let source_read = if general {
+                    "if take then left.box else left.box"
+                } else {
+                    "left.box"
+                };
+                let target = if case == "refuted" {
+                    "right.alternate"
+                } else {
+                    "right.box"
+                };
+                let target_read = if general {
+                    format!("if keep then {target} else {target}")
+                } else {
+                    format!("({target})")
+                };
+                let sg = if case == "false-source" {
+                    " when false"
+                } else {
+                    ""
+                };
+                let tg = if case == "target-guard" {
+                    " when spare.free=2"
+                } else {
+                    ""
+                };
+                let vocabulary =
+                    format!(r#"use vocabulary Reservations version "1" digest "{digest}";"#);
+                let law = format!(
+                    r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State,other:State,take:Bool){sg} reads {source_read};}}
+reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool){tg} reads {target_read};}}"#
+                );
+                std::fs::write(dir.join("d.json"), definition).unwrap();
+                std::fs::write(dir.join("a.json"), map).unwrap();
+                std::fs::write(dir.join("l.law"), law).unwrap();
+                let requests = [
+                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                    "same=compare($m.operation,to=$m.operation,kind=action)",
+                    "n=needed($m)",
+                ];
+                let run = asks(&dir, &requests);
+                assert_eq!(run.code, code, "{shape}/{case}/{general}: {}", run.stdout);
+                assert!(run.stderr.is_empty());
+                let result = result_json(&dir, &run);
+                let m = answer(&result, "m");
+                assert_eq!(
+                    s(get(m, "status")),
+                    match code {
+                        0 => "established",
+                        1 => "refuted",
+                        _ => "undetermined",
+                    }
+                );
+                assert!(
+                    has(get(m, "outputs"), "operation"),
+                    "{shape}/{case}/{general}: {}",
+                    run.stdout
+                );
+                assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+                assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                assert_eq!(arr(get(plan, "requirements")).is_empty(), code != 2);
+                if code == 2 {
+                    assert!(!has(m, "counterexamples"));
+                    assert!(
+                        arr(get(plan, "requirements"))
+                            .iter()
+                            .all(|r| s(get(get(r, "field"), "field")) == "Reservations.State.box")
+                    );
+                }
+                if case == "refuted" {
+                    let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(bindings.len(), 3);
+                    assert_json(value(&result, get(&bindings[0], "value")), r#"["v","p"]"#);
+                    assert_json(value(&result, get(&bindings[2], "value")), "false");
+                    let (left, right) = match shape {
+                        "tuple" => (
+                            r#"[["v","p"],"0",false,{"none":true}]"#,
+                            r#"[["v","r"],"1",false,{"none":true}]"#,
+                        ),
+                        "option" => (r#"{"some":[["v","p"],"0"]}"#, r#"{"none":true}"#),
+                        "list" => (
+                            r#"[[["v","p"],"0"],[["v","q"],"1"],[["v","p"],"0"]]"#,
+                            r#"[[["v","s"],"1"],[["v","r"],"0"],[["v","r"],"0"]]"#,
+                        ),
+                        "set" => (
+                            r#"[[["v","p"],"0"],[["v","q"],"1"]]"#,
+                            r#"[[["v","r"],"2"],[["v","s"],"1"]]"#,
+                        ),
+                        "data" => (
+                            r#"{"args":[["v","p"],"0",{"args":[],"tag":"Empty"}],"tag":"Full"}"#,
+                            r#"{"args":[["v","s"],"0",{"args":[],"tag":"Empty"}],"tag":"Full"}"#,
+                        ),
+                        _ => (r#"[[["v","k"],["v","p"]]]"#, r#"[[["v","k"],["v","s"]]]"#),
+                    };
+                    assert_json(value(&result, get(data, "left")), left);
+                    assert_json(value(&result, get(data, "right")), right);
+                }
+                if case == "preserved" {
+                    let mapped = value(&result, get(get(m, "outputs"), "map"));
+                    let transport = value(&result, &arr(get(mapped, "transports"))[0]);
+                    let values = value(&result, get(&arr(get(transport, "clauses"))[0], "values"));
+                    assert_json(get(values, "source_type"), wire);
+                    let mut pairs = vec![("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")];
+                    if shape == "map" {
+                        pairs.insert(0, ("k", "k"));
+                    }
+                    assert_reference_pairs(&result, values, &pairs);
+                }
+                if !general
+                    && matches!(
+                        case,
+                        "preserved" | "refuted" | "missing" | "identity-missing"
+                    )
+                {
+                    let mut args = vec![
+                        "run",
+                        "--atom-definition",
+                        "d.json",
+                        "--law",
+                        "l.law",
+                        "--archmap",
+                        "a.json",
+                    ];
+                    for request in &requests {
+                        args.extend(["--ask", request]);
+                    }
+                    let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+                    assert_eq!(normal.code, code, "{}", normal.stdout);
+                    assert_map_summary(&normal, &result);
+                    args.extend(["--out", "again", "--reuse", "out"]);
+                    let reused = cli::run(&dir, &args);
+                    assert_eq!(reused.code, code, "{}", reused.stdout);
+                    let again = result_json(&dir, &reused);
+                    assert!(warnings(&again).is_empty());
+                    for key in ["answers", "nodes"] {
+                        assert_eq!(get(&result, key).value, get(&again, key).value);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn local_direct_map_fields_check_type_domains_before_reads_and_guards() {
+    for guard in ["", " when false"] {
+        let dir = four_state_inputs(&format!("direct-map-domain-{}", guard.is_empty()));
+        let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+        let definition=old.replacen(r#""declarations": ["#,r#""declarations": [{"kind":"entity","name":"Reservations.Observer","meaning":"外部の読取り対象","parameters":[{"name":"owner","type":["Ref","Reservations.System"],"meaning":"所属先"}],"fields":[{"name":"box","type":["Map",["Ref","Reservations.State"],["Ref","Reservations.State"]],"meaning":"全域Map値"}],"alignments":[]},"#,1);
+        let definition=definition.replace(r#"{"name": "states", "type":"#,r#"{"name":"observers","type":["Map",["Owned","Reservations.Observer","from"],["Owned","Reservations.Observer","to"]],"meaning":"空の所属対象対応"},{"name": "states", "type":"#);
+        let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies["Reservations"].digest;
+        let mut map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(&before.vocabularies["Reservations"].digest, digest);
+        // source/targetのbaseは既知。外部Observerのslotは未読・欠測のままにする。
+        map=map.replacen("\"subjects\":[",r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"w","type":"Reservations.Observer","origin":"model"},"#,1)
+            .replacen("\"atoms\":[",r#""atoms":[{"id":"m-observers","subject":"m","field":"Reservations.Migration.observers","value":[],"origin":"model"},{"id":"w-owner","subject":"w","field":"Reservations.Observer.owner","value":["v","C"],"origin":"model"},"#,1);
+        let vocabulary = format!(r#"use vocabulary Reservations version "1" digest "{digest}";"#);
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(s:Observer){guard} reads s.box;}}
+reading After {{{vocabulary} local here(t:Observer) reads (t.box);}}"#
+        );
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 1, "{guard}: {}", run.stdout);
+        assert!(run.stderr.is_empty());
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert!(
+            has(get(m, "outputs"), "operation"),
+            "{guard}: {}",
+            run.stdout
+        );
+        assert!(!has(get(m, "outputs"), "map"));
+        assert!(!has(m, "counterexamples"));
+        assert!(
+            arr(get(m, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "condition_failed")
+        );
+        assert!(
+            !arr(get(m, "reasons"))
+                .iter()
+                .any(|r| matches!(s(get(r, "code")), "missing" | "unsupported_algorithm"))
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let condition = value(&result, get(get(m, "outputs"), "proposition"));
+        let witness=archsig::json::parse(br#"[[["v","p"],["v","p"]],[["v","q"],["v","p"]],[["v","r"],["v","p"]],[["v","s"],["v","p"]]]"#).unwrap();
+        assert!(
+            arr(get(condition, "operands"))
+                .iter()
+                .any(|r| value(&result, r).value == witness.value)
+        );
+    }
+}

@@ -82,15 +82,33 @@ impl LocalParameter {
 }
 enum ReadValueMap {
     Finite(super::super::value_transport::FiniteValueTransport, NodeRef),
-    Structural(NodeRef),
+    Structural(NodeRef, bool), // 型全域の値写像と、その恒等性。
 }
 impl ReadValueMap {
+    fn is_identity(&self, c: &mut Control) -> Result<bool, ValidationFailure> {
+        match self {
+            Self::Structural(_, identity) => Ok(*identity),
+            Self::Finite(transport, _) => {
+                if transport.source_type() != transport.target_type() {
+                    return Ok(false);
+                }
+                for (source, image) in transport.source().iter().zip(transport.images()) {
+                    tick(c)?;
+                    if source != image {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+        }
+    }
     fn values(&self) -> NodeRef {
         match self {
-            Self::Finite(_, values) | Self::Structural(values) => *values,
+            Self::Finite(_, values) | Self::Structural(values, _) => *values,
         }
     }
 }
+
 enum Read {
     Projection(usize),
     Expression,
@@ -545,7 +563,15 @@ fn value_type_map(
     dependencies: &[NodeRef],
     failed_arguments: &mut Vec<NodeRef>,
     c: &mut Control,
-) -> Result<Option<(NodeRef, Vec<(NodeRef, NodeRef)>, Vec<(String, String)>)>, ValidationFailure> {
+) -> Result<
+    Option<(
+        NodeRef,
+        Vec<(NodeRef, NodeRef)>,
+        Vec<(String, String)>,
+        bool,
+    )>,
+    ValidationFailure,
+> {
     let mut pending = vec![types[0]];
     let mut references = BTreeSet::new();
     let mut families = BTreeSet::new();
@@ -607,6 +633,7 @@ fn value_type_map(
     pairs.sort();
     pairs.dedup();
     let mut subjects = vec![];
+    let mut identity = types[0] == types[1];
     for st in references {
         let tt = declarations
             .types()
@@ -636,6 +663,11 @@ fn value_type_map(
             type_maps.push(map.clone());
             map
         };
+        identity &= map.source == map.target;
+        for (source, image) in map.transport.source().iter().zip(map.transport.images()) {
+            tick(c)?;
+            identity &= source == image;
+        }
         subjects.extend(map.subjects.iter().copied());
     }
     // 有限の全型域は呼出側で検査済み。無限複合ではMap成分を全列挙する。
@@ -663,7 +695,7 @@ fn value_type_map(
         }
     }
     let values = value_map(b, types, &subjects, &pairs, dependencies)?;
-    Ok(Some((values, subjects, pairs)))
+    Ok(Some((values, subjects, pairs, identity)))
 }
 
 fn expression(
@@ -827,7 +859,7 @@ pub(super) fn retain(
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
-                let Some((values, subjects, value_declarations)) = value_type_map(
+                let Some((values, subjects, value_declarations, _)) = value_type_map(
                     b,
                     inputs,
                     declarations,
@@ -911,7 +943,7 @@ pub(super) fn retain(
             let finite = super::super::finite::supported(&ty, inputs.law(), c)?;
             let structural = !sp.is_empty()
                 && super::super::environment::local_read::reference_value_type_supported(&ty, inputs.law(), c)?;
-            if matches!(read, Read::Expression) && (finite || structural) {
+            if !matches!(read, Read::Projection(_)) && (finite || structural) {
                 let expected = construction::moved_declaration_type(
                     inputs
                         .law()
@@ -932,7 +964,7 @@ pub(super) fn retain(
                     continue 'declarations;
                 }
                 if !finite {
-                    let Some((values, _, _)) = value_type_map(
+                    let Some((values, _, _, identity)) = value_type_map(
                         b,
                         inputs,
                         declarations,
@@ -946,7 +978,7 @@ pub(super) fn retain(
                         result.status = Decision::Refuted;
                         continue 'declarations;
                     };
-                    read_maps.push(Some(ReadValueMap::Structural(values)));
+                    read_maps.push(Some(ReadValueMap::Structural(values, identity)));
                     continue;
                 }
                 let transport = super::super::value_transport::finite_declaration_value_transport(
@@ -962,7 +994,7 @@ pub(super) fn retain(
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
-                let Some((values, _, _)) = value_type_map(
+                let Some((values, _, _, _)) = value_type_map(
                     b,
                     inputs,
                     declarations,
@@ -1007,37 +1039,18 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
-                Read::Expression => field::compare_expression(
-                    b,
-                    env,
-                    inputs,
-                    [source, target],
-                    declarations,
-                    &parameter_maps,
-                    read_map.as_ref(),
-                    applicable.as_ref().map(|domain| domain.rows.as_slice()),
-                    [s, t],
-                    [se, te],
-                    dependencies,
-                    request,
-                    c,
-                )?,
-                Read::Field { position, names } => field::compare(
-                    b,
-                    env,
-                    inputs,
-                    [source, target],
-                    declarations,
-                    &parameter_maps,
-                    applicable.as_ref().map(|domain| domain.rows.as_slice()),
-                    position,
-                    &names,
-                    [s, t],
-                    [se, te],
-                    dependencies,
-                    request,
-                    c,
-                )?,
+                read @ (Read::Expression | Read::Field { .. }) => {
+                    let direct = match &read {
+                        Read::Field { position, names } => Some((*position, names)),
+                        _ => None,
+                    };
+                    field::compare_expression(
+                        b, env, inputs, [source, target], declarations, &parameter_maps,
+                        read_map.as_ref(), direct,
+                        applicable.as_ref().map(|domain| domain.rows.as_slice()),
+                        [s, t], [se, te], dependencies, request, c,
+                    )?
+                },
             };
             if let Some(domain) = &applicable {
                 comparison.status = merge_status(comparison.status, domain.status);
