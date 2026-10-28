@@ -160,7 +160,7 @@ pub(in crate::observed) fn value_type_supported(
         && super::super::value_transport::identity_declarations(ty, law, &mut c.clone())?.is_some())
 }
 
-/// 全参照作用とscalar恒等写像をTuple/Optionへ延長できる型。
+/// 全参照作用とscalar恒等写像をTuple/List/Set/Optionへ延長できる型。
 /// Map等は実値の検査だけで全域性を代用しない。
 pub(in crate::observed) fn reference_value_type_supported(
     ty: &Type,
@@ -173,7 +173,7 @@ pub(in crate::observed) fn reference_value_type_supported(
         match ty {
             Type::Ref(_) => reference = true,
             Type::Tuple(items) => pending.extend(items),
-            Type::Option(item) => pending.push(item),
+            Type::Option(item) | Type::List(item) | Type::Set(item) => pending.push(item),
             Type::Unit | Type::Bool | Type::Fp(_) | Type::Z | Type::Q | Type::Text => {}
             _ => return Ok(false),
         }

@@ -556,7 +556,7 @@ fn value_type_map(
                 references.insert(name.clone());
             }
             Type::Tuple(items) => pending.extend(items),
-            Type::Option(item) | Type::Set(item) => pending.push(item),
+            Type::Option(item) | Type::Set(item) | Type::List(item) => pending.push(item),
             Type::Map(a, b) => pending.extend([a.as_ref(), b.as_ref()]),
             Type::Data(family) => {
                 if families.insert(family.clone()) {
