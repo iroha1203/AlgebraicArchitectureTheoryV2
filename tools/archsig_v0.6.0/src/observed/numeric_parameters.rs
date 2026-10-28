@@ -1,19 +1,50 @@
 //! 数値引数の独立軸と元の引数形を、既存の記号評価へ接続する。
 use super::*;
 use crate::{law::model::Param, observed::affine};
-// 最小の複合数値域として、平坦で同種のTupleだけをscalar軸へ展開する。
-pub(in crate::observed) fn numeric_width(ty: &Type) -> Option<usize> {
-    match ty {
-        Type::Z | Type::Q => Some(1),
-        Type::Tuple(items)
-            if !items.is_empty()
-                && matches!(items[0], Type::Z | Type::Q)
-                && items.iter().all(|ty| *ty == items[0]) =>
-        {
-            Some(items.len())
+// 同じ係数型の葉を、元のTuple順に独立なscalar軸として読む。
+fn numeric_shape(ty: &Type) -> Option<(Type, usize)> {
+    let mut pending = vec![ty];
+    let mut kind = None;
+    let mut width = 0usize;
+    while let Some(ty) = pending.pop() {
+        match ty {
+            Type::Z | Type::Q => {
+                if kind.as_ref().is_some_and(|kind| kind != ty) {
+                    return None;
+                }
+                kind = Some(ty.clone());
+                width = width.checked_add(1)?;
+            }
+            Type::Tuple(items) if !items.is_empty() => pending.extend(items.iter().rev()),
+            _ => return None,
         }
-        _ => None,
     }
+    Some((kind?, width))
+}
+pub(in crate::observed) fn numeric_width(ty: &Type) -> Option<usize> {
+    numeric_shape(ty).map(|(_, width)| width)
+}
+// 軸の列を型の形へ戻す。記号式と反例で同じ葉順を使う。
+fn restore<T>(
+    ty: &Type,
+    c: &Control,
+    leaf: &mut impl FnMut() -> Result<T, ValidationFailure>,
+    tuple: &impl Fn(Vec<T>) -> T,
+) -> Result<T, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        match ty {
+            Type::Tuple(items) => {
+                let mut parts = vec![];
+                for item in items {
+                    parts.push(restore(item, c, leaf, tuple)?);
+                }
+                Ok(tuple(parts))
+            }
+            Type::Z | Type::Q => leaf(),
+            _ => Err("数値引数の復元型が違う".into()),
+        }
+    })
 }
 pub(in crate::observed) fn tuple_variables(
     e: &Environment<'_>,
@@ -22,16 +53,16 @@ pub(in crate::observed) fn tuple_variables(
 ) -> Result<(), ValidationFailure> {
     use crate::observed::term::affine::Value;
     for p in params {
-        if !matches!(p.ty, Type::Tuple(_))
-            || numeric_width(&p.ty).is_none()
-            || !variables.contains_key(&format!("{}.0", p.name))
-        {
+        if !matches!(p.ty, Type::Tuple(_)) || !variables.contains_key(&format!("{}.0", p.name)) {
             continue;
         }
+        let Some(width) = numeric_width(&p.ty) else {
+            continue;
+        };
         let mut parts = vec![];
         let mut aggregate = variables[&format!("{}.0", p.name)].clone();
         aggregate.support.clear();
-        for index in 0..numeric_width(&p.ty).ok_or("数値Tupleの幅がない")? {
+        for index in 0..width {
             e.tick()?;
             let v = variables
                 .get(&format!("{}.{index}", p.name))
@@ -48,7 +79,13 @@ pub(in crate::observed) fn tuple_variables(
                 return Err("数値Tupleの成分がない".into());
             });
         }
-        let symbolic = Value::Tuple(parts);
+        let mut parts = parts.into_iter();
+        let symbolic = restore(
+            &p.ty,
+            &e.control,
+            &mut || parts.next().ok_or_else(|| "数値Tupleの成分がない".into()),
+            &Value::Tuple,
+        )?;
         aggregate.known_value = symbolic.known(&e.control)?;
         aggregate.scalar_scope = aggregate
             .known_value
@@ -69,13 +106,15 @@ pub(in crate::observed) fn law_variables(
     let mut flat = vec![];
     for p in params {
         e.tick()?;
-        if let Type::Tuple(items) = &p.ty {
-            if numeric_width(&p.ty).is_some() && !bindings.iter().any(|(name, _)| *name == p.name) {
-                for (index, ty) in items.iter().enumerate() {
+        if matches!(p.ty, Type::Tuple(_)) {
+            if let Some((kind, width)) =
+                numeric_shape(&p.ty).filter(|_| !bindings.iter().any(|(name, _)| *name == p.name))
+            {
+                for index in 0..width {
                     e.tick()?;
                     flat.push(Param {
                         name: format!("{}.{index}", p.name),
-                        ty: ty.clone(),
+                        ty: kind.clone(),
                         span: p.span,
                     });
                 }
@@ -90,11 +129,7 @@ pub(in crate::observed) fn law_variables(
 }
 
 pub(in crate::observed) fn coefficient_type(ty: &Type) -> Option<Type> {
-    numeric_width(ty)?;
-    Some(match ty {
-        Type::Tuple(items) => items[0].clone(),
-        _ => ty.clone(),
-    })
+    numeric_shape(ty).map(|(kind, _)| kind)
 }
 pub(in crate::observed) fn point_value(
     params: &[Param],
@@ -119,9 +154,76 @@ pub(in crate::observed) fn point_value(
     let coordinates = point
         .get(offset..offset + width)
         .ok_or("数値反例の座標がない")?;
-    Ok(if matches!(parameter.ty, Type::Tuple(_)) {
-        Scalar::Tuple(coordinates.to_vec())
-    } else {
-        coordinates[0].clone()
-    })
+    let mut coordinates = coordinates.iter();
+    restore(
+        &parameter.ty,
+        c,
+        &mut || {
+            coordinates
+                .next()
+                .cloned()
+                .ok_or_else(|| "数値反例の座標がない".into())
+        },
+        &Scalar::Tuple,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::observed::control::{Limits, Usage};
+
+    #[test]
+    fn nested_numeric_point_preserves_shape_and_later_parameter_offsets() {
+        for kind in [Type::Z, Type::Q] {
+            let c = Control::new(Limits::default(), |_| Usage::default());
+            let nested = Type::Tuple(vec![
+                kind.clone(),
+                Type::Tuple(vec![
+                    kind.clone(),
+                    Type::Tuple(vec![kind.clone(), kind.clone()]),
+                ]),
+            ]);
+            let params: Vec<_> = [
+                nested,
+                kind.clone(),
+                Type::Tuple(vec![kind.clone(), kind.clone()]),
+            ]
+            .into_iter()
+            .enumerate()
+            .map(|(index, ty)| Param {
+                name: format!("p{index}"),
+                ty,
+                span: (index, index + 1),
+            })
+            .collect();
+            let n = |v: i32| match kind {
+                Type::Z => Scalar::Z(v.into()),
+                _ => Scalar::Q(v.into(), 1.into()),
+            };
+            let point: Vec<_> = (1i32..=7).map(n).collect();
+            assert_eq!(
+                point_value(&params, &params[0], &point, &c).unwrap(),
+                Scalar::Tuple(vec![
+                    n(1),
+                    Scalar::Tuple(vec![n(2), Scalar::Tuple(vec![n(3), n(4)])])
+                ])
+            );
+            assert_eq!(point_value(&params, &params[1], &point, &c).unwrap(), n(5));
+            assert_eq!(
+                point_value(&params, &params[2], &point, &c).unwrap(),
+                Scalar::Tuple(vec![n(6), n(7)])
+            );
+            assert!(point_value(&params, &params[2], &point[..6], &c).is_err());
+        }
+    }
+
+    #[test]
+    fn nested_numeric_axes_keep_mixed_and_nonnumeric_leaves_out() {
+        for leaf in [Type::Q, Type::Bool, Type::Tuple(vec![])] {
+            let ty = Type::Tuple(vec![Type::Z, Type::Tuple(vec![Type::Z, leaf])]);
+            assert_eq!(numeric_width(&ty), None);
+            assert_eq!(coefficient_type(&ty), None);
+        }
+    }
 }
