@@ -329,7 +329,10 @@ fn put(g: &mut Graph, source: Arc<Source>, kind: Kind) -> Result<NodeRef, Valida
     )
 }
 pub(super) fn numeric_parameters(o: &ViewOrigin) -> bool {
-    !o.parameters.is_empty() && o.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
+    !o.parameters.is_empty()
+        && o.parameters.iter().all(|(_, ty)| {
+            super::environment::numeric_parameters::numeric_width(ty).is_some()
+        })
 }
 pub(super) fn evaluate(
     env: &Environment<'_>,

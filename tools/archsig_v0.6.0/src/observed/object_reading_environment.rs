@@ -72,8 +72,12 @@ impl Environment<'_> {
         if let crate::law::model::Signature::View { params, .. } = &declaration.signature {
             for parameter in params {
                 self.tick()?;
-                if !variables.contains_key(&parameter.name) && matches!(parameter.ty, Type::Z | Type::Q) {
-                    let (free, _) = change_affine::law_variables(self, std::slice::from_ref(parameter), &[])?;
+                if !variables.contains_key(&parameter.name)
+                    && numeric_parameters::numeric_width(&parameter.ty).is_some()
+                {
+                    let (free, _) = numeric_parameters::law_variables(
+                        self, std::slice::from_ref(parameter), &[],
+                    )?;
                     variables.extend(free);
                 }
             }
