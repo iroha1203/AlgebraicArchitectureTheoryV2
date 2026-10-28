@@ -87,6 +87,8 @@ enum Read {
 }
 pub(super) struct Output {
     pub transports: Vec<NodeRef>,
+    // 全域値移送が不成立となる元の型付き値。readの反例とは区別する。
+    pub failed_values: Vec<NodeRef>,
     pub status: Decision,
     pub reasons: Vec<Reason>,
     pub evidence: Vec<NodeRef>,
@@ -508,20 +510,23 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut result = Output {
         transports: vec![],
+        failed_values: vec![],
         status: Decision::Established,
         reasons: vec![],
         evidence: vec![],
     };
     let related = relation::retain(env, b, inputs, declarations, dependencies, request, c)?;
     result.transports.extend(related.transports);
+    result.failed_values.extend(related.failed_values);
     result.status = merge_status(result.status, related.status);
     result.reasons.extend(related.reasons);
     result.evidence.extend(related.evidence);
-    for candidate in declarations.candidates() {
+    'declarations: for candidate in declarations.candidates() {
         tick(c)?;
         if candidate.source().kind == "change" {
             let out = change::retain(env, b, inputs, declarations, candidate, dependencies, request, c)?;
             result.transports.extend(out.transports);
+            result.failed_values.extend(out.failed_values);
             result.status = merge_status(result.status, out.status);
             result.reasons.extend(out.reasons); result.evidence.extend(out.evidence);
             continue;
@@ -611,7 +616,7 @@ pub(super) fn retain(
                             }
                         }
                         Type::Unit | Type::Bool | Type::Fp(_) => {}
-                        // Mapの非単射key像は、このlocal引数経路ではまだ扱わない。
+                        Type::Map(from, to) => pending.extend([from.as_ref(), to.as_ref()]),
                         _ => {
                             reference_types.clear();
                             break;
@@ -668,10 +673,23 @@ pub(super) fn retain(
                 )
                 .map_err(failure)?;
                 if structural_reference {
-                    if transport.failures().iter().any(|f| {
-                        matches!(f, super::super::value_transport::FiniteValueConditionFailure::OutsideTarget { .. })
+                    if let Some(index) = transport.failures().iter().find_map(|failure| match failure {
+                        super::super::value_transport::FiniteValueConditionFailure::OutsideTarget { source, .. } => Some(*source),
+                        _ => None,
                     }) {
-                        return Err("local reference-containing image is outside the target domain".into());
+                        // 型全域の値写像を作れない。read/guardを評価せず、元の型付き値を
+                        // 構成条件の依存として保持する。域外候補をValueMap/Valueにしない。
+                        let value = transport.source()[index].scalar().clone();
+                        result.failed_values.push(b.push(
+                            NodeType::Value(source.ty.clone()),
+                            "binding",
+                            value.wire(),
+                            dependencies.to_vec(),
+                            Some(value),
+                            None,
+                        )?);
+                        result.status = Decision::Refuted;
+                        continue 'declarations;
                     }
                 } else if !transport.failures().is_empty() || transport.bijection().is_none() {
                     return Err("local finite parameter value transport is not a bijection".into());

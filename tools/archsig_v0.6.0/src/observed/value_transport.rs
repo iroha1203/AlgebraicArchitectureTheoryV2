@@ -868,6 +868,84 @@ mod tests {
             Err(ConstructionFailure::Inconsistent(_))
         ));
     }
+    #[test]
+    fn map_key_contraction_keeps_conflicting_values_outside_the_target() {
+        let a = A.replace("\"subjects\": [", r#""subjects": [{"id":"r","type":"Left.Child","origin":"model"},{"id":"n","type":"Bridge.Move","origin":"model"},"#)
+                .replace("\"atoms\": [", r#""atoms": [
+    {"id":"r-owner","subject":"r","field":"Left.Child.owner","value":["v","a"],"origin":"model"},
+    {"id":"r-count","subject":"r","field":"Left.Child.count","value":"2","origin":"model"},
+    {"id":"n-from","subject":"n","field":"Bridge.Move.from","value":["v","a"],"origin":"model"},
+    {"id":"n-to","subject":"n","field":"Bridge.Move.to","value":["v","b"],"origin":"model"},
+    {"id":"n-entries","subject":"n","field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]],"origin":"model"},"#)
+                .replace(r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]]]"#,
+                         r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]]"#);
+        let i = inputs(&a);
+        let d = declarations(&i);
+        let coherent = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(7),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(coherent.source().len(), 4);
+        assert_eq!(coherent.target().len(), 1);
+        assert!(coherent.bijection().is_none());
+        assert!(
+            !coherent.failures().iter().any(|failure| matches!(
+                failure,
+                FiniteValueConditionFailure::OutsideTarget { .. }
+            ))
+        );
+        for image in coherent.images() {
+            let Scalar::Map { pairs, .. } = image.scalar() else {
+                panic!("Map image");
+            };
+            assert_eq!(pairs.len(), 1);
+            assert_eq!(image, &coherent.target()[0]);
+        }
+        let result = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(8),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(result.source().len(), 4);
+        assert_eq!(result.target().len(), 2);
+        assert!(result.bijection().is_none());
+        let outside: Vec<_> = result
+            .failures()
+            .iter()
+            .filter_map(|f| match f {
+                FiniteValueConditionFailure::OutsideTarget { source, .. } => Some(*source),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(outside.len(), 2);
+        for (index, image) in result.images().iter().enumerate() {
+            let Scalar::Map { pairs, .. } = image.scalar() else {
+                panic!("Map image");
+            };
+            if outside.contains(&index) {
+                assert_eq!(pairs.len(), 2);
+                assert_eq!(pairs[0].0, pairs[1].0);
+                assert_ne!(pairs[0].1, pairs[1].1);
+                let Scalar::Map { pairs: source, .. } = result.source()[index].scalar() else {
+                    panic!("Map source");
+                };
+                assert_eq!(source.len(), 2);
+                assert_ne!(source[0].0, source[1].0);
+                assert_ne!(source[0].1, source[1].1);
+            } else {
+                assert_eq!(pairs.len(), 1);
+                assert!(result.target().iter().any(|target| target == image));
+            }
+        }
+        result.recheck(&i, &mut Control::unlimited()).unwrap();
+    }
 }
 
 // 同一の検査済み値型の全元を固定する対応。参照やPathの作用はここで補わない。
