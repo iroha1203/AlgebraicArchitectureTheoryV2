@@ -88,6 +88,88 @@ fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
 }
 const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;";
 #[test]
+fn shared_table_plan_reuses_its_verified_immutable_polynomial_source() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(false, false, BODY, "root");
+    let (mut g, a) = built(&p);
+    let configurations = Rc::new(Cell::new(0usize));
+    let hits = configurations.clone();
+    let mut c = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Configuration {
+            hits.set(hits.get() + 1);
+        }
+        Usage::default()
+    });
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    configurations.set(0);
+    plan.recheck(&env, &g, a, &mut c).unwrap();
+    assert!(configurations.get() > 0, "最初の消費は元計画を再構成する");
+    configurations.set(0);
+    plan.recheck(&env, &g, a, &mut c).unwrap();
+    assert_eq!(
+        configurations.get(),
+        0,
+        "同じ不変計画の再構成を繰り返さない"
+    );
+    assert!(plan.recheck(&env, &g, NodeRef(usize::MAX), &mut c).is_err());
+}
+#[test]
+fn verified_table_plan_does_not_authorize_modified_sources_or_foreign_inputs() {
+    let p = prepared(false, false, BODY, "root");
+    let (mut g, a) = built(&p);
+    let mut c = quiet();
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    plan.recheck(&env, &g, a, &mut c).unwrap();
+    for mutation in 0..3 {
+        let mut forged = plan.clone();
+        let source = Arc::make_mut(&mut forged.0);
+        match mutation {
+            0 => {
+                source.scope.readings.insert("forged".into());
+            }
+            1 => source.parts.clear(),
+            _ => source.base += 1,
+        }
+        assert!(
+            forged.recheck(&env, &g, a, &mut c).is_err(),
+            "mutation {mutation}"
+        );
+    }
+    let foreign = prepared(true, false, BODY, "root");
+    let foreign_env = Environment::with_prepared(&foreign, &mut c).unwrap();
+    assert!(plan.recheck(&foreign_env, &g, a, &mut c).is_err());
+    plan.recheck(&env, &g, a, &mut c).unwrap();
+}
+#[test]
+fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(false, false, BODY, "root");
+    let (mut g, a) = built(&p);
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let armed = Rc::new(Cell::new(false));
+    let arm = armed.clone();
+    let mut c = Control::new(
+        Limits {
+            time_ms: Some(1),
+            ..Limits::default()
+        },
+        move |point| Usage {
+            elapsed_ms: u128::from(arm.get() && point == Checkpoint::Configuration),
+            ..Usage::default()
+        },
+    );
+    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    armed.set(true);
+    assert!(matches!(
+        plan.recheck(&env, &g, a, &mut c),
+        Err(ValidationFailure::Stop(_))
+    ));
+    assert!(env.verified_polynomial_law_diagrams.borrow().is_empty());
+}
+
+#[test]
 fn option_guards_do_not_choose_a_numeric_parameter_value() {
     guards_do_not_choose_a_numeric_parameter_value(&["some(n)=some(0)", "some(n)!=some(0)"]);
 }
