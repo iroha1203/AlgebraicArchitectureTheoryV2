@@ -80,6 +80,17 @@ impl LocalParameter {
         }
     }
 }
+enum ReadValueMap {
+    Finite(super::super::value_transport::FiniteValueTransport, NodeRef),
+    Structural(NodeRef),
+}
+impl ReadValueMap {
+    fn values(&self) -> NodeRef {
+        match self {
+            Self::Finite(_, values) | Self::Structural(values) => *values,
+        }
+    }
+}
 enum Read {
     Projection(usize),
     Expression,
@@ -413,15 +424,52 @@ fn reference_map(
     dependencies: &[NodeRef],
     c: &mut Control,
 ) -> Result<Arc<ParameterMap>, ValidationFailure> {
+    checked_reference_map(
+        b,
+        inputs,
+        declarations,
+        st,
+        tt,
+        dependencies,
+        &mut vec![],
+        c,
+    )?
+    .ok_or_else(|| "local参照写像の像型が違う".into())
+}
+fn checked_reference_map(
+    b: &mut Builder<'_>,
+    inputs: &super::super::input::CheckedInputs,
+    declarations: &construction::DeclarationCorrespondence,
+    st: &str,
+    tt: &str,
+    dependencies: &[NodeRef],
+    failed_arguments: &mut Vec<NodeRef>,
+    c: &mut Control,
+) -> Result<Option<Arc<ParameterMap>>, ValidationFailure> {
     let transport =
         construction::reference_type_transport(inputs, declarations, st, c).map_err(failure)?;
-    if transport.target_type() != tt
-        || transport
-            .failures()
-            .iter()
-            .any(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
+    if transport.target_type() != tt {
+        return Err("local参照写像の終域型が宣言対応と違う".into());
+    }
+    if let Some(construction::ReferenceConditionFailure::ImageType { source, .. }) = transport
+        .failures()
+        .iter()
+        .find(|f| matches!(f, construction::ReferenceConditionFailure::ImageType { .. }))
     {
-        return Err("local参照写像の像型が違う".into());
+        let scalar = Scalar::Subject {
+            snapshot: source.snapshot.clone(),
+            subject: source.subject.clone(),
+            entity: st.into(),
+        };
+        failed_arguments.push(b.push(
+            NodeType::Value(scalar.ty()),
+            "binding",
+            scalar.wire(),
+            dependencies.to_vec(),
+            Some(scalar),
+            None,
+        )?);
+        return Ok(None);
     }
     let mut subjects = vec![];
     for (s, t) in transport.source().iter().zip(transport.images()) {
@@ -458,8 +506,9 @@ fn reference_map(
         transport,
         subjects,
     });
-    Ok(map)
+    Ok(Some(map))
 }
+
 fn outside_value(
     b: &mut Builder<'_>,
     transport: &super::super::value_transport::FiniteValueTransport,
@@ -486,16 +535,17 @@ fn outside_value(
         })
         .transpose()
 }
-fn finite_value_map(
+fn value_type_map(
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
-    transport: &super::super::value_transport::FiniteValueTransport,
+    types: [&Type; 2],
     type_maps: &mut Vec<Arc<ParameterMap>>,
     dependencies: &[NodeRef],
+    failed_arguments: &mut Vec<NodeRef>,
     c: &mut Control,
-) -> Result<(NodeRef, Vec<(NodeRef, NodeRef)>, Vec<(String, String)>), ValidationFailure> {
-    let mut pending = vec![transport.source_type()];
+) -> Result<Option<(NodeRef, Vec<(NodeRef, NodeRef)>, Vec<(String, String)>)>, ValidationFailure> {
+    let mut pending = vec![types[0]];
     let mut references = BTreeSet::new();
     let mut families = BTreeSet::new();
     let mut names = BTreeSet::new();
@@ -517,8 +567,8 @@ fn finite_value_map(
                     }
                 }
             }
-            Type::Unit | Type::Bool | Type::Fp(_) => {}
-            _ => return Err("有限値写像の型が既存有限域でない".into()),
+            Type::Unit | Type::Bool | Type::Fp(_) | Type::Z | Type::Q | Type::Text => {}
+            _ => return Err("値写像の型構造が未対応".into()),
         }
     }
     let mut pairs = if references.is_empty() {
@@ -543,21 +593,28 @@ fn finite_value_map(
         {
             map.clone()
         } else {
-            let map = reference_map(b, inputs, declarations, &st, tt, dependencies, c)?;
+            let Some(map) = checked_reference_map(
+                b,
+                inputs,
+                declarations,
+                &st,
+                tt,
+                dependencies,
+                failed_arguments,
+                c,
+            )?
+            else {
+                return Ok(None);
+            };
             type_maps.push(map.clone());
             map
         };
         subjects.extend(map.subjects.iter().copied());
     }
-    let values = value_map(
-        b,
-        [transport.source_type(), transport.target_type()],
-        &subjects,
-        &pairs,
-        dependencies,
-    )?;
-    Ok((values, subjects, pairs))
+    let values = value_map(b, types, &subjects, &pairs, dependencies)?;
+    Ok(Some((values, subjects, pairs)))
 }
+
 fn expression(
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
@@ -666,6 +723,10 @@ pub(super) fn retain(
                                 c,
                             )?
                             && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type)
+                        || (!sp.is_empty()
+                            && super::super::environment::local_read::reference_value_type_supported(
+                                ty, c,
+                            )?)
                 }
                 None => false,
             };
@@ -715,15 +776,19 @@ pub(super) fn retain(
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
-                let (values, subjects, value_declarations) = finite_value_map(
+                let Some((values, subjects, value_declarations)) = value_type_map(
                     b,
                     inputs,
                     declarations,
-                    &transport,
+                    [transport.source_type(), transport.target_type()],
                     &mut type_maps,
                     dependencies,
+                    &mut result.failed_arguments,
                     c,
-                )?;
+                )? else {
+                    result.status = Decision::Refuted;
+                    continue 'declarations;
+                };
                 argument_subjects.extend(subjects);
                 let mut sources = vec![];
                 for value in transport.source() {
@@ -791,9 +856,10 @@ pub(super) fn retain(
                 .expr_type(sr[index])
                 .ok_or("local read型がない")?
                 .erase();
-            if matches!(read, Read::Expression)
-                && super::super::finite::supported(&ty, inputs.law(), c)?
-            {
+            let finite = super::super::finite::supported(&ty, inputs.law(), c)?;
+            let structural = !sp.is_empty()
+                && super::super::environment::local_read::reference_value_type_supported(&ty, c)?;
+            if matches!(read, Read::Expression) && (finite || structural) {
                 let expected = construction::moved_declaration_type(
                     inputs
                         .law()
@@ -813,6 +879,23 @@ pub(super) fn retain(
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
+                if !finite {
+                    let Some((values, _, _)) = value_type_map(
+                        b,
+                        inputs,
+                        declarations,
+                        [&ty, &expected.erase()],
+                        &mut type_maps,
+                        dependencies,
+                        &mut result.failed_arguments,
+                        c,
+                    )? else {
+                        result.status = Decision::Refuted;
+                        continue 'declarations;
+                    };
+                    read_maps.push(Some(ReadValueMap::Structural(values)));
+                    continue;
+                }
                 let transport = super::super::value_transport::finite_declaration_value_transport(
                     inputs,
                     declarations,
@@ -826,16 +909,20 @@ pub(super) fn retain(
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
-                let (values, _, _) = finite_value_map(
+                let Some((values, _, _)) = value_type_map(
                     b,
                     inputs,
                     declarations,
-                    &transport,
+                    [transport.source_type(), transport.target_type()],
                     &mut type_maps,
                     dependencies,
+                    &mut result.failed_arguments,
                     c,
-                )?;
-                read_maps.push(Some((transport, values)));
+                )? else {
+                    result.status = Decision::Refuted;
+                    continue 'declarations;
+                };
+                read_maps.push(Some(ReadValueMap::Finite(transport, values)));
             } else {
                 read_maps.push(None);
             }
@@ -871,6 +958,7 @@ pub(super) fn retain(
                     env,
                     inputs,
                     [source, target],
+                    declarations,
                     &parameter_maps,
                     read_map.as_ref(),
                     applicable.as_ref().map(|domain| domain.rows.as_slice()),

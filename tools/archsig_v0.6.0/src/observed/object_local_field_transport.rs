@@ -289,11 +289,9 @@ pub(super) fn compare_expression(
     env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
     declarations: [&Declaration; 2],
+    correspondence: &construction::DeclarationCorrespondence,
     maps: &[LocalParameter],
-    read_map: Option<&(
-        super::super::super::value_transport::FiniteValueTransport,
-        NodeRef,
-    )>,
+    read_map: Option<&ReadValueMap>,
     applicable: Option<&[Vec<usize>]>,
     expressions: [usize; 2],
     origins: [NodeRef; 2],
@@ -320,8 +318,8 @@ pub(super) fn compare_expression(
         .expr_type(expressions[0])
         .ok_or("local readの元型がない")?
         .erase();
-    let values = if let Some((_, values)) = read_map {
-        *values
+    let values = if let Some(map) = read_map {
+        map.values()
     } else {
         if !super::super::super::environment::local_read::value_type_supported(&ty, inputs.law(), c)?
             || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
@@ -407,11 +405,23 @@ pub(super) fn compare_expression(
             continue;
         };
         let image;
-        let moved = if let Some((transport, _)) = read_map {
-            image = transport.forward_scalar(left, c).map_err(failure)?;
-            &image
-        } else {
-            left
+        let moved = match read_map {
+            Some(ReadValueMap::Finite(transport, _)) => {
+                image = transport.forward_scalar(left, c).map_err(failure)?;
+                &image
+            }
+            Some(ReadValueMap::Structural(_)) => {
+                image = super::super::super::value_transport::candidate_image(
+                    inputs,
+                    correspondence,
+                    &declarations[0].name,
+                    left,
+                    c,
+                )
+                .map_err(failure)?;
+                &image
+            }
+            None => left,
         };
         let equal = super::super::super::value_equality::equal(moved, right, inputs.law(), c)?
             .ok_or("local read等値の算法は未実装")?;

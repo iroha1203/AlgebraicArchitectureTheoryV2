@@ -1,4 +1,4 @@
-//! 既存の有限域核を使い、宣言の値型全域で移送の順逆を検査する。
+//! 宣言の型構造に沿う値移送と、有限域での順逆検査。
 use super::{
     control::{Checkpoint, Control},
     data, finite,
@@ -511,7 +511,12 @@ fn image(
                     args: moved,
                 }
             }
-            Scalar::Unit | Scalar::Bool(_) | Scalar::Fp { .. } => value.clone(),
+            Scalar::Unit
+            | Scalar::Bool(_)
+            | Scalar::Fp { .. }
+            | Scalar::Z(_)
+            | Scalar::Q(..)
+            | Scalar::Text(_) => value.clone(),
             _ => {
                 return Err(ConstructionFailure::Inconsistent(
                     "有限値域に適用外の値が入った".into(),
@@ -817,6 +822,51 @@ mod tests {
             .is_err()
         );
 
+    }
+
+    #[test]
+    fn reference_products_move_numeric_values_without_extending_the_finite_api() {
+        let law = L
+            .replace(
+                "view returned(value: Option<Left.Child>): Option<Left.Child> = value;",
+                "local returned(value: Left.Child, b: Bool) reads (value,0,rat(3,2),\"fixed\");",
+            )
+            .replace(
+                "view returned(value: Option<Right.Child>): Option<Right.Child> = value;",
+                "local returned(value: Right.Child, b: Bool) reads (value,0,rat(3,2),\"fixed\");",
+            );
+        let i = with_left_and_law(
+            include_bytes!("../../tests/fixtures/finite-value-left.atoms.json"),
+            A,
+            &law,
+        );
+        let d = declarations(&i);
+        let mut c = Control::unlimited();
+        assert!(matches!(
+            finite_declaration_value_transport(
+                &i,
+                &d,
+                "Before.returned",
+                DeclarationValuePosition::LocalRead(0),
+                &mut c,
+            ),
+            Err(ConstructionFailure::InvalidSelection(_))
+        ));
+        let value = |subject: &str, entity: &str| {
+            Scalar::Tuple(vec![
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: subject.into(),
+                    entity: entity.into(),
+                },
+                Scalar::Z((-17).into()),
+                Scalar::Q(3.into(), 2.into()),
+                Scalar::Text("fixed".into()),
+            ])
+        };
+        let moved =
+            candidate_image(&i, &d, "Before.returned", &value("p", "Left.Child"), &mut c).unwrap();
+        assert_eq!(moved, value("q", "Right.Child"));
     }
 
     #[test]
