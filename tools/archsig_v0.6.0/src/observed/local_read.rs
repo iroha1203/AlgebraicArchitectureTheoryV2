@@ -160,8 +160,8 @@ pub(in crate::observed) fn value_type_supported(
         && super::super::value_transport::identity_declarations(ty, law, &mut c.clone())?.is_some())
 }
 
-/// 全参照作用とscalar恒等写像をTuple/List/Set/Option/Dataへ延長できる型。
-/// Map等は実値の検査だけで全域性を代用しない。
+/// 全参照作用とscalar恒等写像をTuple/List/Set/Option/Data/Mapへ延長できる型。
+/// Map成分の全域性は値写像構成時に有限域全体で検査する。
 pub(in crate::observed) fn reference_value_type_supported(
     ty: &Type,
     law: &crate::law::CheckedLaw,
@@ -174,6 +174,9 @@ pub(in crate::observed) fn reference_value_type_supported(
         c.clone().checkpoint(Checkpoint::ObjectViewTransport)?;
         match ty {
             Type::Ref(_) => reference = true,
+            Type::Map(a, b) if a.ref_target().is_some() && b.ref_target().is_some() => {
+                pending.extend([a.as_ref(), b.as_ref()]);
+            }
             Type::Data(family) => {
                 if families.insert(family.clone()) {
                     for ctor in super::super::data::constructors(law, family)? {

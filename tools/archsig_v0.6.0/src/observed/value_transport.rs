@@ -372,6 +372,48 @@ fn shape(
         Err(f) => Err(failure(f)),
     }
 }
+// 通常の有限移送と複合read内の有限成分で、同じ終域所属検査を使う。
+fn target_index(
+    value: &Scalar,
+    target: &[Scalar],
+    inputs: &CheckedInputs,
+    control: &mut Control,
+) -> Result<(Option<usize>, Option<String>), ConstructionFailure> {
+    let invalid = shape(value, inputs, control)?;
+    if invalid.is_none() {
+        for (index, target) in target.iter().enumerate() {
+            tick(control)?;
+            if same(value, target, control)? {
+                return Ok((Some(index), None));
+            }
+        }
+    }
+    Ok((None, invalid))
+}
+
+/// 有限成分の全元を既存の候補作用で写し、終域に入らない最初の元を返す。
+/// readの観測値やguardを全域性の根拠にしない。
+pub(super) fn finite_type_domain_failure(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    ty: &Type,
+    control: &mut Control,
+) -> Result<Option<Scalar>, ConstructionFailure> {
+    let mu = declarations.types().iter().cloned().collect();
+    let target_type = moved_type(ty, &mu, &BTreeMap::new(), control)?;
+    let source = domain(inputs, ty, control)?;
+    let target = domain(inputs, &target_type, control)?;
+    for value in source.values {
+        tick(control)?;
+        let moved = candidate_image(inputs, declarations, declaration, &value, control)?;
+        if target_index(&moved, &target.values, inputs, control)?.0.is_none() {
+            return Ok(Some(value));
+        }
+    }
+    Ok(None)
+}
+
 fn image(
     value: &Scalar,
     inputs: &CheckedInputs,
@@ -603,17 +645,7 @@ pub fn finite_declaration_value_transport(
     for (index, value) in source.values.iter().enumerate() {
         tick(control)?;
         let moved = image(value, inputs, &mu, &action, &BTreeMap::new(), control)?;
-        let mut found = None;
-        let invalid = shape(&moved, inputs, control)?;
-        if invalid.is_none() {
-            for (j, target) in target.values.iter().enumerate() {
-                tick(control)?;
-                if same(&moved, target, control)? {
-                    found = Some(j);
-                    break;
-                }
-            }
-        }
+        let (found, invalid) = target_index(&moved, &target.values, inputs, control)?;
         if let Some(j) = found {
             fibers[j].push(index);
             forward.push(j);
@@ -1124,6 +1156,9 @@ mod tests {
             &mut Control::unlimited(),
         )
         .unwrap();
+        assert!(finite_type_domain_failure(
+            &i, &d, "Before.returned", coherent.source_type(), &mut Control::unlimited(),
+        ).unwrap().is_none());
         assert_eq!(coherent.source().len(), 4);
         assert_eq!(coherent.target().len(), 1);
         assert!(coherent.bijection().is_none());
@@ -1148,6 +1183,14 @@ mod tests {
             &mut Control::unlimited(),
         )
         .unwrap();
+        let witness = finite_type_domain_failure(
+            &i, &d, "Before.returned", result.source_type(), &mut Control::unlimited(),
+        ).unwrap().expect("全Map域のキー合流反例");
+        let moved = candidate_image(&i, &d, "Before.returned", &witness, &mut Control::unlimited()).unwrap();
+        let Scalar::Map { pairs, .. } = &moved else { panic!("Map image"); };
+        assert_eq!(pairs.len(), 2);
+        assert_eq!(pairs[0].0, pairs[1].0);
+        assert_ne!(pairs[0].1, pairs[1].1);
         assert_eq!(result.source().len(), 4);
         assert_eq!(result.target().len(), 2);
         assert!(result.bijection().is_none());

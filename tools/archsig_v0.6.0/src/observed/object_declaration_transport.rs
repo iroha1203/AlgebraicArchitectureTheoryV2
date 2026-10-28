@@ -539,6 +539,7 @@ fn value_type_map(
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
+    declaration: &str,
     types: [&Type; 2],
     type_maps: &mut Vec<Arc<ParameterMap>>,
     dependencies: &[NodeRef],
@@ -549,6 +550,7 @@ fn value_type_map(
     let mut references = BTreeSet::new();
     let mut families = BTreeSet::new();
     let mut names = BTreeSet::new();
+    let mut map_types = vec![];
     let type_action = declarations.types().iter().cloned().collect();
     while let Some(ty) = pending.pop() {
         tick(c)?;
@@ -558,7 +560,12 @@ fn value_type_map(
             }
             Type::Tuple(items) => pending.extend(items),
             Type::Option(item) | Type::Set(item) | Type::List(item) => pending.push(item),
-            Type::Map(a, b) => pending.extend([a.as_ref(), b.as_ref()]),
+            Type::Map(a, b) => {
+                if !map_types.contains(&ty) {
+                    map_types.push(ty);
+                }
+                pending.extend([a.as_ref(), b.as_ref()]);
+            }
             Type::Data(family) => {
                 if families.insert(family.clone()) {
                     names.insert(family.clone());
@@ -630,6 +637,30 @@ fn value_type_map(
             map
         };
         subjects.extend(map.subjects.iter().copied());
+    }
+    // 有限の全型域は呼出側で検査済み。無限複合ではMap成分を全列挙する。
+    if !map_types.is_empty() && !super::super::finite::supported(types[0], inputs.law(), c)? {
+        for ty in map_types {
+            if let Some(value) = super::super::value_transport::finite_type_domain_failure(
+                inputs,
+                declarations,
+                declaration,
+                ty,
+                c,
+            )
+            .map_err(failure)?
+            {
+                failed_arguments.push(b.push(
+                    NodeType::Value(value.ty()),
+                    "binding",
+                    value.wire(),
+                    dependencies.to_vec(),
+                    Some(value),
+                    None,
+                )?);
+                return Ok(None);
+            }
+        }
     }
     let values = value_map(b, types, &subjects, &pairs, dependencies)?;
     Ok(Some((values, subjects, pairs)))
@@ -800,6 +831,7 @@ pub(super) fn retain(
                     b,
                     inputs,
                     declarations,
+                    &candidate.source().name,
                     [transport.source_type(), transport.target_type()],
                     &mut type_maps,
                     dependencies,
@@ -904,6 +936,7 @@ pub(super) fn retain(
                         b,
                         inputs,
                         declarations,
+                        &candidate.source().name,
                         [&ty, &expected.erase()],
                         &mut type_maps,
                         dependencies,
@@ -933,6 +966,7 @@ pub(super) fn retain(
                     b,
                     inputs,
                     declarations,
+                    &candidate.source().name,
                     [transport.source_type(), transport.target_type()],
                     &mut type_maps,
                     dependencies,
