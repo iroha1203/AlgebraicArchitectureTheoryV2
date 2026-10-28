@@ -902,3 +902,60 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
         assert!(!e.value_read.get());
     }
 }
+
+#[test]
+fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
+    for ty in ["Z", "Q"] {
+        for (guard, body, state) in [
+            (
+                "pair.0+pair.1=3",
+                "if pair.0+pair.1=3 then path(e) else identity(source(path(e)))",
+                RelationState::Established,
+            ),
+            (
+                "pair.0=1",
+                "if pair.1=0 then path(e) else identity(source(path(e)))",
+                RelationState::Pending,
+            ),
+            ("pair.0=1 and pair.0=0", "path(e)", RelationState::Inactive),
+        ] {
+            let i = inputs(
+                "normal",
+                &format!(
+                    "relation keep(pair:({ty},{ty}),e:Hop,last:{ty}) when {guard}:({body})=path(e);"
+                ),
+            );
+            let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+            assert_eq!(r.instances.len(), 4);
+            assert!(r.outside_finite.is_empty());
+            for row in &r.instances {
+                assert_eq!(row.state, state, "{ty}: {guard}");
+                assert_eq!(
+                    row.numeric_parameters
+                        .iter()
+                        .map(|p| p.name.as_str())
+                        .collect::<Vec<_>>(),
+                    ["pair", "last"]
+                );
+                let domain = row.numeric_domain.as_ref().unwrap();
+                if state != RelationState::Inactive {
+                    assert_eq!(domain.particular.as_ref().unwrap().len(), 3);
+                    assert_eq!(domain.kernel.len(), 3);
+                }
+            }
+            r.recheck(&i, &mut quiet()).unwrap();
+            let mut forged = r.clone();
+            forged.instances[0].numeric_parameters[0].ty = Type::Tuple(vec![Type::Z, Type::Q]);
+            assert!(forged.recheck(&i, &mut quiet()).is_err());
+        }
+    }
+    for ty in ["(Z,Q)", "((Z,Z),Z)", "(Z,Bool)"] {
+        let i = inputs(
+            "normal",
+            &format!("relation keep(pair:{ty},e:Hop):path(e)=path(e);"),
+        );
+        let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+        assert!(!r.outside_finite.is_empty());
+        assert!(!r.conditions_verified());
+    }
+}

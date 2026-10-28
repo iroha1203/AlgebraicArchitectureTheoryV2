@@ -10226,3 +10226,223 @@ reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q)
         }
     }
 }
+
+#[test]
+fn relation_transport_expands_numeric_tuples_and_restores_original_witnesses() {
+    for ty in ["Z", "Q"] {
+        for (case, guard, target_guard, left, target_left, code) in [
+            (
+                "restricted",
+                "when pair.0+pair.1=3",
+                "when next.0+next.1=3",
+                "if pair.0+pair.1=3 then path(e) else identity(source(path(e)))",
+                "path(t)",
+                0,
+            ),
+            ("expanded", "when pair.0=1", "", "path(e)", "path(t)", 0),
+            (
+                "empty",
+                "when pair.0=1 and pair.0=0",
+                "when false",
+                "path(e)",
+                "path(t)",
+                0,
+            ),
+            (
+                "kernel",
+                "when pair.0+pair.1=3",
+                "when next.0=0",
+                "path(e)",
+                "path(t)",
+                1,
+            ),
+            (
+                "later",
+                "when pair.0=1",
+                "when tail.1=0",
+                "path(e)",
+                "path(t)",
+                1,
+            ),
+            (
+                "word",
+                "when 2*pair.0=1",
+                "when 2*next.0=1",
+                "identity(source(path(e)))",
+                "path(t)",
+                if ty == "Q" { 1 } else { 0 },
+            ),
+            (
+                "missing",
+                "when if e.from.free=0 then pair.0=0 else pair.0=0",
+                "when if t.from.free=0 then next.0=0 else next.0=0",
+                "path(e)",
+                "path(t)",
+                2,
+            ),
+            (
+                "mixed",
+                "when pair.0=1",
+                "when next.0=1",
+                "path(e)",
+                "path(t)",
+                2,
+            ),
+            (
+                "nonlinear",
+                "when pair.0*pair.1=1",
+                "when next.0*next.1=1",
+                "path(e)",
+                "path(t)",
+                2,
+            ),
+        ] {
+            let dir = finite_view_inputs(&format!("relation-tuple-{ty}-{case}"), true);
+            if case == "missing" {
+                let path = dir.join("a.json");
+                let data = std::fs::read_to_string(&path).unwrap();
+                std::fs::write(
+                    path,
+                    data.lines()
+                        .filter(|line| !line.contains(r#""id":"p-free""#))
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                )
+                .unwrap();
+            }
+            let last_ty = if case == "mixed" {
+                if ty == "Z" { "Q" } else { "Z" }
+            } else {
+                ty
+            };
+            let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+            std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(pair:({ty},{ty}),e:Reserve,take:Bool,last:{last_ty},more:({ty},{ty})) {guard}:({left})=path(e); }}
+reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Bool,final:{last_ty},tail:({ty},{ty})) {target_guard}:({target_left})=path(t); }}"#)).unwrap();
+            let requests = [
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ];
+            let run = asks(&dir, &requests);
+            assert_eq!(run.code, code, "{ty}/{case}: {}", run.stdout);
+            let result = result_json(&dir, &run);
+            let m = answer(&result, "m");
+            assert_eq!(
+                s(get(m, "status")),
+                match code {
+                    0 => "established",
+                    1 => "refuted",
+                    _ => "undetermined",
+                }
+            );
+            assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+            assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+            if code == 0 {
+                let map = value(&result, get(get(m, "outputs"), "map"));
+                let transport = value(&result, &arr(get(map, "transports"))[0]);
+                for clause in arr(get(transport, "clauses")) {
+                    let arguments = value(&result, get(clause, "arguments"));
+                    let types = arr(get(arguments, "source_type"));
+                    assert_json(&types[1], &format!(r#"["Tuple","{ty}","{ty}"]"#));
+                    let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
+                    assert_eq!(
+                        qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
+                        ["pair", "e", "take", "last", "more"]
+                    );
+                    for index in [0, 3, 4] {
+                        assert_eq!(s(get(&qs[index], "kind")), "forall");
+                        assert!(!has(&qs[index], "domain"));
+                    }
+                }
+            } else if code == 1 {
+                let examples = arr(get(m, "counterexamples"));
+                assert!(!examples.is_empty());
+                for example in examples {
+                    let data = get(value(&result, example), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(
+                        bindings
+                            .iter()
+                            .map(|b| s(get(b, "name")))
+                            .collect::<Vec<_>>(),
+                        ["pair", "e", "take", "last", "more"]
+                    );
+                    let pair = arr(value(&result, get(&bindings[0], "value")));
+                    let more = arr(value(&result, get(&bindings[4], "value")));
+                    assert_eq!(pair.len(), 2);
+                    assert_eq!(more.len(), 2);
+                    let number = |v: &JNode| {
+                        if ty == "Z" {
+                            (s(v).parse::<i64>().unwrap(), 1)
+                        } else {
+                            let q = arr(v);
+                            (
+                                s(&q[0]).parse::<i64>().unwrap(),
+                                s(&q[1]).parse::<i64>().unwrap(),
+                            )
+                        }
+                    };
+                    let (a, ad) = number(&pair[0]);
+                    let (b, bd) = number(&pair[1]);
+                    if case == "kernel" {
+                        assert_eq!(a * bd + b * ad, 3 * ad * bd);
+                        assert_ne!(a, 0);
+                    }
+                    if case == "later" {
+                        assert_eq!(a, ad);
+                        assert_ne!(number(&more[1]).0, 0);
+                    }
+                    if case == "word" {
+                        assert_eq!((a, ad), (1, 2));
+                        assert!(
+                            arr(get(value(&result, get(data, "left")), "generators")).is_empty()
+                        );
+                        assert_eq!(
+                            arr(get(value(&result, get(data, "right")), "generators")).len(),
+                            1
+                        );
+                    }
+                }
+            } else {
+                assert!(!has(m, "counterexamples"));
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                if case == "missing" {
+                    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                        let f = get(r, "field");
+                        s(get(f, "subject")) == "p"
+                            && s(get(f, "field")) == "Reservations.State.free"
+                    }));
+                    assert!(arr(get(plan, "blockers")).is_empty());
+                } else {
+                    assert!(arr(get(plan, "requirements")).is_empty());
+                    assert!(!arr(get(plan, "blockers")).is_empty());
+                }
+            }
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{ty}/{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{ty}/{case}: {key}"
+                );
+            }
+        }
+    }
+}
