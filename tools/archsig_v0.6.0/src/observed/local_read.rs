@@ -150,14 +150,14 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 恒等写像で比較する既存数値域と、既存有限核の参照なし型。
+/// 既存値演算と恒等写像を持つ、参照を含まない型。
 pub(in crate::observed) fn value_type_supported(
     ty: &Type,
     law: &crate::law::CheckedLaw,
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
-    Ok(matches!(ty, Type::Z | Type::Q)
-        || super::super::finite::completion_supported(ty, law, c)?)
+    Ok(super::super::data::supported(ty, law, c)?
+        && super::super::value_transport::identity_declarations(ty, law, &mut c.clone())?.is_some())
 }
 
 /// 引数を束縛したlocal readを、通常Evaluatorで評価する。

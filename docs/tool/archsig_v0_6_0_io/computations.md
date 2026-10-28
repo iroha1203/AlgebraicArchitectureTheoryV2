@@ -185,6 +185,10 @@ target の追加適用行の被覆や逆像は要求せず、必要な guard が
 local は arguments の型全域の写像を保持し、source guard が真の全割当てを
 その実像で target guard が真となる割当てへ写す。この source 適用域上で公開 read と
 値写像の可換性を検査する。target の追加適用行の被覆や逆像は要求しない。
+1個以上の引数がすべて有限型域または参照型であるlocalでは全組を列挙し、
+参照を含まない同じ返り型の一般readは既存Evaluatorの実値を恒等ValueMapで比較する。
+この比較はList、数値を含むTuple・Option・Set・Data、
+Textにも適用し、返り型の全値列挙を要求しない。必要な値が欠測なら未決を保持する。
 未確定の適用条件を偽として除外せず、理由付きの未決として保持する。
 この宣言式の移送から、局所幾何全体や reading の同値を結論しない。
 local の公開値を依存 field 全体へ広げず、change を内部 Op に加えず、
