@@ -503,13 +503,15 @@ pub(super) fn retain(
     }
     let different_fields = names.iter().any(|pair|
         !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
-    let affine = !params[0][1..].is_empty() && params[0][1..].iter().all(|p| p.ty == Type::Z);
-    // Reuse the complete integer guard fiber for symbolic arguments.
+    let coefficient = params[0].get(1).map(|p| &p.ty).filter(|ty|
+        matches!(ty, Type::Z | Type::Q) && params[0][1..].iter().all(|p| p.ty == **ty));
+    let affine = coefficient.is_some();
+    // Reuse the complete Z or Q guard fiber for symbolic arguments.
     if different_fields && !affine && !super::super::super::finite::supported(
         &Type::Tuple(params[0][1..].iter().map(|p| p.ty.erase()).collect()), inputs.law(), c)?
     {
         return Err(unsupported(inputs, bodies[0],
-            "change transport with different update target sets requires finite or integer affine parameters"));
+            "change transport with different update target sets requires finite or uniform Z/Q affine parameters"));
     }
     let mut identity = vec![];
     for (s, t) in params[0][1..].iter().zip(&params[1][1..]) {
@@ -716,11 +718,9 @@ pub(super) fn retain(
             let mut domains = vec![];
             for side in 0..2 {
                 let mut metadata = change_affine::Pending::default();
-                let result = change_affine::guard_domain(
-                    env,
-                    declarations[side],
-                    &subjects[side],
-                    &mut metadata,
+                let result = change_affine::change_guard_domain(
+                    env, declarations[side], &subjects[side], &mut metadata,
+                    coefficient.ok_or("数値changeの係数型がない")?,
                 );
                 for check in &mut checks {
                     check.support.extend(metadata.support.iter().cloned());
@@ -747,9 +747,9 @@ pub(super) fn retain(
                 continue;
             }
             if let Some(witness) =
-                outside(&domains[0], &domains[1], c)?.or(outside(&domains[1], &domains[0], c)?)
+                domains[0].outside(&domains[1], env)?.or(domains[1].outside(&domains[0], env)?)
             {
-                let values = witness.into_iter().map(Scalar::Z).collect::<Vec<_>>();
+                let values = witness;
                 point(
                     env,
                     b,
@@ -766,7 +766,7 @@ pub(super) fn retain(
                 )?;
                 continue;
             }
-            if domains[0].fiber.particular.is_none() {
+            if domains[0].particular.is_none() {
                 continue;
             }
             for (index, name) in names.iter().enumerate() {
@@ -806,11 +806,10 @@ pub(super) fn retain(
                 let row = left_row
                     .iter()
                     .zip(right_row)
-                    .map(|(a, b)| a - b)
-                    .collect::<Vec<_>>();
-                let rhs = right_offset - left_offset;
-                if let Some(witness) = violation(&domains[0].fiber, &row, &rhs, c)? {
-                    let values = witness.into_iter().map(Scalar::Z).collect::<Vec<_>>();
+                    .map(|(a, b)| super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, a, b, c))
+                    .collect::<Result<Vec<_>,_>>()?;
+                let rhs = super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, right_offset, left_offset, c)?;
+                if let Some(values) = domains[0].violation(&row, &rhs, env)? {
                     point(
                         env,
                         b,

@@ -9878,3 +9878,95 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         for key in ["answers","nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
     }
 }
+
+#[test]
+fn change_transport_compares_rational_guard_fibers_and_different_fieldsets() {
+    #[allow(dead_code)]
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    use archsig::canonical::Json;
+    for (mode, left, right, sg, tg, missing, aligned, code) in [
+        ("same-fields", "free=s.free+n,held=s.held", "free=t.free+k,held=t.held", "", "", false, false, 0),
+        ("target-extra", "free=s.free+n", "free=t.free+k,held=t.held", "", "", false, false, 0),
+        ("source-extra", "free=s.free,held=s.held+m", "free=t.free", " when m=0", " when l=0", false, false, 0),
+        ("fraction", "free=s.free", "free=t.free,held=t.held+l", " when 2*m=1", " when 2*l=1", false, false, 1),
+        ("source-fraction", "free=s.free,held=s.held+m", "free=t.free", " when 2*m=1", " when 2*l=1", false, false, 1),
+        ("kernel", "free=s.free", "free=t.free,held=t.held+l", " when 2*n=1", " when 2*k=1", false, false, 1),
+        ("slanted", "free=s.free", "free=t.free,held=t.held+k+l-rat(1,2)", " when n+m=rat(1,2)", " when k+l=rat(1,2)", false, false, 0),
+        ("rational-coefficient", "free=s.free", "free=t.free,held=t.held+rat(1,2)*k+l", " when n+2*m=0", " when k+2*l=0", false, false, 0),
+        ("empty", "free=s.free", "free=t.free,held=t.held+l", " when m=0 and 2*m=1", " when l=0 and 2*l=1", true, false, 0),
+        ("missing", "free=s.free", "free=t.free,held=t.held", "", "", true, false, 2),
+        ("branch-missing", "held=0", "held=0,free=t.free", "", "", true, false, 2),
+        ("guard-missing", "free=s.free", "free=t.free,held=t.held", " when if s.free=rat(2,3) then n=0 else n=0", " when if t.free=rat(2,3) then k=0 else k=0", true, false, 2),
+        ("partial", "free=s.free", "free=t.free,held=t.held+l", "", "", true, false, 1),
+        ("nonlinear", "free=s.free", "free=t.free,held=t.held+l*l", "", "", false, false, 2),
+        ("inequality", "free=s.free", "free=t.free,held=t.held", " when n>0", " when k>0", false, false, 2),
+        ("aligned", "free=n", "held=k,free=t.free", "", "", false, true, 0),
+        ("aligned-fraction", "free=n", "held=k,free=t.free+l", " when 2*m=1", " when 2*l=1", false, true, 1),
+    ] {
+        let dir = finite_view_inputs(&format!("rational-change-fieldsets-{mode}"),true);
+        let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+        let mut definition = old.replace(r#""name": "free", "type": "Z""#,r#""name": "free", "type": "Q""#)
+            .replace(r#""name": "held", "type": "Z""#,r#""name": "held", "type": "Q""#);
+        assert_ne!(old,definition);
+        if aligned { definition = definition.replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1); }
+        let before = archsig::definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
+        let after = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();
+        let digest = &after.vocabularies["Reservations"].digest;
+        let text = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(&before.vocabularies["Reservations"].digest,digest);
+        let mut archmap = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+        let atoms = fixture::atoms(&mut archmap);
+        let missing_field = if matches!(mode,"branch-missing"|"guard-missing") {"Reservations.State.free"} else {"Reservations.State.held"};
+        atoms.retain(|atom| !missing || !matches!(atom,Json::Obj(a) if a.get("subject")==Some(&Json::str("p")) && a.get("field")==Some(&Json::str(missing_field))));
+        for atom in atoms {
+            let Json::Obj(a) = atom else {panic!("atom")};
+            if matches!(a.get("field"),Some(Json::Str(field)) if matches!(field.as_str(),"Reservations.State.free"|"Reservations.State.held")) {
+                let numerator = if aligned {Json::str("0")} else {a["value"].clone()};
+                let denominator = if numerator==Json::str("0") {"1"} else {"3"};
+                a.insert("value".into(),Json::Arr(vec![numerator,Json::str(denominator)]));
+            }
+        }
+        std::fs::write(dir.join("d.json"),definition).unwrap();
+        std::fs::write(dir.join("a.json"),archmap.canonical()).unwrap();
+        let source = if mode=="branch-missing" {format!("if s.free=rat(2,3) then s with {{{left}}} else s with {{{left}}}")} else {format!("s with {{{left}}}")};
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:Q,m:Q){sg}={source};}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:Q,l:Q){tg}=t with {{{right}}};}}"#)).unwrap();
+        let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
+        let mut args = vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
+        for request in requests {args.extend(["--ask",request]);}
+        let normal = without_file_changes(&dir,||cli::run(&dir,&args));
+        assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
+        let run = asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);
+        let result = result_json(&dir,&run);assert_map_summary(&normal,&result);
+        let map = answer(&result,"m");
+        assert_eq!(s(get(map,"status")),match code {0=>"established",1=>"refuted",_=>"undetermined"},"{mode}");
+        assert_eq!(has(get(map,"outputs"),"map"),code==0);
+        assert_eq!(s(get(answer(&result,"same"),"status")),"established");
+        if code==0 {
+            let completed=value(&result,get(get(map,"outputs"),"map"));let transport=value(&result,&arr(get(completed,"transports"))[0]);
+            assert_eq!(arr(get(transport,"clauses")).len(),3);
+            for clause in arr(get(transport,"clauses")) {assert_eq!(arr(get(value(&result,get(clause,"commutes")),"quantifiers")).len(),3);}
+        }
+        if code==1 {
+            let data=get(value(&result,&arr(get(map,"counterexamples"))[0]),"data");let bindings=arr(get(data,"bindings"));
+            assert_eq!(bindings.len(),3);assert_eq!(s(get(&bindings[1],"name")),"n");assert_eq!(s(get(&bindings[2],"name")),"m");
+            let q=|v:&JNode| {let a=arr(v);(s(&a[0]).parse::<i128>().unwrap(),s(&a[1]).parse::<i128>().unwrap())};
+            let (mn,md)=q(value(&result,get(&bindings[2],"value")));assert_ne!(mn,0);
+            if matches!(mode,"fraction"|"source-fraction"|"aligned-fraction") {assert_eq!((mn,md),(1,2));}
+            if mode=="kernel" {assert_eq!(q(value(&result,get(&bindings[1],"value"))),(1,2));}
+            let (ln,ld)=q(value(&result,get(data,"left")));let (rn,rd)=q(value(&result,get(data,"right")));
+            let delta=if mode=="source-fraction" {ln*rd-rn*ld} else {rn*ld-ln*rd};assert_eq!(delta*md,mn*ld*rd);
+        }
+        if missing && mode!="empty" {
+            assert!(arr(get(map,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"&&!arr(get(r,"missing")).is_empty()),"{mode}");
+            let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
+            if code==2 {assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"subject"))=="p"&&s(get(f,"field"))==missing_field}),"{mode}");}
+            else {assert!(arr(get(plan,"requirements")).is_empty());}
+        }
+        if matches!(mode,"nonlinear"|"inequality") {assert!(arr(get(map,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));}
+        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
+        let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());
+        for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
+    }
+}

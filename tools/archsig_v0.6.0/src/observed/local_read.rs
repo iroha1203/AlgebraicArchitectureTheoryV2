@@ -1755,69 +1755,6 @@ mod tests {
     }
 }
 
-// Only the already constructed Z or Q fiber is normalized to scalar coordinates.
-struct NumericGuard {
-    equations: Vec<Vec<Scalar>>,
-    rhs: Vec<Scalar>,
-    particular: Option<Vec<Scalar>>,
-    kernel: Vec<Vec<Scalar>>,
-    rank: usize,
-}
-fn numeric_guard_domain(
-    env: &Environment<'_>,
-    guard: Option<usize>,
-    vars: &BTreeMap<String, SourceValue>,
-    axes: &[crate::observed::affine::Parameter],
-    reading: &str,
-    pending: &mut super::change_affine::Pending,
-    ty: &Type,
-) -> Result<NumericGuard, ValidationFailure> {
-    match ty {
-        Type::Z => {
-            let guard = super::change_affine::parameter_guard_domain(
-                env, guard, vars, axes, reading, pending,
-            )?;
-            let scalars = |row: Vec<num_bigint::BigInt>| -> Result<Vec<Scalar>, ValidationFailure> {
-                row.into_iter()
-                    .map(|value| {
-                        env.tick()?;
-                        Ok(Scalar::Z(value))
-                    })
-                    .collect()
-            };
-            Ok(NumericGuard {
-                equations: guard
-                    .equations
-                    .into_iter()
-                    .map(&scalars)
-                    .collect::<Result<_, _>>()?,
-                rhs: scalars(guard.rhs)?,
-                particular: guard.fiber.particular.map(&scalars).transpose()?,
-                kernel: guard
-                    .fiber
-                    .kernel
-                    .into_iter()
-                    .map(&scalars)
-                    .collect::<Result<_, _>>()?,
-                rank: guard.fiber.rank,
-            })
-        }
-        Type::Q => {
-            let (equations, rhs, fiber) = super::field_change::parameter_guard_domain(
-                env, guard, vars, axes, reading, pending,
-            )?;
-            Ok(NumericGuard {
-                equations,
-                rhs,
-                particular: fiber.particular,
-                kernel: fiber.kernel,
-                rank: fiber.pivots.len(),
-            })
-        }
-        _ => Err("unsupported local guard coefficient type".into()),
-    }
-}
-
 /// Z/Q local transport on the complete source guard fiber.
 /// The finite/reference bindings are fixed; unbound numeric parameters remain symbolic.
 pub(in crate::observed) struct AffineTransport {
@@ -1874,7 +1811,7 @@ pub(in crate::observed) fn affine_transport(
                 );
             }
         }
-        let domain = numeric_guard_domain(
+        let domain = change_affine::numeric_guard_domain(
             env,
             guards[0],
             &source,
@@ -1883,10 +1820,10 @@ pub(in crate::observed) fn affine_transport(
             &mut pending,
             ty,
         )?;
-        let Some(origin) = &domain.particular else {
+        if domain.particular.is_none() {
             return Ok(());
-        };
-        let target_domain = numeric_guard_domain(
+        }
+        let target_domain = change_affine::numeric_guard_domain(
             env,
             guards[1],
             &target,
@@ -1898,41 +1835,10 @@ pub(in crate::observed) fn affine_transport(
         // On p + K R^d (R = Z or Q), the value at p and every kernel
         // coefficient must vanish. The solver for R determines the full domain.
         let zero = numeric::zero(ty, &env.control)?;
-        let witness = |constant: &Scalar,
-                       coefficients: &[Scalar]|
-         -> Result<Option<Vec<Scalar>>, ValidationFailure> {
-            let mut value = constant.clone();
-            for (a, x) in coefficients.iter().zip(origin) {
-                env.tick()?;
-                let product = numeric::binary(BinOp::Mul, a, x, &env.control)?;
-                value = numeric::binary(BinOp::Add, &value, &product, &env.control)?;
-            }
-            if value != zero {
-                return Ok(Some(origin.clone()));
-            }
-            for column in 0..axes.len() - domain.rank {
-                let mut coefficient = zero.clone();
-                for (a, row) in coefficients.iter().zip(&domain.kernel) {
-                    env.tick()?;
-                    let product = numeric::binary(BinOp::Mul, a, &row[column], &env.control)?;
-                    coefficient =
-                        numeric::binary(BinOp::Add, &coefficient, &product, &env.control)?;
-                }
-                if coefficient != zero {
-                    let mut point = vec![];
-                    for (p, row) in origin.iter().zip(&domain.kernel) {
-                        env.tick()?;
-                        point.push(numeric::binary(BinOp::Add, p, &row[column], &env.control)?);
-                    }
-                    return Ok(Some(point));
-                }
-            }
-            Ok(None)
-        };
         let mut point = None;
         for (row, rhs) in target_domain.equations.iter().zip(&target_domain.rhs) {
             if let Some(values) =
-                witness(&numeric::binary(BinOp::Sub, &zero, rhs, &env.control)?, row)?
+                domain.violation(row, rhs, env)?
             {
                 point = Some(values);
                 break;
@@ -1988,7 +1894,7 @@ pub(in crate::observed) fn affine_transport(
                 out.status = Decision::Undetermined;
                 return Ok(());
             };
-            point = witness(&constant, &coefficients)?;
+            point = domain.violation(&coefficients, &numeric::binary(BinOp::Sub, &zero, &constant, &env.control)?, env)?;
         }
         if let Some(point) = point {
             out.status = Decision::Refuted;

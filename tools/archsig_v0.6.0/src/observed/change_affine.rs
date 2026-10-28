@@ -377,7 +377,6 @@ fn collect_updates(
     body: usize,
     reading: &str,
     vars: &mut BTreeMap<String, SourceValue>,
-    axes: &[Parameter],
     missing: &mut Pending,
     selected: Option<&str>,
     updates: &mut BTreeMap<Fact, Form>,
@@ -411,7 +410,7 @@ fn collect_updates(
                         return Err(unsupported(
                             env,
                             *cond,
-                            "整数changeのparameter依存分岐は未実装",
+                            "数値changeのparameter依存分岐は未実装",
                         ));
                     }
                 };
@@ -430,7 +429,7 @@ fn collect_updates(
                     entity,
                 }) = &target.known_value
                 else {
-                    return Err(unsupported(env, *base, "整数changeの更新先が未確定"));
+                    return Err(unsupported(env, *base, "数値changeの更新先が未確定"));
                 };
                 for (field, id) in fields {
                     if selected.is_some_and(|name| name != field.name) {
@@ -441,9 +440,8 @@ fn collect_updates(
                     missing.scope.merge(&v.scope);
                     usable(env, *id, &v)?;
                     let form = v.affine.ok_or_else(|| {
-                        unsupported(env, *id, "整数changeの更新式がZアフィンでない")
+                        unsupported(env, *id, "数値changeの更新式がアフィンでない")
                     })?;
-                    coordinates(env, *id, &form, Axes::Parameters(axes), missing)?;
                     let position = Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -455,7 +453,7 @@ fn collect_updates(
                             return Err(unsupported(
                                 env,
                                 *id,
-                                "整数changeの同時更新衝突のfiberは未実装",
+                                "数値changeの同時更新衝突のfiberは未実装",
                             ));
                         }
                     } else {
@@ -464,27 +462,28 @@ fn collect_updates(
                 }
                 break;
             }
-            _ => return Err("整数changeのwithがない".into()),
+            _ => return Err("数値changeのwithがない".into()),
         }
     }
     Ok(())
 }
-/// guard域の確認後、選択した更新値の行と固定項だけを取り出す。
+/// guard域の確認後、選択した更新値のZ/Q係数と固定項を取り出す。
 pub(in crate::observed) fn compute_update(
     env: &Environment<'_>,
     change: &Declaration,
     subject: &Scalar,
     field: &str,
     missing: &mut Pending,
-) -> Result<(Vec<Z>, Z), ValidationFailure> {
+) -> Result<(Vec<Scalar>, Scalar), ValidationFailure> {
     let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数候補がchangeでない".into());
     };
-    if params.is_empty() || params[1..].iter().any(|p| p.ty != Type::Z) {
+    let ty = params.get(1).map(|p| &p.ty).ok_or("数値changeの引数がない")?;
+    if !matches!(ty, Type::Z | Type::Q) || params[1..].iter().any(|p| p.ty != *ty) {
         return Err(unsupported(
             env,
             *body,
-            "整数changeの混合parameter型は未実装",
+            "数値changeの混合parameter型は未実装",
         ));
     }
     let bindings = vec![(params[0].name.clone(), subject.clone())];
@@ -496,30 +495,9 @@ pub(in crate::observed) fn compute_update(
         .collect();
     missing.expression = Some(*body);
     let mut updates = BTreeMap::new();
-    // Branch selection can stop before coordinates() collects missing affine terms.
-    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    let result = collect_updates(
-        env,
-        *body,
-        &change.reading,
-        &mut vars,
-        &axes,
-        missing,
-        Some(field),
-        &mut updates,
-    );
-    let reads = env.missing_slot_reads.replace(outer)
-        .ok_or("整数更新の不足位置収集がない")?;
-    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
-        outer.extend(reads.iter().cloned());
-    }
-    if result.is_err() {
-        missing.facts.extend(reads.into_iter().filter(|fact| {
-            !env.primitive_valuation.as_ref().is_some_and(|values| values.contains_key(fact))
-                && !env.affine_valuation.contains_key(fact)
-        }));
-    }
-    result?;
+    with_missing(env, missing, |missing| collect_updates(
+        env, *body, &change.reading, &mut vars, missing, Some(field), &mut updates,
+    ))?;
     let form = if let Some(form) = updates.into_values().next() {
         form
     } else {
@@ -530,10 +508,19 @@ pub(in crate::observed) fn compute_update(
         missing.support.extend(source.support.iter().cloned());
         missing.scope.merge(&source.scope);
         usable(env, *body, &source)?;
-        *source.affine.ok_or_else(|| unsupported(env, *body, "整数changeの未更新値がZアフィンでない"))?
+        *source.affine.ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?
     };
-    let (constant, row) = coordinates(env, *body, &form, Axes::Parameters(&axes), missing)?;
-    Ok((row, constant.ok_or("作用の固定項が未確定")?))
+    let coordinates = match ty {
+        Type::Z => form.integer_coordinates(&axes, &env.control)?.map(|(value, row)|
+            (Scalar::Z(value), row.into_iter().map(Scalar::Z).collect())),
+        Type::Q => form.rational_coordinates(&axes, &env.control)?,
+        _ => return Err("数値changeの係数型が違う".into()),
+    };
+    let (constant, row) = coordinates.ok_or_else(|| {
+        missing.facts.extend(form.missing_facts());
+        unsupported(env, *body, "数値changeの係数に欠測または元parameter以外の記号がある")
+    })?;
+    Ok((row, constant))
 }
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
@@ -608,7 +595,7 @@ pub(in crate::observed) fn compute(
         }
         missing.expression = Some(*body);
         collect_updates(
-            env, *body, &change.reading, &mut vars, &axes, missing, None, &mut updates,
+            env, *body, &change.reading, &mut vars, missing, None, &mut updates,
         )?;
     }
     let mut slots = vec![];
@@ -852,4 +839,147 @@ fn requirement_equations(
         )?;
     }
     Ok((matrix, rhs))
+}
+
+// Only the already constructed Z or Q fiber is normalized to scalar coordinates.
+pub(in crate::observed) struct NumericGuard {
+    pub(in crate::observed) equations: Vec<Vec<Scalar>>,
+    pub(in crate::observed) rhs: Vec<Scalar>,
+    pub(in crate::observed) particular: Option<Vec<Scalar>>,
+    kernel: Vec<Vec<Scalar>>,
+    rank: usize,
+}
+pub(super) fn numeric_guard_domain(
+    env: &Environment<'_>,
+    guard: Option<usize>,
+    vars: &BTreeMap<String, SourceValue>,
+    axes: &[crate::observed::affine::Parameter],
+    reading: &str,
+    pending: &mut Pending,
+    ty: &Type,
+) -> Result<NumericGuard, ValidationFailure> {
+    with_missing(env, pending, |pending| match ty {
+        Type::Z => {
+            let guard = parameter_guard_domain(
+                env, guard, vars, axes, reading, pending,
+            )?;
+            let scalars = |row: Vec<num_bigint::BigInt>| -> Result<Vec<Scalar>, ValidationFailure> {
+                row.into_iter()
+                    .map(|value| {
+                        env.tick()?;
+                        Ok(Scalar::Z(value))
+                    })
+                    .collect()
+            };
+            Ok(NumericGuard {
+                equations: guard
+                    .equations
+                    .into_iter()
+                    .map(&scalars)
+                    .collect::<Result<_, _>>()?,
+                rhs: scalars(guard.rhs)?,
+                particular: guard.fiber.particular.map(&scalars).transpose()?,
+                kernel: guard
+                    .fiber
+                    .kernel
+                    .into_iter()
+                    .map(&scalars)
+                    .collect::<Result<_, _>>()?,
+                rank: guard.fiber.rank,
+            })
+        }
+        Type::Q => {
+            let (equations, rhs, fiber) = super::field_change::parameter_guard_domain(
+                env, guard, vars, axes, reading, pending,
+            )?;
+            Ok(NumericGuard {
+                equations,
+                rhs,
+                particular: fiber.particular,
+                kernel: fiber.kernel,
+                rank: fiber.pivots.len(),
+            })
+        }
+        _ => Err("unsupported guard coefficient type".into()),
+    })
+}
+
+
+// 通常評価器とcacheが既に保持する実読取りを使い、式形ごとの再走査を行わない。
+pub(super) fn with_missing<T>(
+    env: &Environment<'_>,
+    missing: &mut Pending,
+    operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
+) -> Result<T, ValidationFailure> {
+    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+    let result = operation(missing);
+    let reads = env
+        .missing_slot_reads
+        .replace(outer)
+        .ok_or("数値変更の不足位置収集がない")?;
+    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
+        outer.extend(reads.iter().cloned());
+    }
+    if result.is_err() {
+        missing.facts.extend(reads.into_iter().filter(|fact| {
+            !env.primitive_valuation
+                .as_ref()
+                .is_some_and(|values| values.contains_key(fact))
+                && !env.affine_valuation.contains_key(fact)
+        }));
+    }
+    result
+}
+
+impl NumericGuard {
+    // On the solver's full p + K R^d, a linear form is determined by p and K.
+    pub(in crate::observed) fn violation(
+        &self, row: &[Scalar], rhs: &Scalar, env: &Environment<'_>,
+    ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
+        let Some(origin) = &self.particular else { return Ok(None); };
+        if row.len() != origin.len() { return Err("数値parameterの次元が違う".into()); }
+        let zero = numeric::zero(&rhs.ty(), &env.control)?;
+        let dot = |point: &[Scalar]| -> Result<Scalar, ValidationFailure> {
+            let mut value = zero.clone();
+            for (a, x) in row.iter().zip(point) {
+                env.tick()?;
+                let product = numeric::binary(BinOp::Mul, a, x, &env.control)?;
+                value = numeric::binary(BinOp::Add, &value, &product, &env.control)?;
+            }
+            Ok(value)
+        };
+        if dot(origin)? != *rhs { return Ok(Some(origin.clone())); }
+        for column in 0..origin.len() - self.rank {
+            let direction = self.kernel.iter().map(|r| r[column].clone()).collect::<Vec<_>>();
+            if dot(&direction)? != zero {
+                return origin.iter().zip(direction).map(|(a,b)| {
+                    env.tick()?;
+                    numeric::binary(BinOp::Add, a, &b, &env.control)
+                }).collect::<Result<Vec<_>,_>>().map(Some);
+            }
+        }
+        Ok(None)
+    }
+    pub(in crate::observed) fn outside(
+        &self, target: &Self, env: &Environment<'_>,
+    ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
+        if self.particular.is_none() { return Ok(None); }
+        if target.particular.is_none() { return Ok(self.particular.clone()); }
+        for (row, rhs) in target.equations.iter().zip(&target.rhs) {
+            if let Some(point) = self.violation(row, rhs, env)? { return Ok(Some(point)); }
+        }
+        Ok(None)
+    }
+}
+
+pub(in crate::observed) fn change_guard_domain(
+    env: &Environment<'_>, change: &Declaration, subject: &Scalar,
+    missing: &mut Pending, ty: &Type,
+) -> Result<NumericGuard, ValidationFailure> {
+    let Signature::Change {params, guard, ..} = &change.signature else {
+        return Err("数値guardの元宣言がchangeでない".into());
+    };
+    let first = params.first().ok_or("changeの第1引数がない")?;
+    let (vars, axes) = law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
+    numeric_guard_domain(env, *guard, &vars, &axes, &change.reading, missing, ty)
 }
