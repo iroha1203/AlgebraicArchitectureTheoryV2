@@ -283,8 +283,8 @@ pub(super) fn compare(
     Ok(result)
 }
 
-/// 引数の全組を列挙し、source適用域上のZ/Q/Bool readを実像で比較する。
-pub(super) fn compare_scalar_expression(
+/// 引数の全組を列挙し、source適用域上の恒等値写像を持つreadを実像で比較する。
+pub(super) fn compare_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
@@ -316,13 +316,15 @@ pub(super) fn compare_scalar_expression(
         .expr_type(expressions[0])
         .ok_or("local readの元型がない")?
         .erase();
-    if !matches!(ty, Type::Z | Type::Q | Type::Bool)
+    if !super::super::super::environment::local_read::value_type_supported(&ty, inputs.law(), c)?
         || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
     {
-        return Err("localの一般readは同型のZ/Q/Boolだけに対応".into());
+        return Err("local readの型が同じ恒等移送の適用域にない".into());
     }
+    let identities = super::super::super::value_transport::identity_declarations(&ty, inputs.law(), c)?
+        .ok_or("local readの恒等値写像がない")?;
     let mut result = Comparison {
-        values: value_map(b, [&ty, &ty], &[], &[], dependencies)?,
+        values: value_map(b, [&ty, &ty], &[], &identities, dependencies)?,
         status: Decision::Established,
         arguments: vec![],
         reasons: vec![],
@@ -354,7 +356,7 @@ pub(super) fn compare_scalar_expression(
                 bindings.push((param.name.clone(), map.binding(index, side)));
             }
             let (value, support, scope, absent) =
-                super::super::super::environment::local_read::scalar_value(
+                super::super::super::environment::local_read::read_value(
                     env,
                     expressions[side],
                     &bindings,
@@ -378,7 +380,8 @@ pub(super) fn compare_scalar_expression(
                         method: match ty {
                             Type::Bool => "local_boolean_read_transport",
                             Type::Q => "local_rational_read_transport",
-                            _ => "local_integer_read_transport",
+                            Type::Z => "local_integer_read_transport",
+                            _ => "local_finite_read_transport",
                         }
                         .into(),
                     }

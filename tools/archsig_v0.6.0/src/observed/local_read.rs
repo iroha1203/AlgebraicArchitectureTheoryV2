@@ -103,6 +103,17 @@ fn evaluate_read(
             .collect(),
     ))
 }
+// 値/guardに必要な欠測を収集する。局所幾何の全読取り位置の収集とは区別する。
+fn evaluate_value(
+    env: &Environment<'_>, id: usize, variables: &BTreeMap<String, SourceValue>,
+    scope: &Scope, reading: &str,
+) -> Result<(SourceValue, Vec<Fact>, Vec<Fact>), ValidationFailure> {
+    let outer = env.value_read.replace(true);
+    let result = evaluate_read(env, id, variables, scope, reading);
+    env.value_read.set(outer);
+    result
+}
+
 /// local移送でも、直接読取りと同じEvaluator・適合条件でguardを確認する。
 pub(in crate::observed) fn guard_value(
     env: &Environment<'_>,
@@ -116,7 +127,7 @@ pub(in crate::observed) fn guard_value(
         .collect();
     let mut scope = Scope::default();
     scope.readings.insert(reading.into());
-    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
+    let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
             env.inputs.law().exprs[id].span,
@@ -139,8 +150,18 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 引数を束縛したlocalのZ/Q/Bool readを、通常Evaluatorで評価する。
-pub(in crate::observed) fn scalar_value(
+/// 恒等写像で比較する既存数値域と、既存有限核の参照なし型。
+pub(in crate::observed) fn value_type_supported(
+    ty: &Type,
+    law: &crate::law::CheckedLaw,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    Ok(matches!(ty, Type::Z | Type::Q)
+        || super::super::finite::completion_supported(ty, law, c)?)
+}
+
+/// 引数を束縛したlocal readを、通常Evaluatorで評価する。
+pub(in crate::observed) fn read_value(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
@@ -152,8 +173,8 @@ pub(in crate::observed) fn scalar_value(
         .expr_type(id)
         .ok_or("local readの型がない")?
         .erase();
-    if !matches!(ty, Type::Z | Type::Q | Type::Bool) {
-        return Err("localの一般readはZ/Q/Boolだけに対応".into());
+    if !value_type_supported(&ty, env.inputs.law(), &env.control)? {
+        return Err("local readの値型は恒等移送の適用域外".into());
     }
     let variables = bindings
         .iter()
@@ -161,7 +182,7 @@ pub(in crate::observed) fn scalar_value(
         .collect();
     let mut scope = Scope::default();
     scope.readings.insert(reading.into());
-    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
+    let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
             env.inputs.law().exprs[id].span,

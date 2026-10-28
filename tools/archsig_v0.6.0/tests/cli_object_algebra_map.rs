@@ -6081,11 +6081,19 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "b",
         ),
         (
-            "general-expression",
-            "x:Option<Bool>,take:Bool",
-            "a:Option<Bool>,keep:Bool",
-            "if take then x else none<Bool>",
-            "if keep then a else none<Bool>",
+            "list-return", "take:Bool", "keep:Bool",
+            "if take then list<Bool>[true] else list<Bool>[]",
+            "if keep then list<Bool>[true] else list<Bool>[]",
+        ),
+        (
+            "reference-return", "s:State,take:Bool", "t:State,keep:Bool",
+            "if take then some(s) else none<State>",
+            "if keep then some(t) else none<State>",
+        ),
+        (
+            "infinite-composite-return", "s:State,take:Bool", "t:State,keep:Bool",
+            "if take then (s.free,true) else (0,false)",
+            "if keep then (t.free,true) else (0,false)",
         ),
     ] {
         let (dir, vocabulary) =
@@ -7133,6 +7141,293 @@ reading After {{{vocabulary} local here(right:State,chosen:Map<State,State>) rea
                 get(&again, key).value,
                 "{case}: {key}"
             );
+        }
+    }
+}
+
+#[test]
+fn local_optional_expression_reads_distinguish_absence_missing_and_selected_branches() {
+    for case in [
+        "preserved",
+        "none-false",
+        "false-true",
+        "source-missing",
+        "target-missing",
+        "unused-missing",
+        "selected-missing",
+        "guard-selected-missing",
+        "equal-branches",
+        "forward-guard",
+        "target-guard",
+        "false-source",
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-optional-expression-{case}"));
+        let source = "if take then choice else none<Bool>";
+        let target = "if keep then chosen else none<Bool>";
+        let (sr, tr, sg, tg, code) = match case {
+            "none-false" => (
+                source,
+                "if keep then some(false) else none<Bool>",
+                "",
+                "",
+                1,
+            ),
+            "false-true" => (
+                source,
+                "if keep then some(true) else none<Bool>",
+                " when choice=some(false) and take",
+                " when chosen=some(false) and keep",
+                1,
+            ),
+            "source-missing" => (
+                "if take then choice else some(s.free>0)",
+                target,
+                " when take or s.held=0",
+                " when keep or t.held=0",
+                2,
+            ),
+            "target-missing" => (
+                source,
+                "if keep then chosen else some(t.free>0)",
+                " when take or s.held=0",
+                " when keep or t.held=0",
+                2,
+            ),
+            "unused-missing" => (
+                "if true then choice else some(s.free>0)",
+                "if true then chosen else some(t.free>0)",
+                "",
+                "",
+                0,
+            ),
+            "selected-missing" => (
+                "if true then some(s.free>0) else some(s.held>0)",
+                "if true then some(t.free>0) else some(t.held>0)",
+                "",
+                "",
+                2,
+            ),
+            "guard-selected-missing" => (source, target,
+                " when if true then s.free>0 else s.held>0",
+                " when if true then t.free>0 else t.held>0", 2),
+            "equal-branches" => (
+                "if s.free>0 then choice else choice",
+                "if t.free>0 then chosen else chosen",
+                "",
+                "",
+                0,
+            ),
+            "forward-guard" => (
+                source,
+                "if keep then chosen else some(false)",
+                " when take",
+                "",
+                0,
+            ),
+            "target-guard" => (source, target, " when take", " when not keep", 1),
+            "false-source" => (
+                "if true then some(s.free>0) else none<Bool>",
+                "if true then some(t.free>0) else none<Bool>",
+                " when false",
+                " when t.free>0",
+                0,
+            ),
+            _ => (source, target, "", "", 0),
+        };
+        if case.contains("missing") || case == "equal-branches" || case == "false-source" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#)
+                        && !line.contains(r#""id":"r-free""#)
+                        && (!case.contains("selected-missing")
+                            || (!line.contains(r#""id":"p-held""#)
+                                && !line.contains(r#""id":"r-held""#)))
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(choice:Option<Bool>,take:Bool,s:State){sg} reads {sr};}}
+reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool,t:State){tg} reads {tr};}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        let requirements = arr(get(plan, "requirements"));
+        assert_eq!(requirements.is_empty(), code != 2);
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+            assert!(
+                requirements
+                    .iter()
+                    .all(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free")
+            );
+            if case == "target-missing" {
+                assert!(
+                    requirements
+                        .iter()
+                        .all(|r| s(get(get(r, "field"), "subject")) == "r")
+                );
+            }
+        }
+        if matches!(case, "source-missing" | "selected-missing" | "guard-selected-missing") {
+            for subject in ["p", "r"] {
+                assert!(
+                    requirements
+                        .iter()
+                        .any(|r| s(get(get(r, "field"), "subject")) == subject)
+                );
+            }
+        }
+        if case == "target-guard" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            assert_json(value(&result, get(data, "left")), "true");
+            assert_json(value(&result, get(data, "right")), "false");
+        }
+        if matches!(case, "none-false" | "false-true") {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 3);
+            for (binding, name) in bindings.iter().zip(["choice", "take", "s"]) {
+                assert_eq!(s(get(binding, "name")), name);
+            }
+            let input = if case == "none-false" {
+                r#"{"none":true}"#
+            } else {
+                r#"{"some":false}"#
+            };
+            assert_json(value(&result, get(&bindings[0], "value")), input);
+            assert_json(value(&result, get(&bindings[1], "value")), "true");
+            assert_json(value(&result, get(&bindings[2], "value")), r#"["v","p"]"#);
+            assert_json(value(&result, get(data, "left")), input);
+            assert_json(
+                value(&result, get(data, "right")),
+                if case == "none-false" {
+                    r#"{"some":false}"#
+                } else {
+                    r#"{"some":true}"#
+                },
+            );
+        }
+        if matches!(case, "preserved" | "none-false" | "selected-missing") {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_map_summary(&normal, &result);
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{case}: {key}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn local_finite_expression_reads_share_identity_value_maps_for_composite_types() {
+    for (name, source, target, wire) in [
+        (
+            "tuple",
+            "if take then (choice,false) else (none<Bool>,true)",
+            "if keep then (chosen,false) else (none<Bool>,true)",
+            r#"["Tuple",["Option","Bool"],"Bool"]"#,
+        ),
+        (
+            "set",
+            "if take then set<Bool>{false,true} else set<Bool>{}",
+            "if keep then set<Bool>{true,false} else set<Bool>{}",
+            r#"["Set","Bool"]"#,
+        ),
+        (
+            "data",
+            "if take then Choice.Full(false) else Choice.Empty",
+            "if keep then Choice.Full(false) else Choice.Empty",
+            r#"["Data","Reservations.Choice"]"#,
+        ),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-finite-expression-{name}"));
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(choice:Option<Bool>,take:Bool) reads {source};}}
+reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool) reads {target};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            ],
+        );
+        assert_eq!(run.code, 0, "{name}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+        let transport = value(&result, &arr(get(map, "transports"))[0]);
+        let clause = &arr(get(transport, "clauses"))[0];
+        let values = value(&result, get(clause, "values"));
+        assert_json(get(values, "source_type"), wire);
+        assert_json(get(values, "target_type"), wire);
+        assert!(arr(get(values, "subjects")).is_empty());
+        if name == "data" {
+            for name in [
+                "Reservations.Choice",
+                "Reservations.Choice.Empty",
+                "Reservations.Choice.Full",
+            ] {
+                assert!(arr(get(values, "declarations")).iter().any(|pair| {
+                    let pair = arr(pair);
+                    s(&pair[0]) == name && s(&pair[1]) == name
+                }));
+            }
         }
     }
 }

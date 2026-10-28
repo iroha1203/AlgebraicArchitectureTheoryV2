@@ -835,3 +835,63 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
         assert!(forged.recheck(&i, &mut quiet()).is_err());
     }
 }
+
+#[test]
+fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
+    let i = inputs(
+        "missing_source",
+        "relation guarded(n:Node) when if true then true else n.mark>0:identity(n)=identity(n);",
+    );
+    let Signature::Relation {
+        guard: Some(guard), ..
+    } = i.law().declarations["Walk.guarded"].signature
+    else {
+        panic!()
+    };
+    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let subject = Scalar::Subject {
+        snapshot: "v".into(),
+        subject: "p".into(),
+        entity: "Paths.Node".into(),
+    };
+    let variables = BTreeMap::from([(
+        "n".into(),
+        SourceValue {
+            condition_failed: false,
+            condition_pending: false,
+            symbolic: None,
+            comparison: None,
+            scope: Scope::default(),
+            known_value: Some(subject.clone()),
+            affine: None,
+            support: vec![],
+            scalar_scope: Some(Scope::default()),
+        },
+    )]);
+    let mut base = Scope::default();
+    base.readings.insert("Walk".into());
+    let expected = BTreeSet::from([slot("Paths.Node", "p", "mark")]);
+    for _ in 0..2 {
+        *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+        assert_eq!(
+            e.scoped_ast(guard, &variables, &base, "Walk")
+                .unwrap()
+                .known_value,
+            Some(Scalar::Bool(true))
+        );
+        assert_eq!(e.missing_slot_reads.borrow().as_ref().unwrap(), &expected);
+        *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+        let (value, _, _, missing) = super::super::local_read::guard_value(
+            &e,
+            guard,
+            &[("n".into(), subject.clone())],
+            "Walk",
+        )
+        .unwrap();
+        assert_eq!(value, Some(true));
+        assert!(missing.is_empty());
+        assert!(e.missing_slot_reads.borrow().as_ref().unwrap().is_empty());
+        assert!(e.primitive_reads.borrow().is_none());
+        assert!(!e.value_read.get());
+    }
+}
