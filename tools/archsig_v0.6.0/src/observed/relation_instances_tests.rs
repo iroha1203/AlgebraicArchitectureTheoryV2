@@ -791,6 +791,10 @@ fn numeric_transport_families_keep_missing_guard_slots() {
 
 #[test]
 fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coordinates() {
+    fn z(value: &Scalar) -> &num_bigint::BigInt {
+        let Scalar::Z(value) = value else { panic!("integer relation coordinate expected") };
+        value
+    }
     for (guard, body, state) in [
         (
             "n+m=3",
@@ -819,11 +823,11 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
             assert_eq!(row.state, state, "{guard}: {body}");
             let domain = row.numeric_domain.as_ref().unwrap();
             if guard == "n+m=3" {
-                let point = domain.fiber.particular.as_ref().unwrap();
-                assert_eq!(&point[0] + &point[1], 3.into());
-                for column in 0..domain.fiber.kernel[0].len() {
+                let point = domain.particular.as_ref().unwrap();
+                assert_eq!(z(&point[0]) + z(&point[1]), 3.into());
+                for column in 0..domain.kernel[0].len() {
                     assert_eq!(
-                        &domain.fiber.kernel[0][column] + &domain.fiber.kernel[1][column],
+                        z(&domain.kernel[0][column]) + z(&domain.kernel[1][column]),
                         0.into()
                     );
                 }
@@ -831,7 +835,10 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
         }
         r.recheck(&i, &mut quiet()).unwrap();
         let mut forged = r.clone();
-        forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0] += 1;
+        let Scalar::Z(rhs) = &mut forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0] else {
+            panic!("integer relation equation expected")
+        };
+        *rhs += 1;
         assert!(forged.recheck(&i, &mut quiet()).is_err());
     }
 }

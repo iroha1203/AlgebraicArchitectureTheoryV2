@@ -851,11 +851,12 @@ fn requirement_equations(
 }
 
 // Only the already constructed Z or Q fiber is normalized to scalar coordinates.
+#[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct NumericGuard {
     pub(in crate::observed) equations: Vec<Vec<Scalar>>,
     pub(in crate::observed) rhs: Vec<Scalar>,
     pub(in crate::observed) particular: Option<Vec<Scalar>>,
-    kernel: Vec<Vec<Scalar>>,
+    pub(in crate::observed) kernel: Vec<Vec<Scalar>>,
     rank: usize,
 }
 pub(super) fn numeric_guard_domain(

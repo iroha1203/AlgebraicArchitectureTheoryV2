@@ -3,10 +3,7 @@ use super::*;
 use crate::observed::{
     change_result,
     environment::{change_affine, change_evaluation},
-    integer_fiber,
 };
-use num_bigint::BigInt as Z;
-use num_traits::Zero;
 use std::collections::BTreeSet;
 
 fn unsupported(
@@ -355,58 +352,6 @@ fn point(
     }
     Ok(())
 }
-// originと整数核の全基底で線形式を確認する。反例点の選択であり標本検査ではない。
-fn violation(
-    fiber: &integer_fiber::Fiber,
-    row: &[Z],
-    rhs: &Z,
-    c: &mut Control,
-) -> Result<Option<Vec<Z>>, ValidationFailure> {
-    let Some(origin) = &fiber.particular else {
-        return Ok(None);
-    };
-    if row.len() != origin.len() {
-        return Err("change移送の整数parameter次元が違う".into());
-    }
-    let dot = |point: &[Z]| row.iter().zip(point).map(|(a, b)| a * b).sum::<Z>();
-    if dot(origin) != *rhs {
-        return Ok(Some(origin.clone()));
-    }
-    let cols = fiber.kernel.first().map_or(0, Vec::len);
-    for j in 0..cols {
-        tick(c)?;
-        let direction = fiber
-            .kernel
-            .iter()
-            .map(|r| r[j].clone())
-            .collect::<Vec<_>>();
-        if !dot(&direction).is_zero() {
-            return Ok(Some(
-                origin.iter().zip(direction).map(|(a, b)| a + b).collect(),
-            ));
-        }
-    }
-    Ok(None)
-}
-pub(super) fn outside(
-    left: &change_affine::Guard,
-    right: &change_affine::Guard,
-    c: &mut Control,
-) -> Result<Option<Vec<Z>>, ValidationFailure> {
-    if left.fiber.particular.is_none() {
-        return Ok(None);
-    }
-    if right.fiber.particular.is_none() {
-        return Ok(left.fiber.particular.clone());
-    }
-    for (row, rhs) in right.equations.iter().zip(&right.rhs) {
-        if let Some(point) = violation(&left.fiber, row, rhs, c)? {
-            return Ok(Some(point));
-        }
-    }
-    Ok(None)
-}
-
 pub(super) fn retain(
     env: &Environment<'_>,
     b: &mut Builder<'_>,

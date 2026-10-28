@@ -23,8 +23,8 @@ pub(in crate::observed) struct RelationInstance {
     pub bindings: Vec<(String, Scalar)>,
     // bindingsに具体値を置かず、元binderのまま全称評価した数値軸。
     pub numeric_parameters: Vec<Param>,
-    // 元の整数parameter座標の適用域。guardと語はこの全解上で評価する。
-    pub numeric_domain: Option<change_affine::Guard>,
+    // 元の数値parameter座標の適用域。guardと語はこの全解上で評価する。
+    pub numeric_domain: Option<change_affine::NumericGuard>,
     pub guard: Option<bool>,
     // guard自身の適合条件を、左右の語の成立状態から区別する。
     pub guard_checked: bool,
@@ -229,30 +229,29 @@ fn restrict_variables(
     e: &Environment<'_>,
     variables: &mut BTreeMap<String, SourceValue>,
     axes: &[affine::Parameter],
-    domain: &change_affine::Guard,
+    domain: &change_affine::NumericGuard,
 ) -> Result<(), ValidationFailure> {
     let particular = domain
-        .fiber
         .particular
         .as_ref()
-        .ok_or("空の整数域にrelationを適用できない")?;
-    let width = domain.fiber.kernel.first().map_or(0, Vec::len);
+        .ok_or("空の数値域にrelationを適用できない")?;
+    let width = domain.kernel.first().map_or(0, Vec::len);
     if particular.len() != axes.len()
-        || domain.fiber.kernel.len() != axes.len()
+        || domain.kernel.len() != axes.len()
         || width > axes.len()
-        || domain.fiber.kernel.iter().any(|row| row.len() != width)
-        || axes.iter().any(|axis| axis.kind != affine::NumberType::Z)
+        || domain.kernel.iter().any(|row| row.len() != width)
+        || axes.iter().any(|axis| axis.kind != axes[0].kind)
     {
         return Err("relation適用域の元parameter座標が違う".into());
     }
     for (index, axis) in axes.iter().enumerate() {
         e.tick()?;
-        let mut form = affine::constant(&Scalar::Z(particular[index].clone()), &e.control)?
-            .ok_or("整数特解の式がない")?;
-        for (coefficient, free) in domain.fiber.kernel[index].iter().zip(axes) {
+        let mut form = affine::constant(&particular[index], &e.control)?
+            .ok_or("数値特解の式がない")?;
+        for (coefficient, free) in domain.kernel[index].iter().zip(axes) {
             e.tick()?;
-            let coefficient = affine::constant(&Scalar::Z(coefficient.clone()), &e.control)?;
-            let parameter = affine::parameter(&Type::Z, free, &e.control)?;
+            let coefficient = affine::constant(coefficient, &e.control)?;
+            let parameter = affine::parameter(&particular[index].ty(), free, &e.control)?;
             let term = affine::binary(
                 BinOp::Mul,
                 coefficient.as_ref(),
@@ -260,7 +259,7 @@ fn restrict_variables(
                 &e.control,
             )?;
             form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), &e.control)?
-                .ok_or("整数核の式がない")?;
+                .ok_or("数値核の式がない")?;
         }
         let value = variables
             .get_mut(&axis.name)
@@ -276,7 +275,7 @@ pub(in crate::observed) fn on_numeric_domain(
     e: &Environment<'_>,
     declaration: &Declaration,
     bindings: Vec<(String, Scalar)>,
-    domain: &change_affine::Guard,
+    domain: &change_affine::NumericGuard,
 ) -> Result<RelationInstance, ValidationFailure> {
     row(e, declaration, bindings, true, Some(domain))
 }
@@ -292,7 +291,7 @@ fn row_value(
     declaration: &Declaration,
     bindings: Vec<(String, Scalar)>,
     numeric_families: bool,
-    numeric_domain: Option<&change_affine::Guard>,
+    numeric_domain: Option<&change_affine::NumericGuard>,
 ) -> Result<RelationInstance, ValidationFailure> {
     let Signature::Relation {
         params,
@@ -380,11 +379,11 @@ fn row_value(
     let mut g = guard
         .map(|id| e.scoped_ast(id, &variables, &base, &declaration.reading))
         .transpose()?;
-    // 型全域で未知でも、整数等式の全解上で再評価できる。標本値は使わない。
+    // 型全域で未知でも、数値等式の全解上で再評価できる。標本値は使わない。
     if numeric_domain.is_none()
         && numeric_families
         && !axes.is_empty()
-        && axes.iter().all(|p| p.kind == affine::NumberType::Z)
+        && axes.iter().all(|p| p.kind == axes[0].kind)
         && g.as_ref().is_none_or(|v| {
             v.known_value != Some(Scalar::Bool(false))
                 && !v.condition_failed
@@ -392,19 +391,20 @@ fn row_value(
         })
     {
         let mut metadata = change_affine::Pending::default();
-        let domain = change_affine::parameter_guard_domain(
+        let domain = change_affine::numeric_guard_domain(
             e,
             *guard,
             &variables,
             &axes,
             &declaration.reading,
             &mut metadata,
+            &match axes[0].kind { affine::NumberType::Z => Type::Z, affine::NumberType::Q => Type::Q },
         );
         out.support.extend(metadata.support);
         out.scope.merge(&metadata.scope);
         match domain {
             Ok(domain) => {
-                if domain.fiber.particular.is_none() {
+                if domain.particular.is_none() {
                     out.guard = Some(false);
                     out.guard_checked = true;
                     out.state = RelationState::Inactive;
@@ -482,7 +482,7 @@ fn row(
     d: &Declaration,
     bindings: Vec<(String, Scalar)>,
     numeric_families: bool,
-    numeric_domain: Option<&change_affine::Guard>,
+    numeric_domain: Option<&change_affine::NumericGuard>,
 ) -> Result<RelationInstance, ValidationFailure> {
     *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
     let result = row_value(e, d, bindings, numeric_families, numeric_domain);
