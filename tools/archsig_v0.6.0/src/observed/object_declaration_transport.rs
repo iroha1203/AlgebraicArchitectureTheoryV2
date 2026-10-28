@@ -10,6 +10,8 @@ use crate::{
 use std::collections::BTreeSet;
 #[path = "object_local_field_transport.rs"]
 mod field;
+#[path = "object_local_integer_transport.rs"]
+mod integer;
 #[path = "object_change_transport.rs"]
 mod change;
 #[path = "object_relation_transport.rs"]
@@ -23,6 +25,8 @@ struct ParameterMap {
 }
 // localの各引数位置を保ち、既存の参照写像または有限全域の候補像を読む。
 enum LocalParameter {
+    // One symbolic coordinate in the finite-row index, never a sampled value.
+    Integer { values: NodeRef },
     Reference(Arc<ParameterMap>),
     Finite {
         transport: super::super::value_transport::FiniteValueTransport,
@@ -41,22 +45,24 @@ impl LocalParameter {
         match self {
             Self::Reference(map) => map.subjects.len(),
             Self::Finite { transport, .. } => transport.source().len(),
+            Self::Integer { .. } => 1,
         }
     }
     fn values(&self) -> NodeRef {
         match self {
             Self::Reference(map) => map.values,
-            Self::Finite { values, .. } => *values,
+            Self::Finite { values, .. } | Self::Integer { values } => *values,
         }
     }
-    fn source_value(&self, index: usize) -> NodeRef {
-        match self {
+    fn source_value(&self, index: usize) -> Result<NodeRef, ValidationFailure> {
+        Ok(match self {
             Self::Reference(map) => map.subjects[index].0,
             Self::Finite { sources, .. } => sources[index],
-        }
+            Self::Integer { .. } => return Err("symbolic integer has no finite source value".into()),
+        })
     }
-    fn binding(&self, index: usize, side: usize) -> Scalar {
-        match self {
+    fn binding(&self, index: usize, side: usize) -> Result<Scalar, ValidationFailure> {
+        Ok(match self {
             Self::Reference(map) => {
                 let (fact, entity) = if side == 0 {
                     (&map.transport.source()[index], &map.source)
@@ -77,7 +83,8 @@ impl LocalParameter {
                 };
                 values[index].scalar().clone()
             }
-        }
+            Self::Integer { .. } => return Err("symbolic integer has no finite binding".into()),
+        })
     }
 }
 enum ReadValueMap {
@@ -155,15 +162,15 @@ fn counterexample(
         .zip(maps)
         .zip(row)
         .map(|((p, map), &i)| {
-            let value = map.source_value(i);
+            let value = map.source_value(i)?;
             args.push(value);
-            Json::obj([
+            Ok(Json::obj([
                 ("name", Json::str(&p.name)),
                 ("type", p.ty.wire()),
                 ("value", value.wire()),
-            ])
+            ]))
         })
-        .collect();
+        .collect::<Result<Vec<_>, ValidationFailure>>()?;
     b.push(
         NodeType::Evidence,
         "evidence",
@@ -246,7 +253,7 @@ fn applicable(
             };
             let mut bindings = vec![];
             for ((p, map), &i) in params.iter().zip(maps).zip(&row) {
-                bindings.push((p.name.clone(), map.binding(i, side)));
+                bindings.push((p.name.clone(), map.binding(i, side)?));
             }
             let (value, support, scope, absent) =
                 super::super::environment::local_read::guard_value(
@@ -793,8 +800,13 @@ pub(super) fn retain(
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
+        let integer_arguments = sp.iter().any(|p| p.ty == Type::Z);
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
+            if integer_arguments {
+                reads.push(Read::Expression);
+                continue;
+            }
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
             let expression_read = match &read_type {
                 Some(ty) => {
@@ -895,6 +907,18 @@ pub(super) fn retain(
                 });
                 continue;
             }
+            if source.ty == Type::Z && target.ty == Type::Z {
+                super::super::numeric_transport::numeric_declaration_value_transport(
+                    inputs,
+                    declarations,
+                    &candidate.source().name,
+                    super::super::value_transport::DeclarationValuePosition::Parameter(position),
+                    c,
+                ).map_err(failure)?;
+                let values = value_map(b, [&source.ty, &target.ty], &[], &[], dependencies)?;
+                parameter_maps.push(LocalParameter::Integer { values });
+                continue;
+            }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
                 return Err("local argument type has no supported finite value transport".into());
             };
@@ -909,6 +933,12 @@ pub(super) fn retain(
             argument_subjects.extend(map.subjects.iter().copied());
             type_maps.push(map.clone());
             parameter_maps.push(LocalParameter::Reference(map));
+        }
+        let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Integer { .. }));
+        if infinite && sr.iter().chain(tr).any(|id| {
+            inputs.law().expr_type(*id).map(|t| t.erase()) != Some(Type::Z)
+        }) {
+            return Err("integer local transport requires scalar Z reads".into());
         }
         let mut guard_expressions = vec![];
         for (guard, params) in [(*sg, sp), (*tg, tp)] {
@@ -1013,15 +1043,11 @@ pub(super) fn retain(
                 read_maps.push(None);
             }
         }
-        let applicable = applicable(
-            b,
-            env,
-            [source, target],
-            &parameter_maps,
-            &guard_expressions,
-            request,
-            c,
-        )?;
+        let applicable = if infinite {
+            None
+        } else {
+            applicable(b, env, [source, target], &parameter_maps, &guard_expressions, request, c)?
+        };
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
         all.extend(guard_expressions.iter().copied());
@@ -1029,7 +1055,13 @@ pub(super) fn retain(
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
-            let mut comparison = match read {
+            let mut comparison = if infinite {
+                let values = value_map(b, [&Type::Z, &Type::Z], &[], &[], dependencies)?;
+                integer::compare(
+                    b, env, [source, target], &parameter_maps, [s, t], values,
+                    &[se, te], request, c,
+                )?
+            } else { match read {
                 Read::Projection(position) => field::Comparison {
                     values: parameter_maps[position].values(),
                     status: Decision::Established,
@@ -1051,7 +1083,7 @@ pub(super) fn retain(
                         [s, t], [se, te], dependencies, request, c,
                     )?
                 },
-            };
+            } };
             if let Some(domain) = &applicable {
                 comparison.status = merge_status(comparison.status, domain.status);
                 comparison.support.extend(domain.support.iter().cloned());

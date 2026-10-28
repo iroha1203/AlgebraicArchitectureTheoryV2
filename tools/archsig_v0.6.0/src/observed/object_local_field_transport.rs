@@ -127,7 +127,7 @@ pub(super) fn compare_expression(
             let mut bindings = vec![];
             for ((param, map), &index) in params.iter().zip(maps).zip(row) {
                 tick(c)?;
-                bindings.push((param.name.clone(), map.binding(index, side)));
+                bindings.push((param.name.clone(), map.binding(index, side)?));
             }
             let (value, support, scope, absent) =
                 super::super::super::environment::local_read::read_value(

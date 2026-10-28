@@ -1754,3 +1754,198 @@ mod tests {
         }
     }
 }
+
+/// Integer local transport on the complete source guard fiber.
+/// The finite/reference bindings are fixed; unbound Z parameters remain symbolic.
+pub(in crate::observed) struct IntegerTransport {
+    pub status: Decision,
+    pub point: Option<Vec<Scalar>>,
+    pub support: Vec<Fact>,
+    pub scope: Scope,
+    pub missing: Vec<Fact>,
+}
+pub(in crate::observed) fn integer_transport(
+    env: &Environment<'_>,
+    declarations: [&Declaration; 2],
+    bindings: [&[(String, Scalar)]; 2],
+    expressions: [usize; 2],
+) -> Result<IntegerTransport, ValidationFailure> {
+    use crate::observed::{affine, environment::change_affine};
+    use num_bigint::BigInt;
+    use num_traits::Zero;
+    let mut out = IntegerTransport {
+        status: Decision::Established,
+        point: None,
+        support: vec![],
+        scope: Scope::default(),
+        missing: vec![],
+    };
+    let mut pending = change_affine::Pending::default();
+    let result = (|| {
+        let mut params = vec![];
+        let mut guards = vec![];
+        for declaration in declarations {
+            let Signature::Local {
+                params: p, guard, ..
+            } = &declaration.signature
+            else {
+                return Err("integer transport requires local declarations".into());
+            };
+            params.push(p);
+            guards.push(*guard);
+        }
+        let (source, axes) = change_affine::law_variables(env, params[0], bindings[0])?;
+        let (mut target, _) = change_affine::law_variables(env, params[1], bindings[1])?;
+        // The target's numeric argument is the same source coordinate at that position.
+        for (s, t) in params[0].iter().zip(params[1]) {
+            if s.ty == Type::Z && !bindings[0].iter().any(|(name, _)| name == &s.name) {
+                target.insert(
+                    t.name.clone(),
+                    source
+                        .get(&s.name)
+                        .ok_or("source integer coordinate missing")?
+                        .clone(),
+                );
+            }
+        }
+        let domain = change_affine::parameter_guard_domain(
+            env,
+            guards[0],
+            &source,
+            &axes,
+            &declarations[0].reading,
+            &mut pending,
+        )?;
+        let Some(origin) = &domain.fiber.particular else {
+            return Ok(());
+        };
+        let target_domain = change_affine::parameter_guard_domain(
+            env,
+            guards[1],
+            &target,
+            &axes,
+            &declarations[1].reading,
+            &mut pending,
+        )?;
+        // A linear form vanishes on p + K Z^d iff its value at p and every
+        // coefficient along the kernel basis vanish. This is not point sampling.
+        let witness = |constant: &BigInt,
+                       coefficients: &[BigInt]|
+         -> Result<Option<Vec<BigInt>>, ValidationFailure> {
+            let mut value = constant.clone();
+            for (a, x) in coefficients.iter().zip(origin) {
+                env.tick()?;
+                value += a * x;
+            }
+            if !value.is_zero() {
+                return Ok(Some(origin.clone()));
+            }
+            let dimension = axes.len() - domain.fiber.rank;
+            for column in 0..dimension {
+                let mut coefficient = BigInt::zero();
+                for (a, row) in coefficients.iter().zip(&domain.fiber.kernel) {
+                    env.tick()?;
+                    coefficient += a * &row[column];
+                }
+                if !coefficient.is_zero() {
+                    return Ok(Some(
+                        origin
+                            .iter()
+                            .zip(&domain.fiber.kernel)
+                            .map(|(p, row)| p + &row[column])
+                            .collect(),
+                    ));
+                }
+            }
+            Ok(None)
+        };
+        let mut point = None;
+        for (row, rhs) in target_domain.equations.iter().zip(&target_domain.rhs) {
+            if let Some(values) = witness(&(-rhs), row)? {
+                point = Some(values);
+                break;
+            }
+        }
+        if point.is_none() {
+            let mut forms = vec![];
+            for (side, vars) in [&source, &target].into_iter().enumerate() {
+                let (v, _, missing) = evaluate_value(
+                    env,
+                    expressions[side],
+                    vars,
+                    &Scope::default(),
+                    &declarations[side].reading,
+                )?;
+                pending.support.extend(v.support.iter().cloned());
+                pending.scope.merge(&v.scope);
+                pending.facts.extend(missing);
+                if v.condition_failed || v.condition_pending {
+                    out.status = Decision::Undetermined;
+                    return Ok(());
+                }
+                let form = match v.affine {
+                    Some(form) => Some(*form),
+                    None => v
+                        .known_value
+                        .as_ref()
+                        .map(|v| affine::constant(v, &env.control))
+                        .transpose()?
+                        .flatten(),
+                };
+                let Some(form) = form else {
+                    out.status = Decision::Undetermined;
+                    return Ok(());
+                };
+                pending.facts.extend(form.missing_facts());
+                forms.push(form);
+            }
+            let difference =
+                affine::binary(BinOp::Sub, Some(&forms[0]), Some(&forms[1]), &env.control)?;
+            let Some((constant, coefficients)) = difference
+                .as_ref()
+                .map(|f| f.integer_coordinates(&axes, &env.control))
+                .transpose()?
+                .flatten()
+            else {
+                out.status = Decision::Undetermined;
+                return Ok(());
+            };
+            point = witness(&constant, &coefficients)?;
+        }
+        if let Some(point) = point {
+            out.status = Decision::Refuted;
+            let mut values = vec![];
+            for p in params[0] {
+                env.tick()?;
+                values.push(
+                    if let Some((_, v)) = bindings[0].iter().find(|(name, _)| name == &p.name) {
+                        v.clone()
+                    } else {
+                        Scalar::Z(
+                            point[axes
+                                .iter()
+                                .position(|a| a.binder == p.span)
+                                .ok_or("original integer axis missing")?]
+                            .clone(),
+                        )
+                    },
+                );
+            }
+            out.point = Some(values);
+        }
+        Ok(())
+    })();
+    match result {
+        Ok(()) => {}
+        Err(ValidationFailure::UnsupportedExpression { .. }) => out.status = Decision::Undetermined,
+        Err(e) => return Err(e),
+    }
+    out.support = pending.support;
+    out.scope = pending.scope;
+    out.missing = pending.facts;
+    out.support.sort();
+    out.support.dedup();
+    out.missing.sort();
+    out.missing.dedup();
+    Ok(out)
+}
