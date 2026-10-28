@@ -24,8 +24,36 @@ fn numeric_shape(ty: &Type) -> Option<(Type, usize)> {
 pub(in crate::observed) fn numeric_width(ty: &Type) -> Option<usize> {
     numeric_shape(ty).map(|(_, width)| width)
 }
+// 同じ元binderの数値成分を、既存の記号と同じ名前・順序で得る。
+pub(in crate::observed) fn axes(
+    p: &Param,
+    context: super::super::call::Context,
+    c: &Control,
+) -> Result<Vec<affine::Parameter>, ValidationFailure> {
+    let (kind, width) = numeric_shape(&p.ty).ok_or("数値引数の成分型がない")?;
+    let kind = if kind == Type::Z {
+        affine::NumberType::Z
+    } else {
+        affine::NumberType::Q
+    };
+    let mut out = vec![];
+    for index in 0..width {
+        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        out.push(affine::Parameter {
+            binder: p.span,
+            context,
+            kind,
+            name: if matches!(p.ty, Type::Tuple(_)) {
+                format!("{}.{index}", p.name)
+            } else {
+                p.name.clone()
+            },
+        });
+    }
+    Ok(out)
+}
 // 軸の列を型の形へ戻す。記号式と反例で同じ葉順を使う。
-fn restore<T>(
+pub(in crate::observed) fn restore<T>(
     ty: &Type,
     c: &Control,
     leaf: &mut impl FnMut() -> Result<T, ValidationFailure>,
@@ -43,6 +71,32 @@ fn restore<T>(
             }
             Type::Z | Type::Q => leaf(),
             _ => Err("数値引数の復元型が違う".into()),
+        }
+    })
+}
+// helperの実引数も、元の成分式へ同じ反例を代入して復元する。
+pub(in crate::observed) fn substitute_value(
+    value: &super::super::term::affine::Value,
+    assignment: &[(affine::Parameter, Scalar)],
+    c: &Control,
+) -> Result<Option<Scalar>, ValidationFailure> {
+    use super::super::term::affine::Value;
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        match value {
+            Value::Known(value) => Ok(Some(value.clone())),
+            Value::Number(form) => affine::substitute_parameters(form, assignment, c)?.value(c),
+            Value::Tuple(items) => {
+                let mut out = vec![];
+                for item in items {
+                    let Some(value) = substitute_value(item, assignment, c)? else {
+                        return Ok(None);
+                    };
+                    out.push(value);
+                }
+                Ok(Some(Scalar::Tuple(out)))
+            }
+            _ => Ok(None),
         }
     })
 }
@@ -106,20 +160,18 @@ pub(in crate::observed) fn law_variables(
     let mut flat = vec![];
     for p in params {
         e.tick()?;
-        if matches!(p.ty, Type::Tuple(_)) {
-            if let Some((kind, width)) =
-                numeric_shape(&p.ty).filter(|_| !bindings.iter().any(|(name, _)| *name == p.name))
-            {
-                for index in 0..width {
-                    e.tick()?;
-                    flat.push(Param {
-                        name: format!("{}.{index}", p.name),
-                        ty: kind.clone(),
-                        span: p.span,
-                    });
-                }
-                continue;
+        if matches!(p.ty, Type::Tuple(_))
+            && numeric_width(&p.ty).is_some()
+            && !bindings.iter().any(|(name, _)| *name == p.name)
+        {
+            for axis in axes(p, e.context.get().unwrap_or_default(), &e.control)? {
+                flat.push(Param {
+                    name: axis.name,
+                    ty: axis.kind.ty(),
+                    span: axis.binder,
+                });
             }
+            continue;
         }
         flat.push(p.clone());
     }

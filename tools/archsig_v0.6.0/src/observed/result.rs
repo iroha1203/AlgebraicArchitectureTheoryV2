@@ -3284,7 +3284,7 @@ impl Graph {
             expected_arguments.extend([*value, *normalization]);
         } else if let [pair] = node.evidence.as_slice() {
             let proof = self.get(*pair)?;
-            if !self.universal_completion_pair_shape(proof)?
+            if !self.universal_completion_pair_shape(proof, self.context_at(pair.0))?
                 || proof.arguments.first() != Some(expression)
                 || proof.support != node.support
             {
@@ -3371,7 +3371,11 @@ impl Graph {
         Ok(Some(witness))
     }
 
-    fn universal_witness_value_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+    fn universal_witness_value_shape(
+        &self,
+        node: &Node,
+        context: super::call::Context,
+    ) -> Result<bool, ValidationFailure> {
         let [template, anchor, values @ ..] = node.arguments.as_slice() else {
             return Ok(false);
         };
@@ -3379,7 +3383,7 @@ impl Graph {
             return Ok(false);
         };
         if witness.template != *template
-            || self.active != witness.caller
+            || context != witness.caller
             || node.scope != self.get(*anchor)?.scope
             || !matches!(node.rule, Rule::Construction("evaluation"))
             || !node.evidence.is_empty()
@@ -3419,7 +3423,11 @@ impl Graph {
         Ok(true)
     }
 
-    fn universal_witness_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+    fn universal_witness_evaluation_shape(
+        &self,
+        node: &Node,
+        context: super::call::Context,
+    ) -> Result<bool, ValidationFailure> {
         let Some(Payload::Evaluation {
             expression: anchor,
             bindings,
@@ -3486,7 +3494,7 @@ impl Graph {
         let value = value.ok_or("数値補完caseのwhole判断が未完成")?;
         self.value(value, &Type::Bool)?;
         let value_node = self.get(value)?;
-        if !self.universal_witness_value_shape(value_node)? {
+        if !self.universal_witness_value_shape(value_node, self.context_at(value.0))? {
             return Err("数値補完caseのwhole判断に型付きslot代入がない".into());
         }
         let [actual_template, actual_anchor, values @ ..] = value_node.arguments.as_slice() else {
@@ -3510,14 +3518,18 @@ impl Graph {
             || node.scope != self.get(*anchor)?.scope
             || node.scope != value_node.scope
             || node.support != value_node.support
-            || self.active != witness.caller
+            || context != witness.caller
         {
             return Err("数値補完caseの元型域・slot順・whole・Scopeが違う".into());
         }
         Ok(true)
     }
 
-    fn universal_completion_pair_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+    fn universal_completion_pair_shape(
+        &self,
+        node: &Node,
+        context: super::call::Context,
+    ) -> Result<bool, ValidationFailure> {
         let Some(Payload::CompletionPair {
             fields,
             first,
@@ -3548,7 +3560,7 @@ impl Graph {
         if first_witness.template != *template
             || second_witness.template != *template
             || first_witness.caller != second_witness.caller
-            || first_witness.caller != self.active
+            || first_witness.caller != context
             || first_witness.ordinal != 0
             || second_witness.ordinal != 1
             || first_whole != first_result
@@ -3566,7 +3578,7 @@ impl Graph {
         ] {
             self.tick()?;
             let whole_node = self.get(whole)?;
-            if !self.universal_witness_evaluation_shape(whole_node)? {
+            if !self.universal_witness_evaluation_shape(whole_node, self.context_at(whole.0))? {
                 return Err("数値補完対のwhole caseが未完成".into());
             }
             let Some(Payload::Evaluation {
@@ -4241,7 +4253,7 @@ impl Graph {
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
                 super::path_value::check_refs(s, &self.nodes, &node.arguments, &self.control)?;
-                self.universal_witness_value_shape(&node)?;
+                self.universal_witness_value_shape(&node, self.active)?;
                 self.universal_local_quantifier_value_shape(&node)?;
             }
             (
@@ -4343,7 +4355,7 @@ impl Graph {
                     }
                     self.tick()?;
                 }
-                if !self.universal_witness_evaluation_shape(&node)?
+                if !self.universal_witness_evaluation_shape(&node, self.active)?
                     && !self.universal_local_quantifier_evaluation_shape(&node)?
                 {
                     self.universal_evaluation_shape(&node)?;
@@ -4541,7 +4553,7 @@ impl Graph {
                 {
                     return Err("補完対の結果型が違う".into());
                 }
-                if !self.universal_completion_pair_shape(&node)?
+                if !self.universal_completion_pair_shape(&node, self.active)?
                     && node.scope.assignments
                     && !node.arguments.first().is_some_and(|source| {
                         matches!(

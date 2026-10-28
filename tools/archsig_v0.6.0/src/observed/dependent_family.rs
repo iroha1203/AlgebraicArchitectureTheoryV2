@@ -364,7 +364,7 @@ impl Environment<'_> {
                 ty: p.ty.erase(),
                 domain,
                 occurrence: p.span,
-                context: (!matches!(p.ty, Type::Z | Type::Q)).then_some(context),
+                context: (numeric_parameters::numeric_width(&p.ty).is_none()).then_some(context),
             };
             if actual.is_empty() {
                 quantifiers.push(descriptor(None));

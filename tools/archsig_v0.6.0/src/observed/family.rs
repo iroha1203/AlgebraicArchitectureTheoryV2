@@ -39,7 +39,7 @@ impl Environment<'_> {
         if !self.universal_symbolic_type(&ty)? {
             return Ok(false);
         }
-        if matches!(ty, Type::Z | Type::Q) {
+        if numeric_parameters::numeric_width(&ty).is_some() {
             return Ok(true);
         }
         Ok(self.native_law_parameter_domain(parameter)?.is_none())
@@ -183,7 +183,7 @@ impl Environment<'_> {
                     .and_then(|i| domains.get(i))
                     .copied(),
                 occurrence: p.span,
-                context: (!matches!(p.ty, Type::Z | Type::Q)).then_some(context),
+                context: (numeric_parameters::numeric_width(&p.ty).is_none()).then_some(context),
             })
             .collect()
     }

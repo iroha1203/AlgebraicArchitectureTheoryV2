@@ -582,35 +582,68 @@ fn native_propositions_reject_forged_truth_evidence_role_binding_and_environment
 }
 #[test]
 fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples() {
-    let p = prepared("law required unbounded(c:Part,k:Z):c.quantity=k;");
-    let (mut g, a, objects) = start(&p);
-    let ds = crate::observed::polynomial_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    for (object, d) in ds.iter().enumerate() {
-        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
-        for o in &d.originals {
-            assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
-            let before = g.nodes.len();
-            let r = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
-            if frames::origin(&g, o.reference).unwrap().unwrap().outside {
-                assert!(r.answer.is_none() && r.instance.is_none());
-                assert_eq!(g.nodes.len(), before);
-            } else {
-                let answer = r.answer.unwrap();
-                assert!(r.instance.is_some());
-                assert_eq!(g.get(answer.claim.unwrap()).unwrap().judgment.as_ref().unwrap().status,
-                    Decision::Refuted);
-                assert!(g.nodes.len() > before);
+    for tuple in [false, true] {
+        let parameter_type = if tuple {
+            Type::Tuple(vec![Type::Z, Type::Tuple(vec![Type::Z, Type::Z])])
+        } else {
+            Type::Z
+        };
+        let (ty, term) = if tuple {
+            ("(Z,(Z,Z))", "k.0+k.1.1")
+        } else {
+            ("Z", "k")
+        };
+        let p = prepared(&format!(
+            "law required unbounded(c:Part,k:{ty}):c.quantity={term};"
+        ));
+        let (mut g, a, objects) = start(&p);
+        let ds = crate::observed::polynomial_law_diagram::retain_family(
+            &mut g,
+            p.shared_inputs(),
+            a,
+            &mut quiet(),
+        )
+        .unwrap();
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        for (object, d) in ds.iter().enumerate() {
+            assert!(d.unavailable.is_none());
+            for o in &d.originals {
+                assert!(o
+                    .parameters
+                    .iter()
+                    .any(|(n, t)| n == "k" && t == &parameter_type));
+                let before = g.nodes.len();
+                let r = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+                if frames::origin(&g, o.reference).unwrap().unwrap().outside {
+                    assert!(r.answer.is_none() && r.instance.is_none());
+                    assert_eq!(g.nodes.len(), before);
+                } else {
+                    let answer = r.answer.unwrap();
+                    assert!(r.instance.is_some());
+                    assert_eq!(
+                        g.get(answer.claim.unwrap())
+                            .unwrap()
+                            .judgment
+                            .as_ref()
+                            .unwrap()
+                            .status,
+                        Decision::Refuted
+                    );
+                    assert!(g.nodes.len() > before);
+                    let quantifier = answer
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .find(|q| q.name == "k" && q.ty == parameter_type)
+                        .unwrap();
+                    assert!(
+                        matches!(&g.get(quantifier.domain.unwrap()).unwrap().payload,Some(Payload::TypeDomain{ty}) if *ty==parameter_type)
+                    );
+                }
             }
         }
+        replay(&p, &g).unwrap();
     }
-    replay(&p, &g).unwrap();
 }
 
 #[test]

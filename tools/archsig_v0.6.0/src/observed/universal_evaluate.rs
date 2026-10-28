@@ -372,6 +372,7 @@ impl Evaluator<'_, '_> {
             };
             bindings.push(Binding { name, ty, value });
         }
+        self.environment.universal_order_counterexample_bindings(self.graph,original,&mut bindings)?;
         Ok(bindings)
     }
 

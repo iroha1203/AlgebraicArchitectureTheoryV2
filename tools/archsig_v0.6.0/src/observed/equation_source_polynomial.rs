@@ -928,7 +928,7 @@ pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstanc
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
     else { return Ok(None) };
     let Some(root) = *guard else { return Ok(Some(true)) };
-    let ty = instance.parameters().iter().find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone()).unwrap_or(Type::Z);
+    let ty = instance.parameters().iter().find_map(|p| crate::observed::environment::numeric_parameters::coefficient_type(&p.ty)).unwrap_or(Type::Z);
     let mut ring = EquationRing { ty, symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
     let variables = variables_for(instance, finite, c)?;
     let mut compiler = Compiler { inputs, ring: &mut ring, variables };
@@ -954,7 +954,9 @@ pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstanc
 }
 
 fn variables_for(
-    instance: &ObjectInstance, finite: &[(String, Scalar)], c: &mut Control,
+    instance: &ObjectInstance,
+    finite: &[(String, Scalar)],
+    c: &mut Control,
 ) -> Result<BTreeMap<String, Binding>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
@@ -973,19 +975,32 @@ fn variables_for(
     // 差から全軸が消えた場合だけK[X]へ移す。具体値の代入は行わない。
     for parameter in instance.parameters() {
         tick(c)?;
-        let kind = match parameter.ty {
-            Type::Z => affine::NumberType::Z,
-            Type::Q => affine::NumberType::Q,
-            _ => continue,
-        };
-        let key = affine::Parameter { binder: parameter.span, name: parameter.name.clone(),
-            context: Default::default(), kind };
-        if let Some(value) = affine::parameter(&parameter.ty, &key, c).map_err(invalid)? {
-            variables.insert(parameter.name.clone(), Binding::ParameterForm(value));
+        use crate::observed::environment::numeric_parameters;
+        if numeric_parameters::numeric_width(&parameter.ty).is_none() {
+            continue;
         }
+        let mut values = vec![];
+        for axis in numeric_parameters::axes(parameter, Default::default(), c).map_err(invalid)? {
+            let value = affine::parameter(&axis.kind.ty(), &axis, c)
+                .map_err(invalid)?
+                .ok_or_else(|| bad("元数値成分式がない"))?;
+            values.push(Binding::ParameterForm(value));
+        }
+        let mut values = values.into_iter();
+        let value = numeric_parameters::restore(
+            &parameter.ty,
+            c,
+            &mut || values.next().ok_or_else(|| "元数値成分がない".into()),
+            &Binding::Tuple,
+        )
+        .map_err(invalid)?;
+        variables.insert(parameter.name.clone(), value);
     }
     for (name, value) in finite {
-        let binding = match value { Scalar::Bool(value) => Binding::Boolean(*value), _ => Binding::FiniteScalar(value.clone()) };
+        let binding = match value {
+            Scalar::Bool(value) => Binding::Boolean(*value),
+            _ => Binding::FiniteScalar(value.clone()),
+        };
         variables.insert(name.clone(), binding);
     }
     Ok(variables)

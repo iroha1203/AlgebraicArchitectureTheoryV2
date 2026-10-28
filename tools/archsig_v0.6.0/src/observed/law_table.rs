@@ -4,7 +4,7 @@ use super::{
         self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
     },
     control::{Checkpoint, Control},
-    environment::Environment,
+    environment::{Environment, numeric_parameters},
     input::CheckedInputs,
     law_evaluation as frames,
     polynomial_law_diagram::{Diagram, FamilyPlan, Original},
@@ -332,7 +332,7 @@ pub(super) fn retain(
             let t = evaluated_origin(g, d, t)?;
             let answer = if !t.parameters.is_empty() {
                 let answer = super::law_family::check(env, g, t.reference, row.architecture, c)?;
-                if answer.is_none() && t.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q)) {
+                if answer.is_none() && t.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some()) {
                     let origin = frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
                     if origin.outside {
                         super::law_inapplicable::check(env, g, t.reference, row.architecture, c)?

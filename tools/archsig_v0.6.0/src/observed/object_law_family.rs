@@ -1,7 +1,7 @@
 //! 有限Law parameterの全型域と既存family DAGの各行を接続する。
 use super::*;
 use crate::observed::{
-    data, finite,
+    data, finite, environment::numeric_parameters,
     result::{NodeType, ValidationFailure},
     value_transport::{
         DeclarationValuePosition, FiniteTransportValue, FiniteValueTransport,
@@ -301,7 +301,7 @@ impl LawReadingFamily {
     ) -> Result<Vec<NodeRef>, ConstructionFailure> {
         if row.is_none() {
             if self.uniform.as_ref().is_some_and(|r| r.application.value() == Some(false))
-                && e.instance().parameters().iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                && e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                 && let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() {
                 return Ok(g.answers.first().and_then(|a| a.outputs.get("evaluation"))
                     .copied().into_iter().collect());
@@ -408,7 +408,7 @@ pub(in crate::observed) fn constant_numeric_family(
     use crate::law::{ast::{BinOp, ExprKind}, model::Signature};
     tick(c)?;
     if e.instance().parameters().is_empty()
-        || !e.instance().parameters().iter().all(|p| matches!(p.ty.erase(), Type::Z | Type::Q)) {
+        || !e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty.erase()).is_some()) {
         return Ok(None);
     }
     let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else { return Ok(None) };
@@ -454,7 +454,7 @@ pub(in crate::observed) fn constant_numeric_family(
                     let Some(target) = target else { return Ok(None) };
                     let declaration = law.declarations.get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
                     let Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
-                    if params.len() != args.len() || !params.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                    if params.len() != args.len() || !params.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                         || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q | Type::Bool)) { return Ok(None); }
                     pending.extend(args.iter().map(|arg| (*arg, names.clone())));
                     if helpers.insert(target.clone()) {
@@ -814,7 +814,7 @@ pub(in crate::observed) fn read_native_family(
         .map_err(ConstructionFailure::from)?;
     let value = reading(e, c)?;
     let inactive_numeric = value.application.value() == Some(false)
-        && e.instance().parameters().iter().all(|p| matches!(p.ty, Type::Z | Type::Q));
+        && e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some());
     if inactive_numeric || constant_numeric_family(e, c)?.is_some() {
         result.uniform = Some(value);
         result.complete = true;

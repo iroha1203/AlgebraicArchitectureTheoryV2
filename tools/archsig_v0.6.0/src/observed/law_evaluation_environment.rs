@@ -47,7 +47,7 @@ impl Environment<'_> {
                 let request = graph.requests.get(self.current_context(graph).request).ok_or("元Law要求がない")?;
                 if let Some(plan) = self.universal_family_plan(graph, request, &inputs.bindings)?
                     && plan.guard == Some(guard)
-                    && plan.parameters.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+                    && plan.parameters.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                 {
                     let guard = self.universal_template_source_analysis(graph, &plan, guard_span, &inputs.bindings)?;
                     if guard.analysis.known_value == Some(Scalar::Bool(true)) {
@@ -117,7 +117,7 @@ impl Environment<'_> {
         }
         let request = graph.requests.get(context.request).ok_or("元Law要求がない")?;
         let universal_false = if let Some(plan) = self.universal_family_plan(graph, request, bindings)?
-            && plan.parameters.iter().all(|p| matches!(p.ty, Type::Z | Type::Q))
+            && plan.parameters.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
             && let Some(guard) = plan.guard {
             // 全域templateのSourceは実guard評価より先に保持される。元guardを
             // 全parameter上で再計算し、falseの場合だけ値のないbodyを保持する。
@@ -216,8 +216,8 @@ impl Environment<'_> {
             .ok_or("元Lawの宣言がない")?;
         if let crate::law::model::Signature::Law { params, .. } = &declaration.signature {
             for parameter in params {
-                if !variables.contains_key(&parameter.name) && matches!(parameter.ty, Type::Z | Type::Q) {
-                    let (free, _) = change_affine::law_variables(self, std::slice::from_ref(parameter), &[])?;
+                if !variables.contains_key(&parameter.name) && numeric_parameters::numeric_width(&parameter.ty).is_some() {
+                    let (free, _) = numeric_parameters::law_variables(self, std::slice::from_ref(parameter), &[])?;
                     variables.extend(free);
                 }
             }
