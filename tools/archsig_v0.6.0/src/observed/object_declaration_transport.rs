@@ -556,14 +556,6 @@ pub(super) fn retain(
                 && matches!(&read_type, Some(Type::Z | Type::Q | Type::Bool))
                 && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
-                if !matches!(
-                    sp[position].ty,
-                    Type::Ref(_) | Type::Unit | Type::Bool | Type::Fp(_)
-                ) {
-                    return Err(
-                        "local projection read transport supports Ref, Unit, Bool and Fp".into(),
-                    );
-                }
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
                 }

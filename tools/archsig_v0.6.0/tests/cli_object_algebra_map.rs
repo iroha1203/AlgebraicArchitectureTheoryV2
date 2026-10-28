@@ -5661,7 +5661,7 @@ reading After {{{vocabulary} local here(unused:Unit,y:State,pick:Option<Bool>,le
 }
 
 #[test]
-fn local_finite_parameter_extension_keeps_other_domains_and_composite_reads_pending() {
+fn local_finite_parameter_extension_keeps_other_domains_unsupported() {
     for (name, ty, read) in [
         ("integer", "Z", "0+0"),
         ("rational", "Q", "0+0"),
@@ -5669,7 +5669,6 @@ fn local_finite_parameter_extension_keeps_other_domains_and_composite_reads_pend
         ("list", "List<Bool>", "0+0"),
         ("nested-reference", "Option<State>", "0+0"),
         ("map", "Map<State,State>", "0+0"),
-        ("composite-read", "Option<Bool>", "x"),
     ] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-finite-outside-{name}"));
@@ -5739,5 +5738,392 @@ reading After {{{vocabulary} local here(y:{ty}) reads y;}}"#
         assert_json(get(values, "target_type"), wire);
         assert!(arr(get(values, "subjects")).is_empty());
         assert!(arr(get(values, "declarations")).is_empty());
+    }
+}
+
+#[test]
+fn local_composite_argument_reads_keep_the_checked_full_domain_value_map() {
+    for (name, ty, wire_type, identities) in [
+        ("option", "Option<Bool>", r#"["Option","Bool"]"#, false),
+        ("set", "Set<Bool>", r#"["Set","Bool"]"#, false),
+        (
+            "tuple",
+            "(Bool,Fp(3))",
+            r#"["Tuple","Bool",["Fp","3"]]"#,
+            false,
+        ),
+        ("data", "Choice", r#"["Data","Reservations.Choice"]"#, true),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-composite-projection-{name}"));
+        if name == "option" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(z:State,choice:{ty},other:{ty}) reads choice;}}
+reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}) reads pick;}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 0, "{name}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), "established");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let map = value(&result, get(get(m, "outputs"), "map"));
+        let transport = value(&result, &arr(get(map, "transports"))[0]);
+        assert_json(
+            get(transport, "parameters"),
+            r#"[["z","y"],["choice","pick"],["other","spare"]]"#,
+        );
+        let clause = &arr(get(transport, "clauses"))[0];
+        let values = value(&result, get(clause, "values"));
+        assert_json(get(values, "source_type"), wire_type);
+        assert_json(get(values, "target_type"), wire_type);
+        assert!(arr(get(values, "subjects")).is_empty());
+        for side in ["source", "target"] {
+            let domain = value(&result, get(values, side));
+            assert_eq!(s(get(domain, "kind")), "type");
+            assert_json(get(domain, "type"), wire_type);
+        }
+        let args = value(&result, get(clause, "arguments"));
+        assert_reference_pairs(
+            &result,
+            args,
+            &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+        );
+        assert_json(
+            get(args, "source_type"),
+            &format!(r#"["Tuple",["Ref","Reservations.State"],{wire_type},{wire_type}]"#),
+        );
+        if identities {
+            for map in [args, values] {
+                for family in [
+                    "Reservations.Choice",
+                    "Reservations.Choice.Empty",
+                    "Reservations.Choice.Full",
+                ] {
+                    assert!(arr(get(map, "declarations")).iter().any(|pair| {
+                        arr(pair).iter().map(s).collect::<Vec<_>>() == [family, family]
+                    }));
+                }
+            }
+        } else {
+            assert!(arr(get(values, "declarations")).is_empty());
+        }
+        let law = std::fs::read(dir.join("l.law")).unwrap();
+        for (side, name) in [("source", "choice"), ("target", "pick")] {
+            let expr = value(&result, get(clause, side));
+            let location = get(expr, "location");
+            assert_eq!(s(get(location, "input")), "law");
+            let span = arr(get(location, "span"));
+            assert_eq!(
+                &law[num(&span[0]) as usize..num(&span[1]) as usize],
+                name.as_bytes()
+            );
+        }
+        let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
+        assert_eq!(qs.len(), 3);
+        for (q, name) in qs.iter().zip(["z", "choice", "other"]) {
+            assert_eq!(s(get(q, "name")), name);
+        }
+        assert_json(get(&qs[1], "type"), wire_type);
+        assert_json(get(&qs[2], "type"), wire_type);
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, 0, "{name}: {}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_map_summary(&normal, &result);
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 0, "{name}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{name}: {key}"
+            );
+        }
+    }
+}
+
+#[test]
+fn local_composite_argument_reads_keep_guard_direction_and_missing_distinct() {
+    for (case, sg, tg, missing, code) in [
+        (
+            "expanded",
+            "when choice=Full(true) and extra=some(false) and z.held=1",
+            "when pick!=Empty",
+            false,
+            0,
+        ),
+        (
+            "refuted",
+            "when choice=Full(true) and extra=some(false)",
+            "when pick=Full(false)",
+            false,
+            1,
+        ),
+        (
+            "unknown-source",
+            "when if choice=Full(true) and extra=some(false) then z.free>0 else false",
+            "when pick=Full(true)",
+            true,
+            2,
+        ),
+        (
+            "unknown-target",
+            "when choice=Full(true) and extra=some(false)",
+            "when if pick=Full(true) then y.free>0 else false",
+            true,
+            2,
+        ),
+        (
+            "inactive-missing",
+            "when choice=Full(true) and extra=some(false) and z.held=1",
+            "when if pick=Full(true) then y.free>0 else false",
+            true,
+            0,
+        ),
+        ("false-source", "when false", "when y.free>0", true, 0),
+        (
+            "empty-source",
+            "when choice=Full(true) and choice=Empty",
+            "when false",
+            false,
+            0,
+        ),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-composite-guard-{case}"));
+        if missing {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(choice:Choice,z:State,extra:Option<Bool>) {sg} reads choice;}}
+reading After {{{vocabulary} local here(pick:Choice,y:State,spare:Option<Bool>) {tg} reads pick;}}"#)).unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if case == "refuted" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bs = arr(get(data, "bindings"));
+            assert_eq!(bs.len(), 3);
+            for ((b, name), expected) in bs.iter().zip(["choice", "z", "extra"]).zip([
+                r#"{"args":[true],"tag":"Full"}"#,
+                r#"["v","p"]"#,
+                r#"{"some":false}"#,
+            ]) {
+                assert_eq!(s(get(b, "name")), name);
+                assert_json(value(&result, get(b, "value")), expected);
+            }
+            assert_json(value(&result, get(data, "left")), "true");
+            assert_json(value(&result, get(data, "right")), "false");
+        }
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+            let subject = if case == "unknown-target" { "r" } else { "p" };
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let f = get(r, "field");
+                s(get(f, "subject")) == subject && s(get(f, "field")) == "Reservations.State.free"
+            }));
+        } else {
+            assert!(arr(get(plan, "requirements")).is_empty());
+        }
+        if matches!(
+            case,
+            "refuted" | "unknown-source" | "unknown-target" | "inactive-missing"
+        ) {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_map_summary(&normal, &result);
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{case}: {key}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn local_composite_argument_read_guards_use_actual_reference_images() {
+    for (condition, target_condition, code) in
+        [("left=right", "a=b", 0), ("left!=right", "a!=b", 1)]
+    {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-composite-images-{code}"));
+        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State,choice:Option<Bool>,right:State) when {condition} reads choice;}}
+reading After {{{vocabulary} local here(a:State,pick:Option<Bool>,b:State) when {target_condition} reads pick;}}"#)).unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(run.code, code, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 1 {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bs = arr(get(data, "bindings"));
+            assert_eq!(bs.len(), 3);
+            for ((b, name), expected) in bs.iter().zip(["left", "choice", "right"]).zip([
+                r#"["v","p"]"#,
+                r#"{"none":true}"#,
+                r#"["v","r"]"#,
+            ]) {
+                assert_eq!(s(get(b, "name")), name);
+                assert_json(value(&result, get(b, "value")), expected);
+            }
+            assert_json(value(&result, get(data, "left")), "true");
+            assert_json(value(&result, get(data, "right")), "false");
+        }
+    }
+}
+
+#[test]
+fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
+    for (name, source_params, target_params, source_read, target_read) in [
+        (
+            "different-position",
+            "x:Option<Bool>,y:Option<Bool>",
+            "a:Option<Bool>,b:Option<Bool>",
+            "x",
+            "b",
+        ),
+        (
+            "general-expression",
+            "x:Option<Bool>,take:Bool",
+            "a:Option<Bool>,keep:Bool",
+            "if take then x else none<Bool>",
+            "if keep then a else none<Bool>",
+        ),
+        (
+            "nested-reference",
+            "x:Option<State>",
+            "a:Option<State>",
+            "x",
+            "a",
+        ),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-composite-outside-{name}"));
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here({source_params}) reads {source_read};}}
+reading After {{{vocabulary} local here({target_params}) reads {target_read};}}"#
+            ),
+        )
+        .unwrap();
+        let run = without_file_changes(&dir, || {
+            cli::run(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--ask",
+                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                ],
+            )
+        });
+        assert_eq!(run.code, 70, "{name}: {}", run.stdout);
+        assert!(run.stderr.is_empty());
+        assert!(has(&run.receipt, "issues"));
     }
 }
