@@ -189,10 +189,12 @@ local は arguments の型全域の写像を保持し、source guard が真の�
 参照を含まない同じ返り型の一般readは既存Evaluatorの実値を恒等ValueMapで比較する。
 この比較はList、数値を含むTuple・Option・Set・Data、
 Textにも適用し、返り型の全値列挙を要求しない。必要な値が欠測なら未決を保持する。
-原始scalarと参照型をTuple/List/Set/Optionで組み合わせた一般readでは、型に現れる参照型の全有限域の
+原始scalarと参照型をTuple/List/Set/Option/Dataで組み合わせた一般readでは、型に現れる参照型の全有限域の
 前向き作用とscalar恒等写像を成分へ延長する。戻り値だけに現れる参照型も全域を確認し、
 外部参照の固定を保持する。返り値全域の列挙や参照作用の単射性は要求しない。
 List像は順序と重複を保持し、Set像は数学的に等しい成分を一つにまとめる。
+Dataはfamilyとconstructorを保ち、全constructorのpayload型が参照作用で同じ型へ戻ることを、
+未評価の枝も含めて確認する。正の再帰Dataも各familyを一度ずつ確認する。
 未確定の適用条件を偽として除外せず、理由付きの未決として保持する。
 この宣言式の移送から、局所幾何全体や reading の同値を結論しない。
 local の公開値を依存 field 全体へ広げず、change を内部 Op に加えず、

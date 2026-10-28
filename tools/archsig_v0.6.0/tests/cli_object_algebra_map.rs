@@ -8048,6 +8048,26 @@ fn local_reference_product_reads_extend_total_reference_maps_with_scalar_identit
             r#"[[["v","p"],"2"]]"#,
             "p",
         ),
+        (
+            "data",
+            "State",
+            "Choice.Full(left,left.free)",
+            "Choice.Empty",
+            "Choice.Full(left,left.free+1)",
+            r#"["Data","Reservations.Choice"]"#,
+            r#"{"args":[["v","p"],"2"],"tag":"Full"}"#,
+            "p",
+        ),
+        (
+            "recursive-data",
+            "Reserve",
+            "Choice.Full(left.from,left.from.free,Choice.Full(other.to,0,Choice.Empty))",
+            "Choice.Empty",
+            "Choice.Full(left.from,left.from.free+1,Choice.Empty)",
+            r#"["Data","Reservations.Choice"]"#,
+            r#"{"args":[["v","p"],"2",{"args":[["v","q"],"0",{"args":[],"tag":"Empty"}],"tag":"Full"}],"tag":"Full"}"#,
+            "e",
+        ),
     ] {
         for (case, code) in [
             ("preserved", 0),
@@ -8059,8 +8079,25 @@ fn local_reference_product_reads_extend_total_reference_maps_with_scalar_identit
             ("forward", 0),
             ("target-guard", 1),
         ] {
-            let (dir, vocabulary) =
+            let (dir, mut vocabulary) =
                 finite_local_parameter_inputs(&format!("local-reference-product-{shape}-{case}"));
+            if shape.ends_with("data") {
+                let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+                let arguments = if shape == "data" {
+                    r#""arguments":[["Ref","Reservations.State"],"Z"]"#
+                } else {
+                    r#""arguments":[["Ref","Reservations.State"],"Z",["Data","Reservations.Choice"]]"#
+                };
+                let definition = old.replace(r#""arguments":["Bool"]"#, arguments);
+                let prior = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+                let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+                let digest = &checked.vocabularies["Reservations"].digest;
+                let prior = &prior.vocabularies["Reservations"].digest;
+                let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(prior, digest);
+                std::fs::write(dir.join("d.json"), definition).unwrap();
+                std::fs::write(dir.join("a.json"), map).unwrap();
+                vocabulary = vocabulary.replace(prior, digest);
+            }
             if case.contains("missing") || case == "false-source" {
                 let map = std::fs::read_to_string(dir.join("a.json"))
                     .unwrap()
@@ -8149,7 +8186,7 @@ reading After {{{vocabulary} local here(right:{parameter},spare:{parameter},keep
                 );
                 let second = if case == "numeric-refuted" {
                     first
-                } else if shape == "return-only" {
+                } else if parameter == "Reserve" {
                     "e"
                 } else {
                     other
@@ -8167,6 +8204,12 @@ reading After {{{vocabulary} local here(right:{parameter},spare:{parameter},keep
                 let values = value(&result, get(&arr(get(transport, "clauses"))[0], "values"));
                 assert_json(get(values, "source_type"), wire);
                 assert_json(get(values, "target_type"), wire);
+                if shape.ends_with("data") {
+                    for name in ["Reservations.Choice", "Reservations.Choice.Empty", "Reservations.Choice.Full"] {
+                        let expected = archsig::json::parse(format!(r#"["{name}","{name}"]"#).as_bytes()).unwrap();
+                        assert!(arr(get(values, "declarations")).iter().any(|p| p.value == expected.value));
+                    }
+                }
                 assert_reference_pairs(
                     &result,
                     values,
@@ -8212,6 +8255,8 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         ("set-total", false, false, "set<@>{}"),
         ("set-outside", true, false, "set<@>{}"),
         ("set-mismatch", false, true, "set<@>{}"),
+        ("data-payload", false, true, "Bridge.Choice.Empty"),
+        ("data-payload-option", false, true, "none<Bridge.Choice>"),
     ] {
         let dir = workdir(&format!("local-reference-product-domain-{case}"));
         let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
@@ -8223,6 +8268,9 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
+        let bridge = if case.starts_with("data-payload") {
+            bridge.replacen(r#""declarations": ["#, r#""declarations": [{"kind":"data","name":"Bridge.Choice","meaning":"参照を持つ選択","constructors":[{"name":"Empty","arguments":[],"meaning":"空"},{"name":"Full","arguments":[["Ref","Left.Child"],"Z",["Data","Bridge.Choice"]],"meaning":"再帰payload"}]},"#, 1)
+        } else { bridge };
         let checked = archsig::definition::check_definitions(&[
             ("left", left),
             ("right", right),
@@ -8345,6 +8393,15 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
                         .any(|r| value(&result, r).value
                             == archsig::json::parse(br#"["v","h"]"#).unwrap().value)
                 );
+            } else if case.starts_with("data-payload") {
+                let domains: Vec<_> = arr(get(condition, "operands")).iter()
+                    .map(|r| value(&result, r))
+                    .filter(|v| has(v, "kind") && s(get(v, "kind")) == "type")
+                    .collect();
+                for ty in [r#"["Ref","Left.Child"]"#, r#"["Ref","Right.Child"]"#] {
+                    let expected = archsig::json::parse(ty.as_bytes()).unwrap();
+                    assert!(domains.iter().any(|v| get(v, "type").value == expected.value));
+                }
             } else {
                 for text in [&source_read, &target_read] {
                     assert!(arr(get(condition, "operands")).iter().any(|r| {

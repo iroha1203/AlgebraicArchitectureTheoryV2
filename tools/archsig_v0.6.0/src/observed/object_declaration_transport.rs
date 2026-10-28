@@ -549,6 +549,7 @@ fn value_type_map(
     let mut references = BTreeSet::new();
     let mut families = BTreeSet::new();
     let mut names = BTreeSet::new();
+    let type_action = declarations.types().iter().cloned().collect();
     while let Some(ty) = pending.pop() {
         tick(c)?;
         match ty {
@@ -562,7 +563,26 @@ fn value_type_map(
                 if families.insert(family.clone()) {
                     names.insert(family.clone());
                     for ctor in super::super::data::constructors(inputs.law(), family)? {
+                        tick(c)?;
                         names.insert(format!("{family}.{}", ctor.name));
+                        // Dataのfamilyとconstructorは固定する。全payload型が同じ
+                        // familyの引数型へ戻ることを、空値や未評価の枝でも確認する。
+                        for arg in &ctor.arguments {
+                            let moved = construction::moved_declaration_type(
+                                arg,
+                                &type_action,
+                                &std::collections::BTreeMap::new(),
+                                c,
+                            )
+                            .map_err(failure)?;
+                            if moved != *arg {
+                                failed_arguments.extend([
+                                    domain(b, arg, dependencies)?,
+                                    domain(b, &moved, dependencies)?,
+                                ]);
+                                return Ok(None);
+                            }
+                        }
                         pending.extend(&ctor.arguments);
                     }
                 }
@@ -725,7 +745,7 @@ pub(super) fn retain(
                             && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type)
                         || (!sp.is_empty()
                             && super::super::environment::local_read::reference_value_type_supported(
-                                ty, c,
+                                ty, inputs.law(), c,
                             )?)
                 }
                 None => false,
@@ -858,7 +878,7 @@ pub(super) fn retain(
                 .erase();
             let finite = super::super::finite::supported(&ty, inputs.law(), c)?;
             let structural = !sp.is_empty()
-                && super::super::environment::local_read::reference_value_type_supported(&ty, c)?;
+                && super::super::environment::local_read::reference_value_type_supported(&ty, inputs.law(), c)?;
             if matches!(read, Read::Expression) && (finite || structural) {
                 let expected = construction::moved_declaration_type(
                     inputs
