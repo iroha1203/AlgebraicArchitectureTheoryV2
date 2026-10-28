@@ -1,4 +1,4 @@
-//! Z coordinates stay symbolic while the other argument domains are exhausted.
+//! Z/Q coordinates stay symbolic while the other argument domains are exhausted.
 use super::*;
 use crate::law::model::Declaration;
 
@@ -8,6 +8,7 @@ pub(super) fn compare(
     declarations: [&Declaration; 2],
     maps: &[LocalParameter],
     expressions: [usize; 2],
+    ty: &Type,
     values: NodeRef,
     origins: &[NodeRef],
     request: &Request,
@@ -25,7 +26,7 @@ pub(super) fn compare(
     let mut params = vec![];
     for declaration in declarations {
         let Signature::Local { params: p, .. } = &declaration.signature else {
-            return Err("integer transport requires local".into());
+            return Err("numeric transport requires local".into());
         };
         params.push(p);
     }
@@ -34,16 +35,17 @@ pub(super) fn compare(
         for side in 0..2 {
             for ((p, map), index) in params[side].iter().zip(maps).zip(&row) {
                 tick(c)?;
-                if !matches!(map, LocalParameter::Integer { .. }) {
+                if !matches!(map, LocalParameter::Numeric { .. }) {
                     bindings[side].push((p.name.clone(), map.binding(*index, side)?));
                 }
             }
         }
-        let result = super::super::super::environment::local_read::integer_transport(
+        let result = super::super::super::environment::local_read::affine_transport(
             env,
             declarations,
             [&bindings[0], &bindings[1]],
             expressions,
+            ty,
         )?;
         out.status = merge_status(out.status, result.status);
         out.support.extend(result.support.iter().cloned());
@@ -53,8 +55,13 @@ pub(super) fn compare(
                 kind: if result.missing.is_empty() {
                     ReasonKind::UnsupportedAlgorithm {
                         question: request.kind,
-                        operand_types: vec![Type::Z],
-                        method: "local_integer_guard_fiber".into(),
+                        operand_types: vec![ty.clone()],
+                        method: if *ty == Type::Z {
+                            "local_integer_guard_fiber"
+                        } else {
+                            "local_rational_guard_fiber"
+                        }
+                        .into(),
                     }
                 } else {
                     ReasonKind::Missing
@@ -76,7 +83,7 @@ pub(super) fn compare(
                 {
                     actual[side].push((
                         p.name.clone(),
-                        if matches!(map, LocalParameter::Integer { .. }) {
+                        if matches!(map, LocalParameter::Numeric { .. }) {
                             v.clone()
                         } else {
                             map.binding(*index, side)?
@@ -97,11 +104,11 @@ pub(super) fn compare(
                             &actual[side],
                             &declarations[side].reading,
                         )?;
-                    guards[side] = value.ok_or("integer guard witness is not determined")?;
+                    guards[side] = value.ok_or("numeric guard witness is not determined")?;
                 }
             }
             if !guards[0] {
-                return Err("integer witness lies outside source guard".into());
+                return Err("numeric witness lies outside source guard".into());
             }
             let mut outputs = vec![];
             if !guards[1] {
@@ -115,10 +122,10 @@ pub(super) fn compare(
                         &actual[side],
                         &declarations[side].reading,
                     )?;
-                    outputs.push(v.ok_or("integer read witness is not determined")?);
+                    outputs.push(v.ok_or("numeric read witness is not determined")?);
                 }
                 if outputs[0] == outputs[1] {
-                    return Err("integer read witness does not refute equality".into());
+                    return Err("numeric read witness does not refute equality".into());
                 }
             }
             let mut arguments = origins.to_vec();

@@ -10,8 +10,8 @@ use crate::{
 use std::collections::BTreeSet;
 #[path = "object_local_field_transport.rs"]
 mod field;
-#[path = "object_local_integer_transport.rs"]
-mod integer;
+#[path = "object_local_numeric_transport.rs"]
+mod numeric_read;
 #[path = "object_change_transport.rs"]
 mod change;
 #[path = "object_relation_transport.rs"]
@@ -26,7 +26,7 @@ struct ParameterMap {
 // localの各引数位置を保ち、既存の参照写像または有限全域の候補像を読む。
 enum LocalParameter {
     // One symbolic coordinate in the finite-row index, never a sampled value.
-    Integer { values: NodeRef },
+    Numeric { values: NodeRef },
     Reference(Arc<ParameterMap>),
     Finite {
         transport: super::super::value_transport::FiniteValueTransport,
@@ -45,20 +45,20 @@ impl LocalParameter {
         match self {
             Self::Reference(map) => map.subjects.len(),
             Self::Finite { transport, .. } => transport.source().len(),
-            Self::Integer { .. } => 1,
+            Self::Numeric { .. } => 1,
         }
     }
     fn values(&self) -> NodeRef {
         match self {
             Self::Reference(map) => map.values,
-            Self::Finite { values, .. } | Self::Integer { values } => *values,
+            Self::Finite { values, .. } | Self::Numeric { values } => *values,
         }
     }
     fn source_value(&self, index: usize) -> Result<NodeRef, ValidationFailure> {
         Ok(match self {
             Self::Reference(map) => map.subjects[index].0,
             Self::Finite { sources, .. } => sources[index],
-            Self::Integer { .. } => return Err("symbolic integer has no finite source value".into()),
+            Self::Numeric { .. } => return Err("symbolic number has no finite source value".into()),
         })
     }
     fn binding(&self, index: usize, side: usize) -> Result<Scalar, ValidationFailure> {
@@ -83,7 +83,7 @@ impl LocalParameter {
                 };
                 values[index].scalar().clone()
             }
-            Self::Integer { .. } => return Err("symbolic integer has no finite binding".into()),
+            Self::Numeric { .. } => return Err("symbolic number has no finite binding".into()),
         })
     }
 }
@@ -800,10 +800,16 @@ pub(super) fn retain(
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
-        let integer_arguments = sp.iter().any(|p| p.ty == Type::Z);
+        let coefficient = sp.iter()
+            .find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone());
+        if let Some(ty) = &coefficient {
+            if sp.iter().any(|p| matches!(p.ty, Type::Z | Type::Q) && p.ty != *ty) {
+                return Err("mixed Z/Q local arguments are not implemented".into());
+            }
+        }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
-            if integer_arguments {
+            if coefficient.is_some() {
                 reads.push(Read::Expression);
                 continue;
             }
@@ -907,7 +913,7 @@ pub(super) fn retain(
                 });
                 continue;
             }
-            if source.ty == Type::Z && target.ty == Type::Z {
+            if matches!(source.ty, Type::Z | Type::Q) && source.ty == target.ty {
                 super::super::numeric_transport::numeric_declaration_value_transport(
                     inputs,
                     declarations,
@@ -916,7 +922,7 @@ pub(super) fn retain(
                     c,
                 ).map_err(failure)?;
                 let values = value_map(b, [&source.ty, &target.ty], &[], &[], dependencies)?;
-                parameter_maps.push(LocalParameter::Integer { values });
+                parameter_maps.push(LocalParameter::Numeric { values });
                 continue;
             }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
@@ -934,11 +940,11 @@ pub(super) fn retain(
             type_maps.push(map.clone());
             parameter_maps.push(LocalParameter::Reference(map));
         }
-        let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Integer { .. }));
+        let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Numeric { .. }));
         if infinite && sr.iter().chain(tr).any(|id| {
-            inputs.law().expr_type(*id).map(|t| t.erase()) != Some(Type::Z)
+            inputs.law().expr_type(*id).map(|t| t.erase()) != coefficient
         }) {
-            return Err("integer local transport requires scalar Z reads".into());
+            return Err("numeric local transport requires reads of its coefficient type".into());
         }
         let mut guard_expressions = vec![];
         for (guard, params) in [(*sg, sp), (*tg, tp)] {
@@ -1056,9 +1062,10 @@ pub(super) fn retain(
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
             let mut comparison = if infinite {
-                let values = value_map(b, [&Type::Z, &Type::Z], &[], &[], dependencies)?;
-                integer::compare(
-                    b, env, [source, target], &parameter_maps, [s, t], values,
+                let ty = coefficient.as_ref().ok_or("local coefficient type missing")?;
+                let values = value_map(b, [ty, ty], &[], &[], dependencies)?;
+                numeric_read::compare(
+                    b, env, [source, target], &parameter_maps, [s, t], ty, values,
                     &[se, te], request, c,
                 )?
             } else { match read {

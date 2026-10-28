@@ -1755,25 +1755,87 @@ mod tests {
     }
 }
 
-/// Integer local transport on the complete source guard fiber.
-/// The finite/reference bindings are fixed; unbound Z parameters remain symbolic.
-pub(in crate::observed) struct IntegerTransport {
+// Only the already constructed Z or Q fiber is normalized to scalar coordinates.
+struct NumericGuard {
+    equations: Vec<Vec<Scalar>>,
+    rhs: Vec<Scalar>,
+    particular: Option<Vec<Scalar>>,
+    kernel: Vec<Vec<Scalar>>,
+    rank: usize,
+}
+fn numeric_guard_domain(
+    env: &Environment<'_>,
+    guard: Option<usize>,
+    vars: &BTreeMap<String, SourceValue>,
+    axes: &[crate::observed::affine::Parameter],
+    reading: &str,
+    pending: &mut super::change_affine::Pending,
+    ty: &Type,
+) -> Result<NumericGuard, ValidationFailure> {
+    match ty {
+        Type::Z => {
+            let guard = super::change_affine::parameter_guard_domain(
+                env, guard, vars, axes, reading, pending,
+            )?;
+            let scalars = |row: Vec<num_bigint::BigInt>| -> Result<Vec<Scalar>, ValidationFailure> {
+                row.into_iter()
+                    .map(|value| {
+                        env.tick()?;
+                        Ok(Scalar::Z(value))
+                    })
+                    .collect()
+            };
+            Ok(NumericGuard {
+                equations: guard
+                    .equations
+                    .into_iter()
+                    .map(&scalars)
+                    .collect::<Result<_, _>>()?,
+                rhs: scalars(guard.rhs)?,
+                particular: guard.fiber.particular.map(&scalars).transpose()?,
+                kernel: guard
+                    .fiber
+                    .kernel
+                    .into_iter()
+                    .map(&scalars)
+                    .collect::<Result<_, _>>()?,
+                rank: guard.fiber.rank,
+            })
+        }
+        Type::Q => {
+            let (equations, rhs, fiber) = super::field_change::parameter_guard_domain(
+                env, guard, vars, axes, reading, pending,
+            )?;
+            Ok(NumericGuard {
+                equations,
+                rhs,
+                particular: fiber.particular,
+                kernel: fiber.kernel,
+                rank: fiber.pivots.len(),
+            })
+        }
+        _ => Err("unsupported local guard coefficient type".into()),
+    }
+}
+
+/// Z/Q local transport on the complete source guard fiber.
+/// The finite/reference bindings are fixed; unbound numeric parameters remain symbolic.
+pub(in crate::observed) struct AffineTransport {
     pub status: Decision,
     pub point: Option<Vec<Scalar>>,
     pub support: Vec<Fact>,
     pub scope: Scope,
     pub missing: Vec<Fact>,
 }
-pub(in crate::observed) fn integer_transport(
+pub(in crate::observed) fn affine_transport(
     env: &Environment<'_>,
     declarations: [&Declaration; 2],
     bindings: [&[(String, Scalar)]; 2],
     expressions: [usize; 2],
-) -> Result<IntegerTransport, ValidationFailure> {
+    ty: &Type,
+) -> Result<AffineTransport, ValidationFailure> {
     use crate::observed::{affine, environment::change_affine};
-    use num_bigint::BigInt;
-    use num_traits::Zero;
-    let mut out = IntegerTransport {
+    let mut out = AffineTransport {
         status: Decision::Established,
         point: None,
         support: vec![],
@@ -1793,7 +1855,7 @@ pub(in crate::observed) fn integer_transport(
                 params: p, guard, ..
             } = &declaration.signature
             else {
-                return Err("integer transport requires local declarations".into());
+                return Err("numeric transport requires local declarations".into());
             };
             params.push(p);
             guards.push(*guard);
@@ -1802,70 +1864,76 @@ pub(in crate::observed) fn integer_transport(
         let (mut target, _) = change_affine::law_variables(env, params[1], bindings[1])?;
         // The target's numeric argument is the same source coordinate at that position.
         for (s, t) in params[0].iter().zip(params[1]) {
-            if s.ty == Type::Z && !bindings[0].iter().any(|(name, _)| name == &s.name) {
+            if s.ty == *ty && !bindings[0].iter().any(|(name, _)| name == &s.name) {
                 target.insert(
                     t.name.clone(),
                     source
                         .get(&s.name)
-                        .ok_or("source integer coordinate missing")?
+                        .ok_or("source numeric coordinate missing")?
                         .clone(),
                 );
             }
         }
-        let domain = change_affine::parameter_guard_domain(
+        let domain = numeric_guard_domain(
             env,
             guards[0],
             &source,
             &axes,
             &declarations[0].reading,
             &mut pending,
+            ty,
         )?;
-        let Some(origin) = &domain.fiber.particular else {
+        let Some(origin) = &domain.particular else {
             return Ok(());
         };
-        let target_domain = change_affine::parameter_guard_domain(
+        let target_domain = numeric_guard_domain(
             env,
             guards[1],
             &target,
             &axes,
             &declarations[1].reading,
             &mut pending,
+            ty,
         )?;
-        // A linear form vanishes on p + K Z^d iff its value at p and every
-        // coefficient along the kernel basis vanish. This is not point sampling.
-        let witness = |constant: &BigInt,
-                       coefficients: &[BigInt]|
-         -> Result<Option<Vec<BigInt>>, ValidationFailure> {
+        // On p + K R^d (R = Z or Q), the value at p and every kernel
+        // coefficient must vanish. The solver for R determines the full domain.
+        let zero = numeric::zero(ty, &env.control)?;
+        let witness = |constant: &Scalar,
+                       coefficients: &[Scalar]|
+         -> Result<Option<Vec<Scalar>>, ValidationFailure> {
             let mut value = constant.clone();
             for (a, x) in coefficients.iter().zip(origin) {
                 env.tick()?;
-                value += a * x;
+                let product = numeric::binary(BinOp::Mul, a, x, &env.control)?;
+                value = numeric::binary(BinOp::Add, &value, &product, &env.control)?;
             }
-            if !value.is_zero() {
+            if value != zero {
                 return Ok(Some(origin.clone()));
             }
-            let dimension = axes.len() - domain.fiber.rank;
-            for column in 0..dimension {
-                let mut coefficient = BigInt::zero();
-                for (a, row) in coefficients.iter().zip(&domain.fiber.kernel) {
+            for column in 0..axes.len() - domain.rank {
+                let mut coefficient = zero.clone();
+                for (a, row) in coefficients.iter().zip(&domain.kernel) {
                     env.tick()?;
-                    coefficient += a * &row[column];
+                    let product = numeric::binary(BinOp::Mul, a, &row[column], &env.control)?;
+                    coefficient =
+                        numeric::binary(BinOp::Add, &coefficient, &product, &env.control)?;
                 }
-                if !coefficient.is_zero() {
-                    return Ok(Some(
-                        origin
-                            .iter()
-                            .zip(&domain.fiber.kernel)
-                            .map(|(p, row)| p + &row[column])
-                            .collect(),
-                    ));
+                if coefficient != zero {
+                    let mut point = vec![];
+                    for (p, row) in origin.iter().zip(&domain.kernel) {
+                        env.tick()?;
+                        point.push(numeric::binary(BinOp::Add, p, &row[column], &env.control)?);
+                    }
+                    return Ok(Some(point));
                 }
             }
             Ok(None)
         };
         let mut point = None;
         for (row, rhs) in target_domain.equations.iter().zip(&target_domain.rhs) {
-            if let Some(values) = witness(&(-rhs), row)? {
+            if let Some(values) =
+                witness(&numeric::binary(BinOp::Sub, &zero, rhs, &env.control)?, row)?
+            {
                 point = Some(values);
                 break;
             }
@@ -1907,7 +1975,13 @@ pub(in crate::observed) fn integer_transport(
                 affine::binary(BinOp::Sub, Some(&forms[0]), Some(&forms[1]), &env.control)?;
             let Some((constant, coefficients)) = difference
                 .as_ref()
-                .map(|f| f.integer_coordinates(&axes, &env.control))
+                .map(|f| match ty {
+                    Type::Z => Ok(f
+                        .integer_coordinates(&axes, &env.control)?
+                        .map(|(c, row)| (Scalar::Z(c), row.into_iter().map(Scalar::Z).collect()))),
+                    Type::Q => f.rational_coordinates(&axes, &env.control),
+                    _ => Err("unsupported local coefficient type".into()),
+                })
                 .transpose()?
                 .flatten()
             else {
@@ -1925,13 +1999,11 @@ pub(in crate::observed) fn integer_transport(
                     if let Some((_, v)) = bindings[0].iter().find(|(name, _)| name == &p.name) {
                         v.clone()
                     } else {
-                        Scalar::Z(
-                            point[axes
-                                .iter()
-                                .position(|a| a.binder == p.span)
-                                .ok_or("original integer axis missing")?]
-                            .clone(),
-                        )
+                        point[axes
+                            .iter()
+                            .position(|a| a.binder == p.span)
+                            .ok_or("original numeric axis missing")?]
+                        .clone()
                     },
                 );
             }
@@ -1943,7 +2015,7 @@ pub(in crate::observed) fn integer_transport(
     let missing = env
         .missing_slot_reads
         .replace(outer_missing)
-        .ok_or("integer local missing-read collector is absent")?;
+        .ok_or("numeric local missing-read collector is absent")?;
     pending.facts.extend(missing.into_iter().filter(|fact| {
         !env.primitive_valuation
             .as_ref()
