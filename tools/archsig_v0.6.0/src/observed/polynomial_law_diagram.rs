@@ -1680,7 +1680,19 @@ impl FamilyPlan {
         if !Arc::ptr_eq(a, &self.0.architecture) {
             return Err("全Law表の元Architectureが別由来".into());
         }
-        self.0.recheck(env.inputs, a, c)?;
+        // 計画本体は元三入力と不変のArchitectureだけに依存する。
+        // Graph上の元参照・Architecture同一性は、cache利用時も上で照合する。
+        if !env
+            .verified_polynomial_law_diagrams
+            .borrow()
+            .iter()
+            .any(|s| Arc::ptr_eq(s, &self.0))
+        {
+            self.0.recheck(env.inputs, a, c)?;
+            env.verified_polynomial_law_diagrams
+                .borrow_mut()
+                .push(self.0.clone());
+        }
         Ok(a.clone())
     }
 }
