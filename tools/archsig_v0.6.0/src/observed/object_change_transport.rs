@@ -68,12 +68,9 @@ fn update_expression(
     dependencies: &[NodeRef],
 ) -> Result<NodeRef, ValidationFailure> {
     if let Some(plain) = &updates.plain {
-        let id = plain
-            .iter()
-            .find(|(name, _)| name == field)
-            .ok_or("元更新句がない")?
-            .1;
-        return expression(b, inputs, id, params, dependencies);
+        if let Some((_, id)) = plain.iter().find(|(name, _)| name == field) {
+            return expression(b, inputs, *id, params, dependencies);
+        }
     }
     let source = body.ok_or("change全体の元式がない")?;
     b.push(
@@ -290,8 +287,9 @@ fn point(
     if truth[0] == Some(false) {
         return Ok(());
     }
-    let left = change_evaluation::evaluate(env, declarations[0], &bindings[0])?;
-    let right = change_evaluation::evaluate(env, declarations[1], &bindings[1])?;
+    let fields = [0, 1].map(|side| names.iter().map(|pair| pair[side].clone()).collect::<Vec<_>>());
+    let left = change_evaluation::evaluate_on_fields(env, declarations[0], &bindings[0], &fields[0])?;
+    let right = change_evaluation::evaluate_on_fields(env, declarations[1], &bindings[1], &fields[1])?;
     for check in checks.iter_mut() {
         check
             .support
@@ -485,27 +483,33 @@ pub(super) fn retain(
     };
     let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
     let mut names = vec![];
-    for name in &items[0].fields {
-        let moved = correspondence
-            .field_target(inputs, &format!("{st}.{name}"), c)
-            .map_err(failure)?
-            .ok_or_else(|| unsupported(inputs, bodies[0], "missing field correspondence for the change update target"))?;
-        let target = moved
-            .strip_prefix(&format!("{tt}."))
-            .ok_or("change更新先の型対応が違う")?
-            .to_owned();
-        names.push([name.clone(), target]);
+    let (source_parameters, source_fields) = inputs.definitions().declarations[st].signature
+        .record_fields().ok_or("change元型にfieldがない")?;
+    for field in source_parameters.iter().chain(source_fields) {
+        tick(c)?;
+        let moved = correspondence.field_target(inputs, &format!("{st}.{}", field.name), c)
+            .map_err(failure)?;
+        let target = moved.as_deref().and_then(|name| name.strip_prefix(&format!("{tt}.")));
+        if items[0].fields.contains(&field.name)
+            || target.is_some_and(|name| items[1].fields.iter().any(|field| field == name))
+        {
+            let target = target.ok_or_else(|| unsupported(inputs, bodies[0],
+                "missing field correspondence for the change update target"))?;
+            names.push([field.name.clone(), target.to_owned()]);
+        }
     }
-    let mut expected = names.iter().map(|n| n[1].clone()).collect::<Vec<_>>();
-    expected.sort();
-    let mut actual = items[1].fields.clone();
-    actual.sort();
-    if expected != actual {
-        return Err(unsupported(
-            inputs,
-            bodies[0],
-            "change transport with noncorresponding update target sets is not implemented",
-        ));
+    if items[1].fields.iter().any(|field| !names.iter().any(|pair| &pair[1] == field)) {
+        return Err(unsupported(inputs, bodies[1], "missing source field for the change update target"));
+    }
+    let different_fields = names.iter().any(|pair|
+        !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
+    // First connect exact finite argument domains; symbolic parameter updates
+    // continue through their existing affine path with matching coordinates.
+    if different_fields && !super::super::super::finite::supported(
+        &Type::Tuple(params[0][1..].iter().map(|p| p.ty.erase()).collect()), inputs.law(), c)?
+    {
+        return Err(unsupported(inputs, bodies[0],
+            "change transport with different update target sets and infinite parameters is not implemented"));
     }
     let mut identity = vec![];
     for (s, t) in params[0][1..].iter().zip(&params[1][1..]) {
@@ -538,7 +542,7 @@ pub(super) fn retain(
     ]];
     let mut body_sources = [None, None];
     for side in 0..2 {
-        if items[side].plain.is_none() {
+        if items[side].plain.is_none() || different_fields {
             body_sources[side] = Some(expression(
                 b,
                 inputs,
