@@ -1327,3 +1327,17 @@ fn integer_quotient_composed_guard_uses_the_candidate_lattice_and_reuses() {
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));for reference in views {assert_eq!(s(get(node(&j,reference),"value")),"3");}let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
     let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks {args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 }
+
+#[test]
+fn integer_conjunction_build_keeps_required_and_optional_equations() {
+    let dir = input("integer-conjunction-build", "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
+    let r = execute(&dir, "out", &["b=build(Pair,on=@pair/s)",
+        "r=repair(Pair.pinned,on=$b.object,using=Pair.setpair)",
+        "x=evaluate(Pair.first,on=$r.object,s=@pair/s)", "c=check(Pair.pinned,on=$r.object)"]);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let answers = arr(get(&j, "answers"));
+    assert!(answers.iter().all(|answer| s(get(answer, "status")) == "established"));
+    assert_eq!(arr(get(get(output(&j, 0, "algebra"), "value"), "circuits")).len(), 3);
+    assert_eq!(s(get(output(&j, 2, "value"), "value")), "0");
+}

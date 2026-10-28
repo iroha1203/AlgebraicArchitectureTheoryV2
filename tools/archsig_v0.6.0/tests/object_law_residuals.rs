@@ -632,3 +632,27 @@ fn conditional_membership_keeps_unknown_residuals_and_the_original_owner_conditi
     assert!(count > 0);
     r.recheck(i, &mut quiet()).unwrap();
 }
+
+#[test]
+fn conjunction_keeps_distinct_signed_residuals_and_original_operand_pairs() {
+    let i = inputs("law required both(c:Part):(c.quantity=0) and (c.quantity=3);", fixture::A);
+    let r = run(i.clone());
+    assert!(r.is_complete());
+    for e in r.evaluations() {
+        assert!(matches!(e.shape, LawNumericShape::Conjunction { .. }));
+        let case = &e.rows[0].cases[0];
+        assert_eq!(case.reading.body(), Some(false));
+        assert_eq!(case.components.len(), 2);
+        assert_eq!(case.components[0].path, [0]);
+        assert_eq!(case.components[1].path, [1]);
+        assert_eq!(text(&case.components[0].epsilon), Some("\"2\"".into()));
+        assert_eq!(text(&case.components[1].epsilon), Some("\"-1\"".into()));
+        assert_eq!(case.conjuncts.len(), 2);
+        for term in &case.conjuncts {
+            assert_eq!(term.operand_evaluations.len(), 2);
+            assert!(term.epsilon_producer.is_some());
+        }
+        assert_ne!(case.conjuncts[0].operand_evaluations, case.conjuncts[1].operand_evaluations);
+    }
+    r.recheck(i, &mut quiet()).unwrap();
+}

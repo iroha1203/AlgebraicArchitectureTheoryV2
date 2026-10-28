@@ -811,3 +811,98 @@ fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
         let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in &asks{args.extend(["--ask",ask]);}let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);let again=result_json(&dir,&repeat);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
     }
 }
+
+#[test]
+fn rational_conjunction_build_connects_repair_and_preserves_observations() {
+    for role in ["required", "optional"] {
+        for held in [false, true] {
+            let dir = input(&format!("conjunction-{role}-{held}"), &format!(
+                "change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law {role} pinned(s:State):(s.x+s.y=1) and (s.x-s.y=0);"
+            ));
+            if held {
+                let path = dir.join("a.json");
+                let original = std::fs::read_to_string(&path).unwrap();
+                std::fs::write(path, original.replace("[\"0\",\"1\"]", "[\"1\",\"2\"]")).unwrap();
+            }
+            let asks = ["b=build(Pair,on=@v/s)", "c=check(Pair.pinned,s=@v/s)",
+                "r=repair(Pair.pinned,on=$b.object,using=Pair.choose)",
+                "x=evaluate(Pair.x,on=$r.object,s=@v/s)", "after=check(Pair.pinned,on=$r.object)",
+                "old=evaluate(Pair.x,s=@v/s)"];
+            let r = execute(&dir, "out", &asks);
+            assert_eq!(r.code, if held { 0 } else { 1 }, "{} {}", r.stdout, r.stderr);
+            let j = result_json(&dir, &r);
+            let answers = arr(get(&j, "answers"));
+            assert_eq!(s(get(&answers[0], "status")), "established");
+            let algebra = get(output(&j, 0, "algebra"), "value");
+            assert_eq!(arr(get(algebra, "circuits")).len(), 2);
+            assert_eq!(s(get(&answers[1], "status")), if held { "established" } else { "refuted" });
+            assert_eq!(s(get(&answers[2], "status")), "established");
+            assert_eq!(arr(get(output(&j, 3, "value"), "value")).iter().map(s).collect::<Vec<_>>(), ["1", "2"]);
+            assert_eq!(s(get(&answers[4], "status")), "established");
+            assert_eq!(arr(get(output(&j, 5, "value"), "value")).iter().map(s).collect::<Vec<_>>(),
+                if held { ["1", "2"] } else { ["0", "1"] });
+            let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law",
+                "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+            for ask in &asks { args.extend(["--ask", ask]); }
+            let repeated = run(&dir, &args);
+            assert_eq!(repeated.code, r.code, "{}", repeated.stdout);
+            let again = result_json(&dir, &repeated);
+            for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
+        }
+    }
+}
+
+#[test]
+fn rational_conjunction_build_keeps_inconsistent_repairs_empty() {
+    let dir = input("conjunction-inconsistent", "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State):(s.x=0) and (s.x=1);");
+    let r = execute(&dir, "out", &["b=build(Pair,on=@v/s)",
+        "s=solve(Pair.pinned,on=$b.object,using=Pair.choose)", "r=repair(Pair.pinned,on=$b.object,using=Pair.choose)"]);
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let answers = arr(get(&j, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "established");
+    for answer in &answers[1..] { assert_eq!(s(get(answer, "status")), "refuted"); }
+    assert!(!has(get(&answers[2], "outputs"), "object"));
+    assert!(!has(get(&answers[2], "outputs"), "repair"));
+}
+
+#[test]
+fn rational_conjunction_build_keeps_lexical_tuple_components_and_false_guards() {
+    for guard in ["", " when false"] {
+        let dir = input(&format!("conjunction-lexical-{}", guard.is_empty()), &format!(
+            "law required pinned(s:State){guard}:let total=s.x+s.y in (total=0) and ((s.x,s.y)=(0,0));"
+        ));
+        let r = execute(&dir, "out", &["b=build(Pair,on=@v/s)", "c=check(Pair.pinned,s=@v/s)"]);
+        assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        assert_eq!(s(get(&arr(get(&j, "answers"))[0], "status")), "established");
+        let algebra = get(output(&j, 0, "algebra"), "value");
+        assert_eq!(arr(get(algebra, "circuits")).len(), 3);
+        if !guard.is_empty() {
+            assert_eq!(s(get(&arr(get(&j, "answers"))[1], "applicability")), "not_applicable");
+        }
+    }
+}
+
+#[test]
+fn rational_conjunction_build_keeps_missing_operands_and_unknown_guards() {
+    for guard in ["", " when s.y=0"] {
+        let dir = input(&format!("conjunction-missing-{}", guard.is_empty()), &format!(
+            "law required pinned(s:State){guard}:(s.x+s.y=1) and (s.x-s.y=0);"
+        ));
+        let path = dir.join("a.json");
+        let map = std::fs::read_to_string(&path).unwrap();
+        let missing = map.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#, "");
+        assert_ne!(map, missing);
+        std::fs::write(path, missing).unwrap();
+        let r = execute(&dir, "out", &["b=build(Pair,on=@v/s)", "c=check(Pair.pinned,s=@v/s)", "n=needed($b)"]);
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answers = arr(get(&j, "answers"));
+        for answer in &answers[..2] { assert_eq!(s(get(answer, "status")), "undetermined"); }
+        assert!(has(get(&answers[0], "outputs"), "object"));
+        assert!(!has(get(&answers[0], "outputs"), "algebra"));
+        let plan = get(output(&j, 2, "plan"), "value");
+        assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y"));
+    }
+}
