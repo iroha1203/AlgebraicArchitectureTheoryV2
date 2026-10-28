@@ -4911,7 +4911,7 @@ fn local_rational_reads_compare_exact_values_on_all_reference_rows() {
                 } else {
                     a["value"].clone()
                 };
-                a.insert("value".into(), Json::Arr(vec![numerator, Json::str("3")]));
+                a.insert("value".into(), Json::Arr(vec![numerator, Json::str(if case == "zero-refuted" { "1" } else { "3" })]));
             }
         }
         std::fs::write(dir.join("d.json"), definition).unwrap();
