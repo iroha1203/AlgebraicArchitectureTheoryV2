@@ -487,16 +487,18 @@ pub(in crate::observed) fn compute_update(
     let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数候補がchangeでない".into());
     };
-    let ty = params.get(1).map(|p| &p.ty).ok_or("数値changeの引数がない")?;
-    if !matches!(ty, Type::Z | Type::Q) || params[1..].iter().any(|p| p.ty != *ty) {
+    let ty = params.get(1).and_then(|p| numeric_parameters::coefficient_type(&p.ty));
+    if ty.is_none() || params[1..].iter().any(|p|
+        numeric_parameters::coefficient_type(&p.ty) != ty) {
         return Err(unsupported(
             env,
             *body,
             "数値changeの混合parameter型は未実装",
         ));
     }
+    let ty = ty.ok_or("数値changeの係数型がない")?;
     let bindings = vec![(params[0].name.clone(), subject.clone())];
-    let (mut vars, axes) = law_variables(env, params, &bindings)?;
+    let (mut vars, axes) = numeric_parameters::law_variables(env, params, &bindings)?;
     missing.bindings = bindings;
     missing.parameters = params[1..]
         .iter()
@@ -990,6 +992,6 @@ pub(in crate::observed) fn change_guard_domain(
         return Err("数値guardの元宣言がchangeでない".into());
     };
     let first = params.first().ok_or("changeの第1引数がない")?;
-    let (vars, axes) = law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
+    let (vars, axes) = numeric_parameters::law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
     numeric_guard_domain(env, *guard, &vars, &axes, &change.reading, missing, ty)
 }
