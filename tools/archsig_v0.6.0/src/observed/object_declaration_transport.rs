@@ -82,7 +82,7 @@ impl LocalParameter {
 }
 enum Read {
     Projection(usize),
-    ScalarExpression,
+    Expression,
     Field { position: usize, names: [String; 2] },
 }
 pub(super) struct Output {
@@ -558,8 +558,11 @@ pub(super) fn retain(
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
-            let scalar_read = !sp.is_empty()
-                && matches!(&read_type, Some(Type::Z | Type::Q | Type::Bool))
+            let expression_read = !sp.is_empty()
+                && match &read_type {
+                    Some(ty) => super::super::environment::local_read::value_type_supported(ty, inputs.law(), c)?,
+                    None => false,
+                }
                 && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
@@ -574,13 +577,13 @@ pub(super) fn retain(
                         position: a,
                         names: [source, target],
                     });
-                } else if scalar_read {
-                    reads.push(Read::ScalarExpression);
+                } else if expression_read {
+                    reads.push(Read::Expression);
                 } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
-            } else if scalar_read {
-                reads.push(Read::ScalarExpression);
+            } else if expression_read {
+                reads.push(Read::Expression);
             } else {
                 return Err("local readの式移送は未実装".into());
             }
@@ -783,7 +786,7 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
-                Read::ScalarExpression => field::compare_scalar_expression(
+                Read::Expression => field::compare_expression(
                     b, env, inputs, [source, target], &parameter_maps,
                     applicable.as_ref().map(|domain| domain.rows.as_slice()),
                     [s, t], [se, te], dependencies, request, c,

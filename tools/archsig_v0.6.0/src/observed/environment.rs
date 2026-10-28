@@ -176,6 +176,8 @@ struct DottedInputCache {
 // 純粋AST計算の全入力。Graphの照合成功とは別に保持する。
 #[derive(Clone, PartialEq, Eq)]
 struct ScopedKey {
+    // localの必要欠測収集と、通常評価の全出現記録を混同しない。
+    direct_read: bool,
     expression: usize,
     variables: BTreeMap<String, SourceValue>,
     base: Scope,
@@ -7349,6 +7351,7 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
             let key = ScopedKey {
+                direct_read: self.primitive_reads.borrow().is_some(),
                 expression: id,
                 variables: self.copy_variables(variables)?,
                 base: base.clone(),
@@ -7753,8 +7756,31 @@ impl<'a> Environment<'a> {
                     else_branch,
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
-                    let left = self.scoped_ast(*then_branch, variables, base, reading)?;
-                    let right = self.scoped_ast(*else_branch, variables, base, reading)?;
+                    // localの必要欠測だけを選択枝へ制限する。両枝の評価・出現記録は保つ。
+                    let (left, right) = if self.primitive_reads.borrow().is_some()
+                        && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
+                    {
+                        let outer = self.missing_slot_reads.replace(Some(BTreeSet::new()));
+                        let values = (|| -> Result<_, ValidationFailure> {
+                            let left = self.scoped_ast(*then_branch, variables, base, reading)?;
+                            let left_missing = self.missing_slot_reads.replace(Some(BTreeSet::new()))
+                                .ok_or("条件式の不足位置収集がない")?;
+                            let right = self.scoped_ast(*else_branch, variables, base, reading)?;
+                            if *take {
+                                self.missing_slot_reads.replace(Some(left_missing));
+                            }
+                            Ok((left, right))
+                        })();
+                        let missing = self.missing_slot_reads.replace(outer)
+                            .ok_or("条件式の不足位置収集が消えた")?;
+                        if let Some(outer) = self.missing_slot_reads.borrow_mut().as_mut() {
+                            outer.extend(missing);
+                        }
+                        values?
+                    } else {
+                        (self.scoped_ast(*then_branch, variables, base, reading)?,
+                         self.scoped_ast(*else_branch, variables, base, reading)?)
+                    };
                     let known_value = conditional_branch(
                         condition.known_value.as_ref(),
                         left.known_value.as_ref(),

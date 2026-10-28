@@ -225,7 +225,8 @@ fn value(a: &SourceValue, b: &SourceValue, c: &Control) -> Result<bool, Validati
 }
 pub(super) fn key(a: &ScopedKey, b: &ScopedKey, c: &Control) -> Result<bool, ValidationFailure> {
     tick(c)?;
-    if a.expression != b.expression
+    if a.direct_read != b.direct_read
+        || a.expression != b.expression
         || a.reading != b.reading
         || a.context != b.context
         || a.scoped != b.scoped

@@ -139,8 +139,18 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 引数を束縛したlocalのZ/Q/Bool readを、通常Evaluatorで評価する。
-pub(in crate::observed) fn scalar_value(
+/// 恒等写像で比較する既存数値域と、既存有限核の参照なし型。
+pub(in crate::observed) fn value_type_supported(
+    ty: &Type,
+    law: &crate::law::CheckedLaw,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    Ok(matches!(ty, Type::Z | Type::Q)
+        || super::super::finite::completion_supported(ty, law, c)?)
+}
+
+/// 引数を束縛したlocal readを、通常Evaluatorで評価する。
+pub(in crate::observed) fn read_value(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
@@ -152,8 +162,8 @@ pub(in crate::observed) fn scalar_value(
         .expr_type(id)
         .ok_or("local readの型がない")?
         .erase();
-    if !matches!(ty, Type::Z | Type::Q | Type::Bool) {
-        return Err("localの一般readはZ/Q/Boolだけに対応".into());
+    if !value_type_supported(&ty, env.inputs.law(), &env.control)? {
+        return Err("local readの値型は恒等移送の適用域外".into());
     }
     let variables = bindings
         .iter()
