@@ -131,14 +131,14 @@ fn path_binding(
 fn witness_bindings(
     params: &[Param],
     row: &relation_instances::RelationInstance,
-    numeric_point: Option<&[num_bigint::BigInt]>,
+    numeric_point: Option<&[Scalar]>,
     c: &mut Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
     if numeric_point.is_none()
         && row
             .numeric_domain
             .as_ref()
-            .is_some_and(|domain| domain.fiber.particular.is_none())
+            .is_some_and(|domain| domain.particular.is_none())
     {
         return Err("空のrelation適用域に反例はない".into());
     }
@@ -153,19 +153,17 @@ fn witness_bindings(
                     if let Some(point) = numeric_point.or_else(|| {
                         row.numeric_domain
                             .as_ref()
-                            .and_then(|domain| domain.fiber.particular.as_deref())
+                            .and_then(|domain| domain.particular.as_deref())
                     }) {
                         let index = row
                             .numeric_parameters
                             .iter()
                             .position(|axis| axis == p)
                             .ok_or("relation反例の数値軸がない")?;
-                        Scalar::Z(
-                            point
-                                .get(index)
-                                .ok_or("relation反例の特解座標がない")?
-                                .clone(),
-                        )
+                        point
+                            .get(index)
+                            .ok_or("relation反例の特解座標がない")?
+                            .clone()
                     } else {
                         crate::observed::numeric::zero(&p.ty, c)?
                     }
@@ -769,7 +767,7 @@ pub(super) fn retain(
                 continue;
             };
             let guard_point = match (&row.numeric_domain, &target.numeric_domain) {
-                (Some(source), Some(target)) => super::change::outside(source, target, c)?,
+                (Some(source), Some(target)) => source.outside(target, env)?,
                 _ => None,
             };
             let restricted;

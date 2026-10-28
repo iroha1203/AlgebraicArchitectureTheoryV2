@@ -9987,3 +9987,241 @@ change tune(s:State,n:Z)=s with {free=s.free,held=n*n};law required zero(s:State
         let pointer=get(r,"field");s(get(pointer,"subject"))=="p"&&s(get(pointer,"field"))=="Reservations.State.free"
     }));
 }
+
+#[test]
+fn relation_transport_restricts_rational_families_to_exact_guard_domains() {
+    for (case, guard, left, target_guard, target_left, code, status) in [
+        (
+            "restricted",
+            "when n+m=3",
+            "if n+m=3 then path(e) else identity(source(path(e)))",
+            "when k+j=3",
+            "path(t)",
+            0,
+            "established",
+        ),
+        (
+            "fraction-active",
+            "when 2*n=1",
+            "if n=rat(1,2) then path(e) else identity(source(path(e)))",
+            "when 2*k=1",
+            "path(t)",
+            0,
+            "established",
+        ),
+        (
+            "expanded",
+            "when n+m=3",
+            "path(e)",
+            "",
+            "path(t)",
+            0,
+            "established",
+        ),
+        (
+            "empty",
+            "when 2*n=1 and n=0",
+            "path(e)",
+            "when false",
+            "path(t)",
+            0,
+            "established",
+        ),
+        (
+            "guard_refuted",
+            "when n+m=3",
+            "path(e)",
+            "when k=0",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        (
+            "later_guard_refuted",
+            "when n=1",
+            "path(e)",
+            "when last=0",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        (
+            "all_type_guard_refuted",
+            "",
+            "path(e)",
+            "when k=0",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        (
+            "word_refuted",
+            "when 2*n=1",
+            "identity(source(path(e)))",
+            "when 2*k=1",
+            "path(t)",
+            1,
+            "refuted",
+        ),
+        ("missing", "when if e.from.free=0 then n=0 else n=0", "path(e)", "when if t.from.free=0 then k=0 else k=0", "path(t)", 2, "undetermined"),
+        ("nonlinear", "when n*m=1", "path(e)", "when k*j=1", "path(t)", 2, "undetermined"),
+        ("inequality", "when n>0", "path(e)", "when k>0", "path(t)", 2, "undetermined"),
+        ("mixed", "when n=0 and extra=0", "path(e)", "when k=0 and last=0", "path(t)", 2, "undetermined"),
+        (
+            "varying_word",
+            "when n+m=3",
+            "if extra=0 then path(e) else identity(source(path(e)))",
+            "when k+j=3",
+            "path(t)",
+            2,
+            "undetermined",
+        ),
+    ] {
+        let dir = finite_view_inputs(&format!("relation-rational-domain-{case}"), true);
+        if case == "missing" {
+            let path = dir.join("a.json");
+            let data = std::fs::read_to_string(&path).unwrap();
+            std::fs::write(path, data.lines().filter(|line| !line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
+        }
+        if case == "varying_word" {
+            let path = dir.join("a.json");
+            let data = std::fs::read_to_string(&path).unwrap()
+                .replace(r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","q"]"#,r#""id":"e-to","subject":"e","field":"Reservations.Reserve.to","value":["v","p"]"#)
+                .replace(r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","s"]"#,r#""id":"f-to","subject":"f","field":"Reservations.Reserve.to","value":["v","r"]"#);
+            std::fs::write(path, data).unwrap();
+        }
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{ {vocabulary} relation paths(n:Q,e:Reserve,m:Q,take:Bool,extra:Q) {guard}:({left})=path(e); }}
+reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q) {target_guard}:({target_left})=path(t); }}"#)).unwrap();
+        if case == "mixed" {
+            let law = std::fs::read_to_string(dir.join("l.law")).unwrap()
+                .replace("extra:Q", "extra:Z").replace("last:Q", "last:Z");
+            std::fs::write(dir.join("l.law"), law).unwrap();
+        }
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = cli::run(&dir, &args);
+        assert_eq!(
+            normal.code, code,
+            "{case}: {} {}",
+            normal.stdout, normal.stderr
+        );
+        assert!(normal.stderr.is_empty());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        eprintln!(
+            "rational domain relation {case}: stdout {} bytes",
+            normal.stdout.len()
+        );
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 0 {
+            let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            for clause in arr(get(transport, "clauses")) {
+                let arguments = value(&result, get(clause, "arguments"));
+                let types = arr(get(arguments, "source_type"));
+                assert_eq!(types.len(), 6);
+                assert_eq!(s(&types[1]), "Q");
+                assert_eq!(s(&types[3]), "Q");
+                assert_eq!(s(&types[5]), "Q");
+                let proof = value(&result, get(clause, "commutes"));
+                let qs = arr(get(proof, "quantifiers"));
+                assert_eq!(qs.len(), 5);
+                assert_eq!(
+                    qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
+                    ["n", "e", "m", "take", "extra"]
+                );
+                for index in [0, 2, 4] {
+                    assert_eq!(s(get(&qs[index], "kind")), "forall");
+                    assert!(!has(&qs[index], "domain"));
+                }
+            }
+        } else {
+            assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+            if code == 1 {
+                let examples = arr(get(answer(&result, "m"), "counterexamples"));
+                assert!(!examples.is_empty());
+                for example in examples {
+                    let data = get(value(&result, example), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(
+                        bindings
+                            .iter()
+                            .map(|b| s(get(b, "name")))
+                            .collect::<Vec<_>>(),
+                        ["n", "e", "m", "take", "extra"]
+                    );
+                    let q = |index: usize| {
+                        let pair = arr(value(&result, get(&bindings[index], "value")));
+                        (s(&pair[0]).parse::<i64>().unwrap(), s(&pair[1]).parse::<i64>().unwrap())
+                    };
+                    let (n, nd) = q(0);
+                    let (m, md) = q(2);
+                    if case == "guard_refuted" {
+                        assert_eq!(n * md + m * nd, 3 * nd * md);
+                        assert_ne!(n, 0);
+                    } else if case == "later_guard_refuted" {
+                        assert_eq!(n, nd);
+                        assert_ne!(q(4).0, 0);
+                    } else if case == "all_type_guard_refuted" {
+                        assert_ne!(n, 0);
+                    } else {
+                        assert_eq!((n, nd), (1, 2));
+                    }
+                    if case == "word_refuted" {
+                        assert!(
+                            arr(get(value(&result, get(data, "left")), "generators")).is_empty()
+                        );
+                        assert_eq!(
+                            arr(get(value(&result, get(data, "right")), "generators")).len(),
+                            1
+                        );
+                    }
+                }
+            } else {
+                assert!(!has(answer(&result, "m"), "counterexamples"));
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                if case == "missing" {
+                    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                        let field = get(r, "field");
+                        s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.free"
+                    }));
+                } else {
+                    assert!(arr(get(plan, "requirements")).is_empty());
+                }
+                assert!(!arr(get(plan, "blockers")).is_empty());
+            }
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{case}: {key}"
+            );
+        }
+    }
+}
