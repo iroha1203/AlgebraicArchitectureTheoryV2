@@ -198,6 +198,9 @@ Dataはfamilyとconstructorを保ち、全constructorのpayload型が参照作�
 Map成分は両端の参照型から全Map域を列挙し、候補像が移送先の全域Mapに属することを確認する。
 同じkey・同じ値の像は統合し、同じkey・異なる値や移送先key域の被覆不足は、
 空値やfalse guardでもcondition_failedとしてread反証・欠測と分ける。
+直接field readも同じ型全域検査・Evaluator・値移送で比較する。guardがなく一つの参照引数だけに
+依存する場合は、その全域を一度ずつ検査する。同じslotへの恒等値写像は全補完で可換なので、
+そのslotの欠測を要求へ加えない。
 未確定の適用条件を偽として除外せず、理由付きの未決として保持する。
 この宣言式の移送から、局所幾何全体や reading の同値を結論しない。
 local の公開値を依存 field 全体へ広げず、change を内部 Op に加えず、
