@@ -1,6 +1,5 @@
 //! localの参照・field readを、実参照写像と可換な宣言式として保持する。
 use super::*;
-use crate::observed::control::CheckFailure;
 use crate::{
     law::{
         ast::ExprKind,
@@ -587,33 +586,41 @@ pub(super) fn retain(
         let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            // Tuple/Option/Setの有限値構造から参照葉だけを集め、既存の実参照写像を共有する。
+            // 有限性は既存核で確認し、Dataのconstructor引数も含めて参照葉を読む。
             // localの前向き可換性には像の衝突・未到達を許す。有限APIの全単射判定は保つ。
             let mut reference_types = BTreeSet::new();
-            let structural_reference = !matches!(&source.ty, Type::Ref(_))
-                && !source
-                    .ty
-                    .any_controlled::<CheckFailure<Box<crate::issue::Issue>>>(
-                        &mut |ty| match ty {
-                            Type::Ref(name) => {
-                                reference_types.insert(name.clone());
-                                false
+            let mut data_declarations = BTreeSet::new();
+            let finite = super::super::finite::supported(&source.ty, inputs.law(), c)?;
+            if finite {
+                let mut pending = vec![&source.ty];
+                while let Some(ty) = pending.pop() {
+                    tick(c)?;
+                    match ty {
+                        Type::Ref(name) => {
+                            reference_types.insert(name.clone());
+                        }
+                        Type::Tuple(items) => pending.extend(items),
+                        Type::Option(item) | Type::Set(item) => pending.push(item),
+                        Type::Data(family) => {
+                            if data_declarations.insert(family.clone()) {
+                                for ctor in super::super::data::constructors(inputs.law(), family)? {
+                                    tick(c)?;
+                                    data_declarations.insert(format!("{family}.{}", ctor.name));
+                                    pending.extend(&ctor.arguments);
+                                }
                             }
-                            Type::Unit
-                            | Type::Bool
-                            | Type::Fp(_)
-                            | Type::Tuple(_)
-                            | Type::Option(_)
-                            | Type::Set(_) => false,
-                            _ => true,
-                        },
-                        c,
-                        Checkpoint::ObjectViewTransport,
-                    )
-                    .map_err(|failure| match failure {
-                        CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                        CheckFailure::Input(_) => "local parameter type traversal failed".into(),
-                    })?
+                        }
+                        Type::Unit | Type::Bool | Type::Fp(_) => {}
+                        // Mapの非単射key像は、このlocal引数経路ではまだ扱わない。
+                        _ => {
+                            reference_types.clear();
+                            break;
+                        }
+                    }
+                }
+            }
+            let structural_reference = finite
+                && !matches!(&source.ty, Type::Ref(_))
                 && !reference_types.is_empty();
             let mut subjects = vec![];
             if structural_reference {
@@ -645,7 +652,9 @@ pub(super) fn retain(
                     && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?)
             {
                 let value_declarations = if structural_reference {
-                    declarations.types().to_vec()
+                    let mut pairs = declarations.types().to_vec();
+                    pairs.extend(data_declarations.into_iter().map(|name| (name.clone(), name)));
+                    pairs
                 } else {
                     super::super::value_transport::identity_declarations(&source.ty, inputs.law(), c)?
                         .ok_or("local finite parameter identity is not supported")?
