@@ -6085,11 +6085,6 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "if take then list<Z>[0] else items",
             "if keep then list<Z>[0] else items",
         ),
-        (
-            "map-in-product", "s:State,take:Bool", "t:State,keep:Bool",
-            "if take then none<(Map<State,State>,Z)> else none<(Map<State,State>,Z)>",
-            "if keep then none<(Map<State,State>,Z)> else none<(Map<State,State>,Z)>",
-        ),
     ] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-composite-outside-{name}"));
@@ -6900,6 +6895,13 @@ fn finite_local_map_inputs(name: &str) -> (PathBuf, String) {
 fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
     for (case, sg, tg, sr, tr, missing, code) in [
         ("projection", "", "", "table", "chosen", false, 0),
+        ("infinite-product", "", "", "(table,left.free)", "(chosen,right.free)", false, 0),
+        ("infinite-recursive", "", "", "Choice.Full(table,left.free,Choice.Empty)", "Choice.Full(chosen,right.free,Choice.Empty)", false, 0),
+        ("infinite-refuted", "", "", "(table,left.free)", "(chosen,right.free+1)", false, 1),
+        ("infinite-missing", "", "", "(table,left.free)", "(chosen,right.free)", true, 2),
+        ("infinite-false-source", " when false", " when right.free>0", "(table,left.free)", "(chosen,right.free)", true, 0),
+        ("infinite-forward", " when take", "", "(table,left.free)", "(chosen,right.free)", false, 0),
+        ("infinite-nested", "", "", "list<Option<(Map<Key,State>,Z)>>[some((table,left.free))]", "list<Option<(Map<Key,State>,Z)>>[some((chosen,right.free))]", false, 0),
         ("expression", "", "", "if take then table else other", "if keep then chosen else spare", false, 0),
         (
             "forward-guard",
@@ -6956,7 +6958,19 @@ fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
             0,
         ),
     ] {
-        let (dir, vocabulary) = finite_local_map_inputs(&format!("local-map-{case}"));
+        let (dir, mut vocabulary) = finite_local_map_inputs(&format!("local-map-{case}"));
+        if case == "infinite-recursive" {
+            let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+            let definition = old.replacen(r#""declarations": ["#, r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"Mapを持つ再帰値","constructors":[{"name":"Empty","arguments":[],"meaning":"空"},{"name":"Full","arguments":[["Map",["Ref","Reservations.Key"],["Ref","Reservations.State"]],"Z",["Data","Reservations.Choice"]],"meaning":"再帰payload"}]},"#, 1);
+            let prior = archsig::definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
+            let checked = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();
+            let prior = &prior.vocabularies["Reservations"].digest;
+            let digest = &checked.vocabularies["Reservations"].digest;
+            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(prior,digest);
+            std::fs::write(dir.join("d.json"),definition).unwrap();
+            std::fs::write(dir.join("a.json"),map).unwrap();
+            vocabulary = vocabulary.replace(prior,digest);
+        }
         if missing {
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
@@ -7023,7 +7037,16 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
             assert_json(value(&result, get(data, "left")), "false");
             assert_json(value(&result, get(data, "right")), "true");
         }
-        if case == "projection" {
+        if case == "infinite-refuted" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 4);
+            assert_eq!(s(get(&bindings[0], "name")), "left");
+            assert_json(value(&result, get(&bindings[0], "value")), r#"["v","p"]"#);
+            assert_json(value(&result, get(data, "left")), r#"[[[["v","k"],["v","p"]]],"2"]"#);
+            assert_json(value(&result, get(data, "right")), r#"[[[["v","k"],["v","r"]]],"3"]"#);
+        }
+        if case == "projection" || case == "infinite-product" {
             let map = value(&result, get(get(m, "outputs"), "map"));
             let transport = value(&result, &arr(get(map, "transports"))[0]);
             let clause = &arr(get(transport, "clauses"))[0];
@@ -7038,7 +7061,7 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
                 );
             }
         }
-        if matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
+        if case.starts_with("infinite") || matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
             let mut args = vec![
                 "run",
                 "--atom-definition",
@@ -8418,6 +8441,123 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
                     }));
                 }
             }
+        }
+    }
+}
+
+#[test]
+fn local_infinite_map_read_domains_are_checked_before_guards() {
+    for (case, shape, guard, missing) in [
+        ("none", "none<(Map<State,State>,Z)>", "", false),
+        (
+            "false-source",
+            "none<(Map<State,State>,Z)>",
+            " when false",
+            false,
+        ),
+        (
+            "missing",
+            "none<(Map<State,State>,Z)>",
+            " when left.free>0",
+            true,
+        ),
+        (
+            "nested",
+            "list<Option<(Map<State,State>,Z)>>[]",
+            " when false",
+            false,
+        ),
+        ("recursive", "Choice.Empty", " when false", false),
+    ] {
+        let (dir, mut vocabulary) =
+            finite_local_parameter_inputs(&format!("infinite-map-domain-{case}"));
+        if case == "recursive" {
+            let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+            let definition = old.replace(r#""arguments":["Bool"]"#, r#""arguments":[["Map",["Ref","Reservations.State"],["Ref","Reservations.State"]],"Z",["Data","Reservations.Choice"]]"#);
+            let prior = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+            let checked =
+                archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            let prior = &prior.vocabularies["Reservations"].digest;
+            let digest = &checked.vocabularies["Reservations"].digest;
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(prior, digest);
+            std::fs::write(dir.join("d.json"), definition).unwrap();
+            std::fs::write(dir.join("a.json"), map).unwrap();
+            vocabulary = vocabulary.replace(prior, digest);
+        }
+        if missing {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|l| !l.contains(r#""id":"p-free""#) && !l.contains(r#""id":"r-free""#))
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State){guard} reads if left=left then {shape} else {shape};}}
+reading After {{{vocabulary} local here(right:State) reads if right=right then {shape} else {shape};}}"#
+        );
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 1, "{case}: {}", run.stdout);
+        assert!(run.stderr.is_empty());
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), "refuted");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert!(!has(get(m, "outputs"), "map"));
+        assert!(!has(m, "counterexamples"));
+        assert!(
+            arr(get(m, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "condition_failed")
+        );
+        assert!(
+            !arr(get(m, "reasons"))
+                .iter()
+                .any(|r| matches!(s(get(r, "code")), "missing" | "unsupported_algorithm"))
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let condition = value(&result, get(get(m, "outputs"), "proposition"));
+        // 全Map域から得た反例。実際のreadはnone/空Listだけである。
+        let expected = archsig::json::parse(br#"[[["v","p"],["v","p"]],[["v","q"],["v","p"]],[["v","r"],["v","p"]],[["v","s"],["v","p"]]]"#).unwrap();
+        assert!(
+            arr(get(condition, "operands"))
+                .iter()
+                .any(|r| value(&result, r).value == expected.value)
+        );
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, 1, "{case}: {}", normal.stdout);
+        assert_map_summary(&normal, &result);
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{case}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
         }
     }
 }
