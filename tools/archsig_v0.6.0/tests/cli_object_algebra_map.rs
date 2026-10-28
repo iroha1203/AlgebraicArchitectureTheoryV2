@@ -9695,3 +9695,77 @@ reading After {{{vocabulary} local here({params}) reads q;}}"#
         assert!(has(&run.receipt, "issues"));
     }
 }
+
+#[test]
+fn change_transport_compares_different_fieldsets_on_all_finite_arguments() {
+    for (mode, left, right, guard, missing, code) in [
+        ("target-extra", "free=s.free+(if n then 1 else 0)", "held=t.held,free=t.free+(if k then 1 else 0)", "", false, 0),
+        ("source-extra", "held=s.held,free=s.free", "free=t.free", "", false, 0),
+        ("disjoint", "free=s.free", "held=t.held", "", false, 0),
+        ("simultaneous", "free=s.held", "held=t.held,free=t.held", "", false, 0),
+        ("later-tuple", "free=s.free", "held=if k and l then t.held+1 else t.held,free=t.free", "", false, 1),
+        ("missing-unchanged", "free=s.free", "free=t.free,held=t.held", "", true, 2),
+        ("empty", "free=s.free", "free=t.free,held=t.held", " when false", true, 0),
+    ] {
+        let dir = finite_view_inputs(&format!("change-fieldsets-{mode}"), true);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} change tune(s:State,n:Bool,m:Bool){guard}=s with {{{left}}};}}
+reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool){guard}=t with {{{right}}};}}"#)).unwrap();
+        if missing {
+            let text = std::fs::read_to_string(dir.join("a.json")).unwrap();
+            std::fs::write(dir.join("a.json"), text.lines().filter(|line| !line.contains(r#""id":"p-held""#)).collect::<Vec<_>>().join("\n")).unwrap();
+        }
+        let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{mode}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_map_summary(&normal, &result);
+        let map = answer(&result, "m");
+        assert_eq!(s(get(map, "status")), match code {0 => "established", 1 => "refuted", _ => "undetermined"}, "{mode}");
+        assert_eq!(has(get(map,"outputs"),"map"), code == 0);
+        assert_eq!(s(get(answer(&result,"same"),"status")), "established");
+        if code == 0 {
+            let completed = value(&result, get(get(map,"outputs"),"map"));
+            let transport = value(&result, &arr(get(completed,"transports"))[0]);
+            let clauses = arr(get(transport,"clauses"));
+            assert_eq!(clauses.len(), 3);
+            for clause in clauses {
+                let commutes = value(&result, get(clause,"commutes"));
+                assert_eq!(arr(get(commutes,"quantifiers")).len(), 3);
+            }
+            if mode == "target-extra" {
+                let unchanged = value(&result, get(&clauses[2],"source"));
+                assert_eq!(s(get(unchanged,"kind")), "change_update");
+                assert_eq!(s(get(unchanged,"field")), "Reservations.State.held");
+                let source = value(&result, get(unchanged,"source"));
+                assert!(has(source,"location"));
+            }
+        }
+        if code == 1 {
+            let evidence = value(&result, &arr(get(map,"counterexamples"))[0]);
+            let data = get(evidence,"data");
+            let bindings = arr(get(data,"bindings"));
+            assert_eq!(bindings.len(), 3);
+            for binding in &bindings[1..] { assert_eq!(value(&result,get(binding,"value")).value, archsig::json::parse(b"true").unwrap().value); }
+            let left = s(value(&result,get(data,"left"))).parse::<i64>().unwrap();
+            let right = s(value(&result,get(data,"right"))).parse::<i64>().unwrap();
+            assert_eq!(right, left+1);
+        }
+        if code == 2 {
+            let plan = value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
+            assert!(arr(get(plan,"requirements")).iter().any(|r| s(get(get(r,"field"),"subject")) == "p"));
+        }
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, code, "{mode}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
+    }
+}

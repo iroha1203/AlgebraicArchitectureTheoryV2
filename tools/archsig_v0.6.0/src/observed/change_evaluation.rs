@@ -53,10 +53,21 @@ pub(in crate::observed) fn evaluate(
     declaration: &Declaration,
     bindings: &[(String, Scalar)],
 ) -> Result<Update, ValidationFailure> {
+    evaluate_on_fields(environment, declaration, bindings, &[])
+}
+
+/// Read the simultaneous result on the caller's comparison coordinates.
+/// A coordinate omitted by the change keeps its value before the update.
+pub(in crate::observed) fn evaluate_on_fields(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    fields: &[String],
+) -> Result<Update, ValidationFailure> {
     let outer = environment
         .missing_slot_reads
         .replace(Some(BTreeSet::new()));
-    let result = evaluate_inner(environment, declaration, bindings);
+    let result = evaluate_inner(environment, declaration, bindings, fields);
     let missing = environment
         .missing_slot_reads
         .replace(outer)
@@ -83,6 +94,7 @@ fn evaluate_inner(
     environment: &Environment<'_>,
     declaration: &Declaration,
     bindings: &[(String, Scalar)],
+    fields: &[String],
 ) -> Result<Update, ValidationFailure> {
     environment.tick()?;
     let Signature::Change {
@@ -216,6 +228,22 @@ fn evaluate_inner(
                             },
                             value,
                         ));
+                    }
+                }
+                for name in fields {
+                    environment.tick()?;
+                    if updates.iter().any(|(field, _)| field.name == *name) {
+                        continue;
+                    }
+                    let value = environment.scoped_field(
+                        target.clone(), name, &base, &declaration.reading, declaration.span,
+                    )?;
+                    result.retain(&value);
+                    if let Some(value) = value.known_value {
+                        result.values.push((Fact {
+                            snapshot: snapshot.clone(), subject: subject.clone(),
+                            field: Some(format!("{entity}.{name}")), atom: None,
+                        }, value));
                     }
                 }
                 break;
