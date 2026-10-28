@@ -4,7 +4,7 @@ use super::{
         self as native, ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness,
     },
     control::{Checkpoint, Control},
-    environment::Environment,
+    environment::{Environment, numeric_parameters},
     object_component_diagram::ViewOrigin,
     object_reading_evaluation as reading, object_reading_result as whole,
     result::*,
@@ -32,7 +32,7 @@ pub(super) struct Parameter {
     pub scope: Scope,
 }
 fn symbolic(p: &Parameter) -> bool {
-    p.values.is_none() && matches!(p.declaration.ty, Type::Z | Type::Q)
+    p.values.is_none() && numeric_parameters::numeric_width(&p.declaration.ty).is_some()
 }
 pub(super) fn pending_parameters(ps: &[Parameter]) -> bool {
     ps.iter().any(|p| (!symbolic(p) && p.values.is_none()) || !p.missing.is_empty())
@@ -477,7 +477,7 @@ fn build_source(
             if let [b] = fixed.as_slice() {
                 bindings.push((*b).clone());
             } else if fixed.is_empty() {
-                if matches!(p.ty, Type::Z | Type::Q) { continue; }
+                if numeric_parameters::numeric_width(&p.ty).is_some() { continue; }
                 let i = ps
                     .iter()
                     .filter(|p| !symbolic(p))
@@ -495,7 +495,7 @@ fn build_source(
         let expression = NodeRef(base.checked_add(parts.len()).ok_or("view行位置が範囲外")?);
         let mut row = o.clone();
         row.expression = expression;
-        row.parameters.retain(|(_, ty)| matches!(ty, Type::Z | Type::Q));
+        row.parameters.retain(|(_, ty)| numeric_parameters::numeric_width(ty).is_some());
         row.bindings = bindings;
         rows.push(push(
             &mut parts,

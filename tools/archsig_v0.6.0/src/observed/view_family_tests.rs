@@ -493,10 +493,12 @@ fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fak
 }
 #[test]
 fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
-    for ty in ["Z", "Q"] {
+    for (ty, tuple) in [("Z", false), ("Q", false), ("Z", true), ("Q", true)] {
+        let parameter_ty = if tuple { format!("({ty},({ty},{ty}))") } else { ty.to_owned() };
+        let term = if tuple { "n.0+n.1.1" } else { "n" };
         let offset = if ty == "Z" { "amount(p)" } else { "rat(1,2)" };
         let law = LAW.replace("view root(r: Root): Bool = true;", &format!(
-            "view shift(p:Part,n:{ty},b:Bool,m:{ty}):{ty}=if b then n+m+{offset} else n+m;"));
+            "view shift(p:Part,n:{parameter_ty},b:Bool,m:{ty}):{ty}=if b then {term}+m+{offset} else {term}+m;"));
         let p = prepared(&law, MAP);
         let (mut g, o) = start(&p);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -507,6 +509,10 @@ fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
         for (index, expression) in f.expressions.iter().enumerate() {
             let (_, origin) = reading::origin(&g, *expression).unwrap();
             assert_eq!(origin.parameters.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>(), ["n", "m"]);
+            let coefficient = if ty == "Z" { Type::Z } else { Type::Q };
+            let expected = if tuple { Type::Tuple(vec![coefficient.clone(), Type::Tuple(vec![coefficient.clone(), coefficient.clone()])]) } else { coefficient.clone() };
+            assert_eq!(origin.parameters[0].1, expected);
+            assert_eq!(origin.parameters[1].1, coefficient);
             assert_eq!(g.scalar(origin.bindings.iter().find(|b| b.name == "b").unwrap().value).unwrap(), &Scalar::Bool(index == 1));
             assert!(matches!(&g.get(f.evaluations[index]).unwrap().payload, Some(Payload::Evaluation { value: None, .. })));
         }

@@ -3073,3 +3073,150 @@ fn finite_tuple_guards_keep_numeric_products_and_explicit_reuse() {
         for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
     }
 }
+
+#[test]
+fn numeric_tuple_view_families_build_evaluate_and_reuse() {
+    for ty in ["Z", "Q"] {
+        for nested in [false, true] {
+            for finite in [false, true] {
+                let pair_ty = if nested {
+                    format!("({ty},({ty},{ty}))")
+                } else {
+                    format!("({ty},{ty})")
+                };
+                let last = if nested { "pair.1.1" } else { "pair.1" };
+                let seed = match (ty, nested) {
+                    ("Q", true) => "(rat(1,2),(1,rat(3,2)))",
+                    ("Q", false) => "(rat(1,2),rat(3,2))",
+                    (_, true) => "(1,(2,3))",
+                    _ => "(1,3)",
+                };
+                let extra = if finite { ",take:Bool" } else { "" };
+                let body = if finite {
+                    format!("if take then pair.0+{last} else {last}-pair.0")
+                } else {
+                    format!("pair.0+{last}")
+                };
+                let dir = files(&format!("numeric-tuple-view-{ty}-{nested}-{finite}"), &format!(
+                    "law required balanced(c:Part):c.quantity=c.quantity;view combine(c:Part,pair:{pair_ty}{extra}):({ty},Z)=({body},c.quantity);view seed():{pair_ty}={seed};view yes():Bool=true;view no():Bool=false;"
+                ), false);
+                let request = if finite {
+                    "v=evaluate(R.combine,on=$b.object,c=@v/q,pair=$s.value,take=$yes.value)"
+                } else {
+                    "v=evaluate(R.combine,on=$b.object,c=@v/q,pair=$s.value)"
+                };
+                let other = if finite {
+                    "w=evaluate(R.combine,on=$b.object,c=@v/p,pair=$s.value,take=$no.value)"
+                } else {
+                    "w=evaluate(R.combine,on=$b.object,c=@v/p,pair=$s.value)"
+                };
+                let requests = [
+                    "b=build(R,on=@v/root)",
+                    "s=evaluate(R.seed,on=$b.object)",
+                    "yes=evaluate(R.yes,on=$b.object)",
+                    "no=evaluate(R.no,on=$b.object)",
+                    request,
+                    other,
+                ];
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                ];
+                for request in requests {
+                    args.extend(["--ask", request]);
+                }
+                let before = ["d.json", "l.law", "a.json"]
+                    .map(|name| std::fs::read(dir.join(name)).unwrap());
+                let normal = cli::run(&dir, &args);
+                assert_eq!(normal.code, 0, "{ty}/{nested}/{finite}: {}", normal.stdout);
+                assert!(normal.stderr.is_empty());
+                assert!(!has(&normal.receipt, "nodes") && !has(&normal.receipt, "result"));
+                assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+                for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+                    assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+                }
+                let run = asks(&dir, &requests);
+                let result = saved(&dir, &run, "complete", 0);
+                assert!(has(get(answer(&result, "b"), "outputs"), "object"));
+                assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
+                let expected = if ty == "Q" {
+                    r#"[["2","1"],"1"]"#
+                } else {
+                    r#"["4","1"]"#
+                };
+                assert_eq!(
+                    value(&result, get(get(answer(&result, "v"), "outputs"), "value")).value,
+                    archsig::json::parse(expected.as_bytes()).unwrap().value
+                );
+                let expected = match (ty, finite) {
+                    ("Q", true) => r#"[["1","1"],"0"]"#,
+                    ("Q", false) => r#"[["2","1"],"0"]"#,
+                    (_, true) => r#"["2","0"]"#,
+                    _ => r#"["4","0"]"#,
+                };
+                assert_eq!(
+                    value(&result, get(get(answer(&result, "w"), "outputs"), "value")).value,
+                    archsig::json::parse(expected.as_bytes()).unwrap().value
+                );
+                args.extend(["--out", "again", "--reuse", "out"]);
+                let reused = cli::run(&dir, &args);
+                let again = saved(&dir, &reused, "complete", 0);
+                assert!(warnings(&again).is_empty());
+                for field in ["answers", "nodes"] {
+                    assert_eq!(get(&again, field).value, get(&result, field).value);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn numeric_tuple_view_families_keep_missing_observations() {
+    let dir = files("numeric-tuple-view-missing", "law required balanced(c:Part):true;view combine(c:Part,pair:(Z,(Z,Z)),take:Bool):(Z,Z)=(if take then pair.0+pair.1.1 else pair.1.1-pair.0,c.quantity);view seed():(Z,(Z,Z))=(1,(2,3));view enabled():Bool=true;", true);
+    let requests = [
+        "b=build(R,on=@v/root)",
+        "s=evaluate(R.seed,on=$b.object)",
+        "e=evaluate(R.enabled,on=$b.object)",
+        "v=evaluate(R.combine,on=$b.object,c=@v/q,pair=$s.value,take=$e.value)",
+        "n=needed($v)",
+    ];
+    let run = asks(&dir, &requests);
+    let result = saved(&dir, &run, "partial", 2);
+    assert!(has(get(answer(&result, "b"), "outputs"), "object"));
+    let v = answer(&result, "v");
+    assert_eq!(s(get(v, "status")), "undetermined");
+    assert!(!has(get(v, "outputs"), "value"));
+    assert!(!has(v, "counterexamples"));
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+        let field = get(r, "field");
+        s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
+    }));
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
+    let reused = cli::run(&dir, &args);
+    let again = saved(&dir, &reused, "partial", 2);
+    assert!(warnings(&again).is_empty());
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&again, field).value, get(&result, field).value);
+    }
+}
