@@ -1586,15 +1586,16 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
     }
 }
 fn assert_missing_quantity_once(result: &JNode) {
-    for id in ["b", "c"] {
-        let reasons = arr(get(answer(result, id), "reasons"));
-        assert_eq!(reasons.len(), 1);
-        assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
-        let missing = arr(get(&reasons[0], "missing"));
-        assert_eq!(missing.len(), 1);
-        assert_eq!(s(get(&missing[0], "subject")), "q");
-        assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
-    }
+    // 同じ欠測値はcheckの両辺で相殺されるが、buildはviewの入力を要する。
+    assert_eq!(s(get(answer(result, "c"), "status")), "refuted");
+    assert!(!has(answer(result, "c"), "reasons"));
+    let reasons = arr(get(answer(result, "b"), "reasons"));
+    assert_eq!(reasons.len(), 1);
+    assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+    let missing = arr(get(&reasons[0], "missing"));
+    assert_eq!(missing.len(), 1);
+    assert_eq!(s(get(&missing[0], "subject")), "q");
+    assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
 }
 #[test]
 fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
@@ -3266,7 +3267,7 @@ fn required_tuple_law_case(ty: &str, case: &str) {
     } else {
         String::new()
     };
-    let signature = if case == "observed" {
+    let signature = if matches!(case, "observed" | "missing") {
         format!("pair:{shape},c:Part")
     } else {
         format!("{finite}pair:{shape},c:Part,last:{ty},more:({ty},{ty})")
