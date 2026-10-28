@@ -10531,6 +10531,11 @@ fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
                 ty
             };
             let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+            let tr = if ty == "Q" && tr.parse::<i64>().is_ok() {
+                format!("rat({tr},1)")
+            } else {
+                tr.to_owned()
+            };
             std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(pair:({ty},{ty}),s:State,take:Bool,last:{last_ty},more:({ty},{ty})){sg} reads {sr};}}
 reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final:{last_ty},tail:({ty},{ty})){tg} reads {tr};}}"#)).unwrap();
