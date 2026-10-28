@@ -280,7 +280,7 @@ pub(super) fn compare(
     Ok(result)
 }
 
-/// 参照引数の全組を列挙し、source適用域上のZ/Bool readを実像で比較する。
+/// 参照引数の全組を列挙し、source適用域上のZ/Q/Bool readを実像で比較する。
 pub(super) fn compare_scalar_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
@@ -313,10 +313,10 @@ pub(super) fn compare_scalar_expression(
         .expr_type(expressions[0])
         .ok_or("local readの元型がない")?
         .erase();
-    if !matches!(ty, Type::Z | Type::Bool)
+    if !matches!(ty, Type::Z | Type::Q | Type::Bool)
         || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
     {
-        return Err("localの一般readは同型のZ/Boolだけに対応".into());
+        return Err("localの一般readは同型のZ/Q/Boolだけに対応".into());
     }
     let mut result = Comparison {
         values: value_map(b, [&ty, &ty], &[], &[], dependencies)?,
@@ -384,10 +384,10 @@ pub(super) fn compare_scalar_expression(
                     ReasonKind::UnsupportedAlgorithm {
                         question: request.kind,
                         operand_types: vec![ty.clone()],
-                        method: if ty == Type::Bool {
-                            "local_boolean_read_transport"
-                        } else {
-                            "local_integer_read_transport"
+                        method: match ty {
+                            Type::Bool => "local_boolean_read_transport",
+                            Type::Q => "local_rational_read_transport",
+                            _ => "local_integer_read_transport",
                         }
                         .into(),
                     }

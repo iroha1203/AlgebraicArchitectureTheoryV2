@@ -510,7 +510,7 @@ pub(super) fn retain(
         for (&s, &t) in sr.iter().zip(tr) {
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
             let scalar_read = !sp.is_empty()
-                && matches!(&read_type, Some(Type::Z | Type::Bool))
+                && matches!(&read_type, Some(Type::Z | Type::Q | Type::Bool))
                 && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
