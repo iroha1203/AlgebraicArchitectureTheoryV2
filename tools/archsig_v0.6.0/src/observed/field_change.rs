@@ -166,6 +166,44 @@ fn equations(
     })
 }
 
+/// Local declarations use the same rational equation extraction and full fiber.
+pub(super) fn parameter_guard_domain(
+    env: &Environment<'_>,
+    guard: Option<usize>,
+    vars: &BTreeMap<String, SourceValue>,
+    axes: &[Parameter],
+    reading: &str,
+    missing: &mut Pending,
+) -> Result<(Matrix, Vec<Scalar>, Fiber), ValidationFailure> {
+    if axes.iter().any(|axis| axis.kind != NumberType::Q) {
+        return Err("rational guard requires Q parameters".into());
+    }
+    let mut matrix = vec![];
+    let mut rhs = vec![];
+    if let Some(id) = guard {
+        missing.expression = Some(id);
+        let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
+        missing.support.extend(value.support);
+        missing.scope.merge(&value.scope);
+        equations(
+            env,
+            id,
+            vars,
+            reading,
+            Axes::Parameters(axes),
+            &mut matrix,
+            &mut rhs,
+            missing,
+        )?;
+    }
+    let rhs = rhs
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("rational guard constant is undetermined")?;
+    let fiber = field_fiber::solve(&Type::Q, &matrix, axes.len(), &rhs, &env.control)?;
+    Ok((matrix, rhs, fiber))
+}
+
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
     change: &Declaration,
