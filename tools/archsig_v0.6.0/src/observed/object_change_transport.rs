@@ -503,13 +503,13 @@ pub(super) fn retain(
     }
     let different_fields = names.iter().any(|pair|
         !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
-    // First connect exact finite argument domains; symbolic parameter updates
-    // continue through their existing affine path with matching coordinates.
-    if different_fields && !super::super::super::finite::supported(
+    let affine = !params[0][1..].is_empty() && params[0][1..].iter().all(|p| p.ty == Type::Z);
+    // Reuse the complete integer guard fiber for symbolic arguments.
+    if different_fields && !affine && !super::super::super::finite::supported(
         &Type::Tuple(params[0][1..].iter().map(|p| p.ty.erase()).collect()), inputs.law(), c)?
     {
         return Err(unsupported(inputs, bodies[0],
-            "change transport with different update target sets and infinite parameters is not implemented"));
+            "change transport with different update target sets requires finite or integer affine parameters"));
     }
     let mut identity = vec![];
     for (s, t) in params[0][1..].iter().zip(&params[1][1..]) {
@@ -668,7 +668,6 @@ pub(super) fn retain(
     }
     let ps = [params[0], params[1]];
     let gs = [guards[0], guards[1]];
-    let affine = !params[0][1..].is_empty() && params[0][1..].iter().all(|p| p.ty == Type::Z);
     let finite = if affine {
         None
     } else {

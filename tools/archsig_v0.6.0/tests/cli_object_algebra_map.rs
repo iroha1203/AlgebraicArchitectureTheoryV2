@@ -9769,3 +9769,112 @@ reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool){guard}=t with {{
         for key in ["answers", "nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
     }
 }
+
+#[test]
+fn change_transport_compares_different_fieldsets_on_integer_guard_fibers() {
+    for (mode, left, right, sg, tg, missing, aligned, code) in [
+        ("branch-missing", "held=0", "held=0,free=t.free", "", "", true, false, 2),
+        ("target-extra", "free=s.free+n", "free=t.free+k,held=t.held", "", "", false, false, 0),
+        ("source-extra", "free=s.free,held=s.held+m", "free=t.free", " when m=0", " when l=0", false, false, 0),
+        ("disjoint", "free=s.free", "held=t.held", "", "", false, false, 0),
+        ("source-refuted", "free=s.free,held=s.held+m", "free=t.free", "", "", false, false, 1),
+        ("kernel-refuted", "free=s.free", "free=t.free,held=t.held+l", " when n=0", " when k=0", false, false, 1),
+        ("restricted", "free=s.free", "free=t.free,held=t.held+l", " when m=0", " when l=0", false, false, 0),
+        ("slanted", "free=s.free", "free=t.free,held=t.held+k+l-2", " when n+m=2", " when k+l=2", false, false, 0),
+        ("empty", "free=s.free", "free=t.free,held=t.held+l", " when 2*m=1", " when 2*l=1", true, false, 0),
+        ("missing", "free=s.free", "free=t.free,held=t.held", "", "", true, false, 2),
+        ("partial", "free=s.free", "free=t.free,held=t.held+l", "", "", true, false, 1),
+        ("nonlinear", "free=s.free", "free=t.free,held=t.held+l*l", "", "", false, false, 2),
+        ("inequality", "free=s.free", "free=t.free,held=t.held", " when n>0", " when k>0", false, false, 2),
+        ("aligned", "free=n", "held=k,free=t.free", "", "", false, true, 0),
+        ("aligned-refuted", "free=n", "held=k,free=t.free+l", "", "", false, true, 1),
+    ] {
+        let dir = finite_view_inputs(&format!("integer-change-fieldsets-{mode}"), true);
+        let old = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+        let mut digest = old.to_string();
+        let mut archmap = std::fs::read_to_string(dir.join("a.json")).unwrap();
+        if aligned {
+            let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#, r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#, 1);
+            digest = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap().vocabularies["Reservations"].digest.clone();
+            std::fs::write(dir.join("d.json"), definition).unwrap();
+            archmap = archmap.replace(old, &digest);
+            archmap = archmap.lines().map(|line| {
+                let mut line = line.to_string();
+                if line.contains("Reservations.State.free") || line.contains("Reservations.State.held") {
+                    for n in ["1","2","3","4","19","23"] { line = line.replace(&format!(r#""value":"{n}""#), r#""value":"0""#); }
+                }
+                line
+            }).collect::<Vec<_>>().join("\n");
+        }
+        if missing {
+            let atom = if mode == "branch-missing" {r#""id":"p-free""#} else {r#""id":"p-held""#};
+            archmap = archmap.lines().filter(|line| !line.contains(atom)).collect::<Vec<_>>().join("\n");
+        }
+        std::fs::write(dir.join("a.json"), archmap).unwrap();
+        let source = if mode == "branch-missing" {
+            format!("if s.free=2 then s with {{{left}}} else s with {{{left}}}")
+        } else { format!("s with {{{left}}}") };
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:Z,m:Z){sg}={source};}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:Z,l:Z){tg}=t with {{{right}}};}}"#)).unwrap();
+        let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"];
+        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+        for request in requests { args.extend(["--ask", request]); }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{mode}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_map_summary(&normal, &result);
+        let map = answer(&result, "m");
+        assert_eq!(s(get(map,"status")), match code {0 => "established", 1 => "refuted", _ => "undetermined"}, "{mode}");
+        assert_eq!(has(get(map,"outputs"),"map"), code == 0);
+        assert_eq!(s(get(answer(&result,"same"),"status")), "established");
+        if code == 0 {
+            let completed = value(&result,get(get(map,"outputs"),"map"));
+            let transport = value(&result,&arr(get(completed,"transports"))[0]);
+            assert_eq!(arr(get(transport,"clauses")).len(),3);
+            for clause in arr(get(transport,"clauses")) {
+                assert_eq!(arr(get(value(&result,get(clause,"commutes")),"quantifiers")).len(),3);
+            }
+        }
+        if code == 1 {
+            let data = get(value(&result,&arr(get(map,"counterexamples"))[0]),"data");
+            let bindings = arr(get(data,"bindings"));
+            assert_eq!(bindings.len(),3);
+            assert_eq!(s(get(&bindings[1],"name")),"n");
+            assert_eq!(s(get(&bindings[2],"name")),"m");
+            let n = s(value(&result,get(&bindings[1],"value"))).parse::<i64>().unwrap();
+            let m = s(value(&result,get(&bindings[2],"value"))).parse::<i64>().unwrap();
+            assert_ne!(m,0);
+            if mode == "kernel-refuted" { assert_eq!(n,0); }
+            let left = s(value(&result,get(data,"left"))).parse::<i64>().unwrap();
+            let right = s(value(&result,get(data,"right"))).parse::<i64>().unwrap();
+            assert_eq!(if mode == "source-refuted" {left-right} else {right-left},m);
+        }
+        if missing && mode != "empty" {
+            assert!(arr(get(map,"reasons")).iter().any(|r| s(get(r,"code")) == "missing_observation" && !arr(get(r,"missing")).is_empty()), "{mode}");
+            let plan = value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
+            if code == 2 {
+                let field = if mode == "branch-missing" {"Reservations.State.free"} else {"Reservations.State.held"};
+                assert!(arr(get(plan,"requirements")).iter().any(|r| {
+                    let pointer = get(r,"field");
+                    s(get(pointer,"subject")) == "p" && s(get(pointer,"field")) == field
+                }), "{mode}");
+            } else {
+                // A concrete refutation settles this answer; retain diagnostics without requesting more observations.
+                assert!(arr(get(plan,"requirements")).is_empty(), "{mode}");
+            }
+        }
+        if matches!(mode,"nonlinear"|"inequality") {
+            assert!(arr(get(map,"reasons")).iter().any(|r| s(get(r,"code")) == "unsupported_algorithm"));
+        }
+        args.extend(["--out","again","--reuse","out"]);
+        let reused = cli::run(&dir,&args);
+        assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
+        let again = result_json(&dir,&reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers","nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
+    }
+}
