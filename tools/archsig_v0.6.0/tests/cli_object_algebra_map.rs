@@ -9970,3 +9970,20 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
+
+#[test]
+fn integer_change_keeps_earlier_missing_reads_when_a_later_update_is_unsupported() {
+    let dir=finite_view_inputs("integer-change-earlier-missing",true);
+    let text=std::fs::read_to_string(dir.join("a.json")).unwrap();
+    std::fs::write(dir.join("a.json"),text.lines().filter(|line|!line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
+    std::fs::write(dir.join("l.law"),r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+change tune(s:State,n:Z)=s with {free=s.free,held=n*n};law required zero(s:State):s.held=0;}"#).unwrap();
+    let run=asks(&dir,&["r=solve(Before.zero,on=@v/A,using=Before.tune)","n=needed($r)"]);
+    assert_eq!(run.code,2,"{}",run.stdout);
+    let result=result_json(&dir,&run);assert_eq!(s(get(answer(&result,"r"),"status")),"undetermined");
+    let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
+    assert!(arr(get(plan,"requirements")).iter().any(|r|{
+        let pointer=get(r,"field");s(get(pointer,"subject"))=="p"&&s(get(pointer,"field"))=="Reservations.State.free"
+    }));
+}

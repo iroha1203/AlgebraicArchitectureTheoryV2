@@ -377,6 +377,7 @@ fn collect_updates(
     body: usize,
     reading: &str,
     vars: &mut BTreeMap<String, SourceValue>,
+    axes: &[Parameter],
     missing: &mut Pending,
     selected: Option<&str>,
     updates: &mut BTreeMap<Fact, Form>,
@@ -442,6 +443,14 @@ fn collect_updates(
                     let form = v.affine.ok_or_else(|| {
                         unsupported(env, *id, "数値changeの更新式がアフィンでない")
                     })?;
+                    if axes.first().is_some_and(|axis| axis.kind == NumberType::Q) {
+                        form.rational_coordinates(axes, &env.control)?.ok_or_else(|| {
+                            missing.facts.extend(form.missing_facts());
+                            unsupported(env, *id, "有理changeの係数に欠測または元parameter以外の記号がある")
+                        })?;
+                    } else {
+                        coordinates(env, *id, &form, Axes::Parameters(axes), missing)?;
+                    }
                     let position = Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -496,7 +505,7 @@ pub(in crate::observed) fn compute_update(
     missing.expression = Some(*body);
     let mut updates = BTreeMap::new();
     with_missing(env, missing, |missing| collect_updates(
-        env, *body, &change.reading, &mut vars, missing, Some(field), &mut updates,
+        env, *body, &change.reading, &mut vars, &axes, missing, Some(field), &mut updates,
     ))?;
     let form = if let Some(form) = updates.into_values().next() {
         form
@@ -595,7 +604,7 @@ pub(in crate::observed) fn compute(
         }
         missing.expression = Some(*body);
         collect_updates(
-            env, *body, &change.reading, &mut vars, missing, None, &mut updates,
+            env, *body, &change.reading, &mut vars, &axes, missing, None, &mut updates,
         )?;
     }
     let mut slots = vec![];
