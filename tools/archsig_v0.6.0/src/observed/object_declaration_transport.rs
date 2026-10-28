@@ -82,7 +82,7 @@ impl LocalParameter {
 }
 enum Read {
     Projection(usize),
-    Expression,
+    Expression(Option<usize>),
     Field { position: usize, names: [String; 2] },
 }
 pub(super) struct Output {
@@ -558,12 +558,17 @@ pub(super) fn retain(
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
-            let expression_read = !sp.is_empty()
+            // 戻り値と同じ型対を持つ引数の検査済み全域ValueMapを共有する。
+            let value_parameter = sp.iter().zip(tp).position(|(a, b)| {
+                Some(a.ty.erase()) == read_type
+                    && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(b.ty.erase())
+            });
+            let expression_read = value_parameter.is_some() || (!sp.is_empty()
                 && match &read_type {
                     Some(ty) => super::super::environment::local_read::value_type_supported(ty, inputs.law(), c)?,
                     None => false,
                 }
-                && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
+                && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type);
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
@@ -578,12 +583,12 @@ pub(super) fn retain(
                         names: [source, target],
                     });
                 } else if expression_read {
-                    reads.push(Read::Expression);
+                    reads.push(Read::Expression(value_parameter));
                 } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
             } else if expression_read {
-                reads.push(Read::Expression);
+                reads.push(Read::Expression(value_parameter));
             } else {
                 return Err("local readの式移送は未実装".into());
             }
@@ -786,8 +791,8 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
-                Read::Expression => field::compare_expression(
-                    b, env, inputs, [source, target], &parameter_maps,
+                Read::Expression(value_parameter) => field::compare_expression(
+                    b, env, inputs, [source, target], &parameter_maps, value_parameter,
                     applicable.as_ref().map(|domain| domain.rows.as_slice()),
                     [s, t], [se, te], dependencies, request, c,
                 )?,
