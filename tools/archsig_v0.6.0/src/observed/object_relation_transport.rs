@@ -4,7 +4,7 @@ use crate::{
     definition::model::PrimitiveSignature,
     observed::{
         change_result,
-        environment::relation_instances::{self, RelationState},
+        environment::{numeric_parameters, relation_instances::{self, RelationState}},
         path_compose,
         path_value::PathValue,
     },
@@ -149,25 +149,15 @@ fn witness_bindings(
             let value =
                 if let Some((_, value)) = row.bindings.iter().find(|(name, _)| name == &p.name) {
                     value.clone()
-                } else if row.numeric_parameters.contains(p) && relation_instances::numeric_width(&p.ty).is_some() {
+                } else if row.numeric_parameters.contains(p) && numeric_parameters::numeric_width(&p.ty).is_some() {
                     if let Some(point) = numeric_point.or_else(|| {
                         row.numeric_domain
                             .as_ref()
                             .and_then(|domain| domain.particular.as_deref())
                     }) {
-                        let mut offset = 0;
-                        for axis in &row.numeric_parameters {
-                            tick(c)?;
-                            if axis == p { break; }
-                            offset += relation_instances::numeric_width(&axis.ty).ok_or("relation反例の数値型が違う")?;
-                        }
-                        let width = relation_instances::numeric_width(&p.ty).ok_or("relation反例の数値幅がない")?;
-                        let coordinates = point.get(offset..offset + width).ok_or("relation反例の特解座標がない")?;
-                        if matches!(p.ty, Type::Tuple(_)) {
-                            Scalar::Tuple(coordinates.to_vec())
-                        } else {
-                            coordinates[0].clone()
-                        }
+                        numeric_parameters::point_value(
+                            &row.numeric_parameters, p, point, c,
+                        )?
                     } else {
                         crate::observed::numeric::zero(&p.ty, c)?
                     }

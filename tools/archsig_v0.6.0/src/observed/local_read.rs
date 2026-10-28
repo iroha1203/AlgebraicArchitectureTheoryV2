@@ -1771,7 +1771,7 @@ pub(in crate::observed) fn affine_transport(
     expressions: [usize; 2],
     ty: &Type,
 ) -> Result<AffineTransport, ValidationFailure> {
-    use crate::observed::{affine, environment::change_affine};
+    use crate::observed::{affine, environment::{change_affine, numeric_parameters}};
     let mut out = AffineTransport {
         status: Decision::Established,
         point: None,
@@ -1797,11 +1797,13 @@ pub(in crate::observed) fn affine_transport(
             params.push(p);
             guards.push(*guard);
         }
-        let (source, axes) = change_affine::law_variables(env, params[0], bindings[0])?;
-        let (mut target, _) = change_affine::law_variables(env, params[1], bindings[1])?;
+        let (source, axes) = numeric_parameters::law_variables(env, params[0], bindings[0])?;
+        let (mut target, _) = numeric_parameters::law_variables(env, params[1], bindings[1])?;
         // The target's numeric argument is the same source coordinate at that position.
         for (s, t) in params[0].iter().zip(params[1]) {
-            if s.ty == *ty && !bindings[0].iter().any(|(name, _)| name == &s.name) {
+            if numeric_parameters::coefficient_type(&s.ty).as_ref() == Some(ty)
+                && !bindings[0].iter().any(|(name, _)| name == &s.name)
+            {
                 target.insert(
                     t.name.clone(),
                     source
@@ -1899,17 +1901,16 @@ pub(in crate::observed) fn affine_transport(
         if let Some(point) = point {
             out.status = Decision::Refuted;
             let mut values = vec![];
+            let numeric = params[0].iter()
+                .filter(|p| !bindings[0].iter().any(|(name, _)| *name == p.name))
+                .cloned().collect::<Vec<_>>();
             for p in params[0] {
                 env.tick()?;
                 values.push(
                     if let Some((_, v)) = bindings[0].iter().find(|(name, _)| name == &p.name) {
                         v.clone()
                     } else {
-                        point[axes
-                            .iter()
-                            .position(|a| a.binder == p.span)
-                            .ok_or("original numeric axis missing")?]
-                        .clone()
+                        numeric_parameters::point_value(&numeric, p, &point, &env.control)?
                     },
                 );
             }

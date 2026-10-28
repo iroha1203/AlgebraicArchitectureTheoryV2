@@ -6,6 +6,7 @@ use crate::{
         model::{Param, Signature},
     },
     types::Type,
+    observed::environment::numeric_parameters,
 };
 use std::collections::BTreeSet;
 #[path = "object_local_field_transport.rs"]
@@ -800,10 +801,10 @@ pub(super) fn retain(
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
-        let coefficient = sp.iter()
-            .find(|p| matches!(p.ty, Type::Z | Type::Q)).map(|p| p.ty.clone());
+        let coefficient = sp.iter().find_map(|p|
+            numeric_parameters::coefficient_type(&p.ty));
         if let Some(ty) = &coefficient {
-            if sp.iter().any(|p| matches!(p.ty, Type::Z | Type::Q) && p.ty != *ty) {
+            if sp.iter().filter_map(|p| numeric_parameters::coefficient_type(&p.ty)).any(|t| t != *ty) {
                 return Err("mixed Z/Q local arguments are not implemented".into());
             }
         }
@@ -913,7 +914,7 @@ pub(super) fn retain(
                 });
                 continue;
             }
-            if matches!(source.ty, Type::Z | Type::Q) && source.ty == target.ty {
+            if numeric_parameters::numeric_width(&source.ty).is_some() && source.ty == target.ty {
                 super::super::numeric_transport::numeric_declaration_value_transport(
                     inputs,
                     declarations,

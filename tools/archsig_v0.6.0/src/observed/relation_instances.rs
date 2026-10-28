@@ -225,94 +225,6 @@ fn difference(
     tick(c)?;
     Ok(None)
 }
-// 最小の複合数値域として、平坦で同種のTupleだけをscalar軸へ展開する。
-pub(in crate::observed) fn numeric_width(ty: &Type) -> Option<usize> {
-    match ty {
-        Type::Z | Type::Q => Some(1),
-        Type::Tuple(items)
-            if !items.is_empty()
-                && matches!(items[0], Type::Z | Type::Q)
-                && items.iter().all(|ty| *ty == items[0]) =>
-        {
-            Some(items.len())
-        }
-        _ => None,
-    }
-}
-fn tuple_variables(
-    e: &Environment<'_>,
-    params: &[Param],
-    variables: &mut BTreeMap<String, SourceValue>,
-) -> Result<(), ValidationFailure> {
-    use crate::observed::term::affine::Value;
-    for p in params {
-        if !matches!(p.ty, Type::Tuple(_))
-            || numeric_width(&p.ty).is_none()
-            || !variables.contains_key(&format!("{}.0", p.name))
-        {
-            continue;
-        }
-        let mut parts = vec![];
-        let mut aggregate = variables[&format!("{}.0", p.name)].clone();
-        aggregate.support.clear();
-        for index in 0..numeric_width(&p.ty).ok_or("数値Tupleの幅がない")? {
-            e.tick()?;
-            let v = variables
-                .get(&format!("{}.{index}", p.name))
-                .ok_or("数値Tupleの軸がない")?;
-            aggregate.scope.merge(&v.scope);
-            aggregate.support.extend(v.support.iter().cloned());
-            aggregate.condition_failed |= v.condition_failed;
-            aggregate.condition_pending |= v.condition_pending;
-            parts.push(if let Some(form) = &v.affine {
-                Value::Number(form.as_ref().clone())
-            } else if let Some(value) = &v.known_value {
-                Value::Known(value.clone())
-            } else {
-                return Err("数値Tupleの成分がない".into());
-            });
-        }
-        let symbolic = Value::Tuple(parts);
-        aggregate.known_value = symbolic.known(&e.control)?;
-        aggregate.scalar_scope = aggregate
-            .known_value
-            .as_ref()
-            .map(|_| aggregate.scope.clone());
-        aggregate.affine = None;
-        aggregate.symbolic = Some(Box::new(symbolic));
-        aggregate.comparison = None;
-        variables.insert(p.name.clone(), aggregate);
-    }
-    Ok(())
-}
-fn law_variables(
-    e: &Environment<'_>,
-    params: &[Param],
-    bindings: &[(String, Scalar)],
-) -> Result<(BTreeMap<String, SourceValue>, Vec<affine::Parameter>), ValidationFailure> {
-    let mut flat = vec![];
-    for p in params {
-        e.tick()?;
-        if let Type::Tuple(items) = &p.ty {
-            if numeric_width(&p.ty).is_some() && !bindings.iter().any(|(name, _)| *name == p.name) {
-                for (index, ty) in items.iter().enumerate() {
-                    e.tick()?;
-                    flat.push(Param {
-                        name: format!("{}.{index}", p.name),
-                        ty: ty.clone(),
-                        span: p.span,
-                    });
-                }
-                continue;
-            }
-        }
-        flat.push(p.clone());
-    }
-    let (mut variables, axes) = change_affine::law_variables(e, &flat, bindings)?;
-    tuple_variables(e, params, &mut variables)?;
-    Ok((variables, axes))
-}
-
 fn restrict_variables(
     e: &Environment<'_>,
     variables: &mut BTreeMap<String, SourceValue>,
@@ -357,7 +269,7 @@ fn restrict_variables(
         value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
         value.affine = Some(Box::new(form));
     }
-    tuple_variables(e, params, variables)
+    numeric_parameters::tuple_variables(e, params, variables)
 }
 // 移送先は自身のguardの解集合ではなく、sourceの適用域で読む。
 pub(in crate::observed) fn on_numeric_domain(
@@ -395,7 +307,7 @@ fn row_value(
     let mut values = BTreeMap::new();
     for p in params {
         let Some((_, v)) = bindings.iter().find(|(name, _)| name == &p.name) else {
-            if numeric_families && numeric_width(&p.ty).is_some() {
+            if numeric_families && numeric_parameters::numeric_width(&p.ty).is_some() {
                 continue;
             }
             return Err("relation parameterの束縛がない".into());
@@ -447,7 +359,7 @@ fn row_value(
         .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
     let mut axes = vec![];
     if numeric_families {
-        let (mut symbolic, parameters) = law_variables(e, params, &bindings)?;
+        let (mut symbolic, parameters) = numeric_parameters::law_variables(e, params, &bindings)?;
         for (name, value) in variables {
             let entry = symbolic.get_mut(&name).ok_or("relationの記号束縛がない")?;
             entry.scope = value.scope;
@@ -691,7 +603,7 @@ fn instances(
             }
             let mut bindings = vec![vec![]];
             for p in params {
-                if numeric_families && numeric_width(&p.ty).is_some() {
+                if numeric_families && numeric_parameters::numeric_width(&p.ty).is_some() {
                     continue;
                 }
                 let mut next = vec![];
