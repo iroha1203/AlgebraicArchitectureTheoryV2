@@ -6088,13 +6088,6 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "if take then x else none<Bool>",
             "if keep then a else none<Bool>",
         ),
-        (
-            "reference-data",
-            "x:(State,Choice)",
-            "a:(State,Choice)",
-            "x",
-            "a",
-        ),
     ] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-composite-outside-{name}"));
@@ -6823,4 +6816,40 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
             }
         }
     }
+}
+#[test]
+fn local_reference_data_siblings_use_the_finite_value_map() {
+    let (dir, vocabulary) = finite_local_parameter_inputs("local-reference-data-siblings");
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(x:(State,Choice)) reads x;}}
+reading After {{{vocabulary} local here(a:(State,Choice)) reads a;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let transport = value(&result, &arr(get(map, "transports"))[0]);
+    let clause = &arr(get(transport, "clauses"))[0];
+    for map in [
+        value(&result, get(clause, "values")),
+        value(&result, get(clause, "arguments")),
+    ] {
+        assert_reference_pairs(
+            &result,
+            map,
+            &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+        );
+    }
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
 }
