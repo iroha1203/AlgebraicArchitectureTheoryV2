@@ -639,7 +639,7 @@ fn compute_inner(
             dependencies.extend(equation_map);
             dependencies.extend(signature);
             let transported = declaration_transport::retain(env, &mut b, &inputs, &declarations, &[left,right], request, c)?;
-            dependencies.extend(transported.failed_values);
+            dependencies.extend(transported.failed_arguments);
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;

@@ -117,6 +117,7 @@ impl PrimitiveValueIdentity {
         c: &mut Control,
     ) -> Result<Option<Self>, ConstructionFailure> {
         let (source, target) = super::value_transport::selected_types(
+            inputs,
             declarations,
             declaration,
             DeclarationValuePosition::Return,

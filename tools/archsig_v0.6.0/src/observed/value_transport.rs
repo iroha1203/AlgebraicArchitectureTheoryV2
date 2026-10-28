@@ -19,6 +19,7 @@ use std::collections::{BTreeMap, BTreeSet};
 pub enum DeclarationValuePosition {
     Parameter(usize),
     Return,
+    LocalRead(usize),
 }
 /// 型付きの全域値または候補像。像の終域所属は結果の検査で判定する。
 #[derive(Clone, Debug, Eq)]
@@ -100,6 +101,24 @@ impl FiniteValueTransport {
         if self.bijection.is_none() {
             return Err(ConstructionFailure::Inconsistent(
                 "値の順逆対応が未確認".into(),
+            ));
+        }
+        self.forward_scalar(value, control)
+    }
+    /// 全source域で終域所属を確認した前向き作用。単射・全射は要求しない。
+    pub(super) fn forward_scalar(
+        &self,
+        value: &Scalar,
+        control: &mut Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        tick(control)?;
+        if self
+            .failures
+            .iter()
+            .any(|f| matches!(f, FiniteValueConditionFailure::OutsideTarget { .. }))
+        {
+            return Err(ConstructionFailure::Inconsistent(
+                "値の全域移送が不成立".into(),
             ));
         }
         for (source, image) in self.source.iter().zip(&self.images) {
@@ -184,6 +203,7 @@ fn failure(f: ValidationFailure) -> ConstructionFailure {
     }
 }
 pub(super) fn selected_types(
+    inputs: &CheckedInputs,
     declarations: &DeclarationCorrespondence,
     name: &str,
     position: DeclarationValuePosition,
@@ -204,6 +224,44 @@ pub(super) fn selected_types(
                 .get(p)
                 .zip(target.parameters.get(p))
                 .map(|(a, b)| (a.1.clone(), b.1.clone())),
+            DeclarationValuePosition::LocalRead(index) => {
+                let source = &inputs.law().declarations[&c.source().name];
+                let target = &inputs.law().declarations[&target.name];
+                let (
+                    crate::law::model::Signature::Local { reads: a, .. },
+                    crate::law::model::Signature::Local { reads: b, .. },
+                ) = (&source.signature, &target.signature)
+                else {
+                    return Err(ConstructionFailure::InvalidSelection(
+                        "local readの型位置でない".into(),
+                    ));
+                };
+                let types = a.get(index).zip(b.get(index)).and_then(|(a, b)| {
+                    inputs
+                        .law()
+                        .expr_type(*a)
+                        .zip(inputs.law().expr_type(*b))
+                        .map(|(a, b)| (a.clone(), b.clone()))
+                });
+                if let Some((a, b)) = &types {
+                    let mu = declarations.types().iter().cloned().collect();
+                    let alpha = c
+                        .pair()
+                        .ok_or_else(|| {
+                            ConstructionFailure::Inconsistent("local readの宣言対応がない".into())
+                        })?
+                        .parameters()
+                        .iter()
+                        .cloned()
+                        .collect();
+                    if moved_type(a, &mu, &alpha, control)? != *b {
+                        return Err(ConstructionFailure::InvalidSelection(
+                            "local readの型対が宣言移送と違う".into(),
+                        ));
+                    }
+                }
+                types
+            }
             DeclarationValuePosition::Return => c
                 .source()
                 .returns
@@ -505,7 +563,7 @@ pub fn finite_declaration_value_transport(
 ) -> Result<FiniteValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
-    let (source_type, target_type) = selected_types(declarations, declaration, position, control)?;
+    let (source_type, target_type) = selected_types(inputs, declarations, declaration, position, control)?;
     let source = domain(inputs, &source_type, control)?;
     let target = domain(inputs, &target_type, control)?;
     let mut snapshots = source.scope.snapshots.clone();
@@ -657,6 +715,9 @@ mod tests {
         )
     }
     fn with_left(left: &[u8], a: &str) -> CheckedInputs {
+        with_left_and_law(left, a, L)
+    }
+    fn with_left_and_law(left: &[u8], a: &str, law: &str) -> CheckedInputs {
         let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
         let defs =
             crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -678,7 +739,7 @@ mod tests {
         check_inputs(
             InputSources::from_bytes(
                 vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
-                L.replace("@LEFT_DIGEST@", ld)
+                law.replace("@LEFT_DIGEST@", ld)
                     .replace("@RIGHT_DIGEST@", rd)
                     .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
                     .into_bytes(),
@@ -701,6 +762,61 @@ mod tests {
         assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
         assert!(r.missing().is_empty(), "{:?}", r.missing());
         declaration_correspondence(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+    }
+
+    #[test]
+    fn local_read_positions_recheck_their_own_expression_type_pair() {
+        let left = include_bytes!("../../tests/fixtures/finite-value-left.atoms.json");
+        let source = "local returned(value: Left.Child, b: Bool) reads if b then some(value) else none<Left.Child>;";
+        let target = "local returned(value: Right.Child, b: Bool) reads if b then some(value) else none<Right.Child>;";
+        let law = L
+            .replace(
+                "view returned(value: Option<Left.Child>): Option<Left.Child> = value;",
+                source,
+            )
+            .replace(
+                "view returned(value: Option<Right.Child>): Option<Right.Child> = value;",
+                target,
+            );
+        let i = with_left_and_law(left, A, &law);
+        let d = declarations(&i);
+        let mut c = Control::unlimited();
+        let mut transport = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.returned",
+            DeclarationValuePosition::LocalRead(0),
+            &mut c,
+        )
+        .unwrap();
+        assert_eq!(
+            transport.source_type(),
+            &Type::Option(Box::new(Type::Ref("Left.Child".into())))
+        );
+        assert_eq!(
+            transport.target_type(),
+            &Type::Option(Box::new(Type::Ref("Right.Child".into())))
+        );
+        transport.recheck(&i, &mut c).unwrap();
+        transport.position = DeclarationValuePosition::LocalRead(1);
+        assert!(transport.recheck(&i, &mut c).is_err());
+        let wrong = law.replace(
+            target,
+            "local returned(value: Right.Child, b: Bool) reads (value,b);",
+        );
+        let i = with_left_and_law(left, A, &wrong);
+        let d = declarations(&i);
+        assert!(
+            finite_declaration_value_transport(
+                &i,
+                &d,
+                "Before.returned",
+                DeclarationValuePosition::LocalRead(0),
+                &mut c
+            )
+            .is_err()
+        );
+
     }
 
     #[test]

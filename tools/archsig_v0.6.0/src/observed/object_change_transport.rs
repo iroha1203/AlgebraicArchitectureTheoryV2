@@ -457,7 +457,7 @@ pub(super) fn retain(
                 }
                 return Ok(Output {
                     transports: vec![],
-                    failed_values: vec![],
+                    failed_arguments: vec![],
                     status: Decision::Undetermined,
                     reasons: vec![Reason {
                         kind: ReasonKind::UnsupportedAlgorithm {
@@ -831,7 +831,7 @@ pub(super) fn retain(
     let guard_evidence = checks[0].evidence.clone();
     let mut out = Output {
         transports: vec![],
-        failed_values: vec![],
+        failed_arguments: vec![],
         status: Decision::Established,
         reasons: vec![],
         evidence: vec![],

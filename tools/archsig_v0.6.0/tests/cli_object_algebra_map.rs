@@ -6086,11 +6086,6 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "if keep then list<Bool>[true] else list<Bool>[]",
         ),
         (
-            "reference-return", "s:State,take:Bool", "t:State,keep:Bool",
-            "if take then some(s) else none<State>",
-            "if keep then some(t) else none<State>",
-        ),
-        (
             "infinite-composite-return", "s:State,take:Bool", "t:State,keep:Bool",
             "if take then (s.free,true) else (0,false)",
             "if keep then (t.free,true) else (0,false)",
@@ -7457,6 +7452,362 @@ reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool) reads {ta
                     s(&pair[0]) == name && s(&pair[1]) == name
                 }));
             }
+        }
+    }
+}
+
+#[test]
+fn local_read_type_maps_do_not_require_a_matching_parameter() {
+    for (shape, body, empty) in [
+        ("option", "some(left)", "none<State>"),
+        ("tuple", "(left,true)", "(left,false)"),
+        ("set", "set<State>{left}", "set<State>{}"),
+        ("data", "Choice.Full(left)", "Choice.Empty"),
+    ] {
+        for (case, sg, tg, read_missing, different, code) in [
+            ("branch", "", "", false, false, 0),
+            ("active", " when take", " when keep", false, false, 0),
+            (
+                "target-guard",
+                " when take",
+                " when not keep",
+                false,
+                false,
+                1,
+            ),
+            ("refuted", "", "", false, true, 1),
+            ("missing", "", "", true, false, 2),
+            ("false-source", " when false", " when false", true, false, 0),
+        ] {
+            let (dir, _) = finite_local_parameter_inputs(&format!("read-type-{shape}-{case}"));
+            let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+            let definition = old.replace(
+                r#""arguments":["Bool"]"#,
+                r#""arguments":[["Ref","Reservations.State"]]"#,
+            );
+            let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+            let after =
+                archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            let digest = &after.vocabularies["Reservations"].digest;
+            let mut map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .replace(&before.vocabularies["Reservations"].digest, digest);
+            if read_missing {
+                map = map
+                    .lines()
+                    .filter(|line| {
+                        !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+            }
+            std::fs::write(dir.join("d.json"), definition).unwrap();
+            std::fs::write(dir.join("a.json"), map).unwrap();
+            let condition = if read_missing { "left.free>0" } else { "take" };
+            let source_read = format!("if {condition} then {body} else {empty}");
+            let target_read = if different {
+                empty.to_string()
+            } else {
+                source_read.clone()
+            }
+            .replace("left", "right")
+            .replace("take", "keep");
+            std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}"; local here(left:State,take:Bool){sg} reads {source_read};}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}"; local here(right:State,keep:Bool){tg} reads {target_read};}}"#)).unwrap();
+            let requests = [
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ];
+            let run = asks(&dir, &requests);
+            assert_eq!(run.code, code, "{shape}/{case}: {}", run.stdout);
+            let result = result_json(&dir, &run);
+            let m = answer(&result, "m");
+            assert!(has(get(m, "outputs"), "operation"));
+            assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+            assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+            if code == 0 {
+                let map = value(&result, get(get(m, "outputs"), "map"));
+                let transport = value(&result, &arr(get(map, "transports"))[0]);
+                let clause = &arr(get(transport, "clauses"))[0];
+                let values = value(&result, get(clause, "values"));
+                assert_reference_pairs(
+                    &result,
+                    values,
+                    &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+                );
+                let ty = match shape {
+                    "option" => r#"["Option",["Ref","Reservations.State"]]"#,
+                    "tuple" => r#"["Tuple",["Ref","Reservations.State"],"Bool"]"#,
+                    "set" => r#"["Set",["Ref","Reservations.State"]]"#,
+                    _ => r#"["Data","Reservations.Choice"]"#,
+                };
+                assert_json(get(values, "source_type"), ty);
+                assert_json(get(values, "target_type"), ty);
+            } else if code == 1 {
+                let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+                let bindings = arr(get(data, "bindings"));
+                assert_eq!(bindings.len(), 2);
+                assert_eq!(s(get(&bindings[0], "name")), "left");
+                assert_eq!(s(get(&bindings[1], "name")), "take");
+                assert_json(value(&result, get(&bindings[1], "value")), "true");
+                assert_ne!(
+                    value(&result, get(data, "left")).value,
+                    value(&result, get(data, "right")).value
+                );
+            } else {
+                assert!(!has(m, "counterexamples"));
+                assert!(
+                    arr(get(m, "reasons"))
+                        .iter()
+                        .any(|r| s(get(r, "code")) == "missing_observation")
+                );
+            }
+            if matches!(case, "branch" | "refuted" | "missing") {
+                let mut args = vec![
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--archmap",
+                    "a.json",
+                    "--law",
+                    "l.law",
+                ];
+                for request in &requests {
+                    args.extend(["--ask", request]);
+                }
+                let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+                assert_eq!(normal.code, code, "{}", normal.stdout);
+                assert!(normal.stderr.is_empty());
+                assert_map_summary(&normal, &result);
+                args.extend(["--out", "again", "--reuse", "out"]);
+                let reused = cli::run(&dir, &args);
+                assert_eq!(reused.code, code, "{}", reused.stdout);
+                let again = result_json(&dir, &reused);
+                assert!(warnings(&again).is_empty());
+                for key in ["answers", "nodes"] {
+                    assert_eq!(get(&result, key).value, get(&again, key).value);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn local_read_type_maps_check_the_whole_map_domain_before_reading_none() {
+    for (case, domain, guard, code) in [
+        ("coherent", "Key", "", 0),
+        ("collision", "State", "", 1),
+        ("inactive-collision", "State", " when false", 1),
+    ] {
+        let (dir, vocabulary) = finite_local_map_inputs(&format!("read-type-map-{case}"));
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .lines()
+            .filter(|line| !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#))
+            .collect::<Vec<_>>()
+            .join("\n");
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        let source =
+            format!("if left.free>0 then none<Map<{domain},State>> else none<Map<{domain},State>>");
+        let target = source.replace("left", "right");
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State){guard} reads {source};}}
+reading After {{{vocabulary} local here(right:State) reads {target};}}"#
+            ),
+        )
+        .unwrap();
+        // Equal none branches remain known; the other cases fail on the whole output type before evaluation.
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            ],
+        );
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert!(!has(m, "counterexamples"));
+        let reasons = arr(get(m, "reasons"));
+        if code == 0 {
+            assert!(reasons.is_empty());
+        } else {
+            assert!(
+                reasons
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "condition_failed")
+            );
+        }
+        if code != 0 {
+            assert!(!reasons.iter().any(|r| matches!(
+                s(get(r, "code")),
+                "missing_observation" | "unsupported_algorithm"
+            )));
+        }
+        if code == 0 {
+            let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+            let args = [
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                request,
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ];
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, 0, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&again, key).value);
+            }
+        }
+    }
+}
+#[test]
+fn local_read_type_maps_handle_empty_argument_products() {
+    let (dir, vocabulary) = finite_local_parameter_inputs("read-type-no-parameters");
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here() reads none<State>;}}
+reading After {{{vocabulary} local here() reads none<State>;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let transport = value(&result, &arr(get(map, "transports"))[0]);
+    let values = value(&result, get(&arr(get(transport, "clauses"))[0], "values"));
+    assert_json(
+        get(values, "source_type"),
+        r#"["Option",["Ref","Reservations.State"]]"#,
+    );
+    assert_reference_pairs(
+        &result,
+        values,
+        &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+    );
+}
+
+#[test]
+fn local_read_type_maps_keep_the_operation_when_read_types_disagree() {
+    for (case, guard, body) in [
+        ("plain", "", "if take then some(left) else none<State>"),
+        (
+            "inactive",
+            " when false",
+            "if take then some(left) else none<State>",
+        ),
+        (
+            "missing",
+            "",
+            "if left.free>0 then some(left) else none<State>",
+        ),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("read-type-mismatch-{case}"));
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .lines()
+            .filter(|line| !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#))
+            .collect::<Vec<_>>()
+            .join("\n");
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State,take:Bool){guard} reads {body};}}
+reading After {{{vocabulary} local here(right:State,keep:Bool) reads true;}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 1, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), "refuted");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert!(!has(get(m, "outputs"), "map"));
+        assert!(!has(m, "counterexamples"));
+        let law = std::fs::read(dir.join("l.law")).unwrap();
+        let condition = value(&result, get(get(m, "outputs"), "proposition"));
+        for expected in [body, "true"] {
+            assert!(arr(get(condition, "operands")).iter().any(|r| {
+                let expression = value(&result, r);
+                if !has(expression, "kind")
+                    || s(get(expression, "kind")) != "source"
+                    || !has(expression, "location")
+                {
+                    return false;
+                }
+                let span = arr(get(get(expression, "location"), "span"));
+                &law[num(&span[0]) as usize..num(&span[1]) as usize] == expected.as_bytes()
+            }));
+        }
+        let reasons = arr(get(m, "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "condition_failed")
+        );
+        assert!(!reasons.iter().any(|r| matches!(
+            s(get(r, "code")),
+            "missing_observation" | "unsupported_algorithm"
+        )));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_map_summary(&normal, &result);
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
         }
     }
 }

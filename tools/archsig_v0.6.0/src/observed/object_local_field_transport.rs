@@ -290,7 +290,10 @@ pub(super) fn compare_expression(
     inputs: &super::super::super::input::CheckedInputs,
     declarations: [&Declaration; 2],
     maps: &[LocalParameter],
-    value_parameter: Option<usize>,
+    read_map: Option<&(
+        super::super::super::value_transport::FiniteValueTransport,
+        NodeRef,
+    )>,
     applicable: Option<&[Vec<usize>]>,
     expressions: [usize; 2],
     origins: [NodeRef; 2],
@@ -317,8 +320,8 @@ pub(super) fn compare_expression(
         .expr_type(expressions[0])
         .ok_or("local readの元型がない")?
         .erase();
-    let values = if let Some(position) = value_parameter {
-        maps[position].values()
+    let values = if let Some((_, values)) = read_map {
+        *values
     } else {
         if !super::super::super::environment::local_read::value_type_supported(&ty, inputs.law(), c)?
             || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
@@ -404,19 +407,8 @@ pub(super) fn compare_expression(
             continue;
         };
         let image;
-        let moved = if let Some(position) = value_parameter {
-            let map = &maps[position];
-            let mut found = None;
-            for index in 0..map.len() {
-                tick(c)?;
-                if super::super::super::value_equality::equal(
-                    left, &map.binding(index, 0), inputs.law(), c,
-                )? == Some(true) {
-                    found = Some(map.binding(index, 1));
-                    break;
-                }
-            }
-            image = found.ok_or("local read値が確認済み全域にない")?;
+        let moved = if let Some((transport, _)) = read_map {
+            image = transport.forward_scalar(left, c).map_err(failure)?;
             &image
         } else {
             left
