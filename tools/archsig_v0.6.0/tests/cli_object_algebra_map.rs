@@ -10205,10 +10205,11 @@ reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q)
                         let field = get(r, "field");
                         s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.free"
                     }));
+                    assert!(arr(get(plan, "blockers")).is_empty());
                 } else {
                     assert!(arr(get(plan, "requirements")).is_empty());
+                    assert!(!arr(get(plan, "blockers")).is_empty());
                 }
-                assert!(!arr(get(plan, "blockers")).is_empty());
             }
         }
         args.extend(["--out", "again", "--reuse", "out"]);
