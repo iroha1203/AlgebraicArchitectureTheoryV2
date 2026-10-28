@@ -5380,8 +5380,8 @@ fn local_finite_parameters_share_full_domain_transport_without_type_branches() {
             "Choice",
             "@=Full(true)",
             "@=Empty",
-            r#"{"tag":"Full","args":[true]}"#,
-            r#"{"tag":"Empty","args":[]}"#,
+            r#"{"args":[true],"tag":"Full"}"#,
+            r#"{"args":[],"tag":"Empty"}"#,
             r#"["Data","Reservations.Choice"]"#,
         ),
     ] {
