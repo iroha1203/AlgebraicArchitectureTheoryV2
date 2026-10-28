@@ -10227,9 +10227,41 @@ reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q)
     }
 }
 
+fn nest_numeric_tuple_test_law(dir: &Path, ty: &str, nested: bool) {
+    if !nested { return; }
+    let path = dir.join("l.law");
+    let mut text = std::fs::read_to_string(&path).unwrap().replace(
+        &format!("({ty},{ty})"),
+        &format!("(({ty},{ty}),({ty},{ty}))"),
+    );
+    for name in ["pair", "next", "more", "tail"] {
+        text = text.replace(&format!("{name}.0"), &format!("{name}.0.0"))
+            .replace(&format!("{name}.1"), &format!("{name}.1.1"));
+    }
+    std::fs::write(path, text).unwrap();
+}
+
+fn numeric_tuple_test_type(ty: &str, nested: bool) -> String {
+    if nested {
+        format!(r#"["Tuple",["Tuple","{ty}","{ty}"],["Tuple","{ty}","{ty}"]]"#)
+    } else {
+        format!(r#"["Tuple","{ty}","{ty}"]"#)
+    }
+}
+
+fn numeric_tuple_test_leaves(values: &[JNode], nested: bool) -> Vec<&JNode> {
+    if nested {
+        assert_eq!(arr(&values[0]).len(), 2);
+        assert_eq!(arr(&values[1]).len(), 2);
+        vec![&arr(&values[0])[0], &arr(&values[1])[1]]
+    } else {
+        values.iter().collect()
+    }
+}
+
 #[test]
 fn relation_transport_expands_numeric_tuples_and_restores_original_witnesses() {
-    for ty in ["Z", "Q"] {
+    for (ty, nested) in [("Z", false), ("Q", false), ("Z", true), ("Q", true)] {
         for (case, guard, target_guard, left, target_left, code) in [
             (
                 "restricted",
@@ -10319,6 +10351,7 @@ fn relation_transport_expands_numeric_tuples_and_restores_original_witnesses() {
             std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{ {vocabulary} relation paths(pair:({ty},{ty}),e:Reserve,take:Bool,last:{last_ty},more:({ty},{ty})) {guard}:({left})=path(e); }}
 reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Bool,final:{last_ty},tail:({ty},{ty})) {target_guard}:({target_left})=path(t); }}"#)).unwrap();
+            nest_numeric_tuple_test_law(&dir, ty, nested);
             let requests = [
                 "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
                 "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -10344,7 +10377,7 @@ reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Boo
                 for clause in arr(get(transport, "clauses")) {
                     let arguments = value(&result, get(clause, "arguments"));
                     let types = arr(get(arguments, "source_type"));
-                    assert_json(&types[1], &format!(r#"["Tuple","{ty}","{ty}"]"#));
+                    assert_json(&types[1], &numeric_tuple_test_type(ty, nested));
                     let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
                     assert_eq!(
                         qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
@@ -10372,6 +10405,8 @@ reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Boo
                     let more = arr(value(&result, get(&bindings[4], "value")));
                     assert_eq!(pair.len(), 2);
                     assert_eq!(more.len(), 2);
+                    let pair = numeric_tuple_test_leaves(pair, nested);
+                    let more = numeric_tuple_test_leaves(more, nested);
                     let number = |v: &JNode| {
                         if ty == "Z" {
                             (s(v).parse::<i64>().unwrap(), 1)
@@ -10449,7 +10484,7 @@ reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Boo
 
 #[test]
 fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
-    for ty in ["Z", "Q"] {
+    for (ty, nested) in [("Z", false), ("Q", false), ("Z", true), ("Q", true)] {
         for (case, sg, tg, sr, tr, code) in [
             (
                 "identity",
@@ -10539,6 +10574,7 @@ fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
             std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(pair:({ty},{ty}),s:State,take:Bool,last:{last_ty},more:({ty},{ty})){sg} reads {sr};}}
 reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final:{last_ty},tail:({ty},{ty})){tg} reads {tr};}}"#)).unwrap();
+            nest_numeric_tuple_test_law(&dir, ty, nested);
             let requests = [
                 "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
                 "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -10573,7 +10609,7 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                 for clause in arr(get(transport, "clauses")) {
                     let args = value(&result, get(clause, "arguments"));
                     let types = arr(get(args, "source_type"));
-                    assert_json(&types[1], &format!(r#"["Tuple","{ty}","{ty}"]"#));
+                    assert_json(&types[1], &numeric_tuple_test_type(ty, nested));
                     let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
                     assert_eq!(
                         qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
@@ -10598,6 +10634,8 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                     let more = arr(value(&result, get(&bs[4], "value")));
                     assert_eq!(pair.len(), 2);
                     assert_eq!(more.len(), 2);
+                    let pair = numeric_tuple_test_leaves(pair, nested);
+                    let more = numeric_tuple_test_leaves(more, nested);
                     let q = |v: &JNode| {
                         if ty == "Z" {
                             (s(v).parse::<i64>().unwrap(), 1)
@@ -10684,7 +10722,7 @@ fn change_numeric_tuple_arguments_keep_guard_domains_updates_and_original_witnes
     #[path = "common/architecture_environment.rs"]
     mod fixture;
     use archsig::canonical::Json;
-    for ty in ["Z", "Q"] {
+    for (ty, nested) in [("Z", false), ("Q", false), ("Z", true), ("Q", true)] {
         for (case, left, right, sg, tg, missing, code) in [
             (
                 "same-fields",
@@ -10867,6 +10905,7 @@ fn change_numeric_tuple_arguments_keep_guard_domains_updates_and_original_witnes
             std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,pair:({ty},{ty}),last:{last_ty},more:({ty},{ty})){sg}=s with {{{left}}};}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,next:({ty},{ty}),final:{last_ty},tail:({ty},{ty})){tg}=t with {{{right}}};}}"#)).unwrap();
+            nest_numeric_tuple_test_law(&dir, ty, nested);
             let requests = [
                 "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
                 "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -10912,7 +10951,7 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
                     let args = value(&result, get(clause, "arguments"));
                     assert_json(
                         &arr(get(args, "source_type"))[2],
-                        &format!(r#"["Tuple","{ty}","{ty}"]"#),
+                        &numeric_tuple_test_type(ty, nested),
                     );
                 }
             }
@@ -10930,6 +10969,8 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
                     let more = arr(value(&result, get(&bs[3], "value")));
                     assert_eq!(pair.len(), 2);
                     assert_eq!(more.len(), 2);
+                    let pair = numeric_tuple_test_leaves(pair, nested);
+                    let more = numeric_tuple_test_leaves(more, nested);
                     let q = |v: &JNode| {
                         if ty == "Z" {
                             (s(v).parse::<i128>().unwrap(), 1)
