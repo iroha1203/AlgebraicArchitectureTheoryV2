@@ -6139,6 +6139,9 @@ fn assert_local_structural_reference_arguments(
 ) {
     for (case, source_guard, target_guard, source_read, target_read, code) in [
         ("projection", "", "", "choice", "pick", 0),
+        ("expression", "", "", "if choice=other then other else choice", "if pick=spare then spare else pick", 0),
+        ("expression-refuted", "", "", "if choice=other then other else choice", "spare", 1),
+        ("expression-missing", "", "", "if z.free>0 then choice else other", "if y.free>0 then pick else spare", 2),
         (
             "actual-image",
             &format!(" when {condition}"),
@@ -6206,7 +6209,7 @@ fn assert_local_structural_reference_arguments(
     ] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-structural-ref-{shape}-{case}"));
-        if case.starts_with("unknown-") || case == "false-source" {
+        if case.starts_with("unknown-") || case == "false-source" || case == "expression-missing" {
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
                 .lines()
@@ -6245,6 +6248,18 @@ reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}){target_gua
         if code == 2 {
             assert!(!has(m, "counterexamples"));
         }
+        if case == "expression-refuted" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 3);
+            for (binding, name) in bindings.iter().zip(["z", "choice", "other"]) {
+                assert_eq!(s(get(binding, "name")), name);
+            }
+            let left = value(&result, get(data, "left"));
+            let right = value(&result, get(data, "right"));
+            assert_eq!(left.value, value(&result, get(&bindings[1], "value")).value);
+            assert_ne!(left.value, right.value);
+        }
         if case == "two-parameters" || case == "collision" {
             let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
             let bindings = arr(get(data, "bindings"));
@@ -6278,7 +6293,7 @@ reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}){target_gua
                 },
             );
         }
-        if matches!(case, "projection" | "collision" | "unknown-target") {
+        if matches!(case, "projection" | "collision" | "unknown-target" | "expression" | "expression-refuted" | "expression-missing") {
             let mut args = vec![
                 "run",
                 "--atom-definition",
@@ -6319,7 +6334,7 @@ reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}){target_gua
                 args,
                 &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
             );
-            if case == "projection" {
+            if case == "projection" || case == "expression" {
                 let values = value(&result, get(clause, "values"));
                 assert_reference_pairs(
                     &result,
@@ -6374,6 +6389,7 @@ fn local_structural_reference_arguments_follow_noninjective_images_and_all_sourc
 fn local_reference_sets_use_direct_images_without_preserving_cardinality() {
     for (case, sg, tg, sr, tr, missing, code) in [
         ("projection", "", "", "members", "chosen", false, 0),
+        ("expression", "", "", "if take then members else set<State>{}", "if keep then chosen else set<State>{}", false, 0),
         (
             "membership",
             " when left in members",
@@ -6557,7 +6573,7 @@ reading After {{{vocabulary} local here(right:State,chosen:Set<State>,keep:Bool)
                 );
             }
         }
-        if matches!(case, "projection" | "cardinality-read" | "unknown-target") {
+        if matches!(case, "projection" | "cardinality-read" | "unknown-target" | "expression") {
             let mut args = vec![
                 "run",
                 "--atom-definition",
@@ -6594,6 +6610,7 @@ reading After {{{vocabulary} local here(right:State,chosen:Set<State>,keep:Bool)
 fn local_finite_data_arguments_follow_constructor_reference_images() {
     for (case, sg, tg, sr, tr, missing, code) in [
         ("projection", "", "", "packet", "chosen", false, 0),
+        ("expression", "", "", "if take then packet else Empty", "if keep then chosen else Empty", false, 0),
         (
             "forward-guard",
             " when packet=Full(left)",
@@ -6792,7 +6809,7 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
                 }
             }
         }
-        if matches!(case, "projection" | "reverse-read" | "missing-target") {
+        if matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
             let mut args = vec![
                 "run",
                 "--atom-definition",
@@ -6888,6 +6905,7 @@ fn finite_local_map_inputs(name: &str) -> (PathBuf, String) {
 fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
     for (case, sg, tg, sr, tr, missing, code) in [
         ("projection", "", "", "table", "chosen", false, 0),
+        ("expression", "", "", "if take then table else other", "if keep then chosen else spare", false, 0),
         (
             "forward-guard",
             " when table(key)=left",
@@ -6960,9 +6978,14 @@ fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
         } else {
             "Map<Key,State>"
         };
+        let (source_extra, target_extra) = if case == "expression" {
+            (",other:Map<Key,State>", ",spare:Map<Key,State>")
+        } else {
+            ("", "")
+        };
         std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(left:State,table:{ty},take:Bool,key:Key){sg} reads {sr};}}
-reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:Key){tg} reads {tr};}}"#)).unwrap();
+reading Before {{{vocabulary} local here(left:State,table:{ty},take:Bool,key:Key{source_extra}){sg} reads {sr};}}
+reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:Key{target_extra}){tg} reads {tr};}}"#)).unwrap();
         let requests = [
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -7020,7 +7043,7 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
                 );
             }
         }
-        if matches!(case, "projection" | "reverse-read" | "missing-target") {
+        if matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
             let mut args = vec![
                 "run",
                 "--atom-definition",
@@ -7057,6 +7080,7 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
 fn local_map_domain_failure_precedes_reads_guards_and_missing() {
     for (case, guard) in [
         ("constant", ""),
+        ("expression", ""),
         ("false-source", " when false"),
         ("missing-source", " when left.free>0"),
     ] {
@@ -7068,12 +7092,17 @@ fn local_map_domain_failure_precedes_reads_guards_and_missing() {
             .collect::<Vec<_>>()
             .join("\n");
         std::fs::write(dir.join("a.json"), map).unwrap();
+        let (source_read, target_read) = if case == "expression" {
+            ("if left.free>0 then table else table", "if right.free>0 then chosen else chosen")
+        } else {
+            ("0", "0")
+        };
         std::fs::write(
             dir.join("l.law"),
             format!(
                 r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(left:State,table:Map<State,State>){guard} reads 0;}}
-reading After {{{vocabulary} local here(right:State,chosen:Map<State,State>) reads 0;}}"#
+reading Before {{{vocabulary} local here(left:State,table:Map<State,State>){guard} reads {source_read};}}
+reading After {{{vocabulary} local here(right:State,chosen:Map<State,State>) reads {target_read};}}"#
             ),
         )
         .unwrap();

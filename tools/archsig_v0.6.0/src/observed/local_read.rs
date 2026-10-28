@@ -173,8 +173,10 @@ pub(in crate::observed) fn read_value(
         .expr_type(id)
         .ok_or("local readの型がない")?
         .erase();
-    if !value_type_supported(&ty, env.inputs.law(), &env.control)? {
-        return Err("local readの値型は恒等移送の適用域外".into());
+    if !value_type_supported(&ty, env.inputs.law(), &env.control)?
+        && !super::super::finite::supported(&ty, env.inputs.law(), &env.control)?
+    {
+        return Err("local readの値型は既存の評価域外".into());
     }
     let variables = bindings
         .iter()
