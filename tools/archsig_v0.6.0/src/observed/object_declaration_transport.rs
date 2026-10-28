@@ -805,9 +805,6 @@ pub(super) fn retain(
             numeric_parameters::coefficient_type(&p.ty));
         let mixed = coefficient.as_ref().is_some_and(|ty|
             sp.iter().filter_map(|p| numeric_parameters::coefficient_type(&p.ty)).any(|t| t != *ty));
-        if mixed && (sg.is_some() || tg.is_some()) {
-            return Err("mixed Z/Q local arguments are not implemented".into());
-        }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
             if coefficient.is_some() {

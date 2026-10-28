@@ -11315,3 +11315,122 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         }
     }
 }
+
+#[test]
+fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
+    for reverse in [false, true] {
+        for integer in [false, true] {
+            for (name, source_guard, target_guard, code) in [
+                ("true", "true", "true", 0),
+                ("computed", "1+1=2", "not false", 0),
+                ("source-empty", "false", "true", 0),
+                ("both-empty", "false", "false", 0),
+                ("target-empty", "true", "false", 1),
+            ] {
+                let (dir, vocabulary) = rational_local_parameter_inputs(
+                    &format!("mixed-constant-{reverse}-{integer}-{name}"), false);
+                let (sp, tp, names) = if reverse {
+                    ("q:Q,n:Z", "y:Q,m:Z", ["q", "n"])
+                } else { ("n:Z,q:Q", "m:Z,y:Q", ["n", "q"]) };
+                let (left, right) = if integer { ("n", "m") } else { ("q", "y") };
+                std::fs::write(dir.join("l.law"), format!(
+                    r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here({sp}) when {source_guard} reads {left};}}
+reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};}}"#
+                )).unwrap();
+                let r = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                    "n=needed($m)"]);
+                assert_eq!(r.code, code, "{name}/{integer}/{reverse}: {} {}", r.stdout, r.stderr);
+                let j = result_json(&dir, &r);
+                let m = answer(&j, "m");
+                assert_eq!(s(get(m, "status")), if code == 0 { "established" } else { "refuted" });
+                assert!(has(get(m, "outputs"), "operation"));
+                assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+                let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+                assert!(arr(get(plan, "requirements")).is_empty());
+                if code == 1 {
+                    let evidence = &arr(get(m, "counterexamples"))[0];
+                    let data = get(value(&j, evidence), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(bindings.len(), 2);
+                    for (binding, name) in bindings.iter().zip(names) {
+                        assert_eq!(s(get(binding, "name")), name);
+                        assert_json(value(&j, get(binding, "value")), if name == "n" { r#""0""# } else { r#"["0","1"]"# });
+                    }
+                    assert_json(value(&j, get(data, "left")), "true");
+                    assert_json(value(&j, get(data, "right")), "false");
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn local_mixed_numeric_guards_keep_only_needed_observations() {
+    for (name, source_guard, target_guard, left, right, code, missing) in [
+        ("source-unknown", "s.free=0", "true", "q", "y", 2, true),
+        ("target-unknown", "true", "t.free=0", "q", "y", 2, true),
+        ("source-empty", "false", "t.free=0", "s.free+q", "t.free+y", 0, false),
+        ("target-empty", "true", "false", "s.free+q", "t.free+y", 1, false),
+        ("read-unknown", "true", "true", "s.free+q", "t.free+y", 2, true),
+        ("known-true", "true or s.free=0", "true or t.free=0", "q", "y", 0, false),
+        ("known-false", "false and s.free=0", "true", "s.free+q", "t.free+y", 0, false),
+    ] {
+        let (dir, vocabulary) = rational_local_parameter_inputs(&format!("mixed-guard-{name}"), true);
+        std::fs::write(dir.join("l.law"), format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(n:Z,s:State,q:Q) when {source_guard} reads {left};}}
+reading After {{{vocabulary} local here(m:Z,t:State,y:Q) when {target_guard} reads {right};}}"#
+        )).unwrap();
+        let r = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"]);
+        assert_eq!(r.code, code, "{name}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), match code { 0 => "established", 1 => "refuted", _ => "undetermined" });
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        let requirements = arr(get(plan, "requirements"));
+        assert_eq!(!requirements.is_empty(), missing, "{name}");
+        if missing {
+            assert!(requirements.iter().all(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+            assert!(arr(get(m, "reasons")).iter().any(|r| s(get(r, "code")) == "missing_observation"));
+            assert!(!has(m, "counterexamples") || arr(get(m, "counterexamples")).is_empty());
+        }
+    }
+}
+
+#[test]
+fn local_mixed_numeric_bound_finite_guards_and_reuse_keep_actual_witnesses() {
+    for (name, target_guard, read, code) in [("guard", "not keep", "y", 1), ("value", "keep", "rat(0,1)", 1), ("same", "keep", "y", 0)] {
+        let (dir, vocabulary) = rational_local_parameter_inputs(&format!("mixed-bound-guard-{name}"), false);
+        std::fs::write(dir.join("l.law"), format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(n:Z,take:Bool,q:Q) when take reads q;}}
+reading After {{{vocabulary} local here(m:Z,keep:Bool,y:Q) when {target_guard} reads {read};}}"#
+        )).unwrap();
+        let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+        let r = asks(&dir, &[request]);
+        assert_eq!(r.code, code, "{name}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        if code == 1 {
+            for evidence in arr(get(answer(&j, "m"), "counterexamples")) {
+                let data = get(value(&j, evidence), "data");
+                let bindings = arr(get(data, "bindings"));
+                assert_eq!(bindings.len(), 3);
+                assert_eq!(bindings.iter().map(|b| s(get(b, "name"))).collect::<Vec<_>>(), ["n", "take", "q"]);
+                assert_json(value(&j, get(&bindings[0], "value")), r#""0""#);
+                assert_json(value(&j, get(&bindings[1], "value")), "true");
+                if name == "value" { assert_ne!(s(&arr(value(&j, get(&bindings[2], "value")))[0]), "0"); }
+                assert_ne!(value(&j, get(data, "left")).value, value(&j, get(data, "right")).value);
+            }
+        }
+        let repeated = cli::run(&dir, &["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law",
+            "--ask", request, "--out", "again", "--reuse", "out"]);
+        assert_eq!(repeated.code, code, "{}", repeated.stdout);
+        let again = result_json(&dir, &repeated);
+        for key in ["answers", "nodes"] { assert_eq!(get(&j, key).value, get(&again, key).value); }
+    }
+}
