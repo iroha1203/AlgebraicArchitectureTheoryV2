@@ -661,17 +661,57 @@ fn rational_quotient_guards_are_restricted_to_the_selected_solution_fiber() {
     let q=get(output(&j,2,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);let tags=arr(get(node(&j,get(family,"applicability")),"value"));assert_eq!(tags.len(),1);assert!(!get_bool(&arr(&tags[0])[1]));
 }
 #[test]
-fn rational_quotient_missing_guard_does_not_drop_its_instances() {
-    let dir=input("rational-missing-guard","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;law optional guarded(s:State,b:Bool) when s.y>0:s.x=s.x;");let path=dir.join("a.json");let old=std::fs::read_to_string(&path).unwrap();let new=old.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");assert_ne!(new,old);std::fs::write(path,new).unwrap();let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.guarded)","n=needed($q)"]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
-    let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
-    let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
-    assert!(arr(get(reason,"dependencies")).iter().any(|reference| {
-        let expression=get(node(&j,reference),"value");let span=arr(get(get(expression,"location"),"span"));
-        &law[num(&span[0]) as usize..num(&span[1]) as usize]=="s.y>0" && arr(get(expression,"parameters")).len()==1
-    }));
-    let plan=get(output(&j,2,"plan"),"value");
-    assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Pair.State.y"));
-
+fn rational_quotient_missing_guard_keeps_needed_slot_without_derivation_references() {
+    let dir = input("rational-missing-guard", "change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;law optional guarded(s:State,b:Bool) when s.y>0:s.x=s.x;");
+    let path = dir.join("a.json");
+    let observed = std::fs::read_to_string(&path).unwrap();
+    let missing = observed.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#, "");
+    assert_ne!(missing, observed);
+    std::fs::write(&path, missing).unwrap();
+    let asks = [
+        "s=solve(Pair.first,on=@v/s,using=Pair.choose)",
+        "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.guarded)",
+        "n=needed($q)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let answers = arr(get(&j, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "established");
+    assert_eq!(s(get(&answers[1], "status")), "undetermined");
+    assert!(!has(get(&answers[1], "outputs"), "quotient"));
+    assert_eq!(s(get(&answers[2], "status")), "established");
+    let reasons = arr(get(&answers[1], "reasons"));
+    assert_eq!(reasons.len(), 1);
+    let reason = &reasons[0];
+    assert_eq!(s(get(reason, "code")), "missing_observation");
+    assert!(arr(get(reason, "dependencies")).is_empty());
+    let slots = arr(get(reason, "missing"));
+    assert_eq!(slots.len(), 1);
+    for (key, expected) in [("snapshot", "v"), ("subject", "s"), ("field", "Pair.State.y")] {
+        assert_eq!(s(get(&slots[0], key)), expected);
+    }
+    let plan = get(output(&j, 2, "plan"), "value");
+    let requirements = arr(get(plan, "requirements"));
+    assert_eq!(requirements.len(), 1);
+    assert_eq!(get(&requirements[0], "field").value, slots[0].value);
+    let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
+    for ask in asks { args.extend(["--ask", ask]); }
+    let reuse = run(&dir, &args);
+    assert_eq!(reuse.code, 2, "{} {}", reuse.stdout, reuse.stderr);
+    let again = result_json(&dir, &reuse);
+    for key in ["answers", "nodes"] { assert_eq!(get(&j, key).value, get(&again, key).value); }
+    // 観測が揃えば、guardの真偽どちらでも商を確定し、観測要求を残さない。
+    for (label, map) in [("false", observed.clone()), ("true", observed.replace(r#""field":"Pair.State.y","value":["0","1"]"#, r#""field":"Pair.State.y","value":["1","1"]"#))] {
+        std::fs::write(&path, map).unwrap();
+        let r = execute(&dir, label, &asks);
+        assert_eq!(r.code, 0, "{label}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        assert!(arr(get(&j, "answers")).iter().all(|answer| s(get(answer, "status")) == "established"));
+        assert!(has(get(&arr(get(&j, "answers"))[1], "outputs"), "quotient"));
+        let plan = get(output(&j, 2, "plan"), "value");
+        assert!(arr(get(plan, "requirements")).is_empty());
+    }
 }
 
 #[test]
