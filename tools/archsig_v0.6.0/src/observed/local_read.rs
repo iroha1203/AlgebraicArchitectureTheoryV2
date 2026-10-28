@@ -1797,11 +1797,16 @@ pub(in crate::observed) fn affine_transport(
             params.push(p);
             guards.push(*guard);
         }
-        let (source, axes) = numeric_parameters::law_variables(env, params[0], bindings[0])?;
+        let (source, all_axes) = numeric_parameters::law_variables(env, params[0], bindings[0])?;
+        let mixed = all_axes.iter().any(|axis| axis.kind.ty() != *ty);
+        if mixed && guards.iter().any(Option::is_some) {
+            return Err("mixed numeric local guards are not implemented".into());
+        }
+        let axes = all_axes.iter().filter(|axis| axis.kind.ty() == *ty).cloned().collect::<Vec<_>>();
         let (mut target, _) = numeric_parameters::law_variables(env, params[1], bindings[1])?;
         // The target's numeric argument is the same source coordinate at that position.
         for (s, t) in params[0].iter().zip(params[1]) {
-            if numeric_parameters::coefficient_type(&s.ty).as_ref() == Some(ty)
+            if numeric_parameters::coefficient_type(&s.ty).is_some()
                 && !bindings[0].iter().any(|(name, _)| name == &s.name)
             {
                 target.insert(
@@ -1900,6 +1905,16 @@ pub(in crate::observed) fn affine_transport(
         }
         if let Some(point) = point {
             out.status = Decision::Refuted;
+            // The other coefficient domain remains independent. Choose its zero
+            // only for this witness, after finding a violation on the full read domain.
+            let mut coordinates = point.into_iter();
+            let point = all_axes.iter().map(|axis| {
+                if axis.kind.ty() == *ty {
+                    coordinates.next().ok_or_else(|| "local witness coordinate missing".into())
+                } else {
+                    numeric::zero(&axis.kind.ty(), &env.control)
+                }
+            }).collect::<Result<Vec<_>, ValidationFailure>>()?;
             let mut values = vec![];
             let numeric = params[0].iter()
                 .filter(|p| !bindings[0].iter().any(|(name, _)| *name == p.name))

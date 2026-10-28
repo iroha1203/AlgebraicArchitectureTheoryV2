@@ -803,10 +803,10 @@ pub(super) fn retain(
         }
         let coefficient = sp.iter().find_map(|p|
             numeric_parameters::coefficient_type(&p.ty));
-        if let Some(ty) = &coefficient {
-            if sp.iter().filter_map(|p| numeric_parameters::coefficient_type(&p.ty)).any(|t| t != *ty) {
-                return Err("mixed Z/Q local arguments are not implemented".into());
-            }
+        let mixed = coefficient.as_ref().is_some_and(|ty|
+            sp.iter().filter_map(|p| numeric_parameters::coefficient_type(&p.ty)).any(|t| t != *ty));
+        if mixed && (sg.is_some() || tg.is_some()) {
+            return Err("mixed Z/Q local arguments are not implemented".into());
         }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
@@ -942,8 +942,10 @@ pub(super) fn retain(
             parameter_maps.push(LocalParameter::Reference(map));
         }
         let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Numeric { .. }));
-        if infinite && sr.iter().chain(tr).any(|id| {
-            inputs.law().expr_type(*id).map(|t| t.erase()) != coefficient
+        if infinite && sr.iter().zip(tr).any(|(s,t)| {
+            let ty = inputs.law().expr_type(*s).map(|t| t.erase());
+            ty != inputs.law().expr_type(*t).map(|t| t.erase())
+                || if mixed { !matches!(ty, Some(Type::Z | Type::Q)) } else { ty != coefficient }
         }) {
             return Err("numeric local transport requires reads of its coefficient type".into());
         }
@@ -1063,7 +1065,8 @@ pub(super) fn retain(
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
             let mut comparison = if infinite {
-                let ty = coefficient.as_ref().ok_or("local coefficient type missing")?;
+                let read_type = inputs.law().expr_type(s).ok_or("local read type missing")?.erase();
+                let ty = &read_type;
                 let values = value_map(b, [ty, ty], &[], &[], dependencies)?;
                 numeric_read::compare(
                     b, env, [source, target], &parameter_maps, [s, t], ty, values,
