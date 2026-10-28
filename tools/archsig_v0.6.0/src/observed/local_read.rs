@@ -139,7 +139,7 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 参照を束縛したlocalのZ/Bool readを、通常Evaluatorで評価する。
+/// 参照を束縛したlocalのZ/Q/Bool readを、通常Evaluatorで評価する。
 pub(in crate::observed) fn scalar_value(
     env: &Environment<'_>,
     id: usize,
@@ -152,8 +152,8 @@ pub(in crate::observed) fn scalar_value(
         .expr_type(id)
         .ok_or("local readの型がない")?
         .erase();
-    if !matches!(ty, Type::Z | Type::Bool) {
-        return Err("localの一般readはZ/Boolだけに対応".into());
+    if !matches!(ty, Type::Z | Type::Q | Type::Bool) {
+        return Err("localの一般readはZ/Q/Boolだけに対応".into());
     }
     let variables = bindings
         .iter()
