@@ -7710,3 +7710,104 @@ reading After {{{vocabulary} local here() reads none<State>;}}"#
         &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
     );
 }
+
+#[test]
+fn local_read_type_maps_keep_the_operation_when_read_types_disagree() {
+    for (case, guard, body) in [
+        ("plain", "", "if take then some(left) else none<State>"),
+        (
+            "inactive",
+            " when false",
+            "if take then some(left) else none<State>",
+        ),
+        (
+            "missing",
+            "",
+            "if left.free>0 then some(left) else none<State>",
+        ),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("read-type-mismatch-{case}"));
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .lines()
+            .filter(|line| !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#))
+            .collect::<Vec<_>>()
+            .join("\n");
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(left:State,take:Bool){guard} reads {body};}}
+reading After {{{vocabulary} local here(right:State,keep:Bool) reads true;}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, 1, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), "refuted");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert!(!has(get(m, "outputs"), "map"));
+        assert!(!has(m, "counterexamples"));
+        let law = std::fs::read(dir.join("l.law")).unwrap();
+        let condition = value(&result, get(get(m, "outputs"), "proposition"));
+        for expected in [body, "true"] {
+            assert!(arr(get(condition, "operands")).iter().any(|r| {
+                let expression = value(&result, r);
+                if !has(expression, "kind")
+                    || s(get(expression, "kind")) != "source"
+                    || !has(expression, "location")
+                {
+                    return false;
+                }
+                let span = arr(get(get(expression, "location"), "span"));
+                &law[num(&span[0]) as usize..num(&span[1]) as usize] == expected.as_bytes()
+            }));
+        }
+        let reasons = arr(get(m, "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "condition_failed")
+        );
+        assert!(!reasons.iter().any(|r| matches!(
+            s(get(r, "code")),
+            "missing_observation" | "unsupported_algorithm"
+        )));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ];
+        for request in &requests {
+            args.extend(["--ask", request]);
+        }
+        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+        assert_eq!(normal.code, 1, "{}", normal.stdout);
+        assert!(normal.stderr.is_empty());
+        assert_map_summary(&normal, &result);
+        args.extend(["--out", "again", "--reuse", "out"]);
+        let reused = cli::run(&dir, &args);
+        assert_eq!(reused.code, 1, "{}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&again, key).value);
+        }
+    }
+}

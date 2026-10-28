@@ -364,7 +364,7 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         transports: vec![],
-        failed_values: vec![],
+        failed_arguments: vec![],
         status: Decision::Established,
         reasons: vec![],
         evidence: vec![],

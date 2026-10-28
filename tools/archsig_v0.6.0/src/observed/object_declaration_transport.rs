@@ -87,8 +87,8 @@ enum Read {
 }
 pub(super) struct Output {
     pub transports: Vec<NodeRef>,
-    // 全域値移送が不成立となる元の型付き値。readの反例とは区別する。
-    pub failed_values: Vec<NodeRef>,
+    // 移送の構成条件を反証する元の型付きValue/Expression。read値の反例とは区別する。
+    pub failed_arguments: Vec<NodeRef>,
     pub status: Decision,
     pub reasons: Vec<Reason>,
     pub evidence: Vec<NodeRef>,
@@ -608,14 +608,14 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut result = Output {
         transports: vec![],
-        failed_values: vec![],
+        failed_arguments: vec![],
         status: Decision::Established,
         reasons: vec![],
         evidence: vec![],
     };
     let related = relation::retain(env, b, inputs, declarations, dependencies, request, c)?;
     result.transports.extend(related.transports);
-    result.failed_values.extend(related.failed_values);
+    result.failed_arguments.extend(related.failed_arguments);
     result.status = merge_status(result.status, related.status);
     result.reasons.extend(related.reasons);
     result.evidence.extend(related.evidence);
@@ -624,7 +624,7 @@ pub(super) fn retain(
         if candidate.source().kind == "change" {
             let out = change::retain(env, b, inputs, declarations, candidate, dependencies, request, c)?;
             result.transports.extend(out.transports);
-            result.failed_values.extend(out.failed_values);
+            result.failed_arguments.extend(out.failed_arguments);
             result.status = merge_status(result.status, out.status);
             result.reasons.extend(out.reasons); result.evidence.extend(out.evidence);
             continue;
@@ -711,7 +711,7 @@ pub(super) fn retain(
                 )
                 .map_err(failure)?;
                 if let Some(value) = outside_value(b, &transport, dependencies)? {
-                    result.failed_values.push(value);
+                    result.failed_arguments.push(value);
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
@@ -794,6 +794,25 @@ pub(super) fn retain(
             if matches!(read, Read::Expression)
                 && super::super::finite::supported(&ty, inputs.law(), c)?
             {
+                let expected = construction::moved_declaration_type(
+                    inputs
+                        .law()
+                        .expr_type(sr[index])
+                        .ok_or("local readの元型がない")?,
+                    &declarations.types().iter().cloned().collect(),
+                    &pair.parameters().iter().cloned().collect(),
+                    c,
+                )
+                .map_err(failure)?;
+                if inputs.law().expr_type(tr[index]) != Some(&expected) {
+                    // 型写像を構成できない。評価値の反例ではなく、両原式の型を残す。
+                    result.failed_arguments.extend([
+                        expression(b, inputs, sr[index], sp, dependencies)?,
+                        expression(b, inputs, tr[index], tp, dependencies)?,
+                    ]);
+                    result.status = Decision::Refuted;
+                    continue 'declarations;
+                }
                 let transport = super::super::value_transport::finite_declaration_value_transport(
                     inputs,
                     declarations,
@@ -803,7 +822,7 @@ pub(super) fn retain(
                 )
                 .map_err(failure)?;
                 if let Some(value) = outside_value(b, &transport, dependencies)? {
-                    result.failed_values.push(value);
+                    result.failed_arguments.push(value);
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 }
