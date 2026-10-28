@@ -9061,6 +9061,42 @@ fn local_integer_missing_and_unsupported_conditions_remain_undetermined() {
             true,
             2,
         ),
+        (
+            "source-branch",
+            " when if s.free=0 then n=1 else n=2",
+            "",
+            "n",
+            "m",
+            true,
+            2,
+        ),
+        (
+            "target-branch",
+            " when n=2",
+            " when if t.free=0 then m=1 else m=2",
+            "n",
+            "m",
+            true,
+            2,
+        ),
+        (
+            "observed-guard",
+            " when n=s.free",
+            " when m=t.free",
+            "n",
+            "m",
+            false,
+            0,
+        ),
+        (
+            "observed-branch",
+            " when if s.free=0 then n=1 else n=2",
+            " when if t.free=0 then m=1 else m=2",
+            "n",
+            "m",
+            false,
+            0,
+        ),
         ("read", "", "", "n+s.free", "m+t.free", true, 2),
         (
             "false-source",
@@ -9119,7 +9155,37 @@ reading After {{{vocabulary} local here(t:State,m:Z){tg} reads {tr};}}"#
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         if missing && code == 2 {
             let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-            assert!(!arr(get(plan, "requirements")).is_empty(), "{name}");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| { s(get(get(r, "field"), "field")) == "Reservations.State.free" }),
+                "{name}"
+            );
+        }
+        if name == "source-branch" {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, 2, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_map_summary(&normal, &result);
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, 2, "{}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            for key in ["answers", "nodes"] {
+                assert_eq!(get(&result, key).value, get(&again, key).value);
+            }
         }
     }
 }

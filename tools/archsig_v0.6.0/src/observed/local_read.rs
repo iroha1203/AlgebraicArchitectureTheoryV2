@@ -1781,6 +1781,10 @@ pub(in crate::observed) fn integer_transport(
         missing: vec![],
     };
     let mut pending = change_affine::Pending::default();
+    // The guard compiler can stop before extracting affine coefficients (for
+    // example at an unknown conditional). Retain those reads on every exit.
+    let outer_missing = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+    let outer_value = env.value_read.replace(true);
     let result = (|| {
         let mut params = vec![];
         let mut guards = vec![];
@@ -1935,6 +1939,16 @@ pub(in crate::observed) fn integer_transport(
         }
         Ok(())
     })();
+    env.value_read.set(outer_value);
+    let missing = env
+        .missing_slot_reads
+        .replace(outer_missing)
+        .ok_or("integer local missing-read collector is absent")?;
+    pending.facts.extend(missing.into_iter().filter(|fact| {
+        !env.primitive_valuation
+            .as_ref()
+            .is_some_and(|values| values.contains_key(fact))
+    }));
     match result {
         Ok(()) => {}
         Err(ValidationFailure::UnsupportedExpression { .. }) => out.status = Decision::Undetermined,
