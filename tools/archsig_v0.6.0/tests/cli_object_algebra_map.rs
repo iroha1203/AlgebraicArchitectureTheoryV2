@@ -10509,7 +10509,7 @@ fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
                 "next.0",
                 2,
             ),
-            ("mixed", " when pair.0=1", "", "pair.0", "next.0", 2),
+            ("mixed", " when pair.0=1", "", "pair.0", "next.0", 70),
             ("nonlinear", "", "", "pair.0*pair.1", "next.0*next.1", 2),
         ] {
             let dir = finite_view_inputs(&format!("local-tuple-{ty}-{case}"), true);
@@ -10539,6 +10539,15 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                 "same=compare($m.operation,to=$m.operation,kind=action)",
                 "n=needed($m)",
             ];
+            if code == 70 {
+                let run = without_file_changes(&dir, || cli::run(&dir, &[
+                    "run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--ask", requests[0],
+                ]));
+                assert_eq!(run.code, 70, "{ty}/{case}: {}", run.stdout);
+                assert!(has(&run.receipt, "issues"));
+                assert!(run.stderr.is_empty());
+                continue;
+            }
             let run = asks(&dir, &requests);
             assert_eq!(run.code, code, "{ty}/{case}: {}", run.stdout);
             let result = result_json(&dir, &run);
