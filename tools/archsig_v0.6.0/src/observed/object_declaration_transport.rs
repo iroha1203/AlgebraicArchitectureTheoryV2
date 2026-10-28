@@ -20,10 +20,10 @@ struct ParameterMap {
     transport: construction::ReferenceTypeTransport,
     subjects: Vec<(NodeRef, NodeRef)>,
 }
-// localの各引数位置を保ち、既存の参照写像またはBool全域の値移送を読む。
+// localの各引数位置を保ち、既存の参照写像または参照を含まない有限全域の値移送を読む。
 enum LocalParameter {
     Reference(Arc<ParameterMap>),
-    Boolean {
+    Finite {
         transport: super::super::value_transport::FiniteValueTransport,
         values: NodeRef,
         sources: Vec<NodeRef>,
@@ -39,19 +39,19 @@ impl LocalParameter {
     fn len(&self) -> usize {
         match self {
             Self::Reference(map) => map.subjects.len(),
-            Self::Boolean { transport, .. } => transport.source().len(),
+            Self::Finite { transport, .. } => transport.source().len(),
         }
     }
     fn values(&self) -> NodeRef {
         match self {
             Self::Reference(map) => map.values,
-            Self::Boolean { values, .. } => *values,
+            Self::Finite { values, .. } => *values,
         }
     }
     fn source_value(&self, index: usize) -> NodeRef {
         match self {
             Self::Reference(map) => map.subjects[index].0,
-            Self::Boolean { sources, .. } => sources[index],
+            Self::Finite { sources, .. } => sources[index],
         }
     }
     fn binding(&self, index: usize, side: usize) -> Scalar {
@@ -68,7 +68,7 @@ impl LocalParameter {
                     entity: entity.clone(),
                 }
             }
-            Self::Boolean { transport, .. } => {
+            Self::Finite { transport, .. } => {
                 let values = if side == 0 {
                     transport.source()
                 } else {
@@ -556,6 +556,14 @@ pub(super) fn retain(
                 && matches!(&read_type, Some(Type::Z | Type::Q | Type::Bool))
                 && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type;
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
+                if !matches!(
+                    sp[position].ty,
+                    Type::Ref(_) | Type::Unit | Type::Bool | Type::Fp(_)
+                ) {
+                    return Err(
+                        "local projection read transport supports Ref, Unit, Bool and Fp".into(),
+                    );
+                }
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
                 }
@@ -582,9 +590,16 @@ pub(super) fn retain(
         let mut parameter_maps = vec![];
         let mut type_maps: Vec<Arc<ParameterMap>> = vec![];
         let mut argument_subjects = vec![];
+        let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            if source.ty == Type::Bool && target.ty == Type::Bool {
+            // 既存の有限性判定は再帰Data・無限型・内部に参照を含む型を除外する。
+            if source.ty == target.ty
+                && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?
+            {
+                let identity =
+                    super::super::value_transport::identity_declarations(&source.ty, inputs.law(), c)?
+                        .ok_or("local finite parameter identity is not supported")?;
                 let transport = super::super::value_transport::finite_declaration_value_transport(
                     inputs,
                     declarations,
@@ -594,14 +609,14 @@ pub(super) fn retain(
                 )
                 .map_err(failure)?;
                 if !transport.failures().is_empty() || transport.bijection().is_none() {
-                    return Err("local Bool parameter value transport is not a bijection".into());
+                    return Err("local finite parameter value transport is not a bijection".into());
                 }
                 let mut sources = vec![];
                 for value in transport.source() {
                     tick(c)?;
                     let scalar = value.scalar().clone();
                     sources.push(b.push(
-                        NodeType::Value(Type::Bool),
+                        NodeType::Value(source.ty.clone()),
                         "binding",
                         scalar.wire(),
                         dependencies.to_vec(),
@@ -609,8 +624,9 @@ pub(super) fn retain(
                         None,
                     )?);
                 }
-                let values = value_map(b, [&Type::Bool, &Type::Bool], &[], &[], dependencies)?;
-                parameter_maps.push(LocalParameter::Boolean {
+                let values = value_map(b, [&source.ty, &target.ty], &[], &identity, dependencies)?;
+                argument_declarations.extend(identity);
+                parameter_maps.push(LocalParameter::Finite {
                     transport,
                     values,
                     sources,
@@ -618,7 +634,10 @@ pub(super) fn retain(
                 continue;
             }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
-                return Err("local argument transport supports Ref and Bool".into());
+                return Err(
+                    "local argument transport requires Ref or the same reference-free finite type"
+                        .into(),
+                );
             };
             if let Some(map) = type_maps
                 .iter()
@@ -643,11 +662,13 @@ pub(super) fn retain(
             Type::Tuple(sp.iter().map(|p| p.ty.clone()).collect()),
             Type::Tuple(tp.iter().map(|p| p.ty.clone()).collect()),
         ];
+        argument_declarations.sort();
+        argument_declarations.dedup();
         let arguments = value_map(
             b,
             [&args[0], &args[1]],
             &argument_subjects,
-            declarations.types(),
+            &argument_declarations,
             dependencies,
         )?;
         let applicable = applicable(
