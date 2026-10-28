@@ -8915,13 +8915,29 @@ fn local_integer_arguments_preserve_the_entire_source_guard_fiber() {
         ("empty", " when 2*n=1", " when false", "n", "0", 0),
         ("kernel", " when n+k=17", " when m+j=17", "n+k", "17", 0),
         ("kernel-read", " when n+k=17", "", "n", "17", 1),
+        (
+            "reference-late",
+            "",
+            "",
+            "n+s.free",
+            "if t.held=1 then m+t.free+1 else m+t.free",
+            1,
+        ),
+        (
+            "finite-guard",
+            " when flag and n+k=17",
+            " when choice and m+j=17",
+            "n+k",
+            "17",
+            0,
+        ),
         ("kernel-guard", " when n+k=17", " when m=17", "n+k", "17", 1),
         (
             "finite-late",
             "",
             "",
             "if flag then n else n+k",
-            "if choice then m else m+j+1",
+            "if choice then m+1 else m+j",
             1,
         ),
     ] {
@@ -8978,6 +8994,12 @@ reading After {{{vocabulary} local here(m:Z,t:State,choice:Bool,j:Z){tg} reads {
             }
             if name == "kernel-guard" {
                 assert_ne!(n, 17);
+            }
+            if name == "finite-late" {
+                assert_json(value(&result, get(&bindings[2], "value")), "true");
+            }
+            if name == "reference-late" {
+                assert_json(value(&result, get(&bindings[1], "value")), r#"["v","q"]"#);
             }
             if name == "coefficient" {
                 assert_ne!(n, 0);
