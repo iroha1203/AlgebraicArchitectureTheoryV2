@@ -1095,6 +1095,7 @@ fn populate(
         };
         let explicit = match e.shape {
             LawNumericShape::Equality { explicit_guard, .. }
+            | LawNumericShape::Conjunction { explicit_guard, .. }
             | LawNumericShape::Unsupported { explicit_guard, .. } => explicit_guard,
         };
         let guard = guard(inputs, e.position, row, case, g, q, explicit, c)?;
@@ -1105,18 +1106,21 @@ fn populate(
         };
         for component in items {
             tick(c)?;
+            let full_path = component.map(|v| v.path.clone()).unwrap_or_default();
+            let (shape, scalar_path) = e.shape.component(&full_path)
+                .ok_or_else(|| bad("連言の成分がない"))?;
+            let q = if matches!(e.shape, LawNumericShape::Conjunction { .. }) {
+                q.conjuncts.get(full_path[0]).ok_or_else(|| bad("連言の元評価がない"))?
+            } else { q };
             let ty = component
                 .map(|v| v.ty.clone())
-                .unwrap_or_else(|| match &e.shape {
-                    LawNumericShape::Unsupported { ty, .. }
-                    | LawNumericShape::Equality { ty, .. } => ty.clone(),
-                });
-            let path = component.map(|v| v.path.clone()).unwrap_or_default();
+                .unwrap_or_else(|| shape.ty().clone());
+            let path = scalar_path.to_vec();
             let mut occurrence = EquationOccurrence {
                 position: e.position,
                 row,
                 case,
-                component: path.clone(),
+                component: full_path.clone(),
                 ty: ty.clone(),
                 required: q.reading.required(),
                 guard: guard.clone(),
@@ -1157,7 +1161,7 @@ fn populate(
                 ) {
                     // 適用外/guard偽でも原式の記号表示は残す。通常評価を実行したことにはせず、
                     // 生差εは未生成のまま、適用条件付きresidualの零と区別する。
-                    if let LawNumericShape::Equality { left, right, .. } = e.shape
+                    if let LawNumericShape::Equality { left, right, .. } = *shape
                         && let Some(source) = source_polynomial::operands(
                             inputs,
                             original.instance(),
@@ -1187,7 +1191,7 @@ fn populate(
                 } else if row.is_none()
                     && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(original, c)? {
                     let mut polynomial = EquationPolynomial::constant(value.clone(), c)?;
-                    if let LawNumericShape::Equality { left, right, .. } = e.shape
+                    if let LawNumericShape::Equality { left, right, .. } = *shape
                         && let Some(source) = source_polynomial::operands(inputs, original.instance(), left, right, &path, &mut r.rings[index], c)? {
                         let values: Vec<_> = r.rings[index].symbols.iter().map(|symbol| symbol.value.clone()).collect();
                         if source.difference.evaluate(&values, c)?.as_ref().map(|value| value.scalar()) != Some(&value) {

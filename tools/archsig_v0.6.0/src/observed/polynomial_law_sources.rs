@@ -96,11 +96,16 @@ impl Builder<'_> {
         &mut self,
         body: usize,
     ) -> Result<((NodeRef, Type), (NodeRef, Type)), ValidationFailure> {
-        let eq = super::super::object_law_residuals::predicate_equation(
+        self.pair_at(body, None)
+    }
+    fn pair_at(
+        &mut self, body: usize, equality: Option<usize>,
+    ) -> Result<((NodeRef, Type), (NodeRef, Type)), ValidationFailure> {
+        let eq = if equality.is_some() { equality } else { super::super::object_law_residuals::predicate_equation(
             self.inputs,
             body,
             self.control,
-        ).map_err(|e| construction_failure(&e))?;
+        ).map_err(|e| construction_failure(&e))? };
         let Some(eq) = eq else {
             // 一般条件の原bodyを保持し、恒真は固定のUnit等値として構成する。
             let unit = self.put(Part::Scalar(Scalar::Unit))?;
@@ -171,6 +176,10 @@ impl Builder<'_> {
                         _ => return Err("多項式operandのmatch patternが違う".into()),
                     }
                     current = next;
+                }
+                ExprKind::Binary { op: crate::law::ast::BinOp::And, .. } => {
+                    current = super::super::object_law_residuals::conjunction_child(self.inputs, current, eq)
+                        .ok_or("多項式operandの連言に等式がない")?.0;
                 }
                 _ => return Err("多項式operandの元等式までの束縛が違う".into()),
             }
@@ -506,7 +515,6 @@ pub(super) fn append(
             .iter()
             .find(|o| (o.instance, o.row) == key)
             .ok_or("多項式座標の元Law行がない")?;
-        let (left, right) = original.operands.clone().ok_or("多項式の元左右式がない")?;
         let mut b = Builder {
             inputs,
             original,
@@ -514,8 +522,17 @@ pub(super) fn append(
             base,
             control: c,
         };
-        let lhs = b.project(left.0, left.1, &q.component)?;
-        let rhs = b.project(right.0, right.1, &q.component)?;
+        let shape = &core.base().evaluations().iter().find(|e| e.position == q.position)
+            .ok_or("多項式の元Law成分がない")?.shape;
+        let (term, path) = shape.component(&q.component).ok_or("多項式の連言成分がない")?;
+        let (left, right) = if matches!(shape, super::super::object_law_residuals::LawNumericShape::Conjunction { .. }) {
+            let super::super::object_law_residuals::LawNumericShape::Equality { body, equality, .. } = term else {
+                return Err("多項式の連言成分が等式でない".into());
+            };
+            b.pair_at(*body, Some(*equality))?
+        } else { original.operands.clone().ok_or("多項式の元左右式がない")? };
+        let lhs = b.project(left.0, left.1, path)?;
+        let rhs = b.project(right.0, right.1, path)?;
         result.push((original.reference, lhs, rhs));
     }
     tick(c)?;

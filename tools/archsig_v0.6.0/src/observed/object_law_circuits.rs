@@ -251,7 +251,7 @@ fn build(out: &mut ObjectLawCircuits, c: &mut Control) -> Result<(), Constructio
     for e in 0..out.base.evaluations().len() {
         tick(c)?;
         let source = &out.base.evaluations()[e];
-        let LawNumericShape::Equality { ty, .. } = &source.shape else {
+        let (LawNumericShape::Equality { ty, .. } | LawNumericShape::Conjunction { ty, .. }) = &source.shape else {
             continue;
         };
         let mut components = vec![];
