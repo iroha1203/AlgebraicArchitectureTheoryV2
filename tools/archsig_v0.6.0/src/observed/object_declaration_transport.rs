@@ -587,7 +587,7 @@ pub(super) fn retain(
         let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            // Tuple/Optionの有限値構造から参照葉だけを集め、既存の実参照写像を共有する。
+            // Tuple/Option/Setの有限値構造から参照葉だけを集め、既存の実参照写像を共有する。
             // localの前向き可換性には像の衝突・未到達を許す。有限APIの全単射判定は保つ。
             let mut reference_types = BTreeSet::new();
             let structural_reference = !matches!(&source.ty, Type::Ref(_))
@@ -603,7 +603,8 @@ pub(super) fn retain(
                             | Type::Bool
                             | Type::Fp(_)
                             | Type::Tuple(_)
-                            | Type::Option(_) => false,
+                            | Type::Option(_)
+                            | Type::Set(_) => false,
                             _ => true,
                         },
                         c,
