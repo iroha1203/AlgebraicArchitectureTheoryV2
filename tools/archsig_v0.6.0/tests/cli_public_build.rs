@@ -1586,17 +1586,23 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
     }
 }
 fn assert_missing_quantity_once(result: &JNode) {
-    // 同じ欠測値はcheckの両辺で相殺されるが、buildはviewの入力を要する。
+    // 短い表示は反証済みcheckの欠測理由を省き、完全結果は依存を保持する。
     assert_eq!(s(get(answer(result, "c"), "status")), "refuted");
-    assert!(!has(answer(result, "c"), "reasons"));
-    let reasons = arr(get(answer(result, "b"), "reasons"));
-    assert_eq!(reasons.len(), 1);
-    assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
-    let missing = arr(get(&reasons[0], "missing"));
-    assert_eq!(missing.len(), 1);
-    assert_eq!(s(get(&missing[0], "subject")), "q");
-    assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
+    let ids: &[&str] = if has(result, "nodes") { &["b", "c"] } else {
+        assert!(!has(answer(result, "c"), "reasons"));
+        &["b"]
+    };
+    for id in ids {
+        let reasons = arr(get(answer(result, id), "reasons"));
+        assert_eq!(reasons.len(), 1);
+        assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+        let missing = arr(get(&reasons[0], "missing"));
+        assert_eq!(missing.len(), 1);
+        assert_eq!(s(get(&missing[0], "subject")), "q");
+        assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
+    }
 }
+
 #[test]
 fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     let dir = files("state-dependent-law", "law required balanced(c:Part,n:Z):c.quantity+n=n;", false);
