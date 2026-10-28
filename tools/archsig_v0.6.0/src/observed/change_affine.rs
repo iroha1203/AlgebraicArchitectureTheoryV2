@@ -496,7 +496,9 @@ pub(in crate::observed) fn compute_update(
         .collect();
     missing.expression = Some(*body);
     let mut updates = BTreeMap::new();
-    collect_updates(
+    // Branch selection can stop before coordinates() collects missing affine terms.
+    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+    let result = collect_updates(
         env,
         *body,
         &change.reading,
@@ -505,9 +507,32 @@ pub(in crate::observed) fn compute_update(
         missing,
         Some(field),
         &mut updates,
-    )?;
-    let form = updates.values().next().ok_or("整数changeの更新先がない")?;
-    let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
+    );
+    let reads = env.missing_slot_reads.replace(outer)
+        .ok_or("整数更新の不足位置収集がない")?;
+    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
+        outer.extend(reads.iter().cloned());
+    }
+    if result.is_err() {
+        missing.facts.extend(reads.into_iter().filter(|fact| {
+            !env.primitive_valuation.as_ref().is_some_and(|values| values.contains_key(fact))
+                && !env.affine_valuation.contains_key(fact)
+        }));
+    }
+    result?;
+    let form = if let Some(form) = updates.into_values().next() {
+        form
+    } else {
+        // The selected coordinate is unchanged by the original simultaneous update.
+        let source = env.scoped_field(
+            value(env, subject.clone())?, field, &Scope::default(), &change.reading, change.span,
+        )?;
+        missing.support.extend(source.support.iter().cloned());
+        missing.scope.merge(&source.scope);
+        usable(env, *body, &source)?;
+        *source.affine.ok_or_else(|| unsupported(env, *body, "整数changeの未更新値がZアフィンでない"))?
+    };
+    let (constant, row) = coordinates(env, *body, &form, Axes::Parameters(&axes), missing)?;
     Ok((row, constant.ok_or("作用の固定項が未確定")?))
 }
 pub(in crate::observed) fn compute(
