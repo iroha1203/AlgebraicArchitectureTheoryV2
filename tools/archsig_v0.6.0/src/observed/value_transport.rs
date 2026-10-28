@@ -870,6 +870,75 @@ mod tests {
     }
 
     #[test]
+    fn list_images_keep_positions_and_set_images_contract_equal_numeric_reference_pairs() {
+        let a = A.replace("\"subjects\": [", r#""subjects": [{"id":"r","type":"Left.Child","origin":"model"},"#)
+            .replace("\"atoms\": [", r#""atoms": [
+    {"id":"r-owner","subject":"r","field":"Left.Child.owner","value":["v","a"],"origin":"model"},
+    {"id":"r-count","subject":"r","field":"Left.Child.count","value":"2","origin":"model"},"#)
+            .replace(r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]]]"#,
+                     r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]]"#);
+        let i = inputs(&a);
+        let d = declarations(&i);
+        let mut c = Control::unlimited();
+        let element = |entity: &str| Type::Tuple(vec![Type::Ref(entity.into()), Type::Z]);
+        let value = |subject: &str, entity: &str, number: i32| {
+            Scalar::Tuple(vec![
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: subject.into(),
+                    entity: entity.into(),
+                },
+                Scalar::Z(number.into()),
+            ])
+        };
+        let sequence = Scalar::List {
+            element: element("Left.Child"),
+            items: vec![
+                value("p", "Left.Child", 17),
+                value("r", "Left.Child", 18),
+                value("p", "Left.Child", 17),
+            ],
+        };
+        let moved = candidate_image(&i, &d, "Before.returned", &sequence, &mut c).unwrap();
+        assert_eq!(
+            moved,
+            Scalar::List {
+                element: element("Right.Child"),
+                items: vec![
+                    value("q", "Right.Child", 17),
+                    value("q", "Right.Child", 18),
+                    value("q", "Right.Child", 17)
+                ],
+            }
+        );
+        let set = Scalar::Set {
+            element: element("Left.Child"),
+            items: vec![
+                value("p", "Left.Child", 17),
+                value("r", "Left.Child", 17),
+                value("r", "Left.Child", 18),
+            ],
+        };
+        let moved = candidate_image(&i, &d, "Before.returned", &set, &mut c).unwrap();
+        data::check(&moved, i.law(), &c).unwrap();
+        let Scalar::Set { items, .. } = &moved else {
+            panic!("Set image");
+        };
+        assert_eq!(items.len(), 2);
+        assert!(
+            data::equal(
+                &moved,
+                &Scalar::Set {
+                    element: element("Right.Child"),
+                    items: vec![value("q", "Right.Child", 18), value("q", "Right.Child", 17)],
+                },
+                &c
+            )
+            .unwrap()
+        );
+    }
+
+    #[test]
     fn forged_whole_value_domains_images_and_bijections_are_rejected() {
         let i = inputs(A);
         let d = declarations(&i);

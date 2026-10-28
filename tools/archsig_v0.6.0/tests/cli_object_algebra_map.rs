@@ -6081,11 +6081,6 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "b",
         ),
         (
-            "list-reference-return", "s:State,take:Bool", "t:State,keep:Bool",
-            "if take then list<State>[s] else list<State>[]",
-            "if keep then list<State>[t] else list<State>[]",
-        ),
-        (
             "infinite-argument", "items:List<Z>,take:Bool", "items:List<Z>,keep:Bool",
             "if take then list<Z>[0] else items",
             "if keep then list<Z>[0] else items",
@@ -6094,11 +6089,6 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "map-in-product", "s:State,take:Bool", "t:State,keep:Bool",
             "if take then none<(Map<State,State>,Z)> else none<(Map<State,State>,Z)>",
             "if keep then none<(Map<State,State>,Z)> else none<(Map<State,State>,Z)>",
-        ),
-        (
-            "set-in-product", "s:State,take:Bool", "t:State,keep:Bool",
-            "if take then (set<State>{s},0) else (set<State>{},0)",
-            "if keep then (set<State>{t},0) else (set<State>{},0)",
         ),
     ] {
         let (dir, vocabulary) =
@@ -8038,6 +8028,26 @@ fn local_reference_product_reads_extend_total_reference_maps_with_scalar_identit
             r#"[["v","p"],"2"]"#,
             "e",
         ),
+        (
+            "list",
+            "State",
+            "list<(State,Z)>[(left,left.free),(other,other.free),(left,left.free)]",
+            "list<(State,Z)>[]",
+            "list<(State,Z)>[(left,left.free+1)]",
+            r#"["List",["Tuple",["Ref","Reservations.State"],"Z"]]"#,
+            r#"[[["v","p"],"2"],[["v","p"],"2"],[["v","p"],"2"]]"#,
+            "p",
+        ),
+        (
+            "set",
+            "State",
+            "set<(State,Z)>{(left,left.free),(other,other.free)}",
+            "set<(State,Z)>{}",
+            "set<(State,Z)>{(left,left.free+1),(other,other.free)}",
+            r#"["Set",["Tuple",["Ref","Reservations.State"],"Z"]]"#,
+            r#"[[["v","p"],"2"]]"#,
+            "p",
+        ),
     ] {
         for (case, code) in [
             ("preserved", 0),
@@ -8192,10 +8202,16 @@ reading After {{{vocabulary} local here(right:{parameter},spare:{parameter},keep
 
 #[test]
 fn local_reference_products_check_unread_reference_values_before_false_guards() {
-    for (case, external, mismatch) in [
-        ("total", false, false),
-        ("outside", true, false),
-        ("mismatch", false, true),
+    for (case, external, mismatch, empty) in [
+        ("total", false, false, "none<@>"),
+        ("outside", true, false, "none<@>"),
+        ("mismatch", false, true, "none<@>"),
+        ("list-total", false, false, "list<@>[]"),
+        ("list-outside", true, false, "list<@>[]"),
+        ("list-mismatch", false, true, "list<@>[]"),
+        ("set-total", false, false, "set<@>{}"),
+        ("set-outside", true, false, "set<@>{}"),
+        ("set-mismatch", false, true, "set<@>{}"),
     ] {
         let dir = workdir(&format!("local-reference-product-domain-{case}"));
         let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
@@ -8217,16 +8233,22 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         let imports = format!(
             r#"use vocabulary Left version "1" digest "{ld}"; use vocabulary Right version "1" digest "{rd}"; use vocabulary Bridge version "1" digest "{bd}";"#
         );
+        let source_empty = empty.replace('@', "(Left.Child,Z)");
+        let target_empty = empty.replace(
+            '@',
+            if mismatch {
+                "(Right.Child,Q)"
+            } else {
+                "(Right.Child,Z)"
+            },
+        );
+        let source_read = format!("if take then {source_empty} else {source_empty}");
+        let target_read = format!("if keep then {target_empty} else {target_empty}");
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{imports} local here(take:Bool) when false reads if take then none<(Left.Child,Z)> else none<(Left.Child,Z)>;}}
-reading After {{{imports} local here(keep:Bool) when false reads if keep then none<(Right.Child,Z)> else none<(Right.Child,Z)>;}}"#
+reading Before {{{imports} local here(take:Bool) when false reads {source_read};}}
+reading After {{{imports} local here(keep:Bool) when false reads {target_read};}}"#
         );
-        let law = if mismatch {
-            law.replace("Right.Child,Z", "Right.Child,Q")
-        } else {
-            law
-        };
         let mut map = include_str!("fixtures/reference-type.archmap.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
@@ -8324,15 +8346,18 @@ reading After {{{imports} local here(keep:Bool) when false reads if keep then no
                             == archsig::json::parse(br#"["v","h"]"#).unwrap().value)
                 );
             } else {
-                for text in [
-                    "if take then none<(Left.Child,Z)> else none<(Left.Child,Z)>",
-                    "if keep then none<(Right.Child,Q)> else none<(Right.Child,Q)>",
-                ] {
+                for text in [&source_read, &target_read] {
                     assert!(arr(get(condition, "operands")).iter().any(|r| {
                         let expression = value(&result, r);
-                        if !has(expression, "kind") || s(get(expression, "kind")) != "source" || !has(expression, "location") { return false; }
+                        if !has(expression, "kind")
+                            || s(get(expression, "kind")) != "source"
+                            || !has(expression, "location")
+                        {
+                            return false;
+                        }
                         let span = arr(get(get(expression, "location"), "span"));
-                        &law.as_bytes()[num(&span[0]) as usize..num(&span[1]) as usize] == text.as_bytes()
+                        &law.as_bytes()[num(&span[0]) as usize..num(&span[1]) as usize]
+                            == text.as_bytes()
                     }));
                 }
             }
