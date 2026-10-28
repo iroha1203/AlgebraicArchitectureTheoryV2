@@ -5,7 +5,7 @@ use super::{
         ConstructionValue, Witness,
     },
     control::{Checkpoint, Control},
-    environment::Environment,
+    environment::{Environment, numeric_parameters},
     equation_polynomial::EquationPolynomial,
     input::CheckedInputs,
     object_equation_presentation::{
@@ -684,7 +684,7 @@ impl Data {
         let known_guard = true_guard || (self.source.core.is_none() && diagram.unavailable.is_none()
             && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysFalse));
         let numeric_family = known_guard && original.row.is_none()
-            && original.parameters.iter().all(|(_, ty)| matches!(ty, Type::Z | Type::Q))
+            && original.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
             match self

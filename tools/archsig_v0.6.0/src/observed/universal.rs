@@ -19,6 +19,23 @@ pub(in crate::observed) struct UniversalParameter {
     pub ty: Type,
 }
 impl UniversalParameter {
+    fn numeric(&self) -> bool {
+        numeric_parameters::numeric_width(&self.ty).is_some()
+    }
+    fn affine_parameters(&self, c: &Control) -> Result<Vec<Parameter>, ValidationFailure> {
+        if !self.numeric() {
+            return Ok(vec![]);
+        }
+        numeric_parameters::axes(
+            &crate::law::model::Param {
+                name: self.name.clone(),
+                ty: self.ty.clone(),
+                span: self.binder,
+            },
+            self.context,
+            c,
+        )
+    }
     fn affine_parameter(&self) -> Option<Parameter> {
         Some(Parameter {
             binder: self.binder,
@@ -28,6 +45,7 @@ impl UniversalParameter {
         })
     }
 }
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct UniversalPlan {
     pub template_span: (usize, usize),
@@ -110,7 +128,7 @@ impl Environment<'_> {
             || plan
                 .parameters
                 .iter()
-                .any(|p| p.affine_parameter().is_none())
+                .any(|p| !p.numeric())
         {
             return Ok(None);
         }
@@ -183,7 +201,7 @@ impl Environment<'_> {
             let mut finite = Vec::new();
             for parameter in instance.parameters() {
                 self.tick()?;
-                if matches!(parameter.ty, Type::Z | Type::Q) {
+                if numeric_parameters::numeric_width(&parameter.ty).is_some() {
                     continue;
                 }
                 if !matches!(
@@ -263,7 +281,7 @@ impl Environment<'_> {
             if plan
                 .parameters
                 .iter()
-                .any(|p| p.affine_parameter().is_none())
+                .any(|p| !p.numeric())
             {
                 "non-numeric infinite quantified decision"
             } else if self.universal_has_exists(plan)? {
@@ -280,11 +298,10 @@ impl Environment<'_> {
         plan: &UniversalPlan,
         predicate: &AffinePredicate,
     ) -> Result<Vec<Parameter>, ValidationFailure> {
-        let mut parameters: Vec<Parameter> = plan
-            .parameters
-            .iter()
-            .filter_map(UniversalParameter::affine_parameter)
-            .collect();
+        let mut parameters = vec![];
+        for parameter in &plan.parameters {
+            parameters.extend(parameter.affine_parameters(&self.control)?);
+        }
         for bound in &predicate.bound_axes {
             self.tick()?;
             if !parameters.contains(bound) {
@@ -900,7 +917,7 @@ impl Environment<'_> {
                                 && plan
                                     .parameters
                                     .iter()
-                                    .all(|p| p.affine_parameter().is_some()) =>
+                                    .all(|p| p.numeric()) =>
                         {
                             affine::universal_equality(
                                 Some(&predicate.left),
@@ -917,7 +934,7 @@ impl Environment<'_> {
                         .parameters
                         .iter()
                         .rev()
-                        .filter(|p| p.affine_parameter().is_none())
+                        .filter(|p| !p.numeric())
                     {
                         value.known_value = self.universal_opaque_constant(
                             self.universal_parameter_quantifier_kind(parameter)?,
@@ -1122,6 +1139,33 @@ impl Environment<'_> {
                 location: Location::Law { span: binder },
                 feature: "call展開内で追加されるZ/Q全称binderの全域Plan".into(),
             })?;
+        if matches!(parameter.ty, Type::Tuple(_)) && parameter.numeric() {
+            use crate::observed::term::affine::Value;
+            let mut axes = parameter.affine_parameters(&self.control)?.into_iter();
+            let value = numeric_parameters::restore(
+                &parameter.ty,
+                &self.control,
+                &mut || {
+                    let axis = axes.next().ok_or("全称Tupleの成分軸がない")?;
+                    Ok(Value::Number(
+                        affine::parameter(&axis.kind.ty(), &axis, &self.control)?
+                            .ok_or("全称Tupleの成分式がない")?,
+                    ))
+                },
+                &Value::Tuple,
+            )?;
+            return Ok(SourceValue {
+                condition_failed: false,
+                condition_pending: false,
+                symbolic: Some(Box::new(value)),
+                comparison: None,
+                affine: None,
+                scope: base.clone(),
+                known_value: None,
+                support: vec![],
+                scalar_scope: None,
+            });
+        }
         Ok(SourceValue {
             condition_failed: false,
             condition_pending: false,
@@ -1686,7 +1730,7 @@ impl Environment<'_> {
                                 && plan
                                     .parameters
                                     .iter()
-                                    .all(|p| p.affine_parameter().is_some()) =>
+                                    .all(|p| p.numeric()) =>
                         {
                             let parameters = self.universal_closed_parameters(&plan, predicate)?;
                             affine::universal_equality(
@@ -1741,7 +1785,7 @@ impl Environment<'_> {
                         .parameters
                         .iter()
                         .rev()
-                        .filter(|p| p.affine_parameter().is_none())
+                        .filter(|p| !p.numeric())
                     {
                         body_value = self
                             .universal_opaque_constant(
@@ -1892,6 +1936,34 @@ impl Environment<'_> {
         self.context.set(old_context);
         result
     }
+    pub(in crate::observed) fn universal_order_counterexample_bindings(
+        &self,
+        graph: &Graph,
+        original: NodeRef,
+        bindings: &mut [Binding],
+    ) -> Result<(), ValidationFailure> {
+        let span = self.expression_span(graph, original)?;
+        let declaration = self
+            .inputs
+            .law()
+            .declarations
+            .values()
+            .find(|d| d.span.0 <= span.0 && span.1 <= d.span.1)
+            .ok_or("全域反例の元宣言がない")?;
+        let params = match &declaration.signature {
+            Signature::Law { params, .. } | Signature::View { params, .. } => params,
+            _ => return Err("全域反例の元署名が違う".into()),
+        };
+        self.tick()?;
+        // 仮引数は元署名順、式内の量化binderは元の自由変数順に保つ。
+        bindings.sort_by_key(|binding| {
+            params
+                .iter()
+                .position(|p| p.name == binding.name)
+                .unwrap_or(usize::MAX)
+        });
+        Ok(())
+    }
     pub(in crate::observed) fn universal_counterexample_bindings(
         &self,
         graph: &Graph,
@@ -1946,14 +2018,19 @@ impl Environment<'_> {
                     let (value, binder) = if let Some(value) =
                         variables.as_ref().and_then(|variables| variables.get(name))
                     {
-                        let form = value
-                            .affine
-                            .as_deref()
-                            .ok_or("具体反例の実formalがアフィンでない")?;
-                        let Some(scalar) =
+                        let scalar = if let Some(form) = value.affine.as_deref() {
                             affine::substitute_parameters(form, assignment, &self.control)?
                                 .value(&self.control)?
-                        else {
+                        } else if let Some(symbolic) = value.symbolic.as_deref() {
+                            numeric_parameters::substitute_value(
+                                symbolic,
+                                assignment,
+                                &self.control,
+                            )?
+                        } else {
+                            return Err("具体反例の実formalが数値式でない".into());
+                        };
+                        let Some(scalar) = scalar else {
                             // callerの全称parameterを具体化しても、実引数の
                             // Missingは残り得る。formalを架空のScalarで埋めない。
                             continue;
@@ -1994,16 +2071,31 @@ impl Environment<'_> {
                             })
                             .or(declared_binder)
                             .ok_or("具体反例の元自由binderがない")?;
-                        let (parameter, value) = assignment
-                            .iter()
-                            .find(|(parameter, _)| {
-                                parameter.name == *name
-                                    && parameter.kind.ty() == *ty
-                                    && parameter.binder == binder
-                                    && parameter.context == graph.context_at(original.0)
-                            })
-                            .ok_or("具体反例の元parameterがない")?;
-                        (value.clone(), parameter.binder)
+                        let p = crate::law::model::Param {
+                            name: name.clone(),
+                            ty: ty.clone(),
+                            span: binder,
+                        };
+                        let mut values = vec![];
+                        for axis in numeric_parameters::axes(
+                            &p,
+                            graph.context_at(original.0),
+                            &self.control,
+                        )? {
+                            let (_, value) = assignment
+                                .iter()
+                                .find(|(parameter, _)| *parameter == axis)
+                                .ok_or("具体反例の元parameterがない")?;
+                            values.push(value.clone());
+                        }
+                        let mut values = values.into_iter();
+                        let value = numeric_parameters::restore(
+                            ty,
+                            &self.control,
+                            &mut || values.next().ok_or_else(|| "具体反例の成分がない".into()),
+                            &Scalar::Tuple,
+                        )?;
+                        (value, binder)
                     };
                     result.push((name.clone(), ty.clone(), value, binder));
                 }

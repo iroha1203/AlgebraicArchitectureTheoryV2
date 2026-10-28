@@ -3220,3 +3220,344 @@ fn numeric_tuple_view_families_keep_missing_observations() {
         assert_eq!(get(&again, field).value, get(&result, field).value);
     }
 }
+
+fn required_tuple_inputs(name: &str, ty: &str, body: &str, missing: bool) -> PathBuf {
+    let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
+    let dir = files_with_definition(name, body, missing, &definition);
+    if ty == "Q" {
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(r#""value":"0""#, r#""value":["0","1"]"#)
+            .replace(r#""value":"1""#, r#""value":["1","2"]"#);
+        std::fs::write(dir.join("a.json"), map).unwrap();
+    }
+    dir
+}
+fn required_tuple_law_case(ty: &str, case: &str) {
+    let nested = !case.ends_with("flat") && case != "observed";
+    let shape = if nested {
+        format!("({ty},({ty},{ty}))")
+    } else {
+        format!("({ty},{ty})")
+    };
+    let a = "pair.0";
+    let z = if nested { "pair.1.1" } else { "pair.1" };
+    let expression = match case {
+        "held-flat" | "held-nested" => format!("{a}+last+more.1={a}+last+more.1"),
+        "later" => "last=more.1".to_owned(),
+        "finite" => format!("(if take then {a} else {z})={z}"),
+        "empty" => "c.quantity=100".to_owned(),
+        "missing" | "observed" => format!("{a}+c.quantity={a}"),
+        "unknown" => format!("{a}*{z}=1"),
+        "helper" => format!("tail(pair)={a}"),
+        _ => format!("{a}={z}"),
+    };
+    let guard = if case == "empty" {
+        format!(" when {a}+1={a}")
+    } else {
+        String::new()
+    };
+    let finite = if case == "finite" { "take:Bool," } else { "" };
+    let helper = if case == "helper" {
+        format!(
+            "view tail(p:{shape}):{ty}={};",
+            if nested { "p.1.1" } else { "p.1" }
+        )
+    } else {
+        String::new()
+    };
+    let signature = if case == "observed" {
+        format!("pair:{shape},c:Part")
+    } else {
+        format!("{finite}pair:{shape},c:Part,last:{ty},more:({ty},{ty})")
+    };
+    let body = format!("{helper}law required balanced({signature}){guard}:{expression};");
+    let missing = case == "missing";
+    let dir = required_tuple_inputs(&format!("required-tuple-{ty}-{case}"), ty, &body, missing);
+    let code = match case {
+        "held-flat" | "held-nested" | "empty" => 0,
+        "missing" | "unknown" => 2,
+        _ => 1,
+    };
+    let mut requests = vec![
+        "b=build(R,on=@v/root)",
+        "c=check(R.balanced,on=$b.object,c=@v/q)",
+    ];
+    if case != "observed" {
+        requests.push("n=needed($c)");
+    }
+    if case == "missing" {
+        requests.push("p=check(R.balanced,on=$b.object,c=@v/p)");
+    }
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+    ];
+    for request in &requests {
+        args.extend(["--ask", *request]);
+    }
+    let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
+    let normal = cli::run(&dir, &args);
+    assert_eq!(
+        normal.code, code,
+        "{ty}/{case}: {} {}",
+        normal.stdout, normal.stderr
+    );
+    assert!(normal.stderr.is_empty());
+    assert!(!has(&normal.receipt, "nodes") && !has(&normal.receipt, "result"));
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
+        assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
+    }
+    let run = asks(&dir, &requests);
+    let result = saved(
+        &dir,
+        &run,
+        if code == 2 { "partial" } else { "complete" },
+        code,
+    );
+    assert!(has(get(answer(&result, "b"), "outputs"), "object"));
+    let checked = answer(&result, "c");
+    assert_eq!(
+        s(get(checked, "status")),
+        match code {
+            0 => "established",
+            1 => "refuted",
+            _ => "undetermined",
+        }
+    );
+    if case == "empty" {
+        assert_eq!(s(get(checked, "applicability")), "not_applicable");
+    }
+    if code == 1 {
+        let examples = arr(get(checked, "counterexamples"));
+        assert!(!examples.is_empty());
+        for example in examples {
+            let data = get(value(&result, example), "data");
+            let bindings = arr(get(data, "bindings"));
+            let names: Vec<_> = bindings.iter().map(|b| s(get(b, "name"))).collect();
+            assert_eq!(
+                names,
+                if case == "finite" {
+                    vec!["take", "pair", "c", "last", "more"]
+                } else if case == "observed" {
+                    vec!["pair", "c"]
+                } else {
+                    vec!["pair", "c", "last", "more"]
+                }
+            );
+            let binding = |name: &str| {
+                value(
+                    &result,
+                    get(
+                        bindings.iter().find(|b| s(get(b, "name")) == name).unwrap(),
+                        "value",
+                    ),
+                )
+            };
+            let pair = arr(binding("pair"));
+            assert_eq!(pair.len(), 2);
+            let end = if nested {
+                assert_eq!(arr(&pair[1]).len(), 2);
+                &arr(&pair[1])[1]
+            } else {
+                &pair[1]
+            };
+            if case != "observed" {
+                let more = arr(binding("more"));
+                assert_eq!(more.len(), 2);
+                if case == "later" {
+                    assert_ne!(binding("last").value, more[1].value);
+                } else {
+                    assert_ne!(pair[0].value, end.value);
+                }
+            }
+            if case == "finite" {
+                assert_eq!(
+                    binding("take").value,
+                    archsig::json::parse(b"true").unwrap().value
+                );
+            }
+            let left = value(&result, get(value(&result, get(data, "left")), "value"));
+            let right = value(&result, get(value(&result, get(data, "right")), "value"));
+            assert_ne!(left.value, right.value);
+            if case == "observed" {
+                if ty == "Z" {
+                    assert_eq!(
+                        s(left).parse::<i128>().unwrap() - s(right).parse::<i128>().unwrap(),
+                        1
+                    );
+                } else {
+                    let l = arr(left);
+                    let r = arr(right);
+                    let ln = s(&l[0]).parse::<i128>().unwrap();
+                    let ld = s(&l[1]).parse::<i128>().unwrap();
+                    let rn = s(&r[0]).parse::<i128>().unwrap();
+                    let rd = s(&r[1]).parse::<i128>().unwrap();
+                    assert_eq!((ln * rd - rn * ld) * 2, ld * rd);
+                }
+            }
+        }
+    } else if case == "missing" {
+        let examples = arr(get(checked, "counterexamples"));
+        assert!(!examples.is_empty());
+        for example in examples {
+            let pair = value(&result, example);
+            assert_eq!(s(get(pair, "kind")), "completion_pair");
+            let data = get(pair, "data");
+            let first = value(
+                &result,
+                get(value(&result, get(data, "first_result")), "value"),
+            );
+            let second = value(
+                &result,
+                get(value(&result, get(data, "second_result")), "value"),
+            );
+            assert_ne!(first.value, second.value);
+            assert!(arr(get(data, "fields")).iter().any(
+                |f| s(get(f, "subject")) == "q" && s(get(f, "field")) == "Build.Part.quantity"
+            ));
+        }
+    } else {
+        assert!(!has(checked, "counterexamples"));
+    }
+    if case == "missing" {
+        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
+    }
+    if case != "observed" {
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        if case == "missing" {
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let field = get(r, "field");
+                s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
+            }));
+        } else if case == "empty" {
+            assert!(arr(get(plan, "requirements")).is_empty());
+        } else if case == "unknown" {
+            assert!(!arr(get(plan, "blockers")).is_empty());
+        }
+    }
+    args.extend(["--out", "again", "--reuse", "out"]);
+    let reused = cli::run(&dir, &args);
+    let again = saved(
+        &dir,
+        &reused,
+        if code == 2 { "partial" } else { "complete" },
+        code,
+    );
+    assert!(warnings(&again).is_empty());
+    for key in ["answers", "nodes"] {
+        assert_eq!(
+            get(&result, key).value,
+            get(&again, key).value,
+            "{ty}/{case}/{key}"
+        );
+    }
+}
+
+#[test]
+fn required_numeric_tuple_laws_build_and_check() {
+    for ty in ["Z", "Q"] {
+        for case in [
+            "held-flat",
+            "held-nested",
+            "refuted-flat",
+            "refuted-nested",
+            "later",
+        ] {
+            required_tuple_law_case(ty, case);
+        }
+    }
+}
+
+#[test]
+fn required_numeric_tuple_finite_arguments() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "finite");
+    }
+}
+
+#[test]
+fn required_numeric_tuple_empty_domains() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "empty");
+    }
+}
+
+#[test]
+fn required_numeric_tuple_missing_observations() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "missing");
+    }
+}
+
+#[test]
+fn required_numeric_tuple_unknown_nonlinear() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "unknown");
+    }
+}
+
+#[test]
+fn required_numeric_tuple_helper_arguments() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "helper");
+    }
+}
+
+#[test]
+fn required_numeric_tuple_empty_guard_skips_unobserved_body() {
+    for ty in ["Z", "Q"] {
+        let body=format!("law required balanced(pair:({ty},({ty},{ty})),c:Part) when pair.0+1=pair.0:c.quantity=100;");
+        let dir = required_tuple_inputs(
+            &format!("required-tuple-empty-direct-{ty}"),
+            ty,
+            &body,
+            true,
+        );
+        let requests = ["c=check(R.balanced,c=@v/q)", "n=needed($c)"];
+        let run = asks(&dir, &requests);
+        let result = saved(&dir, &run, "complete", 0);
+        let checked = answer(&result, "c");
+        assert_eq!(s(get(checked, "status")), "established");
+        assert_eq!(s(get(checked, "applicability")), "not_applicable");
+        assert!(!has(checked, "counterexamples"));
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
+        let args = [
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            requests[0],
+            "--ask",
+            requests[1],
+            "--out",
+            "again",
+            "--reuse",
+            "out",
+        ];
+        let reused = cli::run(&dir, &args);
+        let again = saved(&dir, &reused, "complete", 0);
+        assert!(warnings(&again).is_empty());
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&again, key).value, get(&result, key).value);
+        }
+    }
+}
+
+#[test]
+fn required_numeric_tuple_observed_zero_and_fraction() {
+    for ty in ["Z", "Q"] {
+        required_tuple_law_case(ty, "observed");
+    }
+}

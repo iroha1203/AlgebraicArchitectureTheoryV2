@@ -56,8 +56,8 @@ pub(super) fn sources(
         let mut cases: Vec<Vec<(String, Scalar)>> = vec![vec![]];
         for parameter in instance.parameters() {
             tick(c)?;
-            match parameter.ty {
-                Type::Z | Type::Q => (),
+            match &parameter.ty {
+                ty if numeric_parameters::numeric_width(ty).is_some() => (),
                 Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) | Type::Set(_) => {
                     if !super::super::finite::completion_supported(&parameter.ty, inputs.law(), c)? { return Ok(None); }
                     let values = super::super::finite::values(&parameter.ty, inputs.law(), c,
@@ -82,7 +82,7 @@ pub(super) fn sources(
                 .map_err(|e| construction_failure(&e))? else { return Ok(None) };
             // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
             symbolic |= !source.difference.parameters.is_empty()
-                || (!source.finite.is_empty() && instance.parameters().iter().any(|p| matches!(p.ty, Type::Z | Type::Q)));
+                || (!source.finite.is_empty() && instance.parameters().iter().any(|p| numeric_parameters::numeric_width(&p.ty).is_some()));
             equations.push((i, source));
         }
     }

@@ -1420,9 +1420,14 @@ impl Environment<'_> {
             self.universal_counterexample_bindings(graph, original, template, &domains)?;
         let (_, fixed) = self.universal_source_fields(graph, original)?;
         if bindings.len() != fixed.len() + expected.len()
-            || bindings.get(..fixed.len()) != Some(fixed)
+            || fixed.iter().any(|b| !bindings.contains(b))
         {
             return Err("全域代入の元固定binding・代入数が違う".into());
+        }
+        let mut ordered = bindings.to_vec();
+        self.universal_order_counterexample_bindings(graph, original, &mut ordered)?;
+        if bindings != ordered {
+            return Err("全域代入の元引数順が違う".into());
         }
         let caller_body = self.universal_counterexample_source(graph, template, &plan, limit)?;
         let caller_values = if graph.context_at(original.0) == graph.context_at(caller_body.0) {
@@ -1430,8 +1435,13 @@ impl Environment<'_> {
         } else {
             Vec::new()
         };
-        for (binding, (name, ty, value, binder)) in bindings[fixed.len()..].iter().zip(&expected) {
+        for (name, ty, value, binder) in &expected {
             self.tick()?;
+            let mut matches = bindings.iter().filter(|b| b.name == *name);
+            let binding = matches.next().ok_or("全域代入の元引数がない")?;
+            if matches.next().is_some() {
+                return Err("全域代入の元引数が重複する".into());
+            }
             // 実Contextと元binderを含む同一代入だけcallerのScalarを共有する。
             // 局所binder・別callee formalは各実Sourceを起点に生成する。
             let binding_source =
