@@ -166,7 +166,7 @@ pub fn numeric_declaration_value_transport(
 ) -> Result<NumericValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
-    let (source, target) = selected_types(declarations, declaration, position, control)?;
+    let (source, target) = selected_types(inputs, declarations, declaration, position, control)?;
     // 既存核はZ/Q/Fpとその有限Tuple積を再帰的に判定する。全域を列挙しない。
     if !numeric::is_numeric_type(&source, control).map_err(invalid_value)?
         || !numeric::is_numeric_type(&target, control).map_err(invalid_value)?

@@ -82,7 +82,7 @@ impl LocalParameter {
 }
 enum Read {
     Projection(usize),
-    Expression(Option<usize>),
+    Expression,
     Field { position: usize, names: [String; 2] },
 }
 pub(super) struct Output {
@@ -460,6 +460,104 @@ fn reference_map(
     });
     Ok(map)
 }
+fn outside_value(
+    b: &mut Builder<'_>,
+    transport: &super::super::value_transport::FiniteValueTransport,
+    dependencies: &[NodeRef],
+) -> Result<Option<NodeRef>, ValidationFailure> {
+    let index = transport.failures().iter().find_map(|f| match f {
+        super::super::value_transport::FiniteValueConditionFailure::OutsideTarget {
+            source,
+            ..
+        } => Some(*source),
+        _ => None,
+    });
+    index
+        .map(|i| {
+            let value = transport.source()[i].scalar().clone();
+            b.push(
+                NodeType::Value(value.ty()),
+                "binding",
+                value.wire(),
+                dependencies.to_vec(),
+                Some(value),
+                None,
+            )
+        })
+        .transpose()
+}
+fn finite_value_map(
+    b: &mut Builder<'_>,
+    inputs: &super::super::input::CheckedInputs,
+    declarations: &construction::DeclarationCorrespondence,
+    transport: &super::super::value_transport::FiniteValueTransport,
+    type_maps: &mut Vec<Arc<ParameterMap>>,
+    dependencies: &[NodeRef],
+    c: &mut Control,
+) -> Result<(NodeRef, Vec<(NodeRef, NodeRef)>, Vec<(String, String)>), ValidationFailure> {
+    let mut pending = vec![transport.source_type()];
+    let mut references = BTreeSet::new();
+    let mut families = BTreeSet::new();
+    let mut names = BTreeSet::new();
+    while let Some(ty) = pending.pop() {
+        tick(c)?;
+        match ty {
+            Type::Ref(name) => {
+                references.insert(name.clone());
+            }
+            Type::Tuple(items) => pending.extend(items),
+            Type::Option(item) | Type::Set(item) => pending.push(item),
+            Type::Map(a, b) => pending.extend([a.as_ref(), b.as_ref()]),
+            Type::Data(family) => {
+                if families.insert(family.clone()) {
+                    names.insert(family.clone());
+                    for ctor in super::super::data::constructors(inputs.law(), family)? {
+                        names.insert(format!("{family}.{}", ctor.name));
+                        pending.extend(&ctor.arguments);
+                    }
+                }
+            }
+            Type::Unit | Type::Bool | Type::Fp(_) => {}
+            _ => return Err("有限値写像の型が既存有限域でない".into()),
+        }
+    }
+    let mut pairs = if references.is_empty() {
+        vec![]
+    } else {
+        declarations.types().to_vec()
+    };
+    pairs.extend(names.into_iter().map(|n| (n.clone(), n)));
+    pairs.sort();
+    pairs.dedup();
+    let mut subjects = vec![];
+    for st in references {
+        let tt = declarations
+            .types()
+            .iter()
+            .find(|(s, _)| s == &st)
+            .map(|(_, t)| t.as_str())
+            .unwrap_or(&st);
+        let map = if let Some(map) = type_maps
+            .iter()
+            .find(|map| map.source == st && map.target == tt)
+        {
+            map.clone()
+        } else {
+            let map = reference_map(b, inputs, declarations, &st, tt, dependencies, c)?;
+            type_maps.push(map.clone());
+            map
+        };
+        subjects.extend(map.subjects.iter().copied());
+    }
+    let values = value_map(
+        b,
+        [transport.source_type(), transport.target_type()],
+        &subjects,
+        &pairs,
+        dependencies,
+    )?;
+    Ok((values, subjects, pairs))
+}
 fn expression(
     b: &mut Builder<'_>,
     inputs: &super::super::input::CheckedInputs,
@@ -558,17 +656,19 @@ pub(super) fn retain(
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
-            // 戻り値と同じ型対を持つ引数の検査済み全域ValueMapを共有する。
-            let value_parameter = sp.iter().zip(tp).position(|(a, b)| {
-                Some(a.ty.erase()) == read_type
-                    && inputs.law().expr_type(t).map(|ty| ty.erase()) == Some(b.ty.erase())
-            });
-            let expression_read = value_parameter.is_some() || (!sp.is_empty()
-                && match &read_type {
-                    Some(ty) => super::super::environment::local_read::value_type_supported(ty, inputs.law(), c)?,
-                    None => false,
+            let expression_read = match &read_type {
+                Some(ty) => {
+                    super::super::finite::supported(ty, inputs.law(), c)?
+                        || (!sp.is_empty()
+                            && super::super::environment::local_read::value_type_supported(
+                                ty,
+                                inputs.law(),
+                                c,
+                            )?
+                            && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type)
                 }
-                && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type);
+                None => false,
+            };
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
                 if read_parameter(inputs, t, tp, c)? != Some(position) {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
@@ -583,12 +683,12 @@ pub(super) fn retain(
                         names: [source, target],
                     });
                 } else if expression_read {
-                    reads.push(Read::Expression(value_parameter));
+                    reads.push(Read::Expression);
                 } else {
                     return Err("異なる引数のfield read移送は未実装".into());
                 }
             } else if expression_read {
-                reads.push(Read::Expression(value_parameter));
+                reads.push(Read::Expression);
             } else {
                 return Err("local readの式移送は未実装".into());
             }
@@ -599,79 +699,9 @@ pub(super) fn retain(
         let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            // 有限性は既存核で確認し、Dataのconstructor引数も含めて参照葉を読む。
-            // localの前向き可換性には像の衝突・未到達を許す。有限APIの全単射判定は保つ。
-            let mut reference_types = BTreeSet::new();
-            let mut data_declarations = BTreeSet::new();
-            let finite = super::super::finite::supported(&source.ty, inputs.law(), c)?;
-            if finite {
-                let mut pending = vec![&source.ty];
-                while let Some(ty) = pending.pop() {
-                    tick(c)?;
-                    match ty {
-                        Type::Ref(name) => {
-                            reference_types.insert(name.clone());
-                        }
-                        Type::Tuple(items) => pending.extend(items),
-                        Type::Option(item) | Type::Set(item) => pending.push(item),
-                        Type::Data(family) => {
-                            if data_declarations.insert(family.clone()) {
-                                for ctor in super::super::data::constructors(inputs.law(), family)? {
-                                    tick(c)?;
-                                    data_declarations.insert(format!("{family}.{}", ctor.name));
-                                    pending.extend(&ctor.arguments);
-                                }
-                            }
-                        }
-                        Type::Unit | Type::Bool | Type::Fp(_) => {}
-                        Type::Map(from, to) => pending.extend([from.as_ref(), to.as_ref()]),
-                        _ => {
-                            reference_types.clear();
-                            break;
-                        }
-                    }
-                }
-            }
-            let structural_reference = finite
-                && !matches!(&source.ty, Type::Ref(_))
-                && !reference_types.is_empty();
-            let mut subjects = vec![];
-            if structural_reference {
-                for st in reference_types {
-                    tick(c)?;
-                    // 対応署名が型構造を保ち、参照葉の先型はこの宣言対応で決まる。
-                    let tt = declarations
-                        .types()
-                        .iter()
-                        .find(|(name, _)| name == &st)
-                        .map(|(_, target)| target.as_str())
-                        .unwrap_or(&st);
-                    let map = if let Some(map) = type_maps
-                        .iter()
-                        .find(|map| map.source == st && map.target == tt)
-                    {
-                        map.clone()
-                    } else {
-                        let map = reference_map(b, inputs, declarations, &st, tt, dependencies, c)?;
-                        argument_subjects.extend(map.subjects.iter().copied());
-                        type_maps.push(map.clone());
-                        map
-                    };
-                    subjects.extend(map.subjects.iter().copied());
-                }
-            }
-            if structural_reference
-                || (source.ty == target.ty
-                    && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?)
+            if !matches!(source.ty, Type::Ref(_))
+                && super::super::finite::supported(&source.ty, inputs.law(), c)?
             {
-                let value_declarations = if structural_reference {
-                    let mut pairs = declarations.types().to_vec();
-                    pairs.extend(data_declarations.into_iter().map(|name| (name.clone(), name)));
-                    pairs
-                } else {
-                    super::super::value_transport::identity_declarations(&source.ty, inputs.law(), c)?
-                        .ok_or("local finite parameter identity is not supported")?
-                };
                 let transport = super::super::value_transport::finite_declaration_value_transport(
                     inputs,
                     declarations,
@@ -680,28 +710,21 @@ pub(super) fn retain(
                     c,
                 )
                 .map_err(failure)?;
-                if structural_reference {
-                    if let Some(index) = transport.failures().iter().find_map(|failure| match failure {
-                        super::super::value_transport::FiniteValueConditionFailure::OutsideTarget { source, .. } => Some(*source),
-                        _ => None,
-                    }) {
-                        // 型全域の値写像を作れない。read/guardを評価せず、元の型付き値を
-                        // 構成条件の依存として保持する。域外候補をValueMap/Valueにしない。
-                        let value = transport.source()[index].scalar().clone();
-                        result.failed_values.push(b.push(
-                            NodeType::Value(source.ty.clone()),
-                            "binding",
-                            value.wire(),
-                            dependencies.to_vec(),
-                            Some(value),
-                            None,
-                        )?);
-                        result.status = Decision::Refuted;
-                        continue 'declarations;
-                    }
-                } else if !transport.failures().is_empty() || transport.bijection().is_none() {
-                    return Err("local finite parameter value transport is not a bijection".into());
+                if let Some(value) = outside_value(b, &transport, dependencies)? {
+                    result.failed_values.push(value);
+                    result.status = Decision::Refuted;
+                    continue 'declarations;
                 }
+                let (values, subjects, value_declarations) = finite_value_map(
+                    b,
+                    inputs,
+                    declarations,
+                    &transport,
+                    &mut type_maps,
+                    dependencies,
+                    c,
+                )?;
+                argument_subjects.extend(subjects);
                 let mut sources = vec![];
                 for value in transport.source() {
                     tick(c)?;
@@ -715,13 +738,6 @@ pub(super) fn retain(
                         None,
                     )?);
                 }
-                let values = value_map(
-                    b,
-                    [&source.ty, &target.ty],
-                    &subjects,
-                    &value_declarations,
-                    dependencies,
-                )?;
                 argument_declarations.extend(value_declarations);
                 parameter_maps.push(LocalParameter::Finite {
                     transport,
@@ -758,6 +774,8 @@ pub(super) fn retain(
         ];
         argument_declarations.sort();
         argument_declarations.dedup();
+        argument_subjects.sort_by_key(|(a, b)| (a.0, b.0));
+        argument_subjects.dedup();
         let arguments = value_map(
             b,
             [&args[0], &args[1]],
@@ -765,6 +783,44 @@ pub(super) fn retain(
             &argument_declarations,
             dependencies,
         )?;
+        // 戻り値の全型域も、guard/readの実評価より先に検査する。
+        let mut read_maps = vec![];
+        for (index, read) in reads.iter().enumerate() {
+            let ty = inputs
+                .law()
+                .expr_type(sr[index])
+                .ok_or("local read型がない")?
+                .erase();
+            if matches!(read, Read::Expression)
+                && super::super::finite::supported(&ty, inputs.law(), c)?
+            {
+                let transport = super::super::value_transport::finite_declaration_value_transport(
+                    inputs,
+                    declarations,
+                    &candidate.source().name,
+                    super::super::value_transport::DeclarationValuePosition::LocalRead(index),
+                    c,
+                )
+                .map_err(failure)?;
+                if let Some(value) = outside_value(b, &transport, dependencies)? {
+                    result.failed_values.push(value);
+                    result.status = Decision::Refuted;
+                    continue 'declarations;
+                }
+                let (values, _, _) = finite_value_map(
+                    b,
+                    inputs,
+                    declarations,
+                    &transport,
+                    &mut type_maps,
+                    dependencies,
+                    c,
+                )?;
+                read_maps.push(Some((transport, values)));
+            } else {
+                read_maps.push(None);
+            }
+        }
         let applicable = applicable(
             b,
             env,
@@ -777,7 +833,7 @@ pub(super) fn retain(
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
         all.extend(guard_expressions.iter().copied());
-        for ((&s, &t), read) in sr.iter().zip(tr).zip(reads) {
+        for (((&s, &t), read), read_map) in sr.iter().zip(tr).zip(reads).zip(&read_maps) {
             tick(c)?;
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
@@ -791,10 +847,19 @@ pub(super) fn retain(
                     support: vec![],
                     scope: Scope::default(),
                 },
-                Read::Expression(value_parameter) => field::compare_expression(
-                    b, env, inputs, [source, target], &parameter_maps, value_parameter,
+                Read::Expression => field::compare_expression(
+                    b,
+                    env,
+                    inputs,
+                    [source, target],
+                    &parameter_maps,
+                    read_map.as_ref(),
                     applicable.as_ref().map(|domain| domain.rows.as_slice()),
-                    [s, t], [se, te], dependencies, request, c,
+                    [s, t],
+                    [se, te],
+                    dependencies,
+                    request,
+                    c,
                 )?,
                 Read::Field { position, names } => field::compare(
                     b,
