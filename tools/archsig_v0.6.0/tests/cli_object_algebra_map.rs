@@ -9610,7 +9610,7 @@ reading After {{{vocabulary} local here(t:State,y:Q){tg} reads {tr};}}"#
 }
 
 #[test]
-fn local_rational_only_arguments_keep_fraction_witnesses_and_mixed_domains_unsupported() {
+fn local_rational_only_arguments_keep_fraction_witnesses_and_mixed_guards_unsupported() {
     for (name, source, target, code) in [
         (
             "identity",
@@ -9660,7 +9660,11 @@ reading Before {{{vocabulary} {source}}} reading After {{{vocabulary} {target}}}
             assert_json(value(&result, get(data, "right")), r#"["0","1"]"#);
         }
     }
-    for params in ["n:Z,q:Q", "q:Q,n:Z"] {
+    for (params,source_guard,target_guard) in [
+        ("n:Z,q:Q"," when n=0",""),
+        ("q:Q,n:Z",""," when n=0"),
+        ("n:Z,q:Q"," when 2*q=1",""),
+    ] {
         let (dir, vocabulary) = rational_local_parameter_inputs(
             &format!("local-q-mixed-{}", params.starts_with('n')),
             false,
@@ -9669,8 +9673,8 @@ reading Before {{{vocabulary} {source}}} reading After {{{vocabulary} {target}}}
             dir.join("l.law"),
             format!(
                 r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here({params}) reads q;}}
-reading After {{{vocabulary} local here({params}) reads q;}}"#
+reading Before {{{vocabulary} local here({params}){source_guard} reads q;}}
+reading After {{{vocabulary} local here({params}){target_guard} reads q;}}"#
             ),
         )
         .unwrap();
@@ -9693,6 +9697,254 @@ reading After {{{vocabulary} local here({params}) reads q;}}"#
         assert_eq!(run.code, 70, "{params}: {}", run.stdout);
         assert!(run.stderr.is_empty());
         assert!(has(&run.receipt, "issues"));
+    }
+}
+
+#[test]
+fn local_independent_mixed_numbers_keep_types_order_and_actual_witnesses() {
+    for reverse in [false, true] {
+        for (name, left, right, code) in [
+            ("q-identity", "q", "y", 0),
+            ("z-identity", "n", "m", 0),
+            ("both", "q,n+1", "y,m+1", 0),
+            ("q-witness", "q", "rat(0,1)", 1),
+            ("z-witness", "n", "0", 1),
+            ("finite-late", "if take then q else rat(0,1)", "rat(0,1)", 1),
+        ] {
+            let (dir, vocabulary) =
+                rational_local_parameter_inputs(&format!("local-mixed-{reverse}-{name}"), false);
+            let (sp, tp, names, types) = if reverse {
+                (
+                    "q:Q,take:Bool,n:Z",
+                    "y:Q,keep:Bool,m:Z",
+                    ["q", "take", "n"],
+                    r#"["Tuple","Q","Bool","Z"]"#,
+                )
+            } else {
+                (
+                    "n:Z,take:Bool,q:Q",
+                    "m:Z,keep:Bool,y:Q",
+                    ["n", "take", "q"],
+                    r#"["Tuple","Z","Bool","Q"]"#,
+                )
+            };
+            std::fs::write(
+                dir.join("l.law"),
+                format!(
+                    r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here({sp}) reads {left};}}
+reading After {{{vocabulary} local here({tp}) reads {right};}}"#
+                ),
+            )
+            .unwrap();
+            let run = asks(&dir, &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ]);
+            assert_eq!(
+                run.code, code,
+                "{name}/{reverse}: {} {}",
+                run.stdout, run.stderr
+            );
+            let result = result_json(&dir, &run);
+            let m = answer(&result, "m");
+            assert_eq!(
+                s(get(m, "status")),
+                if code == 0 { "established" } else { "refuted" }
+            );
+            assert!(has(get(m, "outputs"), "operation"));
+            assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+            assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+            if code == 0 {
+                let map = value(&result, get(get(m, "outputs"), "map"));
+                let transport = value(&result, &arr(get(map, "transports"))[0]);
+                let clauses = arr(get(transport, "clauses"));
+                assert_eq!(clauses.len(), if name == "both" { 2 } else { 1 });
+                for clause in clauses {
+                    let args = value(&result, get(clause, "arguments"));
+                    assert_json(get(args, "source_type"), types);
+                    let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
+                    assert_eq!(qs.len(), 3);
+                    for (q, name) in qs.iter().zip(names) {
+                        assert_eq!(s(get(q, "name")), name);
+                    }
+                }
+            } else {
+                let examples = arr(get(m, "counterexamples"));
+                assert!(!examples.is_empty());
+                for example in examples {
+                    let data = get(value(&result, example), "data");
+                    let bindings = arr(get(data, "bindings"));
+                    assert_eq!(bindings.len(), 3);
+                    for (binding, name) in bindings.iter().zip(names) {
+                        assert_eq!(s(get(binding, "name")), name);
+                    }
+                    let n = value(
+                        &result,
+                        get(&bindings[if reverse { 2 } else { 0 }], "value"),
+                    );
+                    let q = value(
+                        &result,
+                        get(&bindings[if reverse { 0 } else { 2 }], "value"),
+                    );
+                    let take = value(&result, get(&bindings[1], "value"));
+                    if name == "z-witness" {
+                        assert_ne!(s(n), "0");
+                        assert_json(q, r#"["0","1"]"#);
+                        assert_eq!(value(&result, get(data, "left")).value, n.value);
+                    } else {
+                        assert_json(n, r#""0""#);
+                        assert_ne!(s(&arr(q)[0]), "0");
+                        if name == "finite-late" {
+                            assert_json(take, "true");
+                        }
+                        assert_json(
+                            value(&result, get(data, "left")),
+                            &format!("[\"{}\",\"{}\"]", s(&arr(q)[0]), s(&arr(q)[1])),
+                        );
+                    }
+                    assert_ne!(
+                        value(&result, get(data, "left")).value,
+                        value(&result, get(data, "right")).value
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn local_mixed_numeric_reads_preserve_missing_and_nonlinear_reasons() {
+    for (name, left, right, missing) in [
+        ("missing", "s.free+q", "t.free+y", true),
+        ("nonlinear", "q*q", "y*y", false),
+    ] {
+        let (dir, vocabulary) =
+            rational_local_parameter_inputs(&format!("local-mixed-{name}"), missing);
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(n:Z,s:State,q:Q) reads {left};}}
+reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
+            ),
+        )
+        .unwrap();
+        let run=asks(&dir,&[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ]);
+        assert_eq!(run.code, 2, "{name}: {} {}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), "undetermined");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert!(!has(get(m, "outputs"), "map"));
+        assert!(!has(m, "counterexamples") || arr(get(m, "counterexamples")).is_empty());
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert!(arr(get(m, "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code"))
+                == if missing {
+                    "missing_observation"
+                } else {
+                    "unsupported_algorithm"
+                }));
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        let requirements = arr(get(plan, "requirements"));
+        if missing {
+            assert!(requirements
+                .iter()
+                .any(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+        } else {
+            assert!(requirements.is_empty());
+        }
+    }
+}
+
+#[test]
+fn local_mixed_numeric_tuple_witnesses_restore_all_axes_and_reuse() {
+    for (name, left, right, code) in [
+        ("identity", "pair.0+pair.1.1,q", "next.0+next.1.1,y", 0),
+        ("integer", "pair.1.1", "0", 1),
+        ("rational", "q", "rat(0,1)", 1),
+    ] {
+        let (dir, vocabulary) =
+            rational_local_parameter_inputs(&format!("local-mixed-nested-{name}"), false);
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(pair:(Z,(Z,Z)),q:Q) reads {left};}}
+reading After {{{vocabulary} local here(next:(Z,(Z,Z)),y:Q) reads {right};}}"#
+            ),
+        )
+        .unwrap();
+        let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+        let run = asks(&dir, &[request]);
+        assert_eq!(run.code, code, "{name}: {} {}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
+        if code == 1 {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2);
+            assert_eq!(s(get(&bindings[0], "name")), "pair");
+            assert_eq!(s(get(&bindings[1], "name")), "q");
+            let pair = arr(value(&result, get(&bindings[0], "value")));
+            assert_eq!(pair.len(), 2);
+            let tail = arr(&pair[1]);
+            assert_eq!(tail.len(), 2);
+            let q = value(&result, get(&bindings[1], "value"));
+            if name == "integer" {
+                assert_eq!(value(&result, get(data, "left")).value, tail[1].value);
+                assert_ne!(s(&tail[1]), "0");
+                assert_json(q, r#"["0","1"]"#);
+            } else {
+                assert_json(
+                    value(&result, get(&bindings[0], "value")),
+                    r#"["0",["0","0"]]"#,
+                );
+                assert_eq!(value(&result, get(data, "left")).value, q.value);
+                assert_ne!(s(&arr(q)[0]), "0");
+            }
+            assert_ne!(
+                value(&result, get(data, "left")).value,
+                value(&result, get(data, "right")).value
+            );
+        }
+        let reused = cli::run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                request,
+                "--out",
+                "again",
+                "--reuse",
+                "out",
+            ],
+        );
+        assert_eq!(reused.code, code, "{name}: {}", reused.stdout);
+        let again = result_json(&dir, &reused);
+        for key in ["answers", "nodes"] {
+            assert_eq!(
+                get(&result, key).value,
+                get(&again, key).value,
+                "{name}/{key}"
+            );
+        }
     }
 }
 
