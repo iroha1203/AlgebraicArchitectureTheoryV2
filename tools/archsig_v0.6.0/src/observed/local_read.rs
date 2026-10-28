@@ -139,7 +139,7 @@ pub(in crate::observed) fn guard_value(
     Ok((result, support, value.scope, missing))
 }
 
-/// 参照を束縛したlocalのZ/Q/Bool readを、通常Evaluatorで評価する。
+/// 引数を束縛したlocalのZ/Q/Bool readを、通常Evaluatorで評価する。
 pub(in crate::observed) fn scalar_value(
     env: &Environment<'_>,
     id: usize,

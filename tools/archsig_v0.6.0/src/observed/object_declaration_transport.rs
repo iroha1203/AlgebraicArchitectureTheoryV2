@@ -20,6 +20,65 @@ struct ParameterMap {
     transport: construction::ReferenceTypeTransport,
     subjects: Vec<(NodeRef, NodeRef)>,
 }
+// localの各引数位置を保ち、既存の参照写像またはBool全域の値移送を読む。
+enum LocalParameter {
+    Reference(Arc<ParameterMap>),
+    Boolean {
+        transport: super::super::value_transport::FiniteValueTransport,
+        values: NodeRef,
+        sources: Vec<NodeRef>,
+    },
+}
+impl LocalParameter {
+    fn reference(&self) -> Option<&Arc<ParameterMap>> {
+        match self {
+            Self::Reference(map) => Some(map),
+            _ => None,
+        }
+    }
+    fn len(&self) -> usize {
+        match self {
+            Self::Reference(map) => map.subjects.len(),
+            Self::Boolean { transport, .. } => transport.source().len(),
+        }
+    }
+    fn values(&self) -> NodeRef {
+        match self {
+            Self::Reference(map) => map.values,
+            Self::Boolean { values, .. } => *values,
+        }
+    }
+    fn source_value(&self, index: usize) -> NodeRef {
+        match self {
+            Self::Reference(map) => map.subjects[index].0,
+            Self::Boolean { sources, .. } => sources[index],
+        }
+    }
+    fn binding(&self, index: usize, side: usize) -> Scalar {
+        match self {
+            Self::Reference(map) => {
+                let (fact, entity) = if side == 0 {
+                    (&map.transport.source()[index], &map.source)
+                } else {
+                    (&map.transport.images()[index], &map.target)
+                };
+                Scalar::Subject {
+                    snapshot: fact.snapshot.clone(),
+                    subject: fact.subject.clone(),
+                    entity: entity.clone(),
+                }
+            }
+            Self::Boolean { transport, .. } => {
+                let values = if side == 0 {
+                    transport.source()
+                } else {
+                    transport.images()
+                };
+                values[index].scalar().clone()
+            }
+        }
+    }
+}
 enum Read {
     Projection(usize),
     ScalarExpression,
@@ -52,7 +111,7 @@ struct Applicable {
 fn counterexample(
     b: &mut Builder<'_>,
     params: &[Param],
-    maps: &[Arc<ParameterMap>],
+    maps: &[LocalParameter],
     row: &[usize],
     left: NodeRef,
     right: NodeRef,
@@ -64,7 +123,7 @@ fn counterexample(
         .zip(maps)
         .zip(row)
         .map(|((p, map), &i)| {
-            let value = map.subjects[i].0;
+            let value = map.source_value(i);
             args.push(value);
             Json::obj([
                 ("name", Json::str(&p.name)),
@@ -95,14 +154,14 @@ fn counterexample(
     )
 }
 fn parameter_rows(
-    maps: &[Arc<ParameterMap>],
+    maps: &[LocalParameter],
     c: &mut Control,
 ) -> Result<Vec<Vec<usize>>, ValidationFailure> {
     let mut tuples = vec![vec![]];
     for map in maps {
         let mut next = vec![];
         for row in tuples {
-            for i in 0..map.subjects.len() {
+            for i in 0..map.len() {
                 tick(c)?;
                 let mut row = row.clone();
                 row.push(i);
@@ -117,7 +176,7 @@ fn applicable(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
     declarations: [&crate::law::model::Declaration; 2],
-    maps: &[Arc<ParameterMap>],
+    maps: &[LocalParameter],
     origins: &[NodeRef],
     request: &Request,
     c: &mut Control,
@@ -155,23 +214,7 @@ fn applicable(
             };
             let mut bindings = vec![];
             for ((p, map), &i) in params.iter().zip(maps).zip(&row) {
-                let fact = if side == 0 {
-                    &map.transport.source()[i]
-                } else {
-                    &map.transport.images()[i]
-                };
-                bindings.push((
-                    p.name.clone(),
-                    Scalar::Subject {
-                        snapshot: fact.snapshot.clone(),
-                        subject: fact.subject.clone(),
-                        entity: if side == 0 {
-                            map.source.clone()
-                        } else {
-                            map.target.clone()
-                        },
-                    },
-                ));
+                bindings.push((p.name.clone(), map.binding(i, side)));
             }
             let (value, support, scope, absent) =
                 super::super::environment::local_read::guard_value(
@@ -539,22 +582,55 @@ pub(super) fn retain(
         let mut parameter_maps = vec![];
         let mut type_maps: Vec<Arc<ParameterMap>> = vec![];
         let mut argument_subjects = vec![];
-        for (source, target) in sp.iter().zip(tp) {
+        for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
+            if source.ty == Type::Bool && target.ty == Type::Bool {
+                let transport = super::super::value_transport::finite_declaration_value_transport(
+                    inputs,
+                    declarations,
+                    &candidate.source().name,
+                    super::super::value_transport::DeclarationValuePosition::Parameter(position),
+                    c,
+                )
+                .map_err(failure)?;
+                if !transport.failures().is_empty() || transport.bijection().is_none() {
+                    return Err("local Bool parameter value transport is not a bijection".into());
+                }
+                let mut sources = vec![];
+                for value in transport.source() {
+                    tick(c)?;
+                    let scalar = value.scalar().clone();
+                    sources.push(b.push(
+                        NodeType::Value(Type::Bool),
+                        "binding",
+                        scalar.wire(),
+                        dependencies.to_vec(),
+                        Some(scalar),
+                        None,
+                    )?);
+                }
+                let values = value_map(b, [&Type::Bool, &Type::Bool], &[], &[], dependencies)?;
+                parameter_maps.push(LocalParameter::Boolean {
+                    transport,
+                    values,
+                    sources,
+                });
+                continue;
+            }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
-                return Err("非参照local引数の移送は未実装".into());
+                return Err("local argument transport supports Ref and Bool".into());
             };
             if let Some(map) = type_maps
                 .iter()
                 .find(|map| &map.source == st && &map.target == tt)
             {
-                parameter_maps.push(map.clone());
+                parameter_maps.push(LocalParameter::Reference(map.clone()));
                 continue;
             }
             let map = reference_map(b, inputs, declarations, st, tt, dependencies, c)?;
             argument_subjects.extend(map.subjects.iter().copied());
             type_maps.push(map.clone());
-            parameter_maps.push(map);
+            parameter_maps.push(LocalParameter::Reference(map));
         }
         let mut guard_expressions = vec![];
         for (guard, params) in [(*sg, sp), (*tg, tp)] {
@@ -592,7 +668,7 @@ pub(super) fn retain(
             let te = expression(b, inputs, t, tp, dependencies)?;
             let mut comparison = match read {
                 Read::Projection(position) => field::Comparison {
-                    values: parameter_maps[position].values,
+                    values: parameter_maps[position].values(),
                     status: Decision::Established,
                     arguments: vec![],
                     reasons: vec![],

@@ -5034,3 +5034,285 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
         }
     }
 }
+
+#[test]
+fn local_boolean_parameters_keep_mixed_positions_and_all_assignments() {
+    let source_read = "if take then z.free else if mode then a.free else 0";
+    let target_read = "if keep then y.free else if other then x.free else 0";
+    for (case, sg, tg, sr, tr, missing, code) in [
+        (
+            "rational",
+            "",
+            "",
+            "if take then rat(1,3) else rat(2,3)",
+            "if keep then rat(1,3) else rat(2,3)",
+            false,
+            0,
+        ),
+        (
+            "unknown-target",
+            "when take",
+            "when if keep then y.free>0 else false",
+            source_read,
+            target_read,
+            true,
+            2,
+        ),
+        ("preserved", "", "", source_read, target_read, false, 0),
+        (
+            "late-row",
+            "",
+            "",
+            source_read,
+            "if keep and not other and y.held=1 and x.free=2 then y.free+1 else if keep then y.free else if other then x.free else 0",
+            false,
+            1,
+        ),
+        ("projection", "", "", "take", "keep", false, 0),
+        ("reference", "", "", "a", "x", false, 0),
+        ("field", "", "", "a.free", "x.free", false, 0),
+        (
+            "false-refuted",
+            "",
+            "",
+            "take and mode",
+            "keep or other",
+            false,
+            1,
+        ),
+        (
+            "expanded",
+            "when take and z.held=1",
+            "when keep or other",
+            source_read,
+            target_read,
+            false,
+            0,
+        ),
+        (
+            "guard-refuted",
+            "when take",
+            "when keep and other",
+            source_read,
+            target_read,
+            false,
+            1,
+        ),
+        (
+            "unknown-guard",
+            "when if take then z.free>0 else false",
+            "when keep",
+            source_read,
+            target_read,
+            true,
+            2,
+        ),
+        (
+            "inactive-missing",
+            "when take and z.held=1",
+            "when if keep then y.free>0 else true",
+            source_read,
+            target_read,
+            true,
+            0,
+        ),
+        (
+            "missing-read",
+            "",
+            "",
+            "if take then z.free else 0",
+            "if keep then y.free else 0",
+            true,
+            2,
+        ),
+    ] {
+        let dir = four_state_inputs(&format!("local-bool-parameter-{case}"));
+        if missing {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(z:State,take:Bool,a:State,mode:Bool) {sg} reads {sr};}}
+reading After {{{vocabulary} local here(y:State,keep:Bool,x:State,other:Bool) {tg} reads {tr};}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if code == 0 {
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            assert_json(
+                get(transport, "parameters"),
+                r#"[["z","y"],["take","keep"],["a","x"],["mode","other"]]"#,
+            );
+            let clause = &arr(get(transport, "clauses"))[0];
+            let arguments = value(&result, get(clause, "arguments"));
+            assert_json(
+                get(arguments, "source_type"),
+                r#"["Tuple",["Ref","Reservations.State"],"Bool",["Ref","Reservations.State"],"Bool"]"#,
+            );
+            assert_reference_pairs(
+                &result,
+                arguments,
+                &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+            );
+            let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
+            assert_eq!(qs.len(), 4);
+            for ((q, name), ty) in qs.iter().zip(["z", "take", "a", "mode"]).zip([
+                r#"["Ref","Reservations.State"]"#,
+                r#""Bool""#,
+                r#"["Ref","Reservations.State"]"#,
+                r#""Bool""#,
+            ]) {
+                assert_eq!(s(get(q, "name")), name);
+                assert_json(get(q, "type"), ty);
+            }
+            if case == "projection" {
+                let values = value(&result, get(clause, "values"));
+                assert_json(get(values, "source_type"), r#""Bool""#);
+            }
+        }
+        if matches!(case, "late-row" | "false-refuted") {
+            let examples = arr(get(m, "counterexamples"));
+            assert_eq!(examples.len(), 1);
+            let data = get(value(&result, &examples[0]), "data");
+            let bs = arr(get(data, "bindings"));
+            assert_eq!(bs.len(), 4);
+            for (b, name) in bs.iter().zip(["z", "take", "a", "mode"]) {
+                assert_eq!(s(get(b, "name")), name);
+            }
+            let late = case == "late-row";
+            assert_json(
+                value(&result, get(&bs[0], "value")),
+                if late { r#"["v","q"]"# } else { r#"["v","p"]"# },
+            );
+            assert_json(
+                value(&result, get(&bs[1], "value")),
+                if late { "true" } else { "false" },
+            );
+            assert_json(value(&result, get(&bs[2], "value")), r#"["v","p"]"#);
+            assert_json(
+                value(&result, get(&bs[3], "value")),
+                if late { "false" } else { "true" },
+            );
+            assert_json(
+                value(&result, get(data, "left")),
+                if late { r#""1""# } else { "false" },
+            );
+            assert_json(
+                value(&result, get(data, "right")),
+                if late { r#""2""# } else { "true" },
+            );
+        }
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                let f = get(r, "field");
+                s(get(f, "subject")) == if case == "unknown-target" { "r" } else { "p" }
+                    && s(get(f, "field")) == "Reservations.State.free"
+            }));
+        }
+        if matches!(case, "preserved" | "late-row" | "missing-read") {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_map_summary(&normal, &result);
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{case}: {key}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn local_boolean_only_parameters_use_the_whole_boolean_product() {
+    for (case, target, code) in [
+        ("preserved", "if keep then other else false", 0),
+        ("refuted", "if keep then not other else false", 1),
+    ] {
+        let dir = four_state_inputs(&format!("local-only-bool-{case}"));
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(take:Bool,mode:Bool) reads if take then mode else false;}}
+reading After {{{vocabulary} local here(keep:Bool,other:Bool) reads {target};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            ],
+        );
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert!(has(get(m, "outputs"), "operation"));
+        if code == 1 {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bs = arr(get(data, "bindings"));
+            assert_eq!(bs.len(), 2);
+            assert_eq!(s(get(&bs[0], "name")), "take");
+            assert_json(value(&result, get(&bs[0], "value")), "true");
+            assert_eq!(s(get(&bs[1], "name")), "mode");
+            assert_json(value(&result, get(&bs[1], "value")), "false");
+            assert_json(value(&result, get(data, "left")), "false");
+            assert_json(value(&result, get(data, "right")), "true");
+        }
+    }
+}

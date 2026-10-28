@@ -1,4 +1,4 @@
-//! 原始値・参照field値を、全参照引数と戻り値の実像で比較する。
+//! 原始値・参照field値を、全引数と戻り値の実像で比較する。
 use super::*;
 use crate::{archmap::Slot, construction::FactPointer, law::model::Declaration};
 
@@ -74,7 +74,7 @@ pub(super) fn compare(
     inputs: &super::super::super::input::CheckedInputs,
     declarations: [&Declaration; 2],
     correspondence: &construction::DeclarationCorrespondence,
-    maps: &[Arc<ParameterMap>],
+    maps: &[LocalParameter],
     applicable: Option<&[Vec<usize>]>,
     position: usize,
     names: &[String; 2],
@@ -102,6 +102,7 @@ pub(super) fn compare(
         Some(
             if let Some(map) = maps
                 .iter()
+                .filter_map(LocalParameter::reference)
                 .find(|map| &map.source == source && &map.target == target)
             {
                 map.clone()
@@ -145,13 +146,15 @@ pub(super) fn compare(
         support: vec![],
         scope: Scope::default(),
     };
-    // 参照引数の直積が空なら全ての句は空域上で可換。標本を作らない。
-    if maps.iter().any(|map| map.transport.source().is_empty()) {
+    // 引数の直積が空なら全ての句は空域上で可換。標本を作らない。
+    if maps.iter().any(|map| map.len() == 0) {
         return Ok(result);
     }
     // このreadは一つの参照引数だけに依存する。残りの非空域との直積では
     // 同じ比較が繰り返されるため、依存する引数の全域を一度ずつ検査する。
-    let map = &maps[position];
+    let map = maps[position]
+        .reference()
+        .ok_or("local field parameter is not a reference")?;
     let fields = [
         format!("{}.{}", map.source, names[0]),
         format!("{}.{}", map.target, names[1]),
@@ -280,13 +283,13 @@ pub(super) fn compare(
     Ok(result)
 }
 
-/// 参照引数の全組を列挙し、source適用域上のZ/Q/Bool readを実像で比較する。
+/// 引数の全組を列挙し、source適用域上のZ/Q/Bool readを実像で比較する。
 pub(super) fn compare_scalar_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
     inputs: &super::super::super::input::CheckedInputs,
     declarations: [&Declaration; 2],
-    maps: &[Arc<ParameterMap>],
+    maps: &[LocalParameter],
     applicable: Option<&[Vec<usize>]>,
     expressions: [usize; 2],
     origins: [NodeRef; 2],
@@ -348,19 +351,7 @@ pub(super) fn compare_scalar_expression(
             let mut bindings = vec![];
             for ((param, map), &index) in params.iter().zip(maps).zip(row) {
                 tick(c)?;
-                let (point, entity) = if side == 0 {
-                    (&map.transport.source()[index], &map.source)
-                } else {
-                    (&map.transport.images()[index], &map.target)
-                };
-                bindings.push((
-                    param.name.clone(),
-                    Scalar::Subject {
-                        snapshot: point.snapshot.clone(),
-                        subject: point.subject.clone(),
-                        entity: entity.clone(),
-                    },
-                ));
+                bindings.push((param.name.clone(), map.binding(index, side)));
             }
             let (value, support, scope, absent) =
                 super::super::super::environment::local_read::scalar_value(
