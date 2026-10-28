@@ -1,5 +1,5 @@
 //! 元の有理parameter上で作用とLawを正規化し、完全な線形fiberを求める。
-use super::change_affine::Pending;
+use super::change_affine::{Pending, with_missing};
 use super::*;
 use crate::law::model::{Declaration, Signature};
 use crate::observed::{
@@ -423,31 +423,6 @@ fn compute_inner(
         rhs: guard_rhs,
         fiber,
     })
-}
-// 通常評価器とcacheが既に保持する実読取りを使い、式形ごとの再走査を行わない。
-fn with_missing<T>(
-    env: &Environment<'_>,
-    missing: &mut Pending,
-    operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
-) -> Result<T, ValidationFailure> {
-    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    let result = operation(missing);
-    let reads = env
-        .missing_slot_reads
-        .replace(outer)
-        .ok_or("有理変更の不足位置収集がない")?;
-    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
-        outer.extend(reads.iter().cloned());
-    }
-    if result.is_err() {
-        missing.facts.extend(reads.into_iter().filter(|fact| {
-            !env.primitive_valuation
-                .as_ref()
-                .is_some_and(|values| values.contains_key(fact))
-                && !env.affine_valuation.contains_key(fact)
-        }));
-    }
-    result
 }
 pub(in crate::observed) fn state_equations(
     env: &Environment<'_>,
