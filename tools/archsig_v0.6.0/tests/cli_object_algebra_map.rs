@@ -5667,7 +5667,7 @@ fn local_finite_parameter_extension_keeps_other_domains_unsupported() {
         ("rational", "Q", "0+0"),
         ("text", "Text", "0+0"),
         ("list", "List<Bool>", "0+0"),
-        ("nested-reference", "Option<State>", "0+0"),
+        ("nested-reference", "Option<Option<State>>", "0+0"),
         ("map", "Map<State,State>", "0+0"),
     ] {
         let (dir, vocabulary) =
@@ -6089,8 +6089,8 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
         ),
         (
             "nested-reference",
-            "x:Option<State>",
-            "a:Option<State>",
+            "x:Option<Option<State>>",
+            "a:Option<Option<State>>",
             "x",
             "a",
         ),
@@ -6125,5 +6125,181 @@ reading After {{{vocabulary} local here({target_params}) reads {target_read};}}"
         assert_eq!(run.code, 70, "{name}: {}", run.stdout);
         assert!(run.stderr.is_empty());
         assert!(has(&run.receipt, "issues"));
+    }
+}
+
+#[test]
+fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_rows() {
+    for (case, source_guard, target_guard, source_read, target_read, code) in [
+        ("projection", "", "", "choice", "pick", 0),
+        (
+            "actual-image",
+            " when choice=some(z)",
+            " when pick=some(y)",
+            "choice",
+            "pick",
+            0,
+        ),
+        (
+            "collision",
+            " when choice!=other",
+            " when pick!=spare",
+            "choice",
+            "pick",
+            1,
+        ),
+        ("reverse", "", " when pick=some(y)", "choice", "pick", 1),
+        (
+            "nonempty-row",
+            "",
+            "",
+            "if choice=some(z) then 1 else 0",
+            "0",
+            1,
+        ),
+        (
+            "unknown-source",
+            " when choice=some(z) and z.free>0",
+            "",
+            "choice",
+            "pick",
+            2,
+        ),
+        (
+            "unknown-target",
+            " when choice=some(z)",
+            " when pick=some(y) and y.free>0",
+            "choice",
+            "pick",
+            2,
+        ),
+        (
+            "false-source",
+            " when false",
+            " when y.free>0",
+            "choice",
+            "pick",
+            0,
+        ),
+        (
+            "two-parameters",
+            " when choice=some(z) and other!=choice",
+            "",
+            "1",
+            "0",
+            1,
+        ),
+    ] {
+        let (dir, vocabulary) = finite_local_parameter_inputs(&format!("local-option-ref-{case}"));
+        if case.starts_with("unknown-") || case == "false-source" {
+            let map = std::fs::read_to_string(dir.join("a.json"))
+                .unwrap()
+                .lines()
+                .filter(|line| {
+                    !line.contains(r#""id":"p-free""#) && !line.contains(r#""id":"r-free""#)
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(z:State,choice:Option<State>,other:Option<State>){source_guard} reads {source_read};}}
+reading After {{{vocabulary} local here(y:State,pick:Option<State>,spare:Option<State>){target_guard} reads {target_read};}}"#)).unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            match code {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert_eq!(arr(get(plan, "requirements")).is_empty(), code != 2);
+        if code == 2 {
+            assert!(!has(m, "counterexamples"));
+        }
+        if case == "two-parameters" || case == "collision" {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 3);
+            for (binding, name) in bindings.iter().zip(["z", "choice", "other"]) {
+                assert_eq!(s(get(binding, "name")), name);
+            }
+            assert_json(value(&result, get(&bindings[0], "value")), r#"["v","p"]"#);
+            assert_json(
+                value(&result, get(&bindings[1], "value")),
+                r#"{"some":["v","p"]}"#,
+            );
+            assert_json(
+                value(&result, get(&bindings[2], "value")),
+                if case == "collision" {
+                    r#"{"some":["v","r"]}"#
+                } else {
+                    r#"{"none":true}"#
+                },
+            );
+        }
+        if matches!(case, "projection" | "collision" | "unknown-target") {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
+            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_map_summary(&normal, &result);
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{case}: {key}"
+                );
+            }
+        }
+        if code == 0 {
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            let clause = &arr(get(transport, "clauses"))[0];
+            let args = value(&result, get(clause, "arguments"));
+            // p and r both map to r, q and s both map to s; target-only rows are permitted.
+            assert_reference_pairs(
+                &result,
+                args,
+                &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+            );
+            if case == "projection" {
+                let values = value(&result, get(clause, "values"));
+                assert_reference_pairs(
+                    &result,
+                    values,
+                    &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+                );
+            }
+        }
     }
 }
