@@ -10446,3 +10446,234 @@ reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Boo
         }
     }
 }
+
+#[test]
+fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
+    for ty in ["Z", "Q"] {
+        for (case, sg, tg, sr, tr, code) in [
+            (
+                "identity",
+                "",
+                "",
+                "pair.0+pair.1+last+more.0+more.1",
+                "next.0+next.1+final+tail.0+tail.1",
+                0,
+            ),
+            (
+                "restricted",
+                " when pair.0+pair.1=3",
+                " when next.0+next.1=3",
+                "pair.0+pair.1",
+                "3",
+                0,
+            ),
+            ("expanded", " when pair.0=1", "", "pair.0", "1", 0),
+            ("kernel-read", " when pair.0+pair.1=3", "", "pair.0", "0", 1),
+            (
+                "later-guard",
+                " when pair.0=1",
+                " when tail.1=0",
+                "pair.0",
+                "next.0",
+                1,
+            ),
+            (
+                "fraction",
+                " when 2*pair.0=1",
+                "",
+                "pair.0",
+                "0",
+                if ty == "Q" { 1 } else { 0 },
+            ),
+            (
+                "finite-late",
+                " when pair.0=1",
+                "",
+                "if take then pair.0 else 0",
+                "0",
+                1,
+            ),
+            (
+                "reference-late",
+                " when pair.0=1",
+                "",
+                "pair.0",
+                "if t.held=1 then next.0+1 else next.0",
+                1,
+            ),
+            (
+                "missing",
+                " when if s.free=0 then pair.0=0 else pair.0=0",
+                "",
+                "pair.0",
+                "next.0",
+                2,
+            ),
+            ("mixed", " when pair.0=1", "", "pair.0", "next.0", 70),
+            ("nonlinear", "", "", "pair.0*pair.1", "next.0*next.1", 2),
+        ] {
+            let dir = finite_view_inputs(&format!("local-tuple-{ty}-{case}"), true);
+            if case == "missing" {
+                let path = dir.join("a.json");
+                let text = std::fs::read_to_string(&path).unwrap();
+                std::fs::write(
+                    path,
+                    text.lines()
+                        .filter(|l| !l.contains(r#""id":"p-free""#))
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                )
+                .unwrap();
+            }
+            let last_ty = if case == "mixed" {
+                if ty == "Z" { "Q" } else { "Z" }
+            } else {
+                ty
+            };
+            let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+            let tr = if ty == "Q" && tr.parse::<i64>().is_ok() {
+                format!("rat({tr},1)")
+            } else {
+                tr.to_owned()
+            };
+            std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(pair:({ty},{ty}),s:State,take:Bool,last:{last_ty},more:({ty},{ty})){sg} reads {sr};}}
+reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final:{last_ty},tail:({ty},{ty})){tg} reads {tr};}}"#)).unwrap();
+            let requests = [
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ];
+            if code == 70 {
+                let run = without_file_changes(&dir, || cli::run(&dir, &[
+                    "run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--ask", requests[0],
+                ]));
+                assert_eq!(run.code, 70, "{ty}/{case}: {}", run.stdout);
+                assert!(has(&run.receipt, "issues"));
+                assert!(run.stderr.is_empty());
+                continue;
+            }
+            let run = asks(&dir, &requests);
+            assert_eq!(run.code, code, "{ty}/{case}: {}", run.stdout);
+            let result = result_json(&dir, &run);
+            let m = answer(&result, "m");
+            assert_eq!(
+                s(get(m, "status")),
+                match code {
+                    0 => "established",
+                    1 => "refuted",
+                    _ => "undetermined",
+                }
+            );
+            assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+            assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+            if code == 0 {
+                let map = value(&result, get(get(m, "outputs"), "map"));
+                let transport = value(&result, &arr(get(map, "transports"))[0]);
+                for clause in arr(get(transport, "clauses")) {
+                    let args = value(&result, get(clause, "arguments"));
+                    let types = arr(get(args, "source_type"));
+                    assert_json(&types[1], &format!(r#"["Tuple","{ty}","{ty}"]"#));
+                    let qs = arr(get(value(&result, get(clause, "commutes")), "quantifiers"));
+                    assert_eq!(
+                        qs.iter().map(|q| s(get(q, "name"))).collect::<Vec<_>>(),
+                        ["pair", "s", "take", "last", "more"]
+                    );
+                    for index in [0, 3, 4] {
+                        assert_eq!(s(get(&qs[index], "kind")), "forall");
+                        assert!(!has(&qs[index], "domain"));
+                    }
+                }
+            } else if code == 1 {
+                let examples = arr(get(m, "counterexamples"));
+                assert!(!examples.is_empty());
+                for example in examples {
+                    let data = get(value(&result, example), "data");
+                    let bs = arr(get(data, "bindings"));
+                    assert_eq!(
+                        bs.iter().map(|b| s(get(b, "name"))).collect::<Vec<_>>(),
+                        ["pair", "s", "take", "last", "more"]
+                    );
+                    let pair = arr(value(&result, get(&bs[0], "value")));
+                    let more = arr(value(&result, get(&bs[4], "value")));
+                    assert_eq!(pair.len(), 2);
+                    assert_eq!(more.len(), 2);
+                    let q = |v: &JNode| {
+                        if ty == "Z" {
+                            (s(v).parse::<i64>().unwrap(), 1)
+                        } else {
+                            let p = arr(v);
+                            (
+                                s(&p[0]).parse::<i64>().unwrap(),
+                                s(&p[1]).parse::<i64>().unwrap(),
+                            )
+                        }
+                    };
+                    let (a, ad) = q(&pair[0]);
+                    let (b, bd) = q(&pair[1]);
+                    if case == "kernel-read" {
+                        assert_eq!(a * bd + b * ad, 3 * ad * bd);
+                        assert_ne!(a, 0);
+                    }
+                    if case == "later-guard" {
+                        assert_eq!(a, ad);
+                        assert_ne!(q(&more[1]).0, 0);
+                        assert_json(value(&result, get(data, "left")), "true");
+                        assert_json(value(&result, get(data, "right")), "false");
+                    }
+                    if case == "fraction" {
+                        assert_eq!((a, ad), (1, 2));
+                    }
+                    if case == "finite-late" {
+                        assert_json(value(&result, get(&bs[2], "value")), "true");
+                    }
+                    if case == "reference-late" {
+                        assert_json(value(&result, get(&bs[1], "value")), r#"["v","q"]"#);
+                    }
+                    assert_ne!(
+                        value(&result, get(data, "left")).value,
+                        value(&result, get(data, "right")).value
+                    );
+                }
+            } else {
+                assert!(!has(m, "counterexamples"));
+                let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+                if case == "missing" {
+                    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+                        let f = get(r, "field");
+                        s(get(f, "subject")) == "p"
+                            && s(get(f, "field")) == "Reservations.State.free"
+                    }));
+                    assert!(arr(get(plan, "blockers")).is_empty());
+                } else {
+                    assert!(arr(get(plan, "requirements")).is_empty());
+                    assert!(!arr(get(plan, "blockers")).is_empty());
+                }
+            }
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+            ];
+            for request in &requests {
+                args.extend(["--ask", request]);
+            }
+            args.extend(["--out", "again", "--reuse", "out"]);
+            let reused = cli::run(&dir, &args);
+            assert_eq!(reused.code, code, "{ty}/{case}: {}", reused.stdout);
+            let again = result_json(&dir, &reused);
+            assert!(warnings(&again).is_empty());
+            for key in ["answers", "nodes"] {
+                assert_eq!(
+                    get(&result, key).value,
+                    get(&again, key).value,
+                    "{ty}/{case}: {key}"
+                );
+            }
+        }
+    }
+}
