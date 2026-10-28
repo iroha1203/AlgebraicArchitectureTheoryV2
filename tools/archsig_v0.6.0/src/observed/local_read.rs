@@ -1799,9 +1799,6 @@ pub(in crate::observed) fn affine_transport(
         }
         let (source, all_axes) = numeric_parameters::law_variables(env, params[0], bindings[0])?;
         let mixed = all_axes.iter().any(|axis| axis.kind.ty() != *ty);
-        if mixed && guards.iter().any(Option::is_some) {
-            return Err("mixed numeric local guards are not implemented".into());
-        }
         let axes = all_axes.iter().filter(|axis| axis.kind.ty() == *ty).cloned().collect::<Vec<_>>();
         let (mut target, _) = numeric_parameters::law_variables(env, params[1], bindings[1])?;
         // The target's numeric argument is the same source coordinate at that position.
@@ -1816,6 +1813,45 @@ pub(in crate::observed) fn affine_transport(
                         .ok_or("source numeric coordinate missing")?
                         .clone(),
                 );
+            }
+        }
+        let mut empty_target = false;
+        if mixed {
+            for (side, vars) in [&source, &target].into_iter().enumerate() {
+                let Some(id) = guards[side] else { continue };
+                // Keep only observations still needed to decide the guard. In
+                // particular, a known false source has no read obligations.
+                let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+                let evaluated = evaluate_value(env, id, vars, &Scope::default(), &declarations[side].reading);
+                let collected = env.missing_slot_reads.replace(outer)
+                    .ok_or("mixed guard missing-read collector is absent")?;
+                let (value, _, missing) = match evaluated {
+                    Ok(value) => value,
+                    Err(error) => {
+                        pending.facts.extend(collected.into_iter().filter(|fact| {
+                            !env.primitive_valuation.as_ref().is_some_and(|values| values.contains_key(fact))
+                        }));
+                        return Err(error);
+                    }
+                };
+                pending.support.extend(value.support.iter().cloned());
+                pending.scope.merge(&value.scope);
+                if !value.condition_failed && !value.condition_pending {
+                    if let Some(Scalar::Bool(holds)) = value.known_value {
+                        guards[side] = None;
+                        if !holds {
+                            if side == 0 { return Ok(()) }
+                            empty_target = true;
+                        }
+                        continue;
+                    }
+                }
+                if !missing.is_empty() || value.condition_failed || value.condition_pending {
+                    pending.facts.extend(missing);
+                    out.status = Decision::Undetermined;
+                    return Ok(());
+                }
+                return Err("mixed numeric local guards are not implemented".into());
             }
         }
         let domain = change_affine::numeric_guard_domain(
@@ -1842,7 +1878,7 @@ pub(in crate::observed) fn affine_transport(
         // On p + K R^d (R = Z or Q), the value at p and every kernel
         // coefficient must vanish. The solver for R determines the full domain.
         let zero = numeric::zero(ty, &env.control)?;
-        let mut point = None;
+        let mut point = if empty_target { domain.particular.clone() } else { None };
         for (row, rhs) in target_domain.equations.iter().zip(&target_domain.rhs) {
             if let Some(values) =
                 domain.violation(row, rhs, env)?
