@@ -1,5 +1,6 @@
 //! localの参照・field readを、実参照写像と可換な宣言式として保持する。
 use super::*;
+use crate::observed::control::CheckFailure;
 use crate::{
     law::{
         ast::ExprKind,
@@ -7,6 +8,7 @@ use crate::{
     },
     types::Type,
 };
+use std::collections::BTreeSet;
 #[path = "object_local_field_transport.rs"]
 mod field;
 #[path = "object_change_transport.rs"]
@@ -585,38 +587,63 @@ pub(super) fn retain(
         let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            // Option<Ref>はnoneと各参照のsomeを全列挙し、実参照写像で前向きに運ぶ。
-            // ObjectAlgebraMapの可換性はsource全域上の条件なので、像の衝突・未到達を許す。
-            // 有限API自体の全単射判定とtransport_scalarの要件は保つ。
-            let optional_reference = match (&source.ty, &target.ty) {
-                (Type::Option(a), Type::Option(z)) => match (a.as_ref(), z.as_ref()) {
-                    (Type::Ref(st), Type::Ref(tt)) => Some((st, tt)),
-                    _ => None,
-                },
-                _ => None,
-            };
-            let optional_map = if let Some((st, tt)) = optional_reference {
-                Some(
-                    if let Some(map) = type_maps
+            // Tuple/Optionの有限値構造から参照葉だけを集め、既存の実参照写像を共有する。
+            // localの前向き可換性には像の衝突・未到達を許す。有限APIの全単射判定は保つ。
+            let mut reference_types = BTreeSet::new();
+            let structural_reference = !matches!(&source.ty, Type::Ref(_))
+                && !source
+                    .ty
+                    .any_controlled::<CheckFailure<Box<crate::issue::Issue>>>(
+                        &mut |ty| match ty {
+                            Type::Ref(name) => {
+                                reference_types.insert(name.clone());
+                                false
+                            }
+                            Type::Unit
+                            | Type::Bool
+                            | Type::Fp(_)
+                            | Type::Tuple(_)
+                            | Type::Option(_) => false,
+                            _ => true,
+                        },
+                        c,
+                        Checkpoint::ObjectViewTransport,
+                    )
+                    .map_err(|failure| match failure {
+                        CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                        CheckFailure::Input(_) => "local parameter type traversal failed".into(),
+                    })?
+                && !reference_types.is_empty();
+            let mut subjects = vec![];
+            if structural_reference {
+                for st in reference_types {
+                    tick(c)?;
+                    // 対応署名が型構造を保ち、参照葉の先型はこの宣言対応で決まる。
+                    let tt = declarations
+                        .types()
                         .iter()
-                        .find(|map| &map.source == st && &map.target == tt)
+                        .find(|(name, _)| name == &st)
+                        .map(|(_, target)| target.as_str())
+                        .unwrap_or(&st);
+                    let map = if let Some(map) = type_maps
+                        .iter()
+                        .find(|map| map.source == st && map.target == tt)
                     {
                         map.clone()
                     } else {
-                        let map = reference_map(b, inputs, declarations, st, tt, dependencies, c)?;
+                        let map = reference_map(b, inputs, declarations, &st, tt, dependencies, c)?;
                         argument_subjects.extend(map.subjects.iter().copied());
                         type_maps.push(map.clone());
                         map
-                    },
-                )
-            } else {
-                None
-            };
-            if optional_map.is_some()
+                    };
+                    subjects.extend(map.subjects.iter().copied());
+                }
+            }
+            if structural_reference
                 || (source.ty == target.ty
                     && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?)
             {
-                let value_declarations = if optional_map.is_some() {
+                let value_declarations = if structural_reference {
                     declarations.types().to_vec()
                 } else {
                     super::super::value_transport::identity_declarations(&source.ty, inputs.law(), c)?
@@ -630,11 +657,11 @@ pub(super) fn retain(
                     c,
                 )
                 .map_err(failure)?;
-                if optional_map.is_some() {
+                if structural_reference {
                     if transport.failures().iter().any(|f| {
                         matches!(f, super::super::value_transport::FiniteValueConditionFailure::OutsideTarget { .. })
                     }) {
-                        return Err("local optional reference image is outside the target domain".into());
+                        return Err("local reference-containing image is outside the target domain".into());
                     }
                 } else if !transport.failures().is_empty() || transport.bijection().is_none() {
                     return Err("local finite parameter value transport is not a bijection".into());
@@ -652,14 +679,10 @@ pub(super) fn retain(
                         None,
                     )?);
                 }
-                let subjects = optional_map
-                    .as_ref()
-                    .map(|map| map.subjects.as_slice())
-                    .unwrap_or(&[]);
                 let values = value_map(
                     b,
                     [&source.ty, &target.ty],
-                    subjects,
+                    &subjects,
                     &value_declarations,
                     dependencies,
                 )?;
@@ -672,10 +695,7 @@ pub(super) fn retain(
                 continue;
             }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
-                return Err(
-                    "local argument transport requires Ref, Option<Ref>, or the same reference-free finite type"
-                        .into(),
-                );
+                return Err("local argument type has no supported finite value transport".into());
             };
             if let Some(map) = type_maps
                 .iter()

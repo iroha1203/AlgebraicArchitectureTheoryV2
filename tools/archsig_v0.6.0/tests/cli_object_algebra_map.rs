@@ -5667,8 +5667,10 @@ fn local_finite_parameter_extension_keeps_other_domains_unsupported() {
         ("rational", "Q", "0+0"),
         ("text", "Text", "0+0"),
         ("list", "List<Bool>", "0+0"),
-        ("nested-reference", "Option<Option<State>>", "0+0"),
+        ("reference-set", "Set<State>", "0+0"),
         ("map", "Map<State,State>", "0+0"),
+        ("tuple-integer", "(State,Z)", "0+0"),
+        ("option-rational", "Option<(State,Q)>", "0+0"),
     ] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-finite-outside-{name}"));
@@ -6088,9 +6090,9 @@ fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
             "if keep then a else none<Bool>",
         ),
         (
-            "nested-reference",
-            "x:Option<Option<State>>",
-            "a:Option<Option<State>>",
+            "reference-set",
+            "x:Set<State>",
+            "a:Set<State>",
             "x",
             "a",
         ),
@@ -6128,14 +6130,20 @@ reading After {{{vocabulary} local here({target_params}) reads {target_read};}}"
     }
 }
 
-#[test]
-fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_rows() {
+fn assert_local_structural_reference_arguments(
+    shape: &str,
+    ty: &str,
+    condition: &str,
+    target_condition: &str,
+    choice_value: &str,
+    other_value: &str,
+) {
     for (case, source_guard, target_guard, source_read, target_read, code) in [
         ("projection", "", "", "choice", "pick", 0),
         (
             "actual-image",
-            " when choice=some(z)",
-            " when pick=some(y)",
+            &format!(" when {condition}"),
+            &format!(" when {target_condition}"),
             "choice",
             "pick",
             0,
@@ -6148,18 +6156,25 @@ fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_
             "pick",
             1,
         ),
-        ("reverse", "", " when pick=some(y)", "choice", "pick", 1),
+        (
+            "reverse",
+            "",
+            &format!(" when {target_condition}"),
+            "choice",
+            "pick",
+            1,
+        ),
         (
             "nonempty-row",
             "",
             "",
-            "if choice=some(z) then 1 else 0",
+            &format!("if {condition} then 1 else 0"),
             "0",
             1,
         ),
         (
             "unknown-source",
-            " when choice=some(z) and z.free>0",
+            &format!(" when ({condition}) and z.free>0"),
             "",
             "choice",
             "pick",
@@ -6167,8 +6182,8 @@ fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_
         ),
         (
             "unknown-target",
-            " when choice=some(z)",
-            " when pick=some(y) and y.free>0",
+            &format!(" when {condition}"),
+            &format!(" when ({target_condition}) and y.free>0"),
             "choice",
             "pick",
             2,
@@ -6183,14 +6198,15 @@ fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_
         ),
         (
             "two-parameters",
-            " when choice=some(z) and other!=choice",
+            &format!(" when ({condition}) and other!=choice"),
             "",
             "1",
             "0",
             1,
         ),
     ] {
-        let (dir, vocabulary) = finite_local_parameter_inputs(&format!("local-option-ref-{case}"));
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-structural-ref-{shape}-{case}"));
         if case.starts_with("unknown-") || case == "false-source" {
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
@@ -6203,15 +6219,15 @@ fn local_optional_reference_arguments_follow_noninjective_images_and_all_source_
             std::fs::write(dir.join("a.json"), map).unwrap();
         }
         std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(z:State,choice:Option<State>,other:Option<State>){source_guard} reads {source_read};}}
-reading After {{{vocabulary} local here(y:State,pick:Option<State>,spare:Option<State>){target_guard} reads {target_read};}}"#)).unwrap();
+reading Before {{{vocabulary} local here(z:State,choice:{ty},other:{ty}){source_guard} reads {source_read};}}
+reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}){target_guard} reads {target_read};}}"#)).unwrap();
         let requests = [
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
         let run = asks(&dir, &requests);
-        assert_eq!(run.code, code, "{case}: {}", run.stdout);
+        assert_eq!(run.code, code, "{shape}/{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -6240,14 +6256,26 @@ reading After {{{vocabulary} local here(y:State,pick:Option<State>,spare:Option<
             assert_json(value(&result, get(&bindings[0], "value")), r#"["v","p"]"#);
             assert_json(
                 value(&result, get(&bindings[1], "value")),
-                r#"{"some":["v","p"]}"#,
+                if case == "collision" {
+                    match shape {
+                        "tuple" => r#"[["v","p"],false]"#,
+                        "nested" => r#"[{"some":["v","p"]},false]"#,
+                        _ => choice_value,
+                    }
+                } else {
+                    choice_value
+                },
             );
             assert_json(
                 value(&result, get(&bindings[2], "value")),
                 if case == "collision" {
-                    r#"{"some":["v","r"]}"#
+                    match shape {
+                        "tuple" => r#"[["v","r"],false]"#,
+                        "nested" => r#"[{"some":["v","r"]},false]"#,
+                        _ => r#"{"some":["v","r"]}"#,
+                    }
                 } else {
-                    r#"{"none":true}"#
+                    other_value
                 },
             );
         }
@@ -6265,19 +6293,19 @@ reading After {{{vocabulary} local here(y:State,pick:Option<State>,spare:Option<
                 args.extend(["--ask", request]);
             }
             let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
+            assert_eq!(normal.code, code, "{shape}/{case}: {}", normal.stdout);
             assert!(normal.stderr.is_empty());
             assert_map_summary(&normal, &result);
             args.extend(["--out", "again", "--reuse", "out"]);
             let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
+            assert_eq!(reused.code, code, "{shape}/{case}: {}", reused.stdout);
             let again = result_json(&dir, &reused);
             assert!(warnings(&again).is_empty());
             for key in ["answers", "nodes"] {
                 assert_eq!(
                     get(&result, key).value,
                     get(&again, key).value,
-                    "{case}: {key}"
+                    "{shape}/{case}: {key}"
                 );
             }
         }
@@ -6301,5 +6329,44 @@ reading After {{{vocabulary} local here(y:State,pick:Option<State>,spare:Option<
                 );
             }
         }
+    }
+}
+
+#[test]
+fn local_structural_reference_arguments_follow_noninjective_images_and_all_source_rows() {
+    for (shape, ty, condition, target_condition, choice_value, other_value) in [
+        (
+            "option",
+            "Option<State>",
+            "choice=some(z)",
+            "pick=some(y)",
+            r#"{"some":["v","p"]}"#,
+            r#"{"none":true}"#,
+        ),
+        (
+            "tuple",
+            "(State,Bool)",
+            "choice.0=z and choice.1",
+            "pick.0=y and pick.1",
+            r#"[["v","p"],true]"#,
+            r#"[["v","p"],false]"#,
+        ),
+        (
+            "nested",
+            "(Option<State>,Bool)",
+            "choice.0=some(z) and choice.1",
+            "pick.0=some(y) and pick.1",
+            r#"[{"some":["v","p"]},true]"#,
+            r#"[{"none":true},false]"#,
+        ),
+    ] {
+        assert_local_structural_reference_arguments(
+            shape,
+            ty,
+            condition,
+            target_condition,
+            choice_value,
+            other_value,
+        );
     }
 }
