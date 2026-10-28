@@ -20,7 +20,7 @@ struct ParameterMap {
     transport: construction::ReferenceTypeTransport,
     subjects: Vec<(NodeRef, NodeRef)>,
 }
-// localの各引数位置を保ち、既存の参照写像または参照を含まない有限全域の値移送を読む。
+// localの各引数位置を保ち、既存の参照写像または有限全域の候補像を読む。
 enum LocalParameter {
     Reference(Arc<ParameterMap>),
     Finite {
@@ -585,13 +585,43 @@ pub(super) fn retain(
         let mut argument_declarations = declarations.types().to_vec();
         for (position, (source, target)) in sp.iter().zip(tp).enumerate() {
             tick(c)?;
-            // 既存の有限性判定は再帰Data・無限型・内部に参照を含む型を除外する。
-            if source.ty == target.ty
-                && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?
+            // Option<Ref>はnoneと各参照のsomeを全列挙し、実参照写像で前向きに運ぶ。
+            // ObjectAlgebraMapの可換性はsource全域上の条件なので、像の衝突・未到達を許す。
+            // 有限API自体の全単射判定とtransport_scalarの要件は保つ。
+            let optional_reference = match (&source.ty, &target.ty) {
+                (Type::Option(a), Type::Option(z)) => match (a.as_ref(), z.as_ref()) {
+                    (Type::Ref(st), Type::Ref(tt)) => Some((st, tt)),
+                    _ => None,
+                },
+                _ => None,
+            };
+            let optional_map = if let Some((st, tt)) = optional_reference {
+                Some(
+                    if let Some(map) = type_maps
+                        .iter()
+                        .find(|map| &map.source == st && &map.target == tt)
+                    {
+                        map.clone()
+                    } else {
+                        let map = reference_map(b, inputs, declarations, st, tt, dependencies, c)?;
+                        argument_subjects.extend(map.subjects.iter().copied());
+                        type_maps.push(map.clone());
+                        map
+                    },
+                )
+            } else {
+                None
+            };
+            if optional_map.is_some()
+                || (source.ty == target.ty
+                    && super::super::finite::completion_supported(&source.ty, inputs.law(), c)?)
             {
-                let identity =
+                let value_declarations = if optional_map.is_some() {
+                    declarations.types().to_vec()
+                } else {
                     super::super::value_transport::identity_declarations(&source.ty, inputs.law(), c)?
-                        .ok_or("local finite parameter identity is not supported")?;
+                        .ok_or("local finite parameter identity is not supported")?
+                };
                 let transport = super::super::value_transport::finite_declaration_value_transport(
                     inputs,
                     declarations,
@@ -600,7 +630,13 @@ pub(super) fn retain(
                     c,
                 )
                 .map_err(failure)?;
-                if !transport.failures().is_empty() || transport.bijection().is_none() {
+                if optional_map.is_some() {
+                    if transport.failures().iter().any(|f| {
+                        matches!(f, super::super::value_transport::FiniteValueConditionFailure::OutsideTarget { .. })
+                    }) {
+                        return Err("local optional reference image is outside the target domain".into());
+                    }
+                } else if !transport.failures().is_empty() || transport.bijection().is_none() {
                     return Err("local finite parameter value transport is not a bijection".into());
                 }
                 let mut sources = vec![];
@@ -616,8 +652,18 @@ pub(super) fn retain(
                         None,
                     )?);
                 }
-                let values = value_map(b, [&source.ty, &target.ty], &[], &identity, dependencies)?;
-                argument_declarations.extend(identity);
+                let subjects = optional_map
+                    .as_ref()
+                    .map(|map| map.subjects.as_slice())
+                    .unwrap_or(&[]);
+                let values = value_map(
+                    b,
+                    [&source.ty, &target.ty],
+                    subjects,
+                    &value_declarations,
+                    dependencies,
+                )?;
+                argument_declarations.extend(value_declarations);
                 parameter_maps.push(LocalParameter::Finite {
                     transport,
                     values,
@@ -627,7 +673,7 @@ pub(super) fn retain(
             }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
                 return Err(
-                    "local argument transport requires Ref or the same reference-free finite type"
+                    "local argument transport requires Ref, Option<Ref>, or the same reference-free finite type"
                         .into(),
                 );
             };
