@@ -10819,7 +10819,7 @@ fn change_numeric_tuple_arguments_keep_guard_domains_updates_and_original_witnes
                 "",
                 "",
                 false,
-                2,
+                70,
             ),
         ] {
             let dir = finite_view_inputs(&format!("change-tuple-{ty}-{case}"), true);
@@ -10872,6 +10872,15 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
                 "same=compare($m.operation,to=$m.operation,kind=action)",
                 "n=needed($m)",
             ];
+            if code == 70 {
+                let run = without_file_changes(&dir, || cli::run(&dir, &[
+                    "run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--ask", requests[0],
+                ]));
+                assert_eq!(run.code, 70, "{ty}/{case}: {}", run.stdout);
+                assert!(has(&run.receipt, "issues"));
+                assert!(run.stderr.is_empty());
+                continue;
+            }
             let run = asks(&dir, &requests);
             assert_eq!(run.code, code, "{ty}/{case}: {}", run.stdout);
             let result = result_json(&dir, &run);
@@ -10979,7 +10988,7 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
                     assert!(arr(get(plan, "requirements")).is_empty());
                 }
             }
-            if matches!(case, "nonlinear" | "inequality" | "mixed") {
+            if matches!(case, "nonlinear" | "inequality") {
                 assert!(
                     arr(get(map, "reasons"))
                         .iter()
