@@ -2,7 +2,7 @@
 use super::*;
 use crate::observed::{
     change_result,
-    environment::{change_affine, change_evaluation},
+    environment::{change_affine, change_evaluation, numeric_parameters},
 };
 use std::collections::BTreeSet;
 
@@ -448,8 +448,10 @@ pub(super) fn retain(
     }
     let different_fields = names.iter().any(|pair|
         !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
-    let coefficient = params[0].get(1).map(|p| &p.ty).filter(|ty|
-        matches!(ty, Type::Z | Type::Q) && params[0][1..].iter().all(|p| p.ty == **ty));
+    let coefficient = params[0].get(1)
+        .and_then(|p| numeric_parameters::coefficient_type(&p.ty))
+        .filter(|ty| params[0][1..].iter().all(|p|
+            numeric_parameters::coefficient_type(&p.ty).as_ref() == Some(ty)));
     let affine = coefficient.is_some();
     // Reuse the complete Z or Q guard fiber for symbolic arguments.
     if different_fields && !affine && !super::super::super::finite::supported(
@@ -665,7 +667,7 @@ pub(super) fn retain(
                 let mut metadata = change_affine::Pending::default();
                 let result = change_affine::change_guard_domain(
                     env, declarations[side], &subjects[side], &mut metadata,
-                    coefficient.ok_or("数値changeの係数型がない")?,
+                    coefficient.as_ref().ok_or("数値changeの係数型がない")?,
                 );
                 for check in &mut checks {
                     check.support.extend(metadata.support.iter().cloned());
@@ -694,7 +696,9 @@ pub(super) fn retain(
             if let Some(witness) =
                 domains[0].outside(&domains[1], env)?.or(domains[1].outside(&domains[0], env)?)
             {
-                let values = witness;
+                let values = params[0][1..].iter().map(|p|
+                    numeric_parameters::point_value(&params[0][1..], p, &witness, c)
+                ).collect::<Result<Vec<_>,_>>()?;
                 point(
                     env,
                     b,
@@ -754,7 +758,10 @@ pub(super) fn retain(
                     .map(|(a, b)| super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, a, b, c))
                     .collect::<Result<Vec<_>,_>>()?;
                 let rhs = super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, right_offset, left_offset, c)?;
-                if let Some(values) = domains[0].violation(&row, &rhs, env)? {
+                if let Some(witness) = domains[0].violation(&row, &rhs, env)? {
+                    let values = params[0][1..].iter().map(|p|
+                        numeric_parameters::point_value(&params[0][1..], p, &witness, c)
+                    ).collect::<Result<Vec<_>,_>>()?;
                     point(
                         env,
                         b,
