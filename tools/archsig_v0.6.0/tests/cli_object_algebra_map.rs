@@ -7155,6 +7155,7 @@ fn local_optional_expression_reads_distinguish_absence_missing_and_selected_bran
         "target-missing",
         "unused-missing",
         "selected-missing",
+        "guard-selected-missing",
         "equal-branches",
         "forward-guard",
         "target-guard",
@@ -7207,6 +7208,9 @@ fn local_optional_expression_reads_distinguish_absence_missing_and_selected_bran
                 "",
                 2,
             ),
+            "guard-selected-missing" => (source, target,
+                " when if true then s.free>0 else s.held>0",
+                " when if true then t.free>0 else t.held>0", 2),
             "equal-branches" => (
                 "if s.free>0 then choice else choice",
                 "if t.free>0 then chosen else chosen",
@@ -7238,7 +7242,7 @@ fn local_optional_expression_reads_distinguish_absence_missing_and_selected_bran
                 .filter(|line| {
                     !line.contains(r#""id":"p-free""#)
                         && !line.contains(r#""id":"r-free""#)
-                        && (case != "selected-missing"
+                        && (!case.contains("selected-missing")
                             || (!line.contains(r#""id":"p-held""#)
                                 && !line.contains(r#""id":"r-held""#)))
                 })
@@ -7293,7 +7297,7 @@ reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool,t:State){t
                 );
             }
         }
-        if matches!(case, "source-missing" | "selected-missing") {
+        if matches!(case, "source-missing" | "selected-missing" | "guard-selected-missing") {
             for subject in ["p", "r"] {
                 assert!(
                     requirements

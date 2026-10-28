@@ -177,7 +177,7 @@ struct DottedInputCache {
 #[derive(Clone, PartialEq, Eq)]
 struct ScopedKey {
     // localの必要欠測収集と、通常評価の全出現記録を混同しない。
-    direct_read: bool,
+    value_read: bool,
     expression: usize,
     variables: BTreeMap<String, SourceValue>,
     base: Scope,
@@ -415,6 +415,7 @@ pub(crate) struct Environment<'a> {
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     affine_valuation: BTreeMap<Fact, super::affine::Form>,
     primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
+    value_read: Cell<bool>,
     primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
     missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
     evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
@@ -599,6 +600,7 @@ impl<'a> Environment<'a> {
             primitive_valuation: None,
             affine_valuation: BTreeMap::new(),
             primitive_input_valuation: None,
+            value_read: Cell::new(false),
             primitive_reads: RefCell::new(None),
             missing_slot_reads: RefCell::new(None),
             evaluation_capture: RefCell::new(None),
@@ -7351,7 +7353,7 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
             let key = ScopedKey {
-                direct_read: self.primitive_reads.borrow().is_some(),
+                value_read: self.value_read.get(),
                 expression: id,
                 variables: self.copy_variables(variables)?,
                 base: base.clone(),
@@ -7757,7 +7759,7 @@ impl<'a> Environment<'a> {
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
                     // localの必要欠測だけを選択枝へ制限する。両枝の評価・出現記録は保つ。
-                    let (left, right) = if self.primitive_reads.borrow().is_some()
+                    let (left, right) = if self.value_read.get()
                         && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
                     {
                         let outer = self.missing_slot_reads.replace(Some(BTreeSet::new()));

@@ -103,6 +103,17 @@ fn evaluate_read(
             .collect(),
     ))
 }
+// 値/guardに必要な欠測を収集する。局所幾何の全読取り位置の収集とは区別する。
+fn evaluate_value(
+    env: &Environment<'_>, id: usize, variables: &BTreeMap<String, SourceValue>,
+    scope: &Scope, reading: &str,
+) -> Result<(SourceValue, Vec<Fact>, Vec<Fact>), ValidationFailure> {
+    let outer = env.value_read.replace(true);
+    let result = evaluate_read(env, id, variables, scope, reading);
+    env.value_read.set(outer);
+    result
+}
+
 /// local移送でも、直接読取りと同じEvaluator・適合条件でguardを確認する。
 pub(in crate::observed) fn guard_value(
     env: &Environment<'_>,
@@ -116,7 +127,7 @@ pub(in crate::observed) fn guard_value(
         .collect();
     let mut scope = Scope::default();
     scope.readings.insert(reading.into());
-    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
+    let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
             env.inputs.law().exprs[id].span,
@@ -171,7 +182,7 @@ pub(in crate::observed) fn read_value(
         .collect();
     let mut scope = Scope::default();
     scope.readings.insert(reading.into());
-    let (value, _, missing) = evaluate_read(env, id, &variables, &scope, reading)?;
+    let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
             env.inputs.law().exprs[id].span,
