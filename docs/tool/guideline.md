@@ -99,21 +99,7 @@
 - assertion の弱化、snapshot の無検討な更新、製品予算の緩和で green にしない。
   重複を除き、適切な層へ配置する。性能測定と正しさの検査は区別する。
 
-### 検証対象の選択
-
-変更した source が属するクレートを、実際の `Cargo.toml` と workspace の構成から特定する。
-選んだ manifest の package 名・version を確認する。workspace 継承や所属がある場合は
-workspace の manifest や `cargo metadata` も確認する。同じ package 名のクレートが併存し得るため、
-検証コマンドには manifest を明示し、workspace では対象 package も選ぶ。
-ディレクトリ名から version を推測せず、移動・改名後も実際の所属から選ぶ。
-
-docs / schema のみの変更は、対象 contract・version と参照される実装をたどって manifest を特定する。
-特定できない場合は曖昧さを解消してから検証し、旧版・最新版のどちらも既定にしない。
-複数クレートに影響する変更は、影響する全クレートを対象にする。
-
-検証記録は対象 commit、manifest・version、選択した test target と、実行結果 / compile のみ / 未実行を
-短く区別する。`cargo test --manifest-path <対象manifest>` に変更範囲に応じた target・filter を指定する。
-対象選択だけで全 suite の実行を要求せず、CI の対象・実行結果は実際の workflow と照合する。
+### CI への追加
 
 CI への追加は [Workflow guideline](../workflow/guideline.md#ci-への恒久追加の禁止) の承認規律に加え、
 想定する CI 環境で準備・compile・test の合計が3分以内である実測を条件とする。

@@ -5,9 +5,7 @@ description: ArchSig / FieldSig tooling、docs/tool、schema catalogの実装完
 
 # Tool Review
 
-ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野の所有範囲は
-ArchSig / FieldSig の実装と、`docs/tool/`・schema catalog (tooling の claim に隣接する docs)。
-実装の所在は [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って特定する。
+ArchSig / FieldSig tooling の実装と、関連する文書・schema catalog の差分を敵対的にレビューする。
 
 ## 必須契約
 
@@ -70,11 +68,10 @@ ArchSig / FieldSig の実装と、`docs/tool/`・schema catalog (tooling の cla
    - CLI tests、golden output、schema compatibility、E2E workflow が
      変更範囲を覆うかを疑う。テストは名前でなく assertion 内容で
      証拠にする。
-   - [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、対象 manifest・version と検証結果を確認する。
 
 ## 検証
 
-- [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って、対象クレートと必要な検証を選ぶ。
+- [Tool guideline「テスト責務と実行経路」](../../../docs/tool/guideline.md#テスト責務と実行経路)に従って検証する。
 - checklist §6 の横断機械 scan(`git diff --check`、hidden/bidi、privacy)
 - 実行できない検証は理由と残リスクとして報告する。
 

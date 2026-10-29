@@ -42,13 +42,7 @@ GitHub Release notes は原則として英語で書く。
    - 必要に応じて `gh pr list --state merged` や `gh api` で前回 tag 以降の PR / commit を調べる。
    - tag が未作成の場合は、対象 commit を確認し、ユーザー確認後に tag を作成・push する。勝手に release tag を作らない。
 
-3. 対象 surface を分類する。
-   - ArchSig / FieldSig の実装: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って release 対象の manifest・package・version と実装の所在を確認する。
-   - 関連 docs / workflow / template: 対象 version の `docs/tool/**` と、実際にその実装を配布する workflow・release template を確認する。
-   - Lean / docs claim: `Formal/**`, `docs/aat/**`, `docs/sft/**`
-   - Website: `website/**`
-
-4. release notes draft を作る。
+3. release notes draft を作る。
    - `.github/RELEASE_TEMPLATE.md` をコピー元として使う。
    - `Downloads` は実際に workflow が出す asset 名だけを書く。
    - `Highlights` は PR の羅列ではなく、利用者に見える変更単位でまとめる。
@@ -57,9 +51,8 @@ GitHub Release notes は原則として英語で書く。
    - `Boundaries` は削らない。
    - 公開前に `vX.Y.Z`, `<...>`, `#...` などの placeholder が残っていないことを確認する。
 
-5. 検証する。
-   - ArchSig / FieldSig 変更あり: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、
-     release 対象の version と影響するクレートごとに検証する。
+4. 検証する。
+   - ArchSig / FieldSig 変更あり: [Tool guideline「テスト責務と実行経路」](../../../docs/tool/guideline.md#テスト責務と実行経路)に従って検証する。
    - Lean / docs claim 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、変更範囲に応じた focused check または targeted build をローカルで実行する。
    - website 変更あり: Playwright で静的ページを確認する。
    - release notes / workflow / docs 変更のみでも:
@@ -69,7 +62,7 @@ GitHub Release notes は原則として英語で書く。
        public artifact scan
      - `.github/release.yml` を触った場合は YAML parse
 
-6. draft release を作成または更新する。
+5. draft release を作成または更新する。
    - 新規 draft:
      - `gh release create <tag> --verify-tag --draft --title "Tooling <tag>" --notes-file <notes-file>`
    - ArchSig 単独 release として出す場合:
@@ -79,7 +72,7 @@ GitHub Release notes は原則として英語で書く。
    - `-rc.N` tag は `--prerelease` を付ける。
    - publish はユーザー確認後にだけ実行する。
 
-7. 公開後の asset workflow を確認する。
+6. 公開後の asset workflow を確認する。
    - ArchSig asset build は `.github/workflows/archsig-release.yml` が release publish で走る。
    - draft 作成時点では release asset workflow は走らない。asset は publish 後に確認する。
    - `gh run list --workflow archsig-release.yml --limit 5` で workflow run を確認する。
