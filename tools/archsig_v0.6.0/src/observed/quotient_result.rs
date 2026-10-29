@@ -184,7 +184,7 @@ fn compute(
         expression_part.scope.merge(&g.get(reference)?.scope);
         expression_part.scope.merge(&table.scope);
         expression_part.scope.readings.insert(declaration.reading.clone());
-        let law_expression = if let Some((name, _, _, _)) = &table.law {
+        let law_expression = if let Some((name, _)) = &table.law {
             let Signature::Law {params, body, ..} = &env.inputs.law().declarations[name].signature else {unreachable!()};
             let selected = bindings.iter().filter(|(name,_)|params.iter().any(|p| &p.name==name)).cloned().collect::<Vec<_>>();
             let parameters = params.iter().filter(|p|!selected.iter().any(|(n,_)|n==&p.name)).map(|p|(p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
@@ -200,7 +200,15 @@ fn compute(
                 request: request.id.clone(),
                 dependencies: std::iter::once(expression).chain(law_expression).collect(),
                 missing: table.missing,
-                location: table.law.as_ref().map(|(name,_,_,_)|Location::Law {span:env.inputs.law().declarations[name].span}).or(Some(Location::Law { span: declaration.span })),
+                location: table
+                    .law
+                    .as_ref()
+                    .map(|(name, _)| Location::Law {
+                        span: env.inputs.law().declarations[name].span,
+                    })
+                    .or(Some(Location::Law {
+                        span: declaration.span,
+                    })),
             };
             b.parts[expression.0 - base].reasons.push(reason.clone());
             let scope = b.parts[expression.0 - base].scope.clone();
@@ -219,7 +227,7 @@ fn compute(
         let mut evaluations = vec![];
         let mut families = BTreeMap::new();
         let mut images = BTreeMap::new();
-        if let Some((name, ty, _, _)) = &table.law {
+        if let Some((name, ty)) = &table.law {
             for row in &table.rows {
                 let (family, rows) = law_result::row(&mut b, env, &input, row, name, ty, expression)?;
                 evaluations.extend(rows);
@@ -334,7 +342,7 @@ fn compute(
         arguments.push(projection);
         arguments.extend(&evaluations);
         arguments.extend(law_expression);
-        let descent = if let Some((name, ty, _, _)) = &table.law {
+        let descent = if let Some((name, ty)) = &table.law {
             if separating.is_none() {
                 family_values.sort_by_key(|r|r.0); family_values.dedup();
                 let mut dependencies=vec![reference,expression]; dependencies.extend(law_expression); dependencies.extend(&evaluations);
@@ -383,7 +391,7 @@ fn compute(
         let mut evidence = vec![];
         let mut claim = None;
         let mut status = Decision::Established;
-        if let Some((name, _, _, _)) = &table.law {
+        if let Some((name, _)) = &table.law {
             let Json::Obj(wire) = &mut b.parts[quotient.0-base].wire else {unreachable!()};
             wire.insert("law".into(), Json::str(name));
             if let Some(descent) = descent { wire.insert("descent".into(), descent.wire()); }

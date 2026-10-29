@@ -173,7 +173,11 @@ pub(super) fn compute(
         if let Some(law) = &image.law {
             let target = domain(
                 &mut b,
-                &law_result::family_type(env, &law.name, &law.value_type)?,
+                &law_result::family_type(
+                    env,
+                    &law.name,
+                    &Type::Tuple(vec![law.value_type.clone(); 2]),
+                )?,
                 &[],
                 &[reference, law_expression.ok_or("アフィン商のLaw式がない")?],
             )?;
@@ -470,8 +474,15 @@ fn law_descent(
             let row = quotient_affine::point(env, input, image, point, request, c)?;
             candidates.push(change_result::value(b, &row.parameters)?);
             views.push(change_result::value(b, &row.image)?);
-            let (family, checked) =
-                law_result::row(b, env, input, &row, &law.name, &law.value_type, expression)?;
+            let (family, checked) = law_result::row(
+                b,
+                env,
+                input,
+                &row,
+                &law.name,
+                &Type::Tuple(vec![law.value_type.clone(); 2]),
+                expression,
+            )?;
             values.push(change_result::value(b, &family)?);
             checked_views.push(row.image);
             checked_families.push(family);
@@ -514,7 +525,11 @@ fn law_descent(
     {
         // Use actual image coordinates, with Option-valued families as a
         // typed Domain rather than a numeric module.
-        let family_type = law_result::family_type(env, &law.name, &law.value_type)?;
+        let family_type = law_result::family_type(
+            env,
+            &law.name,
+            &Type::Tuple(vec![law.value_type.clone(); 2]),
+        )?;
         let target = b.push(
             NodeType::Domain,
             "domain",

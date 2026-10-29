@@ -628,7 +628,7 @@ pub(in crate::observed) fn point(
             {
                 return Err("商の通常Law評価とアフィン値が違う".into());
             }
-            Some((left, right))
+            Some(Scalar::Tuple(vec![left, right]))
         } else {
             None
         };
