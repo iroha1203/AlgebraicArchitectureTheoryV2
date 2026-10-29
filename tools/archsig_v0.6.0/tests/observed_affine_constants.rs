@@ -1482,125 +1482,139 @@ view later(s:Sample): Unit = unit;
     audit(&baseline, &checked);
     output(&baseline, "current", "Z", Json::str("0"));
     affine_scalar(&baseline, &checked, "s.z-s.z", "Z", Json::str("0"));
-    assert_eq!(
-        baseline_count - prior_count,
-        6,
-        "二つの元fieldと元減算のExpression pre/postだけ"
-    );
+    let expression_count = baseline_count - prior_count;
+    assert!(expression_count > 0);
     let current_span = checked.law().exprs[body(&checked, "Calc.current")].span;
     let later_span = checked.law().exprs[body(&checked, "Calc.later")].span;
-    // 元Expressionの固定3点だけ。係数走査と再検査の内部はprivate試験が扱う。
-    for (offset, kind, field_prefix, complete_current) in
-        [(3, 0, 1, false), (5, 1, 2, false), (6, 2, 2, true)]
-    {
-        let at_stop = prior_count + offset;
-        let expressions = Rc::new(Cell::new(0));
-        let probes = Rc::new(Cell::new(0));
-        let frozen = Rc::new(Cell::new(None));
-        let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: (kind == 1).then_some(1),
-                memory_mib: (kind == 2).then_some(1),
-            },
-            move |point| {
-                p.set(p.get() + 1);
-                if point == Checkpoint::Expression {
-                    e.set(e.get() + 1);
-                    if e.get() == at_stop {
-                        s.set(Some(p.get()));
-                        return Usage {
-                            signal: (kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(kind == 1),
-                            memory_mib: u128::from(kind == 2),
-                        };
+    // 現在要求の全Expression checkpointを止め、元DAGの完成境界を確認する。
+    // 係数走査と再検査の内部はprivate試験が扱う。
+    for kind in 0..4 {
+        let mut covered = BTreeSet::new();
+        for offset in 1..=expression_count {
+            let at_stop = prior_count + offset;
+            let expressions = Rc::new(Cell::new(0));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(
+                Limits {
+                    time_ms: (kind == 1).then_some(1),
+                    memory_mib: (kind == 2).then_some(1),
+                },
+                move |point| {
+                    p.set(p.get() + 1);
+                    if point == Checkpoint::Expression {
+                        e.set(e.get() + 1);
+                        if e.get() == at_stop {
+                            s.set(Some(p.get()));
+                            return Usage {
+                                signal: match kind {
+                                    0 => Some(Signal::Term),
+                                    3 => Some(Signal::Int),
+                                    _ => None,
+                                },
+                                elapsed_ms: u128::from(kind == 1),
+                                memory_mib: u128::from(kind == 2),
+                            };
+                        }
                     }
-                }
-                Usage::default()
-            },
-        );
-        let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
-            .unwrap()
-            .wire();
-        assert_eq!(f(&wire, "status"), &Json::str("interrupted"));
-        audit(&wire, &checked);
-        output(&wire, "seed", "Unit", Json::Arr(vec![]));
-        assert_eq!(
-            f(answer(&wire, "known_false"), "status"),
-            &Json::str("refuted")
-        );
-        for id in ["seed", "known_false", "other_missing"] {
-            for key in ["status", "outputs", "scope", "reasons", "evidence", "claim"] {
-                assert_eq!(
-                    obj(answer(&wire, id)).get(key),
-                    obj(answer(&prior, id)).get(key),
-                    "停止前の値・実反例・元理由を保持"
-                );
-            }
-        }
-        missing(&wire, "other_missing", &[fact("v", "item", "q")]);
-        missing(&wire, "current", &[fact("v", "item", "z")]);
-        for id in ["current", "later"] {
-            let a = answer(&wire, id);
-            assert_eq!(f(a, "status"), &Json::str("undetermined"));
-            assert!(!obj(a).contains_key("claim"));
-            assert!(arr(f(a, "evidence")).is_empty());
-            let code = if kind == 0 {
-                "cancelled"
-            } else {
-                "budget_exhausted"
-            };
-            let reason = arr(f(a, "reasons"))
-                .iter()
-                .find(|r| f(r, "code") == &Json::str(code))
-                .unwrap();
-            let details = if kind == 0 {
-                Json::obj([("signal", Json::str("SIGTERM"))])
-            } else {
-                Json::obj([
-                    (
-                        "resource",
-                        Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
-                    ),
-                    ("limit", Json::str("1")),
-                    ("observed", Json::str("1")),
-                ])
-            };
-            assert_eq!(f(reason, "details"), &details);
-        }
-        assert!(obj(f(answer(&wire, "later"), "outputs")).is_empty());
-        assert!(
-            evaluations_at(&wire, later_span).is_empty(),
-            "未着手の式を評価しない"
-        );
-        let current = evaluations_at(&wire, current_span);
-        assert_eq!(current.len(), usize::from(complete_current));
-        if complete_current {
-            let outputs = f(answer(&wire, "current"), "outputs");
-            assert_eq!(
-                val(target(&index(&wire), f(outputs, "value"), &Json::str("Z"))),
-                &Json::str("0"),
-                "post停止前に検査済みの現在値を保持"
+                    Usage::default()
+                },
             );
-            assert_eq!(f(outputs, "evaluation"), &reference(current[0]));
-            affine_scalar(&wire, &checked, "s.z-s.z", "Z", Json::str("0"));
-        } else {
-            assert!(obj(f(answer(&wire, "current"), "outputs")).is_empty());
+            let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
+                .unwrap()
+                .wire();
+            assert_eq!(f(&wire, "status"), &Json::str("interrupted"));
+            audit(&wire, &checked);
+            output(&wire, "seed", "Unit", Json::Arr(vec![]));
+            assert_eq!(
+                f(answer(&wire, "known_false"), "status"),
+                &Json::str("refuted")
+            );
+            for id in ["seed", "known_false", "other_missing"] {
+                for key in ["status", "outputs", "scope", "reasons", "evidence", "claim"] {
+                    assert_eq!(
+                        obj(answer(&wire, id)).get(key),
+                        obj(answer(&prior, id)).get(key),
+                        "停止前の値・実反例・元理由を保持"
+                    );
+                }
+            }
+            missing(&wire, "other_missing", &[fact("v", "item", "q")]);
+            let field_prefix = missing_field_evaluations(&wire, &checked, "z");
+            if field_prefix > 0 {
+                missing(&wire, "current", &[fact("v", "item", "z")]);
+            }
+            for id in ["current", "later"] {
+                let a = answer(&wire, id);
+                assert_eq!(f(a, "status"), &Json::str("undetermined"));
+                assert!(!obj(a).contains_key("claim"));
+                assert!(arr(f(a, "evidence")).is_empty());
+                let code = if kind == 0 || kind == 3 {
+                    "cancelled"
+                } else {
+                    "budget_exhausted"
+                };
+                let reason = arr(f(a, "reasons"))
+                    .iter()
+                    .find(|r| f(r, "code") == &Json::str(code))
+                    .unwrap();
+                let details = if kind == 0 || kind == 3 {
+                    Json::obj([(
+                        "signal",
+                        Json::str(if kind == 0 { "SIGTERM" } else { "SIGINT" }),
+                    )])
+                } else {
+                    Json::obj([
+                        (
+                            "resource",
+                            Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
+                        ),
+                        ("limit", Json::str("1")),
+                        ("observed", Json::str("1")),
+                    ])
+                };
+                assert_eq!(f(reason, "details"), &details);
+            }
+            assert!(obj(f(answer(&wire, "later"), "outputs")).is_empty());
+            assert!(
+                evaluations_at(&wire, later_span).is_empty(),
+                "未着手の式を評価しない"
+            );
+            let current = evaluations_at(&wire, current_span);
+            assert!(current.len() <= 1);
+            let complete_current = !current.is_empty();
+            covered.insert((field_prefix, complete_current));
+            if complete_current {
+                let outputs = f(answer(&wire, "current"), "outputs");
+                assert_eq!(
+                    val(target(&index(&wire), f(outputs, "value"), &Json::str("Z"))),
+                    &Json::str("0"),
+                    "post停止前に検査済みの現在値を保持"
+                );
+                assert_eq!(f(outputs, "evaluation"), &reference(current[0]));
+                affine_scalar(&wire, &checked, "s.z-s.z", "Z", Json::str("0"));
+            } else {
+                assert!(obj(f(answer(&wire, "current"), "outputs")).is_empty());
+            }
+            assert!(field_prefix <= 2);
+            if complete_current {
+                assert_eq!(field_prefix, 2);
+            }
+            let prefix = arr(f(&wire, "nodes"));
+            assert_eq!(
+                prefix,
+                &arr(f(&baseline, "nodes"))[..prefix.len()],
+                "完成した元DAG prefixをそのまま保持"
+            );
+            assert_eq!(expressions.get(), at_stop);
+            assert_eq!(Some(probes.get()), frozen.get());
+            let before = probes.get();
+            assert!(control.checkpoint(Checkpoint::Expression).is_err());
+            assert_eq!(probes.get(), before, "停止後の再検査でもprobeを再開しない");
         }
-        assert_eq!(
-            missing_field_evaluations(&wire, &checked, "z"),
-            field_prefix
-        );
-        let prefix = arr(f(&wire, "nodes"));
-        assert_eq!(
-            prefix,
-            &arr(f(&baseline, "nodes"))[..prefix.len()],
-            "完成した元DAG prefixをそのまま保持"
-        );
-        assert_eq!(expressions.get(), at_stop);
-        assert_eq!(Some(probes.get()), frozen.get());
-        let before = probes.get();
-        assert!(control.checkpoint(Checkpoint::Expression).is_err());
-        assert_eq!(probes.get(), before, "停止後の再検査でもprobeを再開しない");
+        for boundary in [(1, false), (2, false), (2, true)] {
+            assert!(covered.contains(&boundary), "mode {kind}: {boundary:?}");
+        }
     }
 }
