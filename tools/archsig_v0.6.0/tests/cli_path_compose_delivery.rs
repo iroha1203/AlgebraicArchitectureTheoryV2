@@ -101,8 +101,8 @@ impl Io for Files {
 fn path_compose_request_resolution_stops_notify_without_starting_output() {
     for mode in 0..4 {
         let (dir, mut args) = setup(&format!("path-compose-resolver-stop-{mode}"));
-        args.time_ms = (mode == 0).then(|| "1".into());
-        args.memory_mib = (mode == 1).then(|| "1".into());
+        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
+        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
         let mut control = Control::new(
             Limits {
                 time_ms: (mode == 0).then_some(1),
@@ -165,8 +165,8 @@ fn path_compose_late_stops_publish_only_checked_values_with_consistent_status_an
     assert!(total >= 3);
     for mode in 0..4 {
         let (dir, mut args) = setup(&format!("path-compose-late-stop-{mode}"));
-        args.time_ms = (mode == 0).then(|| "1".into());
-        args.memory_mib = (mode == 1).then(|| "1".into());
+        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
+        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
         let mut control = Control::new(

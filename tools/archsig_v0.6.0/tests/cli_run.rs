@@ -313,30 +313,38 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
             "--time-ms"
         );
     }
-    let dir = inputs("large-budget", Some("2"), L);
-    let n = "9999999999999999999999999999999999999999999999999999999999999999999";
-    let r = run(
-        &dir,
-        &[
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--ask",
-            ASKS[0],
-            "--out",
-            "out",
-            "--time-ms",
-            n,
-            "--memory-mib",
-            n,
-        ],
-    );
-    let res = result(&dir, &r, "complete", 0);
-    assert!(!has(&res, "limits"));
+    for (index, n) in [
+        "340282366920938463463374607431768211455",
+        "340282366920938463463374607431768211456",
+        "9999999999999999999999999999999999999999999999999999999999999999999",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let dir = inputs(&format!("large-budget-{index}"), Some("2"), L);
+        let r = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                ASKS[0],
+                "--out",
+                "out",
+                "--time-ms",
+                n,
+                "--memory-mib",
+                n,
+            ],
+        );
+        let res = result(&dir, &r, "complete", 0);
+        assert!(!has(&res, "limits"));
+    }
 }
 
 #[test]
@@ -468,7 +476,7 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
         },
         asks: ASKS.iter().map(|s| s.to_string()).collect(),
         reuse: None,
-        time_ms: Some("1".into()),
+        time_ms: Some("1".parse().unwrap()),
         memory_mib: None,
     }
 }

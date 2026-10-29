@@ -135,8 +135,8 @@ fn value_comparison_request_resolution_stops_notify_without_starting_output() {
 fn comparison_request_resolution_stops_notify_without_starting_output_case(kind: usize) {
     for mode in 0..4 {
         let (dir, mut args) = setup(&format!("comparison-resolver-stop-{kind}-{mode}"), kind);
-        args.time_ms = (mode == 0).then(|| "1".into());
-        args.memory_mib = (mode == 1).then(|| "1".into());
+        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
+        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
         let mut control = Control::new(
             Limits {
                 time_ms: (mode == 0).then_some(1),
@@ -239,8 +239,8 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     assert!(total >= 2);
     for mode in 0..4 {
         let (dir, mut args) = setup(&format!("comparison-late-stop-{kind}-{mode}"), kind);
-        args.time_ms = (mode == 0).then(|| "1".into());
-        args.memory_mib = (mode == 1).then(|| "1".into());
+        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
+        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
         let mut control = Control::new(
