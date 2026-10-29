@@ -49,24 +49,60 @@ fn unsupported(request: &Request, feature: &str) -> ValidationFailure {
         feature: format!("{}: {feature}", request.id),
     }
 }
-fn exact_type(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        Ok(match ty {
-            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Fp(_) | Type::Text => true,
-            Type::Option(item) | Type::List(item) | Type::Set(item) => exact_type(item, c)?,
-            Type::Tuple(items) => {
-                for item in items {
-                    if !exact_type(item, c)? {
-                        return Ok(false);
-                    }
+fn exact_type(
+    ty: &Type,
+    law: &crate::law::CheckedLaw,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    fn visit(
+        ty: &Type,
+        law: &crate::law::CheckedLaw,
+        c: &mut Control,
+        active: &mut Vec<String>,
+    ) -> Result<bool, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            c.checkpoint(Checkpoint::PrimitiveValuation)?;
+            Ok(match ty {
+                Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Fp(_) | Type::Text => true,
+                Type::Option(item) | Type::List(item) | Type::Set(item) => {
+                    visit(item, law, c, active)?
                 }
-                true
-            }
-            _ => false,
+                Type::Tuple(items) => {
+                    for item in items {
+                        if !visit(item, law, c, active)? {
+                            return Ok(false);
+                        }
+                    }
+                    true
+                }
+                Type::Data(family) => {
+                    if active.contains(family) {
+                        // 定義検査済みの正の自己参照。有限な実値の比較はdata::equalが行う。
+                        return Ok(true);
+                    }
+                    let constructors = data::constructors(law, family)?;
+                    active.push(family.clone());
+                    let result: Result<bool, ValidationFailure> = (|| {
+                        for constructor in constructors {
+                            c.checkpoint(Checkpoint::PrimitiveValuation)?;
+                            for argument in &constructor.arguments {
+                                if !visit(argument, law, c, active)? {
+                                    return Ok(false);
+                                }
+                            }
+                        }
+                        Ok(true)
+                    })();
+                    active.pop();
+                    result?
+                }
+                _ => false,
+            })
         })
-    })
+    }
+    visit(ty, law, c, &mut vec![])
 }
+
 pub(in crate::observed) fn compute(
     original: &Environment<'_>,
     graph: &Graph,
@@ -91,7 +127,7 @@ pub(in crate::observed) fn compute(
     else {
         return Err("商のheadがviewでない".into());
     };
-    if !exact_type(returns, c)? {
+    if !exact_type(returns, original.inputs.law(), c)? {
         return Err(unsupported(request, "このview型の有限商の等値は未実装"));
     }
     let bindings = params
@@ -115,7 +151,7 @@ pub(in crate::observed) fn compute(
             return Err(unsupported(request, "有限商の等式以外の評価族は未実装"));
         };
         let ty = original.inputs.law().expr_type(lhs).ok_or("商の等式値型がない")?.clone();
-        if !exact_type(&ty, c)? { return Err(unsupported(request, "このLaw値型の有限商は未実装")); }
+        if !exact_type(&ty, original.inputs.law(), c)? { return Err(unsupported(request, "このLaw値型の有限商は未実装")); }
         Ok((name.clone(), ty, lhs, rhs))
     }).transpose()?;
     let domain = Arc::new(ObjectDomain::from_readings(
@@ -302,3 +338,7 @@ pub(in crate::observed) fn compute(
         law,
     })
 }
+
+#[cfg(test)]
+#[path = "quotient_evaluation_tests.rs"]
+mod tests;

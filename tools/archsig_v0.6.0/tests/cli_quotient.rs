@@ -1061,3 +1061,6 @@ fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
         }
     }
 }
+
+#[path = "common/quotient_data.rs"]
+mod data_tests;
