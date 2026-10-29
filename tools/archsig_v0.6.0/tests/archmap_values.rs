@@ -190,7 +190,7 @@ const DEFINITION: &str = r#"{
 }"#;
 
 fn digest() -> String {
-    definitions_ok(&[DEFINITION]).vocabularies["V"]
+    definitions_ok(&[DEFINITION]).vocabularies()["V"]
         .digest
         .clone()
 }
@@ -572,7 +572,7 @@ fn data_doc(subjects: &[(&str, &str)], atoms: &[(&str, &str, &str)]) -> String {
 "vocabularies":[{{"namespace":"W","version":"1","digest":"{}"}}],"sources":[],
 "origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
 "snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
-        definitions_ok(&[DATA_DEFINITION]).vocabularies["W"].digest,
+        definitions_ok(&[DATA_DEFINITION]).vocabularies()["W"].digest,
         subjects.join(","),
         atoms.join(",")
     )

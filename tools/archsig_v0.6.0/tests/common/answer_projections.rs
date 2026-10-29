@@ -40,6 +40,6 @@ pub fn tree_input(missing: bool, revision: &str) -> InputSources {
     let d =
         archsig::definition::check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())])
             .unwrap();
-    let digest = &d.vocabularies["Trees"].digest;
+    let digest = &d.vocabularies()["Trees"].digest;
     InputSources::from_bytes(vec![tree::DEFINITIONS.as_bytes().to_vec()],tree::law(digest,"view acceptsPair(t:Tree,x:Z):Z=x;view integer(x:Z):Z=x+1;view leaf():Tree=Leaf(2);view empty():Tree=Empty;law required two(x:Z):forall z:Z.x+z=z+x;").into_bytes(),tree::archmap(digest,missing,revision).into_bytes())
 }

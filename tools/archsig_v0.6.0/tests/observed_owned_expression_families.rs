@@ -144,7 +144,7 @@ fn fixture(
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Owned"].digest;
+    let digest = &checked.vocabularies()["Owned"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Inspect {{ use vocabulary Owned version "1" digest "{digest}"; {script} }}"#
     );

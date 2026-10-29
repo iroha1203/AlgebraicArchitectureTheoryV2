@@ -16,7 +16,7 @@ const L: &str = include_str!("fixtures/object-instances.law");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 fn inputs(law: &str, a: &str) -> CheckedInputs {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &d.vocabularies["Instances"].digest;
+    let digest = &d.vocabularies()["Instances"].digest;
     check_inputs(
         InputSources::from_bytes(
             vec![D.to_vec()],

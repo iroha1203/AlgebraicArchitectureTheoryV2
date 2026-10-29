@@ -318,7 +318,7 @@ fn change_transport_uses_field_alignments_and_keeps_known_refutations_with_missi
         let mut archmap=std::fs::read_to_string(dir.join("a.json")).unwrap();
         if aligned {
             let definition=std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1);
-            let checked=archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();digest=checked.vocabularies["Reservations"].digest.clone();
+            let checked=archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();digest=checked.vocabularies()["Reservations"].digest.clone();
             std::fs::write(dir.join("d.json"),definition).unwrap();archmap=archmap.replace(old,&digest);
         }
         if collision {
@@ -581,7 +581,7 @@ fn incomplete_endpoint_algebras_keep_configuration_operation_and_original_reason
             let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
             let checked =
                 archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-            let digest = &checked.vocabularies["Reservations"].digest;
+            let digest = &checked.vocabularies()["Reservations"].digest;
             std::fs::write(dir.join("d.json"), definition).unwrap();
             let mut a = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
@@ -692,7 +692,7 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
         let definition = old.replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"other","type":["Ref","Reservations.State"],"meaning":"別の参照先。"}, {"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
         let checked =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &checked.vocabularies["Reservations"].digest;
+        let digest = &checked.vocabularies()["Reservations"].digest;
         std::fs::write(dir.join("d.json"), definition).unwrap();
         let old_digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
         let mut a = std::fs::read_to_string(dir.join("a.json"))
@@ -2054,10 +2054,10 @@ fn data_view_inputs(
         archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
     let checked =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Reservations"].digest;
+    let digest = &checked.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
-        .replace(&old_checked.vocabularies["Reservations"].digest, digest);
+        .replace(&old_checked.vocabularies()["Reservations"].digest, digest);
     std::fs::write(dir.join("d.json"), definition).unwrap();
     std::fs::write(dir.join("a.json"), map).unwrap();
     let (sp, tp, sc, tc) = if parameter {
@@ -2207,8 +2207,8 @@ fn finite_data_view_inputs(name: &str) -> PathBuf {
         archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
     let checked =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old_digest = &old_checked.vocabularies["Reservations"].digest;
-    let digest = &checked.vocabularies["Reservations"].digest;
+    let old_digest = &old_checked.vocabularies()["Reservations"].digest;
+    let digest = &checked.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(old_digest, digest);
@@ -3165,7 +3165,7 @@ fn heterogeneous_relation_words_use_actual_reachable_generators_and_full_path_wi
         .canonical();
         let checked =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &checked.vocabularies["Flow"].digest;
+        let digest = &checked.vocabularies()["Flow"].digest;
         std::fs::write(dir.join("d.json"), definition.as_bytes()).unwrap();
         let mut subjects = vec![];
         let mut atoms = vec![];
@@ -4896,10 +4896,10 @@ fn local_rational_reads_compare_exact_values_on_all_reference_rows() {
         let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let after =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &after.vocabularies["Reservations"].digest;
+        let digest = &after.vocabularies()["Reservations"].digest;
         let text = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
-            .replace(&before.vocabularies["Reservations"].digest, digest);
+            .replace(&before.vocabularies()["Reservations"].digest, digest);
         let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
         let atoms = fixture::atoms(&mut map);
         atoms.retain(|atom| !missing || !matches!(atom, Json::Obj(a) if matches!(a.get("id"), Some(Json::Str(id)) if id=="p-free" || id=="r-free")));
@@ -5323,10 +5323,10 @@ fn finite_local_parameter_inputs(name: &str) -> (PathBuf, String) {
     let definition=old.replacen("\"declarations\": [",r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"有限選択値","constructors":[{"name":"Empty","arguments":[],"meaning":"空の選択"},{"name":"Full","arguments":["Bool"],"meaning":"真偽値を持つ選択"}]},"#,1);
     let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
     let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let digest = &after.vocabularies["Reservations"].digest;
+    let digest = &after.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
-        .replace(&before.vocabularies["Reservations"].digest, digest);
+        .replace(&before.vocabularies()["Reservations"].digest, digest);
     std::fs::write(dir.join("d.json"), definition).unwrap();
     std::fs::write(dir.join("a.json"), map).unwrap();
     (
@@ -6673,10 +6673,10 @@ fn local_finite_data_arguments_follow_constructor_reference_images() {
         let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let after =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &after.vocabularies["Reservations"].digest;
+        let digest = &after.vocabularies()["Reservations"].digest;
         let mut map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
-            .replace(&before.vocabularies["Reservations"].digest, digest);
+            .replace(&before.vocabularies()["Reservations"].digest, digest);
         if case == "late-row" {
             map = map.replace(
                 r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#,
@@ -6873,10 +6873,10 @@ fn finite_local_map_inputs(name: &str) -> (PathBuf, String) {
     let definition = old.replacen("\"declarations\": [", r#""declarations": [{"kind":"entity","name":"Reservations.Key","meaning":"写像の固定キー","parameters":[],"fields":[],"alignments":[]},"#, 1);
     let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
     let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let digest = &after.vocabularies["Reservations"].digest;
+    let digest = &after.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
-        .replace(&before.vocabularies["Reservations"].digest, digest)
+        .replace(&before.vocabularies()["Reservations"].digest, digest)
         .replacen(
             "\"subjects\":[",
             r#""subjects":[{"id":"k","type":"Reservations.Key","origin":"model"},"#,
@@ -6963,8 +6963,8 @@ fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
             let definition = old.replacen(r#""declarations": ["#, r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"Mapを持つ再帰値","constructors":[{"name":"Empty","arguments":[],"meaning":"空"},{"name":"Full","arguments":[["Map",["Ref","Reservations.Key"],["Ref","Reservations.State"]],"Z",["Data","Reservations.Choice"]],"meaning":"再帰payload"}]},"#, 1);
             let prior = archsig::definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
             let checked = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();
-            let prior = &prior.vocabularies["Reservations"].digest;
-            let digest = &checked.vocabularies["Reservations"].digest;
+            let prior = &prior.vocabularies()["Reservations"].digest;
+            let digest = &checked.vocabularies()["Reservations"].digest;
             let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(prior,digest);
             std::fs::write(dir.join("d.json"),definition).unwrap();
             std::fs::write(dir.join("a.json"),map).unwrap();
@@ -7510,10 +7510,10 @@ fn local_read_type_maps_do_not_require_a_matching_parameter() {
             let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
             let after =
                 archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-            let digest = &after.vocabularies["Reservations"].digest;
+            let digest = &after.vocabularies()["Reservations"].digest;
             let mut map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
-                .replace(&before.vocabularies["Reservations"].digest, digest);
+                .replace(&before.vocabularies()["Reservations"].digest, digest);
             if read_missing {
                 map = map
                     .lines()
@@ -7898,8 +7898,8 @@ fn local_infinite_compound_reads_use_identity_on_actual_values() {
                         .unwrap();
                 let before =
                     archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
-                let digest = &checked.vocabularies["Reservations"].digest;
-                let prior = &before.vocabularies["Reservations"].digest;
+                let digest = &checked.vocabularies()["Reservations"].digest;
+                let prior = &before.vocabularies()["Reservations"].digest;
                 let map = std::fs::read_to_string(dir.join("a.json"))
                     .unwrap()
                     .replace(prior, digest);
@@ -8113,8 +8113,8 @@ fn local_reference_product_reads_extend_total_reference_maps_with_scalar_identit
                 let definition = old.replace(r#""arguments":["Bool"]"#, arguments);
                 let prior = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
                 let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-                let digest = &checked.vocabularies["Reservations"].digest;
-                let prior = &prior.vocabularies["Reservations"].digest;
+                let digest = &checked.vocabularies()["Reservations"].digest;
+                let prior = &prior.vocabularies()["Reservations"].digest;
                 let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(prior, digest);
                 std::fs::write(dir.join("d.json"), definition).unwrap();
                 std::fs::write(dir.join("a.json"), map).unwrap();
@@ -8285,8 +8285,8 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
         let checked =
             archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-        let ld = &checked.vocabularies["Left"].digest;
-        let rd = &checked.vocabularies["Right"].digest;
+        let ld = &checked.vocabularies()["Left"].digest;
+        let rd = &checked.vocabularies()["Right"].digest;
         let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
@@ -8299,7 +8299,7 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
             ("bridge", bridge.as_bytes()),
         ])
         .unwrap();
-        let bd = &checked.vocabularies["Bridge"].digest;
+        let bd = &checked.vocabularies()["Bridge"].digest;
         let imports = format!(
             r#"use vocabulary Left version "1" digest "{ld}"; use vocabulary Right version "1" digest "{rd}"; use vocabulary Bridge version "1" digest "{bd}";"#
         );
@@ -8476,8 +8476,8 @@ fn local_infinite_map_read_domains_are_checked_before_guards() {
             let prior = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
             let checked =
                 archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-            let prior = &prior.vocabularies["Reservations"].digest;
-            let digest = &checked.vocabularies["Reservations"].digest;
+            let prior = &prior.vocabularies()["Reservations"].digest;
+            let digest = &checked.vocabularies()["Reservations"].digest;
             let map = std::fs::read_to_string(dir.join("a.json"))
                 .unwrap()
                 .replace(prior, digest);
@@ -8627,10 +8627,10 @@ fn local_direct_compound_fields_share_evaluation_transport_and_missing() {
                 let checked =
                     archsig::definition::check_definitions(&[("d", definition.as_bytes())])
                         .unwrap();
-                let digest = &checked.vocabularies["Reservations"].digest;
+                let digest = &checked.vocabularies()["Reservations"].digest;
                 let mut map = std::fs::read_to_string(dir.join("a.json"))
                     .unwrap()
-                    .replace(&before.vocabularies["Reservations"].digest, digest);
+                    .replace(&before.vocabularies()["Reservations"].digest, digest);
                 let mut atoms = String::new();
                 for (subject, peer) in [("p", "q"), ("q", "p"), ("r", "s"), ("s", "r")] {
                     let r = format!(r#"["v","{subject}"]"#);
@@ -8839,10 +8839,10 @@ fn local_direct_map_fields_check_type_domains_before_reads_and_guards() {
         let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let checked =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &checked.vocabularies["Reservations"].digest;
+        let digest = &checked.vocabularies()["Reservations"].digest;
         let mut map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
-            .replace(&before.vocabularies["Reservations"].digest, digest);
+            .replace(&before.vocabularies()["Reservations"].digest, digest);
         // source/targetのbaseは既知。外部Observerのslotは未読・欠測のままにする。
         map=map.replacen("\"subjects\":[",r#""subjects":[{"id":"C","type":"Reservations.System","origin":"model"},{"id":"w","type":"Reservations.Observer","origin":"model"},"#,1)
             .replacen("\"atoms\":[",r#""atoms":[{"id":"m-observers","subject":"m","field":"Reservations.Migration.observers","value":[],"origin":"model"},{"id":"w-owner","subject":"w","field":"Reservations.Observer.owner","value":["v","C"],"origin":"model"},"#,1);
@@ -9261,10 +9261,10 @@ fn rational_local_parameter_inputs(name: &str, missing: bool) -> (PathBuf, Strin
     assert_ne!(old, definition);
     let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
     let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let digest = &after.vocabularies["Reservations"].digest;
+    let digest = &after.vocabularies()["Reservations"].digest;
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
-        .replace(&before.vocabularies["Reservations"].digest, digest);
+        .replace(&before.vocabularies()["Reservations"].digest, digest);
     let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
     let atoms = fixture::atoms(&mut map);
     atoms.retain(|atom| !missing || !matches!(atom,Json::Obj(a) if matches!(a.get("field"),Some(Json::Str(field)) if field=="Reservations.State.free")));
@@ -10047,7 +10047,7 @@ fn change_transport_compares_different_fieldsets_on_integer_guard_fibers() {
         let mut archmap = std::fs::read_to_string(dir.join("a.json")).unwrap();
         if aligned {
             let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#, r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#, 1);
-            digest = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap().vocabularies["Reservations"].digest.clone();
+            digest = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap().vocabularies()["Reservations"].digest.clone();
             std::fs::write(dir.join("d.json"), definition).unwrap();
             archmap = archmap.replace(old, &digest);
             archmap = archmap.lines().map(|line| {
@@ -10164,8 +10164,8 @@ fn change_transport_compares_rational_guard_fibers_and_different_fieldsets() {
         if aligned { definition = definition.replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1); }
         let before = archsig::definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
         let after = archsig::definition::check_definitions(&[("d",definition.as_bytes())]).unwrap();
-        let digest = &after.vocabularies["Reservations"].digest;
-        let text = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(&before.vocabularies["Reservations"].digest,digest);
+        let digest = &after.vocabularies()["Reservations"].digest;
+        let text = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(&before.vocabularies()["Reservations"].digest,digest);
         let mut archmap = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
         let atoms = fixture::atoms(&mut archmap);
         let missing_field = if matches!(mode,"branch-missing"|"guard-missing") {"Reservations.State.free"} else {"Reservations.State.held"};

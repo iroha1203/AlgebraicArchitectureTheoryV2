@@ -204,7 +204,7 @@ impl Case {
         let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let after =
             archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-        let digest = &after.vocabularies["Reservations"].digest;
+        let digest = &after.vocabularies()["Reservations"].digest;
         let text = include_str!("../fixtures/object-configuration-map.archmap.json")
             .to_string()
             .replace(
@@ -215,7 +215,7 @@ impl Case {
                 r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#,
                 r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#,
             )
-            .replace(&before.vocabularies["Reservations"].digest, digest);
+            .replace(&before.vocabularies()["Reservations"].digest, digest);
         let mut archmap = architecture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
         let atoms = architecture::atoms(&mut archmap);
         atoms.retain(|atom|!missing||!matches!(atom,Json::Obj(a) if a.get("subject")==Some(&Json::str("p"))&&a.get("field")==Some(&Json::str("Reservations.State.held"))));

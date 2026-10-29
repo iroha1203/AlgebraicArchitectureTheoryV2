@@ -16,7 +16,7 @@ fn output<'a>(j: &'a JNode, i: usize, key: &str) -> &'a JNode {
 fn input(name: &str, body: &str) -> std::path::PathBuf {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"有理二座標。","parameters":[],"fields":[{"name":"x","type":"Q","meaning":"第一座標。"},{"name":"y","type":"Q","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
     let checked = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Pair"].digest;
+    let digest = &checked.vocabularies()["Pair"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; {body} view x(s:State):Q=s.x; }}"
     );
@@ -725,7 +725,7 @@ fn rational_quotient_unguarded_and_empty_instance_families() {
     let path=dir.join("d.json");let old=std::fs::read_to_string(&path).unwrap();let before=definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
     let new=old.replace(r#""alignments":[]}]}]}"#,r#""alignments":[]},{"kind":"entity","name":"Pair.Ghost","meaning":"観測個体のない型。","parameters":[],"fields":[],"alignments":[]}]}]}"#);assert_ne!(new,old);
     let after=definition::check_definitions(&[("d",new.as_bytes())]).unwrap();std::fs::write(path,new).unwrap();
-    for name in ["a.json","l.law"]{let path=dir.join(name);let text=std::fs::read_to_string(&path).unwrap().replace(&before.vocabularies["Pair"].digest,&after.vocabularies["Pair"].digest);std::fs::write(path,text).unwrap();}
+    for name in ["a.json","l.law"]{let path=dir.join(name);let text=std::fs::read_to_string(&path).unwrap().replace(&before.vocabularies()["Pair"].digest,&after.vocabularies()["Pair"].digest);std::fs::write(path,text).unwrap();}
     let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.empty)"]);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);assert!(arr(get(family,"generators")).is_empty());assert!(!has(family,"applicability"));
 }
 
@@ -759,8 +759,8 @@ fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
     let d=before.replace("\"type\":\"Z\"","\"type\":\"Q\"");
     let old=definition::check_definitions(&[("d",before.as_bytes())]).unwrap();
     let new=definition::check_definitions(&[("d",d.as_bytes())]).unwrap();
-    let digest=&old.vocabularies["Coordinates"].digest;
-    let new_digest=&new.vocabularies["Coordinates"].digest;
+    let digest=&old.vocabularies()["Coordinates"].digest;
+    let new_digest=&new.vocabularies()["Coordinates"].digest;
     let law=std::str::from_utf8(original.law().bytes()).unwrap().replace(digest,new_digest).replace("d:Z","d:Q");
     let mut map=std::str::from_utf8(original.archmap().bytes()).unwrap().replace(digest,new_digest);
     for (n,q) in [("0",r#"["0","1"]"#),("1",r#"["1","2"]"#),("2",r#"["1","1"]"#),("3",r#"["3","2"]"#)] {

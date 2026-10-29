@@ -2046,7 +2046,7 @@ fn files_with_definition(name: &str, body: &str, missing: bool, definition: &str
     let dir = workdir(name);
     let defs =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Build"].digest;
+    let digest = &defs.vocabularies()["Build"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Build version \"1\" digest \"{digest}\";{body}}}"
     );
@@ -2236,8 +2236,8 @@ fn finite_guarded_law_and_value_parameters_flow_through_public_build() {
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
-            &old.vocabularies["Build"].digest,
-            &new.vocabularies["Build"].digest,
+            &old.vocabularies()["Build"].digest,
+            &new.vocabularies()["Build"].digest,
         );
         std::fs::write(dir.join(name), text).unwrap();
     }
@@ -2328,8 +2328,8 @@ fn owned_arrow_is_published_as_a_checked_generator() {
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
-            &old.vocabularies["Build"].digest,
-            &new.vocabularies["Build"].digest,
+            &old.vocabularies()["Build"].digest,
+            &new.vocabularies()["Build"].digest,
         );
         std::fs::write(dir.join(name), text).unwrap();
     }
@@ -2572,8 +2572,8 @@ fn mixed_tuple_public_cases_at(name: &str, expressions: &[(&str, &str)], q: &str
             let text = std::fs::read_to_string(dir.join(name))
                 .unwrap()
                 .replace(
-                    &old.vocabularies["Build"].digest,
-                    &new.vocabularies["Build"].digest,
+                    &old.vocabularies()["Build"].digest,
+                    &new.vocabularies()["Build"].digest,
                 )
                 .replace(r#""value":"0""#, &format!(r#""value":["0",{q}]"#))
                 .replace(r#""value":"1""#, &format!(r#""value":["1",{q}]"#));

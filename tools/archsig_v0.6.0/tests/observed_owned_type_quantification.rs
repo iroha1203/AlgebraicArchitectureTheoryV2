@@ -170,7 +170,7 @@ fn fixture(
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["T"].digest;
+    let digest = &checked.vocabularies()["T"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";reading Inspect {{use vocabulary T version "1" digest "{digest}";{script}}}"#
     );

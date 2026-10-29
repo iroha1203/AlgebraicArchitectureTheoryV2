@@ -37,8 +37,8 @@ fn field(name: &str, ty: &str) -> String {
 #[test]
 fn counter_fixed_digest_meaning_and_locations() {
     let d = check(COUNTER);
-    assert_eq!(d.vocabularies["Counter"].digest, DIGEST);
-    let state = &d.declarations["Counter.State"];
+    assert_eq!(d.vocabularies()["Counter"].digest, DIGEST);
+    let state = &d.declarations()["Counter.State"];
     assert_eq!(state.meaning, "実装中の一つのカウンタ状態。");
     assert_eq!(
         state.signature.field("count").unwrap().meaning,
@@ -53,23 +53,23 @@ fn counter_fixed_digest_meaning_and_locations() {
         }
     );
     assert_eq!(
-        d.inputs[0].model_digest,
-        check(&COUNTER.replace('\n', " ")).inputs[0].model_digest
+        d.inputs()[0].model_digest,
+        check(&COUNTER.replace('\n', " ")).inputs()[0].model_digest
     );
 }
 #[test]
 fn unused_library_and_dependency_are_retained() {
     let d = check(LIBRARY);
-    assert_eq!(d.vocabularies.len(), 2);
-    assert_eq!(d.declarations.len(), 2);
-    assert_eq!(d.vocabularies["Counter"].digest, DIGEST);
+    assert_eq!(d.vocabularies().len(), 2);
+    assert_eq!(d.declarations().len(), 2);
+    assert_eq!(d.vocabularies()["Counter"].digest, DIGEST);
     assert_eq!(
-        d.vocabularies["Extras"].dependencies[0].namespace,
+        d.vocabularies()["Extras"].dependencies[0].namespace,
         "Counter"
     );
     assert_ne!(
-        d.inputs[0].model_digest,
-        check(COUNTER).inputs[0].model_digest
+        d.inputs()[0].model_digest,
+        check(COUNTER).inputs()[0].model_digest
     );
 }
 #[test]
@@ -197,7 +197,7 @@ fn type_and_alignment_references_keep_pointer_and_dependency() {
         &field("next", r#"["Owned","N.State","owner"]"#),
     );
     let d = check(&document(&format!("{root},{node}")));
-    let s = &d.declarations["N.State"];
+    let s = &d.declarations()["N.State"];
     assert_eq!(s.dependencies, vec!["N.Root", "N.State"]);
     assert_eq!(
         s.references[0].0,
@@ -247,11 +247,11 @@ fn data_self_recursion_ground_values_and_variance() {
 fn reservations_structure_is_checked() {
     let d = check(include_str!("fixtures/reservations.atoms.json"));
     assert_eq!(
-        d.vocabularies["Reservations"].digest,
+        d.vocabularies()["Reservations"].digest,
         "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff"
     );
     let PrimitiveSignature::Correspondence { maps, implicit, .. } =
-        &d.declarations["Reservations.Migration"].signature
+        &d.declarations()["Reservations.Migration"].signature
     else {
         panic!()
     };
@@ -261,8 +261,9 @@ fn reservations_structure_is_checked() {
 #[test]
 fn meaning_changes_vocabulary_digest() {
     assert_ne!(
-        check(COUNTER).vocabularies["Counter"].digest,
-        check(&COUNTER.replace("保持する件数。", "保持する数量。")).vocabularies["Counter"].digest
+        check(COUNTER).vocabularies()["Counter"].digest,
+        check(&COUNTER.replace("保持する件数。", "保持する数量。")).vocabularies()["Counter"]
+            .digest
     );
 }
 
@@ -276,7 +277,7 @@ fn split_files_preserve_vocabulary_digest_and_original_identity() {
             ("semantics", Json::str(definition::SEMANTICS)),
             (
                 "vocabularies",
-                Json::Arr(vec![d.vocabularies[name].manifest.clone()]),
+                Json::Arr(vec![d.vocabularies()[name].manifest.clone()]),
             ),
         ])
         .canonical()
@@ -288,13 +289,13 @@ fn split_files_preserve_vocabulary_digest_and_original_identity() {
         ("definition1", counter.as_bytes()),
     ])
     .unwrap();
-    assert_eq!(split.vocabularies["Counter"].digest, DIGEST);
+    assert_eq!(split.vocabularies()["Counter"].digest, DIGEST);
     assert_eq!(
-        split.vocabularies["Extras"].digest,
-        d.vocabularies["Extras"].digest
+        split.vocabularies()["Extras"].digest,
+        d.vocabularies()["Extras"].digest
     );
     assert_eq!(
-        split.declarations["Counter.State"].location,
+        split.declarations()["Counter.State"].location,
         Location::Definition {
             input: "definition1".into(),
             pointer: "/vocabularies/0/declarations/0".into(),
@@ -349,10 +350,13 @@ fn declaration_set_order_normalizes_and_field_order_is_retained() {
     let first = check(&document(&format!("{a},{b}")));
     let second = check(&document(&format!("{b},{a}")));
     assert_eq!(
-        first.vocabularies["N"].digest,
-        second.vocabularies["N"].digest
+        first.vocabularies()["N"].digest,
+        second.vocabularies()["N"].digest
     );
-    assert_eq!(first.inputs[0].model_digest, second.inputs[0].model_digest);
+    assert_eq!(
+        first.inputs()[0].model_digest,
+        second.inputs()[0].model_digest
+    );
     let swapped = entity(
         "A",
         "",
@@ -363,15 +367,15 @@ fn declaration_set_order_normalizes_and_field_order_is_retained() {
         ),
     );
     assert_ne!(
-        first.vocabularies["N"].digest,
-        check(&document(&format!("{swapped},{b}"))).vocabularies["N"].digest
+        first.vocabularies()["N"].digest,
+        check(&document(&format!("{swapped},{b}"))).vocabularies()["N"].digest
     );
 }
 #[test]
 fn empty_declaration_vocabulary_is_accepted() {
     let d = check(&document(""));
-    assert!(d.declarations.is_empty());
-    assert_eq!(d.vocabularies.len(), 1);
+    assert!(d.declarations().is_empty());
+    assert_eq!(d.vocabularies().len(), 1);
 }
 #[test]
 fn two_namespace_cycle_precedes_invalid_digest() {
@@ -398,7 +402,7 @@ fn vocabulary_wrapper_order_normalizes_model_digest() {
             "vocabularies",
             Json::Arr(
                 original
-                    .vocabularies
+                    .vocabularies()
                     .values()
                     .rev()
                     .map(|v| v.manifest.clone())
@@ -409,12 +413,12 @@ fn vocabulary_wrapper_order_normalizes_model_digest() {
     .canonical();
     let reversed = check(&reverse);
     assert_eq!(
-        original.inputs[0].model_digest,
-        reversed.inputs[0].model_digest
+        original.inputs()[0].model_digest,
+        reversed.inputs()[0].model_digest
     );
     assert_eq!(
-        original.vocabularies["Counter"].digest,
-        reversed.vocabularies["Counter"].digest
+        original.vocabularies()["Counter"].digest,
+        reversed.vocabularies()["Counter"].digest
     );
 }
 
@@ -427,7 +431,7 @@ fn fully_qualified_definition_name_is_not_shadowed_by_local_constructor() {
     ));
     let d = check(&s);
     assert_eq!(
-        d.declarations["N.State"]
+        d.declarations()["N.State"]
             .signature
             .field("value")
             .unwrap()
@@ -481,7 +485,7 @@ fn correspondence_requires_all_target_field_positions() {
     );
     let complete = check(&correspondence_with_target_extra(true));
     let PrimitiveSignature::Correspondence { alignments, .. } =
-        &complete.declarations["N.M"].signature
+        &complete.declarations()["N.M"].signature
     else {
         panic!()
     };
@@ -629,4 +633,39 @@ fn native_type_validation_keeps_nested_owned_parameter_position() {
     let missing = d.check_primitive_type(&ty, &at, &[]).unwrap_err();
     assert_eq!(missing.code, Code::Reference);
     assert_eq!(missing.location, e.location);
+}
+
+#[test]
+fn readonly_tables_and_detached_copies_preserve_checked_definitions() {
+    let checked = check(COUNTER);
+    let original = checked.clone();
+    let mut declarations = checked.declarations().clone();
+    declarations
+        .get_mut("Counter.State")
+        .unwrap()
+        .meaning
+        .clear();
+    let mut vocabularies = checked.vocabularies().clone();
+    vocabularies
+        .get_mut("Counter")
+        .unwrap()
+        .dependencies
+        .clear();
+    vocabularies.clear();
+    let mut inputs = checked.inputs().to_vec();
+    inputs[0].model_digest = None;
+    assert_eq!(checked, original);
+    assert_eq!(
+        checked.declarations()["Counter.State"].meaning,
+        "実装中の一つのカウンタ状態。"
+    );
+    let body = archsig::law::check_definition_term_body(
+        &checked,
+        "Counter",
+        &[],
+        &archsig::types::Type::Bool,
+        "true",
+    )
+    .unwrap();
+    assert_eq!(body.types[body.root], Some(archsig::types::Type::Bool));
 }

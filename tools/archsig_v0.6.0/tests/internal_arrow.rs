@@ -15,7 +15,7 @@ const L: &str = include_str!("fixtures/internal-arrow.law");
 const A: &str = include_str!("fixtures/internal-arrow.archmap.json");
 fn inputs(map: &str) -> CheckedInputs {
     let definitions = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &definitions.vocabularies["Flow"].digest;
+    let digest = &definitions.vocabularies()["Flow"].digest;
     check_inputs(
         InputSources::from_bytes(
             vec![D.to_vec()],

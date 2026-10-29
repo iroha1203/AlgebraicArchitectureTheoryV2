@@ -16,7 +16,7 @@ fn quiet() -> Control {
 }
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     InputSources::from_bytes(
         vec![maps::DEFINITIONS.as_bytes().to_vec()],
         maps::law(digest).into_bytes(),
@@ -410,7 +410,7 @@ fn finite_map_unbound_law_parameter_has_all_rows_and_real_counterexample() {
 fn owned_sources(unknown: bool) -> InputSources {
     let definitions = maps::OWNED_DEFINITIONS.as_bytes();
     let d = check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Reservations"].digest;
+    let digest = &d.vocabularies()["Reservations"].digest;
     InputSources::from_bytes(
         vec![definitions.to_vec()],
         maps::owned_law(digest).into_bytes(),

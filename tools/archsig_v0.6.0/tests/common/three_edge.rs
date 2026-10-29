@@ -3,7 +3,7 @@ use archsig::{definition, observed::input::InputSources};
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Coordinates","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Coordinates.System","meaning":"点と辺の所属先。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Coordinates.Point","meaning":"整数座標を持つ点。","parameters":[{"name":"owner","type":["Ref","Coordinates.System"],"meaning":"点の所属先。"}],"fields":[{"name":"coordinate","type":"Z","meaning":"点の座標。"}],"alignments":[]},{"kind":"arrow","name":"Coordinates.Shift","meaning":"二点間の指定変位。","parameters":[{"name":"owner","type":["Ref","Coordinates.System"],"meaning":"辺の所属先。"},{"name":"from","type":["Owned","Coordinates.Point","owner"],"meaning":"始点。"},{"name":"to","type":["Owned","Coordinates.Point","owner"],"meaning":"終点。"}],"fields":[{"name":"shift","type":"Z","meaning":"指定された変位。"}],"alignments":[]}]}]}"#;
 pub fn input(gamma: Option<i64>) -> InputSources {
     let definitions = definition::check_definitions(&[("d",D.as_bytes())]).unwrap();
-    let digest = &definitions.vocabularies["Coordinates"].digest;
+    let digest = &definitions.vocabularies()["Coordinates"].digest;
     let mut subjects = vec![r#"{"id":"root","type":"Coordinates.System","origin":"model"}"#.to_owned()];
     let mut atoms = vec![];
     let mut atom = |subject: &str, field: &str, value: String| atoms.push(format!(r#"{{"id":"{subject}-{field}","subject":"{subject}","field":"Coordinates.{field}","value":{value},"origin":"model"}}"#));

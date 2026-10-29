@@ -7,7 +7,7 @@ use archsig::issue::{Code, Issue};
 use common::*;
 
 fn binding(d: &CheckedDefinitions, ns: &str) -> String {
-    let v = &d.vocabularies[ns];
+    let v = &d.vocabularies()[ns];
     format!(
         r#"{{"namespace":"{ns}","version":"{}","digest":"{}"}}"#,
         v.version, v.digest
@@ -153,7 +153,7 @@ fn extra_bindings_are_checked_and_unused_observations_are_accepted() {
             "/vocabularies/0/version",
         ),
         (
-            d.vocabularies["Extras"].digest.clone(),
+            d.vocabularies()["Extras"].digest.clone(),
             format!("sha256:{}", "0".repeat(64)),
             Code::VocabularyMismatch,
             "/vocabularies/0/digest",

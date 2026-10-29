@@ -15,7 +15,7 @@ fn quiet() -> Control {
 }
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", terms::DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Terms"].digest;
+    let digest = &d.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![terms::DEFINITIONS.as_bytes().to_vec()],
         terms::law(digest).into_bytes(),
@@ -342,7 +342,7 @@ fn closed_term_provenance_pair_preserves_results_and_the_current_source() {
 fn unselected_term_captures_and_invalid_observed_bodies_are_rejected_before_evaluation() {
     let good = sources("r1");
     let d = check_definitions(&[("definition0", terms::DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Terms"].digest;
+    let digest = &d.vocabularies()["Terms"].digest;
     for body in ["s.h", "seed()"] {
         let script = format!(
             "{} view bad(s:Sample):Term<(Z)->Z> = fn(x:Z)=>{body};",
@@ -423,7 +423,7 @@ fn term_branch_sources(script: &str, boxed: bool) -> InputSources {
         );
     }
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Terms"].digest;
+    let digest = &checked.vocabularies()["Terms"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Terms {{ use vocabulary Terms version \"1\" digest \"{digest}\"; {script} }}"
     );

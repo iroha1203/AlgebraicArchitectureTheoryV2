@@ -9,14 +9,14 @@ use common::*;
 #[test]
 fn normative_examples_pass_and_bind_their_vocabulary() {
     let r = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    assert_eq!(r.definitions.vocabularies.len(), 1);
+    assert_eq!(r.definitions.vocabularies().len(), 1);
     assert_eq!(
-        r.definitions.vocabularies["Reservations"].digest,
+        r.definitions.vocabularies()["Reservations"].digest,
         "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff"
     );
     let e = ok(ENGINE_DEFINITION, ENGINE);
     assert_eq!(
-        e.definitions.vocabularies["Engine"].digest,
+        e.definitions.vocabularies()["Engine"].digest,
         "sha256:5c45e2e06c365a98e8d85aa0046ef16d0da903644cecc7f3e3a4dadb87a84d4c"
     );
     // 構造再帰の view と、非アフィンな全整数量化の law を受理する。
@@ -119,10 +119,10 @@ fn every_construct_type_checks() {
             .contains(&"Base.Item".to_owned())
     );
     // 明記した align は manifest に入り、暗黙の同名対応は入らない。
-    let port = &c.definitions.vocabularies["Port"];
+    let port = &c.definitions.vocabularies()["Port"];
     let text = port.manifest.canonical();
     assert!(text.contains(r#""source":"Port.Acc.bal","target":"Port.Ledger.total""#));
-    let base = &c.definitions.vocabularies["Base"];
+    let base = &c.definitions.vocabularies()["Base"];
     assert!(base.manifest.canonical().contains(r#""alignments":[]"#));
 }
 
@@ -195,7 +195,7 @@ use R as target; view u(r: R.R): Z = target.v(r);
 }
 "#,
     );
-    assert!(c.definitions.declarations.contains_key("R.R"));
+    assert!(c.definitions.declarations().contains_key("R.R"));
     assert!(c.infos.iter().any(|i| i.name == "count.u"));
     // 移設した arrow の owner・from・to は定義に保持する。
     ok(

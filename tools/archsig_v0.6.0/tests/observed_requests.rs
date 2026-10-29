@@ -16,7 +16,7 @@ use archsig::{
 
 fn inputs() -> (CheckedLaw, CheckedArchMap) {
     let definitions = common::definitions_ok(&[common::COUNTER_DEFINITION]);
-    let digest = &definitions.vocabularies["Counter"].digest;
+    let digest = &definitions.vocabularies()["Counter"].digest;
     let law = format!(
         r#"{}reading R {{
       use vocabulary Counter version "1" digest "{digest}";
@@ -289,7 +289,7 @@ fn dependent_inputs(known_owner: bool) -> (CheckedLaw, CheckedArchMap) {
         common::vocabulary_json("W", &format!("[{root},{item}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = format!(
         r#"{}reading R {{ use vocabulary W version "1" digest "{digest}";
       view belongs(a: Root, b: Item[a]): Bool = true;
@@ -400,7 +400,7 @@ fn data_constructor_projection_preserves_alternative_types_and_conditions() {
         common::vocabulary_json("W", &format!("[{data}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = format!(
         r#"{}reading R {{ use vocabulary W version "1" digest "{digest}";
       view choice(): Choice = Number(1);

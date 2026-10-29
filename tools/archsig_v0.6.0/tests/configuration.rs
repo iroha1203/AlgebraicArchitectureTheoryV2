@@ -13,7 +13,7 @@ const L: &str = include_str!("fixtures/configuration.law");
 const A: &str = include_str!("fixtures/configuration.archmap.json");
 fn sources(map: &str) -> InputSources {
     let checked = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &checked.vocabularies["Mesh"].digest;
+    let digest = &checked.vocabularies()["Mesh"].digest;
     InputSources::from_bytes(
         vec![D.to_vec()],
         L.replace("@MESH_DIGEST@", digest).into_bytes(),
@@ -365,7 +365,7 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
     );
     let definitions =
         archsig::definition::check_definitions(&[("definition0", CD), ("definition1", D)]).unwrap();
-    let mesh_digest = &definitions.vocabularies["Mesh"].digest;
+    let mesh_digest = &definitions.vocabularies()["Mesh"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Select {{use vocabulary Mesh version \"1\" digest \"{mesh_digest}\";}}"
     );
@@ -378,14 +378,14 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
         construct(&isolated, "Select", "v", "s", &mut Control::unlimited()),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
-    let counter_digest = &definitions.vocabularies["Counter"].digest;
+    let counter_digest = &definitions.vocabularies()["Counter"].digest;
     let mesh=std::str::from_utf8(D).unwrap().replace("\"dependencies\": []",&format!("\"dependencies\": [{{\"namespace\":\"Counter\",\"version\":\"1\",\"digest\":\"{counter_digest}\"}}]"));
     let definitions = archsig::definition::check_definitions(&[
         ("definition0", CD),
         ("definition1", mesh.as_bytes()),
     ])
     .unwrap();
-    let digest = &definitions.vocabularies["Mesh"].digest;
+    let digest = &definitions.vocabularies()["Mesh"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Select {{use vocabulary Mesh version \"1\" digest \"{digest}\";}}"
     );

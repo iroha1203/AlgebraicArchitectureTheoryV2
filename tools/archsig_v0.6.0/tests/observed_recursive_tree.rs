@@ -17,7 +17,7 @@ fn quiet() -> Control {
 }
 fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Trees"].digest;
+    let digest = &checked.vocabularies()["Trees"].digest;
     InputSources::from_bytes(
         vec![tree::DEFINITIONS.as_bytes().to_vec()],
         tree::law(digest, extra).into_bytes(),

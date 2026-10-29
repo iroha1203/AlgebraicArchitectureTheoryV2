@@ -641,7 +641,7 @@ mod tests {
         let law = crate::law::CheckedLaw {
             bytes_digest: String::new(), model_digest: String::new(), declarations: BTreeMap::new(),
             exprs: vec![], expr_types: vec![], quantifier_types: vec![], infos: vec![],
-            definitions: crate::definition::CheckedDefinitions::default(),
+            definitions: crate::definition::CheckedDefinitions::empty(),
         };
         let rename=Renaming {law: &law, fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
             (("v".into(),a.into(),None),Fact{snapshot:"v".into(),subject:b.into(),field:None,atom:None})).collect()};

@@ -112,7 +112,7 @@ fn document(snapshots: Vec<J>) -> String {
             J::Arr(vec![J::obj([
                 ("namespace", J::str("Pattern")),
                 ("version", J::str("1")),
-                ("digest", J::str(&defs.vocabularies["Pattern"].digest)),
+                ("digest", J::str(&defs.vocabularies()["Pattern"].digest)),
             ])]),
         ),
         ("sources", J::Arr(vec![])),
@@ -298,7 +298,7 @@ fn cli_accepts_delta_and_returns_the_same_values_and_missing_as_full_input() {
     let defs = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{}\";view quantity(c:Part):Z=c.quantity;law required positive(c:Part):c.quantity>=0;}}",
-        defs.vocabularies["Pattern"].digest
+        defs.vocabularies()["Pattern"].digest
     );
     for (tag, map) in [
         ("delta", document(chain())),

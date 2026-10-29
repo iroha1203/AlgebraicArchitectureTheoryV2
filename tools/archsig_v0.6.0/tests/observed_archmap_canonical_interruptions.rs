@@ -28,7 +28,7 @@ fn input(fields: &[(&str, &str)], extra: &str, atoms: &[(&str, &str)]) -> InputS
         common::vocabulary_json("V", &format!("[{declarations}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["V"].digest;
+    let digest = &definitions.vocabularies()["V"].digest;
     let atoms = atoms.iter().enumerate().map(|(i, (field, value))| format!(r#"{{"id":"a{i}","subject":"root","field":"V.State.{field}","origin":"model","value":{value}}}"#)).collect::<Vec<_>>().join(",");
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"test","locations":[],"note":"canonical test"}}],"snapshots":[{{"id":"s","origin":"model","subjects":[{{"id":"root","type":"V.State","origin":"model"}}],"atoms":[{atoms}]}}]}}"#

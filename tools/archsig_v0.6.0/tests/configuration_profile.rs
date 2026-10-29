@@ -15,7 +15,7 @@ const L: &str = include_str!("fixtures/configuration-profile.law");
 const A: &str = include_str!("fixtures/configuration-profile.archmap.json");
 fn bundle(d: &[u8], l: &str, a: &str, namespace: &str, placeholder: &str) -> CheckedInputs {
     let definitions = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &definitions.vocabularies[namespace].digest;
+    let digest = &definitions.vocabularies()[namespace].digest;
     check_inputs(
         InputSources::from_bytes(
             vec![d.to_vec()],

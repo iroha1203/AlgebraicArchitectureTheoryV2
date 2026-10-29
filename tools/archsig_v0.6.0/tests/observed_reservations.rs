@@ -481,7 +481,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
             "省略guardに架空の元出現を作らない"
         );
     }
-    let free = checked.definitions().declarations["Reservations.State"]
+    let free = checked.definitions().declarations()["Reservations.State"]
         .location
         .clone();
     let archsig::issue::Location::Definition { input, pointer, .. } = free else {
@@ -489,7 +489,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
     };
     assert_eq!(input, "definition0");
     assert_eq!(pointer, "/vocabularies/0/declarations/2");
-    let (_, fields) = checked.definitions().declarations["Reservations.State"]
+    let (_, fields) = checked.definitions().declarations()["Reservations.State"]
         .signature
         .record_fields()
         .unwrap();

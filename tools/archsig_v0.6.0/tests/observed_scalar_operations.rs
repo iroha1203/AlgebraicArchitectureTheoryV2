@@ -135,7 +135,7 @@ fn fixture(x: Option<&str>, y: Option<&str>, p: Option<bool>, q: Option<bool>) -
       "fields":[{"name":"x","type":"Z","meaning":"第一整数。"},{"name":"y","type":"Z","meaning":"第二整数。"},
       {"name":"p","type":"Bool","meaning":"第一条件。"},{"name":"q","type":"Bool","meaning":"第二条件。"}],"alignments":[]}]}]}"#;
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Measure"].digest;
+    let digest = &checked.vocabularies()["Measure"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{

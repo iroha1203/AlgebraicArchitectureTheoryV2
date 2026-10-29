@@ -16,8 +16,8 @@ pub fn input(script: &str, number: &str, omitted: &[&str], revision: &str) -> In
         .replacen(marker, &format!("{marker}{extra}"), 1)
         .into_bytes();
     let checked = check_definitions(&[("definition0", &definitions)]).unwrap();
-    let old_digest = &old.vocabularies["Paths"].digest;
-    let new_digest = &checked.vocabularies["Paths"].digest;
+    let old_digest = &old.vocabularies()["Paths"].digest;
+    let new_digest = &checked.vocabularies()["Paths"].digest;
     let law = std::str::from_utf8(original.law().bytes())
         .unwrap()
         .replace(old_digest, new_digest);

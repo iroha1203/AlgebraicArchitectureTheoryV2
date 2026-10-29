@@ -492,7 +492,7 @@ fn fixture(script: &str, p: u32, g: u32, slots: &[Slot], peer: bool, moved: bool
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["FiniteFields"].digest;
+    let digest = &checked.vocabularies()["FiniteFields"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary FiniteFields version "1" digest "{digest}"; {script} }}"#
     );

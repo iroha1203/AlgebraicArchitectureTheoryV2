@@ -116,7 +116,7 @@ fn fixture(gate: Option<bool>, body: Option<bool>) -> InputSources {
       "parameters":[],"fields":[{"name":"gate","type":"Bool","meaning":"適用の条件。"},
       {"name":"payload","type":"Bool","meaning":"検査する値。"}],"alignments":[]}]}]}"#;
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Signal"].digest;
+    let digest = &checked.vocabularies()["Signal"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Inspect {{

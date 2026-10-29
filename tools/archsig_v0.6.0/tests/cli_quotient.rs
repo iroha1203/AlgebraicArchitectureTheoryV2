@@ -7,7 +7,7 @@ use cli::*;
 fn input(name: &str) -> std::path::PathBuf {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの条件。","parameters":[],"fields":[{"name":"x","type":"Bool","meaning":"第一条件。"},{"name":"y","type":"Bool","meaning":"第二条件。"}],"alignments":[]}]}]}"#;
     let checked = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Pair"].digest;
+    let digest = &checked.vocabularies()["Pair"].digest;
     let a=r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Pair","version":"1","digest":"@D@"}],"sources":[],"origins":[{"id":"o","mode":"specification","method":"有限商の独立試験。","locations":[],"note":"候補と解を分ける。"}],"snapshots":[{"id":"v","origin":"o","subjects":[{"id":"s","type":"Pair.State","origin":"o"}],"atoms":[{"id":"x","subject":"s","field":"Pair.State.x","value":false,"origin":"o"},{"id":"y","subject":"s","field":"Pair.State.y","value":false,"origin":"o"}]}]}"#.replace("@D@",digest);
     let l = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Pair{{use vocabulary Pair version \"1\" digest \"{digest}\";change choose(s:State,a:Bool,b:Bool)=s with{{x=a,y=b}};law required valid(s:State):s.x;law optional empty(s:State):false;view last(s:State):Bool=s.y;}}"

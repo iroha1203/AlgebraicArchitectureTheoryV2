@@ -12,7 +12,7 @@ fn input() -> std::sync::Arc<observed::input::CheckedInputs> {
     );
     let checked =
         definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Pattern"].digest;
+    let digest = &checked.vocabularies()["Pattern"].digest;
     let map=r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Pattern","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"有限変更の試験。","locations":[],"note":"公開有限変更の正常系。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"root","type":"Pattern.Root","origin":"model"},{"id":"p","type":"Pattern.Part","origin":"model"},{"id":"q","type":"Pattern.Part","origin":"model"}],"atoms":[{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"model"},{"id":"fq","subject":"q","field":"Pattern.Part.flag","value":false,"origin":"model"}]}]}"#.replace("@DIGEST@",digest);
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";change choose(c:Part,b:Bool)=c with {{flag=b}};law required valid(c:Part):c.flag;view flag(c:Part):Bool=c.flag;}}"
@@ -432,8 +432,8 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
     let input = input();
     let definitions=String::from_utf8(input.sources().definitions()[0].bytes().to_vec()).unwrap().replace(r#""fields":[{"name":"flag","type":"Bool","meaning":"条件。"}]"#,r#""fields":[{"name":"flag","type":"Bool","meaning":"条件。"},{"name":"link","type":["Ref","Pattern.Part"],"meaning":"接続。"}]"#);
     let defs = definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let old = &input.definitions().vocabularies["Pattern"].digest;
-    let new = &defs.vocabularies["Pattern"].digest;
+    let old = &input.definitions().vocabularies()["Pattern"].digest;
+    let new = &defs.vocabularies()["Pattern"].digest;
     assert_ne!(old, new);
     let map=String::from_utf8(input.sources().archmap().bytes().to_vec()).unwrap().replace(old,new).replace(r#""atoms":["#,r#""atoms":[{"id":"lp","subject":"p","field":"Pattern.Part.link","value":["v","q"],"origin":"model"},{"id":"lq","subject":"q","field":"Pattern.Part.link","value":["v","p"],"origin":"model"},"#);
     let law=String::from_utf8(input.sources().law().bytes().to_vec()).unwrap().replace(old,new).replace("change choose(c:Part,b:Bool)=c with {flag=b};","change choose(c:Part)=let ignored=then(identity(c),identity(c.link)) in c with {flag=true};");

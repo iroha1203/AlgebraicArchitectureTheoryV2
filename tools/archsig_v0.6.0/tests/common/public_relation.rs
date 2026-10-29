@@ -119,7 +119,7 @@ fn with_missing_guard(sources: InputSources) -> InputSources {
         sources.definitions()[0].bytes(),
     )])
     .unwrap();
-    let old = &original.vocabularies["Paths"].digest;
+    let old = &original.vocabularies()["Paths"].digest;
     let mut definitions =
         fixture_json(&fixture_archsig::json::parse(sources.definitions()[0].bytes()).unwrap());
     let Json::Arr(vocabularies) = field_mut(&mut definitions, "vocabularies") else {
@@ -146,7 +146,7 @@ fn with_missing_guard(sources: InputSources) -> InputSources {
     let definitions = definitions.canonical().into_bytes();
     let checked =
         fixture_archsig::definition::check_definitions(&[("definition0", &definitions)]).unwrap();
-    let digest = &checked.vocabularies["Paths"].digest;
+    let digest = &checked.vocabularies()["Paths"].digest;
     let mut map = fixture_json(&fixture_archsig::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
         panic!()

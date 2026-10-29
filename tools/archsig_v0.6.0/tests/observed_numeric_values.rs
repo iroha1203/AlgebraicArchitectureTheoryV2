@@ -98,7 +98,7 @@ fn fixture(omitted: &[&str], body: &str) -> InputSources {
       {"name":"t","type":["Tuple","Z","Q",["Tuple",["Fp","5"],"Z"]],"meaning":"混合した数値Tuple。"},
       {"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Numeric"].digest;
+    let digest = &checked.vocabularies()["Numeric"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{

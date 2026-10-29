@@ -11,7 +11,7 @@ fn digests(src: &str) -> (String, String, Vec<String>) {
         c.bytes_digest,
         c.model_digest,
         c.definitions
-            .vocabularies
+            .vocabularies()
             .values()
             .map(|v| v.digest.clone())
             .collect(),
@@ -81,7 +81,7 @@ fn canonical_bytes_and_digest_are_fixed_for_unicode_and_control_characters() {
 #[test]
 fn manifest_has_every_field_in_canonical_form() {
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let v = &c.definitions.vocabularies["Reservations"];
+    let v = &c.definitions.vocabularies()["Reservations"];
     assert_eq!(v.namespace, "Reservations");
     let text = v.manifest.canonical();
     assert_eq!(text, include_str!("fixtures/reservations.manifest.json"));
@@ -101,16 +101,16 @@ fn definition_meaning_and_version_change_vocabulary_identity_and_reject_old_impo
     assert_ne!(changed, COUNTER_DEFINITION);
     let c = definitions_ok(&[&changed]);
     assert_ne!(
-        c.vocabularies["Counter"].digest,
-        base.vocabularies["Counter"].digest
+        c.vocabularies()["Counter"].digest,
+        base.vocabularies()["Counter"].digest
     );
     assert_eq!(err(&changed, COUNTER).code, Code::VocabularyMismatch);
     let version = COUNTER_DEFINITION.replace("\"version\": \"1\"", "\"version\": \"2\"");
     assert_ne!(version, COUNTER_DEFINITION);
     let c = definitions_ok(&[&version]);
     assert_ne!(
-        c.vocabularies["Counter"].digest,
-        base.vocabularies["Counter"].digest
+        c.vocabularies()["Counter"].digest,
+        base.vocabularies()["Counter"].digest
     );
     assert_eq!(err(&version, COUNTER).code, Code::VocabularyMismatch);
 }

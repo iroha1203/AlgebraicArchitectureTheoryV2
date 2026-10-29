@@ -123,7 +123,7 @@ fn term_input(body: &str) -> (archsig::definition::CheckedDefinitions, String) {
         common::vocabulary_json("V", &format!("[{declaration}]"), "[]")
     ));
     let definitions = check_definitions(&[("definition0", source.as_bytes())]).unwrap();
-    let digest = &definitions.vocabularies["V"].digest;
+    let digest = &definitions.vocabularies()["V"].digest;
     let body_json = archsig::canonical::Json::str(body).canonical();
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"test","locations":[],"note":"Term input"}}],"snapshots":[{{"id":"s","origin":"model","subjects":[{{"id":"root","type":"V.State","origin":"model"}}],"atoms":[{{"id":"f","subject":"root","field":"V.State.function","origin":"model","value":{{"params":["x"],"body":{body_json}}}}}]}}]}}"#

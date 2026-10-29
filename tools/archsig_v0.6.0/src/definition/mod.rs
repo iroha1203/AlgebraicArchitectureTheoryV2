@@ -68,7 +68,7 @@ fn check_definitions_inner<E: InputError>(
     files: &[(&str, &[u8])],
     control: &mut Control,
 ) -> Result<CheckedDefinitions, (E, Vec<DefinitionIdentity>)> {
-    let mut checked = CheckedDefinitions::default();
+    let mut checked = CheckedDefinitions::empty();
     let result = (|| -> Result<(), E> {
         for (input, bytes) in files {
             E::checkpoint(control, Checkpoint::DefinitionCanonical)?;

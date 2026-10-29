@@ -16,7 +16,7 @@ pub fn with_map(body: &str, map: &str) -> Arc<CheckedInputs> {
     let definition=base::D.replace(r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,r#"{"name":"quantity","type":["Fp","2"],"meaning":"数量。"},{"name":"other","type":["Fp","2"],"meaning":"第二成分。"},{"name":"third","type":["Fp","3"],"meaning":"異なる法。"}"#);
     let d =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Pattern"].digest;
+    let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";{body}}}"
     );

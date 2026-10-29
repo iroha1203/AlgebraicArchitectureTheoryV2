@@ -10,7 +10,7 @@ use cli::*;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"整数対。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, change: &str) -> std::path::PathBuf {
     let d = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Pair"].digest;
+    let digest = &d.vocabularies()["Pair"].digest;
     let a=r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Pair","version":"1","digest":"@D@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"整数対の独立試験。","locations":[],"note":"全整数の修復。"}],"snapshots":[{"id":"pair","origin":"model","subjects":[{"id":"s","type":"Pair.State","origin":"model"}],"atoms":[{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}]}]}"#.replace("@D@",digest);
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{use vocabulary Pair version \"1\" digest \"{digest}\"; {change} law required total(s:State):s.x+s.y=1;law optional pinned(s:State):s.x+s.y=1 and s.x=0;view first(s:State):Z=s.x;}}"
@@ -683,7 +683,7 @@ fn integer_local_instances_have_independent_parameter_axes() {
     let dir = workdir("integer-local");
     let definitions = local_fixture::D;
     let d = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Pattern"].digest;
+    let digest = &d.vocabularies()["Pattern"].digest;
     let map=local_fixture::A.replace("@DIGEST@",digest)
         .replace(r#"{"id":"p","type":"Pattern.Part","origin":"model"}"#,r#"{"id":"p","type":"Pattern.Part","origin":"model"},{"id":"q","type":"Pattern.Part","origin":"model"}"#)
         .replace(r#"{"id":"quantity-p","subject":"p","field":"Pattern.Part.quantity","value":"2","origin":"model"}"#,r#"{"id":"quantity-p","subject":"p","field":"Pattern.Part.quantity","value":"2","origin":"model"},{"id":"owner-q","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},{"id":"quantity-q","subject":"q","field":"Pattern.Part.quantity","value":"5","origin":"model"}"#);

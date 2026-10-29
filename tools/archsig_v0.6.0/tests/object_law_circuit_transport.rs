@@ -23,8 +23,8 @@ fn quiet() -> Control {
 fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -37,7 +37,7 @@ fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let expand = |s: &str| {
         s.replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
-            .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
             .into_bytes()
     };
     Arc::new(

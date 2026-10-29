@@ -9,7 +9,7 @@ mod common;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
     let definitions = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
-    let digest = &definitions.vocabularies["Fixed"].digest;
+    let digest = &definitions.vocabularies()["Fixed"].digest;
     let atoms=value.map(|v|format!(r#"{{"id":"f","subject":"s","field":"Fixed.State.flag","value":{v},"origin":"model"}}"#)).unwrap_or_default();
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Fixed","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"固定状態の独立試験。","locations":[],"note":"観測有無を分ける試験モデル。"}}],"snapshots":[{{"id":"fixed","origin":"model","subjects":[{{"id":"s","type":"Fixed.State","origin":"model"}}],"atoms":[{atoms}]}}]}}"#
@@ -220,7 +220,7 @@ fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
         for explicit in [false,true] {
         for (predicate, truth) in [("z=z", true), ("z=w", false), ("(let a=z+w in a=w+z) and s.free=s.free", true)] {
             let dir=if ty=="Q" {rational_compare_input("universal-fixed-q",true)} else {diagnostic_compare_input("universal-fixed-z",true,true)};
-            let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies["Reservations"].digest.clone();
+            let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies()["Reservations"].digest.clone();
             let local=if explicit {"local here(t:State) reads t.free;"} else {""};
             let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; view two():{ty}=2; {local} law required valid(z:{ty},s:State,w:{ty}):{predicate}; }}");
             std::fs::write(dir.join("l.law"),law).unwrap();
@@ -423,8 +423,8 @@ fn implicit_context_exposes_the_primitive_read_as_well_as_the_equation_value() {
     let original = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
     let definitions = D.replace("\"Bool\"", "\"Z\"");
     let checked = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
-    let old = &original.vocabularies["Fixed"].digest;
-    let new = &checked.vocabularies["Fixed"].digest;
+    let old = &original.vocabularies()["Fixed"].digest;
+    let new = &checked.vocabularies()["Fixed"].digest;
     std::fs::write(dir.join("d.json"), definitions).unwrap();
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
@@ -470,7 +470,7 @@ fn localize_checks_answer_bound_owners_before_using_the_values() {
         common::vocabulary_json("W", &format!("[{root},{item}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = format!(
         "{}reading R {{use vocabulary W version \"1\" digest \"{digest}\";view echo(a:Root):Root=a;law optional present(a:Root,b:Item[a]):true=true;}}",
         common::HEADER
@@ -1457,11 +1457,11 @@ fn multiple_read_input(
         r#""meaning":"観測値。"},{"name":"other","type":"Bool","meaning":"別の観測値。"}"#,
     );
     let definitions = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let digest = &definitions.vocabularies["Fixed"].digest;
+    let digest = &definitions.vocabularies()["Fixed"].digest;
     let dir = input(name, Some(left));
     std::fs::write(dir.join("d.json"), &definition).unwrap();
     let old = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
-    let old_digest = &old.vocabularies["Fixed"].digest;
+    let old_digest = &old.vocabularies()["Fixed"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(old_digest, digest);
@@ -2258,7 +2258,7 @@ fn tuple_intersections_retain_typed_component_projections() {
             std::fs::write(dir.join("d.json"), &definition).unwrap();
             for file in ["a.json", "l.law"] {
                 let text = std::fs::read_to_string(dir.join(file)).unwrap()
-                    .replace(&old.vocabularies["Fixed"].digest, &new.vocabularies["Fixed"].digest)
+                    .replace(&old.vocabularies()["Fixed"].digest, &new.vocabularies()["Fixed"].digest)
                     .replace("law required second(s:State):s.other=true;", "")
                     .replace(r#""atoms":["#, r#""atoms":[{"id":"third","subject":"s","field":"Fixed.State.third","value":true,"origin":"model"},"#);
                 std::fs::write(dir.join(file), text).unwrap();
@@ -2370,8 +2370,8 @@ fn tuple_component_support_excludes_other_bound_subjects() {
         std::fs::write(dir.join("d.json"), definition).unwrap();
         for file in ["a.json", "l.law"] {
             let mut text = std::fs::read_to_string(dir.join(file)).unwrap().replace(
-                &old.vocabularies["Fixed"].digest,
-                &new.vocabularies["Fixed"].digest,
+                &old.vocabularies()["Fixed"].digest,
+                &new.vocabularies()["Fixed"].digest,
             );
             if file == "a.json" {
                 for (subject, ty) in [("u", "Left"), ("v", "Right")] {
@@ -2846,8 +2846,8 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
         std::fs::write(dir.join("d.json"), definition).unwrap();
         for file in ["a.json", "l.law"] {
             let mut text = std::fs::read_to_string(dir.join(file)).unwrap().replace(
-                &old.vocabularies["Fixed"].digest,
-                &new.vocabularies["Fixed"].digest,
+                &old.vocabularies()["Fixed"].digest,
+                &new.vocabularies()["Fixed"].digest,
             );
             if file == "a.json" {
                 for (subject, ty) in [("u", "Left"), ("v", "Right")] {
@@ -3412,7 +3412,7 @@ fn integer_local_owner_missing_reaches_needed_for_change_and_law_domains() {
 #[test]
 fn integer_local_zero_class_survives_a_refuted_gluing_condition() {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの整数座標。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
-    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies["Pair"].digest;
+    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies()["Pair"].digest;
     let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; law required x(s:State):s.x=s.x; law required y(s:State):s.y=s.y; local X(s:State) reads s.x; local Y(s:State) reads s.y; change diagonal(s:State,t:Z)=s with{{x=t,y=t}}; }}");
     let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"対角作用の試験。","locations":[],"note":"二座標の原始値。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
     let dir=workdir("integer-class-without-gluing");for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
@@ -3517,7 +3517,7 @@ fn integer_local_empty_cover_degree_iteration_observes_budget() {
 #[test]
 fn integer_local_noninjective_reads_keep_the_image_and_cover_conditions() {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの整数座標。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
-    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies["Pair"].digest;
+    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();let digest=&checked.vocabularies()["Pair"].digest;
     for mode in ["sum-only","constrained","free","constrained-missing","free-missing","offset-missing"] {
         let extra=if mode=="sum-only" {""} else {"local Both(s:State) reads (s.x,s.y);"};
         let requirement=if mode.starts_with("free") {""} else {"law required total(s:State):s.x+s.y=0;"};
@@ -3659,7 +3659,7 @@ fn integer_diagnostic_comparison_transports_a_nonzero_obstruction() {
 fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_distinct() {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Motion","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Motion.State","meaning":"整数状態。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"位置。"},{"name":"goal","type":"Z","meaning":"要求位置。"}],"alignments":[]}]}]}"#;
     let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
-    let digest=&checked.vocabularies["Motion"].digest;
+    let digest=&checked.vocabularies()["Motion"].digest;
     let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Motion {{ use vocabulary Motion version \"1\" digest \"{digest}\"; law required reachesGoal(s:State):s.x=s.goal; local Read(s:State) reads (s.x,s.goal); change move(s:State,a:Z,b:Z)=s with{{x=2*a+2*b}}; }}");
     for (goal, guarded) in [(Some(2),false),(Some(1),false),(None,false),(Some(4),true),(Some(2),true)] {
         let law=if guarded {law.replace("b:Z)=s", "b:Z) when a=b=s")} else {law.clone()};
@@ -3908,10 +3908,10 @@ fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path
     );
     assert_ne!(old, definitions);
     let checked = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Reservations"].digest;
+    let digest = &checked.vocabularies()["Reservations"].digest;
     let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
         .unwrap()
-        .vocabularies["Reservations"]
+        .vocabularies()["Reservations"]
         .digest
         .clone();
     let raw = std::fs::read_to_string(dir.join("a.json"))
@@ -4505,7 +4505,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
                 let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
                 let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
                     .unwrap()
-                    .vocabularies["Reservations"]
+                    .vocabularies()["Reservations"]
                     .digest
                     .clone();
                 let mut definitions =
@@ -4539,7 +4539,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
                 let definitions = definitions.canonical();
                 let digest = definition::check_definitions(&[("d", definitions.as_bytes())])
                     .unwrap()
-                    .vocabularies["Reservations"]
+                    .vocabularies()["Reservations"]
                     .digest
                     .clone();
                 let raw = std::fs::read_to_string(dir.join("a.json"))
@@ -4711,7 +4711,7 @@ fn finite_integer_local_system_cases(reads: Option<&str>) {
                 &std::fs::read(dir.join("d.json")).unwrap(),
             )])
             .unwrap()
-            .vocabularies["Reservations"]
+            .vocabularies()["Reservations"]
                 .digest
                 .clone();
             let law = format!(
@@ -4897,7 +4897,7 @@ fn finite_integer_localization_keeps_missing_fixed_fields() {
 fn finite_integer_repaired_fixed_values(explicit: bool) {
     let dir = diagnostic_compare_input(&format!("finite-integer-repaired-fixed-{explicit}"), true, true);
     let digest = definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
-        .unwrap().vocabularies["Reservations"].digest.clone();
+        .unwrap().vocabularies()["Reservations"].digest.clone();
     std::fs::write(dir.join("l.law"), format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change setHeld(s:State)=s with{{held=3}}; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional ready(s:State):s.held=3; law optional localValid(s:State):s.free=s.held; view held(s:State):Z=s.held; }}"
     )).unwrap();
@@ -4971,7 +4971,7 @@ fn finite_integer_declared_read_keeps_repaired_guard_and_affine_offset() {
 fn finite_integer_read_input(name: &str, known: bool, joint: bool) -> std::path::PathBuf {
     let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの自由整数と固定値。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"},{"name":"z","type":"Z","meaning":"固定値。"}],"alignments":[]}]}]}"#;
     let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
-    let digest=&checked.vocabularies["Pair"].digest;
+    let digest=&checked.vocabularies()["Pair"].digest;
     let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; local Sum(s:State) reads s.x+s.y,s.z; change choose(s:State,b:Bool)=s with{{x=if b then 0 else 1,y=if b then 1 else 0}}; }}");
     let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"非単射readと欠測の独立試験。","locations":[],"note":"固定値zは未観測。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
     let law=if joint {law.replace("local Sum", "local Left(s:State) reads s.x; local Sum")} else {law};
@@ -5020,8 +5020,8 @@ fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
     let d = old.replace("\"type\": \"Z\"", "\"type\": \"Q\"");
     let before = definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
     let after = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
-    let digest = &before.vocabularies["Reservations"].digest;
-    let updated = &after.vocabularies["Reservations"].digest;
+    let digest = &before.vocabularies()["Reservations"].digest;
+    let updated = &after.vocabularies()["Reservations"].digest;
     let law = std::fs::read_to_string(dir.join("l.law"))
         .unwrap()
         .replace(digest, updated)
@@ -5284,10 +5284,10 @@ fn diagnostic_comparison_rejects_different_coefficient_rings() {
     field(&mut definitions);
     let definitions = definitions.canonical();
     let after = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
-    let digest = &after.vocabularies["Reservations"].digest;
+    let digest = &after.vocabularies()["Reservations"].digest;
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
-        .replace(&before.vocabularies["Reservations"].digest, digest);
+        .replace(&before.vocabularies()["Reservations"].digest, digest);
     let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(a) = atom else { panic!("atom") };
@@ -5593,7 +5593,7 @@ fn finite_affine_diagnostics_transport_noninjective_read_images(rational: bool) 
             let d=old.replace("\"type\": \"Z\"","\"type\": \"Q\"");
             let before=definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
             let after=definition::check_definitions(&[("d",d.as_bytes())]).unwrap();
-            let old_digest=&before.vocabularies["Reservations"].digest;let digest=&after.vocabularies["Reservations"].digest;
+            let old_digest=&before.vocabularies()["Reservations"].digest;let digest=&after.vocabularies()["Reservations"].digest;
             let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace(old_digest,digest).replace("(Z, Z)","(Q, Q)");
             let text=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(old_digest,digest);
             let mut map=fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
@@ -5626,7 +5626,7 @@ fn finite_affine_diagnostics_transport_noninjective_read_images(rational: bool) 
 fn finite_change_on_rational_fields_keeps_full_equation_fibers() {
     for mode in ["implicit","coordinate","noninjective"] {for selected in [false,true] {for degree in [0,1] {
         let dir=rational_compare_input(&format!("finite-change-rational-fields-{mode}-{selected}-{degree}"),true);
-        let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies["Reservations"].digest.clone();
+        let digest=definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())]).unwrap().vocabularies()["Reservations"].digest.clone();
         let mut law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then rat(1,2) else rat(3,2)}}; law optional localValid(s:State):s.free=rat(1,2); }}");
         if mode=="coordinate" {law=law.replace("change choose","local Here(s:State) reads s.free; change choose");}
         if mode=="noninjective" {law=law.replace("change choose","local Sum(s:State) reads s.free+s.held; local Left(s:State) reads s.free; change choose").replace("else rat(3,2)}","else rat(3,2),held=if b then 0 else -1}");}
@@ -5659,7 +5659,7 @@ fn universal_laws_localize_integer_and_rational_affine_changes() {
             let dir = if rational { rational_compare_input("universal-affine-local-q",true) }
                 else { diagnostic_compare_input("universal-affine-local-z",true,true) };
             let digest = definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())])
-                .unwrap().vocabularies["Reservations"].digest.clone();
+                .unwrap().vocabularies()["Reservations"].digest.clone();
             let ty = if rational {"Q"} else {"Z"};
             let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,n:{ty})=s with{{free=n}}; law required symbolic(z:{ty},s:State,w:{ty}):{predicate}; }}");
             std::fs::write(dir.join("l.law"),law).unwrap();
@@ -5720,7 +5720,7 @@ fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
             let dir = if rational { rational_compare_input("universal-local-q", true) }
                 else { diagnostic_compare_input("universal-local-z", true, true) };
             let digest = definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
-                .unwrap().vocabularies["Reservations"].digest.clone();
+                .unwrap().vocabularies()["Reservations"].digest.clone();
             let ty = if rational { "Q" } else { "Z" };
             // 数値parameterが束縛済みStateの前後にある場合も元binderを保つ。
             let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law required symbolic(z:{ty},s:State,w:{ty}):{predicate}; }}");

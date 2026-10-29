@@ -21,7 +21,7 @@ pub fn custom(body: &str, moved: bool) -> InputSources {
 "vocabularies":[{"namespace":"Paths","version":"1","semantics":"archsig/0.6.0","dependencies":[],
 "declarations":[{"kind":"entity","name":"Paths.Node","meaning":"恒等の対象。","parameters":[],"fields":[],"alignments":[]}]}]}"#;
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Paths"].digest;
+    let digest = &checked.vocabularies()["Paths"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Walk {{\nuse vocabulary Paths version \"1\" digest \"{digest}\";\n{body}\n}}\n"
     );

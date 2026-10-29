@@ -82,7 +82,7 @@ pub fn numeric_input() -> InputSources {
         numeric::OWNED_DEFINITIONS.as_bytes(),
     )])
     .unwrap();
-    let digest = &d.vocabularies["Reservations"].digest;
+    let digest = &d.vocabularies()["Reservations"].digest;
     let law=numeric::owned_law(digest).replace(numeric::OWNED_SCRIPT,&(numeric::OWNED_SCRIPT.to_owned()+"view numeric(a:System,b:System,p:State):Bool=forall f:Map<State[a],State[b]> . f=f and p.free-p.free=0;"));
     let map = numeric::owned_archmap(true)
         .lines()

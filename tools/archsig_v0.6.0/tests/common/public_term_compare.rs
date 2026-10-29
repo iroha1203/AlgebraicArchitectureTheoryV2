@@ -27,7 +27,7 @@ view opaqueOther():(Term<(Z)->Z>,Z) = (fn(y:Z)=>y*y+0,1);
 pub fn input(extra: &str, missing: bool, revision: &str) -> InputSources {
     let definitions=primitive::DEFINITIONS.replace(r#"{"kind":"data","name":"Terms.Choice""#,r#"{"kind":"data","name":"Terms.FnBox","meaning":"閉じた項の保持","constructors":[{"name":"Wrap","arguments":[["Term",["Bool"],"Z"]],"meaning":"項を保持"},{"name":"Plain","arguments":["Bool"],"meaning":"真偽値"},{"name":"Vacant","arguments":[],"meaning":"空"}]},{"kind":"data","name":"Terms.Flag","meaning":"有限型","constructors":[{"name":"Off","arguments":[],"meaning":"無効"},{"name":"On","arguments":["Bool"],"meaning":"有効"}]},{"kind":"data","name":"Terms.Choice""#);
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Terms"].digest;
+    let digest = &checked.vocabularies()["Terms"].digest;
     let law = primitive::law(digest).replace(
         primitive::SCRIPT,
         &format!("{}\n{SCRIPT}\n{extra}", primitive::SCRIPT),

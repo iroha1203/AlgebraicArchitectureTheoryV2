@@ -169,7 +169,7 @@ fn fixture(script: &str, missing_bool: bool, moved: bool) -> InputSources {
     let checked =
         check_definitions_controlled(&[("definition0", definition.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Universal"].digest;
+    let digest = &checked.vocabularies()["Universal"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary Universal version "1" digest "{digest}"; {script} }}"#
     );
@@ -234,8 +234,8 @@ fn run_parameter_types(
     assert_eq!(after.archmap().bytes_digest, checked.archmap().bytes_digest);
     assert_eq!(after.archmap().model_digest, checked.archmap().model_digest);
     assert_eq!(
-        after.definitions().vocabularies,
-        checked.definitions().vocabularies
+        after.definitions().vocabularies(),
+        checked.definitions().vocabularies()
     );
     assert_eq!(after.law().declarations, checked.law().declarations);
     let wire = evaluated.wire();

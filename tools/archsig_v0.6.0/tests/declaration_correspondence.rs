@@ -19,8 +19,8 @@ fn sources(law: &str) -> InputSources {
     let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -33,7 +33,7 @@ fn sources(law: &str) -> InputSources {
     let a = include_str!("fixtures/configuration-map-bridge.archmap.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd)
-        .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest);
+        .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest);
     InputSources::from_bytes(
         vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
         law.replace("@LEFT_DIGEST@", ld)

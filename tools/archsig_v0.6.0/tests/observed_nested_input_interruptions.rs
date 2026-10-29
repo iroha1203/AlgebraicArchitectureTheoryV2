@@ -37,7 +37,7 @@ fn definition(fields: usize) -> String {
 
 fn sources(definition: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["V"].digest;
+    let digest = &checked.vocabularies()["V"].digest;
     let law = format!(
         "{}reading Helpers {{ view one(): Z = 1; view two(): Z = 2; }} reading R {{ use Helpers as H; view value(): Z = H.one() + H.two(); }}",
         common::HEADER

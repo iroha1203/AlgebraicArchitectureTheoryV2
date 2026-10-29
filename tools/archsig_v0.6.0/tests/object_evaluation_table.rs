@@ -23,7 +23,7 @@ fn quiet() -> Control {
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &d.vocabularies["Instances"].digest;
+    let digest = &d.vocabularies()["Instances"].digest;
     Arc::new(
         check_inputs(
             InputSources::from_bytes(

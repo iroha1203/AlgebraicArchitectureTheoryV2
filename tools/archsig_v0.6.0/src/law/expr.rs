@@ -1355,7 +1355,7 @@ mod semantic_finish_tests {
     use std::{cell::Cell, rc::Rc};
     type Failure = CheckFailure<Box<Issue>>;
     static EMPTY_DEFINITIONS: std::sync::LazyLock<CheckedDefinitions> =
-        std::sync::LazyLock::new(CheckedDefinitions::default);
+        std::sync::LazyLock::new(CheckedDefinitions::empty);
 
     fn checker(control: &mut Control) -> Checker<'static, Failure> {
         Checker::with_definitions(

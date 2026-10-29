@@ -14,7 +14,7 @@ view seed():Z=1;
 "#;
 pub fn input(unknown: bool, second: bool, revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Reservations"].digest;
+    let digest = &d.vocabularies()["Reservations"].digest;
     let subject = |id: &str, ty: &str| {
         Json::obj([
             ("id", Json::str(id)),
