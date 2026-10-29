@@ -830,6 +830,7 @@ fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
         let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
         let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
         let j=result_json(&dir,&r);
+        let internal = (gamma == Some(3)).then(|| internal_graph(&dir, &j));
         for i in [2,3] {
             let answer=&arr(get(&j,"answers"))[i];
             assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
@@ -843,10 +844,10 @@ fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
                 assert!(!has(answer,"counterexamples"));
             }else{
                 assert_ne!(coordinates[0][0],"0");
-                let j=internal_graph(&dir,&j);
-                let answer=&arr(get(&j,"answers"))[i];
-                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(&j,r),"value")).find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
-                let pairing=arr(get(node(&j,get(get(proof,"data"),"pairing")),"value"));assert_ne!(s(&pairing[0]),"0");
+                let j = internal.as_ref().expect("反証時の内部評価");
+                let answer=&arr(get(j,"answers"))[i];
+                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(j,r),"value")).find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
+                let pairing=arr(get(node(j,get(get(proof,"data"),"pairing")),"value"));assert_ne!(s(&pairing[0]),"0");
             }
         }
         if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
