@@ -287,20 +287,36 @@ fn state_dependent_piecewise_expression_is_not_its_observed_constant() {
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn outside_selected_object_retains_original_uniform_without_fabricated_raw_equation() {
+fn outside_selected_object_keeps_finite_rows_and_symbolic_equation_without_body_evaluation() {
     let i = inputs("law required onlyRoot(a:Root,b:Bool):2=1;");
     let r =
         object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &mut quiet()).unwrap();
     assert_eq!(r.object(), 1);
-    assert_eq!(r.occurrences().len(), 1);
-    let q = &r.occurrences()[0];
-    assert_eq!(q.guard, G::OutsideObject);
-    assert_eq!(q.status, S::NotApplicable);
-    assert_eq!(q.row, None);
-    assert!(q.nu.is_none());
-    assert!(q.epsilon.is_none());
-    assert_eq!(number(&q.residual), Some("\"0\"".into()));
-    assert!(r.rings()[0].required_generators.is_empty());
+    assert!(r.is_complete());
+    assert_eq!(r.status(), S::Ready);
+    assert_eq!(r.occurrences().len(), 2);
+    for (row, q) in r.occurrences().iter().enumerate() {
+        assert_eq!(q.guard, G::OutsideObject);
+        assert_eq!(q.status, S::NotApplicable);
+        assert_eq!(q.row, Some(row));
+        let original = &r.base().base().evaluations()[q.position.instance];
+        assert_eq!(
+            original.family().rows()[row].bindings()[0].1.wire(),
+            archsig::canonical::Json::Bool(row == 1)
+        );
+        assert!(q.evaluation.is_none());
+        assert!(q.operands.is_empty());
+        assert!(q.epsilon_producer.is_none());
+        assert_eq!(terms(q.left.as_ref().unwrap()), [(vec![], "\"2\"".into())]);
+        assert_eq!(terms(q.right.as_ref().unwrap()), [(vec![], "\"1\"".into())]);
+        assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![], "\"1\"".into())]);
+        assert!(q.evaluated_nu.is_none());
+        assert!(q.component_holds.is_none());
+        assert!(q.epsilon.is_none());
+        assert!(q.epsilon_constant.is_none());
+        assert_eq!(number(&q.residual), Some("\"0\"".into()));
+    }
+    assert!(r.rings().iter().all(|ring| ring.required_generators.is_empty()));
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
