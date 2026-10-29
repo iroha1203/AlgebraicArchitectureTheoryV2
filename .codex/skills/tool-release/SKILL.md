@@ -43,8 +43,8 @@ GitHub Release notes は原則として英語で書く。
    - tag が未作成の場合は、対象 commit を確認し、ユーザー確認後に tag を作成・push する。勝手に release tag を作らない。
 
 3. 対象 surface を分類する。
-   - ArchSig: `tools/archsig/**`, `tools/archsig_v0.6.0/**`, 対象 version の `docs/tool/**`, `.github/workflows/archsig-release.yml`, `.github/RELEASE_TEMPLATE.md`
-   - FieldSig: `tools/fieldsig/**`, FieldSig docs / workflow
+   - ArchSig / FieldSig の実装: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って release 対象の manifest・package・version と実装の所在を確認する。
+   - 関連 docs / workflow / template: 対象 version の `docs/tool/**` と、実際にその実装を配布する workflow・release template を確認する。
    - Lean / docs claim: `Formal/**`, `docs/aat/**`, `docs/sft/**`
    - Website: `website/**`
 

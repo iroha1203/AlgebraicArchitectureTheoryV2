@@ -101,17 +101,15 @@
 
 ### 検証対象の選択
 
-変更したクレートに対応する manifest を選ぶ。複数クレートに影響する変更は、それぞれを検証する。
+変更した source が属するクレートを、実際の `Cargo.toml` と workspace の構成から特定する。
+選んだ manifest の package 名・version を確認する。workspace 継承や所属がある場合は
+workspace の manifest や `cargo metadata` も確認する。同じ package 名のクレートが併存し得るため、
+検証コマンドには manifest を明示し、workspace では対象 package も選ぶ。
+ディレクトリ名から version を推測せず、移動・改名後も実際の所属から選ぶ。
 
-| 対象 | manifest |
-| --- | --- |
-| `tools/archsig/**` | `tools/archsig/Cargo.toml` |
-| `tools/archsig_v0.6.0/**` | `tools/archsig_v0.6.0/Cargo.toml` |
-| `tools/fieldsig/**` | `tools/fieldsig/Cargo.toml` |
-
-両 ArchSig は package 名が同じため、名前だけで選ばず manifest を明示する。
-docs / schema のみの変更は、対象 contract・version が指定するクレートを選ぶ。
-対象が不明なら特定してから検証し、旧版を既定にしない。
+docs / schema のみの変更は、対象 contract・version と参照される実装をたどって manifest を特定する。
+特定できない場合は曖昧さを解消してから検証し、旧版・最新版のどちらも既定にしない。
+複数クレートに影響する変更は、影響する全クレートを対象にする。
 
 検証記録は対象 commit、manifest・version、選択した test target と、実行結果 / compile のみ / 未実行を
 短く区別する。`cargo test --manifest-path <対象manifest>` に変更範囲に応じた target・filter を指定する。

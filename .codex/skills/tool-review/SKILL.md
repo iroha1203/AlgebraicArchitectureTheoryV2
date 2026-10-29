@@ -6,8 +6,8 @@ description: ArchSig / FieldSig tooling、docs/tool、schema catalogの実装完
 # Tool Review
 
 ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野の所有範囲は
-`tools/archsig`, `tools/archsig_v0.6.0`, `tools/fieldsig` に加え、`docs/tool/` と schema catalog
-(tooling の claim に隣接する docs)。
+ArchSig / FieldSig の実装と、`docs/tool/`・schema catalog (tooling の claim に隣接する docs)。
+実装の所在は [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って特定する。
 
 ## 必須契約
 
