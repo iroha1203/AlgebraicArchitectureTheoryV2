@@ -1671,10 +1671,87 @@ impl ObservedEvaluation {
     }
 }
 
+#[derive(Debug, Default)]
+// node表への可変アクセスは保存済prefixを失効させる。検査済の末尾追加だけは
+// 既存nodeを変えない。複製した表は別々に追記できるため、新しいidentityを持つ。
+pub(crate) struct GraphNodes {
+    values: Vec<Node>,
+    identity: std::rc::Rc<()>,
+}
+impl From<Vec<Node>> for GraphNodes {
+    fn from(values: Vec<Node>) -> Self {
+        Self {
+            values,
+            identity: std::rc::Rc::new(()),
+        }
+    }
+}
+impl Clone for GraphNodes {
+    fn clone(&self) -> Self {
+        self.values.clone().into()
+    }
+}
+impl std::ops::Deref for GraphNodes {
+    type Target = Vec<Node>;
+    fn deref(&self) -> &Self::Target {
+        &self.values
+    }
+}
+impl std::ops::DerefMut for GraphNodes {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.identity = std::rc::Rc::new(());
+        &mut self.values
+    }
+}
+impl AsRef<[Node]> for GraphNodes {
+    fn as_ref(&self) -> &[Node] {
+        &self.values
+    }
+}
+impl<T: AsRef<[Node]> + ?Sized> PartialEq<T> for GraphNodes {
+    fn eq(&self, other: &T) -> bool {
+        self.values.as_slice() == other.as_ref()
+    }
+}
+impl PartialEq<GraphNodes> for &[Node] {
+    fn eq(&self, other: &GraphNodes) -> bool {
+        *self == other.values.as_slice()
+    }
+}
+impl PartialEq<GraphNodes> for [Node] {
+    fn eq(&self, other: &GraphNodes) -> bool {
+        self == other.values.as_slice()
+    }
+}
+impl<'a> IntoIterator for &'a GraphNodes {
+    type Item = &'a Node;
+    type IntoIter = std::slice::Iter<'a, Node>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.values.iter()
+    }
+}
+impl<'a> IntoIterator for &'a mut GraphNodes {
+    type Item = &'a mut Node;
+    type IntoIter = std::slice::IterMut<'a, Node>;
+    fn into_iter(self) -> Self::IntoIter {
+        std::ops::DerefMut::deref_mut(self).iter_mut()
+    }
+}
+impl GraphNodes {
+    pub(super) fn prefix_identity(&self) -> std::rc::Rc<()> {
+        self.identity.clone()
+    }
+    fn append_checked(&mut self, node: Node) {
+        self.values.push(node);
+    }
+    pub(super) fn into_vec(self) -> Vec<Node> {
+        self.values
+    }
+}
 /// Ref の種類と型は挿入時に照合する。既出 node のみを参照できる。
 #[derive(Debug, Default)]
 pub(crate) struct Graph {
-    pub nodes: Vec<Node>,
+    pub nodes: GraphNodes,
     pub(super) contexts: Vec<super::call::Context>,
     pub(super) frames: Vec<super::call::Frame>,
     pub(super) iterations: Vec<super::call::Iteration>,
@@ -1729,7 +1806,7 @@ impl Graph {
             self.expect(*r, &NodeType::Evidence)?;
         }
         let r = NodeRef(self.nodes.len());
-        self.nodes.push(node);
+        self.nodes.append_checked(node);
         self.contexts.push(self.active);
         let _ = self
             .control
@@ -1785,7 +1862,7 @@ impl Graph {
     }
     pub fn new(control: &Control) -> Self {
         Self {
-            nodes: vec![],
+            nodes: Vec::new().into(),
             contexts: vec![],
             frames: vec![],
             iterations: vec![],
@@ -4633,7 +4710,7 @@ impl Graph {
             self.validate_proposition_evidence(&node)?;
         }
         let r = NodeRef(self.nodes.len());
-        self.nodes.push(node);
+        self.nodes.append_checked(node);
         self.contexts.push(self.active);
         committed(r);
         self.tick()?;

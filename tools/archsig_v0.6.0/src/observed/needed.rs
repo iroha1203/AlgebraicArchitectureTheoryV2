@@ -348,7 +348,7 @@ mod tests {
     }
     fn graph(result: &ObservedEvaluation) -> Graph {
         let mut graph = Graph::new(&Control::unlimited());
-        graph.nodes = result.nodes.clone();
+        graph.nodes = result.nodes.clone().into();
         graph.contexts = result.contexts.clone();
         graph.requests = result.prepared.requests().requests().to_vec();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();

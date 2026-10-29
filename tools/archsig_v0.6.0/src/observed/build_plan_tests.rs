@@ -702,7 +702,7 @@ fn required_numeric_tuple_missing_needed_rechecks_original_answers() {
         let result = crate::observed::evaluate_observed(p, &mut quiet()).unwrap();
         let env = Environment::with_prepared(&result.prepared, &mut quiet()).unwrap();
         let mut g = Graph::new(&quiet());
-        g.nodes = result.nodes.clone();
+        g.nodes = result.nodes.clone().into();
         g.contexts = result.contexts.clone();
         g.requests = result.prepared.requests().requests().to_vec();
         g.checked_answers = result.answers.iter().cloned().enumerate().collect();

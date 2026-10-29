@@ -3200,7 +3200,7 @@ fn evaluate_observed_with_validator(
     };
     let evaluation = ObservedEvaluation {
         prepared,
-        nodes: graph.nodes,
+        nodes: graph.nodes.into_vec(),
         #[cfg(test)]
         contexts: graph.contexts,
         #[cfg(test)]
@@ -4638,7 +4638,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         assert_eq!(normal.answers[2].status, Decision::Established);
         assert!(normal.answers[2].claim.is_some());
         let mut normal_graph = Graph::default();
-        normal_graph.nodes = normal.nodes.clone();
+        normal_graph.nodes = normal.nodes.clone().into();
         assert_eq!(
             normal_graph
                 .scalar(normal.answers[3].outputs["value"])
@@ -4693,7 +4693,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         );
         assert_eq!(result.answers.len(), 4);
         let mut graph = Graph::default();
-        graph.nodes = result.nodes.clone();
+        graph.nodes = result.nodes.clone().into();
         let amount = &result.answers[0];
         assert_eq!(amount.status, Decision::Established);
         assert!(amount.claim.is_none());
@@ -4886,7 +4886,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             let mut control = Control::unlimited();
             let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
             let mut graph = Graph::new(&control);
-            graph.nodes = result.nodes.clone();
+            graph.nodes = result.nodes.clone().into();
             graph.requests = result.prepared.requests().requests().to_vec();
             graph.contexts = result.contexts.clone();
             graph.frames = result.frames.clone();
@@ -4931,7 +4931,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     fn rejects_answer_value_with_wrong_type_value_or_missing_evaluation() {
         let result = value_examples(false);
         let mut graph = Graph::default();
-        graph.nodes = result.nodes.clone();
+        graph.nodes = result.nodes.clone().into();
         let original = &result.answers[0];
         graph.validate_answer(original, false).unwrap();
         let subject = NodeRef(
@@ -4970,7 +4970,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     fn rejects_answer_output_from_a_different_check_evaluation() {
         let result = value_examples(false);
         let mut graph = Graph::default();
-        graph.nodes = result.nodes.clone();
+        graph.nodes = result.nodes.clone().into();
         let original = &result.answers[5];
         graph.validate_answer(original, true).unwrap();
         let mut wrong = original.clone();
@@ -5088,7 +5088,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
                 let mut answer = result.answers[0].clone();
                 answer.scope = scope;
                 let mut graph = Graph::default();
-                graph.nodes = nodes.to_vec();
+                graph.nodes = nodes.to_vec().into();
                 graph.validate_answer(&answer, false).unwrap();
                 // source/evaluation/answer の相互同値だけでは元入力の代用にならない。
             });

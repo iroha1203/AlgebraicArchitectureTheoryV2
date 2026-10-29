@@ -297,7 +297,7 @@ fn infinite_exists_domain_scope_source_and_reason_mutations_are_rejected() {
             environment.recheck_node(&graph, &graph.nodes[whole], whole),
             Err(ValidationFailure::Internal(_))
         ));
-        graph.nodes = result.nodes.clone();
+        graph.nodes = result.nodes.clone().into();
         graph.contexts = result.contexts.clone();
         environment
             .recheck_node(&graph, &graph.nodes[whole], whole)

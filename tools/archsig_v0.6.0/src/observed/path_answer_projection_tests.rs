@@ -165,7 +165,7 @@ fn path_answer_component_same_environment_rechecks_producer_requests_values_and_
             ),
             "fresh variant {variant}"
         );
-        graph.nodes = r.nodes.clone();
+        graph.nodes = r.nodes.clone().into();
         graph.contexts = r.contexts.clone();
         graph.requests = original_requests.clone();
         graph.checked_answers = original_registry.clone();
