@@ -303,3 +303,97 @@ impl Control {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::Cell;
+
+    #[test]
+    fn stop_reasons_priorities_and_latch_are_owned_by_control() {
+        let time = StopReason::BudgetExhausted {
+            resource: Resource::TimeMs,
+            limit: 1,
+            observed: 2,
+        };
+        let memory = StopReason::BudgetExhausted {
+            resource: Resource::MemoryMib,
+            limit: 1,
+            observed: 2,
+        };
+        for (sample, expected) in [
+            (
+                Usage {
+                    elapsed_ms: 2,
+                    ..Usage::default()
+                },
+                time.clone(),
+            ),
+            (
+                Usage {
+                    memory_mib: 2,
+                    ..Usage::default()
+                },
+                memory,
+            ),
+            (
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                },
+                StopReason::Cancelled(Signal::Term),
+            ),
+            (
+                Usage {
+                    elapsed_ms: 2,
+                    memory_mib: 2,
+                    ..Usage::default()
+                },
+                time,
+            ),
+            (
+                Usage {
+                    elapsed_ms: 2,
+                    memory_mib: 2,
+                    signal: Some(Signal::Int),
+                },
+                StopReason::Cancelled(Signal::Int),
+            ),
+        ] {
+            let probes = Rc::new(Cell::new(0));
+            let calls = probes.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: Some(1),
+                },
+                move |_| {
+                    calls.set(calls.get() + 1);
+                    if calls.get() == 1 {
+                        Usage::default()
+                    } else {
+                        sample
+                    }
+                },
+            );
+            assert_eq!(control.checkpoint(Checkpoint::Localize), Ok(()));
+            assert_eq!(
+                control.checkpoint(Checkpoint::Localize),
+                Err(expected.clone())
+            );
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            let usage = control.usage();
+            let mut shared = control.clone();
+            for point in [
+                Checkpoint::Localize,
+                Checkpoint::Expression,
+                Checkpoint::Resolve,
+            ] {
+                assert_eq!(shared.checkpoint(point), Err(expected.clone()));
+            }
+            assert_eq!(probes.get(), 2);
+            assert_eq!(control.usage(), usage);
+            assert_eq!(shared.stop_reason(), Some(expected));
+        }
+    }
+}
