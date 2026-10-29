@@ -2,6 +2,10 @@
 #[path = "common/watchdog.rs"]
 mod watchdog;
 
+#[allow(dead_code)]
+#[path = "common/cli.rs"]
+mod cli;
+
 use std::io::Write;
 use std::process::Command;
 use std::time::{Duration, Instant};
@@ -90,4 +94,17 @@ fn hanging_child_is_killed_reaped_and_next_child_runs() {
 fn spawn_failure_is_reported() {
     let mut command = Command::new(std::env::current_exe().unwrap().join("missing-child"));
     assert!(watchdog::output(&mut command, Duration::from_secs(30)).is_err());
+}
+
+#[test]
+fn explicit_deadline_preserves_the_cli_receipt() {
+    let dir = cli::workdir("watchdog-explicit-deadline");
+    let default = cli::run(&dir, &["run"]);
+    let explicit = cli::run_with_deadline(&dir, &["run"], Duration::from_secs(30));
+    assert_ne!(default.code, 0);
+    assert_eq!(explicit.code, default.code);
+    assert_eq!(explicit.receipt.value, default.receipt.value);
+    assert_eq!(explicit.stdout, default.stdout);
+    assert_eq!(explicit.stderr, default.stderr);
+    std::fs::remove_dir_all(dir).unwrap();
 }
