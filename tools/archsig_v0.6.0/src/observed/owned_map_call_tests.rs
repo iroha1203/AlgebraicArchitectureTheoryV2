@@ -370,3 +370,98 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
 fn owned_map_original_domain_roster_recheck_stop_keeps_verified_outputs_and_prefix() {
     owned_map_member_stop(true)
 }
+
+#[test]
+fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
+    use crate::observed::control::{Limits, Usage};
+    use std::{cell::Cell, rc::Rc};
+    let input = crate::observed::input::check_inputs(
+        owned_map_fixture::input("missing", "r1"),
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    let visits = Rc::new(Cell::new(0));
+    let seen = visits.clone();
+    let mut c = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::FiniteIteration {
+            seen.set(seen.get() + 1);
+        }
+        Usage {
+            signal: (seen.get() >= 5000).then_some(crate::result::Signal::Int),
+            ..Usage::default()
+        }
+    });
+    let env = Environment::with_requests(&input, &[], &mut c).unwrap();
+    let roster = Environment::with_requests(&input, &[], &mut named_call_quiet())
+        .unwrap()
+        .finite_values(&Type::Ref("Reservations.State".into()), &mut |_, _| {})
+        .unwrap();
+    assert_eq!(roster.values.len(), 8);
+    let fields = [Fact {
+        snapshot: "v".into(),
+        subject: "m".into(),
+        field: Some("Reservations.Migration.states".into()),
+        atom: None,
+    }];
+    let mut phases = std::collections::BTreeMap::new();
+    let all = env
+        .completion_assignments(&fields, &mut |phase, index| {
+            phases.insert(phase, index);
+        })
+        .unwrap();
+    assert!(c.stop_reason().is_none());
+    assert_eq!(phases["type_enum"], 8);
+    assert_eq!(phases["reference_constraints"], 8);
+    assert_eq!(all.values.len(), 4);
+    let mut images = std::collections::BTreeSet::new();
+    for value in &all.values {
+        let Scalar::Map {
+            domain,
+            codomain,
+            pairs,
+        } = value
+        else {
+            panic!("Map")
+        };
+        assert_eq!(domain, &Type::Ref("Reservations.State".into()));
+        assert_eq!(codomain, domain);
+        assert_eq!(pairs.len(), 2);
+        let mut targets = vec![];
+        for ((key, image), expected) in pairs.iter().zip(["p", "q"]) {
+            assert!(
+                matches!(key,Scalar::Subject {snapshot,subject,..} if snapshot=="v" && subject==expected)
+            );
+            let Scalar::Subject {
+                snapshot, subject, ..
+            } = image
+            else {
+                panic!("image")
+            };
+            assert_eq!(snapshot, "v");
+            assert!(["r", "s"].contains(&subject.as_str()));
+            targets.push(subject.clone());
+        }
+        assert!(images.insert(targets));
+    }
+    assert_eq!(
+        images,
+        [
+            vec!["r".to_string(), "r".into()],
+            vec!["r".into(), "s".into()],
+            vec!["s".into(), "r".into()],
+            vec!["s".into(), "s".into()]
+        ]
+        .into_iter()
+        .collect()
+    );
+    for snapshot in ["v", "w"] {
+        assert!(all.scope.snapshots.contains(snapshot));
+        for atom in ["p-owner", "q-owner", "r-owner", "s-owner", "m-from", "m-to"] {
+            assert!(
+                all.support
+                    .iter()
+                    .any(|f| f.snapshot == snapshot && f.atom.as_deref() == Some(atom))
+            );
+        }
+    }
+}

@@ -202,6 +202,78 @@ impl Environment<'_> {
         Ok(all)
     }
 
+    // 単一Mapのownerと全所属が元入力で確定していれば、所属族を先に使う。
+    // 未観測のowner/所属は従来の全候補と入力制約の検査へ残す。
+    fn completion_map_rosters(
+        &self,
+        fields: &[Fact],
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<
+        Option<(
+            Type,
+            BTreeMap<(String, String), super::super::finite::Enumeration>,
+        )>,
+        ValidationFailure,
+    > {
+        let [fact] = fields else { return Ok(None) };
+        if self.primitive_valuation.is_some() {
+            return Ok(None);
+        }
+        let holder = self.subject(&fact.snapshot, &fact.subject)?;
+        let field = self.field(
+            &fact.snapshot,
+            &fact.subject,
+            fact.field.as_deref().ok_or("補完slotに元fieldがない")?,
+        )?;
+        let Type::Map(domain, codomain) = &field.ty else {
+            return Ok(None);
+        };
+        let mut rosters = BTreeMap::new();
+        for ty in [domain.as_ref(), codomain.as_ref()] {
+            self.tick()?;
+            let Type::Owned(entity, name) = ty else {
+                return Ok(None);
+            };
+            let field = self.field(
+                &fact.snapshot,
+                &fact.subject,
+                &format!("{}.{name}", holder.ty),
+            )?;
+            let Slot::Known {
+                value: Value::Ref { snapshot, subject },
+                ..
+            } = &field.slot
+            else {
+                return Ok(None);
+            };
+            // 一時的なcompletion値から、元の未観測所属を確定させない。
+            for member in self.subjects.values() {
+                self.tick()?;
+                if member.snapshot != *snapshot || member.ty != *entity {
+                    continue;
+                }
+                if self
+                    .field(snapshot, &member.id, &format!("{entity}.owner"))?
+                    .slot
+                    == Slot::Missing
+                {
+                    return Ok(None);
+                }
+            }
+            let owner = Scalar::Subject {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                entity: self.subject(snapshot, subject)?.ty.clone(),
+            };
+            let members = self.owned_members(entity, &owner, None, "", observer)?;
+            if !members.missing.is_empty() {
+                return Ok(None);
+            }
+            rosters.insert((entity.clone(), name.clone()), members.enumeration);
+        }
+        Ok(Some((field.ty.clone(), rosters)))
+    }
+
     /// 元slot順の全候補を作り、元ArchMap制約へ拡張できる代入だけを残す。
     pub(in crate::observed) fn completion_assignments(
         &self,
@@ -210,15 +282,24 @@ impl Environment<'_> {
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
         let types = self.completion_slot_types(fields)?;
         let ty = assignment_type(&types);
+        let known = self.completion_map_rosters(fields, observer)?;
+        let candidate_type = known.as_ref().map(|(ty, _)| ty).unwrap_or(&ty);
         let observer = RefCell::new(observer);
         let mut all = super::super::finite::field_candidates(
-            &ty,
+            candidate_type,
             self.inputs.law(),
             &self.control,
             &mut |entity| {
                 self.reference_roster(entity, &mut |index| {
                     observer.borrow_mut()("ref_roster", index)
                 })
+            },
+            &mut |entity, name| {
+                known
+                    .as_ref()
+                    .and_then(|(_, rosters)| rosters.get(&(entity.into(), name.into())))
+                    .cloned()
+                    .ok_or_else(|| "field候補に元Owned所属族がない".into())
             },
             &mut |index| observer.borrow_mut()("type_enum", index),
         )?;
