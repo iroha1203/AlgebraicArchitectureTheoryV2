@@ -11076,8 +11076,83 @@ fn numeric_tuple_change_cli_preserves_delivery_reuse_and_failure_contracts() {
     }
 }
 
+const MIXED_CONSTANT_ASKS: [&str; 2] = [
+    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+    "n=needed($m)",
+];
+
+fn mixed_constant_inputs(
+    name: &str,
+    reverse: bool,
+    integer: bool,
+    source_guard: &str,
+    target_guard: &str,
+) -> PathBuf {
+    let (dir, vocabulary) = rational_local_parameter_inputs(
+        &format!("mixed-constant-{reverse}-{integer}-{name}"),
+        false,
+    );
+    let (sp, tp) = if reverse {
+        ("q:Q,n:Z", "y:Q,m:Z")
+    } else {
+        ("n:Z,q:Q", "m:Z,y:Q")
+    };
+    let (left, right) = if integer { ("n", "m") } else { ("q", "y") };
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here({sp}) when {source_guard} reads {left};}}
+reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};}}"#
+        ),
+    )
+    .unwrap();
+    dir
+}
+
+fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_key: &str) {
+    let names = if reverse { ["q", "n"] } else { ["n", "q"] };
+    let m = answer(j, "m");
+    assert_eq!(
+        s(get(m, "status")),
+        if code == 0 { "established" } else { "refuted" }
+    );
+    assert!(has(get(m, "outputs"), "operation"));
+    assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+    let plan = value(j, get(get(answer(j, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    if code == 1 {
+        let evidence = arr(get(m, evidence_key))
+            .iter()
+            .find(|reference| {
+                let evidence = value(j, reference);
+                has(evidence, "kind") && s(get(evidence, "kind")) == "counterexample"
+            })
+            .expect("guard反証の実際のcounterexample");
+        let data = get(value(j, evidence), "data");
+        let bindings = arr(get(data, "bindings"));
+        assert_eq!(bindings.len(), 2);
+        for (binding, name) in bindings.iter().zip(names) {
+            assert_eq!(s(get(binding, "name")), name);
+            assert_json(
+                value(j, get(binding, "value")),
+                if name == "n" {
+                    r#""0""#
+                } else {
+                    r#"["0","1"]"#
+                },
+            );
+        }
+        assert_json(value(j, get(data, "left")), "true");
+        assert_json(value(j, get(data, "right")), "false");
+    }
+}
+
 #[test]
 fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
+    use archsig::observed::{
+        control::Control, evaluate_observed, input::InputSources, prepare_observed,
+    };
     for reverse in [false, true] {
         for integer in [false, true] {
             for (name, source_guard, target_guard, code) in [
@@ -11087,41 +11162,35 @@ fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
                 ("both-empty", "false", "false", 0),
                 ("target-empty", "true", "false", 1),
             ] {
-                let (dir, vocabulary) = rational_local_parameter_inputs(
-                    &format!("mixed-constant-{reverse}-{integer}-{name}"), false);
-                let (sp, tp, names) = if reverse {
-                    ("q:Q,n:Z", "y:Q,m:Z", ["q", "n"])
-                } else { ("n:Z,q:Q", "m:Z,y:Q", ["n", "q"]) };
-                let (left, right) = if integer { ("n", "m") } else { ("q", "y") };
-                std::fs::write(dir.join("l.law"), format!(
-                    r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here({sp}) when {source_guard} reads {left};}}
-reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};}}"#
-                )).unwrap();
-                let r = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                    "n=needed($m)"]);
-                assert_eq!(r.code, code, "{name}/{integer}/{reverse}: {} {}", r.stdout, r.stderr);
-                let j = result_json(&dir, &r);
-                let m = answer(&j, "m");
-                assert_eq!(s(get(m, "status")), if code == 0 { "established" } else { "refuted" });
-                assert!(has(get(m, "outputs"), "operation"));
-                assert_eq!(has(get(m, "outputs"), "map"), code == 0);
-                let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
-                assert!(arr(get(plan, "requirements")).is_empty());
-                if code == 1 {
-                    let evidence = &arr(get(m, "counterexamples"))[0];
-                    let data = get(value(&j, evidence), "data");
-                    let bindings = arr(get(data, "bindings"));
-                    assert_eq!(bindings.len(), 2);
-                    for (binding, name) in bindings.iter().zip(names) {
-                        assert_eq!(s(get(binding, "name")), name);
-                        assert_json(value(&j, get(binding, "value")), if name == "n" { r#""0""# } else { r#"["0","1"]"# });
-                    }
-                    assert_json(value(&j, get(data, "left")), "true");
-                    assert_json(value(&j, get(data, "right")), "false");
-                }
+                let dir = mixed_constant_inputs(name, reverse, integer, source_guard, target_guard);
+                let sources = InputSources::from_bytes(
+                    vec![std::fs::read(dir.join("d.json")).unwrap()],
+                    std::fs::read(dir.join("l.law")).unwrap(),
+                    std::fs::read(dir.join("a.json")).unwrap(),
+                );
+                let mut control = Control::unlimited();
+                let prepared =
+                    prepare_observed(sources, &MIXED_CONSTANT_ASKS, &mut control).unwrap();
+                let result = evaluate_observed(prepared, &mut control).unwrap();
+                assert_eq!(result.status(), "complete", "{name}/{integer}/{reverse}");
+                let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+                assert_mixed_constant_result(&j, reverse, code, "evidence");
             }
         }
+    }
+}
+
+#[test]
+fn local_mixed_numeric_constant_guard_cli_keeps_held_and_refuted_outputs() {
+    for (name, reverse, integer, source_guard, target_guard, code) in [
+        ("cli-computed", false, true, "1+1=2", "not false", 0),
+        ("cli-target-empty", true, false, "true", "false", 1),
+    ] {
+        let dir = mixed_constant_inputs(name, reverse, integer, source_guard, target_guard);
+        let r = asks(&dir, &MIXED_CONSTANT_ASKS);
+        assert_eq!(r.code, code, "{name}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        assert_mixed_constant_result(&j, reverse, code, "counterexamples");
     }
 }
 
