@@ -617,7 +617,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
         let dir = law_input(
             &format!("quotient-option-recursive-{case}"),
             &format!(
-                "view tagged(s:State):{ty} = {body};law optional visible(s:State):some(s.x)=some(s.x);law optional hidden(s:State,z:Bool,a:Bool):(if s.y then some(0) else none<Z>)=some(if z and a then 1 else 0);"
+                "view tagged(s:State):{ty} = {body};law optional visible(s:State):some(s.x)=some(s.x);law optional hidden(s:State,z:Bool,a:Bool):(if s.y then some(0) else none<Z>)=some(if z then 1 else 0);"
             ),
         );
         let sources = InputSources::from_bytes(
@@ -681,7 +681,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
                 } else {
                     assert_eq!(get(&operands[0], "none").value, JValue::Bool(true));
                 }
-                assert_eq!(s(get(&operands[1], "some")), if z && a { "1" } else { "0" });
+                assert_eq!(s(get(&operands[1], "some")), if z { "1" } else { "0" });
             }
             keys.sort();
             assert_eq!(
