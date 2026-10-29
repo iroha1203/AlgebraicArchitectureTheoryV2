@@ -792,8 +792,79 @@ fn rational_quotient_composed_fixed_guards_keep_the_selected_domain() {
 
 #[test]
 fn rational_quotient_varying_guard_is_not_fixed_by_an_arbitrary_assignment() {
+    use num_bigint::BigInt;
     let dir=input("rational-varying-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional indexed(s:State,b:Bool) when (s.x+s.y=1) and b:s.x=s.x;");
-    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,70,"{} {}",r.stdout,r.stderr);assert!(arr(get(&r.receipt,"issues")).iter().any(|issue| has(get(issue,"details"),"operation") && s(get(get(issue,"details"),"operation")).contains("quotient evaluation (not implemented)")));assert!(!has(&r.receipt,"result"));assert!(!dir.join("out").exists());
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "s=solve(Pair.total,on=@v/s,using=Pair.choose)",
+            "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(num(get(&r.receipt, "exit_code")), 1);
+    let j = result_json(&dir, &r);
+    assert_eq!(num(get(&j, "exit_code")), 1);
+    let answer = &arr(get(&j, "answers"))[1];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    let q = get(output(&j, 1, "quotient"), "value");
+    assert!(!has(q, "descent"));
+    let examples = arr(get(answer, "counterexamples"));
+    assert_eq!(examples.len(), 1);
+    let example = get(node(&j, &examples[0]), "value");
+    assert_eq!(s(get(example, "kind")), "separating_pair");
+    let data = get(example, "data");
+    let points = ["first", "second"].map(|key| arr(get(node(&j, get(data, key)), "value")));
+    assert!(points.iter().all(|point| point.len() == 2));
+    assert_eq!(points[0][0].value, points[1][0].value);
+    assert_ne!(points[0][1].value, points[1][1].value);
+    let views = arr(get(data, "view_values"));
+    assert_eq!(views.len(), 2);
+    for (view, point) in views.iter().zip(points) {
+        assert_eq!(get(node(&j, view), "value").value, point[0].value);
+    }
+    let rational = |value: &JNode| {
+        let pair = arr(value);
+        (
+            s(&pair[0]).parse::<BigInt>().unwrap(),
+            s(&pair[1]).parse::<BigInt>().unwrap(),
+        )
+    };
+    let active = points.map(|point| {
+        let (x, xd) = rational(&point[0]);
+        let (y, yd) = rational(&point[1]);
+        x * &yd + y * &xd == xd * yd
+    });
+    assert_ne!(active[0], active[1]);
+    let families = arr(get(data, "law_values"));
+    assert_eq!(families.len(), 2);
+    for (index, reference) in families.iter().enumerate() {
+        let rows = arr(get(node(&j, reference), "value"));
+        assert_eq!(rows.len(), 2);
+        let mut flags = vec![];
+        for row in rows {
+            let row = arr(row);
+            let key = arr(&row[0]);
+            assert_eq!(key.len(), 2);
+            let flag = get_bool(&key[1]);
+            flags.push(flag);
+            if flag && active[index] {
+                let operands = arr(get(&row[1], "some"));
+                assert_eq!(operands.len(), 2);
+                for operand in operands {
+                    assert_eq!(operand.value, points[index][0].value);
+                }
+            } else {
+                // b=false remains None in both witnesses, including the
+                // candidate where the other instance's guard holds.
+                assert!(get_bool(get(&row[1], "none")));
+                assert!(!has(&row[1], "some"));
+            }
+        }
+        flags.sort();
+        assert_eq!(flags, vec![false, true]);
+    }
 }
 
 #[test]
@@ -1287,4 +1358,104 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
             ("0", "1")
         ]
     );
+}
+#[test]
+fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
+    use archsig::observed::{
+        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+        evaluate::evaluate_observed_bytes,
+    };
+    use archsig::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+    for (usage, expected) in [
+        (
+            Usage {
+                elapsed_ms: 2,
+                ..Usage::default()
+            },
+            StopReason::BudgetExhausted {
+                resource: Resource::TimeMs,
+                limit: 1,
+                observed: 2,
+            },
+        ),
+        (
+            Usage {
+                memory_mib: 2,
+                ..Usage::default()
+            },
+            StopReason::BudgetExhausted {
+                resource: Resource::MemoryMib,
+                limit: 1,
+                observed: 2,
+            },
+        ),
+        (
+            Usage {
+                signal: Some(Signal::Int),
+                ..Usage::default()
+            },
+            StopReason::Cancelled(Signal::Int),
+        ),
+        (
+            Usage {
+                signal: Some(Signal::Term),
+                ..Usage::default()
+            },
+            StopReason::Cancelled(Signal::Term),
+        ),
+    ] {
+        let hit = Rc::new(Cell::new(false));
+        let seen = hit.clone();
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: Some(1),
+            },
+            move |point| {
+                if point == Checkpoint::QuotientGuardedInstance {
+                    seen.set(true);
+                    usage
+                } else {
+                    Usage::default()
+                }
+            },
+        );
+        let sources = input_sources("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when s.x=0:s.x=s.x;");
+        let evaluated = evaluate_observed_bytes(
+            sources,
+            &[
+                "s=solve(Pair.total,on=@v/s,using=Pair.choose)",
+                "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
+                "later=evaluate(Pair.x,s=@v/s)",
+            ],
+            &mut control,
+        );
+        let Ok(result) = evaluated else {
+            panic!("guarded quotient stop must preserve completed solve")
+        };
+        assert!(hit.get(), "stop must occur inside guarded family assembly");
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answers = arr(get(&j, "answers"));
+        assert_eq!(answers.len(), 3);
+        assert_eq!(s(get(&answers[0], "status")), "established");
+        assert!(has(get(&answers[0], "outputs"), "solutions"));
+        let expected_wire = archsig::json::parse(expected.wire().canonical().as_bytes()).unwrap();
+        for (answer, id) in answers[1..].iter().zip(["q", "later"]) {
+            assert_eq!(s(get(answer, "id")), id);
+            assert_eq!(s(get(answer, "status")), "undetermined");
+            let archsig::json::JValue::Obj(outputs) = &get(answer, "outputs").value else {
+                panic!("outputs must be an object")
+            };
+            assert!(outputs.is_empty());
+            let reasons = arr(get(answer, "reasons"));
+            assert_eq!(reasons.len(), 1);
+            assert_eq!(s(get(&reasons[0], "code")), expected.code());
+            assert_eq!(
+                get(&reasons[0], "details").value,
+                get(&expected_wire, "details").value
+            );
+        }
+    }
 }
