@@ -2,7 +2,6 @@
 
 use crate::{canonical::Json, result::Signal};
 use std::collections::BTreeMap;
-use std::time::Instant;
 use std::{cell::RefCell, rc::Rc};
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
@@ -122,7 +121,8 @@ impl Limits {
     }
 }
 
-/// 外部から注入した単調時計・peak RSS・取消通知の観測。
+/// 外部probeから注入した単調時計・peak RSS・取消通知の観測。
+/// 値を供給しない欄も既定値になるため、既定値だけから実測ゼロとは判断しない。
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Usage {
     pub elapsed_ms: u128,
@@ -243,14 +243,11 @@ impl Control {
         }
     }
 
-    /// OS の取消捕捉は呼出し側に委ねる。通常の内部呼出しは時間と peak RSS を測る。
+    /// 資源や取消を観測しない内部計算用の制御。OSへの問い合わせは行わない。
+    /// usageの既定値は未観測を表す。予算・計測・取消を必要とする呼出し側は
+    /// newでprobeを注入する。CLIの計測・signal捕捉もアプリケーション側が所有する。
     pub fn unlimited() -> Self {
-        let started = Instant::now();
-        Self::new(Limits::default(), move |_| Usage {
-            elapsed_ms: started.elapsed().as_millis(),
-            memory_mib: u128::from(crate::run::peak_rss_bytes()) / (1024 * 1024),
-            signal: None,
-        })
+        Self::new(Limits::default(), |_| Usage::default())
     }
 
     pub fn limits(&self) -> Limits {
@@ -308,6 +305,82 @@ impl Control {
 mod tests {
     use super::*;
     use std::cell::Cell;
+
+    #[test]
+    fn unlimited_and_default_leave_resource_and_signal_observations_unset() {
+        for mut control in [Control::unlimited(), Control::default()] {
+            let mut shared = control.clone();
+            for point in [
+                Checkpoint::InputBundle,
+                Checkpoint::Localize,
+                Checkpoint::Expression,
+            ] {
+                assert_eq!(control.checkpoint(point), Ok(()));
+                assert_eq!(shared.checkpoint(point), Ok(()));
+            }
+            assert_eq!(control.limits(), Limits::default());
+            assert_eq!(control.usage(), Usage::default(), "既定値は未観測");
+            assert_eq!(shared.usage(), Usage::default());
+            assert!(control.stop_reason().is_none());
+            assert!(shared.stop_reason().is_none());
+        }
+    }
+
+    #[test]
+    fn injected_unbounded_probe_keeps_usage_and_cancellation_shared() {
+        let probes = Rc::new(Cell::new(0));
+        let calls = probes.clone();
+        let mut control = Control::new(Limits::default(), move |_| {
+            let index = calls.get();
+            calls.set(index + 1);
+            [
+                Usage {
+                    elapsed_ms: 17,
+                    memory_mib: 23,
+                    signal: None,
+                },
+                Usage {
+                    elapsed_ms: 3,
+                    memory_mib: 5,
+                    signal: None,
+                },
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                },
+            ][index]
+        });
+        let mut shared = control.clone();
+        assert_eq!(control.checkpoint(Checkpoint::InputBundle), Ok(()));
+        assert_eq!(
+            shared.usage(),
+            Usage {
+                elapsed_ms: 17,
+                memory_mib: 23,
+                signal: None
+            }
+        );
+        assert_eq!(shared.checkpoint(Checkpoint::Localize), Ok(()));
+        assert_eq!(control.usage(), shared.usage());
+        assert_eq!(control.usage().elapsed_ms, 17);
+        assert_eq!(control.usage().memory_mib, 23);
+        let stopped = StopReason::Cancelled(Signal::Term);
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(stopped.clone())
+        );
+        assert_eq!(shared.checkpoint(Checkpoint::Resolve), Err(stopped.clone()));
+        assert_eq!(shared.stop_reason(), Some(stopped));
+        assert_eq!(
+            shared.usage(),
+            Usage {
+                elapsed_ms: 17,
+                memory_mib: 23,
+                signal: Some(Signal::Term)
+            }
+        );
+        assert_eq!(probes.get(), 3, "停止後はprobeを呼ばない");
+    }
 
     #[test]
     fn stop_reasons_priorities_and_latch_are_owned_by_control() {
