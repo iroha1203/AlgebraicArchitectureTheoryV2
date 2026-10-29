@@ -119,7 +119,7 @@ fn candidates(
             continue;
         }
         for (object, d) in ds.iter().enumerate().skip(1) {
-            for target in &d.originals {
+            for target in d.originals.iter().filter(|target| target.row.is_none()) {
                 let t = frames::origin(g, target.reference).unwrap().unwrap();
                 if t.outside
                     && b.declaration == t.declaration

@@ -511,7 +511,7 @@ fn source_or_target_circuit_failure_keeps_completed_other_side_and_original_oper
     }
 }
 #[test]
-fn outside_instances_keep_uniform_rejection_and_transport_all_actual_argument_images() {
+fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_images() {
     let i = inputs(
         "law required measure(c:Left.Child,b:Bool):2=0;",
         "law required measure(d:Right.Child,q:Bool):3=0;",
@@ -522,8 +522,8 @@ fn outside_instances_keep_uniform_rejection_and_transport_all_actual_argument_im
     let r = object_law_circuit_transport(i.clone(), &d, o, n, &mut quiet()).unwrap();
     assert_eq!(r.outcome(), &Outcome::Preserved);
     assert_eq!(r.points().len(), 2);
-    for (p, b) in r.points().iter().zip([false, true]) {
-        assert_eq!((p.source_point, p.target_point), (None, None));
+    for (j, (p, b)) in r.points().iter().zip([false, true]).enumerate() {
+        assert_eq!((p.source_point, p.target_point), (Some(j), Some(j)));
         assert_eq!((p.source_when, p.target_when), (Some(false), Some(false)));
         assert_eq!(
             (p.source_accepts, p.target_accepts),
@@ -537,16 +537,20 @@ fn outside_instances_keep_uniform_rejection_and_transport_all_actual_argument_im
             p.target_bindings[0].1.wire(),
             archsig::canonical::Json::Bool(b)
         );
-        let source = &r.source().unwrap().circuits()[p.source_circuit];
-        assert!(source.points.is_empty());
-        let uniform = source.uniform.as_ref().unwrap();
-        assert!(uniform.arguments.is_empty());
-        assert!(
-            uniform
-                .witnesses
-                .iter()
-                .all(|w| w.original_evaluation.is_none() && w.epsilon_producer.is_none())
-        );
+        for (side, circuit) in [
+            (r.source().unwrap(), p.source_circuit),
+            (r.target().unwrap(), p.target_circuit),
+        ] {
+            let circuit = &side.circuits()[circuit];
+            assert!(circuit.uniform.is_none());
+            assert_eq!(circuit.points.len(), 2);
+            assert_eq!(circuit.points[j].arguments[0].wire(), archsig::canonical::Json::Bool(b));
+            assert_eq!(circuit.points[j].when, Some(false));
+            assert!(!circuit.points[j].witnesses.is_empty());
+            assert!(circuit.points[j].witnesses.iter().all(|w|
+                w.row == Some(j) && w.original_evaluation.is_none() && w.epsilon_producer.is_none()
+            ));
+        }
     }
     r.recheck(i, &mut quiet()).unwrap();
 }

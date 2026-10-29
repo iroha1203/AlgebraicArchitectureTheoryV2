@@ -146,7 +146,8 @@ fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_obj
         &mut quiet(),
     )
     .unwrap();
-    let mut count = 0;
+    let mut templates = 0;
+    let mut rows = 0;
     for (object, d) in ds.iter().enumerate() {
         for o in &d.originals {
             let row = frames::origin(&g, o.reference).unwrap().unwrap();
@@ -154,16 +155,23 @@ fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_obj
             let answer = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
             assert_eq!(answer.is_some(), row.outside);
             if let Some(answer) = answer {
-                assert!(o.row.is_some());
+                assert!(!row.ready);
+                assert!(!row.body_allowed);
+                assert_eq!(row.bindings.len(), 1);
+                assert!(matches!(g.scalar(row.bindings[0].value).unwrap(), Scalar::Subject { subject, .. } if subject == if object == 1 { "q" } else { "p" }));
                 assert_outside(&g, &answer, o.reference, objects[object]);
                 assert_eq!(g.nodes.len(), before + 3);
-                count += 1;
+                if o.row.is_some() {
+                    rows += 1;
+                } else {
+                    templates += 1;
+                }
             } else {
                 assert_eq!(g.nodes.len(), before);
             }
         }
     }
-    assert_eq!(count, 4);
+    assert_eq!((templates, rows), (4, 4));
     replay(&p, &g).unwrap();
 }
 #[test]

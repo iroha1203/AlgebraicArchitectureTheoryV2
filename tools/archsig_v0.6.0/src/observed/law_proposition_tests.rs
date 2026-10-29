@@ -74,7 +74,8 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
         &mut quiet(),
     )
     .unwrap();
-    let mut runs = 0;
+    let mut templates = 0;
+    let mut rows = 0;
     for (object, d) in ds.iter().enumerate() {
         for o in &d.originals {
             let row = frames::origin(&g, o.reference).unwrap().unwrap();
@@ -93,8 +94,7 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
             assert_eq!(reading.origin, o.reference);
             assert_eq!(
                 reading.answer.is_some(),
-                o.row.is_some()
-                    && (object == 0 || (object == 1 && who == "p") || (object == 2 && who == "q"))
+                object == 0 || (object == 1 && who == "p") || (object == 2 && who == "q")
             );
             if let Some(answer) = reading.answer {
                 assert_eq!(
@@ -120,11 +120,18 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
                     )),
                     who == "q"
                 );
-                runs += 1;
+                assert!(answer.reasons.is_empty());
+                assert!(row.ready);
+                assert!(row.body_allowed);
+                if o.row.is_some() {
+                    rows += 1;
+                } else {
+                    templates += 1;
+                }
             }
         }
     }
-    assert_eq!(runs, 4);
+    assert_eq!((templates, rows), (4, 4));
     replay(&p, &g).unwrap();
 }
 

@@ -157,19 +157,38 @@ fn guard_false_keeps_raw_difference_separate_from_zero_conditioned_residual() {
 fn outside_object_uses_typed_zero_without_inventing_raw_operands_or_fake_parameters() {
     let i = inputs("law required rootOnly(a:Root,b:Bool):2=1;", fixture::A);
     let r = run(Arc::clone(&i));
-    let outside = r
+    let outside: Vec<_> = r
         .evaluations()
         .iter()
-        .find(|e| e.uniform.is_some())
+        .filter(|e| e.position.object == 1)
+        .collect();
+    assert_eq!(outside.len(), 1);
+    let outside = outside[0];
+    assert!(outside.complete);
+    assert!(outside.uniform.is_none());
+    assert_eq!(outside.rows.len(), 2);
+    let original = r
+        .base()
+        .evaluations()
+        .iter()
+        .find(|e| e.position() == outside.position)
         .unwrap();
-    let row = outside.uniform.as_ref().unwrap();
-    assert!(outside.rows.is_empty());
-    let c = &row.cases[0];
-    assert_eq!(c.reading.application().value(), Some(false));
-    assert!(c.evaluation.is_none());
-    assert!(c.components[0].epsilon.is_none());
-    assert!(c.components[0].left.is_none());
-    assert_eq!(text(&c.components[0].residual), Some("\"0\"".into()));
+    for (j, row) in outside.rows.iter().enumerate() {
+        assert!(row.complete);
+        assert_eq!(original.family().rows()[j].bindings()[0].1.wire(), Json::Bool(j == 1));
+        assert_eq!(row.cases.len(), 1);
+        let c = &row.cases[0];
+        assert_eq!(c.reading.application().value(), Some(false));
+        assert!(c.evaluation.is_none());
+        assert!(c.body_evaluation.is_none());
+        assert!(c.operand_evaluations.is_empty());
+        assert!(c.epsilon_producer.is_none());
+        assert_eq!(c.components.len(), 1);
+        assert!(c.components[0].epsilon.is_none());
+        assert!(c.components[0].left.is_none());
+        assert!(c.components[0].right.is_none());
+        assert_eq!(text(&c.components[0].residual), Some("\"0\"".into()));
+    }
     assert_eq!(r.comparisons()[0].points.len(), 2);
     assert_eq!(r.outcome(), Some(&Outcome::Refuted { component: vec![] }));
     r.recheck(i, &mut quiet()).unwrap();
