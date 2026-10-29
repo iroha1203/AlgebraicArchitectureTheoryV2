@@ -2,7 +2,8 @@
 mod common;
 
 use archsig::{
-    issue::{Code, Location},
+    canonical::Json,
+    issue::{Code, Issue, Location},
     law::{check_law, check_law_controlled},
     observed::{
         control::{CheckFailure, Checkpoint, Control, Limits, Resource, StopReason, Usage},
@@ -29,6 +30,25 @@ fn sources(law: &str) -> InputSources {
         law.as_bytes().to_vec(),
         include_bytes!("fixtures/counter.archmap.json").to_vec(),
     )
+}
+
+fn expected_input_issue(law: &str, issue: &Issue) -> Json {
+    let mut wire = ResultIssue::Input(issue.clone()).wire();
+    let Json::Obj(fields) = &mut wire else {
+        panic!("issue")
+    };
+    let Json::Obj(location) = fields.get_mut("location").unwrap() else {
+        panic!("location")
+    };
+    // 固定入力の参照位置: view の second は3行19列、reading の B は2行17列。
+    let (line, column) = if law.contains("view first") {
+        (3, 19)
+    } else {
+        (2, 17)
+    };
+    location.insert("line".into(), Json::Nat(line));
+    location.insert("column".into(), Json::Nat(column));
+    wire
 }
 
 fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
@@ -59,7 +79,7 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(
         failure.issues(),
-        [ResultIssue::Input(expected.clone()).wire()]
+        [expected_input_issue(law, &expected)]
     );
     assert!(total.get() > 2);
     (expected, total.get())
@@ -108,7 +128,7 @@ fn assert_known_cycle_over_budget(law: &str) {
         assert_eq!(failure.status(), InputStatus::Invalid);
         assert_eq!(
             failure.issues(),
-            [reason.wire(), ResultIssue::Input(expected.clone()).wire()]
+            [reason.wire(), expected_input_issue(law, &expected)]
         );
         assert!(failure.declarations().is_empty());
         assert!(failure.primitives().is_empty());
