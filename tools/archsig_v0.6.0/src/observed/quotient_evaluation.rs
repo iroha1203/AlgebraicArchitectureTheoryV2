@@ -32,7 +32,7 @@ pub(in crate::observed) struct LawRow {
     pub guard_evaluation: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
     pub guard: bool,
-    pub values: Option<(Scalar, Scalar)>,
+    pub values: Option<Scalar>,
     pub scope: Scope,
 }
 pub(in crate::observed) struct Table {
@@ -41,7 +41,7 @@ pub(in crate::observed) struct Table {
     pub scope: Scope,
     pub parameter_type: Type,
     pub bindings: Vec<(String, Scalar)>,
-    pub law: Option<(String, Type, usize, usize)>,
+    pub law: Option<(String, Type)>,
 }
 fn unsupported(request: &Request, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
@@ -144,16 +144,62 @@ pub(in crate::observed) fn compute(
             ))
         })
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
-    let law = request.arguments.iter().find(|a| a.name == "law").map(|a| {
-        let Selector::Declaration { name } = &a.value else { return Err(ValidationFailure::from("商のLaw名がない")); };
-        let Signature::Law { body, .. } = &original.inputs.law().declarations[name].signature else { return Err(ValidationFailure::from("商のLaw署名がない")); };
-        let ExprKind::Binary { op: BinOp::Eq, lhs, rhs } = original.inputs.law().exprs[*body].kind else {
-            return Err(unsupported(request, "有限商の等式以外の評価族は未実装"));
-        };
-        let ty = original.inputs.law().expr_type(lhs).ok_or("商の等式値型がない")?.clone();
-        if !exact_type(&ty, original.inputs.law(), c)? { return Err(unsupported(request, "このLaw値型の有限商は未実装")); }
-        Ok((name.clone(), ty, lhs, rhs))
-    }).transpose()?;
+    let law = request
+        .arguments
+        .iter()
+        .find(|a| a.name == "law")
+        .map(|a| {
+            let Selector::Declaration { name } = &a.value else {
+                return Err(ValidationFailure::from("商のLaw名がない"));
+            };
+            let Signature::Law { body, params, .. } =
+                &original.inputs.law().declarations[name].signature
+            else {
+                return Err(ValidationFailure::from("商のLaw署名がない"));
+            };
+            let mut expression = *body;
+            while let ExprKind::Group(child) = original.inputs.law().exprs[expression].kind {
+                c.checkpoint(Checkpoint::Quotient)?;
+                expression = child;
+            }
+            let ty = match &original.inputs.law().exprs[expression].kind {
+                ExprKind::Binary {
+                    op: BinOp::Eq, lhs, ..
+                } => {
+                    let ty = original
+                        .inputs
+                        .law()
+                        .expr_type(*lhs)
+                        .ok_or("商の等式値型がない")?
+                        .clone();
+                    if !exact_type(&ty, original.inputs.law(), c)? {
+                        return Err(unsupported(request, "このLaw値型の有限商は未実装"));
+                    }
+                    Type::Tuple(vec![ty.clone(), ty])
+                }
+                ExprKind::Bool(_) => Type::Bool,
+                ExprKind::Dotted(path)
+                    if (path.len() == 1
+                        && params.iter().any(|p| {
+                            p.name == path[0].name
+                                && p.ty.erase() == Type::Bool
+                                && request
+                                    .arguments
+                                    .iter()
+                                    .any(|a| a.name == format!("bind.{}", p.name))
+                        }))
+                        || (path.len() == 2
+                            && params.iter().any(|p| p.name == path[0].name)
+                            && original.inputs.law().expr_type(expression)
+                                == Some(&Type::Bool)) =>
+                {
+                    Type::Bool
+                }
+                _ => return Err(unsupported(request, "この有限商のLaw評価族は未実装")),
+            };
+            Ok((name.clone(), ty))
+        })
+        .transpose()?;
     let domain = Arc::new(ObjectDomain::from_readings(
         original.inputs,
         input.witness.readings(),
@@ -163,7 +209,7 @@ pub(in crate::observed) fn compute(
     let mut rows = vec![];
     let mut missing = BTreeSet::new();
     let mut scope = Scope::default();
-    if let Some((name, _, _, _)) = &law {
+    if let Some((name, _)) = &law {
         let decl = &original.inputs.law().declarations[name];
         scope.readings.insert(decl.reading.clone());
         let Signature::Law {params, ..} = &decl.signature else {unreachable!()};
@@ -255,7 +301,7 @@ pub(in crate::observed) fn compute(
             return Err(unsupported(request, "候補上のview構成条件・記号値の商は未実装"));
         }
         let mut laws = vec![];
-        if let Some((name, _, _, _)) = &law {
+        if let Some((name, _)) = &law {
             let law_decl = &original.inputs.law().declarations[name];
             let Signature::Law { params, body, guard, .. } = &law_decl.signature else { unreachable!() };
             let mut instances = vec![vec![]];
@@ -288,10 +334,29 @@ pub(in crate::observed) fn compute(
                 let capture = env.evaluation_capture.replace(None).ok_or("商の通常評価出現がない")?;
                 let evaluated = evaluated?;
                 scope.merge(&evaluated.scope);
-                if evaluated.application == Some(false) { continue; }
-                let values = if evaluated.guard == Some(false) { None } else {
-                    match evaluated.operands {
-                        Some((_, Some(left), Some(right))) => Some((left, right)),
+                if evaluated.application == Some(false) {
+                    continue;
+                }
+                let body_evaluation = capture
+                    .roots
+                    .iter()
+                    .copied()
+                    .find(|i| capture.nodes[*i].expression == *body);
+                let values = if evaluated.guard == Some(false) {
+                    None
+                } else {
+                    let value = if law.as_ref().is_some_and(|(_, ty)| *ty == Type::Bool) {
+                        body_evaluation.and_then(|i| capture.nodes[i].value.clone())
+                    } else {
+                        evaluated
+                            .operands
+                            .and_then(|(_, left, right)| match (left, right) {
+                                (Some(left), Some(right)) => Some(Scalar::Tuple(vec![left, right])),
+                                _ => None,
+                            })
+                    };
+                    match value {
+                        Some(value) => Some(value),
                         _ => {
                             let reads = env.missing_slot_reads.borrow().as_ref().cloned().unwrap_or_default();
                             missing.extend(reads); missing.extend(evaluated.application_missing);
@@ -306,7 +371,6 @@ pub(in crate::observed) fn compute(
                     if missing.is_empty() { return Err(unsupported(request, "商のLaw適用条件が未確定")); }
                     continue;
                 }
-                let body_evaluation = capture.roots.iter().copied().find(|i| capture.nodes[*i].expression == *body);
                 let guard_evaluation = guard.and_then(|id|capture.roots.iter().copied().find(|i|capture.nodes[*i].expression == id));
                 laws.push(LawRow { bindings, guard: evaluated.guard == Some(true), values, scope: evaluated.scope,
                     evaluations:capture.nodes,body_evaluation,guard_evaluation });

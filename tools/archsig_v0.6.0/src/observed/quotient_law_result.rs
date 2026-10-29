@@ -1,4 +1,4 @@
-//! 同じ候補環境の等式評価と、instance keyを含む型付き評価族。
+//! 同じ候補環境の通常評価と、instance keyを含む型付き評価族。
 use super::*;
 use crate::observed::environment::quotient_evaluation::{LawRow, Row};
 
@@ -90,7 +90,7 @@ pub(super) fn family_type(
     };
     Ok(Type::Set(Box::new(Type::Tuple(vec![
         Type::Tuple(params.iter().map(|p| p.ty.erase()).collect()),
-        Type::Option(Box::new(Type::Tuple(vec![ty.clone(), ty.clone()]))),
+        Type::Option(Box::new(ty.clone())),
     ]))))
 }
 pub(super) fn row(
@@ -248,10 +248,8 @@ pub(super) fn row(
         items.push(Scalar::Tuple(vec![
             key,
             Scalar::Option {
-                element: Type::Tuple(vec![ty.clone(), ty.clone()]),
-                value: values
-                    .as_ref()
-                    .map(|(a, b)| Box::new(Scalar::Tuple(vec![a.clone(), b.clone()]))),
+                element: ty.clone(),
+                value: values.as_ref().map(|value| Box::new(value.clone())),
             },
         ]));
     }
