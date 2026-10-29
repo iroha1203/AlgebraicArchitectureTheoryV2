@@ -1341,3 +1341,29 @@ fn integer_conjunction_build_keeps_required_and_optional_equations() {
     assert_eq!(arr(get(get(output(&j, 0, "algebra"), "value"), "circuits")).len(), 3);
     assert_eq!(s(get(output(&j, 2, "value"), "value")), "0");
 }
+#[test]
+fn quotient_integer_infeasible_guard_preserves_inapplicable_family() {
+    let dir = input("integer-infeasible-quotient-guard", "change choose(s:State,a:Z,b:Z)=s with{x=a,y=b};law optional inactive(s:State) when 2*s.x=1:s.y=s.y;");
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "s=solve(Pair.total,on=@pair/s,using=Pair.choose)",
+            "q=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.inactive)",
+        ],
+    );
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
+    let q = get(output(&j, 1, "quotient"), "value");
+    let descent = get(node(&j, get(q, "descent")), "value");
+    let linear = get(node(&j, get(descent, "linear")), "value");
+    let family = get(node(&j, get(linear, "target")), "value");
+    assert_eq!(num(get(family, "free_rank")), 0);
+    let tags = arr(get(node(&j, get(family, "applicability")), "value"));
+    assert_eq!(tags.len(), 1);
+    assert!(matches!(
+        arr(&tags[0])[1].value,
+        archsig::json::JValue::Bool(false)
+    ));
+}

@@ -415,10 +415,28 @@ pub(in crate::observed) fn compute(
                         law.pending_expression = Some(*guard);
                         return Ok(result);
                     }
-                    return Err(unsupported(
-                        request,
-                        "商の候補域で変化するLaw guardの降下は未実装",
-                    ));
+                    // A nonconstant symbolic Bool can still have no applicable
+                    // candidate. Solve on the selected coordinates over their
+                    // original ring; integer infeasibility must stay integral.
+                    let mut pending = change_affine::Pending::default();
+                    let domain = change_affine::numeric_guard_domain(
+                        selected,
+                        Some(*guard),
+                        &vars,
+                        &linear.axes[..dimensions],
+                        &declaration.reading,
+                        &mut pending,
+                        ty,
+                    )?;
+                    result.scope.merge(&pending.scope);
+                    if domain.particular.is_none() {
+                        false
+                    } else {
+                        return Err(unsupported(
+                            request,
+                            "商の候補域で変化するLaw guardの降下は未実装",
+                        ));
+                    }
                 }
             } else {
                 true
