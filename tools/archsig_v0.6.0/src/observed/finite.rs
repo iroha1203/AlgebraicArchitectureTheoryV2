@@ -156,6 +156,7 @@ pub(super) fn field_candidates(
     law: &CheckedLaw,
     control: &Control,
     roster: &mut Roster<'_>,
+    owned: &mut OwnedRoster<'_>,
     visitor: &mut dyn FnMut(usize),
 ) -> Result<Enumeration, ValidationFailure> {
     enumerate_values(
@@ -163,7 +164,7 @@ pub(super) fn field_candidates(
         law,
         control,
         roster,
-        &mut |_, _| Err("field候補の型が消去されていない".into()),
+        owned,
         visitor,
         true,
     )

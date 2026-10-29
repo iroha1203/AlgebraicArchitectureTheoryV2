@@ -634,7 +634,8 @@ fn map_field_post_validation_cancel_retains_verified_current_and_probe_freeze() 
 
 #[test]
 fn map_field_actual_key_subset_construction_cancel_keeps_strict_prefix() {
-    stop("map_field_key", 1, 0);
+    // 確定ownerの始域は1要素なので、その実keyの境界で止める。
+    stop("map_field_key", 0, 0);
 }
 #[test]
 fn map_field_actual_candidate_table_emission_time_stop_keeps_strict_prefix() {
