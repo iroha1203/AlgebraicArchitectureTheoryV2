@@ -43,7 +43,7 @@ GitHub Release notes は原則として英語で書く。
    - tag が未作成の場合は、対象 commit を確認し、ユーザー確認後に tag を作成・push する。勝手に release tag を作らない。
 
 3. 対象 surface を分類する。
-   - ArchSig: `tools/archsig/**`, `docs/tool/**`, `.github/workflows/archsig-release.yml`, `.github/RELEASE_TEMPLATE.md`
+   - ArchSig: `tools/archsig/**`, `tools/archsig_v0.6.0/**`, 対象 version の `docs/tool/**`, `.github/workflows/archsig-release.yml`, `.github/RELEASE_TEMPLATE.md`
    - FieldSig: `tools/fieldsig/**`, FieldSig docs / workflow
    - Lean / docs claim: `Formal/**`, `docs/aat/**`, `docs/sft/**`
    - Website: `website/**`
@@ -58,8 +58,8 @@ GitHub Release notes は原則として英語で書く。
    - 公開前に `vX.Y.Z`, `<...>`, `#...` などの placeholder が残っていないことを確認する。
 
 5. 検証する。
-   - ArchSig 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
-   - FieldSig 変更あり: `cargo test --manifest-path tools/fieldsig/Cargo.toml`
+   - ArchSig / FieldSig 変更あり: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、
+     release 対象の version と影響するクレートごとに検証する。
    - Lean / docs claim 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、変更範囲に応じた focused check または targeted build をローカルで実行する。
    - website 変更あり: Playwright で静的ページを確認する。
    - release notes / workflow / docs 変更のみでも:
