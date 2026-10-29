@@ -5,6 +5,7 @@ mod cli;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 fn inputs(name: &str) -> PathBuf {
     let dir = workdir(name);
@@ -27,9 +28,10 @@ fn inputs(name: &str) -> PathBuf {
     dir
 }
 fn asks(dir: &Path, requests: &[&str]) -> Run {
-    asks_with_limit(dir, requests, "120000")
+    asks_with_limits(dir, requests, "120000", CHILD_DEADLINE)
 }
-fn asks_with_limit(dir: &Path, requests: &[&str], time: &str) -> Run {
+// 360秒の製品予算を使う呼出しは、起動・保存の余裕60秒を加えた420秒監視を明示する。
+fn asks_with_limits(dir: &Path, requests: &[&str], time: &str, deadline: Duration) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -46,7 +48,7 @@ fn asks_with_limit(dir: &Path, requests: &[&str], time: &str) -> Run {
     for request in requests {
         args.extend(["--ask", request]);
     }
-    run(dir, &args)
+    run_with_deadline(dir, &args, deadline)
 }
 fn answer<'a>(result: &'a JNode, id: &str) -> &'a JNode {
     arr(get(result, "answers"))
@@ -1346,7 +1348,7 @@ reading Alternative {
 use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 law required zero(s: State): (s.free, s.held) = (0, 0);
 }"#).unwrap();
-    let run = asks_with_limit(
+    let run = asks_with_limits(
         &dir,
         &[
             "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
@@ -1356,6 +1358,7 @@ law required zero(s: State): (s.free, s.held) = (0, 0);
             "same=compare($m.operation,to=$base.operation,kind=action)",
         ],
         "360000",
+        Duration::from_secs(420),
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1402,7 +1405,7 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
         ),
     )
     .unwrap();
-    let run = asks_with_limit(
+    let run = asks_with_limits(
         &dir,
         &[
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
@@ -1410,6 +1413,7 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
             "why=needed($m)",
         ],
         "360000",
+        Duration::from_secs(420),
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1503,12 +1507,13 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
         ),
     )
     .unwrap();
-    let run = asks_with_limit(
+    let run = asks_with_limits(
         &dir,
         &[
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         ],
         "360000",
+        Duration::from_secs(420),
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1559,13 +1564,14 @@ reading After {{{uses} law {role} zero(s:State):{body};}}"#
             ),
         )
         .unwrap();
-        let run = asks_with_limit(
+        let run = asks_with_limits(
             &dir,
             &[
                 "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
                 "same=compare($m.operation,to=$m.operation,kind=action)",
             ],
             "360000",
+            Duration::from_secs(420),
         );
         assert_eq!(run.code, 1, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -1595,13 +1601,13 @@ view holdings(s: State): (Z, Z) = (s.free, s.held);
 view enabled(s: State): Bool = s.free >= 0;
 law required conserved(e: Reserve): e.to.free+e.to.held=e.from.free+e.from.held;
 }"#).unwrap();
-    let run = asks_with_limit(&dir, &[
+    let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
         "b=build(Alternative,on=$m.map.target.base.subject)",
         "n=evaluate(Alternative.holdings,on=$b.object,s=@v/r)",
         "flag=evaluate(Alternative.enabled,on=$b.object,s=@v/r)",
         "ok=check(Alternative.conserved,on=$b.object,e=@v/f)",
-    ], "360000");
+    ], "360000", Duration::from_secs(420));
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1660,11 +1666,11 @@ reading Alternative {
 use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 view holdings(s: State): (Z, Z) = (s.free,s.held);
 }"#).unwrap();
-    let run = asks_with_limit(&dir, &[
+    let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
         "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
         "same=compare($m.operation,to=$base.operation,kind=action)",
-    ], "360000");
+    ], "360000", Duration::from_secs(420));
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");
@@ -1738,13 +1744,13 @@ view one(): Fp(2) = 1;
 #[test]
 fn finite_view_map_preserves_all_parameters_with_renamed_target_and_following_queries() {
     let dir = finite_view_inputs("finite-view-map", true);
-    let run = asks_with_limit(&dir, &[
+    let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         "b=build(After,on=$m.map.target.base.subject)",
         "yes=evaluate(After.yes)", "zero=evaluate(After.zero)", "one=evaluate(After.one)",
         "free=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$zero.value)",
         "held=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$one.value)",
-    ], "120000");
+    ], "120000", CHILD_DEADLINE);
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1780,10 +1786,10 @@ fn finite_view_map_preserves_all_parameters_with_renamed_target_and_following_qu
 #[test]
 fn finite_view_map_refutes_a_changed_nonzero_parameter_row() {
     let dir = finite_view_inputs("finite-view-map-changed", false);
-    let run = asks_with_limit(&dir, &[
+    let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         "same=compare($m.operation,to=$m.operation,kind=action)",
-    ], "120000");
+    ], "120000", CHILD_DEADLINE);
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1818,11 +1824,11 @@ fn mixed_product_views_map_build_and_evaluate_with_and_without_parameters() {
     for parameter in [false, true] {
         let dir = mixed_view_inputs(if parameter { "mixed-parameter-view" } else { "mixed-closed-view" }, true, parameter);
         let query = if parameter { "n=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$yes.value)" } else { "n=evaluate(After.metrics,on=$b.object,s=@v/r)" };
-        let run = asks_with_limit(&dir, &[
+        let run = asks_with_limits(&dir, &[
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "b=build(After,on=$m.map.target.base.subject)",
             "yes=evaluate(After.yes)", query,
-        ], "120000");
+        ], "120000", CHILD_DEADLINE);
         assert_eq!(run.code, 0, "{}", run.stdout);
         let result = result_json(&dir, &run);
         for id in ["m", "b", "yes", "n"] { assert_eq!(s(get(answer(&result, id), "status")), "established"); }
@@ -1840,10 +1846,10 @@ fn mixed_product_views_map_build_and_evaluate_with_and_without_parameters() {
 #[test]
 fn mixed_product_view_map_refutes_changed_numeric_coordinate() {
     let dir = mixed_view_inputs("mixed-view-changed", false, false);
-    let run = asks_with_limit(&dir, &[
+    let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         "same=compare($m.operation,to=$m.operation,kind=action)",
-    ], "120000");
+    ], "120000", CHILD_DEADLINE);
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");

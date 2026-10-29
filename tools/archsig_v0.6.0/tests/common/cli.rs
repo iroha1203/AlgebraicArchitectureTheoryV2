@@ -3,6 +3,14 @@
 use archsig::json::{JNode, JValue, parse};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::Duration;
+
+#[path = "watchdog.rs"]
+mod watchdog;
+
+// 通常の120秒の製品予算に、起動・保存・負荷の余裕を加えた独立した上限。
+// 製品の予算引数から延長せず、超過はテスト失敗にする。
+pub const CHILD_DEADLINE: Duration = Duration::from_secs(180);
 
 pub fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_archsig"))
@@ -25,7 +33,15 @@ pub struct Run {
 }
 
 pub fn run(dir: &Path, args: &[&str]) -> Run {
-    let out = bin().current_dir(dir).args(args).output().unwrap();
+    run_with_deadline(dir, args, CHILD_DEADLINE)
+}
+
+/// 長時間テストは製品予算と独立した監視時間を呼出箇所で明示する。
+pub fn run_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> Run {
+    let captured = watchdog::output(bin().current_dir(dir).args(args), deadline)
+        .expect("CLIテストの子プロセスを実行");
+    assert!(!captured.timed_out, "CLIテストの子プロセスが独立監視時間{deadline:?}を超過");
+    let out = captured.output;
     let stdout = String::from_utf8(out.stdout).unwrap();
     assert_eq!(stdout.matches('\n').count(), 1, "stdout は一行: {stdout:?}");
     Run {
