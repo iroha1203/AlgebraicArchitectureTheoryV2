@@ -213,3 +213,6 @@ mod native_source;
 
 #[cfg(test)]
 mod numeric_tuple_change_integration_tests;
+
+#[cfg(test)]
+mod local_closure_retention_tests;
