@@ -512,18 +512,92 @@ fn law_descent(
         .iter()
         .any(|instance| matches!(instance.guard, quotient_affine::Guard::Affine(_)))
     {
-        return guarded_descent(
-            b,
-            env,
-            image,
-            expression,
-            ring,
-            actual_image,
-            classes,
-            fiber,
-            c,
-        )
-        .map(|map| (Some(map), vec![], vec![]));
+        // Use actual image coordinates, with Option-valued families as a
+        // typed Domain rather than a numeric module.
+        let family_type = law_result::family_type(env, &law.name, &law.value_type)?;
+        let target = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([("kind", Json::str("type")), ("type", family_type.wire())]),
+            vec![expression],
+            None,
+            None,
+        )?;
+        let mut arguments = vec![classes, target, actual_image, expression];
+        let mut instances = vec![];
+        let affine_component = |b: &mut Builder<'_>,
+                                rows: &[Vec<Scalar>],
+                                offset: &[Scalar],
+                                arguments: &mut Vec<NodeRef>,
+                                c: &mut Control| {
+            let target = linear::module(b, ring, rows.len(), "free", vec![])?;
+            let transformed = coefficients::multiply(&image.ty, rows, &fiber.lifts, fiber.rank, c)?;
+            let map = scalar_wire::map(b, actual_image, target, &transformed, fiber.rank, c)?;
+            let offset = scalar_wire::vector(b, target, offset, c)?;
+            arguments.extend([map, offset]);
+            Ok::<_, ValidationFailure>(Json::obj([
+                ("linear", map.wire()),
+                ("offset", offset.wire()),
+            ]))
+        };
+        for instance in &law.instances {
+            c.checkpoint(crate::observed::control::Checkpoint::Quotient)?;
+            let key = Scalar::Tuple(
+                instance
+                    .bindings
+                    .iter()
+                    .map(|(_, value)| value.clone())
+                    .collect(),
+            );
+            let key = change_result::value(b, &key)?;
+            arguments.push(key);
+            let guard = match &instance.guard {
+                quotient_affine::Guard::Fixed(value) => Json::Bool(*value),
+                quotient_affine::Guard::Affine(domain) => {
+                    let offset = domain
+                        .rhs
+                        .iter()
+                        .map(|rhs| {
+                            numeric::binary(
+                                crate::law::ast::BinOp::Sub,
+                                &numeric::zero(&image.ty, c)?,
+                                rhs,
+                                c,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()?;
+                    affine_component(b, &domain.equations, &offset, &mut arguments, c)?
+                }
+            };
+            let mut row = BTreeMap::from([("key".into(), key.wire()), ("guard".into(), guard)]);
+            if !instance.guard.never() {
+                let values = affine_component(
+                    b,
+                    &law.matrix[instance.rows.clone()],
+                    &law.offset[instance.rows.clone()],
+                    &mut arguments,
+                    c,
+                )?;
+                row.insert("values".into(), values);
+            }
+            instances.push(Json::Obj(row));
+        }
+        let map = b.push(
+            NodeType::Construction(T::StateMap),
+            "state_map",
+            Json::obj([
+                ("source", classes.wire()),
+                ("target", target.wire()),
+                ("kind", Json::str("guarded_affine")),
+                ("coordinates", actual_image.wire()),
+                ("value_type", law.value_type.wire()),
+                ("instances", Json::Arr(instances)),
+            ]),
+            arguments,
+            None,
+            None,
+        )?;
+        return Ok((Some(map), vec![], vec![]));
     }
     // 固定したinstance keyの左右値を座標とする係数加群。成立Boolや残差には縮めない。
     let mut arguments = vec![expression];
@@ -603,103 +677,4 @@ fn law_descent(
         None,
     )?;
     Ok((Some(descent), vec![], vec![]))
-}
-
-// The coordinates belong to the actual image basis. No map is extended to
-// the ambient integer lattice, and Option-valued families are not modules.
-fn guarded_descent(
-    b: &mut Builder<'_>,
-    env: &Environment<'_>,
-    image: &quotient_affine::Image,
-    expression: NodeRef,
-    ring: NodeRef,
-    coordinates: NodeRef,
-    classes: NodeRef,
-    fiber: &coefficients::Fiber,
-    c: &mut Control,
-) -> Result<NodeRef, ValidationFailure> {
-    let law = image.law.as_ref().ok_or("商のLawがない")?;
-    let family_type = law_result::family_type(env, &law.name, &law.value_type)?;
-    let target = b.push(
-        NodeType::Domain,
-        "domain",
-        Json::obj([("kind", Json::str("type")), ("type", family_type.wire())]),
-        vec![expression],
-        None,
-        None,
-    )?;
-    let mut arguments = vec![classes, target, coordinates, expression];
-    let mut instances = vec![];
-    let affine_component = |b: &mut Builder<'_>,
-                            rows: &[Vec<Scalar>],
-                            offset: &[Scalar],
-                            arguments: &mut Vec<NodeRef>,
-                            c: &mut Control| {
-        let target = linear::module(b, ring, rows.len(), "free", vec![])?;
-        let transformed = coefficients::multiply(&image.ty, rows, &fiber.lifts, fiber.rank, c)?;
-        let map = scalar_wire::map(b, coordinates, target, &transformed, fiber.rank, c)?;
-        let offset = scalar_wire::vector(b, target, offset, c)?;
-        arguments.extend([map, offset]);
-        Ok::<_, ValidationFailure>(Json::obj([
-            ("linear", map.wire()),
-            ("offset", offset.wire()),
-        ]))
-    };
-    for instance in &law.instances {
-        c.checkpoint(crate::observed::control::Checkpoint::Quotient)?;
-        let key = Scalar::Tuple(
-            instance
-                .bindings
-                .iter()
-                .map(|(_, value)| value.clone())
-                .collect(),
-        );
-        let key = change_result::value(b, &key)?;
-        arguments.push(key);
-        let guard = match &instance.guard {
-            quotient_affine::Guard::Fixed(value) => Json::Bool(*value),
-            quotient_affine::Guard::Affine(domain) => {
-                let offset = domain
-                    .rhs
-                    .iter()
-                    .map(|rhs| {
-                        numeric::binary(
-                            crate::law::ast::BinOp::Sub,
-                            &numeric::zero(&image.ty, c)?,
-                            rhs,
-                            c,
-                        )
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
-                affine_component(b, &domain.equations, &offset, &mut arguments, c)?
-            }
-        };
-        let mut row = BTreeMap::from([("key".into(), key.wire()), ("guard".into(), guard)]);
-        if !instance.guard.never() {
-            let values = affine_component(
-                b,
-                &law.matrix[instance.rows.clone()],
-                &law.offset[instance.rows.clone()],
-                &mut arguments,
-                c,
-            )?;
-            row.insert("values".into(), values);
-        }
-        instances.push(Json::Obj(row));
-    }
-    b.push(
-        NodeType::Construction(T::StateMap),
-        "state_map",
-        Json::obj([
-            ("source", classes.wire()),
-            ("target", target.wire()),
-            ("kind", Json::str("guarded_affine")),
-            ("coordinates", coordinates.wire()),
-            ("value_type", law.value_type.wire()),
-            ("instances", Json::Arr(instances)),
-        ]),
-        arguments,
-        None,
-        None,
-    )
 }
