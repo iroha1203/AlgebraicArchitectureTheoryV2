@@ -1000,3 +1000,52 @@ fn rational_conjunction_build_keeps_missing_operands_and_unknown_guards() {
         assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y"));
     }
 }
+
+#[test]
+fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
+    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    for (guard, domain) in [
+        ("s.x=0 and s.x=1", "$s.domain"),
+        ("s.x=0 and s.y=0", "$s.solutions"),
+    ] {
+        let sources = input_sources(&format!("change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law required total(s:State):s.x+s.y=1;law optional inactive(s:State) when {guard}:s.y=s.y;"));
+        let mut control = Control::unlimited();
+        let ask = format!("q=quotient(Pair.x,on={domain},s=@v/s,law=Pair.inactive)");
+        let evaluated = evaluate_observed_bytes(
+            sources,
+            &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", &ask],
+            &mut control,
+        );
+        assert!(
+            evaluated.is_ok(),
+            "inconsistent guard must have empty applicability"
+        );
+        let result = evaluated.unwrap();
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
+        let q = get(output(&j, 1, "quotient"), "value");
+        let descent = get(node(&j, get(q, "descent")), "value");
+        let linear = get(node(&j, get(descent, "linear")), "value");
+        let family = get(node(&j, get(linear, "target")), "value");
+        assert_eq!(num(get(family, "free_rank")), 0);
+        let tags = arr(get(node(&j, get(family, "applicability")), "value"));
+        assert_eq!(tags.len(), 1);
+        assert!(!get_bool(&arr(&tags[0])[1]));
+    }
+}
+
+#[test]
+fn quotient_satisfiable_rational_guard_is_not_replaced_by_empty_applicability() {
+    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    let sources = input_sources("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when 2*s.x=1:s.y=s.y;");
+    let mut control = Control::unlimited();
+    let result = evaluate_observed_bytes(
+        sources,
+        &[
+            "s=solve(Pair.total,on=@v/s,using=Pair.choose)",
+            "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
+        ],
+        &mut control,
+    );
+    assert!(matches!(result, Err(archsig::observed::result::EvaluationFailure::NotImplemented { feature, .. }) if feature.contains("候補域で変化するLaw guard")), "the conditional family at x=1/2 still requires implementation");
+}
