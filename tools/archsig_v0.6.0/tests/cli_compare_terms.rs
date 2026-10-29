@@ -44,7 +44,7 @@ fn answer<'a>(j: &'a archsig::json::JNode, id: &str) -> &'a archsig::json::JNode
 }
 #[test]
 fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_evidence() {
-    let dir = inputs("compare-terms-first");
+    let dir = inputs("compare-terms-evidence");
     let r = asks(
         &dir,
         &[
@@ -75,52 +75,12 @@ fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_eviden
         let a = answer(&j, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
         assert!(has(get(a, "outputs"), "comparison"));
-        if status == "refuted" { assert!(!arr(get(a, "counterexamples")).is_empty(), "{id}"); }
-        else { assert!(!has(a, "counterexamples")); }
+        if status == "refuted" {
+            assert!(!arr(get(a, "counterexamples")).is_empty(), "{id}");
+        } else {
+            assert!(!has(a, "counterexamples"));
+        }
     }
-    std::fs::remove_dir_all(dir).unwrap();
-}
-
-fn node<'a>(j: &'a archsig::json::JNode, r: &archsig::json::JNode) -> &'a archsig::json::JNode {
-    arr(get(j, "nodes"))
-        .iter()
-        .find(|n| get(n, "id") == get(r, "node"))
-        .unwrap()
-}
-fn evidence<'a>(
-    j: &'a archsig::json::JNode,
-    id: &str,
-    kind: &str,
-) -> Vec<&'a archsig::json::JNode> {
-    let a = answer(j,id);
-    arr(get(a, if has(a,"evidence") { "evidence" } else { "counterexamples" }))
-        .iter()
-        .map(|r| node(j, r))
-        .filter(|n| s(get(get(n, "value"), "kind")) == kind)
-        .collect()
-}
-#[test]
-fn term_evidence_retains_the_finite_domain_normal_forms_and_reapplied_zero_unit_points() {
-    let dir = inputs("compare-terms-evidence");
-    let r = asks(
-        &dir,
-        &[
-            "g=evaluate(Terms.observed,s=@v/s)",
-            "same=evaluate(Terms.finiteSame)",
-            "other=evaluate(Terms.finiteOther)",
-            "f=evaluate(Terms.read,s=@v/s)",
-            "equiv=evaluate(Terms.affineSame)",
-            "shift=evaluate(Terms.affineShift)",
-            "slope=evaluate(Terms.affineSlope)",
-            "finite_equal=compare($g.value,to=$same.value,kind=value)",
-            "finite_different=compare($g.value,to=$other.value,kind=value)",
-            "affine_equal=compare($f.value,to=$equiv.value,kind=value)",
-            "affine_zero=compare($f.value,to=$shift.value,kind=value)",
-            "affine_unit=compare($f.value,to=$slope.value,kind=value)",
-        ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
     for n in arr(get(&j, "nodes")) {
         if !has(n, "value")
             || !has(get(n, "value"), "kind")
@@ -199,6 +159,26 @@ fn term_evidence_retains_the_finite_domain_normal_forms_and_reapplied_zero_unit_
     }));
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+fn node<'a>(j: &'a archsig::json::JNode, r: &archsig::json::JNode) -> &'a archsig::json::JNode {
+    arr(get(j, "nodes"))
+        .iter()
+        .find(|n| get(n, "id") == get(r, "node"))
+        .unwrap()
+}
+fn evidence<'a>(
+    j: &'a archsig::json::JNode,
+    id: &str,
+    kind: &str,
+) -> Vec<&'a archsig::json::JNode> {
+    let a = answer(j,id);
+    arr(get(a, if has(a,"evidence") { "evidence" } else { "counterexamples" }))
+        .iter()
+        .map(|r| node(j, r))
+        .filter(|n| s(get(get(n, "value"), "kind")) == kind)
+        .collect()
+}
+
 #[test]
 fn nested_term_values_and_term_returning_terms_use_extensional_equality() {
     let dir = inputs("compare-terms-nested");
