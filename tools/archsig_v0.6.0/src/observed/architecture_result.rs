@@ -451,6 +451,12 @@ pub(super) fn validate_build_origin(
             } else {environment.answer_binding_matches(graph,on,reference,(0,0))?;}
         }
     }
+    if !a.construction().resolved_owners().is_empty() {
+        let regenerated = ArchitectureWitness::compute(
+            Witness::Architecture(a.clone()).shared_inputs(), request, reading, &root, &mut environment.control.clone(),
+        ).map_err(failure)?;
+        if **a != *regenerated { return Err("owner補完Architectureの再構成が違う".into()); }
+    }
     if a.construction().root() != &root || a.construction().reading() != reading {
         return Err("build構成が元root・readingに属さない".into());
     }

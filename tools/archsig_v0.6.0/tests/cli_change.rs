@@ -394,7 +394,7 @@ fn unimplemented_change_preserves_the_evaluation_api_failure_class() {
             law.replace("b:Bool)=c with {flag=b}", "b:Z)=c with {flag=true}")
         };
         let map = if missing {
-            map.replace(r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#,"")
+            map.replace(r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#,"").replace(r#""subjects":["#, r#""subjects":[{"id":"other","type":"Pattern.Root","origin":"model"},"#)
         } else {
             map
         };

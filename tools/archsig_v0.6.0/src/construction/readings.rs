@@ -203,6 +203,7 @@ struct ReferenceChoice {
     conditions: Vec<MembershipCondition>,
 }
 fn owner_condition(
+    construction: &ConfigurationConstruction,
     candidate: &Subject,
     owner: &FactPointer,
     control: &mut Control,
@@ -221,6 +222,10 @@ fn owner_condition(
                 value: Value::Ref { snapshot, subject },
                 ..
             } => Ok((snapshot == &owner.snapshot && subject == &owner.subject).then(Vec::new)),
+            Slot::Missing if construction.resolved_owners().iter().any(|(fact, actual)|
+                *fact == slot(candidate, &field.name) && actual == owner) => Ok(Some(vec![])),
+            Slot::Missing if construction.resolved_owners().iter().any(|(fact, _)|
+                *fact == slot(candidate, &field.name)) => Ok(None),
             Slot::Missing => Ok(Some(vec![MembershipCondition {
                 slot: slot(candidate, &field.name),
                 owner: owner.clone(),
@@ -415,6 +420,7 @@ pub fn object_reading_instances(
                                 )
                             })?;
                         let Some(required) = owner_condition(
+                            construction,
                             subject(inputs, &choice.subject, control)?,
                             &owner.subject,
                             control,

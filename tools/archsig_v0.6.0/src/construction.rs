@@ -136,8 +136,24 @@ pub struct ConfigurationConstruction {
     base: ConfigurationCandidate,
     components: Vec<ObjectComponent>,
     local_domain: SubjectDomain,
+    owner_resolution: Option<crate::observed::DeterminedOwners>,
 }
 impl ConfigurationConstruction {
+    pub(crate) fn resolved_owners(&self) -> &[(FactPointer, FactPointer)] {
+        self.owner_resolution
+            .as_ref()
+            .map(|r| r.owners())
+            .unwrap_or(&[])
+    }
+    pub(crate) fn owner_support(&self) -> &[FactPointer] {
+        self.owner_resolution
+            .as_ref()
+            .map(|r| r.support())
+            .unwrap_or(&[])
+    }
+    pub(crate) fn owner_scope(&self) -> Option<&crate::observed::result::Scope> {
+        self.owner_resolution.as_ref().map(|r| r.scope())
+    }
     pub fn reading(&self) -> &str {
         &self.reading
     }
@@ -165,7 +181,11 @@ impl ConfigurationConstruction {
         root: &str,
         control: &mut Control,
     ) -> Result<(), ConstructionFailure> {
-        let expected = construct(inputs, reading, snapshot, root, control)?;
+        let expected = if self.owner_resolution.is_none() {
+            construct(inputs, reading, snapshot, root, control)?
+        } else {
+            construct_resolving_owners(inputs, reading, snapshot, root, control)?
+        };
         if self != &expected {
             return Err(ConstructionFailure::Inconsistent(
                 "Configuration/Uが現在の入力・reading/rootと違う".into(),
@@ -349,7 +369,17 @@ fn configuration(
     inputs: &CheckedInputs,
     subjects: &[&Subject],
     index: &BTreeMap<(&str, &str), &Subject>,
+    blocking: BTreeSet<FactPointer>,
+    control: &mut Control,
+) -> Result<ConfigurationCandidate, ConstructionFailure> {
+    configuration_with_owners(inputs, subjects, index, blocking, &[], control)
+}
+fn configuration_with_owners(
+    inputs: &CheckedInputs,
+    subjects: &[&Subject],
+    index: &BTreeMap<(&str, &str), &Subject>,
     mut blocking: BTreeSet<FactPointer>,
+    owners: &[(FactPointer, FactPointer)],
     control: &mut Control,
 ) -> Result<ConfigurationCandidate, ConstructionFailure> {
     let mut family = BTreeSet::new();
@@ -378,6 +408,10 @@ fn configuration(
                         relations.insert((fact.clone(), target));
                     }
                 }
+                Slot::Missing
+                    if owners
+                        .iter()
+                        .any(|(fact, _)| *fact == slot(subject, &field.name)) => {}
                 Slot::Missing if has_reference(inputs, &field.ty, control)? => {
                     blocking.insert(slot(subject, &field.name));
                 }
@@ -420,6 +454,63 @@ pub fn construct(
     reading: &str,
     snapshot: &str,
     root: &str,
+    control: &mut Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    construct_with_owners(inputs, reading, snapshot, root, &[], control)
+}
+/// 観測から列挙した整合owner補完が一元のときだけ所属を確定する。
+/// 原始Atomの集合と値は観測のまま保持する。
+pub(crate) fn construct_resolving_owners(
+    inputs: &CheckedInputs,
+    reading: &str,
+    snapshot: &str,
+    root: &str,
+    control: &mut Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    let observed = construct(inputs, reading, snapshot, root, control)?;
+    let fields = observed
+        .local_domain
+        .conditional
+        .iter()
+        .map(|m| m.owner_slot.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if fields.is_empty() {
+        return Ok(observed);
+    }
+    let Some(resolution) = crate::observed::determined_owners(inputs, &fields, control)? else {
+        return Ok(observed);
+    };
+    let owners = resolution.owners();
+    let mut candidate = construct_with_owners(inputs, reading, snapshot, root, owners, control)?;
+    // この構成経路はownerだけの欠測を扱う。通常の構成器の欠測規則は保つ。
+    for requirement in candidate.base.known.requirements() {
+        tick(control)?;
+        let subject = inputs
+            .archmap()
+            .snapshots
+            .iter()
+            .flat_map(|s| &s.subjects)
+            .find(|s| s.snapshot == requirement.snapshot && s.id == requirement.subject)
+            .ok_or_else(|| ConstructionFailure::Inconsistent("構成要求のsubjectがない".into()))?;
+        if subject.fields.iter().any(|field| {
+            Some(&field.name) == requirement.field.as_ref()
+                && matches!(field.slot, Slot::Missing)
+                && !owners.iter().any(|(slot, _)| slot == requirement)
+        }) {
+            return Ok(observed);
+        }
+    }
+    candidate.owner_resolution = Some(resolution);
+    Ok(candidate)
+}
+fn construct_with_owners(
+    inputs: &CheckedInputs,
+    reading: &str,
+    snapshot: &str,
+    root: &str,
+    owners: &[(FactPointer, FactPointer)],
     control: &mut Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
     tick(control)?;
@@ -512,6 +603,22 @@ pub fn construct(
                     parts.push(*subject);
                 }
             }
+            Slot::Missing
+                if owners.iter().any(|(fact, owner)| {
+                    *fact == slot(subject, &field.name)
+                        && owner.snapshot == snapshot
+                        && owner.subject == root
+                }) =>
+            {
+                subjects.push(subject);
+                if is_entity {
+                    parts.push(*subject);
+                }
+            }
+            Slot::Missing
+                if owners
+                    .iter()
+                    .any(|(fact, _)| *fact == slot(subject, &field.name)) => {}
             Slot::Missing => {
                 blocking.insert(slot(subject, &field.name));
                 conditional.insert(
@@ -554,13 +661,20 @@ pub fn construct(
         known: canonical_facts(known, control)?,
         conditional: conditions,
     };
-    let base = configuration(inputs, &subjects, &index, blocking, control)?;
+    let base = configuration_with_owners(inputs, &subjects, &index, blocking, owners, control)?;
     let mut components = Vec::new();
     for subject in parts {
         tick(control)?;
         components.push(ObjectComponent {
             subject: exists(subject),
-            candidate: configuration(inputs, &[subject], &index, BTreeSet::new(), control)?,
+            candidate: configuration_with_owners(
+                inputs,
+                &[subject],
+                &index,
+                BTreeSet::new(),
+                owners,
+                control,
+            )?,
         });
     }
     components.sort_by_key(|p| p.subject.wire().canonical());
@@ -571,6 +685,7 @@ pub fn construct(
         base,
         components,
         local_domain,
+        owner_resolution: None,
     };
     tick(control)?;
     Ok(result)
