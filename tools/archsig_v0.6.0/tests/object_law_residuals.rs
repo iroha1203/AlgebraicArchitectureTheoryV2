@@ -338,21 +338,26 @@ fn empty_actual_parameter_domains_are_not_fabricated_as_a_zero_argument_row() {
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn unsupported_infinite_parameter_execution_keeps_the_original_failure_and_partial() {
-    use archsig::construction::readings::ObjectEvaluationFailure;
+fn unbounded_identity_law_preserves_symbolic_zero_residuals() {
     let i = inputs("law required unbounded(c:Part,z:Z):z=z;", fixture::A);
-    let f = object_law_residuals(i, "Selected", "v", "root", &mut quiet()).unwrap_err();
-    let ObjectLawResidualsFailure::Original(f) = f else {
-        panic!("original execution")
-    };
-    assert!(matches!(
-        f.cause(),
-        ObjectEvaluationFailure::NotImplemented { .. }
-    ));
-    assert!(f.partial().is_some());
-    assert!(f.position().is_some());
-    assert!(!f.partial().unwrap().is_complete());
+    let r = run(Arc::clone(&i));
+    assert!(r.is_complete());
+    assert_eq!(r.outcome(), Some(&Outcome::Compatible));
+    assert_eq!(r.evaluations().len(), 2);
+    for e in r.evaluations() {
+        assert!(e.complete);
+        assert!(e.rows.is_empty());
+        let row = e.uniform.as_ref().unwrap();
+        assert!(row.complete);
+        assert_eq!(row.cases.len(), 1);
+        assert_eq!(row.cases[0].reading.body(), Some(true));
+        assert_eq!(row.cases[0].components.len(), 1);
+        assert_eq!(text(&row.cases[0].components[0].epsilon), Some("\"0\"".into()));
+        assert_eq!(row.cases[0].components[0].epsilon, row.cases[0].components[0].residual);
+    }
+    r.recheck(i, &mut quiet()).unwrap();
 }
+
 #[test]
 fn different_complete_patterns_keep_their_own_numeric_laws_without_equality_obligations() {
     let map=fixture::A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"r\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}")

@@ -1,4 +1,6 @@
 //! 拒否が決まった型の元診断を、共有 budget と取消の優先規則に沿って保持する。
+#[path = "common/positions.rs"]
+mod positions;
 use archsig::{
     canonical::Json,
     definition::check_definitions,
@@ -113,7 +115,7 @@ fn baseline(input: &InputSources, in_law: bool, point: Checkpoint) -> (Issue, us
     let (mut control, total) = probe(point, usize::MAX, 0);
     let failure = check_inputs(input.clone(), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
-    assert_eq!(failure.issues(), [ResultIssue::Input(issue.clone()).wire()]);
+    assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), input.law().bytes())]);
     empty_stage(&failure);
     (issue, total.get())
 }
@@ -142,7 +144,7 @@ fn terminal_priority(input: InputSources, in_law: bool, point: Checkpoint, unwin
                 );
                 assert_eq!(
                     failure.issues(),
-                    [reason.wire(), ResultIssue::Input(issue.clone()).wire()]
+                    [reason.wire(), positions::law_positions(ResultIssue::Input(issue.clone()).wire(), input.law().bytes())]
                 );
             }
         }

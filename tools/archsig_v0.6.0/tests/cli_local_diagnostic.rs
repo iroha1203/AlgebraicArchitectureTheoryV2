@@ -968,7 +968,12 @@ fn required_laws_on_the_same_support_are_all_retained_and_checked() {
         } else {
             assert_eq!(s(get(&answers[1], "status")), "undetermined");
             assert!(!has(get(&answers[1], "outputs"), "system"));
-            assert_eq!(arr(get(&answers[1], "reasons")).len(), 2);
+            let reasons = arr(get(&answers[1], "reasons"));
+            assert_eq!(reasons.len(), 1);
+            assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+            let missing = arr(get(&reasons[0], "missing"));
+            assert_eq!(missing.len(), 1);
+            assert_eq!(s(get(&missing[0], "field")), "Fixed.State.flag");
             assert_eq!(s(get(&answers[4], "status")), "established");
         }
     }
@@ -1136,7 +1141,12 @@ fn finite_law_parameters_are_universal_and_keep_each_binding() {
         } else {
             assert_eq!(s(get(&answers[1], "status")), "undetermined");
             assert!(!has(get(&answers[1], "outputs"), "system"));
-            assert_eq!(arr(get(&answers[1], "reasons")).len(), 2);
+            let reasons = arr(get(&answers[1], "reasons"));
+            assert_eq!(reasons.len(), 1);
+            assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+            let missing = arr(get(&reasons[0], "missing"));
+            assert_eq!(missing.len(), 1);
+            assert_eq!(s(get(&missing[0], "field")), "Fixed.State.flag");
             assert_eq!(s(get(&answers[4], "status")), "established");
         }
     }

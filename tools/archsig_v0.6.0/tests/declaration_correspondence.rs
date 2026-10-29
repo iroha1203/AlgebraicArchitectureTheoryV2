@@ -342,7 +342,7 @@ fn term_value_types_are_preserved_and_path_endpoints_are_transported() {
         failure
             .issues()
             .iter()
-            .any(|issue| issue.canonical().contains("Term の引数・戻り型は参照"))
+            .any(|issue| issue.canonical().contains("Term parameters and return type must be value types containing no references, Map, or Path"))
     );
 }
 #[test]

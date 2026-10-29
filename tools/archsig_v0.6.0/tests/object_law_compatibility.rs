@@ -303,18 +303,24 @@ fn current_input_bytes_body_role_and_unused_provenance_are_rechecked() {
     }
 }
 #[test]
-fn unsupported_unbounded_law_reading_is_an_execution_failure_with_original_evidence() {
-    use archsig::construction::readings::ObjectEvaluationFailure;
+fn unbounded_identity_law_is_compared_as_a_universal_family() {
     let i = inputs("law required unbounded(c:Part,z:Z):z=z;", fixture::A);
-    let f = object_law_compatibility(i, "Selected", "v", "root", &mut quiet()).unwrap_err();
-    assert!(matches!(
-        f.cause(),
-        ObjectEvaluationFailure::NotImplemented { .. }
-    ));
-    let r = f.partial().unwrap();
-    assert!(!r.is_complete());
-    assert!(r.outcome().is_none());
-    assert!(f.position().is_some());
+    let r = run(Arc::clone(&i));
+    assert!(r.is_complete());
+    assert_eq!(r.outcome(), Some(&Outcome::Compatible));
+    assert_eq!(r.evaluations().len(), 2);
+    for e in r.evaluations() {
+        let family = e.family();
+        assert!(family.is_complete());
+        assert!(family.rows().is_empty());
+        assert_eq!(family.uniform().unwrap().body(), Some(true));
+        assert!(family.domains().is_empty());
+        let parameters = r.readings().instances()[e.position().instance].parameters();
+        assert_eq!(parameters.len(), 1);
+        assert_eq!(parameters[0].name, "z");
+        assert_eq!(parameters[0].ty, archsig::types::Type::Z);
+    }
+    r.recheck(i, &mut quiet()).unwrap();
 }
 
 #[test]

@@ -239,24 +239,20 @@ fn nonnumeric_original_law_is_retained_as_unsupported_and_empty_domain_is_reject
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn infinite_parameter_keeps_original_failure_and_its_partial() {
-    let f = object_law_circuits(
-        inputs("law required infinite(c:Part,z:Z):z=z;", fixture::A),
-        "Selected",
-        "v",
-        "root",
-        &mut quiet(),
-    )
-    .unwrap_err();
-    let ObjectLawCircuitsFailure::Original(f) = f else {
-        panic!("original")
-    };
-    let archsig::construction::readings::ObjectLawResidualsFailure::Original(f) = f else {
-        panic!("original")
-    };
-    assert!(f.partial().is_some());
-    assert!(f.position().is_some());
+fn unbounded_identity_law_keeps_the_universal_circuit() {
+    let i = inputs("law required infinite(c:Part,z:Z):z=z;", fixture::A);
+    let r = run(Arc::clone(&i));
+    assert!(r.is_complete());
+    assert_eq!(r.condition(), &Condition::Ready);
+    assert_eq!(r.circuits().len(), 2);
+    for circuit in r.circuits() {
+        assert!(circuit.points.is_empty());
+        assert_eq!(circuit.detector, Some(Detector::Reject));
+        assert_eq!(circuit.uniform.as_ref().unwrap().when, Some(false));
+    }
+    r.recheck(i, &mut quiet()).unwrap();
 }
+
 #[test]
 fn no_laws_has_no_circuits_and_is_complete() {
     let i = inputs("view quantity(c:Part):Z=c.quantity;", fixture::A);

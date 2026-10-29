@@ -580,12 +580,16 @@ impl Evaluator<'_, '_> {
         })
     }
 
-    pub(super) fn universal_view_evaluation(&mut self, plan: UniversalPlan) -> Result<Evaluated, Failure> {
+    pub(super) fn universal_expression_evaluation(&mut self, plan: UniversalPlan, expression: usize) -> Result<Evaluated, Failure> {
         let ty = self.environment.inputs.law().expr_type(plan.body)
-            .ok_or_else(|| Failure::Internal("全域viewの戻り型がない".into()))?.clone();
-        let (template, _) = self.universal_raw_source(&plan, plan.template_span, ty)?;
+            .ok_or_else(|| Failure::Internal("全域式の戻り型がない".into()))?.clone();
+        let template = if plan.guard.is_some() {
+            self.universal_template(&plan)?.0
+        } else {
+            self.universal_raw_source(&plan, plan.template_span, ty)?.0
+        };
         let domains = self.universal_parameter_domains(&plan, template)?;
-        Ok(self.universal_pointwise(&plan, template, &domains, plan.body)?.evaluated)
+        Ok(self.universal_pointwise(&plan, template, &domains, expression)?.evaluated)
     }
 
     #[inline(never)]

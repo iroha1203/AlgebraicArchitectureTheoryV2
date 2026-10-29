@@ -193,8 +193,9 @@ fn known_results_under_missing_observations_do_not_request_unused_slots() {
         JValue::Bool(false)
     );
     assert_eq!(s(get(answer(&result, "c"), "status")), "refuted");
+    let internal = internal_graph(&dir, &result);
     assert!(
-        arr(get(&result, "nodes"))
+        arr(get(&internal, "nodes"))
             .iter()
             .any(|n| arr(get(n, "reasons"))
                 .iter()
