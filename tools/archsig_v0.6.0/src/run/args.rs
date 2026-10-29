@@ -4,6 +4,38 @@ use super::{CheckArgs, Command, RunArgs, UsageError};
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
+use std::{
+    num::{IntErrorKind, NonZeroU128},
+    str::FromStr,
+};
+
+/// 検証済みの正の十進予算。実測のu128を超える値は到達不能な上限。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Budget(Option<NonZeroU128>);
+
+impl FromStr for Budget {
+    type Err = &'static str;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        let invalid = "must be an integer matching [1-9][0-9]*";
+        if !matches!(text.as_bytes().first(), Some(b'1'..=b'9'))
+            || !text.bytes().all(|b| b.is_ascii_digit())
+        {
+            return Err(invalid);
+        }
+        match text.parse::<NonZeroU128>() {
+            Ok(value) => Ok(Self(Some(value))),
+            Err(error) if *error.kind() == IntErrorKind::PosOverflow => Ok(Self(None)),
+            Err(_) => Err(invalid),
+        }
+    }
+}
+
+impl Budget {
+    pub(super) fn measured_limit(self) -> Option<u128> {
+        self.0.map(NonZeroU128::get)
+    }
+}
 
 fn usage(argument: &str, message: impl Into<String>) -> UsageError {
     UsageError {
@@ -30,6 +62,8 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut singles = BTreeMap::new();
     let mut definitions = Vec::new();
     let mut asks = Vec::new();
+    let mut time_ms = None;
+    let mut memory_mib = None;
     let mut index = 1;
     while index < args.len() {
         let flag = args[index].to_string_lossy();
@@ -64,13 +98,13 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
                 let text = value
                     .to_str()
                     .ok_or_else(|| usage(&flag, "budget must be an integer matching [1-9][0-9]*"))?;
-                if !matches!(text.as_bytes().first(), Some(b'1'..=b'9'))
-                    || !text.bytes().all(|b| b.is_ascii_digit())
-                {
-                    return Err(usage(
-                        &flag,
-                        format!("budget `{text}` must be an integer matching [1-9][0-9]*"),
-                    ));
+                let budget = text
+                    .parse::<Budget>()
+                    .map_err(|message| usage(&flag, format!("budget `{text}` {message}")))?;
+                if flag == "--time-ms" {
+                    time_ms = Some(budget);
+                } else {
+                    memory_mib = Some(budget);
                 }
             }
             singles.insert(flag.into_owned(), value.clone());
@@ -108,12 +142,8 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
             inputs,
             asks,
             reuse: singles.remove("--reuse").map(PathBuf::from),
-            time_ms: singles
-                .remove("--time-ms")
-                .map(|s| s.to_string_lossy().into_owned()),
-            memory_mib: singles
-                .remove("--memory-mib")
-                .map(|s| s.to_string_lossy().into_owned()),
+            time_ms,
+            memory_mib,
         }))
     } else {
         Ok(Command::Check(inputs))

@@ -6,7 +6,7 @@ mod output;
 mod reuse;
 pub use evaluate::{run_internal_outcome, run_requests};
 
-pub use args::parse_args;
+pub use args::{Budget, parse_args};
 pub use output::peak_rss_bytes;
 
 use crate::archmap::check_archmap_controlled;
@@ -49,21 +49,22 @@ pub struct CheckArgs {
     pub out: Option<PathBuf>,
 }
 
+/// 実行要求。予算はCLI・直接APIともBudgetの生成時に検証する。
 #[derive(Debug, PartialEq, Eq)]
 pub struct RunArgs {
     pub inputs: CheckArgs,
     pub asks: Vec<String>,
     pub reuse: Option<PathBuf>,
-    pub time_ms: Option<String>,
-    pub memory_mib: Option<String>,
+    pub time_ms: Option<Budget>,
+    pub memory_mib: Option<Budget>,
 }
 
 impl RunArgs {
     pub fn limits(&self) -> crate::observed::control::Limits {
         // 実測値はu128。これを超える正の予算を切り詰めず、到達不能な上限として扱う。
         crate::observed::control::Limits {
-            time_ms: self.time_ms.as_ref().and_then(|s| s.parse().ok()),
-            memory_mib: self.memory_mib.as_ref().and_then(|s| s.parse().ok()),
+            time_ms: self.time_ms.and_then(Budget::measured_limit),
+            memory_mib: self.memory_mib.and_then(Budget::measured_limit),
         }
     }
 }

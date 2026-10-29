@@ -475,8 +475,8 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
                 },
             );
             let mut options = args(&dir);
-            options.time_ms = (mode == 0).then(|| "1".into());
-            options.memory_mib = (mode == 1).then(|| "1".into());
+            options.time_ms = (mode == 0).then(|| "1".parse().unwrap());
+            options.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
             let mut signals = NoSignal::default();
             let outcome = archsig::run::run_requests(
                 &mut TestIo,
