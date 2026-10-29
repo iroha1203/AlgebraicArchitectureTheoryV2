@@ -1367,3 +1367,88 @@ fn quotient_integer_infeasible_guard_preserves_inapplicable_family() {
         archsig::json::JValue::Bool(false)
     ));
 }
+#[test]
+fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
+    use archsig::observed::{
+        control::Control, evaluate::evaluate_observed_bytes, input::InputSources,
+    };
+    // Argument order is (b,a), while the state is (x,y)=(a,b).
+    let dir = input("integer-conditional-image", "change choose(s:State,b:Z,a:Z)=s with{x=a,y=b};view odd(s:State):Z=2*s.x+1;law optional active(s:State) when s.x=1:s.x=s.x;law optional bad(s:State) when s.x=1:s.y=s.y;");
+    let sources = InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let result = evaluate_observed_bytes(
+        sources,
+        &[
+            "s=solve(Pair.total,on=@pair/s,using=Pair.choose)",
+            "q=quotient(Pair.odd,on=$s.domain,s=@pair/s,law=Pair.active)",
+            "bad=quotient(Pair.odd,on=$s.domain,s=@pair/s,law=Pair.bad)",
+        ],
+        &mut Control::unlimited(),
+    );
+    let Ok(result) = result else {
+        panic!("integer conditional quotient must complete")
+    };
+    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
+    let q = get(output(&j, 1, "quotient"), "value");
+    let rep = get(q, "representation");
+    assert_eq!(coordinates(&j, get(rep, "offset")), vec![1]);
+    let d = get(node(&j, get(q, "descent")), "value");
+    assert_eq!(s(get(d, "kind")), "guarded_affine");
+    assert_eq!(get(d, "coordinates").value, get(rep, "image").value);
+    let image = get(node(&j, get(d, "coordinates")), "value");
+    let generators = arr(get(image, "generators"));
+    assert_eq!(generators.len(), 1);
+    assert_eq!(
+        s(get(&generators[0], "value"))
+            .parse::<i64>()
+            .unwrap()
+            .abs(),
+        2
+    );
+    let rows = arr(get(d, "instances"));
+    assert_eq!(rows.len(), 1);
+    let guard = get(&rows[0], "guard");
+    let a = integer_columns(&j, get(guard, "linear"));
+    let b = coordinates(&j, get(guard, "offset"));
+    assert_eq!(a.len(), 1);
+    assert_eq!(a[0][0].abs(), 1);
+    assert_eq!(b, vec![-1]);
+    // The active actual view value is 3. In image coordinates it is 1/a,
+    // and lhs/rhs are both 1 there, rather than a map on every integer view.
+    let active = 1 / a[0][0];
+    assert_eq!(1 + 2 * a[0][0] * active, 3);
+    let values = get(&rows[0], "values");
+    let values_a = integer_columns(&j, get(values, "linear"));
+    let values_b = coordinates(&j, get(values, "offset"));
+    assert_eq!(
+        values_a[0]
+            .iter()
+            .zip(values_b)
+            .map(|(a, b)| a * active + b)
+            .collect::<Vec<_>>(),
+        vec![1, 1]
+    );
+    let bad = &arr(get(&j, "answers"))[2];
+    assert_eq!(s(get(bad, "status")), "refuted");
+    let proof = get(node(&j, &arr(get(bad, "evidence"))[0]), "value");
+    let data = get(proof, "data");
+    let points = ["first", "second"].map(|key| arr(get(node(&j, get(data, key)), "value")));
+    for point in points {
+        assert_eq!(point.len(), 2);
+        assert_eq!(s(&point[1]), "1");
+    }
+    assert_ne!(points[0][0].value, points[1][0].value);
+    let views = arr(get(data, "view_values"));
+    for view in views {
+        assert_eq!(s(get(node(&j, view), "value")), "3");
+    }
+    let families = arr(get(data, "law_values"));
+    assert_ne!(
+        get(node(&j, &families[0]), "value").value,
+        get(node(&j, &families[1]), "value").value
+    );
+}

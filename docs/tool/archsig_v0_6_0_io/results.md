@@ -537,7 +537,7 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 | --- | --- |
 | Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
 | StateSpace | `{base:Architecture,slots:Slot[],state_type:P}` |
-| StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` |
+| StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
 | CandidateSpace | `{kind:"change"\|"identity",base:Architecture,bindings:Binding[],change?:QName,parameters:Domain,states:StateSpace,action:StateMap,instances:{subject:Ref,positions:Nat[]}[],guards:Expression[],requirements:LawInstance[]}` |
 | SolutionSet | `{domain:CandidateSpace,requirements:LawInstance[],representation:SolutionRepresentation}` |
 | EquationSpace | `{base:Architecture,variables:{position:Position,type:P}[],fixed:Slot[],parameters:Domain,requirements:LawInstance[]}` |
@@ -704,6 +704,24 @@ fiberのimageはその同値類、preimageは同じ候補集合。空の商も�
 アフィン商は元のparameter域上の実像とoffsetを保持し、周囲の格子全体へ拡大しない。
 descentは十分性成立時の商からLaw評価族への実写像。十分性のPropositionは商の後に別nodeで作る。
 Lawの十分性反証には同じview値を持ち、Law評価族が異なる候補対をEvidenceに残す。
+
+`guarded_affine` は、同一係数域ZまたはQ上で選択した完全なアフィン域のLaw評価族を表す。
+`AffinePart={linear:ModuleMap,offset:Vector}` とし、各linearのsourceはcoordinates、
+offsetのmoduleはそのlinearのtargetとする。coordinatesは商の実像の基底であり、
+classのview値は商のoffsetとこの基底の線形結合で復元する。周囲の整数格子へ延長しない。
+instanceのkeyは元Lawの宣言順の全引数Tuple。guardがBoolなら固定した適用可否、
+AffinePartならその全座標が零のときだけ適用する。guard=falseの行はvaluesを省略し、keyを保持する。
+その他の行はvaluesを持ち、value_typeに従って左右それぞれを平坦化した順のアフィン値を復元する。
+targetは `Set<(key,Option<(lhs,rhs)>)>` の型Domainであり、適用時をsome、非適用時をnoneとする。
+
+選択域の完全なparameter座標uにおいて、商がQu+a、非空guardが既知係数の等式連言Bu=d、
+左右値がEu+bのとき、BとEの双方が商の核を零へ写すことを検査する。
+Zでは整数核、Qでは有理核を使う。この条件で適用可否と適用時の左右値が各fiber上で一定となり、
+実像へのliftの選択によらず降下する。guardが空なら左右値を評価せずnoneを返す。
+不足する観測・構成条件の未確定・実行停止は空域と区別する。不等式、選言、非線形guardの一般的解法は含めない。
+反証の候補対は非空guardの実解u₀と核方向kからu₀,u₀+kを取り、元Assignmentへ復元し、
+通常評価器で同じview値と異なる型付き評価族を確認する。
+
 ObservationPlanは数学的な最小観測集合を主張せず、未観測と可視性不足・非対応をblockersで区別する。
 
 ## 6. 証拠と理由

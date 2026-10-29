@@ -104,8 +104,8 @@ pub(in crate::observed) fn add_product(
 }
 pub(in crate::observed) fn multiply(
     ty: &Type,
-    a: &Matrix,
-    b: &Matrix,
+    a: &[Vec<Scalar>],
+    b: &[Vec<Scalar>],
     cols: usize,
     c: &Control,
 ) -> Result<Matrix, ValidationFailure> {

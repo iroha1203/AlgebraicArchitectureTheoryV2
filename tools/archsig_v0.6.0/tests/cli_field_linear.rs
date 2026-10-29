@@ -1034,18 +1034,257 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
     }
 }
 
-#[test]
-fn quotient_satisfiable_rational_guard_is_not_replaced_by_empty_applicability() {
+fn conditional_internal(body: &str, asks: &[&str]) -> JNode {
     use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
-    let sources = input_sources("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when 2*s.x=1:s.y=s.y;");
-    let mut control = Control::unlimited();
-    let result = evaluate_observed_bytes(
-        sources,
-        &[
-            "s=solve(Pair.total,on=@v/s,using=Pair.choose)",
-            "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
-        ],
-        &mut control,
+    let result = evaluate_observed_bytes(input_sources(body), asks, &mut Control::unlimited());
+    let Ok(result) = result else {
+        panic!("conditional quotient must complete")
+    };
+    archsig::json::parse(result.wire().canonical().as_bytes()).unwrap()
+}
+fn conditional_descent(j: &JNode, index: usize) -> &JNode {
+    let q = get(output(j, index, "quotient"), "value");
+    let descent = get(node(j, get(q, "descent")), "value");
+    assert_eq!(s(get(descent, "kind")), "guarded_affine");
+    let target = get(node(j, get(descent, "target")), "value");
+    assert_eq!(s(get(target, "kind")), "type");
+    assert_eq!(s(&arr(get(target, "type"))[0]), "Set");
+    descent
+}
+fn conditional_witness(j: &JNode, index: usize) -> &JNode {
+    let answer = &arr(get(j, "answers"))[index];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    let q = get(output(j, index, "quotient"), "value");
+    assert!(!has(q, "descent"));
+    let proof = get(node(j, &arr(get(answer, "evidence"))[0]), "value");
+    let data = get(proof, "data");
+    let views = arr(get(data, "view_values"));
+    let families = arr(get(data, "law_values"));
+    assert_eq!(
+        get(node(j, &views[0]), "value").value,
+        get(node(j, &views[1]), "value").value
     );
-    assert!(matches!(result, Err(archsig::observed::result::EvaluationFailure::NotImplemented { feature, .. }) if feature.contains("候補域で変化するLaw guard")), "the conditional family at x=1/2 still requires implementation");
+    assert_ne!(
+        get(node(j, &families[0]), "value").value,
+        get(node(j, &families[1]), "value").value
+    );
+    data
+}
+fn q_scalar(value: &JNode) -> (&str, &str) {
+    let v = arr(value);
+    (s(&v[0]), s(&v[1]))
+}
+#[test]
+fn quotient_satisfiable_rational_guard_keeps_half_coordinate_counterexample() {
+    let j = conditional_internal("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when 2*s.x=1:s.y=s.y;", &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)"]);
+    let data = conditional_witness(&j, 1);
+    for key in ["first", "second"] {
+        let parameters = arr(get(node(&j, get(data, key)), "value"));
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(q_scalar(&parameters[0]), ("1", "2"));
+    }
+}
+#[test]
+fn quotient_nonempty_guard_on_quotient_coordinate_descends() {
+    let j = conditional_internal("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when s.x=0 and 2*s.x=0:s.x=s.x;", &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)", "restricted=quotient(Pair.x,on=$s.solutions,s=@v/s,law=Pair.active)"]);
+    for i in [1, 2] {
+        assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "established");
+        let d = conditional_descent(&j, i);
+        let rows = arr(get(d, "instances"));
+        assert_eq!(rows.len(), 1);
+        let guard = get(&rows[0], "guard");
+        // The actual view value x=0 is active, even if the solution
+        // parameterization has a nonzero image offset.
+        let q = get(output(&j, i, "quotient"), "value");
+        let rep = get(q, "representation");
+        let image = get(node(&j, get(rep, "image")), "value");
+        let generator = q_scalar(get(&arr(get(image, "generators"))[0], "value"));
+        assert_eq!(generator.1, "1");
+        let generator: i64 = generator.0.parse().unwrap();
+        let offset = qcoordinates(&j, get(rep, "offset"));
+        assert_eq!(offset[0][1], "1");
+        let offset: i64 = offset[0][0].parse().unwrap();
+        let active = -offset / generator;
+        assert_eq!(offset + generator * active, 0);
+        for (part, expected) in [(guard, vec![0, 0]), (get(&rows[0], "values"), vec![0, 0])] {
+            let columns = arr(get(get(node(&j, get(part, "linear")), "value"), "columns"));
+            assert_eq!(columns.len(), 1);
+            let offsets = qcoordinates(&j, get(part, "offset"));
+            let mut at_active = vec![];
+            for (coefficient, offset) in arr(&columns[0]).iter().zip(offsets) {
+                let coefficient = q_scalar(get(node(&j, coefficient), "value"));
+                assert_eq!(coefficient.1, "1");
+                assert_eq!(offset[1], "1");
+                let coefficient: i64 = coefficient.0.parse().unwrap();
+                let offset: i64 = offset[0].parse().unwrap();
+                at_active.push(coefficient * active + offset);
+                assert_ne!(coefficient * (active + 1) + offset, 0);
+            }
+            assert_eq!(at_active, expected);
+        }
+    }
+}
+#[test]
+fn quotient_guard_and_value_noninvariance_use_applicable_nonzero_witnesses() {
+    let j = conditional_internal("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view y(s:State):Q=s.y;law optional guard_bad(s:State) when s.x=0:s.x=s.x;law optional value_bad(s:State) when s.x=1:s.y=s.y;", &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", "guard=quotient(Pair.y,on=$s.domain,s=@v/s,law=Pair.guard_bad)", "value=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.value_bad)"]);
+    let guard = conditional_witness(&j, 1);
+    let families = arr(get(guard, "law_values"));
+    let applicability = families
+        .iter()
+        .map(|r| {
+            let rows = arr(get(node(&j, r), "value"));
+            has(&arr(&rows[0])[1], "some")
+        })
+        .collect::<Vec<_>>();
+    assert_ne!(applicability[0], applicability[1]);
+    let data = conditional_witness(&j, 2);
+    let mut ys = vec![];
+    for key in ["first", "second"] {
+        let parameters = arr(get(node(&j, get(data, key)), "value"));
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(q_scalar(&parameters[0]), ("1", "1"));
+        ys.push(&parameters[1].value);
+    }
+    assert_ne!(ys[0], ys[1]);
+    for r in arr(get(data, "law_values")) {
+        let rows = arr(get(node(&j, r), "value"));
+        assert!(has(&arr(&rows[0])[1], "some"));
+    }
+}
+#[test]
+fn quotient_nonempty_guard_on_quotient_coordinate_cli() {
+    let dir = input("conditional-quotient-coordinate", "change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional indexed(b:Bool,s:State) when b and s.x=0:s.x=s.x;");
+    let asks = [
+        "s=solve(Pair.total,on=@v/s,using=Pair.choose)",
+        "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)",
+    ];
+    let fresh = execute(&dir, "out", &asks);
+    assert_eq!(fresh.code, 0, "{} {}", fresh.stdout, fresh.stderr);
+    let j = result_json(&dir, &fresh);
+    assert_eq!(num(get(&fresh.receipt, "exit_code")), 0);
+    let d = conditional_descent(&j, 1);
+    let rows = arr(get(d, "instances"));
+    assert_eq!(rows.len(), 2);
+    for row in rows {
+        let key = arr(get(node(&j, get(row, "key")), "value"));
+        assert_eq!(key.len(), 2);
+        let flag = get_bool(&key[0]); // Law's original (b,s) order.
+        if flag {
+            assert!(has(row, "values"));
+            assert!(has(get(row, "guard"), "linear"));
+        } else {
+            assert!(!get_bool(get(row, "guard")));
+            assert!(!has(row, "values"));
+        }
+    }
+    let rerun = |out| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            out,
+            "--reuse",
+            "out",
+            "--time-ms",
+            "120000",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        run(&dir, &args)
+    };
+    let reused = rerun("again");
+    assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
+    let again = result_json(&dir, &reused);
+    for key in ["nodes", "answers"] {
+        assert_eq!(get(&j, key).value, get(&again, key).value);
+    }
+    let path = dir.join(s(get(&fresh.receipt, "result")));
+    let saved = std::fs::read_to_string(&path).unwrap();
+    let damaged = saved.replacen("guarded_affine", "affine", 1);
+    assert_ne!(saved, damaged);
+    std::fs::write(path, damaged).unwrap();
+    let rejected = rerun("rejected");
+    assert_eq!(rejected.code, 0, "{} {}", rejected.stdout, rejected.stderr);
+    let rejected = result_json(&dir, &rejected);
+    assert!(warnings(&rejected)
+        .iter()
+        .any(|reason| s(get(reason, "code")) == "usage"));
+    for key in ["nodes", "answers"] {
+        assert_eq!(get(&j, key).value, get(&rejected, key).value);
+    }
+}
+#[test]
+fn quotient_variable_guard_missing_is_not_empty_and_empty_skips_missing_body() {
+    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    for (guard, expected) in [
+        ("s.x=0 and s.y=1", "undetermined"),
+        ("s.x=0 and s.x=1", "established"),
+    ] {
+        let source = missing_sources(&format!("change choose(s:State,a:Q)=s with{{x=a}};law required first(s:State):s.x=0;law optional active(s:State) when {guard}:s.y=s.y;"));
+        let result = evaluate_observed_bytes(
+            source,
+            &[
+                "s=solve(Pair.first,on=@v/s,using=Pair.choose)",
+                "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
+                "n=needed($q)",
+            ],
+            &mut Control::unlimited(),
+        );
+        let Ok(result) = result else {
+            panic!("missing and empty must remain separate")
+        };
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answer = &arr(get(&j, "answers"))[1];
+        assert_eq!(s(get(answer, "status")), expected);
+        if expected == "undetermined" {
+            assert!(!has(get(answer, "outputs"), "quotient"));
+            let reasons = arr(get(answer, "reasons"));
+            assert_eq!(reasons.len(), 1);
+            assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
+            let slots = arr(get(&reasons[0], "missing"));
+            assert_eq!(slots.len(), 1);
+            assert_eq!(s(get(&slots[0], "field")), "Pair.State.y");
+        } else {
+            assert!(has(get(answer, "outputs"), "quotient"));
+            assert!(arr(get(answer, "reasons")).is_empty());
+        }
+    }
+}
+#[test]
+fn quotient_guarded_family_preserves_nested_operand_type() {
+    let j = conditional_internal("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when s.x=0:(s.x,(s.x,rat(7,1)))=(s.x,(s.x,rat(7,1)));", &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)"]);
+    let d = conditional_descent(&j, 1);
+    let ty = arr(get(d, "value_type"));
+    assert_eq!(s(&ty[0]), "Tuple");
+    assert_eq!(s(&ty[1]), "Q");
+    assert_eq!(s(&arr(&ty[2])[0]), "Tuple");
+    let rows = arr(get(d, "instances"));
+    let values = get(&rows[0], "values");
+    assert_eq!(
+        qcoordinates(&j, get(values, "offset")),
+        [0, 0, 7, 0, 0, 7].map(|v| vec![v.to_string(), "1".to_owned()])
+    );
+    let linear = get(node(&j, get(values, "linear")), "value");
+    let columns = arr(get(linear, "columns"));
+    assert_eq!(columns.len(), 1);
+    assert_eq!(
+        arr(&columns[0])
+            .iter()
+            .map(|r| q_scalar(get(node(&j, r), "value")))
+            .collect::<Vec<_>>(),
+        vec![
+            ("1", "1"),
+            ("1", "1"),
+            ("0", "1"),
+            ("1", "1"),
+            ("1", "1"),
+            ("0", "1")
+        ]
+    );
 }

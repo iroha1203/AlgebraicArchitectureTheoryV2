@@ -2,7 +2,7 @@
 use super::*;
 use crate::observed::{
     change_result::field_linear_result as scalar_wire,
-    change_result::{CandidateInput, linear_result as linear},
+    change_result::{linear_result as linear, CandidateInput},
     environment::quotient_affine,
     environment::quotient_affine::coefficients,
     numeric,
@@ -421,15 +421,51 @@ fn law_descent(
     let free = image.dimensions - fiber.rank;
     let differences = coefficients::multiply(ty, &law.matrix, &fiber.kernel, free, c)?;
     let zero = numeric::zero(ty, c)?;
-    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| row[*j] != zero)) {
-        let points = [
-            vec![zero; image.dimensions],
-            fiber.kernel.iter().map(|row| row[j].clone()).collect(),
-        ];
+    let mut separating = None;
+    for instance in &law.instances {
+        if instance.guard.never() {
+            continue;
+        }
+        let origin = match &instance.guard {
+            quotient_affine::Guard::Affine(domain) => {
+                let guard_differences =
+                    coefficients::multiply(ty, &domain.equations, &fiber.kernel, free, c)?;
+                let origin = domain
+                    .particular
+                    .as_ref()
+                    .ok_or("商の非空guardの解がない")?;
+                if let Some(j) =
+                    (0..free).find(|j| guard_differences.iter().any(|row| row[*j] != zero))
+                {
+                    separating = Some((origin.clone(), j));
+                    break;
+                }
+                origin.clone()
+            }
+            quotient_affine::Guard::Fixed(_) => vec![zero.clone(); image.dimensions],
+        };
+        if let Some(j) = (0..free).find(|j| {
+            differences[instance.rows.clone()]
+                .iter()
+                .any(|row| row[*j] != zero)
+        }) {
+            separating = Some((origin, j));
+            break;
+        }
+    }
+    if let Some((origin, j)) = separating {
+        let other = origin
+            .iter()
+            .zip(&fiber.kernel)
+            .map(|(x, row)| numeric::binary(crate::law::ast::BinOp::Add, x, &row[j], c))
+            .collect::<Result<Vec<_>, _>>()?;
+        let points = [origin, other];
         let mut candidates = vec![];
         let mut values = vec![];
         let mut views = vec![];
         let mut evaluations = vec![];
+        let mut checked_views = vec![];
+        let mut checked_families = vec![];
         for point in &points {
             let row = quotient_affine::point(env, input, image, point, request, c)?;
             candidates.push(change_result::value(b, &row.parameters)?);
@@ -437,7 +473,12 @@ fn law_descent(
             let (family, checked) =
                 law_result::row(b, env, input, &row, &law.name, &law.value_type, expression)?;
             values.push(change_result::value(b, &family)?);
+            checked_views.push(row.image);
+            checked_families.push(family);
             evaluations.extend(checked);
+        }
+        if checked_views[0] != checked_views[1] || checked_families[0] == checked_families[1] {
+            return Err("商の通常評価で反例対を確認できない".into());
         }
         let evidence = b.push(
             NodeType::Evidence,
@@ -466,10 +507,102 @@ fn law_descent(
         )?;
         return Ok((None, vec![evidence], evaluations));
     }
+    if law
+        .instances
+        .iter()
+        .any(|instance| matches!(instance.guard, quotient_affine::Guard::Affine(_)))
+    {
+        // Use actual image coordinates, with Option-valued families as a
+        // typed Domain rather than a numeric module.
+        let family_type = law_result::family_type(env, &law.name, &law.value_type)?;
+        let target = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([("kind", Json::str("type")), ("type", family_type.wire())]),
+            vec![expression],
+            None,
+            None,
+        )?;
+        let mut arguments = vec![classes, target, actual_image, expression];
+        let mut instances = vec![];
+        let affine_component = |b: &mut Builder<'_>,
+                                rows: &[Vec<Scalar>],
+                                offset: &[Scalar],
+                                arguments: &mut Vec<NodeRef>,
+                                c: &mut Control| {
+            let target = linear::module(b, ring, rows.len(), "free", vec![])?;
+            let transformed = coefficients::multiply(&image.ty, rows, &fiber.lifts, fiber.rank, c)?;
+            let map = scalar_wire::map(b, actual_image, target, &transformed, fiber.rank, c)?;
+            let offset = scalar_wire::vector(b, target, offset, c)?;
+            arguments.extend([map, offset]);
+            Ok::<_, ValidationFailure>(Json::obj([
+                ("linear", map.wire()),
+                ("offset", offset.wire()),
+            ]))
+        };
+        for instance in &law.instances {
+            c.checkpoint(crate::observed::control::Checkpoint::Quotient)?;
+            let key = Scalar::Tuple(
+                instance
+                    .bindings
+                    .iter()
+                    .map(|(_, value)| value.clone())
+                    .collect(),
+            );
+            let key = change_result::value(b, &key)?;
+            arguments.push(key);
+            let guard = match &instance.guard {
+                quotient_affine::Guard::Fixed(value) => Json::Bool(*value),
+                quotient_affine::Guard::Affine(domain) => {
+                    let offset = domain
+                        .rhs
+                        .iter()
+                        .map(|rhs| {
+                            numeric::binary(
+                                crate::law::ast::BinOp::Sub,
+                                &numeric::zero(&image.ty, c)?,
+                                rhs,
+                                c,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()?;
+                    affine_component(b, &domain.equations, &offset, &mut arguments, c)?
+                }
+            };
+            let mut row = BTreeMap::from([("key".into(), key.wire()), ("guard".into(), guard)]);
+            if !instance.guard.never() {
+                let values = affine_component(
+                    b,
+                    &law.matrix[instance.rows.clone()],
+                    &law.offset[instance.rows.clone()],
+                    &mut arguments,
+                    c,
+                )?;
+                row.insert("values".into(), values);
+            }
+            instances.push(Json::Obj(row));
+        }
+        let map = b.push(
+            NodeType::Construction(T::StateMap),
+            "state_map",
+            Json::obj([
+                ("source", classes.wire()),
+                ("target", target.wire()),
+                ("kind", Json::str("guarded_affine")),
+                ("coordinates", actual_image.wire()),
+                ("value_type", law.value_type.wire()),
+                ("instances", Json::Arr(instances)),
+            ]),
+            arguments,
+            None,
+            None,
+        )?;
+        return Ok((Some(map), vec![], vec![]));
+    }
     // 固定したinstance keyの左右値を座標とする係数加群。成立Boolや残差には縮めない。
     let mut arguments = vec![expression];
     // 不適用のinstanceも族の固定成分であり、キーを落として空族へ変えない。
-    if law.instances.iter().any(|i| !i.guard) {
+    if law.instances.iter().any(|i| i.guard.never()) {
         let Signature::Law { params, .. } = &env.inputs.law().declarations[&law.name].signature
         else {
             return Err("商のLaw署名がない".into());
@@ -481,7 +614,7 @@ fn law_descent(
             .map(|instance| {
                 Scalar::Tuple(vec![
                     Scalar::Tuple(instance.bindings.iter().map(|(_, v)| v.clone()).collect()),
-                    Scalar::Bool(instance.guard),
+                    Scalar::Bool(!instance.guard.never()),
                 ])
             })
             .collect::<Vec<_>>();
@@ -498,7 +631,7 @@ fn law_descent(
     let mut labels = coefficients::coordinate_names(&law.value_type, "lhs", c)?;
     labels.extend(coefficients::coordinate_names(&law.value_type, "rhs", c)?);
     let mut generators = vec![];
-    for instance in law.instances.iter().filter(|i| i.guard) {
+    for instance in law.instances.iter().filter(|i| !i.guard.never()) {
         let key = Scalar::Tuple(
             instance
                 .bindings
