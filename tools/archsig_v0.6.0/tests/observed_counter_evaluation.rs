@@ -651,7 +651,7 @@ fn renamed_vocabulary_reading_field_binding_and_large_z_use_the_common_path() {
     };
     let definitions = renamed(DEFINITIONS);
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Gauge"].digest;
+    let digest = &checked.vocabularies()["Gauge"].digest;
     let old_digest = "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";
     let law = renamed(LAW)
         .replace(old_digest, digest)
@@ -1376,7 +1376,7 @@ fn guarded_counter(count: &str, guard: &str) -> (InputSources, String) {
         {"name":"count","type":"Z","meaning":"保持する件数。"},
         {"name":"enabled","type":"Bool","meaning":"この状態に条件を適用する。"}],"alignments":[]}]}]}"#;
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Counter"].digest;
+    let digest = &checked.vocabularies()["Counter"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Guarded {{
@@ -1917,7 +1917,7 @@ fn missing_field_through_a_cross_snapshot_reference_keeps_target_scope() {
       {"name":"next","type":["Ref","Counter.State"],"meaning":"次の状態。"}],"alignments":[]}]}]}"#;
     let checked_definitions =
         check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked_definitions.vocabularies["Counter"].digest;
+    let digest = &checked_definitions.vocabularies()["Counter"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Follow {{

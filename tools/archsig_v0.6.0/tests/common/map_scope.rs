@@ -2,7 +2,7 @@
 pub fn fixture(entries: Option<(&str, &str)>, source_links: &str) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
     let definition = include_bytes!("../fixtures/configuration-map-graph.atoms.json");
     let checked = archsig::definition::check_definitions(&[("definition0", definition)]).unwrap();
-    let digest = &checked.vocabularies["Graph"].digest;
+    let digest = &checked.vocabularies()["Graph"].digest;
     let law = include_str!("../fixtures/configuration-map-graph.law").replace("@DIGEST@", digest);
     let mut map = include_str!("../fixtures/configuration-map-graph.archmap.json")
         .replace("@DIGEST@", digest)

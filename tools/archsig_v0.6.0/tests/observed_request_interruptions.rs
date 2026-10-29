@@ -36,7 +36,7 @@ fn sources() -> InputSources {
         common::vocabulary_json("W", &format!("[{root},{choice}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = format!(
         r#"{}reading R {{ use vocabulary W version "1" digest "{digest}";
       view pair(s: Root, t: Root): (Z,Z) = (s.count,t.count);

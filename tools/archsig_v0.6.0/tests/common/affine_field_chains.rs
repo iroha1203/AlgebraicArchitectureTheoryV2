@@ -53,14 +53,14 @@ pub fn input(script: &str, number: &str, omitted: &[&str], revision: &str) -> In
     }
     let bytes = definitions.canonical().into_bytes();
     let checked = check_definitions(&[("definition0", &bytes)]).unwrap();
-    let digest = &checked.vocabularies["Paths"].digest;
+    let digest = &checked.vocabularies()["Paths"].digest;
     let old = check_definitions(&[("definition0", original.definitions()[0].bytes())]).unwrap();
     let law = std::str::from_utf8(original.law().bytes()).unwrap();
     let marker = "view unused(x:Unused):Bool=true;";
     assert_eq!(law.matches(marker).count(), 1);
     let law = law
         .replace(marker, script)
-        .replace(&old.vocabularies["Paths"].digest, digest);
+        .replace(&old.vocabularies()["Paths"].digest, digest);
     let mut map = json(&archsig::json::parse(original.archmap().bytes()).unwrap());
     *fm(&mut am(fm(&mut map, "vocabularies"))[0], "digest") = Json::str(digest);
     for snapshot in am(fm(&mut map, "snapshots")) {

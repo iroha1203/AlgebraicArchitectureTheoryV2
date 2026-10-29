@@ -212,13 +212,7 @@ fn from_checked_accepts_matching_tables_and_rejects_mixed_definition_identity() 
     let mut definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let law = check_law(LAW, &definitions).unwrap();
     let map = check_archmap(MAP, &definitions).unwrap();
-    definitions
-        .declarations
-        .values_mut()
-        .next()
-        .unwrap()
-        .meaning
-        .push_str(" altered");
+    definitions = changed_definitions();
     let failure =
         CheckedInputs::from_checked(sources(), definitions, law, map, &mut Control::unlimited())
             .unwrap_err();
@@ -315,4 +309,28 @@ fn memory_budget_and_signal_reasons_preserve_typed_details_and_priority() {
             .unwrap_err(),
         StopReason::Cancelled(Signal::Term)
     );
+}
+
+fn changed_definitions() -> archsig::definition::CheckedDefinitions {
+    let altered = String::from_utf8(DEFINITIONS.to_vec()).unwrap().replace(
+        "実装中の一つのカウンタ状態。",
+        "実装中の一つのカウンタ状態。 altered",
+    );
+    let src = sources();
+    let files: Vec<_> = src
+        .definitions()
+        .iter()
+        .enumerate()
+        .map(|(i, input)| {
+            (
+                input.id(),
+                if i == 0 {
+                    altered.as_bytes()
+                } else {
+                    input.bytes()
+                },
+            )
+        })
+        .collect();
+    check_definitions(&files).unwrap()
 }

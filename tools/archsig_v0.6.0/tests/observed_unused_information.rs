@@ -101,11 +101,11 @@ fn extended_law() -> String {
     let definitions = check_definitions(&[("definition0", LIBRARY)]).unwrap();
     let import = format!(
         "use vocabulary Extras version \"1\" digest \"{}\";",
-        definitions.vocabularies["Extras"].digest
+        definitions.vocabularies()["Extras"].digest
     );
     let counter_import = format!(
         "use vocabulary Counter version \"1\" digest \"{}\";",
-        definitions.vocabularies["Counter"].digest
+        definitions.vocabularies()["Counter"].digest
     );
     // import と alias は Counter の式から参照しない。spare の型に必要な subject も観測しない。
     let script = LAW.replace(
@@ -139,7 +139,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
     assert_eq!(
         checked
             .definitions()
-            .vocabularies
+            .vocabularies()
             .keys()
             .map(String::as_str)
             .collect::<Vec<_>>(),
@@ -152,13 +152,13 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
     assert!(
         checked
             .definitions()
-            .declarations
+            .declarations()
             .contains_key("Counter.State")
     );
     assert_eq!(
         checked
             .definitions()
-            .declarations
+            .declarations()
             .contains_key("Extras.Note"),
         has_extras
     );
@@ -205,7 +205,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
         );
     }
     assert_eq!(checked.definitions(), &checked.law().definitions);
-    for vocabulary in checked.definitions().vocabularies.values() {
+    for vocabulary in checked.definitions().vocabularies().values() {
         let row = arr(get(result, "vocabularies"))
             .iter()
             .find(|row| get(get(row, "manifest"), "namespace") == &Json::str(&vocabulary.namespace))
@@ -234,12 +234,12 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
                 pointer(&source, text(get(&location, "pointer"))),
                 &dependency.wire()
             );
-            let target = &checked.definitions().vocabularies[&dependency.namespace];
+            let target = &checked.definitions().vocabularies()[&dependency.namespace];
             assert_eq!(dependency.version, target.version);
             assert_eq!(dependency.digest, target.digest);
         }
     }
-    for primitive in checked.definitions().declarations.values() {
+    for primitive in checked.definitions().declarations().values() {
         for row in primitive_declarations_wire(primitive) {
             assert_eq!(
                 named(result, "declarations", "name", text(get(&row, "name"))),
@@ -278,7 +278,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
             assert_eq!(&script[start..end], expected);
             assert_eq!(
                 binding.digest,
-                checked.definitions().vocabularies[&binding.namespace].digest
+                checked.definitions().vocabularies()[&binding.namespace].digest
             );
         }
     }
@@ -824,7 +824,7 @@ fn unselected_law_reference_and_type_are_rejected() {
 fn unused_import_and_dependency_bindings_are_rejected() {
     let good = extended_law();
     let definitions = check_definitions(&[("definition0", LIBRARY)]).unwrap();
-    let digest = &definitions.vocabularies["Extras"].digest;
+    let digest = &definitions.vocabularies()["Extras"].digest;
     let import = format!("use vocabulary Extras version \"1\" digest \"{digest}\";");
     for broken in [
         import.replace("version \"1\"", "version \"2\""),
@@ -841,7 +841,7 @@ fn unused_import_and_dependency_bindings_are_rejected() {
         );
     }
     let extras = std::str::from_utf8(EXTRAS).unwrap();
-    let counter_digest = &definitions.vocabularies["Counter"].digest;
+    let counter_digest = &definitions.vocabularies()["Counter"].digest;
     let (before_version, after_version) = extras.rsplit_once("\"version\": \"1\"").unwrap();
     for bad in [
         format!("{before_version}\"version\": \"2\"{after_version}"),

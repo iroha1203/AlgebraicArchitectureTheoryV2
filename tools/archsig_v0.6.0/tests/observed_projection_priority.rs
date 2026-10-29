@@ -41,7 +41,7 @@ fn sources_with_empty_constructor(empty_first: Option<bool>) -> InputSources {
         common::vocabulary_json("W", &format!("[{root},{choice}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = common::reading_with(
         "W",
         digest,

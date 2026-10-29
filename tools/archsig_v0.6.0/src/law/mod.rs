@@ -421,7 +421,7 @@ mod entry_control_tests {
                     control.checkpoint(Checkpoint::InputBundle).unwrap_err();
                 }
                 let failure =
-                    check_law_controlled(b"bad", &CheckedDefinitions::default(), &mut control)
+                    check_law_controlled(b"bad", &CheckedDefinitions::empty(), &mut control)
                         .unwrap_err();
                 let CheckFailure::Stopped(reason) = failure else {
                     panic!("entry stop must precede input checking");
@@ -435,7 +435,7 @@ mod entry_control_tests {
     #[test]
     fn live_entry_checks_control_before_digest_and_preserves_input_failure() {
         BYTES_DIGEST_STARTS.with(|count| count.set(0));
-        let definitions = CheckedDefinitions::default();
+        let definitions = CheckedDefinitions::empty();
         let ordinary = check_law(b"bad", &definitions).unwrap_err();
         BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
         let first = Rc::new(Cell::new(None));

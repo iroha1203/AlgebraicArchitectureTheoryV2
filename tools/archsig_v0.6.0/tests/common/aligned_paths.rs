@@ -535,7 +535,7 @@ pub const MAP: &str = r#"{
 }"#;
 pub fn input(quantity_variant: bool) -> InputSources {
     let d = check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Flow"].digest;
+    let digest = &d.vocabularies()["Flow"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Flow {{use vocabulary Flow version \"1\" digest \"{digest}\";view step(m:Move):Path<Left,Right> =path(m);view maybe(m:Move):Option<Path<Left,Right>> =some(path(m));view left(m:Move):Bool=then(identity(source(path(m))),path(m))=path(m);view right(m:Move):Bool=then(path(m),identity(target(path(m))))=path(m);}}"
     );
@@ -624,9 +624,9 @@ pub fn unmatched_root_field_input() -> InputSources {
     );
     let definitions = definitions.canonical();
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Flow"].digest;
+    let digest = &checked.vocabularies()["Flow"].digest;
     let original = check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let old = &original.vocabularies["Flow"].digest;
+    let old = &original.vocabularies()["Flow"].digest;
     let law = std::str::from_utf8(normal.law().bytes())
         .unwrap()
         .replace(old, digest);

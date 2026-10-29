@@ -40,7 +40,7 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
         "constrained" | "varying" | "nonkey" | "empty_varying" | "empty" | "missing_table"
     ));
     let checked = check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["MapCall"].digest;
+    let digest = &checked.vocabularies()["MapCall"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";reading MapCall {{use vocabulary MapCall version "1" digest "{digest}";{SCRIPT}}}"#
     );

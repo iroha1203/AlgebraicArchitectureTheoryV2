@@ -17,7 +17,7 @@ pub fn inputs(missing: bool, tuple: bool, body: &str) -> Arc<CheckedInputs> {
     );
     let defs =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Family"].digest;
+    let digest = &defs.vocabularies()["Family"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";{body}}}"
     );

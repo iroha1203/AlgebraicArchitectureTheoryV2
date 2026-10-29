@@ -114,7 +114,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
 fn object_instances_use_the_same_bundle_for_multiple_actual_view_evaluations() {
     let d = include_bytes!("fixtures/object-instances.atoms.json");
     let definitions = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &definitions.vocabularies["Instances"].digest;
+    let digest = &definitions.vocabularies()["Instances"].digest;
     let shared = Arc::new(
         check_inputs(
             InputSources::from_bytes(

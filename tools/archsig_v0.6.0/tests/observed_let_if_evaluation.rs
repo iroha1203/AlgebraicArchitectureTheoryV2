@@ -111,7 +111,7 @@ fn fixture(omitted: &[&str], body: &str) -> InputSources {
       {"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
     let definitions_checked =
         check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &definitions_checked.vocabularies["Branch"].digest;
+    let digest = &definitions_checked.vocabularies()["Branch"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{

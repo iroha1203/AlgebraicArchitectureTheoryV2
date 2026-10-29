@@ -18,7 +18,7 @@ fn quiet() -> Control {
 fn inputs_with(definition: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Pattern"].digest;
+    let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{use vocabulary Pattern version \"1\" digest \"{digest}\"; {body}}}"
     );

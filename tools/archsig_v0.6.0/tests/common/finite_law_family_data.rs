@@ -8,7 +8,7 @@ const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.
 const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Family","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"独立の有限入力。","locations":[],"note":"元の値。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"root","type":"Family.Root","origin":"model"},{"id":"r2","type":"Family.Root","origin":"model"},{"id":"p","type":"Family.Part","origin":"model"},{"id":"q","type":"Family.Part","origin":"model"}],"atoms":[{"id":"op","subject":"p","field":"Family.Part.owner","value":["v","root"],"origin":"model"},{"id":"oq","subject":"q","field":"Family.Part.owner","value":["v","root"],"origin":"model"},{"id":"xp","subject":"p","field":"Family.Part.quantity","value":"0","origin":"model"},{"id":"xq","subject":"q","field":"Family.Part.quantity","value":"1","origin":"model"}]}]}"#;
 pub fn inputs(missing: bool, body: &str) -> Arc<CheckedInputs> {
     let defs = archsig::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Family"].digest;
+    let digest = &defs.vocabularies()["Family"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";{body}}}"
     );

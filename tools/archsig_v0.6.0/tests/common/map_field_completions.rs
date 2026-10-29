@@ -182,7 +182,7 @@ fn build(v: Variant) -> InputSources {
     ])
     .canonical();
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["MapFields"].digest;
+    let digest = &checked.vocabularies()["MapFields"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Inspect{{use vocabulary MapFields version \"1\" digest \"{digest}\";{SCRIPT}}}"
     );

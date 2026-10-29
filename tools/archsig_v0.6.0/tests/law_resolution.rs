@@ -24,8 +24,8 @@ fn short_and_explicit_forms_resolve_to_the_same_meaning() {
     let short = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let explicit = ok(RESERVATIONS_DEFINITION, &explicit_src);
     assert_eq!(
-        short.definitions.vocabularies,
-        explicit.definitions.vocabularies
+        short.definitions.vocabularies(),
+        explicit.definitions.vocabularies()
     );
     assert_ne!(short.model_digest, explicit.model_digest);
     assert_ne!(short.bytes_digest, explicit.bytes_digest);
@@ -117,7 +117,7 @@ law required l(a: A): a.x = 0;"#,
 fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
     use archsig::definition::PrimitiveSignature;
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let m = &c.definitions.declarations["Reservations.Migration"];
+    let m = &c.definitions.declarations()["Reservations.Migration"];
     let PrimitiveSignature::Correspondence { implicit, .. } = &m.signature else {
         panic!()
     };
@@ -142,13 +142,13 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
         }
     );
     assert!(
-        c.definitions.vocabularies["Reservations"]
+        c.definitions.vocabularies()["Reservations"]
             .manifest
             .canonical()
             .contains(r#""alignments":[]"#)
     );
     let swapped = definitions_ok(&[DEF_35]);
-    let sw = &swapped.declarations["R.Swap"];
+    let sw = &swapped.declarations()["R.Swap"];
     let PrimitiveSignature::Correspondence {
         implicit,
         alignments,
@@ -180,7 +180,7 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
 fn constructors_have_their_own_metadata() {
     use archsig::definition::PrimitiveSignature;
     let c = ok(ENGINE_DEFINITION, ENGINE);
-    let data = &c.definitions.declarations["Engine.Expr"];
+    let data = &c.definitions.declarations()["Engine.Expr"];
     let PrimitiveSignature::Data { constructors } = &data.signature else {
         panic!()
     };
@@ -390,7 +390,7 @@ fn declarations_are_listed_by_full_name_with_expression_types() {
         rebalance.expressions[0].ty,
         Type::Ref("Reservations.State".into())
     );
-    let reserve = &c.definitions.declarations["Reservations.Reserve"];
+    let reserve = &c.definitions.declarations()["Reservations.Reserve"];
     assert_eq!(
         reserve.signature.field("from").unwrap().ty,
         Type::Owned("Reservations.State".into(), "owner".into())
@@ -555,7 +555,7 @@ const IMPORT_B: &str = r#"use vocabulary B version "1" digest "sha256:848963f024
 #[test]
 fn counter_readings_share_one_primitive_type_and_keep_direct_imports() {
     let c = ok(COUNTER_DEFINITION, COUNTER);
-    assert_eq!(c.definitions.declarations.len(), 1);
+    assert_eq!(c.definitions.declarations().len(), 1);
     assert!(!c.declarations.contains_key("Counter.State"));
     for n in [
         "CountCheck.amount",
@@ -712,7 +712,7 @@ fn before_after_variants_are_valid_without_cross_reading_preservation() {
         );
         assert_eq!(span_text(&src, before.expressions[0].span), "s.free >= 0");
         assert_eq!(span_text(&src, after.expressions[0].span), "t.free >= 5");
-        assert_eq!(c.definitions.declarations.len(), 4);
+        assert_eq!(c.definitions.declarations().len(), 4);
         assert_ne!(before.span, after.span);
     }
 }
@@ -727,8 +727,8 @@ fn full_primitive_names_precede_relative_constructor_candidates() {
         "{HEADER}reading Helpers {{ {QUALIFIED_COUNTER_IMPORT} view amount(s: Counter.State): Z = s.count; }}\nreading R {{ {QUALIFIED_COUNTER_IMPORT} use Helpers as H; view direct(s: Counter.State): Z = s.count; view via_alias(s: Counter.State): Z = H.amount(s); view tag(): Counter.Counter = Counter.Counter.State; }}"
     );
     let c = ok(QUALIFIED_PRIMITIVES, &src);
-    assert!(c.definitions.declarations.contains_key("Counter.State"));
-    assert!(c.definitions.declarations.contains_key("Counter.Counter"));
+    assert!(c.definitions.declarations().contains_key("Counter.State"));
+    assert!(c.definitions.declarations().contains_key("Counter.Counter"));
     for name in ["Helpers.amount", "R.direct", "R.via_alias"] {
         let i = info(&c, name);
         assert_eq!(

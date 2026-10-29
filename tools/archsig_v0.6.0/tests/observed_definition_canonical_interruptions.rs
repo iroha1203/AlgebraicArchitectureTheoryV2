@@ -42,7 +42,7 @@ fn definition(fields: usize, nested: bool, meaning: &str) -> String {
 
 fn sources(definition: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["V"].digest;
+    let digest = &checked.vocabularies()["V"].digest;
     let law = format!("{}reading R {{ view value(): Z = 1; }}", common::HEADER);
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[],"origins":[],"snapshots":[]}}"#
@@ -143,8 +143,8 @@ fn normalization_visits_nested_types_each_field_and_escaped_string_character() {
         let ordinary = check_definitions(&[("definition0", text.as_bytes())]).unwrap();
         assert_eq!(ordinary, controlled);
         assert_eq!(
-            controlled.vocabularies["V"].digest,
-            sha256_digest(controlled.vocabularies["V"].manifest.canonical().as_bytes())
+            controlled.vocabularies()["V"].digest,
+            sha256_digest(controlled.vocabularies()["V"].manifest.canonical().as_bytes())
         );
         total.get()
     };

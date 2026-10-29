@@ -735,8 +735,8 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
         ("definition1", right.as_bytes()),
     ])
     .unwrap();
-    let ld = &definitions.vocabularies["Left"].digest;
-    let rd = &definitions.vocabularies["Right"].digest;
+    let ld = &definitions.vocabularies()["Left"].digest;
+    let rd = &definitions.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -754,7 +754,7 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
         .replace("@RIGHT_DIGEST@", rd)
         .replace(
             "@BRIDGE_DIGEST@",
-            &definitions.vocabularies["Bridge"].digest,
+            &definitions.vocabularies()["Bridge"].digest,
         )
         .replace("Right.Root.count", "Right.Root.other");
     let dir = workdir("map-absent-target-field");

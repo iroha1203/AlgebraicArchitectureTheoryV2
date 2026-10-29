@@ -28,8 +28,8 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
 fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -42,7 +42,7 @@ fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
     let expand = |s: &str| {
         s.replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
-            .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
             .into_bytes()
     };
     Arc::new(
@@ -658,7 +658,7 @@ fn target_expression_stop_keeps_source_and_target_partial_dag_without_a_decision
 fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
     let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &defs.vocabularies["V"].digest;
+    let digest = &defs.vocabularies()["V"].digest;
     let law = "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Read { use vocabulary V version \"1\" digest \"@DIGEST@\"; view probe(s: V.S): Bool = false; }";
     let i = Arc::new(
         check_inputs(

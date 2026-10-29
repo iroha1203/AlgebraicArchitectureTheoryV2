@@ -19,7 +19,7 @@ view seed():Z=1;
 pub fn input(script: &str, peer: bool, moved: bool) -> InputSources {
     let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Refs","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Refs.Root","meaning":"参照先。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Refs.Sample","meaning":"独立した欠測参照。","parameters":[{"name":"owner","type":["Ref","Refs.Root"],"meaning":"所属。"}],"fields":[{"name":"left","type":["Ref","Refs.Root"],"meaning":"左参照。"},{"name":"right","type":["Ref","Refs.Root"],"meaning":"右参照。"},{"name":"flag","type":"Bool","meaning":"有限条件。"}],"alignments":[]}]}]}"#;
     let d = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Refs"].digest;
+    let digest = &d.vocabularies()["Refs"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";reading RefCalc {{use vocabulary Refs version "1" digest "{digest}";{script}}}"#
     );

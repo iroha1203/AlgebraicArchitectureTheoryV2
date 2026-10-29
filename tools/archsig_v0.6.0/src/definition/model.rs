@@ -190,11 +190,70 @@ pub struct DefinitionIdentity {
     pub bytes_digest: String,
     pub model_digest: Option<String>,
 }
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// `check_definitions` で検査した共通定義。公開の参照から内容を読み取れる。
+///
+/// ```
+/// use archsig::definition::check_definitions;
+/// let checked = check_definitions(&[]).unwrap();
+/// assert!(checked.declarations().is_empty());
+/// assert!(checked.vocabularies().is_empty());
+/// assert!(checked.inputs().is_empty());
+/// ```
+///
+/// 構築と更新は検査を通す。
+///
+/// ```compile_fail,E0451
+/// use archsig::definition::CheckedDefinitions;
+/// let forged = CheckedDefinitions {
+///     declarations: Default::default(),
+///     vocabularies: Default::default(),
+///     inputs: Vec::new(),
+/// };
+/// ```
+///
+/// ```compile_fail,E0599
+/// use archsig::definition::CheckedDefinitions;
+/// let forged = CheckedDefinitions::default();
+/// ```
+///
+/// ```compile_fail,E0596
+/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// checked.declarations().clear();
+/// ```
+///
+/// ```compile_fail,E0596
+/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// checked.vocabularies().values_mut().next().unwrap().dependencies.clear();
+/// ```
+///
+/// ```compile_fail,E0594
+/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// checked.inputs()[0].model_digest = None;
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CheckedDefinitions {
-    pub declarations: BTreeMap<String, PrimitiveDeclaration>,
-    pub vocabularies: BTreeMap<String, Vocabulary>,
-    pub inputs: Vec<DefinitionIdentity>,
+    pub(crate) declarations: BTreeMap<String, PrimitiveDeclaration>,
+    pub(crate) vocabularies: BTreeMap<String, Vocabulary>,
+    pub(crate) inputs: Vec<DefinitionIdentity>,
+}
+
+impl CheckedDefinitions {
+    pub(crate) fn empty() -> Self {
+        Self {
+            declarations: BTreeMap::new(),
+            vocabularies: BTreeMap::new(),
+            inputs: Vec::new(),
+        }
+    }
+    pub fn declarations(&self) -> &BTreeMap<String, PrimitiveDeclaration> {
+        &self.declarations
+    }
+    pub fn vocabularies(&self) -> &BTreeMap<String, Vocabulary> {
+        &self.vocabularies
+    }
+    pub fn inputs(&self) -> &[DefinitionIdentity] {
+        &self.inputs
+    }
 }
 
 /// data の引数から推移的に計算した原始型の性質。

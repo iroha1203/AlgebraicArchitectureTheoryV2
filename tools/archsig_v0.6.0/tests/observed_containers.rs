@@ -424,7 +424,7 @@ fn fixture(script: &str) -> InputSources {
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Containers"].digest;
+    let digest = &checked.vocabularies()["Containers"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{ use vocabulary Containers version "1" digest "{digest}"; {script} }}"#
@@ -667,7 +667,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
         );
     }
     let archsig::definition::PrimitiveSignature::Data { constructors } =
-        &checked.law().definitions.declarations["Containers.Packet"].signature
+        &checked.law().definitions.declarations()["Containers.Packet"].signature
     else {
         panic!("Packet definition")
     };

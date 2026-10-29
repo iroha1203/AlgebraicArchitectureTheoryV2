@@ -19,7 +19,7 @@ const A: &str = include_str!("fixtures/object-configuration-map.archmap.json");
 const DIGEST: &str = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 fn with_definition(d: &[u8], a: &str) -> CheckedInputs {
     let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &defs.vocabularies["Reservations"].digest;
+    let digest = &defs.vocabularies()["Reservations"].digest;
     check_inputs(
         InputSources::from_bytes(
             vec![d.to_vec()],
@@ -36,7 +36,7 @@ fn inputs(a: &str) -> CheckedInputs {
 fn cross_kind_inputs() -> CheckedInputs {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
     let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &defs.vocabularies["V"].digest;
+    let digest = &defs.vocabularies()["V"].digest;
     check_inputs(
         InputSources::from_bytes(
             vec![d.to_vec()],
@@ -492,7 +492,7 @@ fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize
 #[test]
 fn stopped_configuration_transport_retains_operation_tables_and_completed_rows() {
     for i in [inputs(A), cross_kind_inputs()] {
-        let reading = if i.definitions().vocabularies.contains_key("V") {
+        let reading = if i.definitions().vocabularies().contains_key("V") {
             "Read"
         } else {
             "Reservations"

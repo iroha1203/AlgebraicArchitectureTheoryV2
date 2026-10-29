@@ -22,8 +22,8 @@ fn inputs(a: &str) -> CheckedInputs {
 fn with_left(left: &[u8], a: &str) -> CheckedInputs {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -36,13 +36,13 @@ fn with_left(left: &[u8], a: &str) -> CheckedInputs {
     let a = a
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd)
-        .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest);
+        .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest);
     check_inputs(
         InputSources::from_bytes(
             vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
             L.replace("@LEFT_DIGEST@", ld)
                 .replace("@RIGHT_DIGEST@", rd)
-                .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+                .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
                 .into_bytes(),
             a.into_bytes(),
         ),
@@ -550,8 +550,8 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
         ("bridge", bridge.as_bytes()),
     ])
     .unwrap();
-    let old_bridge = &base.definitions().vocabularies["Bridge"].digest;
-    let new_bridge = &definitions.vocabularies["Bridge"].digest;
+    let old_bridge = &base.definitions().vocabularies()["Bridge"].digest;
+    let new_bridge = &definitions.vocabularies()["Bridge"].digest;
     let law = std::str::from_utf8(original.law().bytes())
         .unwrap()
         .replace(old_bridge, new_bridge);
@@ -571,8 +571,8 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
             "[[[\"v\",\"p\"],[\"v\",\"q\"]],[[\"v\",\"r\"],[\"v\",\"q\"]]]",
             "[[[\"v\",\"p\"],[\"v\",\"r\"]],[[\"v\",\"r\"],[\"v\",\"p\"]]]",
         )
-        .replace("@LEFT_DIGEST@", &definitions.vocabularies["Left"].digest)
-        .replace("@RIGHT_DIGEST@", &definitions.vocabularies["Right"].digest)
+        .replace("@LEFT_DIGEST@", &definitions.vocabularies()["Left"].digest)
+        .replace("@RIGHT_DIGEST@", &definitions.vocabularies()["Right"].digest)
         .replace("@BRIDGE_DIGEST@", new_bridge);
     let i = check_inputs(
         InputSources::from_bytes(

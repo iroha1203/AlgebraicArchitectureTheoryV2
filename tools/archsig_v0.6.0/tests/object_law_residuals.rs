@@ -22,7 +22,7 @@ fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
 fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
         archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Pattern"].digest;
+    let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
     );

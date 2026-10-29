@@ -19,7 +19,7 @@ fn sources() -> InputSources {
 fn sources_at(revision: &str) -> InputSources {
     let defs = fixture::definitions();
     let d = check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Terms"].digest;
+    let digest = &d.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![defs.into_bytes()],
         fixture::law(digest).into_bytes(),

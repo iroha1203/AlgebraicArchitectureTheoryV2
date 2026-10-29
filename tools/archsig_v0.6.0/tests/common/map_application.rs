@@ -22,7 +22,7 @@ pub fn owned(mode: &str) -> InputSources {
 pub fn owned_revision(mode: &str, revision: &str) -> InputSources {
     let definitions = OWNED_DEFINITIONS.as_bytes();
     let d = check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Reservations"].digest;
+    let digest = &d.vocabularies()["Reservations"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";reading Applications {{use vocabulary Reservations version "1" digest "{digest}";{OWNED_SCRIPT}}}"#
     );
@@ -98,7 +98,7 @@ pub fn owned_revision(mode: &str, revision: &str) -> InputSources {
 pub fn plain(revision: &str) -> InputSources {
     let definitions = known::DEFINITIONS.as_bytes();
     let d = check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     let body = r#"view apply(s:Sample,x:Item):Item=s.different(x);view choice(s:Sample,x:Item):Item=(if true then s.m else s.different)(x);view lexical(s:Sample,x:Item):Item=let f=s.different in f(x);view generated(x:Item):Bool=forall f:Map<Item,Item> . f(x)=f(x);view absent(s:Sample,x:Item):Item=s.missing(x);view read(s:Sample):Map<Item,Item> =s.different;view call(s:Sample,x:Item):Item=read(s)(x);view composed(s:Sample,x:Item):Item=s.m(s.different(x));view seed():Z=1;law required prior():false;"#;
     let law = known::law(digest).replace(known::SCRIPT, body);
     InputSources::from_bytes(
@@ -115,7 +115,7 @@ mod finite {
 pub fn distinct() -> InputSources {
     let definitions = finite::DEFINITIONS.as_bytes();
     let d = check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     let law = finite::law(digest).replace(
         finite::SCRIPT,
         "view generated(x:Key):Bool=forall f:Map<Key,Image> . f(x)=f(x);",

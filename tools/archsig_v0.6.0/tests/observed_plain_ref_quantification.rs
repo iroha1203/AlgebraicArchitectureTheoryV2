@@ -277,7 +277,7 @@ fn fixture(script: &str, known_flag: Option<bool>, reverse: bool, moved: bool) -
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Roster"].digest;
+    let digest = &checked.vocabularies()["Roster"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Roster {{ use vocabulary Roster version "1" digest "{digest}"; }}

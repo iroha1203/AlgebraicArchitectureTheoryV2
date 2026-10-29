@@ -247,7 +247,7 @@ fn exhausted_dependency_candidates_keep_original_reference_above_budget() {
         Json::obj([
             ("namespace", Json::str(name)),
             ("version", Json::str("1")),
-            ("digest", Json::str(&checked.vocabularies[name].digest)),
+            ("digest", Json::str(&checked.vocabularies()[name].digest)),
         ])
     };
     let a = definition(vec![vocabulary(

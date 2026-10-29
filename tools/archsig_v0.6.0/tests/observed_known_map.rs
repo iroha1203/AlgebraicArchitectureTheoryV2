@@ -16,7 +16,7 @@ fn quiet() -> Control {
 }
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     InputSources::from_bytes(
         vec![maps::DEFINITIONS.as_bytes().to_vec()],
         maps::law(digest).into_bytes(),
@@ -313,7 +313,7 @@ fn known_map_type_domains_and_application_return_concrete_values() {
     );
     let d = maps::DEFINITIONS.as_bytes();
     let checked = check_definitions(&[("definition0", d)]).unwrap();
-    let digest = &checked.vocabularies["Maps"].digest;
+    let digest = &checked.vocabularies()["Maps"].digest;
     let input = InputSources::from_bytes(
         vec![d.to_vec()],
         law.into_bytes(),
@@ -359,7 +359,7 @@ fn known_map_type_domains_and_application_return_concrete_values() {
 fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_slots() {
     let definitions = maps::OWNED_DEFINITIONS.as_bytes();
     let d = check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     let input = InputSources::from_bytes(
         vec![definitions.to_vec()],
         maps::owned_law(digest).into_bytes(),

@@ -208,7 +208,7 @@ const LISTS: &str = r#"{
 }"#;
 
 fn list_doc(xs: &str, ys: &str, t: &str) -> String {
-    let digest = definitions_ok(&[LISTS]).vocabularies["L"].digest.clone();
+    let digest = definitions_ok(&[LISTS]).vocabularies()["L"].digest.clone();
     format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"L","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"m","locations":[],"note":"n"}}],"snapshots":[{{"id":"s","origin":"o","subjects":[{{"id":"e","type":"L.E","origin":"o"}}],"atoms":[{{"id":"a","subject":"e","field":"L.E.xs","value":{xs},"origin":"o"}},{{"id":"b","subject":"e","field":"L.E.ys","value":{ys},"origin":"o"}},{{"id":"c","subject":"e","field":"L.E.t","value":{t},"origin":"o"}}]}}]}}"#
     )

@@ -266,7 +266,7 @@ fn fixture(script: &str, shape: Shape, moved: bool, reverse: bool) -> InputSourc
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Completion"].digest;
+    let digest = &checked.vocabularies()["Completion"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary Completion version "1" digest "{digest}"; {script} }}"#
     );

@@ -73,8 +73,8 @@ fn run_input(
         checked.archmap().sources
     );
     assert_eq!(
-        result.prepared().inputs().definitions().vocabularies,
-        checked.definitions().vocabularies
+        result.prepared().inputs().definitions().vocabularies(),
+        checked.definitions().vocabularies()
     );
     assert_eq!(
         result.prepared().inputs().law().declarations,

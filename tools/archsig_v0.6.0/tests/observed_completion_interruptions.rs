@@ -21,7 +21,7 @@ fn source(
         common::vocabulary_json("V", &format!("[{}]", declarations.join(",")), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["V"].digest;
+    let digest = &definitions.vocabularies()["V"].digest;
     let law = common::reading_with("V", digest, "view marker(): Bool = true;");
     let subjects: Vec<_> = subjects
         .iter()

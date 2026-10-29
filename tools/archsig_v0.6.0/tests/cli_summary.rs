@@ -327,8 +327,8 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     let definition = original.replace("\"type\": \"Z\"", "\"type\": \"Q\"");
     let before = definition::check_definitions(&[("d", original.as_bytes())]).unwrap();
     let after = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let old = &before.vocabularies["Reservations"].digest;
-    let digest = &after.vocabularies["Reservations"].digest;
+    let old = &before.vocabularies()["Reservations"].digest;
+    let digest = &after.vocabularies()["Reservations"].digest;
     let law = include_str!("fixtures/public-compose.law").replace("view holdings", "law optional localValid(s:State):s.free=2; local Sum(s:State) reads s.free+s.held; local Left(s:State) reads s.free; local Delta(s:State) reads s.free-s.held; change choose(s:State,b:Bool)=s with{free=if b then 2 else 3,held=if b then 0 else -1}; view holdings")
         .replace(old, digest).replace("(Z, Z)", "(Q, Q)");
     let text = include_str!("fixtures/configuration-operation.archmap.json").replace(old, digest)

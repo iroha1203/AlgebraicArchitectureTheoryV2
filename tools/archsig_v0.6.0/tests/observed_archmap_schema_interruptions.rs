@@ -21,7 +21,7 @@ fn sources(id: &str, path: &str, kind: &str) -> InputSources {
         )
     ));
     let defs = common::definitions_ok(&[&definition]);
-    let digest = &defs.vocabularies["V"].digest;
+    let digest = &defs.vocabularies()["V"].digest;
     let mut map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[{{"id":"source","uri":"urn:test","revision":"1","digest":"sha256:0000000000000000000000000000000000000000000000000000000000000000"}}],"origins":[{{"id":"origin","mode":"observed","method":"test","locations":[{{"source":"source","path":"{path}","span":[0,1]}}]}}],"snapshots":[{{"id":"snap","origin":"origin","subjects":[{{"id":"{id}","type":"V.Root","origin":"origin"}}],"atoms":[]}}]}}"#
     );

@@ -198,7 +198,7 @@ fn fixture(omitted: &[&str], script: &str) -> InputSources {
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Cases"].digest;
+    let digest = &checked.vocabularies()["Cases"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Cases {{ use vocabulary Cases version "1" digest "{digest}"; }}
@@ -527,7 +527,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
         f(observed, "id"),
         "同じ値でも観測と別producerを共有しない"
     );
-    let declaration = &checked.law().definitions.declarations["Cases.Packet"];
+    let declaration = &checked.law().definitions.declarations()["Cases.Packet"];
     let archsig::definition::PrimitiveSignature::Data { constructors } = &declaration.signature
     else {
         panic!("data定義")

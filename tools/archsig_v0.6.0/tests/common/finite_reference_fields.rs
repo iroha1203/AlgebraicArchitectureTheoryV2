@@ -137,7 +137,7 @@ fn build(peer: bool, moved: bool, unknown_owner: bool, counter: Option<bool>) ->
     ])
     .canonical();
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Fields"].digest;
+    let digest = &checked.vocabularies()["Fields"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Inspect {{ use vocabulary Fields version \"1\" digest \"{digest}\"; {SCRIPT} }}"
     );
@@ -303,14 +303,14 @@ pub fn map_constrained() -> InputSources {
     let i = references::constrained(true);
     let old = String::from_utf8(i.definitions()[0].bytes().to_vec()).unwrap();
     let d = check_definitions(&[("definition0", old.as_bytes())]).unwrap();
-    let old_digest = &d.vocabularies["Reservations"].digest;
+    let old_digest = &d.vocabularies()["Reservations"].digest;
     let start = old.find("\"name\": \"Reservations.State\"").unwrap();
     let index = start + old[start..].find("\"fields\": [").unwrap() + "\"fields\": [".len();
     let extra = r#"{"name":"chosen","type":["Owned","Reservations.State","owner"],"meaning":"移行元から選ぶ欠測状態。"},"#;
     let mut definitions = old.clone();
     definitions.insert_str(index, extra);
     let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Reservations"].digest;
+    let digest = &checked.vocabularies()["Reservations"].digest;
     let law = String::from_utf8(i.law().bytes().to_vec())
         .unwrap()
         .replace(references::MAP_SCRIPT, MAP_SCRIPT)

@@ -53,7 +53,7 @@ pub fn tree_input(revision: &str) -> InputSources {
     let checked =
         archsig::definition::check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())])
             .unwrap();
-    let digest = &checked.vocabularies["Trees"].digest;
+    let digest = &checked.vocabularies()["Trees"].digest;
     InputSources::from_bytes(
         vec![tree::DEFINITIONS.as_bytes().to_vec()],
         tree::law(digest, "").into_bytes(),

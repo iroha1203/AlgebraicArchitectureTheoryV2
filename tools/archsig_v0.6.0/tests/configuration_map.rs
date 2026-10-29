@@ -31,10 +31,10 @@ fn reference_inputs(map: &str) -> CheckedInputs {
     let old = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
     let definitions =
         archsig::definition::check_definitions(&[("definition0", definition)]).unwrap();
-    let digest = &definitions.vocabularies["Reservations"].digest;
+    let digest = &definitions.vocabularies()["Reservations"].digest;
     let law = std::str::from_utf8(L)
         .unwrap()
-        .replace(&old.vocabularies["Reservations"].digest, digest);
+        .replace(&old.vocabularies()["Reservations"].digest, digest);
     check_inputs(
         InputSources::from_bytes(
             vec![definition.to_vec()],
@@ -80,7 +80,7 @@ fn graph_inputs_with_edit(
     };
     let definitions =
         archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &definitions.vocabularies["Graph"].digest;
+    let digest = &definitions.vocabularies()["Graph"].digest;
     let map = include_str!("fixtures/configuration-map-graph.archmap.json")
         .replace("@DIGEST@", digest)
         .replace(r#""@LINKS_A@""#, links_a)
@@ -120,8 +120,8 @@ fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
         ("definition1", right.as_bytes()),
     ])
     .unwrap();
-    let left_digest = &definitions.vocabularies["Left"].digest;
-    let right_digest = &definitions.vocabularies["Right"].digest;
+    let left_digest = &definitions.vocabularies()["Left"].digest;
+    let right_digest = &definitions.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", left_digest)
         .replace("@RIGHT_DIGEST@", right_digest);
@@ -139,7 +139,7 @@ fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
         .replace("@RIGHT_DIGEST@", right_digest)
         .replace(
             "@BRIDGE_DIGEST@",
-            &definitions.vocabularies["Bridge"].digest,
+            &definitions.vocabularies()["Bridge"].digest,
         );
     let map = if rename_root_field {
         map.replace("Right.Root.count", "Right.Root.other")
@@ -473,8 +473,8 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
         ])
         .unwrap();
         let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
-            .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
-            .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+            .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
+            .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest);
         let result = archsig::definition::check_definitions(&[
             ("definition0", left.as_bytes()),
             ("definition1", right.as_bytes()),
@@ -488,12 +488,12 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
         } else {
             let defs = result.expect("宣言の参照型が対応すれば空値も許す");
             let law = include_str!("fixtures/configuration-map-bridge.law")
-                .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
-                .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+                .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
+                .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest);
             let map = include_str!("fixtures/configuration-map-bridge.archmap.json")
-                .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
-                .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest)
-                .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+                .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
+                .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest)
+                .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
                 .replacen("\"value\": \"2\"", r#""value": {"none":true}"#, 1)
                 .replacen(
                     "\"value\": [\n            \"1\",\n            \"1\"\n          ]",
@@ -766,8 +766,8 @@ fn quantity_only_root_options_do_not_require_equal_value_types() {
     ])
     .unwrap();
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
-        .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
-        .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+        .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
+        .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest);
     assert!(
         archsig::definition::check_definitions(&[
             ("definition0", left.as_bytes()),

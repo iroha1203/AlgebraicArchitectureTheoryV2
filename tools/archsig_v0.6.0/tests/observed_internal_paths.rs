@@ -32,7 +32,7 @@ fn input() -> InputSources {
         fixture::OWNED_DEFINITIONS.as_bytes(),
     )])
     .unwrap();
-    let digest = &d.vocabularies["Reservations"].digest;
+    let digest = &d.vocabularies()["Reservations"].digest;
     let body = "view step(e:Reserve):Path<State,State> =path(e); view maybe(e:Reserve):Option<Path<State,State>> =some(path(e)); view first(e:Reserve):State=source(path(e)); view last(e:Reserve):State=target(path(e));";
     let law = fixture::owned_law(digest).replace(
         fixture::OWNED_SCRIPT,

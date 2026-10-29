@@ -22,7 +22,7 @@ fn source(definitions: String, body: &str, import: bool) -> InputSources {
         let definitions = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
         format!(
             "use vocabulary Counter version \"1\" digest \"{}\";",
-            definitions.vocabularies["Counter"].digest
+            definitions.vocabularies()["Counter"].digest
         )
     } else {
         String::new()

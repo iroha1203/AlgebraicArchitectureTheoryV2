@@ -366,7 +366,7 @@ fn fixture(script: &str, peer_flag: bool, reverse: bool) -> InputSources {
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Quantification"].digest;
+    let digest = &checked.vocabularies()["Quantification"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{ use vocabulary Quantification version "1" digest "{digest}"; {script} }}"#

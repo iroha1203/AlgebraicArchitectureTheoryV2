@@ -188,7 +188,7 @@ fn value_sources(ty: &str, value: &str) -> InputSources {
 
 fn value_sources_from_definition(definition: String, value: &str) -> InputSources {
     let defs = common::definitions_ok(&[&definition]);
-    let digest = &defs.vocabularies["V"].digest;
+    let digest = &defs.vocabularies()["V"].digest;
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"test","locations":[],"note":"value"}}],"snapshots":[{{"id":"s","origin":"model","subjects":[{{"id":"root","type":"V.Root","origin":"model"}}],"atoms":[{{"id":"v","subject":"root","field":"V.Root.value","origin":"model","value":{value}}}]}}]}}"#
     );

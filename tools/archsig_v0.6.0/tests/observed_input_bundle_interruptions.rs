@@ -212,13 +212,7 @@ fn mismatched_checked_tables_preserve_error_and_stage_at_post_comparison_budget(
     for resource in 0..3 {
         let (mut control, seen, _) = stop(22, resource);
         let (mut definitions, law, map) = tables(&src);
-        definitions
-            .declarations
-            .values_mut()
-            .next()
-            .unwrap()
-            .meaning
-            .push_str(" altered");
+        definitions = changed_definitions();
         let failure = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
             .unwrap_err();
         assert_eq!(seen.get(), 22);
@@ -293,13 +287,7 @@ fn internal_comparison_mismatch_preserves_stage_and_budget_priority() {
         let changed = || {
             let (mut definitions, law, mut map) = tables(&src);
             if bad_law {
-                definitions
-                    .declarations
-                    .values_mut()
-                    .next()
-                    .unwrap()
-                    .meaning
-                    .push_str(" altered");
+                definitions = changed_definitions();
             } else {
                 map.snapshots[0].subjects[0].ty = "Foreign.State".into();
             }
@@ -353,4 +341,28 @@ fn internal_comparison_mismatch_preserves_stage_and_budget_priority() {
             }
         }
     }
+}
+
+fn changed_definitions() -> archsig::definition::CheckedDefinitions {
+    let altered = String::from_utf8(DEFINITIONS.to_vec()).unwrap().replace(
+        "実装中の一つのカウンタ状態。",
+        "実装中の一つのカウンタ状態。 altered",
+    );
+    let src = sources();
+    let files: Vec<_> = src
+        .definitions()
+        .iter()
+        .enumerate()
+        .map(|(i, input)| {
+            (
+                input.id(),
+                if i == 0 {
+                    altered.as_bytes()
+                } else {
+                    input.bytes()
+                },
+            )
+        })
+        .collect();
+    check_definitions(&files).unwrap()
 }

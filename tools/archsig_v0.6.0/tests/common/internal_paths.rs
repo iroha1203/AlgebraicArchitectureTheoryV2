@@ -39,7 +39,7 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
         "normal" | "mismatch" | "list_mismatch" | "missing_to" | "missing_tag" | "missing_source"
     ));
     let checked = check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Paths"].digest;
+    let digest = &checked.vocabularies()["Paths"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Walk {{use vocabulary Paths version \"1\" digest \"{digest}\";{SCRIPT}}}"
     );

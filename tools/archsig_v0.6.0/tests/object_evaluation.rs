@@ -23,7 +23,7 @@ fn quiet() -> Control {
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &d.vocabularies["Instances"].digest;
+    let digest = &d.vocabularies()["Instances"].digest;
     Arc::new(
         check_inputs(
             InputSources::from_bytes(
@@ -275,7 +275,7 @@ fn fixed_argument_names_remain_explicit_parameter_bindings() {
 
 fn foreign_inputs(import: bool) -> Arc<CheckedInputs> {
     let checked = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
-    let digest = &checked.vocabularies["Instances"].digest;
+    let digest = &checked.vocabularies()["Instances"].digest;
     let d = include_str!("fixtures/object-evaluation-foreign.atoms.json")
         .replace("@INSTANCES_DIGEST@", digest);
     let checked = archsig::definition::check_definitions(&[
@@ -283,7 +283,7 @@ fn foreign_inputs(import: bool) -> Arc<CheckedInputs> {
         ("definition1", d.as_bytes()),
     ])
     .unwrap();
-    let foreign = &checked.vocabularies["Foreign"].digest;
+    let foreign = &checked.vocabularies()["Foreign"].digest;
     let l = include_str!("fixtures/object-evaluation-foreign.law")
         .replace(
             "@SELECTED_FOREIGN@",

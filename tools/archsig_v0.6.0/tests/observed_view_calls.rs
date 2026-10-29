@@ -164,7 +164,7 @@ fn fixture(omitted: &[&str], helpers: &str, caller: &str) -> InputSources {
     let checked =
         check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
             .unwrap();
-    let digest = &checked.vocabularies["Calls"].digest;
+    let digest = &checked.vocabularies()["Calls"].digest;
     // 実在するreading Hよりも、Calcのuse Helpers as Hを優先して解決する。
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";

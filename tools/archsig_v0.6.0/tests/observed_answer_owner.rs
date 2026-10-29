@@ -22,7 +22,7 @@ fn sources(known_owner: bool) -> InputSources {
         common::vocabulary_json("W", &format!("[{root},{item}]"), "[]")
     ));
     let definitions = common::definitions_ok(&[&definition]);
-    let digest = &definitions.vocabularies["W"].digest;
+    let digest = &definitions.vocabularies()["W"].digest;
     let law = format!(
         r#"{}reading R {{ use vocabulary W version "1" digest "{digest}";
           view owned(a: Root, b: Item[a]): Item[a] = b;
