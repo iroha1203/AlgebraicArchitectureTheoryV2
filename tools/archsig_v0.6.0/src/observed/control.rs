@@ -87,6 +87,7 @@ pub enum Checkpoint {
     PrimitiveValuation,
     ChangeWitness,
     Quotient,
+    QuotientGuardedInstance,
     Localize,
     FiniteLawSelection,
     FiniteLawAutomatic,
