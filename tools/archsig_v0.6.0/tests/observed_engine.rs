@@ -162,7 +162,7 @@ fn audit(r: &ObservedEvaluation, revision: Option<&str>) {
         for fact in arr(f(n, "support")) {
             let m = r.prepared().inputs().archmap();
             let snap = m
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -193,12 +193,12 @@ fn audit(r: &ObservedEvaluation, revision: Option<&str>) {
             } else {
                 &subject.origin
             };
-            let origin = m.origins.iter().find(|o| &o.id == origin).unwrap();
+            let origin = m.origins().iter().find(|o| &o.id == origin).unwrap();
             assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
             if let Some(rev) = revision {
                 assert!(!origin.locations.is_empty());
                 for l in &origin.locations {
-                    let source = m.sources.iter().find(|s| s.id == l.source).unwrap();
+                    let source = m.sources().iter().find(|s| s.id == l.source).unwrap();
                     assert_eq!(source.uri, "urn:fixture:engine");
                     assert_eq!(source.revision, rev);
                 }
@@ -320,7 +320,7 @@ fn check_counterexample(r: &ObservedEvaluation) {
     assert_eq!(f(assigned, "type"), &Json::str("Z"));
     let x: BigInt = text(val(assigned)).parse().unwrap();
     let map = r.prepared().inputs().archmap();
-    let source = &map.snapshots[0]
+    let source = &map.snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "subtract")
@@ -375,11 +375,11 @@ fn engine_generated_ir_and_recursive_views_keep_original_parts_and_facts() {
     assert_eq!(value(&w, "target", Json::str("Z")), &Json::str("6"));
     let law = r.prepared().inputs().law();
     for name in ["Engine.evalSource", "Engine.translate", "Engine.evalIR"] {
-        let archsig::law::model::Signature::View { body, .. } = &law.declarations[name].signature
+        let archsig::law::model::Signature::View { body, .. } = &law.declarations()[name].signature
         else {
             panic!("view")
         };
-        let span = law.exprs[*body].span;
+        let span = law.exprs()[*body].span;
         assert!(
             arr(f(&w, "nodes"))
                 .iter()

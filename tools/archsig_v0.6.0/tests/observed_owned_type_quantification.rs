@@ -249,23 +249,23 @@ fn unchanged(a: &CheckedInputs, b: &CheckedInputs) {
     assert_eq!(a.sources(), b.sources());
     assert_eq!(a.inputs(), b.inputs());
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(b.definitions(), &b.law().definitions);
-    assert_eq!(a.law().exprs, b.law().exprs);
-    assert_eq!(a.law().expr_types, b.law().expr_types);
-    assert_eq!(a.law().declarations, b.law().declarations);
-    assert_eq!(a.law().infos, b.law().infos);
-    assert_eq!(a.law().model_digest, b.law().model_digest);
+    assert_eq!(b.definitions(), b.law().definitions());
+    assert_eq!(a.law().exprs(), b.law().exprs());
+    assert_eq!(a.law().expr_types(), b.law().expr_types());
+    assert_eq!(a.law().declarations(), b.law().declarations());
+    assert_eq!(a.law().infos(), b.law().infos());
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
     assert_eq!(
-        b.law().bytes_digest,
+        b.law().bytes_digest(),
         sha256_digest(b.sources().law().bytes())
     );
-    assert_eq!(a.archmap().snapshots, b.archmap().snapshots);
-    assert_eq!(a.archmap().origins, b.archmap().origins);
-    assert_eq!(a.archmap().sources, b.archmap().sources);
-    assert_eq!(a.archmap().vocabularies, b.archmap().vocabularies);
-    assert_eq!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.archmap().snapshots(), b.archmap().snapshots());
+    assert_eq!(a.archmap().origins(), b.archmap().origins());
+    assert_eq!(a.archmap().sources(), b.archmap().sources());
+    assert_eq!(a.archmap().vocabularies(), b.archmap().vocabularies());
+    assert_eq!(a.archmap().model_digest(), b.archmap().model_digest());
     assert_eq!(
-        b.archmap().bytes_digest,
+        b.archmap().bytes_digest(),
         sha256_digest(b.sources().archmap().bytes())
     );
 }
@@ -274,7 +274,7 @@ fn erased(original: &TypeAst, checked: &CheckedInputs) -> Json {
         TypeAst::Named { name, .. } => {
             let target = checked
                 .law()
-                .infos
+                .infos()
                 .iter()
                 .flat_map(|d| &d.references)
                 .find(|(at, _)| *at == name.span())
@@ -305,7 +305,7 @@ fn original_names(original: &TypeAst, checked: &CheckedInputs) {
             assert!(
                 checked
                     .law()
-                    .infos
+                    .infos()
                     .iter()
                     .flat_map(|d| &d.references)
                     .any(|(at, target)| *at == name.span()
@@ -367,7 +367,7 @@ fn audit(w: &Json, checked: &CheckedInputs) {
         for fact in arr(f(n, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -403,7 +403,7 @@ fn audit(w: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -418,7 +418,7 @@ fn audit(w: &Json, checked: &CheckedInputs) {
             let location = &origin.locations[0];
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();
@@ -514,7 +514,7 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
             continue;
         } // 欠測を持つCompletionSeedのassignment域は元型Domainと区別する。
         let position = span(f(val(source), "location"));
-        let Some(expr) = checked.law().exprs.iter().find(|e| e.span == position) else {
+        let Some(expr) = checked.law().exprs().iter().find(|e| e.span == position) else {
             continue;
         };
         let ExprKind::Quant {
@@ -590,11 +590,11 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
                     &Json::str("Expression"),
                 );
                 let origin_span = span(f(val(origin), "location"));
-                let lexical = checked.law().exprs.iter().find_map(|e| match &e.kind {
+                let lexical = checked.law().exprs().iter().find_map(|e| match &e.kind {
                     ExprKind::Let { name, value, body }
                         if name.name == index_name.name
-                            && checked.law().exprs[*body].span.0 <= expr.span.0
-                            && expr.span.1 <= checked.law().exprs[*body].span.1 =>
+                            && checked.law().exprs()[*body].span.0 <= expr.span.0
+                            && expr.span.1 <= checked.law().exprs()[*body].span.1 =>
                     {
                         Some(*value)
                     }
@@ -603,11 +603,11 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
                 if let Some(rhs) = lexical {
                     assert_eq!(
                         origin_span,
-                        checked.law().exprs[rhs].span,
+                        checked.law().exprs()[rhs].span,
                         "letの元field RHS producer"
                     );
                 } else if let Some(scrutinee) =
-                    checked.law().exprs.iter().find_map(|e| match &e.kind {
+                    checked.law().exprs().iter().find_map(|e| match &e.kind {
                         ExprKind::Match { scrutinee, .. }
                             if e.span.0 <= expr.span.0 && expr.span.1 <= e.span.1 =>
                         {
@@ -618,7 +618,7 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
                 {
                     assert_eq!(
                         origin_span,
-                        checked.law().exprs[scrutinee].span,
+                        checked.law().exprs()[scrutinee].span,
                         "patternの元scrutinee producer"
                     );
                 } else {
@@ -626,12 +626,12 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
                         source_args[..source_args.len() - owners.len()].contains(owner_ref),
                         "通常call/内包の現在producerを元Context引数へ戻す"
                     );
-                    assert!(checked.law().exprs.iter().any(|e| e.span == origin_span));
+                    assert!(checked.law().exprs().iter().any(|e| e.span == origin_span));
                 }
             }
             let entity = &checked
                 .law()
-                .infos
+                .infos()
                 .iter()
                 .flat_map(|d| &d.references)
                 .find(|(at, _)| *at == name.span())
@@ -639,7 +639,7 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
                 .1;
             for snapshot in checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .filter(|s| arr(f(f(domain, "scope"), "snapshots")).contains(&Json::str(&s.id)))
             {
@@ -702,7 +702,7 @@ fn domains(result: &ObservedEvaluation, id: &str, binder: &str, wanted: &[Vec<Js
             let expression = target(&ns, f(val(child), "expression"), &Json::str("Expression"));
             assert_eq!(
                 span(f(val(expression), "location")),
-                checked.law().exprs[*body].span
+                checked.law().exprs()[*body].span
             );
             assert!(
                 arr(f(expression, "arguments")).contains(member),
@@ -1084,7 +1084,7 @@ fn completed_unknown(
     let checked = r.prepared().inputs();
     let quantifier = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|e| matches!(e.kind, ExprKind::Quant { .. }))
         .unwrap();
@@ -1222,9 +1222,9 @@ fn owned_type_provenance_move_preserves_domain_and_current_owner_sources() {
     let a = a.prepared().inputs();
     let b = b.prepared().inputs();
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(a.law().model_digest, b.law().model_digest);
-    assert_eq!(a.archmap().snapshots, b.archmap().snapshots);
-    assert_ne!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
+    assert_eq!(a.archmap().snapshots(), b.archmap().snapshots());
+    assert_ne!(a.archmap().model_digest(), b.archmap().model_digest());
 }
 #[test]
 fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_producer() {
@@ -1250,7 +1250,7 @@ fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_prod
     let ns = index(&w);
     let conditional = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|e| matches!(e.kind, ExprKind::If { .. }))
         .unwrap();
@@ -1266,7 +1266,7 @@ fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_prod
         value: rhs,
         body: quantifier,
         ..
-    } = &checked.law().exprs[*else_branch].kind
+    } = &checked.law().exprs()[*else_branch].kind
     else {
         panic!("elseの元let")
     };
@@ -1295,7 +1295,7 @@ fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_prod
         );
         assert_eq!(
             span(f(val(expression), "location")),
-            checked.law().exprs[id].span
+            checked.law().exprs()[id].span
         );
         for fact in arr(f(evaluation, "support")) {
             assert!(
@@ -1318,7 +1318,7 @@ fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_prod
         );
         assert_eq!(
             span(f(val(expression), "location")),
-            checked.law().exprs[id].span
+            checked.law().exprs()[id].span
         );
     }
     let quant_source = target(
@@ -1356,7 +1356,7 @@ fn owned_type_unselected_if_branch_preserves_eager_order_and_single_lexical_prod
             f(n, "type") == &Json::str("Evaluation") && {
                 let expression = target(&ns, f(val(n), "expression"), &Json::str("Expression"));
                 f(val(expression), "kind") == &Json::str("source")
-                    && span(f(val(expression), "location")) == checked.law().exprs[*rhs].span
+                    && span(f(val(expression), "location")) == checked.law().exprs()[*rhs].span
             }
         })
         .collect();

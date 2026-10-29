@@ -86,15 +86,61 @@ pub struct Snapshot {
     pub subjects: Vec<Subject>,
 }
 
-/// 検査を通った ArchMap。
+/// 検査を通った ArchMap。`check_archmap` / controlled版で構築し、共有参照で読み取る。
+///
+/// ```compile_fail,E0616
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.bytes_digest.clear(); }
+/// ```
+/// ```compile_fail,E0616
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.model_digest.clear(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.vocabularies().clear(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.sources().first_mut(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.origins().first_mut(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.snapshots().first_mut(); }
+/// ```
+/// ```compile_fail,E0451
+/// use archsig::archmap::CheckedArchMap;
+/// let forged = CheckedArchMap {
+///     bytes_digest: String::new(), model_digest: String::new(),
+///     vocabularies: Default::default(), sources: vec![], origins: vec![], snapshots: vec![],
+/// };
+/// ```
 #[derive(Debug)]
 pub struct CheckedArchMap {
-    pub bytes_digest: String,
-    pub model_digest: String,
-    pub vocabularies: BTreeMap<String, Binding>,
-    pub sources: Vec<Source>,
-    pub origins: Vec<Origin>,
-    pub snapshots: Vec<Snapshot>,
+    pub(crate) bytes_digest: String,
+    pub(crate) model_digest: String,
+    pub(crate) vocabularies: BTreeMap<String, Binding>,
+    pub(crate) sources: Vec<Source>,
+    pub(crate) origins: Vec<Origin>,
+    pub(crate) snapshots: Vec<Snapshot>,
+}
+impl CheckedArchMap {
+    pub fn bytes_digest(&self) -> &str {
+        &self.bytes_digest
+    }
+    pub fn model_digest(&self) -> &str {
+        &self.model_digest
+    }
+    pub fn vocabularies(&self) -> &BTreeMap<String, Binding> {
+        &self.vocabularies
+    }
+    pub fn sources(&self) -> &[Source] {
+        &self.sources
+    }
+    pub fn origins(&self) -> &[Origin] {
+        &self.origins
+    }
+    pub fn snapshots(&self) -> &[Snapshot] {
+        &self.snapshots
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

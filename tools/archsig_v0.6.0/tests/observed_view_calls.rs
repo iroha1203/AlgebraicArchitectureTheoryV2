@@ -234,7 +234,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(node, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -264,7 +264,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
@@ -288,7 +288,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
             );
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();
@@ -304,7 +304,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
             let at = span(f(val(node), "location"));
             assert_eq!(span(f(f(node, "rule"), "location")), at);
             assert!(
-                checked.law().exprs.iter().any(|e| e.span == at)
+                checked.law().exprs().iter().any(|e| e.span == at)
                     || checked.sources().law().bytes()[at.0..at.1]
                         .iter()
                         .all(|b| b.is_ascii_alphanumeric()),
@@ -314,7 +314,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
         if f(node, "type") == &Json::str("Evaluation") {
             if let Some(instance) = aggregate_instance(&ns, node) {
                 let instance_value = val(instance);
-                let declaration = &checked.law().declarations[text(f(instance_value, "name"))];
+                let declaration = &checked.law().declarations()[text(f(instance_value, "name"))];
                 let Signature::Law {
                     guard: Some(guard),
                     body,
@@ -336,7 +336,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
                 {
                     assert_eq!(
                         span(f(&parts[i], "location")),
-                        checked.law().exprs[*original].span
+                        checked.law().exprs()[*original].span
                     );
                     let children = arr(f(&parts[i], "children"));
                     assert_eq!(children, &[arguments[argument_index].clone()]);
@@ -344,7 +344,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
                     assert_eq!(f(val(child), "expression"), f(instance_value, name));
                     assert_eq!(
                         evaluation_span(&ns, child),
-                        checked.law().exprs[*original].span
+                        checked.law().exprs()[*original].span
                     );
                     assert_eq!(obj(&parts[i]).get("value"), obj(val(child)).get("value"));
                 }
@@ -402,19 +402,19 @@ fn audit_calls_in(
             continue;
         }
         let at = evaluation_span(&ns, evaluation);
-        let Some(expr) = law.exprs.iter().find(|e| e.span == at) else {
+        let Some(expr) = law.exprs().iter().find(|e| e.span == at) else {
             continue;
         };
         let ExprKind::Call { callee, args } = &expr.kind else {
             continue;
         };
         let mut callee = *callee;
-        while let ExprKind::Group(inner) = &law.exprs[callee].kind {
+        while let ExprKind::Group(inner) = &law.exprs()[callee].kind {
             callee = *inner;
         }
-        let callee_at = law.exprs[callee].span;
+        let callee_at = law.exprs()[callee].span;
         let Some(name) = law
-            .infos
+            .infos()
             .iter()
             .flat_map(|d| &d.references)
             .find(|(s, _)| *s == callee_at)
@@ -422,7 +422,7 @@ fn audit_calls_in(
         else {
             continue;
         };
-        let declaration = &law.declarations[name];
+        let declaration = &law.declarations()[name];
         let Signature::View {
             params,
             body,
@@ -444,7 +444,7 @@ fn audit_calls_in(
             "同じAST/値でもcallごとのbody Evaluationを共有しない"
         );
         let body_eval = target(&ns, body_ref, &Json::str("Evaluation"));
-        assert_eq!(evaluation_span(&ns, body_eval), law.exprs[*body].span);
+        assert_eq!(evaluation_span(&ns, body_eval), law.exprs()[*body].span);
         let body_source = expression(&ns, body_eval);
         assert!(
             arr(f(body_source, "arguments")).contains(f(val(evaluation), "expression")),
@@ -456,7 +456,7 @@ fn audit_calls_in(
             let arg_eval = target(&ns, &children[i], &Json::str("Evaluation"));
             assert_eq!(
                 evaluation_span(&ns, arg_eval),
-                law.exprs[*arg].span,
+                law.exprs()[*arg].span,
                 "実引数の元AST順"
             );
             assert!(
@@ -495,7 +495,7 @@ fn audit_calls_in(
                     continue;
                 }
                 let name_span = evaluation_span(&ns, name_eval);
-                if law.exprs.iter().any(|e| e.span == name_span && matches!(&e.kind, ExprKind::Dotted(names) if names.len()==1 && names[0].name==parameter.name)) {
+                if law.exprs().iter().any(|e| e.span == name_span && matches!(&e.kind, ExprKind::Dotted(names) if names.len()==1 && names[0].name==parameter.name)) {
                     assert_eq!(f(part(name_eval), "children"), &Json::Arr(vec![children[i].clone()]));
                     assert_eq!(obj(val(name_eval)).get("value"), obj(val(arg_eval)).get("value"));
                 }
@@ -621,7 +621,7 @@ fn named_calls_keep_six_exact_types_nested_frames_aliases_and_caller_lexical_sta
     }
     let zero = checked
         .law()
-        .infos
+        .infos()
         .iter()
         .find(|d| d.name == "Calc.zero")
         .unwrap();
@@ -1349,34 +1349,34 @@ fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints()
     }
     let Signature::View {
         body: caller_body, ..
-    } = &checked.law().declarations["Reservations.caller"].signature
+    } = &checked.law().declarations()["Reservations.caller"].signature
     else {
         panic!("caller view");
     };
-    let caller_span = checked.law().exprs[*caller_body].span;
+    let caller_span = checked.law().exprs()[*caller_body].span;
     let Signature::Law {
         body: member_body, ..
-    } = &checked.law().declarations["Reservations.member"].signature
+    } = &checked.law().declarations()["Reservations.member"].signature
     else {
         panic!("member Law");
     };
     let ExprKind::Binary {
         lhs: member_call, ..
-    } = &checked.law().exprs[*member_body].kind
+    } = &checked.law().exprs()[*member_body].kind
     else {
         panic!("元等号");
     };
-    let member_span = checked.law().exprs[*member_call].span;
+    let member_span = checked.law().exprs()[*member_call].span;
     for at in [caller_span, member_span] {
         assert_eq!(&law.as_bytes()[at.0..at.1], b"owned(system,s)");
     }
     let Signature::View {
         body: return_body, ..
-    } = &checked.law().declarations["Reservations.return_caller"].signature
+    } = &checked.law().declarations()["Reservations.return_caller"].signature
     else {
         panic!("return caller view");
     };
-    let return_span = checked.law().exprs[*return_body].span;
+    let return_span = checked.law().exprs()[*return_body].span;
     assert_eq!(
         &law.as_bytes()[return_span.0..return_span.1],
         b"claimed(system,s)"

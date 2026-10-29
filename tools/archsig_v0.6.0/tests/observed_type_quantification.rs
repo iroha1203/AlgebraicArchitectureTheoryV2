@@ -176,7 +176,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -205,7 +205,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -213,7 +213,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let at = &origin.locations[0];
             let cited_source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == at.source)
                 .unwrap();
@@ -240,7 +240,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == at.source)
                     .unwrap()
@@ -251,7 +251,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         if f(n, "type") == &Json::str("Expression") && f(val(n), "kind") == &Json::str("source") {
             let at = span(f(val(n), "location"));
             let mut lexical = vec![];
-            for expr in &checked.law().exprs {
+            for expr in checked.law().exprs() {
                 let ExprKind::Quant {
                     var,
                     split:
@@ -264,7 +264,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 else {
                     continue;
                 };
-                let body = checked.law().exprs[*body].span;
+                let body = checked.law().exprs()[*body].span;
                 if body.0 <= at.0 && at.1 <= body.1 {
                     if let Some(q) = arr(f(f(n, "scope"), "quantifiers")).iter().find(|q| {
                         f(q, "name") == &Json::str(&var.name)
@@ -353,7 +353,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -524,7 +524,7 @@ fn type_body(checked: &CheckedInputs, name: &str) -> usize {
                 body,
             },
         ..
-    } = &checked.law().exprs[id].kind
+    } = &checked.law().exprs()[id].kind
     else {
         panic!("型量化")
     };
@@ -690,7 +690,7 @@ law required false_law(): forall b:Bool . b;
             .unwrap();
         assert_eq!(
             span(f(val(source_node), "location")),
-            checked.law().exprs[original].span
+            checked.law().exprs()[original].span
         );
         for member in arr(f(val(domain), "elements")) {
             let member = target(&ns, member, &t);
@@ -706,7 +706,7 @@ law required false_law(): forall b:Bool . b;
                 .all(|r| f(ns[text(f(r, "node"))], "type") != &Json::str("Evaluation")),
             "型域に架空のcollection Evaluationを作らない"
         );
-        let body_span = checked.law().exprs[type_body(&checked, &format!("Calc.{name}"))].span;
+        let body_span = checked.law().exprs()[type_body(&checked, &format!("Calc.{name}"))].span;
         let body_evals = children(&ns, root(&wire, name));
         assert_eq!(body_evals.len(), wanted.len(), "{name}:全body coverage");
         let mut covered = vec![];
@@ -883,7 +883,7 @@ law required decisive_law(s: Sample): forall b:Bool . if b then false else s.fla
     for inner in outer_children {
         assert_eq!(
             evaluation_span(&ns, inner),
-            checked.law().exprs[inner_quant].span
+            checked.law().exprs()[inner_quant].span
         );
         assert!(
             reached(&ns, &[inner]).contains(text(f(outer_domain, "id"))),
@@ -910,11 +910,11 @@ law required decisive_law(s: Sample): forall b:Bool . if b then false else s.fla
             Some(f(val(aggregate), "expression"))
         );
         let (Signature::View { body, .. } | Signature::Law { body, .. }) =
-            &checked.law().declarations[name].signature
+            &checked.law().declarations()[name].signature
         else {
             panic!("元view/Law")
         };
-        let at = checked.law().exprs[*body].span;
+        let at = checked.law().exprs()[*body].span;
         let originals = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[text(f(r, "node"))])
@@ -1113,8 +1113,8 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             let evaluation = root(&wire, "a");
             let original = expression(&ns, evaluation);
             let declaration = format!("Calc.{name}");
-            let original_span = checked.law().exprs[declared_body(&checked, &declaration)].span;
-            let body_span = checked.law().exprs[type_body(&checked, &declaration)].span;
+            let original_span = checked.law().exprs()[declared_body(&checked, &declaration)].span;
+            let body_span = checked.law().exprs()[type_body(&checked, &declaration)].span;
             assert_eq!(span(f(val(original), "location")), original_span);
             assert_eq!(f(val(original), "kind"), &Json::str("source"));
             assert!(arr(f(val(original), "parameters")).is_empty());
@@ -1145,7 +1145,7 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
                         domain: QuantDomain::Type(archsig::law::ast::TypeAst::Builtin(builtin, _)),
                         body: body_id,
                     },
-            } = &checked.law().exprs[quantifier_id].kind
+            } = &checked.law().exprs()[quantifier_id].kind
             else {
                 panic!("元のZ/Q forall AST")
             };
@@ -1289,7 +1289,7 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
         assert!(!obj(val(domain)).contains_key("elements"));
         assert_eq!(
             span(f(val(expression(&ns, evaluation)), "location")),
-            checked.law().exprs[original].span
+            checked.law().exprs()[original].span
         );
         assert!(!arr(f(evaluation, "evidence")).is_empty());
     }
@@ -1349,7 +1349,7 @@ view later(s: Sample): Z = s.zero+9;
     );
     let original = declared_body(&checked, "Calc.current");
     let body = type_body(&checked, "Calc.current");
-    let body_span = checked.law().exprs[body].span;
+    let body_span = checked.law().exprs()[body].span;
     let ns = index(&baseline);
     assert_eq!(children(&ns, root(&baseline, "current")).len(), 2);
     assert!(!evidence(&ns, answer(&baseline, "current"), "finite_exhaustion").is_empty());
@@ -1426,7 +1426,7 @@ view later(s: Sample): Z = s.zero+9;
             };
             assert_eq!(f(reason, "details"), &details);
         }
-        assert!(evaluations_at(&wire, checked.law().exprs[original].span).is_empty());
+        assert!(evaluations_at(&wire, checked.law().exprs()[original].span).is_empty());
         let bodies = evaluations_at(&wire, body_span);
         assert_eq!(bodies.len(), done);
         for body in bodies {
@@ -1435,7 +1435,7 @@ view later(s: Sample): Z = s.zero+9;
                 &Json::Bool(true)
             );
         }
-        let source_span = checked.law().exprs[original].span;
+        let source_span = checked.law().exprs()[original].span;
         let current_domains = arr(f(&wire, "nodes"))
             .iter()
             .filter(|n| {
@@ -1460,7 +1460,7 @@ view later(s: Sample): Z = s.zero+9;
         assert!(
             evaluations_at(
                 &wire,
-                checked.law().exprs[declared_body(&checked, "Calc.later")].span
+                checked.law().exprs()[declared_body(&checked, "Calc.later")].span
             )
             .is_empty()
         );

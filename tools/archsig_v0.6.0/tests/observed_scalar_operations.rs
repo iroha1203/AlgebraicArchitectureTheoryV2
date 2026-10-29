@@ -244,7 +244,7 @@ fn audit_completion(result: &Json, checked: &CheckedInputs, request: &Json, orig
     assert_eq!(f(val(seed), "location"), f(val(source), "location"));
     let (start, end) = span(f(val(seed), "location"));
     let text = std::str::from_utf8(&checked.sources().law().bytes()[start..end]).unwrap();
-    let sample = &checked.archmap().snapshots[0].subjects[0];
+    let sample = &checked.archmap().snapshots()[0].subjects[0];
     let mut fixed = BTreeMap::new();
     let mut fields = vec![];
     for name in ["p", "q"] {
@@ -461,7 +461,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
         }
         for support in arr(f(n, "support")) {
             if let Some(field) = obj(support).get("field") {
-                let sample = &checked.archmap().snapshots[0].subjects[0];
+                let sample = &checked.archmap().snapshots()[0].subjects[0];
                 let slot = &sample
                     .fields
                     .iter()
@@ -474,14 +474,14 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                 assert_eq!(atom, txt(f(support, "atom")));
                 let origin = checked
                     .archmap()
-                    .origins
+                    .origins()
                     .iter()
                     .find(|o| &o.id == origin)
                     .unwrap();
                 assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == origin.locations[0].source)
                     .unwrap();
@@ -531,13 +531,13 @@ fn audit(result: &Json, checked: &CheckedInputs) {
             }
         }
         let name = txt(f(f(request, "head"), "name"));
-        let decl = &checked.law().declarations[name];
+        let decl = &checked.law().declarations()[name];
         let original = original_root(&ns, result, txt(f(a, "id")));
         let evaluations = evaluation_tree(&ns, original);
         audit_completion(result, checked, request, original);
         for (id, expr) in checked
             .law()
-            .exprs
+            .exprs()
             .iter()
             .enumerate()
             .filter(|(_, e)| decl.span.0 <= e.span.0 && e.span.1 <= decl.span.1)
@@ -588,7 +588,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                 if !source_text.contains(&format!("s.{name}")) {
                     continue;
                 }
-                let field = checked.archmap().snapshots[0].subjects[0]
+                let field = checked.archmap().snapshots()[0].subjects[0]
                     .fields
                     .iter()
                     .find(|field| field.name == format!("Measure.Point.{name}"))
@@ -623,11 +623,11 @@ fn audit(result: &Json, checked: &CheckedInputs) {
             }
             let expected: Vec<_> = match &expr.kind {
                 ExprKind::Binary { lhs, rhs, .. } => vec![
-                    checked.law().exprs[*lhs].span,
-                    checked.law().exprs[*rhs].span,
+                    checked.law().exprs()[*lhs].span,
+                    checked.law().exprs()[*rhs].span,
                 ],
                 ExprKind::Unary { operand, .. } | ExprKind::Group(operand) => {
-                    vec![checked.law().exprs[*operand].span]
+                    vec![checked.law().exprs()[*operand].span]
                 }
                 _ => vec![],
             };

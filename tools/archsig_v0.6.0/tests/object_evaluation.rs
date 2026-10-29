@@ -360,7 +360,7 @@ fn membership_values_keep_included_and_excluded_owner_atoms_and_their_source_ori
             }
         }
         // 支持Factは元のowner slotから別Origin/Sourceまで解決できる。
-        let subject = i.archmap().snapshots[0]
+        let subject = i.archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "r")
@@ -378,7 +378,7 @@ fn membership_values_keep_included_and_excluded_owner_atoms_and_their_source_ori
         assert_eq!(origin, "ownerEvidence");
         let origin = i
             .archmap()
-            .origins
+            .origins()
             .iter()
             .find(|o| &o.id == origin)
             .unwrap();
@@ -386,7 +386,7 @@ fn membership_values_keep_included_and_excluded_owner_atoms_and_their_source_ori
         assert_eq!(origin.locations[0].source, "ownerSource");
         let source = i
             .archmap()
-            .sources
+            .sources()
             .iter()
             .find(|s| s.id == origin.locations[0].source)
             .unwrap();

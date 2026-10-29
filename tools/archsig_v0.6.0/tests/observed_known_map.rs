@@ -261,7 +261,7 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
                 if let Some(atom) = object(fact).get("atom") {
                     let map = result.prepared().inputs().archmap();
                     let subject = map
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| s.id == text(get(fact, "snapshot")))
                         .unwrap()
@@ -283,10 +283,10 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
                         panic!("known")
                     };
                     assert_eq!(atom, &Json::str(actual));
-                    let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+                    let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
                     assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
                     for loc in &origin.locations {
-                        let source = map.sources.iter().find(|s| s.id == loc.source).unwrap();
+                        let source = map.sources().iter().find(|s| s.id == loc.source).unwrap();
                         assert_eq!(source.uri, "urn:fixture:known-map");
                         assert_eq!(
                             source.revision,
@@ -410,7 +410,7 @@ fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_sl
             format!("{:?}", result.prepared().inputs().archmap()),
             before
         );
-        let owner = &result.prepared().inputs().archmap().snapshots[0]
+        let owner = &result.prepared().inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "h")

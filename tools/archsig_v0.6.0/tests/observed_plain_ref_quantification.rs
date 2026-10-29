@@ -164,7 +164,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -239,7 +239,7 @@ fn type_body(checked: &CheckedInputs, name: &str) -> usize {
                 body,
             },
         ..
-    } = &checked.law().exprs[id].kind
+    } = &checked.law().exprs()[id].kind
     else {
         panic!("型量化")
     };
@@ -345,7 +345,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         for fact in arr(f(node, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -356,7 +356,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 .unwrap();
             let snapshot_origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == snapshot.origin)
                 .unwrap();
@@ -385,7 +385,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
@@ -400,7 +400,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             );
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == origin.locations[0].source)
                 .unwrap();
@@ -577,7 +577,7 @@ fn assert_full_domain(
     assert_eq!(actual, expected, "{id}:全域");
     let original = declared_body(checked, declaration);
     let body = type_body(checked, declaration);
-    let body_span = checked.law().exprs[body].span;
+    let body_span = checked.law().exprs()[body].span;
     let source_node = arr(f(domain, "arguments"))
         .iter()
         .map(|r| ns[text(f(r, "node"))])
@@ -585,7 +585,7 @@ fn assert_full_domain(
         .unwrap();
     assert_eq!(
         span(f(val(source_node), "location")),
-        checked.law().exprs[original].span
+        checked.law().exprs()[original].span
     );
     assert!(
         arr(f(domain, "arguments"))
@@ -687,10 +687,10 @@ law required self_law(): forall r:E . r=r;
         assert_roster_scope(node);
         assert_roster_support(node);
     }
-    for snapshot in &checked.archmap().snapshots {
+    for snapshot in checked.archmap().snapshots() {
         let origin = checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .find(|o| o.id == snapshot.origin)
             .unwrap();
@@ -716,7 +716,7 @@ law required self_law(): forall r:E . r=r;
         }
     }
     let body = type_body(&checked, "Calc.all_refs");
-    let body_span = checked.law().exprs[body].span;
+    let body_span = checked.law().exprs()[body].span;
     for body in evaluations_at(&wire, body_span) {
         for name_eval in children(&ns, body) {
             let scalar = target(&ns, f(val(name_eval), "value"), &t);
@@ -743,13 +743,13 @@ law required self_law(): forall r:E . r=r;
     assert!(
         moved_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .all(|o| o.id.ends_with("_moved"))
     );
-    assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
+    assert_eq!(moved_checked.archmap().sources()[0].revision, "r2");
     assert_eq!(
-        moved_checked.archmap().sources[0].uri,
+        moved_checked.archmap().sources()[0].uri,
         "urn:fixture:plain-ref:relocated"
     );
 }
@@ -988,7 +988,7 @@ law required flags_law(): forall r:E . r.flag;
         } else {
             "Calc.any_flag"
         };
-        let expected_span = checked.law().exprs[declared_body(&checked, name)].span;
+        let expected_span = checked.law().exprs()[declared_body(&checked, name)].span;
         let originals = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[text(f(r, "node"))])
@@ -1344,7 +1344,7 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
         assert_eq!((text(f(q, "kind")), text(f(q, "name"))), ("exists", "x"));
     }
     let outer = quantifier_domain(&wire, "a", "r", "forall", &t);
-    let inner_span = checked.law().exprs[type_body(&checked, "Calc.nested")].span;
+    let inner_span = checked.law().exprs()[type_body(&checked, "Calc.nested")].span;
     let inners = children(&ns, root(&wire, "a"));
     assert_eq!(inners.len(), 2);
     let mut selected = vec![];
@@ -1448,7 +1448,7 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
                 .prepared()
                 .inputs()
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == "v")
                 .unwrap()
@@ -1533,8 +1533,8 @@ view later(s: E): Unit = unit;
     output(&baseline, "current", &Json::str("Bool"), Json::Bool(true));
     assert_eq!(total.get() - count.get(), 6);
     let original = declared_body(&checked, "Calc.current");
-    let original_span = checked.law().exprs[original].span;
-    let body_span = checked.law().exprs[type_body(&checked, "Calc.current")].span;
+    let original_span = checked.law().exprs()[original].span;
+    let body_span = checked.law().exprs()[type_body(&checked, "Calc.current")].span;
     let ns = index(&baseline);
     assert_eq!(children(&ns, root(&baseline, "current")).len(), 2);
     assert_roster_support(root(&baseline, "current"));
@@ -1715,7 +1715,7 @@ view later(s: E): Unit = unit;
         assert!(
             evaluations_at(
                 &wire,
-                checked.law().exprs[declared_body(&checked, "Calc.later")].span
+                checked.law().exprs()[declared_body(&checked, "Calc.later")].span
             )
             .is_empty()
         );

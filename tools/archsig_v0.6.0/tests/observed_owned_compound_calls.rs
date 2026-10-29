@@ -277,7 +277,7 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
                         .prepared()
                         .inputs()
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| Json::str(&s.id) == f["snapshot"])
                         .unwrap()
@@ -297,7 +297,7 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
                         .prepared()
                         .inputs()
                         .archmap()
-                        .origins
+                        .origins()
                         .iter()
                         .find(|o| o.id == *origin)
                         .unwrap();
@@ -306,7 +306,7 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
                             r.prepared()
                                 .inputs()
                                 .archmap()
-                                .sources
+                                .sources()
                                 .iter()
                                 .find(|s| s.id == at.source)
                                 .unwrap()
@@ -349,7 +349,7 @@ fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
         .prepared()
         .inputs()
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == "v")
         .unwrap();

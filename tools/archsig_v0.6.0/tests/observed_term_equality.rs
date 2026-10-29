@@ -218,7 +218,7 @@ fn audit(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             };
             let sub = inputs
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == *snapshot)
                 .unwrap()
@@ -239,7 +239,7 @@ fn audit(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             };
             let origin = inputs
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == *origin)
                 .unwrap();
@@ -247,7 +247,7 @@ fn audit(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             for l in &origin.locations {
                 let source = inputs
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == l.source)
                     .unwrap();
@@ -339,7 +339,7 @@ fn finite_term_missing_function_keeps_its_original_slot_and_inputs() {
         missing.into_bytes(),
     );
     let before = archsig::observed::input::check_inputs(src.clone(), &mut quiet()).unwrap();
-    let field = before.archmap().snapshots[0].subjects[0]
+    let field = before.archmap().snapshots()[0].subjects[0]
         .fields
         .iter()
         .find(|f| f.name == "Terms.Sample.g")

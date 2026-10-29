@@ -197,7 +197,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             };
             let snap = inputs
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == *snapshot)
                 .unwrap();
@@ -214,7 +214,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             };
             let origin = inputs
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == *origin)
                 .unwrap();
@@ -222,7 +222,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             for l in &origin.locations {
                 let source = inputs
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == l.source)
                     .unwrap();

@@ -208,7 +208,7 @@ fn missing_wrong_kind_and_different_short_name_do_not_use_aliases_or_other_readi
                 }]
             );
         }
-        assert!(i.law().declarations.contains_key("Decoy.amount"));
+        assert!(i.law().declarations().contains_key("Decoy.amount"));
         r.operation()
             .recheck(&i, &mut Control::unlimited())
             .unwrap();

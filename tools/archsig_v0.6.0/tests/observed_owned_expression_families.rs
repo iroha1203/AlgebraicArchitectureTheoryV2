@@ -229,23 +229,23 @@ fn unchanged(a: &CheckedInputs, b: &CheckedInputs) {
     assert_eq!(a.sources(), b.sources());
     assert_eq!(a.inputs(), b.inputs());
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(b.definitions(), &b.law().definitions);
-    assert_eq!(a.law().declarations, b.law().declarations);
-    assert_eq!(a.law().exprs, b.law().exprs);
-    assert_eq!(a.law().expr_types, b.law().expr_types);
-    assert_eq!(a.law().infos, b.law().infos);
-    assert_eq!(a.law().model_digest, b.law().model_digest);
+    assert_eq!(b.definitions(), b.law().definitions());
+    assert_eq!(a.law().declarations(), b.law().declarations());
+    assert_eq!(a.law().exprs(), b.law().exprs());
+    assert_eq!(a.law().expr_types(), b.law().expr_types());
+    assert_eq!(a.law().infos(), b.law().infos());
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
     assert_eq!(
-        b.law().bytes_digest,
+        b.law().bytes_digest(),
         sha256_digest(b.sources().law().bytes())
     );
-    assert_eq!(a.archmap().snapshots, b.archmap().snapshots);
-    assert_eq!(a.archmap().origins, b.archmap().origins);
-    assert_eq!(a.archmap().sources, b.archmap().sources);
-    assert_eq!(a.archmap().vocabularies, b.archmap().vocabularies);
-    assert_eq!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.archmap().snapshots(), b.archmap().snapshots());
+    assert_eq!(a.archmap().origins(), b.archmap().origins());
+    assert_eq!(a.archmap().sources(), b.archmap().sources());
+    assert_eq!(a.archmap().vocabularies(), b.archmap().vocabularies());
+    assert_eq!(a.archmap().model_digest(), b.archmap().model_digest());
     assert_eq!(
-        b.archmap().bytes_digest,
+        b.archmap().bytes_digest(),
         sha256_digest(b.sources().archmap().bytes())
     );
 }
@@ -261,7 +261,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert!(
                 checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .any(|s| s.id == text(snapshot))
             );
@@ -299,7 +299,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         for pointer in arr(f(n, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(pointer, "snapshot")))
                 .unwrap();
@@ -347,7 +347,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -363,7 +363,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let location = &origin.locations[0];
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();
@@ -442,7 +442,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
         let position = at(&ns, evaluation);
         let Some((id, expr)) = checked
             .law()
-            .exprs
+            .exprs()
             .iter()
             .enumerate()
             .find(|(_, e)| e.span == position)
@@ -462,7 +462,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
             continue;
         }
         let owner_evaluation = target(&ns, &children[0], &Json::str("Evaluation"));
-        if at(&ns, owner_evaluation) != checked.law().exprs[*owner].span {
+        if at(&ns, owner_evaluation) != checked.law().exprs()[*owner].span {
             continue;
         }
         families += 1;
@@ -482,7 +482,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
             panic!("Family Ref要素型")
         };
         assert!(
-            checked.law().infos.iter().any(|d| d
+            checked.law().infos().iter().any(|d| d
                 .references
                 .iter()
                 .any(|(at, target)| *at == name.span() && target == entity)),
@@ -492,7 +492,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
         assert_eq!(owner_parts.len(), 1);
         assert_eq!(
             span(f(&owner_parts[0], "location")),
-            checked.law().exprs[*owner].span
+            checked.law().exprs()[*owner].span
         );
         let original_arguments = arr(f(expression, "arguments"));
         for formal in original_arguments
@@ -504,19 +504,19 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
                 "callの実owner引数Evaluationを保持する"
             );
         }
-        if let ExprKind::Dotted(names) = &checked.law().exprs[*owner].kind {
+        if let ExprKind::Dotted(names) = &checked.law().exprs()[*owner].kind {
             if names.len() == 1 {
-                for lexical in &checked.law().exprs {
+                for lexical in checked.law().exprs() {
                     if let ExprKind::Let { name, value, body } = &lexical.kind {
                         if name.name == names[0].name
-                            && checked.law().exprs[*body].span.0 <= position.0
-                            && position.1 <= checked.law().exprs[*body].span.1
+                            && checked.law().exprs()[*body].span.0 <= position.0
+                            && position.1 <= checked.law().exprs()[*body].span.1
                         {
                             let children = arr(f(&owner_parts[0], "children"));
                             assert_eq!(children.len(), 1);
                             assert_eq!(
                                 at(&ns, target(&ns, &children[0], &Json::str("Evaluation"))),
-                                checked.law().exprs[*value].span
+                                checked.law().exprs()[*value].span
                             );
                         }
                     }
@@ -526,7 +526,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
         if let Some(owner_ref) = obj(val(owner_evaluation)).get("value") {
             let owner_value = val(target(&ns, owner_ref, &ty("Ref", Json::str("Owned.Root"))));
             let pair = arr(owner_value);
-            if let ExprKind::Dotted(names) = &checked.law().exprs[*owner].kind {
+            if let ExprKind::Dotted(names) = &checked.law().exprs()[*owner].kind {
                 if names.len() == 1 {
                     if let Some(binding) = arr(f(val(expression), "bindings"))
                         .iter()
@@ -563,7 +563,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
                 assert_eq!(arr(val(scalar)).len(), actual.len());
                 let snapshot = checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == text(&pair[0]))
                     .unwrap();
@@ -645,7 +645,7 @@ fn audit_in_domains(wire: &Json, checked: &CheckedInputs) {
         }
         let Some(expr) = checked
             .law()
-            .exprs
+            .exprs()
             .iter()
             .find(|e| e.span == at(&ns, evaluation))
         else {
@@ -663,7 +663,7 @@ fn audit_in_domains(wire: &Json, checked: &CheckedInputs) {
         else {
             continue;
         };
-        if !matches!(checked.law().exprs[*input].kind, ExprKind::Family { .. }) {
+        if !matches!(checked.law().exprs()[*input].kind, ExprKind::Family { .. }) {
             continue;
         }
         let parts = arr(f(val(evaluation), "parts"));
@@ -675,7 +675,7 @@ fn audit_in_domains(wire: &Json, checked: &CheckedInputs) {
             continue;
         };
         let family = target(&ns, first, &Json::str("Evaluation"));
-        if at(&ns, family) != checked.law().exprs[*input].span {
+        if at(&ns, family) != checked.law().exprs()[*input].span {
             continue;
         }
         let Some(family_value) = obj(val(family)).get("value") else {
@@ -705,7 +705,7 @@ fn audit_in_domains(wire: &Json, checked: &CheckedInputs) {
         );
         for ((child, member), item) in children[1..].iter().zip(elements).zip(items) {
             let body_eval = target(&ns, child, &Json::str("Evaluation"));
-            assert_eq!(at(&ns, body_eval), checked.law().exprs[*body].span);
+            assert_eq!(at(&ns, body_eval), checked.law().exprs()[*body].span);
             assert_eq!(val(target(&ns, member, f(val(domain), "type"))), item);
             let body_source = source(&ns, body_eval);
             assert!(
@@ -831,7 +831,7 @@ fn owned_arrow_missing_owner_uses_endpoint_constraints_and_keeps_original_missin
             );
         }
     }
-    let candidate = &r.prepared().inputs().archmap().snapshots[0]
+    let candidate = &r.prepared().inputs().archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "hA")
@@ -889,7 +889,7 @@ fn owned_family_repeated_occurrences_keep_extensional_set_equality_and_source_sp
     let ns = index(&w);
     let spans: BTreeSet<_> = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .filter(|e| matches!(e.kind, ExprKind::Family { .. }))
         .map(|e| e.span)
@@ -1168,7 +1168,7 @@ fn unknown(
     let checked = r.prepared().inputs();
     let family = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|e| matches!(e.kind, ExprKind::Family { .. }))
         .unwrap();
@@ -1187,7 +1187,7 @@ fn unknown(
         checked.law().expr_type(
             checked
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .position(|e| e.span == family.span)
                 .unwrap()
@@ -1323,7 +1323,7 @@ fn owned_family_provenance_move_preserves_set_and_current_owner_sources() {
     let a = a.prepared().inputs();
     let b = b.prepared().inputs();
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(a.law().model_digest, b.law().model_digest);
-    assert_eq!(a.archmap().snapshots, b.archmap().snapshots);
-    assert_ne!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
+    assert_eq!(a.archmap().snapshots(), b.archmap().snapshots());
+    assert_ne!(a.archmap().model_digest(), b.archmap().model_digest());
 }

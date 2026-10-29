@@ -244,7 +244,7 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
                 found += 1;
                 let map = r.prepared().inputs().archmap();
                 let snapshot = map
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| Json::str(&s.id) == fact["snapshot"])
                     .unwrap();
@@ -267,11 +267,11 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
                     panic!()
                 };
                 assert_eq!(&Json::str(actual), atom);
-                let origin = map.origins.iter().find(|o| o.id == *origin).unwrap();
+                let origin = map.origins().iter().find(|o| o.id == *origin).unwrap();
                 assert!(!origin.locations.is_empty());
                 for at in &origin.locations {
                     assert_eq!(
-                        map.sources
+                        map.sources()
                             .iter()
                             .find(|s| s.id == at.source)
                             .unwrap()

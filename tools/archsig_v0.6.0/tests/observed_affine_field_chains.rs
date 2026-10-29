@@ -222,7 +222,7 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
         let checked = archsig::observed::input::check_inputs(inputs, &mut quiet()).unwrap();
         let map = checked.archmap();
         let subject = map
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == "v")
             .unwrap()
@@ -237,10 +237,10 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
                 panic!()
             };
             assert_eq!(f(fact, "atom"), &Json::str(atom));
-            let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+            let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
             for location in &origin.locations {
                 let source = map
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();

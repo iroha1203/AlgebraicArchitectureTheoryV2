@@ -162,7 +162,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
     let (Signature::View { body, .. } | Signature::Law { body, .. }) =
-        &checked.law().declarations[name].signature
+        &checked.law().declarations()[name].signature
     else {
         panic!("view/law")
     };
@@ -336,7 +336,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         for fact in arr(f(node, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -347,7 +347,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 .unwrap();
             let snapshot_origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == snapshot.origin)
                 .unwrap();
@@ -376,7 +376,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
@@ -391,7 +391,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             );
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == origin.locations[0].source)
                 .unwrap();
@@ -475,7 +475,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
 }
 
 fn law_parts(checked: &CheckedInputs, name: &str) -> (usize, Option<usize>) {
-    let Signature::Law { body, guard, .. } = &checked.law().declarations[name].signature else {
+    let Signature::Law { body, guard, .. } = &checked.law().declarations()[name].signature else {
         panic!("Law")
     };
     (*body, *guard)
@@ -715,17 +715,17 @@ fn assert_family_selected(
     );
     assert_eq!(f(val(source_node), "bindings"), f(val(whole), "bindings"));
     let (body, guard) = law_parts(checked, name);
-    let body_span = checked.law().exprs[body].span;
+    let body_span = checked.law().exprs()[body].span;
     assert_eq!(span(f(val(source_node), "location")), body_span);
     assert_eq!(
         span(f(val(whole), "occurrence")),
-        checked.law().declarations[name].span
+        checked.law().declarations()[name].span
     );
     if let Some(guard) = guard {
         let expr = target(&ns, f(val(whole), "guard"), &Json::str("Expression"));
         assert_eq!(
             span(f(val(expr), "location")),
-            checked.law().exprs[guard].span
+            checked.law().exprs()[guard].span
         );
         assert_eq!(
             f(val(expr), "parameters"),
@@ -784,7 +784,7 @@ fn assert_family_selected(
         assert_eq!(f(val(instance), "role"), &Json::str("required"));
         assert_eq!(
             span(f(val(instance), "occurrence")),
-            checked.law().declarations[name].span
+            checked.law().declarations()[name].span
         );
         let bindings = f(val(instance), "bindings");
         actual_rows.push(binding_values(wire, bindings, all_types));
@@ -1120,7 +1120,7 @@ law required empty_case(r:Empty,b:Bool): false;
     );
     let body = declared_body(&checked, "Calc.empty_case");
     assert!(
-        evaluations_at(&wire, checked.law().exprs[body].span).is_empty(),
+        evaluations_at(&wire, checked.law().exprs()[body].span).is_empty(),
         "空直積で架空body Evaluationを作らない"
     );
 }
@@ -1618,11 +1618,11 @@ fn finite_law_instances_preserve_nested_view_return() {
 fn finite_law_instances_preserve_nested_sources_after_provenance_relocation() {
     let (moved, moved_checked) = run(nested_sources_fixture(true), &["a=check(Calc.nested)"]);
     check_claim(&moved, "a", "established");
-    assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
+    assert_eq!(moved_checked.archmap().sources()[0].revision, "r2");
     assert!(
         moved_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .all(|o| o.id.ends_with("_moved"))
     );
@@ -1712,7 +1712,7 @@ view later(s:E): Unit = unit;
     let ns = index(&baseline);
     let baseline_rows = row_instances(&baseline, "current", "Calc.current");
     assert_eq!(baseline_rows.len(), 2);
-    let body_span = checked.law().exprs[declared_body(&checked, "Calc.current")].span;
+    let body_span = checked.law().exprs()[declared_body(&checked, "Calc.current")].span;
     assert!(!evidence(&ns, answer(&baseline, "current"), "finite_exhaustion").is_empty());
     // 固定Expression pre/postだけを注入。実直積/適用/集約証拠/再検査内部はprivate試験が担う。
     for (offset, kind, done_bodies, done_rows) in [(1, 0, 0, 0), (3, 1, 1, 1), (4, 2, 2, 1)] {
@@ -1878,7 +1878,7 @@ view later(s:E): Unit = unit;
         assert!(
             evaluations_at(
                 &wire,
-                checked.law().exprs[declared_body(&checked, "Calc.later")].span
+                checked.law().exprs()[declared_body(&checked, "Calc.later")].span
             )
             .is_empty()
         );

@@ -194,8 +194,8 @@ fn known_projection_errors_preserve_usage_and_budget_while_cancellation_wins() {
             let PrepareFailure::Requests { inputs, .. } = &failure else {
                 panic!("requests");
             };
-            assert!(inputs.law().declarations.contains_key("R.choice"));
-            assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+            assert!(inputs.law().declarations().contains_key("R.choice"));
+            assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
             assert_eq!(count.get(), total.get());
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
             assert_eq!(
@@ -407,8 +407,8 @@ fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_po
                     panic!("known projection error and budget");
                 };
                 assert_eq!(actual, &reason);
-                assert!(inputs.law().declarations.contains_key("R.choice"));
-                assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+                assert!(inputs.law().declarations().contains_key("R.choice"));
+                assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
             } else {
                 assert_eq!(wire["status"], Json::str("interrupted"));
                 assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
@@ -512,8 +512,8 @@ fn assert_binding_priority(asks: &[&str], at: usize, kind: Stop, known_mismatch:
             wire["issues"],
             Json::Arr(vec![reason.wire(), issues[0].wire()])
         );
-        assert!(inputs.law().declarations.contains_key("R.echo"));
-        assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+        assert!(inputs.law().declarations().contains_key("R.echo"));
+        assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
     } else {
         assert_eq!(wire["status"], Json::str("interrupted"));
         assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));

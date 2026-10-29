@@ -89,7 +89,7 @@ pub fn original_owner_is_missing(result: &ObservedEvaluation, snapshot: &str) {
         .prepared()
         .inputs()
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|entry| entry.id == snapshot)
         .unwrap()

@@ -202,23 +202,23 @@ fn unchanged(before: &CheckedInputs, after: &CheckedInputs) {
     assert_eq!(before.sources(), after.sources());
     assert_eq!(before.inputs(), after.inputs());
     assert_eq!(before.definitions(), after.definitions());
-    assert_eq!(after.definitions(), &after.law().definitions);
-    assert_eq!(before.law().declarations, after.law().declarations);
-    assert_eq!(before.law().exprs, after.law().exprs);
-    assert_eq!(before.law().expr_types, after.law().expr_types);
-    assert_eq!(before.law().infos, after.law().infos);
-    assert_eq!(before.law().model_digest, after.law().model_digest);
+    assert_eq!(after.definitions(), after.law().definitions());
+    assert_eq!(before.law().declarations(), after.law().declarations());
+    assert_eq!(before.law().exprs(), after.law().exprs());
+    assert_eq!(before.law().expr_types(), after.law().expr_types());
+    assert_eq!(before.law().infos(), after.law().infos());
+    assert_eq!(before.law().model_digest(), after.law().model_digest());
     assert_eq!(
-        after.law().bytes_digest,
+        after.law().bytes_digest(),
         sha256_digest(after.sources().law().bytes())
     );
-    assert_eq!(before.archmap().snapshots, after.archmap().snapshots);
-    assert_eq!(before.archmap().vocabularies, after.archmap().vocabularies);
-    assert_eq!(before.archmap().origins, after.archmap().origins);
-    assert_eq!(before.archmap().sources, after.archmap().sources);
-    assert_eq!(before.archmap().model_digest, after.archmap().model_digest);
+    assert_eq!(before.archmap().snapshots(), after.archmap().snapshots());
+    assert_eq!(before.archmap().vocabularies(), after.archmap().vocabularies());
+    assert_eq!(before.archmap().origins(), after.archmap().origins());
+    assert_eq!(before.archmap().sources(), after.archmap().sources());
+    assert_eq!(before.archmap().model_digest(), after.archmap().model_digest());
     assert_eq!(
-        after.archmap().bytes_digest,
+        after.archmap().bytes_digest(),
         sha256_digest(after.sources().archmap().bytes())
     );
 }
@@ -270,7 +270,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         for pointer in arr(f(node, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(pointer, "snapshot")))
                 .unwrap();
@@ -307,7 +307,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
@@ -323,7 +323,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let location = &origin.locations[0];
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();
@@ -409,7 +409,7 @@ fn domains(result: &ObservedEvaluation, wire: &Json, family_root: &Json) {
     let checked = result.prepared().inputs();
     let request = &result.prepared().requests().requests()[0];
     let Signature::Law { params, body, .. } =
-        &checked.law().declarations["Inspect.chain"].signature
+        &checked.law().declarations()["Inspect.chain"].signature
     else {
         panic!("Law")
     };
@@ -443,7 +443,7 @@ fn domains(result: &ObservedEvaluation, wire: &Json, family_root: &Json) {
                         _ => None,
                     };
                     let mut values = vec![];
-                    for snapshot in &checked.archmap().snapshots {
+                    for snapshot in checked.archmap().snapshots() {
                         for candidate in &snapshot.subjects {
                             if &candidate.ty != entity {
                                 continue;
@@ -530,7 +530,7 @@ fn domains(result: &ObservedEvaluation, wire: &Json, family_root: &Json) {
         let source = target(&ns, &arguments[0], &Json::str("Expression"));
         assert_eq!(
             span(f(val(source), "location")),
-            checked.law().exprs[*body].span
+            checked.law().exprs()[*body].span
         );
         let mut prefix = vec![];
         for (i, pair) in arguments[1..prefix_len].chunks_exact(2).enumerate() {
@@ -593,7 +593,7 @@ fn domains(result: &ObservedEvaluation, wire: &Json, family_root: &Json) {
                 && family_reached.contains(text(f(n, "id")))
                 && arr(f(n, "arguments")).first() == Some(source_ref)
                 && span(f(f(n, "rule"), "location"))
-                    == checked.law().declarations["Inspect.chain"].span
+                    == checked.law().declarations()["Inspect.chain"].span
         })
         .collect();
     assert_eq!(total.len(), 1, "実row全域");
@@ -696,7 +696,7 @@ fn assert_family_selected(
     );
     assert_eq!(f(val(whole), "name"), &Json::str("Inspect.chain"));
     assert_eq!(f(val(whole), "role"), &Json::str("required"));
-    let declaration = &checked.law().declarations["Inspect.chain"];
+    let declaration = &checked.law().declarations()["Inspect.chain"];
     let Signature::Law {
         params,
         guard: Some(guard),
@@ -758,8 +758,8 @@ fn assert_family_selected(
             Json::str("a")
         ])
     );
-    let body_span = checked.law().exprs[*body].span;
-    let guard_span = checked.law().exprs[*guard].span;
+    let body_span = checked.law().exprs()[*body].span;
+    let guard_span = checked.law().exprs()[*guard].span;
     for (name, wanted) in [("body", body_span), ("guard", guard_span)] {
         let expression = target(&ns, f(val(whole), name), &Json::str("Expression"));
         assert_eq!(span(f(val(expression), "location")), wanted);
@@ -810,7 +810,7 @@ fn assert_family_selected(
         let leaf = arr(&values[2]);
         let snapshot = checked
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == text(&leaf[0]))
             .unwrap();
@@ -851,7 +851,7 @@ fn assert_family_selected(
             );
         }
         let row_reached = reachable(&ns, r);
-        for (id, expr) in checked.law().exprs.iter().enumerate().filter(|(id, e)| {
+        for (id, expr) in checked.law().exprs().iter().enumerate().filter(|(id, e)| {
             checked.law().expr_type(*id).is_some()
                 && ((body_span.0 <= e.span.0 && e.span.1 <= body_span.1) || e.span == guard_span)
         }) {
@@ -911,7 +911,7 @@ fn assert_family_selected(
         assert!(arr(f(scope, "assumptions")).is_empty());
         let has_missing_body = checked
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .flat_map(|s| &s.fields)
@@ -924,7 +924,7 @@ fn assert_family_selected(
                 "finite_model"
             })
         );
-        let expected_modes = if checked.archmap().snapshots.len() == 2 {
+        let expected_modes = if checked.archmap().snapshots().len() == 2 {
             vec![Json::str("proposed"), Json::str("specification")]
         } else {
             vec![Json::str("specification")]
@@ -932,7 +932,7 @@ fn assert_family_selected(
         assert_eq!(f(scope, "modes"), &Json::Arr(expected_modes));
         let snapshots = arr(f(scope, "snapshots"));
         assert!(snapshots.contains(&Json::str("v")));
-        if checked.archmap().snapshots.len() == 2 {
+        if checked.archmap().snapshots().len() == 2 {
             assert!(snapshots.contains(&Json::str("w")));
         }
         let quantifiers = arr(f(scope, "quantifiers"));
@@ -1239,7 +1239,7 @@ fn missing_and_counterexample(flags: [Option<bool>; 2], missing_leaf: &str) {
     );
     assert!(!arr(f(reason, "dependencies")).is_empty());
     assert!(
-        result.prepared().inputs().archmap().snapshots[0]
+        result.prepared().inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .any(|s| s.id == missing_leaf)
@@ -1321,7 +1321,7 @@ fn dependent_unknown_owner_completes_the_whole_and_keeps_original_missing_source
     assert!(!arr(f(missing, "dependencies")).is_empty());
     let checked = result.prepared().inputs();
     let Signature::Law { params, body, .. } =
-        &checked.law().declarations["Inspect.chain"].signature
+        &checked.law().declarations()["Inspect.chain"].signature
     else {
         panic!("Law")
     };
@@ -1332,7 +1332,7 @@ fn dependent_unknown_owner_completes_the_whole_and_keeps_original_missing_source
         let source = target(&ns, &dependencies[0], &Json::str("Expression"));
         assert_eq!(
             span(f(val(source), "location")),
-            checked.law().exprs[*body].span
+            checked.law().exprs()[*body].span
         );
     }
     let instances: Vec<_> = arr(f(&wire, "nodes"))
@@ -1366,7 +1366,7 @@ fn dependent_unknown_owner_completes_the_whole_and_keeps_original_missing_source
     .collect();
     assert_eq!(actual, wanted);
     assert!(
-        result.prepared().inputs().archmap().snapshots[0]
+        result.prepared().inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .any(|s| s.id == "p")
@@ -1391,11 +1391,11 @@ fn dependent_provenance_relocation_keeps_rows_and_traces_current_owner_sources()
     let a = original.prepared().inputs();
     let b = relocated.prepared().inputs();
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(a.law().model_digest, b.law().model_digest);
-    assert_ne!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
+    assert_ne!(a.archmap().model_digest(), b.archmap().model_digest());
     assert_eq!(
-        a.archmap().snapshots,
-        b.archmap().snapshots,
+        a.archmap().snapshots(),
+        b.archmap().snapshots(),
         "原始参照/値/owner/subject/Atomを固定する"
     );
 }
@@ -1434,7 +1434,7 @@ fn dependent_numeric_parameters_keep_each_actual_fiber_and_full_z_q_domain() {
             assert_eq!(arr(f(val(domain), "elements")).len(), 2);
             assert_eq!(arguments.len(), 4);
             let Signature::Law { params, .. } =
-                &result.prepared().inputs().law().declarations["Inspect.chain"].signature
+                &result.prepared().inputs().law().declarations()["Inspect.chain"].signature
             else {
                 panic!()
             };
@@ -1720,12 +1720,12 @@ fn dependent_numeric_unknown_owner_nonlinear_and_current_provenance_keep_their_b
         b.prepared().inputs().definitions()
     );
     assert_eq!(
-        a.prepared().inputs().archmap().snapshots,
-        b.prepared().inputs().archmap().snapshots
+        a.prepared().inputs().archmap().snapshots(),
+        b.prepared().inputs().archmap().snapshots()
     );
     assert_ne!(
-        a.prepared().inputs().archmap().sources,
-        b.prepared().inputs().archmap().sources
+        a.prepared().inputs().archmap().sources(),
+        b.prepared().inputs().archmap().sources()
     );
     let wire = b.wire();
     let subject_tuples: Vec<_> = arr(f(&wire, "nodes"))

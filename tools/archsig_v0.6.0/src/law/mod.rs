@@ -24,20 +24,51 @@ use std::collections::BTreeMap;
 pub const FORMAT: &str = "archsig.law/2";
 pub const SEMANTICS: &str = "archsig/0.6.0";
 
-/// 検査を通った Law。
+/// 検査を通った Law。`check_law` / controlled版で構築し、共有参照で読み取る。
+///
+/// ```compile_fail,E0616
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.bytes_digest.clear(); }
+/// ```
+/// ```compile_fail,E0616
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.model_digest.clear(); }
+/// ```
+/// ```compile_fail,E0616
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.definitions = archsig::definition::check_definitions(&[]).unwrap(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.declarations().clear(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.exprs().first_mut(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.expr_types().first_mut(); }
+/// ```
+/// ```compile_fail,E0596
+/// fn alter(law: &mut archsig::law::CheckedLaw) { law.infos().first_mut(); }
+/// ```
+/// ```compile_fail,E0451
+/// use archsig::law::CheckedLaw;
+/// let forged = CheckedLaw {
+///     bytes_digest: String::new(), model_digest: String::new(),
+///     declarations: Default::default(), exprs: vec![], expr_types: vec![],
+///     quantifier_types: vec![], infos: vec![],
+///     definitions: archsig::definition::check_definitions(&[]).unwrap(),
+/// };
+/// ```
 #[derive(Debug)]
 pub struct CheckedLaw {
-    pub bytes_digest: String,
-    pub model_digest: String,
+    pub(crate) bytes_digest: String,
+    pub(crate) model_digest: String,
     /// 完全名から宣言へ。
-    pub declarations: BTreeMap<String, Declaration>,
+    pub(crate) declarations: BTreeMap<String, Declaration>,
     /// 原式の arena と、各出現の解決した型。
-    pub exprs: Vec<Expr>,
-    pub expr_types: Vec<Option<Type>>,
+    pub(crate) exprs: Vec<Expr>,
+    pub(crate) expr_types: Vec<Option<Type>>,
     /// 各量化の検査時に解決した元binder型。body中の使用から推測しない。
     pub(crate) quantifier_types: Vec<Option<Type>>,
-    pub infos: Vec<DeclarationInfo>,
-    pub definitions: CheckedDefinitions,
+    pub(crate) infos: Vec<DeclarationInfo>,
+    pub(crate) definitions: CheckedDefinitions,
 }
 
 /// 検査した観測 Term の本体。
@@ -51,6 +82,27 @@ pub struct TermBody {
 }
 
 impl CheckedLaw {
+    pub fn bytes_digest(&self) -> &str {
+        &self.bytes_digest
+    }
+    pub fn model_digest(&self) -> &str {
+        &self.model_digest
+    }
+    pub fn declarations(&self) -> &BTreeMap<String, Declaration> {
+        &self.declarations
+    }
+    pub fn exprs(&self) -> &[Expr] {
+        &self.exprs
+    }
+    pub fn expr_types(&self) -> &[Option<Type>] {
+        &self.expr_types
+    }
+    pub fn infos(&self) -> &[DeclarationInfo] {
+        &self.infos
+    }
+    pub fn definitions(&self) -> &CheckedDefinitions {
+        &self.definitions
+    }
     pub fn expr_type(&self, id: ExprId) -> Option<&Type> {
         self.expr_types.get(id).and_then(Option::as_ref)
     }

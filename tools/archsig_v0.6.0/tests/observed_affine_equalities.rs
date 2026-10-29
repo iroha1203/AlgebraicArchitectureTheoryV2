@@ -134,7 +134,7 @@ fn evaluations_at<'a>(wire: &'a Json, at_span: (usize, usize)) -> Vec<&'a Json> 
 }
 fn body(checked: &CheckedInputs, name: &str) -> usize {
     let (Signature::View { body, .. } | Signature::Law { body, .. }) =
-        &checked.law().declarations[name].signature
+        &checked.law().declarations()[name].signature
     else {
         panic!("view/law")
     };
@@ -266,17 +266,17 @@ fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
         inputs.archmap().bytes()
     );
     assert_eq!(
-        evaluated.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots,
+        evaluated.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots(),
         "記号や補完値を観測Atom、owner、既知slotへ追加しない"
     );
     assert_eq!(
-        evaluated.prepared().inputs().archmap().bytes_digest,
-        checked.archmap().bytes_digest
+        evaluated.prepared().inputs().archmap().bytes_digest(),
+        checked.archmap().bytes_digest()
     );
     assert_eq!(
-        evaluated.prepared().inputs().archmap().model_digest,
-        checked.archmap().model_digest
+        evaluated.prepared().inputs().archmap().model_digest(),
+        checked.archmap().model_digest()
     );
     let wire = evaluated.wire();
     audit(&wire, &checked);
@@ -383,7 +383,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let scalar = ns[text(f(f(binding, "value"), "node"))];
             let declared_types = checked
                 .law()
-                .declarations
+                .declarations()
                 .values()
                 .filter_map(|d| match &d.signature {
                     Signature::View { params, .. } | Signature::Law { params, .. } => Some(params),
@@ -407,7 +407,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let position = at(&ns, n);
             if let Some((id, expr)) = checked
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .enumerate()
                 .find(|(_, e)| e.span == position)
@@ -424,26 +424,26 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     }
                     let expected = match &expr.kind {
                         ExprKind::Binary { lhs, rhs, .. } => vec![
-                            checked.law().exprs[*lhs].span,
-                            checked.law().exprs[*rhs].span,
+                            checked.law().exprs()[*lhs].span,
+                            checked.law().exprs()[*rhs].span,
                         ],
                         ExprKind::Unary { operand, .. }
                         | ExprKind::Group(operand)
                         | ExprKind::Field { base: operand, .. } => {
-                            vec![checked.law().exprs[*operand].span]
+                            vec![checked.law().exprs()[*operand].span]
                         }
                         ExprKind::Let { value, body, .. } => vec![
-                            checked.law().exprs[*value].span,
-                            checked.law().exprs[*body].span,
+                            checked.law().exprs()[*value].span,
+                            checked.law().exprs()[*body].span,
                         ],
                         ExprKind::If {
                             cond,
                             then_branch,
                             else_branch,
                         } => vec![
-                            checked.law().exprs[*cond].span,
-                            checked.law().exprs[*then_branch].span,
-                            checked.law().exprs[*else_branch].span,
+                            checked.law().exprs()[*cond].span,
+                            checked.law().exprs()[*then_branch].span,
+                            checked.law().exprs()[*else_branch].span,
                         ],
                         _ => vec![],
                     };
@@ -490,7 +490,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 assert!(!obj(missing).contains_key("atom"));
                 let snapshot = checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == text(f(missing, "snapshot")))
                     .unwrap();
@@ -512,7 +512,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
 fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     let snapshot = checked
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == text(f(support, "snapshot")))
         .unwrap();
@@ -544,13 +544,13 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     };
     let origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| &o.id == origin_id)
         .unwrap();
     let snapshot_origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| o.id == snapshot.origin)
         .unwrap();
@@ -564,7 +564,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     );
     let source = checked
         .archmap()
-        .sources
+        .sources()
         .iter()
         .find(|s| s.id == origin.locations[0].source)
         .unwrap();
@@ -591,10 +591,10 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
 fn complete_ast(wire: &Json, checked: &CheckedInputs, id: &str, declaration: &str) {
     let ns = index(wire);
     let reached = live(&ns, root(wire, id));
-    let declaration = &checked.law().declarations[declaration];
+    let declaration = &checked.law().declarations()[declaration];
     for (expr_id, expr) in checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .enumerate()
         .filter(|(_, e)| declaration.span.0 <= e.span.0 && e.span.1 <= declaration.span.1)
@@ -677,7 +677,7 @@ fn normalization<'a>(
     let comparison_span = at(&ns, comparison);
     let (id, ast) = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .enumerate()
         .find(|(_, e)| e.span == comparison_span)
@@ -702,7 +702,7 @@ fn normalization<'a>(
         Json::str(numeric_type)
     );
     for (operand, expr) in operands.iter().zip([*lhs, *rhs]) {
-        assert_eq!(at(&ns, operand), checked.law().exprs[expr].span);
+        assert_eq!(at(&ns, operand), checked.law().exprs()[expr].span);
         assert!(
             !obj(val(operand)).contains_key("value"),
             "元左右の未知値をScalarへ捏造しない"
@@ -889,7 +889,7 @@ fn compare_case(numeric_type: &str, field: &str, op: &str, same: bool, required:
     } else {
         "Calc.comparison"
     };
-    let comparison_span = checked.law().exprs[body(&checked, declaration)].span;
+    let comparison_span = checked.law().exprs()[body(&checked, declaration)].span;
     assert_eq!(
         evaluations_at(&wire, comparison_span),
         vec![root(&wire, "a")]
@@ -1498,7 +1498,7 @@ fn provenance_relocation_keeps_false_affine_law_and_new_fact_origins() {
                     == Some(&Json::str("Affine.Sample.knownz"))
                     && obj(support).get("atom") == Some(&Json::str("item_knownz")))
         );
-        let subject = inputs.archmap().snapshots[0]
+        let subject = inputs.archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "item")
@@ -1532,14 +1532,14 @@ fn provenance_relocation_keeps_false_affine_law_and_new_fact_origins() {
     assert!(
         moved_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .all(|o| o.id.ends_with("_moved"))
     );
-    assert_eq!(moved_checked.archmap().sources[0].id, "scan_moved");
-    assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
+    assert_eq!(moved_checked.archmap().sources()[0].id, "scan_moved");
+    assert_eq!(moved_checked.archmap().sources()[0].revision, "r2");
     assert_eq!(
-        moved_checked.archmap().sources[0].uri,
+        moved_checked.archmap().sources()[0].uri,
         "urn:fixture:affine-constants:relocated"
     );
 }

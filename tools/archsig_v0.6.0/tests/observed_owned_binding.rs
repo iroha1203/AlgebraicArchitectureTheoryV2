@@ -496,9 +496,9 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
     assert_eq!(checked.sources(), &original);
     assert_eq!(checked.inputs(), before.inputs());
     assert_eq!(checked.definitions(), before.definitions());
-    assert_eq!(checked.law().declarations, before.law().declarations);
-    assert_eq!(checked.law().exprs, before.law().exprs);
-    assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
+    assert_eq!(checked.law().declarations(), before.law().declarations());
+    assert_eq!(checked.law().exprs(), before.law().exprs());
+    assert_eq!(checked.archmap().snapshots(), before.archmap().snapshots());
     let w = r.wire();
     let mut seen = BTreeSet::new();
     let mut owner_atoms = 0;
@@ -517,7 +517,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
             };
             let s = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| &s.id == snapshot)
                 .unwrap()
@@ -542,7 +542,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
             };
             let o = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -550,7 +550,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
                 assert_eq!(
                     checked
                         .archmap()
-                        .sources
+                        .sources()
                         .iter()
                         .find(|s| s.id == loc.source)
                         .unwrap()
@@ -572,7 +572,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
             .prepared()
             .inputs()
             .archmap()
-            .sources
+            .sources()
             .iter()
             .all(|s| s.revision == "r2")
     );
@@ -692,7 +692,7 @@ fn fixed_owned_binding_unknown_membership_keeps_missing_and_direct_dependency_ch
         for reason in arr(f(a(&w, "take"), "reasons")) {
             assert!(arr(f(a(&w, "again"), "reasons")).contains(reason));
         }
-        let p = &r.prepared().inputs().archmap().snapshots[0]
+        let p = &r.prepared().inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "p")
@@ -756,7 +756,7 @@ fn fixed_owned_binding_completed_membership_uses_roster_and_known_map_constraint
             f(node(&w, f(f(a(&w, "child"), "outputs"), "value")), "value"),
             &Json::Arr(vec![Json::str("v"), Json::str("p")])
         );
-        let p = r.prepared().inputs().archmap().snapshots[0]
+        let p = r.prepared().inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "p")
@@ -871,7 +871,7 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
                     facts += 1;
                     let map = r.prepared().inputs().archmap();
                     let subject = map
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| Json::str(&s.id) == fact["snapshot"])
                         .unwrap()
@@ -893,11 +893,11 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
                         panic!()
                     };
                     assert_eq!(&Json::str(actual), atom);
-                    let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+                    let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
                     assert!(!origin.locations.is_empty());
                     for at in &origin.locations {
                         assert_eq!(
-                            map.sources
+                            map.sources()
                                 .iter()
                                 .find(|s| s.id == at.source)
                                 .unwrap()

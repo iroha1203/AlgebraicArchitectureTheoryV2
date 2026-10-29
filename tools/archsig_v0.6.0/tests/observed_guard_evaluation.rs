@@ -532,7 +532,7 @@ fn guarded_case(
     bool_value(&nodes, final_root, conditional);
     let reached = reachable(&nodes, &[f(a, "outputs"), f(a, "claim"), f(a, "evidence")]);
     let from_evaluation = reachable(&nodes, &[root_ref]);
-    let declaration = &checked.law().declarations["Inspect.guarded"];
+    let declaration = &checked.law().declarations()["Inspect.guarded"];
     let Signature::Law {
         guard: Some(guard),
         body: body_id,
@@ -541,8 +541,8 @@ fn guarded_case(
     else {
         panic!("明示guardとbody")
     };
-    let raw_guard = source_evaluation(&nodes, root, checked.law().exprs[*guard].span);
-    let raw_body = source_evaluation(&nodes, root, checked.law().exprs[*body_id].span);
+    let raw_guard = source_evaluation(&nodes, root, checked.law().exprs()[*guard].span);
+    let raw_body = source_evaluation(&nodes, root, checked.law().exprs()[*body_id].span);
     for raw in [raw_guard, raw_body] {
         assert!(
             from_evaluation.contains(text(f(raw, "id"))),
@@ -600,8 +600,8 @@ fn guarded_case(
             assert_eq!(f(source, "kind"), &Json::str("source"));
             let position = span(f(source, "location"));
             assert!(
-                position == checked.law().exprs[*guard].span
-                    || position == checked.law().exprs[*body_id].span
+                position == checked.law().exprs()[*guard].span
+                    || position == checked.law().exprs()[*body_id].span
             );
         }
     }
@@ -640,7 +640,7 @@ fn guarded_case(
     for support in arr(f(root, "support")) {
         if obj(support).contains_key("field") {
             assert!(expected_facts.contains(support));
-            let subject = &checked.archmap().snapshots[0].subjects[0];
+            let subject = &checked.archmap().snapshots()[0].subjects[0];
             let field = subject
                 .fields
                 .iter()
@@ -652,13 +652,13 @@ fn guarded_case(
             assert_eq!(atom, text(f(support, "atom")));
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == origin.locations[0].source)
                 .unwrap();
@@ -702,8 +702,8 @@ fn guarded_case(
             root,
             (gate, body),
             (
-                checked.law().exprs[*guard].span,
-                checked.law().exprs[*body_id].span,
+                checked.law().exprs()[*guard].span,
+                checked.law().exprs()[*body_id].span,
             ),
         );
     }

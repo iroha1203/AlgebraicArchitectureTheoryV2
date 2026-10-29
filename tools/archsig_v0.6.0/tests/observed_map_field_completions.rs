@@ -80,16 +80,16 @@ fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json 
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
     assert_eq!(
-        r.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots
+        r.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().origins,
-        checked.archmap().origins
+        r.prepared().inputs().archmap().origins(),
+        checked.archmap().origins()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().sources,
-        checked.archmap().sources
+        r.prepared().inputs().archmap().sources(),
+        checked.archmap().sources()
     );
     let j = r.wire();
     let ns = nodes(&j);
@@ -137,7 +137,7 @@ fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json 
         for fact in arr(f(n, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -168,7 +168,7 @@ fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json 
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -176,7 +176,7 @@ fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json 
             for location in &origin.locations {
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -266,7 +266,7 @@ fn assignments(j: &Json, id: &str) -> BTreeSet<String> {
 fn map_field_completions_share_tables_keep_independent_slots_and_actual_application() {
     let input = fixture::input(false, false, false, false);
     let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
-    let field = checked.archmap().snapshots[0]
+    let field = checked.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "h")

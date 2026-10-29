@@ -109,7 +109,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             assert_eq!(get(fact, "snapshot"), &Json::str("v"));
             assert_eq!(get(fact, "subject"), &Json::str("sample"));
             let map = result.prepared().inputs().archmap();
-            let subject = &map.snapshots[0].subjects[0];
+            let subject = &map.snapshots()[0].subjects[0];
             let origin = if let Some(field) = object(fact).get("field") {
                 let slot = &subject
                     .fields
@@ -132,11 +132,11 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             } else {
                 &subject.origin
             };
-            let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+            let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
             assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
             for location in &origin.locations {
                 let source = map
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -200,11 +200,11 @@ fn recursive_tree_known_branch_calls_compute_from_original_bytes() {
     audit(&result);
     assert_eq!(get(&wire, "status"), &Json::str("complete"), "{wire:?}");
     assert_eq!(value(&wire, "a", Json::str("Z")), &Json::str("4"));
-    let body = match &result.prepared().inputs().law().declarations["Trees.total"].signature {
+    let body = match &result.prepared().inputs().law().declarations()["Trees.total"].signature {
         archsig::law::model::Signature::View { body, .. } => *body,
         _ => unreachable!(),
     };
-    let span = result.prepared().inputs().law().exprs[body].span;
+    let span = result.prepared().inputs().law().exprs()[body].span;
     let ns: BTreeMap<_, _> = array(get(&wire, "nodes"))
         .iter()
         .map(|n| (text(get(n, "id")), n))
@@ -349,11 +349,11 @@ fn recursive_tree_provenance_pair_and_law_judgments_keep_current_sources() {
     assert_eq!(get(&a, "answers"), get(&b, "answers"));
     assert_eq!(get(answer(&a, "ok"), "status"), &Json::str("established"));
     assert_ne!(
-        first.prepared().inputs().archmap().bytes_digest,
-        second.prepared().inputs().archmap().bytes_digest
+        first.prepared().inputs().archmap().bytes_digest(),
+        second.prepared().inputs().archmap().bytes_digest()
     );
     assert_eq!(
-        second.prepared().inputs().archmap().sources[0].revision,
+        second.prepared().inputs().archmap().sources()[0].revision,
         "r2"
     );
     let mut inputs = sources(false, "", "r1");

@@ -267,7 +267,7 @@ fn audit_selected(
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == txt(f(fact, "subject")))
@@ -290,7 +290,7 @@ fn audit_selected(
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
@@ -298,7 +298,7 @@ fn audit_selected(
             let location = &origin.locations[0];
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();
@@ -330,7 +330,7 @@ fn audit_selected(
         assert_eq!(f(scope, "modes"), &Json::Arr(vec![Json::str("observed")]));
         assert_eq!(f(scope, "readings"), &Json::Arr(vec![Json::str("Calc")]));
         assert_eq!(f(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
-        let decl = &checked.law().declarations[txt(f(f(request, "head"), "name"))];
+        let decl = &checked.law().declarations()[txt(f(f(request, "head"), "name"))];
         let reach = if let Some(originals) = originals {
             let selected = originals[txt(f(a, "id"))];
             if completion_case {
@@ -357,7 +357,7 @@ fn audit_selected(
         let mut source_ids = BTreeSet::new();
         for (id, expr) in checked
             .law()
-            .exprs
+            .exprs()
             .iter()
             .enumerate()
             .filter(|(_, e)| decl.span.0 <= e.span.0 && e.span.1 <= decl.span.1)
@@ -441,13 +441,13 @@ fn audit_selected(
                 ExprKind::Tuple(items) | ExprKind::Call { args: items, .. } => items.clone(),
                 ExprKind::Dotted(names) if names.len() == 1 => checked
                     .law()
-                    .exprs
+                    .exprs()
                     .iter()
                     .filter_map(|ancestor| {
                         let ExprKind::Let { name, value, body } = &ancestor.kind else {
                             return None;
                         };
-                        let scope = checked.law().exprs[*body].span;
+                        let scope = checked.law().exprs()[*body].span;
                         (name.name == names[0].name
                             && scope.0 <= expr.span.0
                             && expr.span.1 <= scope.1)
@@ -461,7 +461,7 @@ fn audit_selected(
                     let field_name = format!("Branch.Sample.{}", names[1].name);
                     let binding = ns[txt(f(f(&bindings[0], "value"), "node"))];
                     let subject_id = txt(&arr(val(binding))[1]);
-                    let subject = checked.archmap().snapshots[0]
+                    let subject = checked.archmap().snapshots()[0]
                         .subjects
                         .iter()
                         .find(|subject| subject.id == subject_id)
@@ -578,7 +578,7 @@ fn audit_selected(
                 }
                 _ => expected
                     .iter()
-                    .map(|id| checked.law().exprs[*id].span)
+                    .map(|id| checked.law().exprs()[*id].span)
                     .collect(),
             };
             assert_eq!(
@@ -591,7 +591,7 @@ fn audit_selected(
             {
                 let rhs = part_at(
                     target(&ns, &children[0], &Json::str("Evaluation")),
-                    checked.law().exprs[expected[0]].span,
+                    checked.law().exprs()[expected[0]].span,
                 );
                 match (obj(rhs).get("value"), obj(part).get("value")) {
                     (Some(rhs), Some(value)) => {
@@ -786,11 +786,11 @@ fn unknown_if_retains_condition_missing_and_both_branches_without_choosing_one()
             arr(f(aggregate, "arguments")).first(),
             Some(f(val(aggregate), "expression"))
         );
-        let decl = &checked.law().declarations[txt(f(f(request, "head"), "name"))];
+        let decl = &checked.law().declarations()[txt(f(f(request, "head"), "name"))];
         let archsig::law::model::Signature::View { body, .. } = &decl.signature else {
             panic!("view")
         };
-        let at = checked.law().exprs[*body].span;
+        let at = checked.law().exprs()[*body].span;
         let candidates = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[txt(f(r, "node"))])
@@ -1222,11 +1222,11 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
             }),
             "true補完の既知field値も到達可能に保持する"
         );
-        let declaration = &checked.law().declarations[name];
+        let declaration = &checked.law().declarations()[name];
         let archsig::law::model::Signature::View { body, .. } = &declaration.signature else {
             panic!("view")
         };
-        let at = checked.law().exprs[*body].span;
+        let at = checked.law().exprs()[*body].span;
         assert!(
             reach.iter().any(|id| {
                 let n = ns[id.as_str()];
@@ -1250,7 +1250,7 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
             f(val(aggregate), "expression"),
             &Json::str("Expression"),
         );
-        let condition_spans=checked.law().exprs.iter().filter(|e| declaration.span.0<=e.span.0 && e.span.1<=declaration.span.1 && matches!(&e.kind,ExprKind::Dotted(parts) if parts.len()==2 && parts[0].name=="s" && parts[1].name=="p")).map(|e|e.span).collect::<Vec<_>>();
+        let condition_spans=checked.law().exprs().iter().filter(|e| declaration.span.0<=e.span.0 && e.span.1<=declaration.span.1 && matches!(&e.kind,ExprKind::Dotted(parts) if parts.len()==2 && parts[0].name=="s" && parts[1].name=="p")).map(|e|e.span).collect::<Vec<_>>();
         assert_eq!(condition_spans.len(), 1);
         let partial_sources = arr(f(seed, "arguments"))
             .iter()

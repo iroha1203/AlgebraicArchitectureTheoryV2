@@ -426,7 +426,7 @@ fn fixed_compound_owned_static_invalid_unprovided_unknown_and_cross_snapshot_rem
         f(f(answer(&w, "take"), "scope"), "domain"),
         &Json::str("all_completions")
     );
-    let p = completed.prepared().inputs().archmap().snapshots[0]
+    let p = completed.prepared().inputs().archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "p")
@@ -479,9 +479,9 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
     assert_eq!(checked.sources(), &original);
     assert_eq!(checked.inputs(), before.inputs());
     assert_eq!(checked.definitions(), before.definitions());
-    assert_eq!(checked.law().declarations, before.law().declarations);
-    assert_eq!(checked.law().exprs, before.law().exprs);
-    assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
+    assert_eq!(checked.law().declarations(), before.law().declarations());
+    assert_eq!(checked.law().exprs(), before.law().exprs());
+    assert_eq!(checked.archmap().snapshots(), before.archmap().snapshots());
     let mut seen = BTreeSet::new();
     let mut owner_atoms = BTreeSet::new();
     for n in arr(f(&w, "nodes")) {
@@ -499,7 +499,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
             };
             let s = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| &s.id == snapshot)
                 .unwrap()
@@ -524,7 +524,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -532,7 +532,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
                 assert_eq!(
                     checked
                         .archmap()
-                        .sources
+                        .sources()
                         .iter()
                         .find(|s| s.id == loc.source)
                         .unwrap()
@@ -565,7 +565,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
             .prepared()
             .inputs()
             .archmap()
-            .sources
+            .sources()
             .iter()
             .all(|s| s.revision == "r2")
     );

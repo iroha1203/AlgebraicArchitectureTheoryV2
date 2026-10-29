@@ -144,10 +144,10 @@ fn full_and_delta_have_the_same_model_and_distinct_original_bytes() {
     ]))
     .unwrap();
     let delta = check(&document(chain())).unwrap();
-    assert_eq!(delta.model_digest, expanded.model_digest);
-    assert_ne!(delta.bytes_digest, expanded.bytes_digest);
+    assert_eq!(delta.model_digest(), expanded.model_digest());
+    assert_ne!(delta.bytes_digest(), expanded.bytes_digest());
     assert_eq!(archmap::model_json(&delta), archmap::model_json(&expanded));
-    let x = &delta.snapshots[2];
+    let x = &delta.snapshots()[2];
     assert_eq!(x.subjects.len(), 2);
     let p = x.subjects.iter().find(|s| s.id == "p").unwrap();
     assert!(matches!(
@@ -173,8 +173,8 @@ fn full_and_delta_have_the_same_model_and_distinct_original_bytes() {
     let mut reordered = chain();
     reordered.reverse();
     assert_eq!(
-        check(&document(reordered)).unwrap().model_digest,
-        expanded.model_digest
+        check(&document(reordered)).unwrap().model_digest(),
+        expanded.model_digest()
     );
 }
 #[test]
@@ -279,7 +279,7 @@ fn explicit_new_atom_references_are_not_rebased() {
         ),
     ]))
     .unwrap();
-    let w = map.snapshots.iter().find(|s| s.id == "w").unwrap();
+    let w = map.snapshots().iter().find(|s| s.id == "w").unwrap();
     let p = w.subjects.iter().find(|s| s.id == "p").unwrap();
     let Slot::Known { value, .. } = &p
         .fields

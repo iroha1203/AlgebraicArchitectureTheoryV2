@@ -353,7 +353,7 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
                 facts += 1;
                 let map = r.prepared().inputs().archmap();
                 let s = map
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| Json::str(&s.id) == f["snapshot"])
                     .unwrap()
@@ -375,11 +375,11 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
                     panic!()
                 };
                 assert_eq!(&Json::str(actual), atom);
-                let o = map.origins.iter().find(|o| o.id == *origin).unwrap();
+                let o = map.origins().iter().find(|o| o.id == *origin).unwrap();
                 assert!(!o.locations.is_empty());
                 for at in &o.locations {
                     assert_eq!(
-                        map.sources
+                        map.sources()
                             .iter()
                             .find(|s| s.id == at.source)
                             .unwrap()

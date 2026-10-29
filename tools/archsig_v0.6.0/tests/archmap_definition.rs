@@ -103,8 +103,8 @@ fn bindings_follow_subject_and_field_types_transitively() {
     let abc = ["A", "B", "C"].map(|ns| binding(&d, ns)).join(",");
     let s = subject("i", "A.Item");
     let c = accepted(&d, &document(&abc, &s, ""));
-    assert_eq!(c.vocabularies.len(), 3);
-    assert_eq!(c.snapshots[0].subjects.len(), 1);
+    assert_eq!(c.vocabularies().len(), 3);
+    assert_eq!(c.snapshots()[0].subjects.len(), 1);
     assert_eq!(missing_slots(&c).len(), 3);
     // field の Atom を省略しても、その型の間接 namespace を binding する。
     for absent in ["A", "B", "C"] {
@@ -121,7 +121,7 @@ fn bindings_follow_subject_and_field_types_transitively() {
     }
     // subject がないと個体と slot を生成しない。
     let empty = accepted(&d, &document("", "", ""));
-    assert!(empty.snapshots[0].subjects.is_empty());
+    assert!(empty.snapshots()[0].subjects.is_empty());
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn extra_bindings_are_checked_and_unused_observations_are_accepted() {
     let note = subject("note", "Extras.Note");
     let map = document(&format!("{extra},{count}"), &note, "");
     let c = accepted(&defs, &map);
-    assert_eq!(c.snapshots[0].subjects.len(), 1);
+    assert_eq!(c.snapshots()[0].subjects.len(), 1);
     assert_eq!(missing_slots(&c)[0].2, "Extras.Note.text");
     assert_eq!(field(&c, "s", "note", "text").slot, Slot::Missing);
     for (from, to, code, ptr) in [

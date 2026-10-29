@@ -36,7 +36,7 @@ fn with_value(atom: &str, value: &str) -> String {
 fn normative_archmaps_pass_with_their_law() {
     let c = map_ok(RESERVATIONS_DEFINITION, RESERVATIONS_MAP);
     assert!(missing_slots(&c).is_empty());
-    assert_eq!(c.vocabularies.len(), 1);
+    assert_eq!(c.vocabularies().len(), 1);
     // retained は偽だが、静的検査は成立・反証を問わない。
     let e = map_ok(ENGINE_DEFINITION, ENGINE_MAP);
     assert!(missing_slots(&e).is_empty());

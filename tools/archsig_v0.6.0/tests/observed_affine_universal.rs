@@ -227,17 +227,17 @@ fn run_parameter_types(
     let after = evaluated.prepared().inputs();
     assert_eq!(after.sources(), &inputs);
     assert_eq!(
-        after.archmap().snapshots,
-        checked.archmap().snapshots,
+        after.archmap().snapshots(),
+        checked.archmap().snapshots(),
         "代入値・補完値で観測、owner、既知値を変更しない"
     );
-    assert_eq!(after.archmap().bytes_digest, checked.archmap().bytes_digest);
-    assert_eq!(after.archmap().model_digest, checked.archmap().model_digest);
+    assert_eq!(after.archmap().bytes_digest(), checked.archmap().bytes_digest());
+    assert_eq!(after.archmap().model_digest(), checked.archmap().model_digest());
     assert_eq!(
         after.definitions().vocabularies(),
         checked.definitions().vocabularies()
     );
-    assert_eq!(after.law().declarations, checked.law().declarations);
+    assert_eq!(after.law().declarations(), checked.law().declarations());
     let wire = evaluated.wire();
     assert_ne!(
         f(&wire, "status"),
@@ -306,7 +306,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                 if declared_parameters {
                     let declaration = checked
                         .law()
-                        .declarations
+                        .declarations()
                         .values()
                         .find(|declaration| {
                             declaration.span.0 <= position.0 && position.1 <= declaration.span.1
@@ -342,7 +342,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                 val(scalar);
                 let mut expected = checked
                     .law()
-                    .declarations
+                    .declarations()
                     .values()
                     .filter_map(|d| match &d.signature {
                         Signature::View { params, .. } | Signature::Law { params, .. } => {
@@ -354,7 +354,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                     .filter(|p| p.name == text(f(binding, "name")))
                     .map(|p| p.ty.wire())
                     .collect::<Vec<_>>();
-                for ast in &checked.law().exprs {
+                for ast in checked.law().exprs() {
                     use archsig::law::ast::{Builtin, QuantDomain, QuantSplit, TypeAst};
                     if let ExprKind::Quant {
                         var,
@@ -384,7 +384,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                 let position = span(f(val(expr), "location"));
                 if let Some((id, _)) = checked
                     .law()
-                    .exprs
+                    .exprs()
                     .iter()
                     .enumerate()
                     .find(|(_, e)| e.span == position)
@@ -422,7 +422,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                 assert!(!obj(missing).contains_key("atom"));
                 assert_eq!(f(missing, "snapshot"), &Json::str("v"));
                 assert_eq!(f(missing, "subject"), &Json::str("item"));
-                let subject = checked.archmap().snapshots[0]
+                let subject = checked.archmap().snapshots()[0]
                     .subjects
                     .iter()
                     .find(|s| s.id == "item")
@@ -444,7 +444,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     assert_eq!(f(support, "snapshot"), &Json::str("v"));
     assert!(arr(f(f(node, "scope"), "snapshots")).contains(&Json::str("v")));
     assert!(arr(f(f(node, "scope"), "modes")).contains(&Json::str("specification")));
-    let subject = checked.archmap().snapshots[0]
+    let subject = checked.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == text(f(support, "subject")))
@@ -467,7 +467,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     };
     let origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| &o.id == origin_id)
         .unwrap();
@@ -475,7 +475,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     let location = &origin.locations[0];
     let source = checked
         .archmap()
-        .sources
+        .sources()
         .iter()
         .find(|s| s.id == location.source)
         .unwrap();
@@ -602,7 +602,7 @@ fn assert_ast(wire: &Json, checked: &CheckedInputs, evaluation: &Json) {
     let evaluations = evaluation_tree(wire, evaluation);
     for (id, ast) in checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .enumerate()
         .filter(|(_, e)| area.0 <= e.span.0 && e.span.1 <= area.1)
@@ -746,7 +746,7 @@ fn whole<'a>(
     let comparison_span = span(f(&difference_parts[0], "location"));
     let (_, comparison_ast) = checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .enumerate()
         .find(|(_, ast)| ast.span == comparison_span)
@@ -760,8 +760,8 @@ fn whole<'a>(
         panic!("元アフィンEq")
     };
     let operand_spans = [
-        checked.law().exprs[*lhs].span,
-        checked.law().exprs[*rhs].span,
+        checked.law().exprs()[*lhs].span,
+        checked.law().exprs()[*rhs].span,
     ];
     assert_eq!(
         f(&difference_parts[0], "children"),
@@ -796,7 +796,7 @@ fn whole<'a>(
             arr(f(target(&ns, source, "Expression"), "arguments")).first(),
             Some(&args[0])
         );
-        if let ExprKind::Int(integer) = &checked.law().exprs[id].kind {
+        if let ExprKind::Int(integer) = &checked.law().exprs()[id].kind {
             let ty = checked.law().expr_type(id).unwrap().wire();
             assert_eq!(
                 val(typed(&ns, f(val(evaluation), "value"), &ty)),
@@ -1872,11 +1872,11 @@ fn false_universal_guard_retains_unobserved_body_and_original_type_domain() {
         f(val(evaluation), "applicability"),
         &Json::str("not_applicable")
     );
-    let Signature::Law { body, .. } = &checked.law().declarations["Calc.requirement"].signature
+    let Signature::Law { body, .. } = &checked.law().declarations()["Calc.requirement"].signature
     else {
         panic!("Law")
     };
-    let body_span = checked.law().exprs[*body].span;
+    let body_span = checked.law().exprs()[*body].span;
     let body_part = arr(f(val(evaluation), "parts"))
         .iter()
         .find(|p| span(f(p, "location")) == body_span)
@@ -1971,7 +1971,7 @@ fn known_coefficients_and_provenance_relocation_preserve_universal_refutation() 
                     == Some(&Json::str("Universal.Sample.knownz"))
                     && obj(support).get("atom") == Some(&Json::str("knownz")))
         );
-        let subject = inputs.archmap().snapshots[0]
+        let subject = inputs.archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "item")
@@ -1996,15 +1996,15 @@ fn known_coefficients_and_provenance_relocation_preserve_universal_refutation() 
     assert!(
         moved_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .all(|o| o.id.ends_with("_moved"))
     );
     assert_eq!(
-        moved_checked.archmap().sources[0].uri,
+        moved_checked.archmap().sources()[0].uri,
         "urn:fixture:affine-universal:relocated"
     );
-    assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
+    assert_eq!(moved_checked.archmap().sources()[0].revision, "r2");
 }
 
 #[test]
@@ -2780,11 +2780,11 @@ fn additional_view_quantifier(ty: &str, mode: u8) {
     );
     assert_eq!(inner_args[2], reference(comparison));
     let Signature::View { body: inner_id, .. } =
-        &checked.law().declarations["Calc.inner"].signature
+        &checked.law().declarations()["Calc.inner"].signature
     else {
         panic!("元inner view")
     };
-    let ExprKind::Quant { var, .. } = &checked.law().exprs[*inner_id].kind else {
+    let ExprKind::Quant { var, .. } = &checked.law().exprs()[*inner_id].kind else {
         panic!("元追加forall")
     };
     assert_eq!(var.name, "y");
@@ -2830,7 +2830,7 @@ fn additional_view_quantifier(ty: &str, mode: u8) {
         );
         assert_eq!(
             span(f(f(value, "rule"), "location")),
-            checked.law().exprs[*inner_id].span
+            checked.law().exprs()[*inner_id].span
         );
         assert_eq!(inner_args.len(), 4);
         assert_eq!(inner_args[3], reference(value));
@@ -2855,7 +2855,7 @@ fn additional_view_quantifier(ty: &str, mode: u8) {
         let position = span(f(val(original), "location"));
         let (id, _) = checked
             .law()
-            .exprs
+            .exprs()
             .iter()
             .enumerate()
             .find(|(_, expr)| expr.span == position)

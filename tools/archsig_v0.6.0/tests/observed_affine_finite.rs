@@ -382,7 +382,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
         .unwrap();
         let map = checked.archmap();
         let slot = map
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == "v")
             .unwrap()
@@ -398,10 +398,10 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
             panic!()
         };
         assert!(arr(f(&w,"nodes")).iter().flat_map(|n|arr(f(n,"support"))).any(|fact|matches!(fact,Json::Obj(fs)if fs.get("field")==Some(&Json::str("Paths.Node.mark"))&&fs.get("subject")==Some(&Json::str("p"))&&fs.get("atom")==Some(&Json::str(atom)))));
-        let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+        let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
         assert!(!origin.locations.is_empty());
         for loc in &origin.locations {
-            let src = map.sources.iter().find(|s| s.id == loc.source).unwrap();
+            let src = map.sources().iter().find(|s| s.id == loc.source).unwrap();
             assert_eq!(src.revision, revision);
             assert_eq!(
                 loc.span,

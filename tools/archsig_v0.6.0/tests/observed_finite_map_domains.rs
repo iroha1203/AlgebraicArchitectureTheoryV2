@@ -161,7 +161,7 @@ fn finite_map_type_domain_enumerates_all_four_functions_across_snapshots() {
     assert_eq!(
         checked
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .filter(|s| s.ty == "Maps.Key")
@@ -171,7 +171,7 @@ fn finite_map_type_domain_enumerates_all_four_functions_across_snapshots() {
     assert!(
         checked
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .flat_map(|s| &s.fields)
@@ -222,7 +222,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         for fact in array(get(n, "support")) {
             let subject = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(get(fact, "snapshot")))
                 .unwrap()
@@ -246,12 +246,12 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
             for loc in &origin.locations {
-                assert!(checked.archmap().sources.iter().any(|s| s.id == loc.source));
+                assert!(checked.archmap().sources().iter().any(|s| s.id == loc.source));
             }
         }
         if get(n, "type") == &Json::str("Domain")
@@ -529,7 +529,7 @@ fn finite_map_provenance_move_keeps_answers_and_current_roster_sources() {
         b.prepared().inputs().sources().archmap().bytes()
     );
     for (r, rev) in [(&a, "r1"), (&b, "r2")] {
-        assert_eq!(r.prepared().inputs().archmap().sources[0].revision, rev);
+        assert_eq!(r.prepared().inputs().archmap().sources()[0].revision, rev);
         audit(r);
     }
 }
@@ -611,12 +611,12 @@ fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims
             );
             let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
             let archsig::law::model::Signature::Law { params, body, .. } =
-                &checked.law().declarations["Reservations.nested"].signature
+                &checked.law().declarations()["Reservations.nested"].signature
             else {
                 panic!("Law signature");
             };
             let expected_type = params[2].ty.erase().wire();
-            let body_span = checked.law().exprs[*body].span;
+            let body_span = checked.law().exprs()[*body].span;
             let result = evaluate_observed_bytes(
                 input.clone(),
                 &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],

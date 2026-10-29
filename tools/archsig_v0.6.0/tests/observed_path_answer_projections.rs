@@ -450,7 +450,7 @@ fn path_projection_preserves_producer_prefix_support_scope_and_current_provenanc
                 };
                 let snapshot = checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == text("snapshot"))
                     .unwrap();
@@ -475,7 +475,7 @@ fn path_projection_preserves_producer_prefix_support_scope_and_current_provenanc
                 };
                 let origin = checked
                     .archmap()
-                    .origins
+                    .origins()
                     .iter()
                     .find(|o| &o.id == origin)
                     .unwrap();
@@ -483,7 +483,7 @@ fn path_projection_preserves_producer_prefix_support_scope_and_current_provenanc
                 for location in &origin.locations {
                     let source = checked
                         .archmap()
-                        .sources
+                        .sources()
                         .iter()
                         .find(|s| s.id == location.source)
                         .unwrap();

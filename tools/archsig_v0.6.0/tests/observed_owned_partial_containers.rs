@@ -77,7 +77,7 @@ fn assert_original_arrow_owner(r: &archsig::observed::ObservedEvaluation) {
         .prepared()
         .inputs()
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == "v")
         .unwrap();
@@ -149,7 +149,7 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
             panic!()
         };
         let id = law
-            .exprs
+            .exprs()
             .iter()
             .position(|e| e.span == (*a as usize, *b as usize))
             .unwrap();
@@ -164,7 +164,7 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
     }
     assert!(seen.len() >= 5);
     let law = r.prepared().inputs().law();
-    let declared_parameters: std::collections::BTreeSet<_> = law.infos.iter()
+    let declared_parameters: std::collections::BTreeSet<_> = law.infos().iter()
         .flat_map(|info| &info.parameters)
         .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical())).collect();
     let mut axes = std::collections::BTreeSet::new();
@@ -470,7 +470,7 @@ fn partial_option_set_calls_preserve_original_inputs_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| Json::str(&s.id) == f["snapshot"])
                         .unwrap()
@@ -490,7 +490,7 @@ fn partial_option_set_calls_preserve_original_inputs_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .origins
+                        .origins()
                         .iter()
                         .find(|o| o.id == *origin)
                         .unwrap();
@@ -499,7 +499,7 @@ fn partial_option_set_calls_preserve_original_inputs_and_current_provenance() {
                             r.prepared()
                                 .inputs()
                                 .archmap()
-                                .sources
+                                .sources()
                                 .iter()
                                 .find(|s| s.id == at.source)
                                 .unwrap()

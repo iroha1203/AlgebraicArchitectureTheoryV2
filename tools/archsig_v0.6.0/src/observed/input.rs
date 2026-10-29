@@ -495,3 +495,6 @@ pub fn check_inputs(
         archmap,
     })
 }
+
+#[cfg(test)]
+mod checked_table_tests;

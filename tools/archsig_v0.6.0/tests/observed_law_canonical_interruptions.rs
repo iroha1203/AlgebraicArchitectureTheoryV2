@@ -187,9 +187,9 @@ fn law_canonical_preserves_token_order_unicode_escaping_and_digest() {
         .canonical();
         assert_eq!(law::model_canonical(&tokens), expected);
         assert_eq!(
-            checked.law().model_digest,
+            checked.law().model_digest(),
             sha256_digest(expected.as_bytes())
         );
-        assert_eq!(checked.law().model_digest, law::model_digest(&tokens));
+        assert_eq!(checked.law().model_digest(), law::model_digest(&tokens));
     }
 }

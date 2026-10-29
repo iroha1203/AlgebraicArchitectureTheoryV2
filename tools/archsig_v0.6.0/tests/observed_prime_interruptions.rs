@@ -192,9 +192,9 @@ fn unlimited_fp_controls_preserve_the_checked_definition_and_law_tables() {
         &mut Control::unlimited(),
     )
     .unwrap();
-    assert_eq!(ordinary.bytes_digest, controlled.bytes_digest);
-    assert_eq!(ordinary.model_digest, controlled.model_digest);
-    assert_eq!(ordinary.infos, controlled.infos);
-    assert_eq!(ordinary.expr_types, controlled.expr_types);
-    assert_eq!(ordinary.definitions, controlled.definitions);
+    assert_eq!(ordinary.bytes_digest(), controlled.bytes_digest());
+    assert_eq!(ordinary.model_digest(), controlled.model_digest());
+    assert_eq!(ordinary.infos(), controlled.infos());
+    assert_eq!(ordinary.expr_types(), controlled.expr_types());
+    assert_eq!(ordinary.definitions(), controlled.definitions());
 }

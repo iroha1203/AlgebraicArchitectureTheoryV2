@@ -61,29 +61,29 @@ fn run_input(
     .unwrap();
     assert_eq!(result.prepared().inputs().sources(), &inputs);
     assert_eq!(
-        result.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots
+        result.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots()
     );
     assert_eq!(
-        result.prepared().inputs().archmap().origins,
-        checked.archmap().origins
+        result.prepared().inputs().archmap().origins(),
+        checked.archmap().origins()
     );
     assert_eq!(
-        result.prepared().inputs().archmap().sources,
-        checked.archmap().sources
+        result.prepared().inputs().archmap().sources(),
+        checked.archmap().sources()
     );
     assert_eq!(
         result.prepared().inputs().definitions().vocabularies(),
         checked.definitions().vocabularies()
     );
     assert_eq!(
-        result.prepared().inputs().law().declarations,
-        checked.law().declarations
+        result.prepared().inputs().law().declarations(),
+        checked.law().declarations()
     );
     assert!(
         checked
             .archmap()
-            .sources
+            .sources()
             .iter()
             .all(|s| s.revision == revision)
     );
@@ -375,7 +375,7 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     .unwrap();
     let snapshot = checked
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == "v")
         .unwrap();

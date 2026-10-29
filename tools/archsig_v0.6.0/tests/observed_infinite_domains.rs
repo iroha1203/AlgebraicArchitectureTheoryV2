@@ -268,7 +268,7 @@ fn infinite_domains_preserve_current_provenance_without_changing_mathematical_an
         audit(&wire);
         let checked = result.prepared().inputs().archmap();
         let subject = checked
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == "v")
             .unwrap()
@@ -285,10 +285,10 @@ fn infinite_domains_preserve_current_provenance_without_changing_mathematical_an
             panic!()
         };
         assert!(array(field(&wire,"nodes")).iter().flat_map(|n|array(field(n,"support"))).any(|fact|matches!(fact,Json::Obj(o) if o.get("field")==Some(&Json::str("Paths.Node.mark"))&&o.get("subject")==Some(&Json::str("p"))&&o.get("atom")==Some(&Json::str(atom)))));
-        let origin = checked.origins.iter().find(|o| &o.id == origin).unwrap();
+        let origin = checked.origins().iter().find(|o| &o.id == origin).unwrap();
         assert!(!origin.locations.is_empty());
         for at in &origin.locations {
-            let source = checked.sources.iter().find(|s| s.id == at.source).unwrap();
+            let source = checked.sources().iter().find(|s| s.id == at.source).unwrap();
             assert_eq!(source.revision, revision);
             assert_eq!(
                 at.span,

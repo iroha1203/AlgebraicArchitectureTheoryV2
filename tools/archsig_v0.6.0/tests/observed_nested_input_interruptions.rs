@@ -164,7 +164,7 @@ fn unlimited_control_preserves_public_definition_and_law_results() {
         let controlled_law =
             check_law_controlled(source.law().bytes(), &controlled, &mut Control::unlimited())
                 .unwrap();
-        assert_eq!(ordinary_law.model_digest, controlled_law.model_digest);
-        assert_eq!(ordinary_law.infos, controlled_law.infos);
+        assert_eq!(ordinary_law.model_digest(), controlled_law.model_digest());
+        assert_eq!(ordinary_law.infos(), controlled_law.infos());
     }
 }
