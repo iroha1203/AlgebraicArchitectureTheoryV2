@@ -2,7 +2,7 @@
 #[allow(dead_code)]
 #[path = "common/cli.rs"]
 mod cli;
-use archsig::{definition, json::JNode};
+use archsig::{definition, json::JNode, observed::input::InputSources};
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
     arr(get(j, "nodes"))
@@ -13,7 +13,7 @@ fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
 fn output<'a>(j: &'a JNode, i: usize, key: &str) -> &'a JNode {
     node(j, get(get(&arr(get(j, "answers"))[i], "outputs"), key))
 }
-fn input(name: &str, body: &str) -> std::path::PathBuf {
+fn input_sources(body: &str) -> InputSources {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"有理二座標。","parameters":[],"fields":[{"name":"x","type":"Q","meaning":"第一座標。"},{"name":"y","type":"Q","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
     let checked = definition::check_definitions(&[("d", d.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Pair"].digest;
@@ -23,12 +23,27 @@ fn input(name: &str, body: &str) -> std::path::PathBuf {
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"有理線形系の独立入力。","locations":[],"note":"初期値だけを指定。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":["0","1"],"origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}}]}}]}}"#
     );
+    InputSources::from_bytes(
+        vec![d.as_bytes().to_vec()],
+        law.into_bytes(),
+        map.into_bytes(),
+    )
+}
+fn write_inputs(name: &str, sources: InputSources) -> std::path::PathBuf {
     let dir = workdir(name);
-    for (name, text) in [("d.json", d), ("l.law", &law), ("a.json", &map)] {
-        std::fs::write(dir.join(name), text).unwrap();
+    for (name, bytes) in [
+        ("d.json", sources.definitions()[0].bytes()),
+        ("l.law", sources.law().bytes()),
+        ("a.json", sources.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
     }
     dir
 }
+fn input(name: &str, body: &str) -> std::path::PathBuf {
+    write_inputs(name, input_sources(body))
+}
+
 fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
     let mut args = vec![
         "run",
@@ -418,71 +433,86 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
     }
 }
 
+const MISSING_CONDITIONS: [(&str, &str, usize); 7] = [
+    (
+        "s.y=0",
+        "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0:s.x=0;",
+        0,
+    ),
+    (
+        "s.y=0 and s.x=0",
+        "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0 and s.x=0:s.x=0;",
+        0,
+    ),
+    (
+        "s.y=0",
+        "change choose(s:State,a:Q)=if s.y=0 then s with{x=a} else s with{x=a};law required pinned(s:State):s.x=0;",
+        1,
+    ),
+    (
+        "s.y>0",
+        "change choose(s:State,a:Q) when s.y>0=s with{x=a};law required pinned(s:State):s.x=0;",
+        1,
+    ),
+    (
+        "(if s.y>0 then true else false)",
+        "change choose(s:State,a:Q) when (if s.y>0 then true else false)=s with{x=a};law required pinned(s:State):s.x=0;",
+        1,
+    ),
+    (
+        "positive(s)",
+        "view positive(s:State):Bool=s.y>0;change choose(s:State,a:Q) when positive(s)=s with{x=a};law required pinned(s:State):s.x=0;",
+        1,
+    ),
+    (
+        "(let b=s.y>0 in b)",
+        "change choose(s:State,a:Q) when (let b=s.y>0 in b)=s with{x=a};law required pinned(s:State):s.x=0;",
+        1,
+    ),
+];
+const MISSING_ASKS: [&str; 2] = [
+    "r=repair(Pair.pinned,on=@v/s,using=Pair.choose)",
+    "n=needed($r)",
+];
+
+fn missing_sources(body: &str) -> InputSources {
+    let source = input_sources(body);
+    let map = std::str::from_utf8(source.archmap().bytes()).unwrap();
+    let missing = map.replace(
+        r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,
+        "",
+    );
+    assert_ne!(map, missing);
+    InputSources::from_bytes(
+        vec![source.definitions()[0].bytes().to_vec()],
+        source.law().bytes().to_vec(),
+        missing.into_bytes(),
+    )
+}
+
 #[test]
 fn rational_missing_conditions_keep_source_binding_and_needed_field() {
-    let mut failures = vec![];
-    for (guard, body, parameter_count) in [
-        (
-            "s.y=0",
-            "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0:s.x=0;",
-            0,
-        ),
-        (
-            "s.y=0 and s.x=0",
-            "change choose(s:State,a:Q)=s with{x=a};law required pinned(s:State) when s.y=0 and s.x=0:s.x=0;",
-            0,
-        ),
-        (
-            "s.y=0",
-            "change choose(s:State,a:Q)=if s.y=0 then s with{x=a} else s with{x=a};law required pinned(s:State):s.x=0;",
-            1,
-        ),
-        (
-            "s.y>0",
-            "change choose(s:State,a:Q) when s.y>0=s with{x=a};law required pinned(s:State):s.x=0;",
-            1,
-        ),
-        (
-            "(if s.y>0 then true else false)",
-            "change choose(s:State,a:Q) when (if s.y>0 then true else false)=s with{x=a};law required pinned(s:State):s.x=0;",
-            1,
-        ),
-        (
-            "positive(s)",
-            "view positive(s:State):Bool=s.y>0;change choose(s:State,a:Q) when positive(s)=s with{x=a};law required pinned(s:State):s.x=0;",
-            1,
-        ),
-        (
-            "(let b=s.y>0 in b)",
-            "change choose(s:State,a:Q) when (let b=s.y>0 in b)=s with{x=a};law required pinned(s:State):s.x=0;",
-            1,
-        ),
-    ] {
-        let dir = input("rational-missing-conditions", body);
-        let path = dir.join("a.json");
-        let map = std::fs::read_to_string(&path).unwrap();
-        let missing=map.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");
-        assert_ne!(map, missing);
-        std::fs::write(path, missing).unwrap();
-        let asks = [
-            "r=repair(Pair.pinned,on=@v/s,using=Pair.choose)",
-            "n=needed($r)",
-        ];
-        let r = execute(&dir, "out", &asks);
-        if r.code != 2 {
-            failures.push(format!("{guard}: {} {}", r.stdout, r.stderr));
-            continue;
-        }
-        let j = result_json(&dir, &r);
-        let internal = internal_graph(&dir, &j);
+    use archsig::observed::{control::Control, evaluate_observed, prepare_observed};
+    for (guard, body, parameter_count) in MISSING_CONDITIONS {
+        let sources = missing_sources(body);
+        let law = std::str::from_utf8(sources.law().bytes())
+            .unwrap()
+            .to_owned();
+        let mut control = Control::unlimited();
+        let prepared = prepare_observed(sources, &MISSING_ASKS, &mut control).unwrap();
+        let result = evaluate_observed(prepared, &mut control).unwrap();
+        assert_eq!(result.status(), "partial", "{guard}");
+        let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&internal, "answers"))[0];
         let reason = arr(get(answer, "reasons"))
             .iter()
             .find(|r| s(get(r, "code")) == "missing_observation")
             .unwrap();
-        let expression = get(node(&internal, &arr(get(reason, "dependencies"))[0]), "value");
+        let expression = get(
+            node(&internal, &arr(get(reason, "dependencies"))[0]),
+            "value",
+        );
         let span = arr(get(get(expression, "location"), "span"));
-        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
         assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], guard);
         let binding = arr(get(expression, "bindings"))
             .iter()
@@ -496,38 +526,61 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
             ["v", "s"]
         );
         assert_eq!(arr(get(expression, "parameters")).len(), parameter_count);
-        let plan = get(output(&j, 1, "plan"), "value");
+        let plan = get(output(&internal, 1, "plan"), "value");
         assert!(
             arr(get(plan, "requirements"))
                 .iter()
                 .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
         );
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-            "--time-ms",
-            "120000",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let reused = run(&dir, &args);
-        assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&again, field).value);
-        }
     }
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+fn rational_missing_condition_cli_preserves_saved_reuse() {
+    // 名前付きviewを通るchange guardを代表にし、元のLawとの接続も検査する。
+    let (_, body, _) = MISSING_CONDITIONS[5];
+    let dir = write_inputs("rational-missing-condition-reuse", missing_sources(body));
+    let r = execute(&dir, "out", &MISSING_ASKS);
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(s(get(&r.receipt, "status")), "partial");
+    let j = result_json(&dir, &r);
+    let answer = &arr(get(&j, "answers"))[0];
+    assert!(
+        arr(get(answer, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation")
+    );
+    let plan = get(output(&j, 1, "plan"), "value");
+    assert!(
+        arr(get(plan, "requirements"))
+            .iter()
+            .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
+    );
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for ask in MISSING_ASKS {
+        args.extend(["--ask", ask]);
+    }
+    let reused = run(&dir, &args);
+    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
+    let again = result_json(&dir, &reused);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&j, field).value, get(&again, field).value);
+    }
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]
