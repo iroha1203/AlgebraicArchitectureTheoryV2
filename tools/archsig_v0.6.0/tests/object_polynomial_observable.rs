@@ -358,7 +358,10 @@ fn false_guard_has_zero_conditional_coordinate_without_changing_the_nonzero_raw_
         .unwrap()
     );
     assert_eq!(r.holds_at(off, root, &mut quiet()).unwrap(), Some(true));
-    assert_eq!(r.base().occurrences()[off].component_holds, Some(false));
+    let original = &r.base().occurrences()[off];
+    assert!(original.component_holds.is_none());
+    assert!(original.evaluated_nu.is_none());
+    assert_eq!(terms(&r.at(off, root, R::Nu, &mut quiet()).unwrap().unwrap(), 0), [(vec![0], "\"1\"".into())]);
     assert_eq!(r.holds_at(on, root, &mut quiet()).unwrap(), Some(false));
     assert_eq!(r.factors()[0].required_generators, [on]);
     r.recheck(i, &mut quiet()).unwrap();
