@@ -258,7 +258,7 @@ fn replay_nodes(
     nodes: Vec<Node>,
 ) -> Result<(), ValidationFailure> {
     let mut bad = copy_graph(source, &quiet());
-    bad.nodes = nodes;
+    bad.nodes = nodes.into();
     replay(p, &bad)
 }
 fn copy_graph(g: &Graph, c: &Control) -> Graph {
@@ -583,7 +583,7 @@ fn native_propositions_reject_forged_truth_evidence_role_binding_and_environment
                 *right = *left;
             }
         }
-        assert!(replay_nodes(&p, &g, nodes).is_err(), "forgery {mode}");
+        assert!(replay_nodes(&p, &g, nodes.into_vec()).is_err(), "forgery {mode}");
     }
     replay(&p, &g).unwrap();
 }

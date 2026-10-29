@@ -1019,7 +1019,7 @@ fn both_orientations_of_a_public_derivation_agree_with_the_original_binding_and_
         ],
     );
     let mut graph = Graph::new(&Control::unlimited());
-    graph.nodes = result.nodes.clone();
+    graph.nodes = result.nodes.clone().into();
     let mut reversed = false;
     for answer in &result.answers[2..] {
         assert_eq!(answer.status, Decision::Established);

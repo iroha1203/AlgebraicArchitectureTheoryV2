@@ -189,11 +189,12 @@ struct ScopedKey {
     universal: Option<universal::AnalysisContext>,
     completions: CompletionValues,
 }
-// 前回のGraphの全typed bytes相当と全隠しregistryを照合してからだけ成功を再利用する。
+// 前回のGraphのnode prefixと全隠しregistryが同じ場合だけ成功を再利用する。
 // nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
 // producerを持つ場合だけ許す。新caseも同じprefix境界を守る。
 // 既存metadataの改変は全て失効させる。
 struct ValidationSnapshot {
+    node_identity: std::rc::Rc<()>,
     nodes: Vec<Node>,
     contexts: Vec<super::call::Context>,
     frames: Vec<super::call::Frame>,
@@ -263,9 +264,11 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        for (a, b) in g.nodes[..self.nodes.len()].iter().zip(&self.nodes) {
-            if !validation_identity::node(a, b, control)? {
-                return Ok(false);
+        if !std::rc::Rc::ptr_eq(&self.node_identity, &g.nodes.prefix_identity()) {
+            for (a, b) in g.nodes[..self.nodes.len()].iter().zip(&self.nodes) {
+                if !validation_identity::node(a, b, control)? {
+                    return Ok(false);
+                }
             }
         }
         if !Self::same(&g.contexts[..self.contexts.len()], &self.contexts, control)?
@@ -321,6 +324,7 @@ impl ValidationSnapshot {
     }
     fn from_graph(g: &Graph, control: &Control) -> Result<Self, ValidationFailure> {
         Ok(Self {
+            node_identity: g.nodes.prefix_identity(),
             nodes: Self::copy(&g.nodes, control)?,
             contexts: Self::copy(&g.contexts, control)?,
             frames: Self::copy(&g.frames, control)?,
@@ -332,10 +336,11 @@ impl ValidationSnapshot {
             answers: Self::copy(&g.checked_answers, control)?,
         })
     }
-    // matches成功後の同じ不変Graph借用でだけ呼ぶ。全既存内容の照合は省略しない。
+    // matches成功後の同じ不変Graph借用でだけ呼ぶ。可変アクセス後は全既存内容を照合する。
     // 変更できた表は末尾追加だけなので、既存nodeを毎回複製し直す必要はない。
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
+        self.node_identity = g.nodes.prefix_identity();
         self.nodes
             .extend(Self::copy(&g.nodes[self.nodes.len()..], control)?);
         self.contexts
@@ -10614,3 +10619,7 @@ pub(super) fn same_scalar_identity(
 ) -> Result<bool, ValidationFailure> {
     validation_identity::scalar(a, b, control)
 }
+
+#[cfg(test)]
+#[path = "validation_snapshot_tests.rs"]
+mod validation_snapshot_tests;
