@@ -537,3 +537,157 @@ fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_desce
         }
     }
 }
+
+#[test]
+fn option_quotient_keeps_none_fibers_typed_laws_and_reuse() {
+    let dir = law_input(
+        "quotient-option",
+        "view tagged(s:State):Option<Bool> = if s.x then some(s.y) else none<Bool>;law optional visible(s:State):some(s.x)=some(s.x);law optional hidden(s:State):some(s.y)=some(s.y);",
+    );
+    let asks = [
+        "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "good=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.visible)",
+        "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
+    ];
+    let first = execute(&dir, "out", &asks, None);
+    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[1], "status")), "established");
+    assert_eq!(s(get(&answers[2], "status")), "refuted");
+    for index in [1, 2] {
+        exact_fibers(
+            &result,
+            index,
+            vec![
+                vec![(false, false), (false, true)],
+                vec![(true, false)],
+                vec![(true, true)],
+            ],
+        );
+    }
+    let evidence = node(&result, &arr(get(&answers[2], "counterexamples"))[0]);
+    assert_eq!(s(get(get(evidence, "value"), "kind")), "separating_pair");
+    let data = get(get(evidence, "value"), "data");
+    let points = [
+        pair(get(node(&result, get(data, "first")), "value")),
+        pair(get(node(&result, get(data, "second")), "value")),
+    ];
+    assert!(!points[0].0 && !points[1].0);
+    assert_ne!(points[0].1, points[1].1);
+    let values = arr(get(data, "law_values"));
+    assert_ne!(
+        get(node(&result, &values[0]), "value").value,
+        get(node(&result, &values[1]), "value").value
+    );
+    let repeated = execute(&dir, "reused", &asks, Some("out"));
+    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
+    let reused = result_json(&dir, &repeated);
+    for key in ["answers", "nodes"] {
+        assert_eq!(get(&result, key).value, get(&reused, key).value);
+    }
+}
+
+#[test]
+fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
+    use archsig::observed::{
+        control::{Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        input::InputSources,
+    };
+    let views = [
+        (
+            "Option<Z>",
+            "if s.x then some(if s.y then 1 else 0) else none<Z>",
+        ),
+        (
+            "Option<Option<Bool>>",
+            "if s.x then some(if s.y then some(false) else none<Bool>) else none<Option<Bool>>",
+        ),
+        (
+            "Option<(Bool,Z)>",
+            "if s.x then some((s.y,0)) else none<(Bool,Z)>",
+        ),
+        (
+            "(Option<Bool>,Z)",
+            "(if s.x then some(s.y) else none<Bool>,0)",
+        ),
+    ];
+    for (case, (ty, body)) in views.iter().enumerate() {
+        let dir = law_input(
+            &format!("quotient-option-recursive-{case}"),
+            &format!(
+                "view tagged(s:State):{ty} = {body};law optional visible(s:State):some(s.x)=some(s.x);law optional hidden(s:State,z:Bool,a:Bool):(if s.y then some(0) else none<Z>)=some(if z and a then 1 else 0);"
+            ),
+        );
+        let sources = InputSources::from_bytes(
+            vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),
+            std::fs::read(dir.join("a.json")).unwrap(),
+        );
+        let result = evaluate_observed_bytes(
+            sources,
+            &[
+                "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+                "good=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.visible)",
+                "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
+            ],
+            &mut Control::new(Limits::default(), |_| Usage::default()),
+        )
+        .unwrap();
+        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answers = arr(get(&wire, "answers"));
+        assert_eq!(s(get(&answers[1], "status")), "established");
+        assert_eq!(s(get(&answers[2], "status")), "refuted");
+        for index in [1, 2] {
+            exact_fibers(
+                &wire,
+                index,
+                vec![
+                    vec![(false, false), (false, true)],
+                    vec![(true, false)],
+                    vec![(true, true)],
+                ],
+            );
+        }
+        let evidence = node(&wire, &arr(get(&answers[2], "evidence"))[0]);
+        let data = get(get(evidence, "value"), "data");
+        let points = [
+            pair(get(node(&wire, get(data, "first")), "value")),
+            pair(get(node(&wire, get(data, "second")), "value")),
+        ];
+        assert!(!points[0].0 && !points[1].0);
+        assert_ne!(points[0].1, points[1].1);
+        // Each family key follows the Law declaration s,z,a, including z != a.
+        for (side, reference) in arr(get(data, "law_values")).iter().enumerate() {
+            let family = arr(get(node(&wire, reference), "value"));
+            assert_eq!(family.len(), 4);
+            let mut keys = vec![];
+            for entry in family {
+                let entry = arr(entry);
+                let key = arr(&entry[0]);
+                assert_eq!(key.len(), 3);
+                assert_eq!(s(&arr(&key[0])[0]), "v");
+                assert_eq!(s(&arr(&key[0])[1]), "s");
+                let bool_value = |n: &JNode| match n.value {
+                    JValue::Bool(b) => b,
+                    _ => panic!("Bool key"),
+                };
+                let (z, a) = (bool_value(&key[1]), bool_value(&key[2]));
+                keys.push((z, a));
+                let operands = arr(get(&entry[1], "some"));
+                if points[side].1 {
+                    assert_eq!(s(get(&operands[0], "some")), "0");
+                } else {
+                    assert_eq!(get(&operands[0], "none").value, JValue::Bool(true));
+                }
+                assert_eq!(s(get(&operands[1], "some")), if z && a { "1" } else { "0" });
+            }
+            keys.sort();
+            assert_eq!(
+                keys,
+                vec![(false, false), (false, true), (true, false), (true, true)]
+            );
+        }
+    }
+}

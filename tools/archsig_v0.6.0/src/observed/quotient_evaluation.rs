@@ -54,6 +54,7 @@ fn exact_type(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(match ty {
             Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Fp(_) | Type::Text => true,
+            Type::Option(item) => exact_type(item, c)?,
             Type::Tuple(items) => {
                 for item in items {
                     if !exact_type(item, c)? {
