@@ -421,22 +421,19 @@ fn invalid_map_selectors_and_private_projections_fail_as_concrete_usage_errors()
     }
 }
 #[test]
-fn valid_object_algebra_kind_reports_internal_unimplemented_instead_of_math_uncertainty() {
-    let dir = inputs("map-unimplemented-kind", A);
-    let r = without_file_changes(&dir, || asks(
-        &dir,
-        &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
-    ));
-    notified(&dir, &r, "error", 70);
-    let receipt = &r.receipt;
-    assert!(
-        arr(get(&receipt, "issues"))
-            .iter()
-            .all(|i| s(get(i, "code")) == "internal")
-    );
-    assert!(!dir.join("out").exists());
+fn object_algebra_kind_refutes_failed_preservation_without_an_internal_error() {
+    let dir = inputs("map-object-algebra-kind", A);
+    let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"]);
+    let result = saved(&dir, &run, "complete", 1);
+    let a = answer(&result, "m");
+    assert_eq!(s(get(a, "status")), "refuted");
+    assert!(!has(get(a, "outputs"), "map"));
+    assert!(!arr(get(a, "counterexamples")).is_empty());
+    assert!(arr(get(a, "reasons")).iter().all(|reason| s(get(reason, "code")) == "condition_failed"));
+    assert!(arr(get(&result, "issues")).iter().all(|issue| s(get(issue, "code")) == "condition_failed"));
     std::fs::remove_dir_all(dir).unwrap();
 }
+
 #[test]
 fn map_reuse_rechecks_the_total_action_and_rejects_a_forged_saved_operation() {
     let dir = inputs("map-reuse", A);
@@ -912,18 +909,25 @@ fn object_algebra_selection_checks_common_inputs_before_reporting_unimplemented(
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
-fn valid_unimplemented_map_dependencies_keep_their_declared_public_projection_types() {
+fn object_algebra_dependencies_keep_their_declared_public_projection_types() {
     for (i, requests) in [
         vec!["copy=map(Reservations.Migration,on=$v.value.some,reading=Reservations,kind=object_algebra)","v=evaluate(Reservations.present,m=@v/m)"],
         vec!["copy=map(Reservations.Migration,on=$m.map.configuration_map.candidate.subject,reading=Reservations)","m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
     ].iter().enumerate() {
         let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
         std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
-        let run=without_file_changes(&dir, || asks(&dir,requests));
-        notified(&dir,&run,"error",70);
-        let receipt=&run.receipt;
-        assert!(arr(get(&receipt,"issues")).iter().all(|issue|s(get(issue,"code"))=="internal"));
-        assert!(!dir.join("out").exists());
+        let run=asks(&dir,requests);
+        let result=saved(&dir,&run,if i==0 {"complete"} else {"partial"},if i==0 {1} else {2});
+        let copy=answer(&result,"copy");
+        assert_eq!(s(get(copy,"status")),if i==0 {"refuted"} else {"undetermined"});
+        assert!(!has(get(copy,"outputs"),"map"));
+        assert!(arr(get(&result,"issues")).iter().all(|issue| s(get(issue,"code"))!="internal"));
+        assert!(!arr(get(copy,"reasons")).is_empty());
+        let codes: Vec<_> = arr(get(copy,"reasons")).iter().map(|reason| s(get(reason,"code"))).collect();
+        assert_eq!(codes, if i==0 {vec!["condition_failed"]} else {vec!["condition_failed","dependency_blocked"]});
+        let upstream = answer(&result,if i==0 {"v"} else {"m"});
+        assert_eq!(s(get(upstream,"status")),if i==0 {"established"} else {"refuted"});
+        if i==1 { assert!(has(get(upstream,"outputs"),"operation")); }
         std::fs::remove_dir_all(dir).unwrap();
     }
 }

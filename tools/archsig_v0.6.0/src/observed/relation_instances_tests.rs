@@ -949,7 +949,13 @@ fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
             assert!(forged.recheck(&i, &mut quiet()).is_err());
         }
     }
-    for ty in ["(Z,Q)", "((Z,Z),Z)", "(Z,Bool)"] {
+    let i = inputs("normal", "relation keep(pair:((Z,Z),Z),e:Hop):path(e)=path(e);");
+    let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    assert_eq!(r.instances.len(), 4);
+    assert!(r.outside_finite.is_empty());
+    assert!(r.instances.iter().all(|row| row.state == RelationState::Established));
+    r.recheck(&i, &mut quiet()).unwrap();
+    for ty in ["(Z,Q)", "(Z,Bool)"] {
         let i = inputs(
             "normal",
             &format!("relation keep(pair:{ty},e:Hop):path(e)=path(e);"),

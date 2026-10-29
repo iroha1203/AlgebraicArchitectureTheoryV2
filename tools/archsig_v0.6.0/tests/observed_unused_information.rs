@@ -1,4 +1,6 @@
 //! 未使用情報の保持、選択した問いだけの評価、全入力の静的検査。
+#[path = "common/positions.rs"]
+mod positions;
 use archsig::{
     canonical::{Json, sha256_digest},
     definition::check_definitions,
@@ -260,7 +262,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
     for declaration in &checked.law().infos {
         assert_eq!(
             named(result, "declarations", "name", &declaration.name),
-            &declaration_wire(declaration)
+            &positions::law_positions(declaration_wire(declaration), checked.sources().law().bytes())
         );
         let (start, end) = declaration.span;
         let script = std::str::from_utf8(checked.sources().law().bytes()).unwrap();
@@ -511,7 +513,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
         assert_eq!(spare.kind, "reading");
         assert_eq!(
             named(result, "declarations", "name", "Spare"),
-            &declaration_wire(spare)
+            &positions::law_positions(declaration_wire(spare), checked.sources().law().bytes())
         );
         assert_eq!(
             spare
@@ -554,7 +556,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
             assert_eq!(info.kind, kind);
             assert_eq!(
                 named(result, "declarations", "name", name),
-                &declaration_wire(info)
+                &positions::law_positions(declaration_wire(info), checked.sources().law().bytes())
             );
         }
         let declaration = checked

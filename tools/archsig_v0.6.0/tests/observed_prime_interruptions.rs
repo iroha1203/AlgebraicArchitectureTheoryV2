@@ -1,4 +1,6 @@
 //! Fp の素数性内部へ三入力検査の共有制御が届き、既知不正と元位置を保つ。
+#[path = "common/positions.rs"]
+mod positions;
 use archsig::{
     canonical::Json,
     definition::{check_definitions, check_definitions_controlled},
@@ -110,7 +112,7 @@ fn negative_baseline(in_law: bool) -> (Issue, usize) {
     let (mut baseline, total) = probe(in_law, usize::MAX, 0);
     let failure = check_inputs(source, &mut baseline).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
-    assert_eq!(failure.issues(), [ResultIssue::Input(issue.clone()).wire()]);
+    assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), sources(in_law, "49").law().bytes())]);
     empty_stage(&failure);
     assert!(total.get() > 10);
     (issue, total.get())
@@ -162,7 +164,7 @@ fn completed_composite_checks_keep_the_original_pointer_or_span_above_budget() {
                     );
                     assert_eq!(
                         failure.issues(),
-                        [reason.wire(), ResultIssue::Input(issue.clone()).wire()]
+                        [reason.wire(), positions::law_positions(ResultIssue::Input(issue.clone()).wire(), sources(in_law, "49").law().bytes())]
                     );
                 }
             }

@@ -112,10 +112,10 @@ fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
 }
 #[test]
 fn required_delimiter_mismatch_keeps_usage_at_the_first_false_post_from_bytes() {
-    // user_name: 1..7; expect pre: 8; whitespace: 9,10; '=' mismatch post: 11.
-    assert_request_priority(LAW, "a!", Checkpoint::RequestSyntax, 11);
+    // 11は拒否確定前、12は '=' の不一致を確定した直後のcheckpoint。
+    assert_request_priority(LAW, "a!", Checkpoint::RequestSyntax, 12);
     for mode in 0..3 {
-        let (mut control, _) = probe(Checkpoint::RequestSyntax, 10, mode);
+        let (mut control, _) = probe(Checkpoint::RequestSyntax, 11, mode);
         assert!(matches!(
             prepare_observed(sources(LAW, MAP), &["a!"], &mut control),
             Err(PrepareFailure::Requests {

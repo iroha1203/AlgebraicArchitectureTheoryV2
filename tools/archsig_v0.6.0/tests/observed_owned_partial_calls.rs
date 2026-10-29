@@ -78,6 +78,10 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
     }
     // 数値binderを架空のScalar/固定Bindingにしない。
     let mut symbolic_tuple = 0;
+    let law = r.prepared().inputs().law();
+    let declared_parameters: std::collections::BTreeSet<_> = law.infos.iter()
+        .flat_map(|info| &info.parameters)
+        .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical())).collect();
     let mut numeric_parameters = std::collections::BTreeSet::new();
     for n in arr(get(&w, "nodes")) {
         if get(n, "type") == &Json::str("Expression") {
@@ -85,8 +89,10 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
             if let Json::Obj(m) = v {
                 if let Some(Json::Arr(ps)) = m.get("parameters") {
                     for p in ps {
-                        assert!([Json::str("Z"), Json::str("Q")].contains(get(p, "type")));
-                        numeric_parameters.insert(get(p, "type").canonical());
+                        assert!(declared_parameters.contains(&(get(p, "name").canonical(), get(p, "type").canonical())), "parameter: {p:?}; declared: {declared_parameters:?}");
+                        if [Json::str("Z"), Json::str("Q")].contains(get(p, "type")) {
+                            numeric_parameters.insert(get(p, "type").canonical());
+                        }
                     }
                 }
             }

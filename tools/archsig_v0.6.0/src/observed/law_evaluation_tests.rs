@@ -560,17 +560,45 @@ fn native_unanchored_helpers_stay_out_of_axes_and_symbolic_parameters_keep_their
     .unwrap();
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
-        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+        assert!(d.unavailable.is_none());
         for o in &d.originals {
             assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
+            assert!(o.row.is_none(), "無限域を有限の代入行にしない");
+            let applies = origin(&g, o.reference).unwrap().unwrap().ready;
             let before = g.nodes.len();
             let e = evaluate(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
-            assert!(e.instance.is_none() && e.body.is_none() && e.guard.is_none());
-            assert_eq!(g.nodes.len(), before);
+            assert_eq!(e.instance.is_some(), applies);
+            assert_eq!(e.body.is_some(), applies);
+            assert!(e.guard.is_none());
+            if !applies { assert_eq!(g.nodes.len(), before); }
         }
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
+#[test]
+fn native_numeric_law_frames_evaluate_the_requested_guard_and_body() {
+    for guard in ["true", "false", "k=k"] {
+        let p = prepared(&format!("law required family(c:Part,k:Z) when {guard}:k=k;"));
+        let (mut g, a, objects) = initial(&p);
+        let rows = polynomial_origins(&mut g, &p, a);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut checked = 0;
+        for (object, rows) in rows.iter().enumerate() {
+            for row in rows {
+                let e = evaluate(&env, &mut g, *row, objects[object], &mut quiet()).unwrap();
+                if let Some(actual) = e.guard {
+                    assert_eq!(truth(&g, actual), Some(guard != "false"));
+                    assert_eq!(e.body.is_some(), guard != "false");
+                    if let Some(body) = e.body { assert_eq!(truth(&g, body), Some(true)); }
+                    checked += 1;
+                }
+            }
+        }
+        assert_eq!(checked, 4);
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+
 #[test]
 fn native_law_expression_four_stops_keep_exact_completed_dag_prefix_and_restore_context() {
     use std::{cell::Cell, rc::Rc};

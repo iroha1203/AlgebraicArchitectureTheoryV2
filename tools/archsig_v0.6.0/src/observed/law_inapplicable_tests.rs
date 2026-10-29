@@ -524,7 +524,7 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
 }
 
 #[test]
-fn unbound_integer_parameter_does_not_become_a_finite_outside_proposition() {
+fn unbound_integer_parameter_keeps_its_quantifier_in_outside_propositions() {
     let p = prepared(fixture::inputs(
         false,
         false,
@@ -541,16 +541,20 @@ fn unbound_integer_parameter_does_not_become_a_finite_outside_proposition() {
     .unwrap();
     let mut original_count = 0;
     for (object, d) in ds.iter().enumerate() {
-        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+        assert!(d.unavailable.is_none());
         for o in &d.originals {
             assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
+            assert!(o.row.is_none(), "無限域を有限の代入行にしない");
+            let outside = crate::observed::law_evaluation::origin(&g, o.reference).unwrap().unwrap().outside;
             let before = g.nodes.len();
-            assert!(
-                check(&env, &mut g, o.reference, objects[object], &mut quiet())
-                    .unwrap()
-                    .is_none()
-            );
-            assert_eq!(g.nodes.len(), before);
+            let answer = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+            assert_eq!(answer.is_some(), outside);
+            if let Some(answer) = answer {
+                assert_outside(&g, &answer, o.reference, objects[object]);
+                assert_eq!(g.nodes[answer.claim.unwrap().0].scope.quantifiers, g.nodes[o.reference.0].scope.quantifiers);
+            } else {
+                assert_eq!(g.nodes.len(), before);
+            }
             original_count += 1;
         }
     }
