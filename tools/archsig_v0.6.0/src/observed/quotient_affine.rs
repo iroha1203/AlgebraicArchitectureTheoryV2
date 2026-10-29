@@ -9,9 +9,43 @@ use crate::observed::{
 pub(in crate::observed) mod coefficients;
 use std::sync::Arc;
 
+pub(in crate::observed) enum Guard {
+    Fixed(bool),
+    Affine(change_affine::NumericGuard),
+}
+impl Guard {
+    pub fn never(&self) -> bool {
+        matches!(self, Self::Fixed(false))
+    }
+    fn at(
+        &self,
+        coordinates: &[Scalar],
+        ty: &Type,
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        match self {
+            Self::Fixed(value) => Ok(*value),
+            Self::Affine(domain) => {
+                for (row, rhs) in domain.equations.iter().zip(&domain.rhs) {
+                    if row.len() != coordinates.len() {
+                        return Err("商のguard座標の次元が違う".into());
+                    }
+                    let mut value = numeric::zero(ty, c)?;
+                    for (a, x) in row.iter().zip(coordinates) {
+                        value = coefficients::add_product(&value, a, x, c)?;
+                    }
+                    if value != *rhs {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+        }
+    }
+}
 pub(in crate::observed) struct Instance {
     pub bindings: Vec<(String, Scalar)>,
-    pub guard: bool,
+    pub guard: Guard,
     pub rows: std::ops::Range<usize>,
 }
 pub(in crate::observed) struct Law {
@@ -404,7 +438,7 @@ pub(in crate::observed) fn compute(
                     .take()
                     .ok_or("商のguard不足収集がない")?;
                 if let Some(applies) = resolved {
-                    applies
+                    Guard::Fixed(applies)
                 } else {
                     result.missing.extend(
                         missing
@@ -415,11 +449,10 @@ pub(in crate::observed) fn compute(
                         law.pending_expression = Some(*guard);
                         return Ok(result);
                     }
-                    // A nonconstant symbolic Bool can still have no applicable
-                    // candidate. Solve on the selected coordinates over their
-                    // original ring; integer infeasibility must stay integral.
+                    // Keep the full applicability fiber over the selected
+                    // coordinates and original coefficient ring.
                     let mut pending = change_affine::Pending::default();
-                    let domain = change_affine::numeric_guard_domain(
+                    let computed = change_affine::numeric_guard_domain(
                         selected,
                         Some(*guard),
                         &vars,
@@ -427,22 +460,25 @@ pub(in crate::observed) fn compute(
                         &declaration.reading,
                         &mut pending,
                         ty,
-                    )?;
+                    );
                     result.scope.merge(&pending.scope);
+                    result.missing.extend(pending.facts);
+                    if !result.missing.is_empty() {
+                        law.pending_expression = Some(*guard);
+                        return Ok(result);
+                    }
+                    let domain = computed?;
                     if domain.particular.is_none() {
-                        false
+                        Guard::Fixed(false)
                     } else {
-                        return Err(unsupported(
-                            request,
-                            "商の候補域で変化するLaw guardの降下は未実装",
-                        ));
+                        Guard::Affine(domain)
                     }
                 }
             } else {
-                true
+                Guard::Fixed(true)
             };
             let start = law.matrix.len();
-            if applies {
+            if !applies.never() {
                 for operand in law.operands {
                     env.missing_slot_reads.replace(Some(BTreeSet::new()));
                     let value =
@@ -572,14 +608,15 @@ pub(in crate::observed) fn point(
             .take()
             .ok_or("商のLaw評価出現がない")?;
         let evaluated = evaluated?;
+        let applicable = instance.guard.at(coordinates, &image.ty, c)?;
         if evaluated.application != Some(true)
-            || evaluated.guard != Some(instance.guard)
+            || evaluated.guard != Some(applicable)
             || evaluated.condition_failed
             || evaluated.condition_pending
         {
             return Err(unsupported(request, "商の反例点でLaw適用条件が変わる"));
         }
-        let values = if instance.guard {
+        let values = if applicable {
             let Some((_, Some(left), Some(right))) = evaluated.operands else {
                 return Err("商の反例の左右値がない".into());
             };
@@ -612,7 +649,7 @@ pub(in crate::observed) fn point(
             body_evaluation,
             guard_evaluation,
             bindings: instance.bindings.clone(),
-            guard: instance.guard,
+            guard: applicable,
             values,
             scope: evaluated.scope,
         });
