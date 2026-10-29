@@ -142,8 +142,8 @@ fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
         "補完で元ArchMap byteを変更しない"
     );
     assert_eq!(
-        evaluated.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots,
+        evaluated.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots(),
         "補完値を観測Atomや既知slotへ追加しない"
     );
     let wire = evaluated.wire();
@@ -181,7 +181,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
     let (Signature::View { body, .. } | Signature::Law { body, .. }) =
-        &checked.law().declarations[name].signature
+        &checked.law().declarations()[name].signature
     else {
         panic!("view/law")
     };
@@ -273,7 +273,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             )));
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -304,20 +304,20 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
             let snapshot_origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == snapshot.origin)
                 .unwrap();
             assert_eq!(origin.mode, snapshot_origin.mode);
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == origin.locations[0].source)
                 .unwrap();
@@ -363,7 +363,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 let at = span(f(val(source_node), "location"));
                 if let Some((id, _)) = checked
                     .law()
-                    .exprs
+                    .exprs()
                     .iter()
                     .enumerate()
                     .find(|(_, e)| e.span == at)
@@ -402,7 +402,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 assert!(!obj(fact).contains_key("atom"));
                 let snapshot = checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == text(f(fact, "snapshot")))
                     .unwrap();
@@ -1406,7 +1406,7 @@ fn finite_value_completions_quantify_data_families_and_keep_guards() {
                 .collect::<Vec<_>>(),
         );
         assert_eq!(
-            checked.archmap().sources[0].revision,
+            checked.archmap().sources()[0].revision,
             if moved { "r2" } else { "r1" }
         );
     }
@@ -1755,7 +1755,7 @@ view later(s:Sample): Unit = unit;
             .collect::<Vec<_>>(),
     );
 
-    let current_span = checked.law().exprs[declared_body(&checked, "Calc.current")].span;
+    let current_span = checked.law().exprs()[declared_body(&checked, "Calc.current")].span;
     assert_eq!(source(&checked, current_span), b"s.h");
     // 実保持case数からExpression停止点を選ぶ。補完の列挙/証拠/再検査phase内部はprivate試験が担う。
     let wanted = [0, 1, 3];
@@ -1901,7 +1901,7 @@ view later(s:Sample): Unit = unit;
         assert!(
             evaluations_at(
                 &wire,
-                checked.law().exprs[declared_body(&checked, "Calc.later")].span
+                checked.law().exprs()[declared_body(&checked, "Calc.later")].span
             )
             .is_empty()
         );

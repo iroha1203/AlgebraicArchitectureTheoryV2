@@ -307,7 +307,7 @@ fn explicit_none_and_container_order_remain_primitive_values() {
             .relations()
             .contains(&(fact("A", Some("choice"), true), fact("x", None, false)))
     );
-    let subject = &inputs.archmap().snapshots[0].subjects[0];
+    let subject = &inputs.archmap().snapshots()[0].subjects[0];
     let field = subject
         .fields
         .iter()

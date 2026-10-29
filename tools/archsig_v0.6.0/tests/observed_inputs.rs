@@ -46,7 +46,7 @@ fn stop_at(target: Checkpoint) -> Control {
 fn checked_bundle_preserves_original_bytes_identities_and_shared_definitions() {
     let inputs = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     assert_eq!(inputs.sources().law().bytes(), LAW);
-    assert_eq!(inputs.definitions(), &inputs.law().definitions);
+    assert_eq!(inputs.definitions(), inputs.law().definitions());
     assert_eq!(
         inputs
             .inputs()
@@ -66,7 +66,7 @@ fn checked_bundle_preserves_original_bytes_identities_and_shared_definitions() {
             .all(|i| i.model_digest.is_some() && i.path.is_none())
     );
     let metadata = inputs.metadata_wire();
-    assert!(array_len(field(&metadata, "declarations")) > inputs.law().infos.len());
+    assert!(array_len(field(&metadata, "declarations")) > inputs.law().infos().len());
     assert_eq!(array_len(field(&metadata, "vocabularies")), 1);
 }
 
@@ -220,20 +220,6 @@ fn from_checked_accepts_matching_tables_and_rejects_mixed_definition_identity() 
     assert!(failure.declarations().is_empty());
     assert!(failure.primitives().is_empty());
     assert!(failure.vocabularies().is_empty());
-}
-
-#[test]
-fn from_checked_rejects_mutated_map_even_with_original_digests() {
-    let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
-    let law = check_law(LAW, &definitions).unwrap();
-    let mut map = check_archmap(MAP, &definitions).unwrap();
-    map.snapshots[0].subjects[0].ty = "Foreign.State".into();
-    let failure =
-        CheckedInputs::from_checked(sources(), definitions, law, map, &mut Control::unlimited())
-            .unwrap_err();
-    assert_eq!(failure.status(), InputStatus::Invalid);
-    assert!(!failure.declarations().is_empty());
-    assert!(!failure.vocabularies().is_empty());
 }
 
 #[test]

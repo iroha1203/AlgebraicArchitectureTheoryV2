@@ -90,8 +90,8 @@ fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
                 panic!("invalid request")
             };
             assert!(requests.is_empty());
-            assert!(inputs.law().declarations.contains_key("CountCheck.amount"));
-            assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+            assert!(inputs.law().declarations().contains_key("CountCheck.amount"));
+            assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
             assert_eq!(stop_reason.as_ref(), control.stop_reason().as_ref());
             assert!(matches!(
                 stop_reason,

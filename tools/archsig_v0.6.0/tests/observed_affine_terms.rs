@@ -269,7 +269,7 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
             };
             let sub = inputs
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == *snapshot)
                 .unwrap()
@@ -290,7 +290,7 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
             };
             let origin = inputs
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| o.id == *origin)
                 .unwrap();
@@ -298,7 +298,7 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
             for l in &origin.locations {
                 let source = inputs
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == l.source)
                     .unwrap();

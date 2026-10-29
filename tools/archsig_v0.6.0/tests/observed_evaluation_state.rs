@@ -267,7 +267,7 @@ fn assert_known_answers(wire: &Json) {
     let map = batch_map();
     let checked = check_inputs(sources(DEFINITIONS, LAW, &map), &mut quiet()).unwrap();
     assert_eq!(checked.sources().archmap().bytes(), map);
-    let snapshot = &checked.archmap().snapshots[0];
+    let snapshot = &checked.archmap().snapshots()[0];
     assert_eq!(snapshot.id, "v");
     let subject = snapshot.subjects.iter().find(|s| s.id == "s").unwrap();
     let count = subject
@@ -293,7 +293,7 @@ fn assert_known_answers(wire: &Json) {
     ));
     let origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| &o.id == origin)
         .unwrap();

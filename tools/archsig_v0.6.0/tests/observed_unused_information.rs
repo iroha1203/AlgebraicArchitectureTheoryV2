@@ -204,7 +204,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
             })
         );
     }
-    assert_eq!(checked.definitions(), &checked.law().definitions);
+    assert_eq!(checked.definitions(), checked.law().definitions());
     for vocabulary in checked.definitions().vocabularies().values() {
         let row = arr(get(result, "vocabularies"))
             .iter()
@@ -259,7 +259,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
             assert_eq!(get(raw, "meaning"), &Json::str(&field.meaning));
         }
     }
-    for declaration in &checked.law().infos {
+    for declaration in checked.law().infos() {
         assert_eq!(
             named(result, "declarations", "name", &declaration.name),
             &positions::law_positions(declaration_wire(declaration), checked.sources().law().bytes())
@@ -283,7 +283,7 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
         }
     }
     // この観測入力には Counter の一 subject だけがある。Extras 用の観測を補わない。
-    let subjects = &checked.archmap().snapshots[0].subjects;
+    let subjects = &checked.archmap().snapshots()[0].subjects;
     assert_eq!(subjects.len(), 1);
     assert_eq!(subjects[0].id, "s");
     assert_eq!(subjects[0].ty, "Counter.State");
@@ -494,7 +494,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
                 let location = get(payload, "location");
                 assert_eq!(get(location, "input"), &Json::str("law"));
                 let (start, end) = span(location);
-                assert!(checked.law().declarations.values().any(|d| matches!(
+                assert!(checked.law().declarations().values().any(|d| matches!(
                     d.name.as_str(),
                     "CountCheck.amount" | "CountCheck.nonnegative" | "CountAudit.bounded"
                 ) && d.span.0 <= start
@@ -506,7 +506,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
     if has_spare {
         let spare = checked
             .law()
-            .infos
+            .infos()
             .iter()
             .find(|d| d.name == "Spare")
             .expect("拡張入力の Spare reading を保持する");
@@ -540,7 +540,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
         ] {
             let declaration = checked
                 .law()
-                .declarations
+                .declarations()
                 .get(name)
                 .expect("拡張入力の非選択宣言を map に保持する");
             assert_eq!(declaration.reading, "Spare");
@@ -548,7 +548,7 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
             assert_eq!(&script[declaration.span.0..declaration.span.1], source);
             let info = checked
                 .law()
-                .infos
+                .infos()
                 .iter()
                 .find(|d| d.name == name)
                 .expect("拡張入力の非選択宣言を infos に保持する");
@@ -561,24 +561,24 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool)
         }
         let declaration = checked
             .law()
-            .declarations
+            .declarations()
             .get("Spare.untouched")
             .expect("非選択 match view を保持する");
         let Signature::View { body, .. } = &declaration.signature else {
             panic!("view")
         };
         assert!(matches!(
-            &checked.law().exprs[*body].kind,
+            &checked.law().exprs()[*body].kind,
             ExprKind::Match { .. }
         ));
-        let expression = &checked.law().exprs[*body];
+        let expression = &checked.law().exprs()[*body];
         assert_eq!(
             &script[expression.span.0..expression.span.1],
             "match s.count { _ => 7; }"
         );
         let reading = checked
             .law()
-            .infos
+            .infos()
             .iter()
             .find(|d| d.name == "CountCheck")
             .unwrap();
@@ -654,11 +654,11 @@ fn compare_unused(count: Option<&str>) {
         );
         if count == Some("2") && has_spare {
             let Signature::View { body, .. } =
-                &checked.law().declarations["Spare.untouched"].signature
+                &checked.law().declarations()["Spare.untouched"].signature
             else {
                 unreachable!()
             };
-            let expected = checked.law().exprs[*body].span;
+            let expected = checked.law().exprs()[*body].span;
             let selected = evaluate_observed_bytes(
                 src,
                 &["probe=evaluate(Spare.untouched,s=@v/s)"],

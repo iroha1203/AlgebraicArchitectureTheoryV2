@@ -139,7 +139,7 @@ fn evaluations_at<'a>(wire: &'a Json, at_span: (usize, usize)) -> Vec<&'a Json> 
 }
 fn body(checked: &CheckedInputs, name: &str) -> usize {
     let (Signature::View { body, .. } | Signature::Law { body, .. }) =
-        &checked.law().declarations[name].signature
+        &checked.law().declarations()[name].signature
     else {
         panic!("view/law")
     };
@@ -271,8 +271,8 @@ fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
         inputs.archmap().bytes()
     );
     assert_eq!(
-        evaluated.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots,
+        evaluated.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots(),
         "記号や補完値を観測Atom、owner、既知slotへ追加しない"
     );
     let wire = evaluated.wire();
@@ -380,7 +380,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let scalar = ns[text(f(f(binding, "value"), "node"))];
             let declared_types = checked
                 .law()
-                .declarations
+                .declarations()
                 .values()
                 .filter_map(|d| match &d.signature {
                     Signature::View { params, .. } | Signature::Law { params, .. } => Some(params),
@@ -404,7 +404,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let position = at(&ns, n);
             if let Some((id, expr)) = checked
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .enumerate()
                 .find(|(_, e)| e.span == position)
@@ -421,26 +421,26 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     }
                     let expected = match &expr.kind {
                         ExprKind::Binary { lhs, rhs, .. } => vec![
-                            checked.law().exprs[*lhs].span,
-                            checked.law().exprs[*rhs].span,
+                            checked.law().exprs()[*lhs].span,
+                            checked.law().exprs()[*rhs].span,
                         ],
                         ExprKind::Unary { operand, .. }
                         | ExprKind::Group(operand)
                         | ExprKind::Field { base: operand, .. } => {
-                            vec![checked.law().exprs[*operand].span]
+                            vec![checked.law().exprs()[*operand].span]
                         }
                         ExprKind::Let { value, body, .. } => vec![
-                            checked.law().exprs[*value].span,
-                            checked.law().exprs[*body].span,
+                            checked.law().exprs()[*value].span,
+                            checked.law().exprs()[*body].span,
                         ],
                         ExprKind::If {
                             cond,
                             then_branch,
                             else_branch,
                         } => vec![
-                            checked.law().exprs[*cond].span,
-                            checked.law().exprs[*then_branch].span,
-                            checked.law().exprs[*else_branch].span,
+                            checked.law().exprs()[*cond].span,
+                            checked.law().exprs()[*then_branch].span,
+                            checked.law().exprs()[*else_branch].span,
                         ],
                         _ => vec![],
                     };
@@ -487,7 +487,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 assert!(!obj(missing).contains_key("atom"));
                 let snapshot = checked
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == text(f(missing, "snapshot")))
                     .unwrap();
@@ -509,7 +509,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
 fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     let snapshot = checked
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == text(f(support, "snapshot")))
         .unwrap();
@@ -541,13 +541,13 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     };
     let origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| &o.id == origin_id)
         .unwrap();
     let snapshot_origin = checked
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| o.id == snapshot.origin)
         .unwrap();
@@ -561,7 +561,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
     );
     let source = checked
         .archmap()
-        .sources
+        .sources()
         .iter()
         .find(|s| s.id == origin.locations[0].source)
         .unwrap();
@@ -588,10 +588,10 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
 fn complete_ast(wire: &Json, checked: &CheckedInputs, id: &str, declaration: &str) {
     let ns = index(wire);
     let reached = live(&ns, root(wire, id));
-    let declaration = &checked.law().declarations[declaration];
+    let declaration = &checked.law().declarations()[declaration];
     for (expr_id, expr) in checked
         .law()
-        .exprs
+        .exprs()
         .iter()
         .enumerate()
         .filter(|(_, e)| declaration.span.0 <= e.span.0 && e.span.1 <= declaration.span.1)
@@ -1406,7 +1406,7 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
         relocated_checked.sources().archmap().bytes()
     );
     for checked in [&original_checked, &relocated_checked] {
-        let sample = checked.archmap().snapshots[0]
+        let sample = checked.archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "item")
@@ -1432,12 +1432,12 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
     assert!(
         relocated_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .all(|o| o.id.ends_with("_moved"))
     );
     assert_eq!(
-        relocated_checked.archmap().sources[0].uri,
+        relocated_checked.archmap().sources()[0].uri,
         "urn:fixture:affine-constants:relocated"
     );
 }
@@ -1484,8 +1484,8 @@ view later(s:Sample): Unit = unit;
     affine_scalar(&baseline, &checked, "s.z-s.z", "Z", Json::str("0"));
     let expression_count = baseline_count - prior_count;
     assert!(expression_count > 0);
-    let current_span = checked.law().exprs[body(&checked, "Calc.current")].span;
-    let later_span = checked.law().exprs[body(&checked, "Calc.later")].span;
+    let current_span = checked.law().exprs()[body(&checked, "Calc.current")].span;
+    let later_span = checked.law().exprs()[body(&checked, "Calc.later")].span;
     // 現在要求の全Expression checkpointを止め、元DAGの完成境界を確認する。
     // 係数走査と再検査の内部はprivate試験が扱う。
     for kind in 0..4 {

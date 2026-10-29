@@ -385,7 +385,7 @@ fn owned_map_type_provenance_pair_keeps_math_and_current_three_inputs() {
     for revision in ["r1", "r2"] {
         let input = fixture::input("plain", revision);
         let c = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        assert_eq!(c.archmap().sources[0].revision, revision);
+        assert_eq!(c.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.typeEvery,a=@v/A,b=@v/A)"]);
         established(&w, "x", true);
         both_owners(&w);

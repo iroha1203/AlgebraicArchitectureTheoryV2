@@ -77,16 +77,16 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
     assert_eq!(
-        r.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots
+        r.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().origins,
-        checked.archmap().origins
+        r.prepared().inputs().archmap().origins(),
+        checked.archmap().origins()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().sources,
-        checked.archmap().sources
+        r.prepared().inputs().archmap().sources(),
+        checked.archmap().sources()
     );
     let j = r.wire();
     let ns = nodes(&j);
@@ -127,7 +127,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
         for fact in arr(f(n, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -158,7 +158,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -166,7 +166,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
             for location in &origin.locations {
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -354,7 +354,7 @@ fn unknown_owner_cross_snapshot_membership_and_current_provenance_are_preserved(
 fn unknown_owner_family_uses_known_map_constraints_and_keeps_the_raw_missing_slot() {
     let i = fixture::constrained();
     let checked = check_inputs(i.clone(), &mut quiet()).unwrap();
-    let p = checked.archmap().snapshots[0]
+    let p = checked.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "p")

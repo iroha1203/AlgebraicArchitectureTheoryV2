@@ -297,7 +297,7 @@ impl CheckedInputs {
     }
 
     /// 外部の検査済み表を採用するときだけ元 byte 列へ照合する。
-    /// 現行の表は公開 field を持つため digest の一致だけを証拠にしない。
+    /// 検査済み表と元入力の対応を、digest と表の内容の両方で確認する。
     #[allow(clippy::result_large_err)]
     pub fn from_checked(
         sources: InputSources,
@@ -495,3 +495,6 @@ pub fn check_inputs(
         archmap,
     })
 }
+
+#[cfg(test)]
+mod checked_table_tests;

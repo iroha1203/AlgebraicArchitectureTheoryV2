@@ -393,7 +393,7 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| Json::str(&s.id) == f["snapshot"])
                         .unwrap()
@@ -413,7 +413,7 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .origins
+                        .origins()
                         .iter()
                         .find(|o| o.id == *origin)
                         .unwrap();
@@ -422,7 +422,7 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
                             r.prepared()
                                 .inputs()
                                 .archmap()
-                                .sources
+                                .sources()
                                 .iter()
                                 .find(|s| s.id == at.source)
                                 .unwrap()

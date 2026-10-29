@@ -178,7 +178,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -207,7 +207,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -215,7 +215,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let at = &origin.locations[0];
             let cited_source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == at.source)
                 .unwrap();
@@ -242,7 +242,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == at.source)
                     .unwrap()
@@ -318,7 +318,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -493,7 +493,7 @@ fn quant_parts(checked: &CheckedInputs, body: usize) -> (usize, usize) {
                 body,
             },
         ..
-    } = &checked.law().exprs[body].kind
+    } = &checked.law().exprs()[body].kind
     else {
         panic!("検査済In量化")
     };
@@ -558,7 +558,7 @@ law required rejected(): forall b in list<Bool>[true,false] . b;
     let original_children = children(&ns, root(&wire, "a"));
     assert_eq!(
         evaluation_span(&ns, original_children[0]),
-        checked.law().exprs[domain].span
+        checked.law().exprs()[domain].span
     );
     assert_eq!(
         val(target(
@@ -570,7 +570,7 @@ law required rejected(): forall b in list<Bool>[true,false] . b;
     );
     let bodies = original_children
         .iter()
-        .filter(|e| evaluation_span(&ns, e) == checked.law().exprs[body].span)
+        .filter(|e| evaluation_span(&ns, e) == checked.law().exprs()[body].span)
         .collect::<Vec<_>>();
     assert_eq!(
         bodies.len(),
@@ -635,7 +635,7 @@ law required rejected(): forall b in list<Bool>[true,false] . b;
         assert_eq!(f(data, "checked"), &Json::Nat(2));
         for r in instances {
             let e = target(&ns, r, &Json::str("Evaluation"));
-            assert_eq!(evaluation_span(&ns, e), checked.law().exprs[body].span);
+            assert_eq!(evaluation_span(&ns, e), checked.law().exprs()[body].span);
             assert_eq!(
                 val(target(&ns, f(val(e), "value"), &Json::str("Bool"))),
                 &Json::Bool(true)
@@ -723,11 +723,11 @@ law required rejected(): forall b in list<Bool>[true,false] . b;
             quantifier_domain(&moved, "a", "n", "forall", &Json::str("Z"))
         )
     );
-    assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
+    assert_eq!(moved_checked.archmap().sources()[0].revision, "r2");
     assert_eq!(
         moved_checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .find(|o| o.id == "values")
             .unwrap()
@@ -779,8 +779,8 @@ view later(s: Sample): Z = s.zero+9;
     output(&baseline, "current", &Json::str("Bool"), Json::Bool(true));
     let original = declared_body(&checked, "Calc.current");
     let (collection, body) = quant_parts(&checked, original);
-    let collection_span = checked.law().exprs[collection].span;
-    let body_span = checked.law().exprs[body].span;
+    let collection_span = checked.law().exprs()[collection].span;
+    let body_span = checked.law().exprs()[body].span;
     let ns = index(&baseline);
     let full = children(&ns, root(&baseline, "current"));
     assert_eq!(
@@ -883,7 +883,7 @@ view later(s: Sample): Z = s.zero+9;
             assert_eq!(f(reason, "details"), &details);
         }
         assert!(
-            evaluations_at(&wire, checked.law().exprs[original].span).is_empty(),
+            evaluations_at(&wire, checked.law().exprs()[original].span).is_empty(),
             "親量化未完成"
         );
         let collections = evaluations_at(&wire, collection_span);
@@ -926,7 +926,7 @@ view later(s: Sample): Z = s.zero+9;
         assert!(
             evaluations_at(
                 &wire,
-                checked.law().exprs[declared_body(&checked, "Calc.later")].span
+                checked.law().exprs()[declared_body(&checked, "Calc.later")].span
             )
             .is_empty()
         );
@@ -953,7 +953,7 @@ fn in_quantifiers_keep_known_decisions_with_missing_instances() {
             arr(f(aggregate, "arguments")).first(),
             Some(f(val(aggregate), "expression"))
         );
-        let at = checked.law().exprs[declared_body(checked, name)].span;
+        let at = checked.law().exprs()[declared_body(checked, name)].span;
         let originals = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[text(f(r, "node"))])
@@ -1178,10 +1178,10 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
         completion_cases(&wire, "c", &[(false, false), (true, true)]);
         let (domain, body) = quant_parts(&checked, declared_body(&checked, "Calc.unknown_domain"));
         assert_eq!(children(&ns, root(&wire, "d")).len(), 1);
-        assert!(evaluations_at(&wire, checked.law().exprs[body].span).is_empty());
+        assert!(evaluations_at(&wire, checked.law().exprs()[body].span).is_empty());
         assert!(
             !obj(val(
-                evaluations_at(&wire, checked.law().exprs[domain].span)[0]
+                evaluations_at(&wire, checked.law().exprs()[domain].span)[0]
             ))
             .contains_key("value")
         );
@@ -1311,7 +1311,7 @@ view by_call(s: Sample): Bool = nested() and (s.zero=0);
             .unwrap();
         assert_eq!(
             evaluation_span(&ns, collection),
-            checked.law().exprs[inner_domain].span,
+            checked.law().exprs()[inner_domain].span,
             "各実inner域を元内包へ戻す"
         );
     }
@@ -1319,13 +1319,13 @@ view by_call(s: Sample): Bool = nested() and (s.zero=0);
     let outer = children(&ns, root(&wire, "a"));
     assert_eq!(
         evaluation_span(&ns, outer[0]),
-        checked.law().exprs[outer_domain].span
+        checked.law().exprs()[outer_domain].span
     );
     assert_eq!(outer.len(), 3);
     for e in &outer[1..] {
         assert_eq!(
             evaluation_span(&ns, e),
-            checked.law().exprs[outer_body].span
+            checked.law().exprs()[outer_body].span
         );
         assert!(
             reached(&ns, &[e]).contains(text(f(outer[0], "id"))),
@@ -1510,6 +1510,6 @@ law required ordered(s: Sample): forall outerlaw in later_domain(s) . outerlaw>0
     let call_earlier = declared_body(&checked, "Calc.call_earlier");
     let later = declared_body(&checked, "Calc.later_domain");
     let call_later = declared_body(&checked, "Calc.call_later");
-    assert!(checked.law().exprs[earlier].span.0 < checked.law().exprs[call_earlier].span.0);
-    assert!(checked.law().exprs[later].span.0 > checked.law().exprs[call_later].span.0);
+    assert!(checked.law().exprs()[earlier].span.0 < checked.law().exprs()[call_earlier].span.0);
+    assert!(checked.law().exprs()[later].span.0 > checked.law().exprs()[call_later].span.0);
 }

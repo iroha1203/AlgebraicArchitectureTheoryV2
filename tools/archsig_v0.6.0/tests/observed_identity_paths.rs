@@ -103,10 +103,10 @@ fn run(moved: bool, asks: &[&str]) -> Json {
     assert_eq!(result.status(), "complete", "{:?}", result.wire());
     assert_eq!(result.prepared().inputs().sources(), &inputs);
     assert_eq!(
-        result.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots
+        result.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots()
     );
-    let source = &result.prepared().inputs().archmap().sources[0];
+    let source = &result.prepared().inputs().archmap().sources()[0];
     assert_eq!(
         source.uri,
         if moved {
@@ -116,7 +116,7 @@ fn run(moved: bool, asks: &[&str]) -> Json {
         }
     );
     assert_eq!(source.revision, if moved { "r2" } else { "r1" });
-    let origin = &result.prepared().inputs().archmap().origins[0];
+    let origin = &result.prepared().inputs().archmap().origins()[0];
     assert_eq!(origin.locations[0].source, source.id);
     assert_eq!(
         origin.locations[0].span,

@@ -11,7 +11,7 @@ const SHORT: &str = "  law required conserved(e: Reserve):\n    e.to.free + e.to
 const EXPLICIT: &str = "  law required conserved(e: Reservations.Reserve) when true:\n    e.to.free + e.to.held = e.from.free + e.from.held;\n";
 
 fn info<'a>(c: &'a CheckedLaw, name: &str) -> &'a DeclarationInfo {
-    c.infos
+    c.infos()
         .iter()
         .find(|i| i.name == name)
         .unwrap_or_else(|| panic!("{name}"))
@@ -24,11 +24,11 @@ fn short_and_explicit_forms_resolve_to_the_same_meaning() {
     let short = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let explicit = ok(RESERVATIONS_DEFINITION, &explicit_src);
     assert_eq!(
-        short.definitions.vocabularies(),
-        explicit.definitions.vocabularies()
+        short.definitions().vocabularies(),
+        explicit.definitions().vocabularies()
     );
-    assert_ne!(short.model_digest, explicit.model_digest);
-    assert_ne!(short.bytes_digest, explicit.bytes_digest);
+    assert_ne!(short.model_digest(), explicit.model_digest());
+    assert_ne!(short.bytes_digest(), explicit.bytes_digest());
 
     let s = info(&short, "Reservations.conserved");
     let e = info(&explicit, "Reservations.conserved");
@@ -81,7 +81,7 @@ fn short_and_explicit_forms_resolve_to_the_same_meaning() {
 
     // 他の宣言の解決結果は変わらない。
     let shape = |c: &CheckedLaw| {
-        c.infos
+        c.infos()
             .iter()
             .map(|i| (i.name.clone(), i.kind, i.parameters.clone(), names(i)))
             .collect::<Vec<_>>()
@@ -117,7 +117,7 @@ law required l(a: A): a.x = 0;"#,
 fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
     use archsig::definition::PrimitiveSignature;
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let m = &c.definitions.declarations()["Reservations.Migration"];
+    let m = &c.definitions().declarations()["Reservations.Migration"];
     let PrimitiveSignature::Correspondence { implicit, .. } = &m.signature else {
         panic!()
     };
@@ -142,7 +142,7 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
         }
     );
     assert!(
-        c.definitions.vocabularies()["Reservations"]
+        c.definitions().vocabularies()["Reservations"]
             .manifest
             .canonical()
             .contains(r#""alignments":[]"#)
@@ -180,7 +180,7 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
 fn constructors_have_their_own_metadata() {
     use archsig::definition::PrimitiveSignature;
     let c = ok(ENGINE_DEFINITION, ENGINE);
-    let data = &c.definitions.declarations()["Engine.Expr"];
+    let data = &c.definitions().declarations()["Engine.Expr"];
     let PrimitiveSignature::Data { constructors } = &data.signature else {
         panic!()
     };
@@ -314,7 +314,7 @@ fn assert_locations(src: &str, c: &CheckedLaw) {
             "{span:?}"
         );
     };
-    for i in &c.infos {
+    for i in c.infos() {
         valid(i.span);
         assert!(!span_text(src, i.span).trim().is_empty());
         for (span, name) in &i.references {
@@ -370,7 +370,7 @@ view t(): Text = "日本語の文字列"; view u(): Z = count(list<Text>["é", t
 #[test]
 fn declarations_are_listed_by_full_name_with_expression_types() {
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let names: Vec<_> = c.infos.iter().map(|i| i.name.as_str()).collect();
+    let names: Vec<_> = c.infos().iter().map(|i| i.name.as_str()).collect();
     let mut sorted = names.clone();
     sorted.sort();
     assert_eq!(names, sorted);
@@ -390,7 +390,7 @@ fn declarations_are_listed_by_full_name_with_expression_types() {
         rebalance.expressions[0].ty,
         Type::Ref("Reservations.State".into())
     );
-    let reserve = &c.definitions.declarations()["Reservations.Reserve"];
+    let reserve = &c.definitions().declarations()["Reservations.Reserve"];
     assert_eq!(
         reserve.signature.field("from").unwrap().ty,
         Type::Owned("Reservations.State".into(), "owner".into())
@@ -402,7 +402,7 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
     use archsig::law::ast::{ExprKind, QuantDomain, QuantSplit};
     use archsig::law::model::Signature;
     let mut roots = Vec::new();
-    for d in c.declarations.values() {
+    for d in c.declarations().values() {
         match &d.signature {
             Signature::View { body, .. } => roots.push(*body),
             Signature::Law { guard, body, .. } | Signature::Change { guard, body, .. } => {
@@ -427,7 +427,7 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
     while let Some((id, value)) = stack.pop() {
         out.push((id, value));
         let mut push = |e: usize| stack.push((e, true));
-        match &c.exprs[id].kind {
+        match &c.exprs()[id].kind {
             ExprKind::Let { value, body, .. } => [*value, *body].into_iter().for_each(&mut push),
             ExprKind::If {
                 cond,
@@ -456,11 +456,11 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
             ExprKind::Field { base, .. } | ExprKind::Index { base, .. } => push(*base),
             ExprKind::Call { callee, args } => {
                 let mut name = *callee;
-                while let ExprKind::Group(inner) = c.exprs[name].kind {
+                while let ExprKind::Group(inner) = c.exprs()[name].kind {
                     name = inner;
                 }
-                let is_name = matches!(c.exprs[name].kind, ExprKind::ThenOp)
-                    || matches!(c.exprs[name].kind, ExprKind::Dotted(_))
+                let is_name = matches!(c.exprs()[name].kind, ExprKind::ThenOp)
+                    || matches!(c.exprs()[name].kind, ExprKind::Dotted(_))
                         && c.expr_type(name).is_none();
                 if !is_name {
                     push(*callee);
@@ -512,14 +512,14 @@ law required b(p: A): forall k in p.kids . k.x = p.x;
             assert!(
                 c.expr_type(id).is_some(),
                 "型のない式 `{}`",
-                span_text(src, c.exprs[id].span)
+                span_text(src, c.exprs()[id].span)
             );
         }
     }
     // retained の量化は、域 State[m.from] と本体 holdings(m.states(s)) = holdings(s) に分かれる。
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let archsig::law::model::Signature::Law { body, .. } =
-        &c.declarations["Reservations.retained"].signature
+        &c.declarations()["Reservations.retained"].signature
     else {
         panic!()
     };
@@ -530,16 +530,16 @@ law required b(p: A): forall k in p.kids . k.x = p.x;
                 body: inner,
             },
         ..
-    } = &c.exprs[*body].kind
+    } = &c.exprs()[*body].kind
     else {
         panic!("量化")
     };
     let archsig::law::ast::QuantDomain::In(d) = domain else {
         panic!("域は式")
     };
-    assert_eq!(span_text(RESERVATIONS, c.exprs[*d].span), "State[m.from]");
+    assert_eq!(span_text(RESERVATIONS, c.exprs()[*d].span), "State[m.from]");
     assert_eq!(
-        span_text(RESERVATIONS, c.exprs[*inner].span),
+        span_text(RESERVATIONS, c.exprs()[*inner].span),
         "holdings(m.states(s)) = holdings(s)"
     );
     assert_eq!(
@@ -555,8 +555,8 @@ const IMPORT_B: &str = r#"use vocabulary B version "1" digest "sha256:848963f024
 #[test]
 fn counter_readings_share_one_primitive_type_and_keep_direct_imports() {
     let c = ok(COUNTER_DEFINITION, COUNTER);
-    assert_eq!(c.definitions.declarations().len(), 1);
-    assert!(!c.declarations.contains_key("Counter.State"));
+    assert_eq!(c.definitions().declarations().len(), 1);
+    assert!(!c.declarations().contains_key("Counter.State"));
     for n in [
         "CountCheck.amount",
         "CountCheck.nonnegative",
@@ -577,7 +577,7 @@ fn counter_readings_share_one_primitive_type_and_keep_direct_imports() {
         assert!(span_text(COUNTER, span).starts_with("use vocabulary Counter"));
     }
     assert!(
-        c.infos
+        c.infos()
             .iter()
             .filter(|i| i.kind != "reading")
             .all(|i| i.vocabularies.is_empty())
@@ -701,7 +701,7 @@ fn before_after_variants_are_valid_without_cross_reading_preservation() {
         let c = ok(RESERVATIONS_DEFINITION, &src);
         let before = info(&c, "Before.nonnegative");
         let after = c
-            .infos
+            .infos()
             .iter()
             .find(|i| i.name == "After.nonnegative" || i.name == "After.bounded")
             .unwrap();
@@ -712,7 +712,7 @@ fn before_after_variants_are_valid_without_cross_reading_preservation() {
         );
         assert_eq!(span_text(&src, before.expressions[0].span), "s.free >= 0");
         assert_eq!(span_text(&src, after.expressions[0].span), "t.free >= 5");
-        assert_eq!(c.definitions.declarations().len(), 4);
+        assert_eq!(c.definitions().declarations().len(), 4);
         assert_ne!(before.span, after.span);
     }
 }
@@ -727,8 +727,8 @@ fn full_primitive_names_precede_relative_constructor_candidates() {
         "{HEADER}reading Helpers {{ {QUALIFIED_COUNTER_IMPORT} view amount(s: Counter.State): Z = s.count; }}\nreading R {{ {QUALIFIED_COUNTER_IMPORT} use Helpers as H; view direct(s: Counter.State): Z = s.count; view via_alias(s: Counter.State): Z = H.amount(s); view tag(): Counter.Counter = Counter.Counter.State; }}"
     );
     let c = ok(QUALIFIED_PRIMITIVES, &src);
-    assert!(c.definitions.declarations().contains_key("Counter.State"));
-    assert!(c.definitions.declarations().contains_key("Counter.Counter"));
+    assert!(c.definitions().declarations().contains_key("Counter.State"));
+    assert!(c.definitions().declarations().contains_key("Counter.Counter"));
     for name in ["Helpers.amount", "R.direct", "R.via_alias"] {
         let i = info(&c, name);
         assert_eq!(

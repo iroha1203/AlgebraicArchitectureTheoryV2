@@ -351,9 +351,9 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
     assert_eq!(checked.sources(), &original);
     assert_eq!(checked.inputs(), before.inputs());
     assert_eq!(checked.definitions(), before.definitions());
-    assert_eq!(checked.law().declarations, before.law().declarations);
-    assert_eq!(checked.law().exprs, before.law().exprs);
-    assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
+    assert_eq!(checked.law().declarations(), before.law().declarations());
+    assert_eq!(checked.law().exprs(), before.law().exprs());
+    assert_eq!(checked.archmap().snapshots(), before.archmap().snapshots());
     let w = r.wire();
     let mut seen = BTreeSet::new();
     let mut atoms = BTreeSet::new();
@@ -372,7 +372,7 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
             };
             let s = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| &s.id == snap)
                 .unwrap()
@@ -396,7 +396,7 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -404,7 +404,7 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
                 assert_eq!(
                     checked
                         .archmap()
-                        .sources
+                        .sources()
                         .iter()
                         .find(|s| s.id == loc.source)
                         .unwrap()
@@ -421,7 +421,7 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
             .prepared()
             .inputs()
             .archmap()
-            .sources
+            .sources()
             .iter()
             .all(|s| s.revision == "r2")
     );

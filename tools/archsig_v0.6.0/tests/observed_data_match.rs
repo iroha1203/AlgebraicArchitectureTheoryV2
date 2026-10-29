@@ -277,7 +277,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -306,7 +306,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -331,7 +331,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == at.source)
                     .unwrap()
@@ -382,7 +382,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -461,7 +461,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
     let ns = index(&wire);
     let c = root(&wire, "c");
     let body = declared_body(&checked, "Calc.construct");
-    let ExprKind::Call { args, .. } = &checked.law().exprs[body].kind else {
+    let ExprKind::Call { args, .. } = &checked.law().exprs()[body].kind else {
         panic!("constructor")
     };
     let children = arr(f(part(c), "children"));
@@ -481,7 +481,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
     ];
     for (i, child) in children.iter().enumerate() {
         let e = target(&ns, child, &Json::str("Evaluation"));
-        assert_eq!(evaluation_span(&ns, e), checked.law().exprs[args[i]].span);
+        assert_eq!(evaluation_span(&ns, e), checked.law().exprs()[args[i]].span);
         assert_eq!(
             val(target(&ns, f(val(e), "value"), &types[i])),
             &arr(f(&full(), "args"))[i]
@@ -502,7 +502,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
     assert_eq!(f(f(cvalue, "rule"), "kind"), &Json::str("law"));
     assert_eq!(
         span(f(f(cvalue, "rule"), "location")),
-        checked.law().exprs[body].span
+        checked.law().exprs()[body].span
     );
     let scope = f(answer(&wire, "c"), "scope");
     assert_eq!(f(cvalue, "scope"), scope);
@@ -527,7 +527,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
         f(observed, "id"),
         "同じ値でも観測と別producerを共有しない"
     );
-    let declaration = &checked.law().definitions.declarations()["Cases.Packet"];
+    let declaration = &checked.law().definitions().declarations()["Cases.Packet"];
     let archsig::definition::PrimitiveSignature::Data { constructors } = &declaration.signature
     else {
         panic!("data定義")
@@ -637,7 +637,7 @@ fn known_data_patterns_preserve_lexical_bindings_and_selected_children() {
 
     let ns = index(&wire);
     let body = declared_body(&checked, "Calc.read");
-    let ExprKind::Match { scrutinee, arms } = &checked.law().exprs[body].kind else {
+    let ExprKind::Match { scrutinee, arms } = &checked.law().exprs()[body].kind else {
         panic!("match")
     };
     let mut match_ids = BTreeSet::new();
@@ -648,14 +648,14 @@ fn known_data_patterns_preserve_lexical_bindings_and_selected_children() {
         assert!(match_ids.insert(text(f(&cs[0], "node"))));
         assert_eq!(
             evaluation_span(&ns, target(&ns, &cs[0], &Json::str("Evaluation"))),
-            checked.law().exprs[*scrutinee].span
+            checked.law().exprs()[*scrutinee].span
         );
         assert_eq!(
             evaluation_span(&ns, target(&ns, &cs[1], &Json::str("Evaluation"))),
-            checked.law().exprs[arms[selected].body].span
+            checked.law().exprs()[arms[selected].body].span
         );
         let reach = reached(&ns, &[&cs[1]]);
-        let other = checked.law().exprs[arms[1 - selected].body].span;
+        let other = checked.law().exprs()[arms[1 - selected].body].span;
         assert!(
             !reach
                 .iter()
@@ -686,7 +686,7 @@ fn known_data_patterns_preserve_lexical_bindings_and_selected_children() {
         (b"Packet.Full(n,_,_,_,_,_)".as_slice(), b"n+1".as_slice()),
     ]) {
         let whole = evaluation_span(&ns, root(&wire, "f"));
-        let at = checked.law().exprs[arm.body].span;
+        let at = checked.law().exprs()[arm.body].span;
         let pattern = arm.pattern.span();
         assert!(whole.0 <= pattern.0 && pattern.1 <= at.0 && at.1 <= whole.1);
         assert_eq!(source(&checked, pattern), pattern_bytes);
@@ -700,7 +700,7 @@ fn known_data_patterns_preserve_lexical_bindings_and_selected_children() {
         .filter(|n| {
             f(n, "type") == &Json::str("Evaluation")
                 && aggregate_instance(&ns, n).is_none()
-                && evaluation_span(&ns, n) == checked.law().exprs[body].span
+                && evaluation_span(&ns, n) == checked.law().exprs()[body].span
         })
         .collect();
     assert_eq!(selected.len(), 2, "同じ元ASTでも別callのmatchを共有しない");
@@ -764,7 +764,7 @@ fn unknown_data_and_selected_missing_remain_original_slots() {
     let ns = index(&known);
     let u = root(&known, "u");
     let body = declared_body(&checked, "Calc.unselected");
-    let ExprKind::Match { arms, .. } = &checked.law().exprs[body].kind else {
+    let ExprKind::Match { arms, .. } = &checked.law().exprs()[body].kind else {
         panic!("match")
     };
     let reach = reached(&ns, &[f(part(u), "children")]);
@@ -774,7 +774,7 @@ fn unknown_data_and_selected_missing_remain_original_slots() {
             .map(|id| ns[id.as_str()])
             .any(|n| f(n, "type") == &Json::str("Evaluation")
                 && aggregate_instance(&ns, n).is_none()
-                && evaluation_span(&ns, n) == checked.law().exprs[arms[0].body].span)
+                && evaluation_span(&ns, n) == checked.law().exprs()[arms[0].body].span)
     );
 }
 
@@ -1012,18 +1012,18 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
             "Calc.selected"
         };
         let original = declared_body(&checked, name);
-        let done_id = match &checked.law().exprs[original].kind {
+        let done_id = match &checked.law().exprs()[original].kind {
             ExprKind::Call { args, .. } if kind == 0 => args[0],
             ExprKind::Match { scrutinee, .. } if kind == 1 => *scrutinee,
             ExprKind::Match { arms, .. } if kind == 2 => {
-                let ExprKind::Binary { lhs, .. } = &checked.law().exprs[arms[1].body].kind else {
+                let ExprKind::Binary { lhs, .. } = &checked.law().exprs()[arms[1].body].kind else {
                     panic!("選択arm加算")
                 };
                 *lhs
             }
             _ => panic!("元停止箇所"),
         };
-        let done_span = checked.law().exprs[done_id].span;
+        let done_span = checked.law().exprs()[done_id].span;
         assert_eq!(source(&checked, done_span), done_text);
         let complete = arr(f(&wire, "nodes"))
             .iter()
@@ -1043,7 +1043,7 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
             val(target(&ns, f(val(complete), "value"), &expected_type)),
             &expected_value
         );
-        let original_span = checked.law().exprs[original].span;
+        let original_span = checked.law().exprs()[original].span;
         assert!(
             !arr(f(&wire, "nodes"))
                 .iter()
@@ -1052,7 +1052,7 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
                     && evaluation_span(&ns, n) == original_span),
             "未完成親を完成Evaluationへ昇格しない"
         );
-        let later_span = checked.law().exprs[declared_body(&checked, "Calc.later")].span;
+        let later_span = checked.law().exprs()[declared_body(&checked, "Calc.later")].span;
         assert!(
             !arr(f(&wire, "nodes"))
                 .iter()

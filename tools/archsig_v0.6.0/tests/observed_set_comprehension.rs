@@ -175,7 +175,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -204,7 +204,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -229,7 +229,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == at.source)
                     .unwrap()
@@ -280,7 +280,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -516,10 +516,10 @@ view ref_keep(s: Sample): Set<Sample> = set { r | r in s.refs };
         );
     }
     let called = declared_body(&checked, "Calc.called");
-    let ExprKind::Tuple(parts) = &checked.law().exprs[called].kind else {
+    let ExprKind::Tuple(parts) = &checked.law().exprs()[called].kind else {
         panic!("tuple")
     };
-    let tail = evaluations_at(&wire, checked.law().exprs[parts[1]].span);
+    let tail = evaluations_at(&wire, checked.law().exprs()[parts[1]].span);
     assert_eq!(tail.len(), 2);
     for e in tail {
         assert_eq!(source(&checked, evaluation_span(&ns, e)), b"step(9)");
@@ -536,17 +536,17 @@ view ref_keep(s: Sample): Set<Sample> = set { r | r in s.refs };
         );
     }
     let body = declared_body(&checked, "Calc.ref_read");
-    let ExprKind::SetComp { elem, domain, .. } = &checked.law().exprs[body].kind else {
+    let ExprKind::SetComp { elem, domain, .. } = &checked.law().exprs()[body].kind else {
         panic!("内包")
     };
     let ch = children(&ns, root(&wire, "e"));
     assert_eq!(ch.len(), 3);
     assert_eq!(
         evaluation_span(&ns, ch[0]),
-        checked.law().exprs[*domain].span
+        checked.law().exprs()[*domain].span
     );
     for e in &ch[1..] {
-        assert_eq!(evaluation_span(&ns, e), checked.law().exprs[*elem].span);
+        assert_eq!(evaluation_span(&ns, e), checked.law().exprs()[*elem].span);
     }
     let fields = arr(f(root(&wire, "e"), "support"))
         .iter()
@@ -602,7 +602,7 @@ view prior(s: Sample): Z = s.zero;
         arr(f(aggregate_d, "arguments")).first(),
         Some(f(val(aggregate_d), "expression"))
     );
-    let original_span = checked.law().exprs[declared_body(&checked, "Calc.unknown_filter")].span;
+    let original_span = checked.law().exprs()[declared_body(&checked, "Calc.unknown_filter")].span;
     let originals = arr(f(seed, "arguments"))
         .iter()
         .map(|r| ns[text(f(r, "node"))])
@@ -628,7 +628,7 @@ view prior(s: Sample): Z = s.zero;
         ("d", "Calc.unknown_filter", 2),
     ] {
         let body = declared_body(&checked, name);
-        let ExprKind::SetComp { elem, .. } = &checked.law().exprs[body].kind else {
+        let ExprKind::SetComp { elem, .. } = &checked.law().exprs()[body].kind else {
             panic!("内包")
         };
         let evaluated = if id == "d" {
@@ -637,7 +637,7 @@ view prior(s: Sample): Z = s.zero;
             root(&wire, id)
         };
         assert_eq!(children(&ns, evaluated).len(), count);
-        let elems = evaluations_at(&wire, checked.law().exprs[*elem].span);
+        let elems = evaluations_at(&wire, checked.law().exprs()[*elem].span);
         let original_reachable = reached(&ns, &[evaluated]);
         assert!(
             if id == "d" {
@@ -655,7 +655,7 @@ view prior(s: Sample): Z = s.zero;
         domain,
         filter: Some(filter),
         ..
-    } = &checked.law().exprs[declared_body(&checked, "Calc.unknown_filter")].kind
+    } = &checked.law().exprs()[declared_body(&checked, "Calc.unknown_filter")].kind
     else {
         panic!("filter付き内包")
     };
@@ -690,7 +690,7 @@ view prior(s: Sample): Z = s.zero;
         assert_eq!(ch.len(), if *flag { 3 } else { 2 });
         assert_eq!(
             evaluation_span(&ns, ch[0]),
-            checked.law().exprs[*domain].span
+            checked.law().exprs()[*domain].span
         );
         assert_eq!(
             val(target(
@@ -702,7 +702,7 @@ view prior(s: Sample): Z = s.zero;
         );
         assert_eq!(
             evaluation_span(&ns, ch[1]),
-            checked.law().exprs[*filter].span
+            checked.law().exprs()[*filter].span
         );
         assert_eq!(source(&checked, evaluation_span(&ns, ch[1])), b"s.flag");
         assert_eq!(
@@ -710,7 +710,7 @@ view prior(s: Sample): Z = s.zero;
             &Json::Bool(*flag)
         );
         if *flag {
-            assert_eq!(evaluation_span(&ns, ch[2]), checked.law().exprs[*elem].span);
+            assert_eq!(evaluation_span(&ns, ch[2]), checked.law().exprs()[*elem].span);
             assert_eq!(source(&checked, evaluation_span(&ns, ch[2])), b"x+1");
             assert_eq!(
                 val(target(&ns, f(val(ch[2]), "value"), &Json::str("Z"))),
@@ -719,7 +719,7 @@ view prior(s: Sample): Z = s.zero;
         } else {
             let reachable = reached(&ns, &[case]);
             assert!(
-                evaluations_at(&wire, checked.law().exprs[*elem].span)
+                evaluations_at(&wire, checked.law().exprs()[*elem].span)
                     .iter()
                     .all(|e| !reachable.contains(text(f(e, "id"))))
             );
@@ -901,7 +901,7 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
         domain,
         filter: Some(filter),
         ..
-    } = &checked.law().exprs[body].kind
+    } = &checked.law().exprs()[body].kind
     else {
         panic!("内包")
     };
@@ -909,7 +909,7 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
     assert_eq!(ch.len(), 6, "元domain + 全3filter + 採用2elem");
     assert_eq!(
         evaluation_span(&ns, ch[0]),
-        checked.law().exprs[*domain].span
+        checked.law().exprs()[*domain].span
     );
     assert_eq!(
         val(target(
@@ -920,14 +920,14 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
         &numbers(&["2", "1", "2"])
     );
     let domain_ref = Json::obj([("node", f(ch[0], "id").clone())]);
-    let filter_span = checked.law().exprs[*filter].span;
-    let elem_span = checked.law().exprs[*elem].span;
+    let filter_span = checked.law().exprs()[*filter].span;
+    let elem_span = checked.law().exprs()[*elem].span;
     assert_eq!(
         ch.iter()
             .map(|e| evaluation_span(&ns, e))
             .collect::<Vec<_>>(),
         vec![
-            checked.law().exprs[*domain].span,
+            checked.law().exprs()[*domain].span,
             filter_span,
             elem_span,
             filter_span,
@@ -978,11 +978,11 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
             .any(|p| obj(p).get("field") == Some(&Json::str("Comprehensions.Sample.nums")))
     );
     let empty = declared_body(&checked, "Calc.empty_domain");
-    let ExprKind::SetComp { elem, .. } = &checked.law().exprs[empty].kind else {
+    let ExprKind::SetComp { elem, .. } = &checked.law().exprs()[empty].kind else {
         panic!("内包")
     };
     assert!(
-        evaluations_at(&wire, checked.law().exprs[*elem].span).is_empty(),
+        evaluations_at(&wire, checked.law().exprs()[*elem].span).is_empty(),
         "空域で要素を捏造しない"
     );
 }
@@ -1025,13 +1025,13 @@ view later(s: Sample): Z = s.zero+9;
         domain,
         filter: Some(filter),
         ..
-    } = &checked.law().exprs[original].kind
+    } = &checked.law().exprs()[original].kind
     else {
         panic!("内包")
     };
-    let domain_span = checked.law().exprs[*domain].span;
-    let filter_span = checked.law().exprs[*filter].span;
-    let elem_span = checked.law().exprs[*elem].span;
+    let domain_span = checked.law().exprs()[*domain].span;
+    let filter_span = checked.law().exprs()[*filter].span;
+    let elem_span = checked.law().exprs()[*elem].span;
     let ns = index(&baseline);
     let full = children(&ns, root(&baseline, "current"));
     assert_eq!(
@@ -1127,7 +1127,7 @@ view later(s: Sample): Z = s.zero+9;
             assert_eq!(f(reason, "details"), &details);
         }
         assert!(
-            evaluations_at(&wire, checked.law().exprs[original].span).is_empty(),
+            evaluations_at(&wire, checked.law().exprs()[original].span).is_empty(),
             "未完成親を通常値へ昇格しない"
         );
         let domains = evaluations_at(&wire, domain_span);
@@ -1157,7 +1157,7 @@ view later(s: Sample): Z = s.zero+9;
                 &Json::str("2")
             );
         }
-        let later_span = checked.law().exprs[declared_body(&checked, "Calc.later")].span;
+        let later_span = checked.law().exprs()[declared_body(&checked, "Calc.later")].span;
         assert!(
             evaluations_at(&wire, later_span).is_empty(),
             "未着手の問いを評価しない"

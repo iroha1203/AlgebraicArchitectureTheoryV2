@@ -215,7 +215,7 @@ fn all_value_parameter_domains_and_original_metadata_remain_symbolic() {
         assert_eq!(
             instance.declaration(),
             i.law()
-                .infos
+                .infos()
                 .iter()
                 .find(|info| info.name == instance.declaration().name)
                 .unwrap()

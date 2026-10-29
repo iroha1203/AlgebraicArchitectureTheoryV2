@@ -81,7 +81,7 @@ law required a(s: S): forall a in A[s] . a.x >= 0;
          law required f(p: A): forall t: R.S . forall u: A[t] . u.x = u.x;"#,
         ),
     );
-    let b = c.infos.iter().find(|i| i.name == "R.b").unwrap();
+    let b = c.infos().iter().find(|i| i.name == "R.b").unwrap();
     let names: Vec<_> = b.references.iter().map(|(_, n)| n.as_str()).collect();
     assert_eq!(names, ["R.A", "R.A.kids", "R.A.x", "R.A.x"]);
     // 量化の域と本体の区切りがどの位置でも List/Set にならなければ型エラー。
@@ -118,7 +118,7 @@ law optional a(): exists s: S . A[s] = set<A>{};
          view n(xs: List<Z>): (Bool, Z) = (forall x in xs . x > 0, 1);"#,
         ),
     );
-    let e = c.infos.iter().find(|i| i.name == "R.e").unwrap();
+    let e = c.infos().iter().find(|i| i.name == "R.e").unwrap();
     assert_eq!(e.expressions[0].ty, archsig::types::Type::Bool);
     // let の右辺の量化は let の区切りの `in` を越えない。
     ok(
@@ -151,7 +151,7 @@ law required k(): forall x: A.B . x = x;
 }
 "#;
     let c = ok(DEF_45, &nested);
-    let k = c.infos.iter().find(|i| i.name == "R.k").unwrap();
+    let k = c.infos().iter().find(|i| i.name == "R.k").unwrap();
     assert!(k.dependencies.contains(&"A.B".to_owned()));
     // 域が List/Set になる区切りがない量化は拒否する。
     let issue = err(

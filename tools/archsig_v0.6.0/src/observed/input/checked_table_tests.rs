@@ -12,9 +12,9 @@ use archsig::{
 };
 use std::{cell::Cell, rc::Rc};
 
-const DEFINITIONS: &[u8] = include_bytes!("fixtures/counter.atoms.json");
-const LAW: &[u8] = include_bytes!("fixtures/counter.law");
-const MAP: &[u8] = include_bytes!("fixtures/counter.archmap.json");
+const DEFINITIONS: &[u8] = include_bytes!("../../../tests/fixtures/counter.atoms.json");
+const LAW: &[u8] = include_bytes!("../../../tests/fixtures/counter.law");
+const MAP: &[u8] = include_bytes!("../../../tests/fixtures/counter.archmap.json");
 
 fn sources() -> InputSources {
     let unused = String::from_utf8(DEFINITIONS.to_vec())
@@ -365,4 +365,108 @@ fn changed_definitions() -> archsig::definition::CheckedDefinitions {
         })
         .collect();
     check_definitions(&files).unwrap()
+}
+
+#[test]
+fn from_checked_rejects_mutated_map_even_with_original_digests() {
+    let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
+    let law = check_law(LAW, &definitions).unwrap();
+    let mut map = check_archmap(MAP, &definitions).unwrap();
+    map.snapshots[0].subjects[0].ty = "Foreign.State".into();
+    let failure = CheckedInputs::from_checked(
+        InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), MAP.to_vec()),
+        definitions,
+        law,
+        map,
+        &mut Control::unlimited(),
+    )
+    .unwrap_err();
+    assert_eq!(failure.status(), InputStatus::Invalid);
+    assert!(!failure.declarations().is_empty());
+    assert!(!failure.vocabularies().is_empty());
+}
+
+#[test]
+fn from_checked_rejects_internally_mutated_law_tables_and_digests() {
+    let src = sources();
+    for field_name in [
+        "bytes",
+        "model",
+        "declarations",
+        "exprs",
+        "types",
+        "infos",
+        "definitions",
+    ] {
+        let (definitions, mut law, map) = tables(&src);
+        match field_name {
+            "bytes" => law.bytes_digest.clear(),
+            "model" => law.model_digest.clear(),
+            "declarations" => law.declarations.clear(),
+            "exprs" => law.exprs.clear(),
+            "types" => law.expr_types.clear(),
+            "infos" => law.infos.clear(),
+            "definitions" => law.definitions = check_definitions(&[]).unwrap(),
+            _ => unreachable!(),
+        }
+        let failure = CheckedInputs::from_checked(
+            src.clone(),
+            definitions,
+            law,
+            map,
+            &mut Control::unlimited(),
+        )
+        .unwrap_err();
+        assert_eq!(failure.status(), InputStatus::Invalid, "{field_name}");
+        assert_eq!(
+            field(&failure.issues()[0], "code"),
+            &Json::str("vocabulary_mismatch"),
+            "{field_name}"
+        );
+        assert!(failure.declarations().is_empty(), "{field_name}");
+    }
+}
+
+#[test]
+fn from_checked_rejects_internally_mutated_archmap_tables_and_digests() {
+    let src = sources();
+    for field_name in [
+        "bytes",
+        "model",
+        "vocabularies",
+        "sources",
+        "origins",
+        "snapshots",
+    ] {
+        let (definitions, law, mut map) = tables(&src);
+        match field_name {
+            "bytes" => map.bytes_digest.clear(),
+            "model" => map.model_digest.clear(),
+            "vocabularies" => map.vocabularies.clear(),
+            "sources" => map.sources.push(crate::archmap::Source {
+                id: "extra".into(),
+                uri: "urn:example:extra".into(),
+                revision: "r1".into(),
+                digest: sha256_digest(b"extra"),
+            }),
+            "origins" => map.origins.clear(),
+            "snapshots" => map.snapshots.clear(),
+            _ => unreachable!(),
+        }
+        let failure = CheckedInputs::from_checked(
+            src.clone(),
+            definitions,
+            law,
+            map,
+            &mut Control::unlimited(),
+        )
+        .unwrap_err();
+        assert_eq!(failure.status(), InputStatus::Invalid, "{field_name}");
+        assert_eq!(
+            field(&failure.issues()[0], "code"),
+            &Json::str("vocabulary_mismatch"),
+            "{field_name}"
+        );
+        assert!(!failure.declarations().is_empty(), "{field_name}");
+    }
 }

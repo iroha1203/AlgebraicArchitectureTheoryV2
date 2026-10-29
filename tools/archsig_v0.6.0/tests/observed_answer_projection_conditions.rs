@@ -275,7 +275,7 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
             };
             facts += 1;
             let snapshot = map
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| Json::str(&s.id) == fact["snapshot"])
                 .unwrap();
@@ -298,11 +298,11 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
                 panic!()
             };
             assert_eq!(&Json::str(actual), atom);
-            let origin = map.origins.iter().find(|o| o.id == *origin).unwrap();
+            let origin = map.origins().iter().find(|o| o.id == *origin).unwrap();
             assert!(!origin.locations.is_empty());
             for at in &origin.locations {
                 assert_eq!(
-                    map.sources
+                    map.sources()
                         .iter()
                         .find(|s| s.id == at.source)
                         .unwrap()

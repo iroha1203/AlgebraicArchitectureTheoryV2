@@ -79,7 +79,7 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
     // 数値binderを架空のScalar/固定Bindingにしない。
     let mut symbolic_tuple = 0;
     let law = r.prepared().inputs().law();
-    let declared_parameters: std::collections::BTreeSet<_> = law.infos.iter()
+    let declared_parameters: std::collections::BTreeSet<_> = law.infos().iter()
         .flat_map(|info| &info.parameters)
         .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical())).collect();
     let mut numeric_parameters = std::collections::BTreeSet::new();
@@ -112,7 +112,7 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
             };
             let law = r.prepared().inputs().law();
             let id = law
-                .exprs
+                .exprs()
                 .iter()
                 .position(|e| e.span == (*start as usize, *end as usize))
                 .unwrap();
@@ -268,7 +268,7 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
         .prepared()
         .inputs()
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == "v")
         .unwrap();
@@ -422,7 +422,7 @@ fn partial_owned_calls_preserve_original_inputs_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| Json::str(&s.id) == f["snapshot"])
                         .unwrap()
@@ -442,7 +442,7 @@ fn partial_owned_calls_preserve_original_inputs_and_current_provenance() {
                         .prepared()
                         .inputs()
                         .archmap()
-                        .origins
+                        .origins()
                         .iter()
                         .find(|o| o.id == *origin)
                         .unwrap();
@@ -451,7 +451,7 @@ fn partial_owned_calls_preserve_original_inputs_and_current_provenance() {
                             r.prepared()
                                 .inputs()
                                 .archmap()
-                                .sources
+                                .sources()
                                 .iter()
                                 .find(|s| s.id == at.source)
                                 .unwrap()

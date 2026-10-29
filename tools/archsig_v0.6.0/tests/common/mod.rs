@@ -115,7 +115,7 @@ pub fn pointer(issue: &Issue) -> &str {
 /// 欠測 slot の identity `(snapshot, subject, field)` と型。
 pub fn missing_slots(c: &CheckedArchMap) -> Vec<(&str, &str, &str, &Type)> {
     let mut out = Vec::new();
-    for s in &c.snapshots {
+    for s in c.snapshots() {
         for sub in &s.subjects {
             for f in &sub.fields {
                 if f.slot == Slot::Missing {
@@ -129,7 +129,7 @@ pub fn missing_slots(c: &CheckedArchMap) -> Vec<(&str, &str, &str, &Type)> {
 
 /// subject の field を短名で引く。
 pub fn field<'a>(c: &'a CheckedArchMap, snapshot: &str, id: &str, name: &str) -> &'a Field {
-    let s = c.snapshots.iter().find(|s| s.id == snapshot).unwrap();
+    let s = c.snapshots().iter().find(|s| s.id == snapshot).unwrap();
     let sub = s.subjects.iter().find(|s| s.id == id).unwrap();
     sub.fields
         .iter()

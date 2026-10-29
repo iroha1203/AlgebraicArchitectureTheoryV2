@@ -154,8 +154,8 @@ fn assert_request_stop(
         panic!("要求段階のtypedな中断を期待");
     };
     assert_eq!(&actual, reason);
-    assert!(inputs.law().declarations.contains_key("R.accept"));
-    assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+    assert!(inputs.law().declarations().contains_key("R.accept"));
+    assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
     assert_eq!(count.get(), at);
     assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason.clone()));
     assert_eq!(count.get(), at, "停止後にprobeや新たな導出を始めない");

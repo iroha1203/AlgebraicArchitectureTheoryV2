@@ -71,7 +71,7 @@ fn request_failure_preserves_checked_input_tables() {
         panic!("入力検査は成功する")
     };
     assert_eq!(checked.sources(), &inputs());
-    assert!(checked.law().declarations.contains_key("CountCheck.amount"));
+    assert!(checked.law().declarations().contains_key("CountCheck.amount"));
     let ResolveFailure::Invalid {
         requests,
         issues,
@@ -109,7 +109,7 @@ fn the_same_control_reaches_request_resolution() {
     assert!(
         checked
             .law()
-            .declarations
+            .declarations()
             .contains_key("CountCheck.nonnegative")
     );
     assert!(matches!(failure, ResolveFailure::Interrupted { .. }));

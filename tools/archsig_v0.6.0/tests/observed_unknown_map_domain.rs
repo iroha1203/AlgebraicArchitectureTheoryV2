@@ -304,7 +304,7 @@ fn unknown_owner_map_provenance_pair_preserves_math_and_current_sources() {
     for revision in ["r1", "r2"] {
         let input = fixture::input("varying", revision);
         let checked = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        assert_eq!(checked.archmap().sources[0].revision, revision);
+        assert_eq!(checked.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.call,a=@v/A,h=@v/h)"]);
         domains(&w, &["A", "B"]);
         wires.push(w);

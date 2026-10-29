@@ -254,30 +254,30 @@ fn unchanged(expected: &CheckedInputs, actual: &CheckedInputs, law: &[u8], map: 
     assert_eq!(actual.sources().archmap().bytes(), map);
     assert_eq!(actual.inputs(), expected.inputs());
     assert_eq!(actual.definitions(), expected.definitions());
-    assert_eq!(actual.definitions(), &actual.law().definitions);
-    assert_eq!(actual.law().declarations, expected.law().declarations);
-    assert_eq!(actual.law().exprs, expected.law().exprs);
-    assert_eq!(actual.law().expr_types, expected.law().expr_types);
-    assert_eq!(actual.law().infos, expected.law().infos);
-    assert_eq!(actual.law().bytes_digest, sha256_digest(law));
-    assert_eq!(actual.law().model_digest, expected.law().model_digest);
-    assert_eq!(actual.archmap().snapshots, expected.archmap().snapshots);
-    assert_eq!(actual.archmap().origins, expected.archmap().origins);
-    assert_eq!(actual.archmap().sources, expected.archmap().sources);
+    assert_eq!(actual.definitions(), actual.law().definitions());
+    assert_eq!(actual.law().declarations(), expected.law().declarations());
+    assert_eq!(actual.law().exprs(), expected.law().exprs());
+    assert_eq!(actual.law().expr_types(), expected.law().expr_types());
+    assert_eq!(actual.law().infos(), expected.law().infos());
+    assert_eq!(actual.law().bytes_digest(), sha256_digest(law));
+    assert_eq!(actual.law().model_digest(), expected.law().model_digest());
+    assert_eq!(actual.archmap().snapshots(), expected.archmap().snapshots());
+    assert_eq!(actual.archmap().origins(), expected.archmap().origins());
+    assert_eq!(actual.archmap().sources(), expected.archmap().sources());
     assert_eq!(
-        actual.archmap().vocabularies,
-        expected.archmap().vocabularies
+        actual.archmap().vocabularies(),
+        expected.archmap().vocabularies()
     );
-    assert_eq!(actual.archmap().bytes_digest, sha256_digest(map));
+    assert_eq!(actual.archmap().bytes_digest(), sha256_digest(map));
     assert_eq!(
-        actual.archmap().model_digest,
-        expected.archmap().model_digest
+        actual.archmap().model_digest(),
+        expected.archmap().model_digest()
     );
 }
 
 fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
     let ns = index(wire);
-    let declaration = &checked.law().declarations["Reservations.conserved"];
+    let declaration = &checked.law().declarations()["Reservations.conserved"];
     let Signature::Law {
         params,
         guard,
@@ -290,12 +290,12 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
     assert_eq!(params.len(), 1);
     assert_eq!(params[0].name, "e");
     assert_eq!(params[0].ty.wire(), ref_type("Reservations.Reserve"));
-    let body_span = checked.law().exprs[*body].span;
+    let body_span = checked.law().exprs()[*body].span;
     let law = checked.sources().law().bytes();
     assert_eq!(&law[params[0].span.0..params[0].span.1], b"e");
     let info = checked
         .law()
-        .infos
+        .infos()
         .iter()
         .find(|d| d.name == "Reservations.conserved")
         .unwrap();
@@ -316,7 +316,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
         }
     );
     let mut dotted_count = 0;
-    for (id, expr) in checked.law().exprs.iter().enumerate() {
+    for (id, expr) in checked.law().exprs().iter().enumerate() {
         if expr.span.0 < body_span.0
             || body_span.1 < expr.span.1
             || checked.law().expr_type(id).is_none()
@@ -424,7 +424,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
             );
             assert_eq!(f(f(leaf, "rule"), "kind"), &Json::str("law"));
             assert_eq!(span(f(f(leaf, "rule"), "location")), expr.span);
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == owner)
@@ -461,7 +461,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
         body_span
     );
     if let Some(guard) = guard {
-        let guard_span = checked.law().exprs[*guard].span;
+        let guard_span = checked.law().exprs()[*guard].span;
         assert_eq!(&law[guard_span.0..guard_span.1], b"true");
         assert_eq!(
             span(f(
@@ -481,7 +481,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
             "省略guardに架空の元出現を作らない"
         );
     }
-    let free = checked.definitions().declarations()["Reservations.State"]
+    let free = &checked.definitions().declarations()["Reservations.State"]
         .location
         .clone();
     let archsig::issue::Location::Definition { input, pointer, .. } = free else {
@@ -514,7 +514,7 @@ fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
     for node in arr(f(wire, "nodes")) {
         for pointer in arr(f(node, "support")) {
             assert_eq!(f(pointer, "snapshot"), &Json::str("v"));
-            let snapshot = &checked.archmap().snapshots[0];
+            let snapshot = &checked.archmap().snapshots()[0];
             let subject = snapshot
                 .subjects
                 .iter()
@@ -561,7 +561,7 @@ fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -580,7 +580,7 @@ fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
                 );
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -654,11 +654,11 @@ fn assert_case(result: &ObservedEvaluation, decision: &str, left: Option<&str>, 
     );
     binding(&ns, f(val(evaluation), "bindings"));
     let Signature::Law { body, .. } =
-        &checked.law().declarations["Reservations.conserved"].signature
+        &checked.law().declarations()["Reservations.conserved"].signature
     else {
         panic!("Law")
     };
-    let body = at(&ns, checked.law().exprs[*body].span);
+    let body = at(&ns, checked.law().exprs()[*body].span);
     let children = arr(f(own_part(body), "children"));
     assert_eq!(children.len(), 2);
     let lhs = target(&ns, &children[0], &Json::str("Evaluation"));
@@ -747,7 +747,7 @@ fn assert_case(result: &ObservedEvaluation, decision: &str, left: Option<&str>, 
             "欠測を観測反例へ昇格しない"
         );
         assert!(
-            checked.archmap().snapshots[0]
+            checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .any(|s| s.id == "q")
@@ -799,17 +799,17 @@ fn compare_spelling(map: &[u8], decision: &str, left: Option<&str>) {
     let a = short.prepared().inputs();
     let b = long.prepared().inputs();
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(a.archmap().snapshots, b.archmap().snapshots);
-    assert_eq!(a.archmap().vocabularies, b.archmap().vocabularies);
-    assert_eq!(a.archmap().model_digest, b.archmap().model_digest);
+    assert_eq!(a.archmap().snapshots(), b.archmap().snapshots());
+    assert_eq!(a.archmap().vocabularies(), b.archmap().vocabularies());
+    assert_eq!(a.archmap().model_digest(), b.archmap().model_digest());
     assert_ne!(a.sources().law().bytes(), b.sources().law().bytes());
-    assert_ne!(a.law().model_digest, b.law().model_digest);
+    assert_ne!(a.law().model_digest(), b.law().model_digest());
     let body_span = |c: &CheckedInputs| {
-        let Signature::Law { body, .. } = &c.law().declarations["Reservations.conserved"].signature
+        let Signature::Law { body, .. } = &c.law().declarations()["Reservations.conserved"].signature
         else {
             panic!("Law")
         };
-        c.law().exprs[*body].span
+        c.law().exprs()[*body].span
     };
     assert_ne!(body_span(a), body_span(b), "別原文の元位置を同一化しない");
     let short = short.wire();
@@ -869,13 +869,13 @@ fn reservations_provenance_relocation_preserves_judgment_and_tracks_new_source()
     let a = a.prepared().inputs();
     let b = b.prepared().inputs();
     assert_eq!(a.definitions(), b.definitions());
-    assert_eq!(a.law().model_digest, b.law().model_digest);
-    assert_ne!(a.archmap().model_digest, b.archmap().model_digest);
-    assert_ne!(a.archmap().bytes_digest, b.archmap().bytes_digest);
-    for (before, after) in a.archmap().snapshots[0]
+    assert_eq!(a.law().model_digest(), b.law().model_digest());
+    assert_ne!(a.archmap().model_digest(), b.archmap().model_digest());
+    assert_ne!(a.archmap().bytes_digest(), b.archmap().bytes_digest());
+    for (before, after) in a.archmap().snapshots()[0]
         .subjects
         .iter()
-        .zip(&b.archmap().snapshots[0].subjects)
+        .zip(&b.archmap().snapshots()[0].subjects)
     {
         assert_eq!(before.id, after.id);
         assert_eq!(before.ty, after.ty);

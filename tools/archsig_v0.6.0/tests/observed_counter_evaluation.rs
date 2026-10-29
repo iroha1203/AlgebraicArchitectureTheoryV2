@@ -376,7 +376,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
     let checked = check_inputs(sources(LAW, &map), &mut quiet_control()).unwrap();
     let snapshot = checked
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|v| v.id == "v")
         .unwrap();
@@ -394,7 +394,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
     assert!(
         checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .any(|o| &o.id == origin && o.mode == archsig::archmap::Mode::Specification)
     );
@@ -422,7 +422,7 @@ fn absent_count_keeps_subject_missing_expression_and_all_completions() {
     assert!(
         checked
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == "v")
             .unwrap()
@@ -501,14 +501,14 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
         if field(payload, "kind") == &Json::str("source") {
             let position = span(field(payload, "location"));
             assert!(
-                checked.law().exprs.iter().any(|e| e.span == position)
+                checked.law().exprs().iter().any(|e| e.span == position)
                     || &LAW[position.0..position.1] == b"s",
                 "省略guardへ架空の原式spanを作らない"
             );
             expressions.insert(position, text(field(node, "id")));
             let declaration = checked
                 .law()
-                .declarations
+                .declarations()
                 .values()
                 .find(|d| {
                     matches!(
@@ -549,7 +549,7 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
             }
         }
     }
-    for (expr_id, expr) in checked.law().exprs.iter().enumerate() {
+    for (expr_id, expr) in checked.law().exprs().iter().enumerate() {
         if checked.law().expr_type(expr_id).is_none() {
             continue;
         }
@@ -591,7 +591,7 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
             other => panic!("{other}"),
         };
         assert_eq!(field(payload, "role"), &Json::str(role));
-        let declaration = &checked.law().declarations[text(field(payload, "name"))];
+        let declaration = &checked.law().declarations()[text(field(payload, "name"))];
         assert_eq!(span(field(payload, "occurrence")), declaration.span);
         let archsig::law::model::Signature::Law { body, params, .. } = &declaration.signature
         else {
@@ -600,7 +600,7 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
         let expression = value(typed(&index, field(payload, "body"), "Expression"));
         assert_eq!(
             span(field(expression, "location")),
-            checked.law().exprs[*body].span
+            checked.law().exprs()[*body].span
         );
         let bindings = arr(field(payload, "bindings"));
         assert_eq!(bindings.len(), params.len());
@@ -739,7 +739,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
         for fact in arr(field(node, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(field(fact, "snapshot")))
                 .unwrap();
@@ -772,7 +772,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -781,7 +781,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
             assert_eq!(origin.locations[0].span, Some((3, 8)));
             let source = checked
                 .archmap()
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == origin.locations[0].source)
                 .unwrap();
@@ -1551,7 +1551,7 @@ fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str
         );
     }
     if explicit_field {
-        let subject = &checked.archmap().snapshots[0].subjects[0];
+        let subject = &checked.archmap().snapshots()[0].subjects[0];
         let field = subject
             .fields
             .iter()
@@ -1564,7 +1564,7 @@ fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str
         assert_eq!(origin, "gate");
         let origin = checked
             .archmap()
-            .origins
+            .origins()
             .iter()
             .find(|o| &o.id == origin)
             .unwrap();
@@ -1588,7 +1588,7 @@ fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str
         assert_ne!(body_origin, &origin.id);
         let source = checked
             .archmap()
-            .sources
+            .sources()
             .iter()
             .find(|s| s.id == origin.locations[0].source)
             .unwrap();
@@ -1654,7 +1654,7 @@ fn true_field_guard_with_missing_body_keeps_applicability_and_all_completions() 
         map.into_bytes(),
     );
     let checked = check_inputs(inputs.clone(), &mut quiet_control()).unwrap();
-    let subject = &checked.archmap().snapshots[0].subjects[0];
+    let subject = &checked.archmap().snapshots()[0].subjects[0];
     assert_eq!(subject.id, "s");
     assert!(matches!(
         &subject
@@ -1944,7 +1944,7 @@ reading Follow {{
     let checked = check_inputs(inputs.clone(), &mut quiet_control()).unwrap();
     let target_subject = &checked
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|v| v.id == "w")
         .unwrap()

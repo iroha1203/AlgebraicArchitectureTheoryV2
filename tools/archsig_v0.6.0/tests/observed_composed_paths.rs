@@ -198,7 +198,7 @@ fn then_provenance_pair_preserves_math_and_current_checked_input_tables() {
         let input = fixture::input(false, revision);
         let mut c = Control::new(Limits::default(), |_| Usage::default());
         let checked = archsig::observed::input::check_inputs(input.clone(), &mut c).unwrap();
-        assert_eq!(checked.archmap().sources[0].revision, revision);
+        assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             input.clone(),
             &["x=evaluate(Walk.join,e=@v/e,f=@v/next)"],

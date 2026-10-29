@@ -444,7 +444,7 @@ fn fixed_external_reference_bindings_and_original_support_are_retained() {
         &r.source_readings().source_law().bytes()[body.0..body.1],
         b"c.count = 2"
     );
-    let atom = i.archmap().snapshots[0]
+    let atom = i.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "p")
@@ -458,13 +458,13 @@ fn fixed_external_reference_bindings_and_original_support_are_retained() {
     };
     let origin = i
         .archmap()
-        .origins
+        .origins()
         .iter()
         .find(|o| &o.id == origin)
         .unwrap();
     let source = i
         .archmap()
-        .sources
+        .sources()
         .iter()
         .find(|s| s.id == origin.locations[0].source)
         .unwrap();

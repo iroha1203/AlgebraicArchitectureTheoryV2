@@ -139,7 +139,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         for fact in arr(get(n, "support")) {
             let subject = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(get(fact, "snapshot")))
                 .unwrap()
@@ -163,12 +163,12 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
             for loc in &origin.locations {
-                assert!(checked.archmap().sources.iter().any(|s| s.id == loc.source));
+                assert!(checked.archmap().sources().iter().any(|s| s.id == loc.source));
             }
         }
         if get(n, "type") == &Json::str("Domain")
@@ -412,7 +412,7 @@ fn map_application_provenance_only_changes_return_current_sources() {
         b.prepared().inputs().sources().archmap().bytes()
     );
     for (r, rev) in [(&a, "r1"), (&b, "r2")] {
-        assert_eq!(r.prepared().inputs().archmap().sources[0].revision, rev);
+        assert_eq!(r.prepared().inputs().archmap().sources()[0].revision, rev);
         audit(r);
     }
 }
@@ -477,7 +477,7 @@ fn map_application_condition_provenance_pair_keeps_the_same_math_and_current_ori
         b.prepared().inputs().sources().archmap().bytes()
     );
     for (r, rev) in [(&a, "r1"), (&b, "r2")] {
-        assert_eq!(r.prepared().inputs().archmap().sources[0].revision, rev);
+        assert_eq!(r.prepared().inputs().archmap().sources()[0].revision, rev);
         assert_condition(r, &["p", "q"], "r");
     }
 }

@@ -232,7 +232,7 @@ fn internal_path_provenance_pair_retains_math_and_returns_to_current_inputs() {
     for revision in ["r1", "r2"] {
         let inputs = small::input("normal", revision);
         let checked = archsig::observed::input::check_inputs(inputs.clone(), &mut quiet()).unwrap();
-        assert_eq!(checked.archmap().sources[0].revision, revision);
+        assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             inputs.clone(),
             &["x=evaluate(Walk.maybe,e=@v/e)"],

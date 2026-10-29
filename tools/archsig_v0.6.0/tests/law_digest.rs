@@ -8,9 +8,9 @@ use common::*;
 fn digests(src: &str) -> (String, String, Vec<String>) {
     let c = ok(RESERVATIONS_DEFINITION, src);
     (
-        c.bytes_digest,
-        c.model_digest,
-        c.definitions
+        c.bytes_digest().to_owned(),
+        c.model_digest().to_owned(),
+        c.definitions()
             .vocabularies()
             .values()
             .map(|v| v.digest.clone())
@@ -67,12 +67,12 @@ fn canonical_bytes_and_digest_are_fixed_for_unicode_and_control_characters() {
     assert_eq!(model_canonical(&tokens), UNICODE_CANONICAL);
     let c = ok(EMPTY_DEFINITION, UNICODE_LAW);
     assert_eq!(
-        c.model_digest,
+        c.model_digest().to_owned(),
         "sha256:f40552dcb0667d9f65aea50feca9ffc109077fe491405146fcc827124b5d1cfd"
     );
     let nfc = UNICODE_LAW.replace("e\u{301}", "\u{e9}");
     assert_eq!(
-        ok(EMPTY_DEFINITION, &nfc).model_digest,
+        ok(EMPTY_DEFINITION, &nfc).model_digest(),
         "sha256:6c68acdc082ea6f21074f7d7734e61a8106a5eb337526230100710d9b8a2272c"
     );
 }
@@ -81,7 +81,7 @@ fn canonical_bytes_and_digest_are_fixed_for_unicode_and_control_characters() {
 #[test]
 fn manifest_has_every_field_in_canonical_form() {
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let v = &c.definitions.vocabularies()["Reservations"];
+    let v = &c.definitions().vocabularies()["Reservations"];
     assert_eq!(v.namespace, "Reservations");
     let text = v.manifest.canonical();
     assert_eq!(text, include_str!("fixtures/reservations.manifest.json"));

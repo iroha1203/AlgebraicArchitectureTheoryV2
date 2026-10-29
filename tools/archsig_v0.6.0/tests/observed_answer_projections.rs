@@ -377,7 +377,7 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
                 facts += 1;
                 let map = r.prepared().inputs().archmap();
                 let snapshot = map
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| Json::str(&s.id) == fact["snapshot"])
                     .unwrap();
@@ -400,11 +400,11 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
                     panic!()
                 };
                 assert_eq!(&Json::str(actual), atom);
-                let origin = map.origins.iter().find(|o| o.id == *origin).unwrap();
+                let origin = map.origins().iter().find(|o| o.id == *origin).unwrap();
                 assert!(!origin.locations.is_empty());
                 for at in &origin.locations {
                     assert_eq!(
-                        map.sources
+                        map.sources()
                             .iter()
                             .find(|s| s.id == at.source)
                             .unwrap()

@@ -173,7 +173,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         }
         for fact in arr(f(n, "support")) {
             assert_eq!(f(fact, "snapshot"), &Json::str("v"));
-            let subject = checked.archmap().snapshots[0]
+            let subject = checked.archmap().snapshots()[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == text(f(fact, "subject")))
@@ -202,7 +202,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -227,7 +227,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == at.source)
                     .unwrap()
@@ -278,7 +278,7 @@ fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
     &checked.sources().law().bytes()[at.0..at.1]
 }
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
         panic!("view")
     };
     *body
@@ -608,7 +608,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
     assert_ne!(f(observed, "id"), f(constructed, "id"));
     assert_eq!(
         span(f(f(constructed, "rule"), "location")),
-        checked.law().exprs[declared_body(&checked, "Calc.construct")].span
+        checked.law().exprs()[declared_body(&checked, "Calc.construct")].span
     );
     for id in [
         "ou",
@@ -626,7 +626,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
         assert_scope(&wire, id);
     }
     let body = declared_body(&checked, "Calc.construct");
-    let ExprKind::Call { callee, args } = &checked.law().exprs[body].kind else {
+    let ExprKind::Call { callee, args } = &checked.law().exprs()[body].kind else {
         panic!("constructor call")
     };
     let ch = children(&wire, "c");
@@ -634,7 +634,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
     for (i, child) in ch.iter().enumerate() {
         assert_eq!(
             evaluation_span(&ns, child),
-            checked.law().exprs[args[i]].span
+            checked.law().exprs()[args[i]].span
         );
         assert!(
             arr(f(constructed, "support"))
@@ -646,7 +646,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
                     ))))
         );
     }
-    let callee_span = checked.law().exprs[*callee].span;
+    let callee_span = checked.law().exprs()[*callee].span;
     assert!(
         !arr(f(&wire, "nodes"))
             .iter()
@@ -655,7 +655,7 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
                 && evaluation_span(&ns, n) == callee_span)
     );
     let mixed_body = declared_body(&checked, "Calc.mixed");
-    let ExprKind::Tuple(items) = &checked.law().exprs[mixed_body].kind else {
+    let ExprKind::Tuple(items) = &checked.law().exprs()[mixed_body].kind else {
         panic!("mixed Tuple")
     };
     let ch = children(&wire, "m");
@@ -663,11 +663,11 @@ fn primitive_containers_preserve_wire_types_occurrences_and_origins() {
     for (child, original) in ch.iter().zip(items) {
         assert_eq!(
             evaluation_span(&ns, child),
-            checked.law().exprs[*original].span
+            checked.law().exprs()[*original].span
         );
     }
     let archsig::definition::PrimitiveSignature::Data { constructors } =
-        &checked.law().definitions.declarations()["Containers.Packet"].signature
+        &checked.law().definitions().declarations()["Containers.Packet"].signature
     else {
         panic!("Packet definition")
     };
@@ -844,7 +844,7 @@ fn container_operations_keep_list_order_set_extensionality_and_typed_zero() {
     ] {
         let body = declared_body(&checked, name);
         let (ExprKind::ListLit { items, .. } | ExprKind::SetLit { items, .. }) =
-            &checked.law().exprs[body].kind
+            &checked.law().exprs()[body].kind
         else {
             panic!("container literal")
         };
@@ -855,7 +855,7 @@ fn container_operations_keep_list_order_set_extensionality_and_typed_zero() {
             assert!(ids.insert(text(f(child, "id"))));
             assert_eq!(
                 evaluation_span(&ns, child),
-                checked.law().exprs[*original].span
+                checked.law().exprs()[*original].span
             );
             assert_eq!(
                 val(target(&ns, f(val(child), "value"), &Json::str("Z"))),
@@ -1138,13 +1138,13 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
         audit(&wire, &checked);
         let ns = index(&wire);
         let original = declared_body(&checked, &format!("Calc.{name}"));
-        let done_id = match &checked.law().exprs[original].kind {
+        let done_id = match &checked.law().exprs()[original].kind {
             ExprKind::ListLit { items, .. } if kind == 0 => items[0],
             ExprKind::SetLit { items, .. } if kind == 1 => items[2],
             ExprKind::Call { .. } if kind == 2 => original,
             _ => panic!("固定した停止出現"),
         };
-        let done_span = checked.law().exprs[done_id].span;
+        let done_span = checked.law().exprs()[done_id].span;
         assert_eq!(source(&checked, done_span), done_text);
         let done = arr(f(&wire, "nodes"))
             .iter()
@@ -1189,7 +1189,7 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
                 &numbers(&["2", "1", "2"])
             );
         } else {
-            let original_span = checked.law().exprs[original].span;
+            let original_span = checked.law().exprs()[original].span;
             assert!(
                 !arr(f(&wire, "nodes"))
                     .iter()
@@ -1199,7 +1199,7 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
                 "親Evaluation未完成prefixを通常値へ昇格しない"
             );
         }
-        let later_span = checked.law().exprs[declared_body(&checked, "Calc.later")].span;
+        let later_span = checked.law().exprs()[declared_body(&checked, "Calc.later")].span;
         assert!(
             !arr(f(&wire, "nodes"))
                 .iter()

@@ -77,16 +77,16 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
     assert_eq!(
-        r.prepared().inputs().archmap().snapshots,
-        checked.archmap().snapshots
+        r.prepared().inputs().archmap().snapshots(),
+        checked.archmap().snapshots()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().origins,
-        checked.archmap().origins
+        r.prepared().inputs().archmap().origins(),
+        checked.archmap().origins()
     );
     assert_eq!(
-        r.prepared().inputs().archmap().sources,
-        checked.archmap().sources
+        r.prepared().inputs().archmap().sources(),
+        checked.archmap().sources()
     );
     let j = r.wire();
     let ns = nodes(&j);
@@ -130,7 +130,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
         for fact in arr(f(n, "support")) {
             let snapshot = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap();
@@ -161,7 +161,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
@@ -169,7 +169,7 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
             for location in &origin.locations {
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -259,7 +259,7 @@ fn assignments(j: &Json, id: &str) -> BTreeSet<String> {
 fn finite_owned_field_completions_keep_shared_values_independent_slots_and_exact_type() {
     let input = fixture::input(false, false, false);
     let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
-    let original = checked.archmap().snapshots[0]
+    let original = checked.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "h")
@@ -465,7 +465,7 @@ fn finite_owned_fields_share_unknown_owner_constraints_and_keep_current_snapshot
 fn finite_owned_field_values_keep_known_map_totality_and_raw_missing_slots() {
     let input = fixture::map_constrained();
     let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
-    let holder = &checked.archmap().snapshots[0]
+    let holder = &checked.archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "p")

@@ -394,9 +394,9 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
     assert_eq!(checked.sources(), &original);
     assert_eq!(checked.inputs(), before.inputs());
     assert_eq!(checked.definitions(), before.definitions());
-    assert_eq!(checked.law().declarations, before.law().declarations);
-    assert_eq!(checked.law().exprs, before.law().exprs);
-    assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
+    assert_eq!(checked.law().declarations(), before.law().declarations());
+    assert_eq!(checked.law().exprs(), before.law().exprs());
+    assert_eq!(checked.archmap().snapshots(), before.archmap().snapshots());
     let w = r.wire();
     let mut seen = BTreeSet::new();
     let mut known = 0;
@@ -408,7 +408,7 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
         for fact in arr(f(n, "support")) {
             let subject = checked
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == text(f(fact, "snapshot")))
                 .unwrap()
@@ -434,14 +434,14 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
             };
             let origin = checked
                 .archmap()
-                .origins
+                .origins()
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
             for location in &origin.locations {
                 let source = checked
                     .archmap()
-                    .sources
+                    .sources()
                     .iter()
                     .find(|s| s.id == location.source)
                     .unwrap();
@@ -468,7 +468,7 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
             .prepared()
             .inputs()
             .archmap()
-            .sources
+            .sources()
             .iter()
             .all(|s| s.revision == "r2")
     );
