@@ -6,7 +6,7 @@ description: ArchSig / FieldSig tooling、docs/tool、schema catalogの実装完
 # Tool Review
 
 ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野の所有範囲は
-`tools/archsig`, `tools/fieldsig` に加え、`docs/tool/` と schema catalog
+`tools/archsig`, `tools/archsig_v0.6.0`, `tools/fieldsig` に加え、`docs/tool/` と schema catalog
 (tooling の claim に隣接する docs)。
 
 ## 必須契約
@@ -51,7 +51,9 @@ ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野�
      仕様と突合する。
    - PRD が「正式経路」と指定する workflow に E2E テストが実在するかを疑う。
 
-3. **暗黙補完と Rust 安全性**
+3. **設計・Rust 品質・簡素化と引き算**
+   - [Rust 品質規約](../../../docs/tool/guideline.md#rust-品質規約)に従い、依存方向・型の不変条件・API と所有権を確認する。
+   - [簡素化と引き算](../../../docs/tool/guideline.md#簡素化と引き算)を独立した観点として、不要な機能・並行実装・一般化を疑う。
    - 欠落入力の `unwrap_or_default`、重複入力の先勝ち/後勝ち黙殺など、
      「黙って無視しない」原則への違反経路を疑う。欠落・重複の負系
      fixture の存在を確認する。
@@ -62,23 +64,22 @@ ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野�
      疑う(checklist §6 の privacy scan)。
 
 4. **schema・テスト被覆・回帰**
+   - [テストの書き方](../../../docs/tool/guideline.md#テストの書き方)に従い、層・assertion・fixture・実行の隔離と停止を確認する。
    - `Result` / error design、serde schema、versioned artifact、
      fixture ownership の整合を疑う。
    - CLI tests、golden output、schema compatibility、E2E workflow が
      変更範囲を覆うかを疑う。テストは名前でなく assertion 内容で
      証拠にする。
-   - `cargo test --manifest-path tools/archsig/Cargo.toml` /
-     `cargo test --manifest-path tools/fieldsig/Cargo.toml` の必要性と
-     結果を確認する。
+   - [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、対象 manifest・version と検証結果を確認する。
 
 ## 検証
 
-- `cargo test --manifest-path tools/archsig/Cargo.toml`(ArchSig 変更)
-- `cargo test --manifest-path tools/fieldsig/Cargo.toml`(FieldSig 変更)
+- [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従って、対象クレートと必要な検証を選ぶ。
 - checklist §6 の横断機械 scan(`git diff --check`、hidden/bidi、privacy)
 - 実行できない検証は理由と残リスクとして報告する。
 
 ## 親 Codex の統合判定
 
+[レビューでの扱い](../../../docs/tool/guideline.md#レビューでの扱い)に従い、指摘を簡潔に示す。
 共有契約の統合出力に従い、判定を
 `Needs changes` / `No major findings` / `Blocked / cannot determine` で返す。

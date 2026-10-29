@@ -70,6 +70,7 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
 4. 専用ブランチを切る。
    - 例: `issue-6-bounded-path`
 5. 実装する。
+   - Rust tooling は [Tool guideline の品質規約とテスト責務](../../../docs/tool/guideline.md#rust-品質規約)に従う。
    - 既存の設計と命名を優先する。
    - 受け入れ要件ごとに実装箇所と確認証拠を追跡し、すべての完了を必須とする。
    - Issue の `備考` に明示された対象外に反する変更は入れない。
@@ -91,7 +92,7 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
 7. 検証する。
    - Lean 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、
      変更範囲に応じた focused check または targeted build を実行する。サブエージェントに委譲しない。
-   - Rust tooling 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
+   - Rust tooling 変更あり: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、影響するクレートごとに検証する。
    - website 変更あり: `python3 -m http.server 8000 --directory website` などで静的 preview を確認する。
    - Issue の`受け入れ要件`に示された検証証拠を優先する。
    - PR 前の共通scanは`docs/workflow/guideline.md`「PR 前の共通確認」と
