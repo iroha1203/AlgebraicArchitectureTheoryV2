@@ -691,3 +691,373 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
         }
     }
 }
+
+#[test]
+fn container_quotient_preserves_list_and_set_fibers_and_reuses() {
+    let dir = law_input(
+        "quotient-containers",
+        "view ordered(s:State):List<Bool> = if s.x then list<Bool>[s.y] else list<Bool>[];view unordered(s:State):Set<Bool> = set<Bool>{s.x,s.y};law optional visible(s:State):list<Bool>[s.x]=list<Bool>[s.x];law optional hidden(s:State):list<Bool>[s.y]=list<Bool>[s.y];law optional unordered_values(s:State):set<Bool>{s.x,s.y}=set<Bool>{s.x,s.y};",
+    );
+    let asks = [
+        "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "list_good=quotient(Pair.ordered,on=$s.domain,s=@v/s,law=Pair.visible)",
+        "list_bad=quotient(Pair.ordered,on=$s.domain,s=@v/s,law=Pair.hidden)",
+        "set_good=quotient(Pair.unordered,on=$s.domain,s=@v/s,law=Pair.unordered_values)",
+        "set_bad=quotient(Pair.unordered,on=$s.domain,s=@v/s,law=Pair.visible)",
+    ];
+    let first = execute(&dir, "out", &asks, None);
+    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let answers = arr(get(&result, "answers"));
+    for index in [1, 3] {
+        assert_eq!(s(get(&answers[index], "status")), "established");
+    }
+    for index in [2, 4] {
+        assert_eq!(s(get(&answers[index], "status")), "refuted");
+        let data = get(
+            get(
+                node(&result, &arr(get(&answers[index], "counterexamples"))[0]),
+                "value",
+            ),
+            "data",
+        );
+        let points = [
+            pair(get(node(&result, get(data, "first")), "value")),
+            pair(get(node(&result, get(data, "second")), "value")),
+        ];
+        if index == 2 {
+            assert!(!points[0].0 && !points[1].0);
+            assert_ne!(points[0].1, points[1].1);
+        } else {
+            assert_eq!(points, [(false, true), (true, false)]);
+        }
+        let values = arr(get(data, "law_values"));
+        assert_ne!(
+            get(node(&result, &values[0]), "value").value,
+            get(node(&result, &values[1]), "value").value
+        );
+    }
+    for index in [1, 2] {
+        exact_fibers(
+            &result,
+            index,
+            vec![
+                vec![(false, false), (false, true)],
+                vec![(true, false)],
+                vec![(true, true)],
+            ],
+        );
+    }
+    for index in [3, 4] {
+        exact_fibers(
+            &result,
+            index,
+            vec![
+                vec![(false, false)],
+                vec![(false, true), (true, false)],
+                vec![(true, true)],
+            ],
+        );
+    }
+    let repeated = execute(&dir, "reused", &asks, Some("out"));
+    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
+    let reused = result_json(&dir, &repeated);
+    for key in ["answers", "nodes"] {
+        assert_eq!(get(&result, key).value, get(&reused, key).value);
+    }
+}
+
+#[test]
+fn finite_container_quotient_uses_typed_recursive_equality() {
+    use archsig::observed::{
+        control::{Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        input::InputSources,
+    };
+    let separate = vec![
+        vec![(false, false)],
+        vec![(false, true)],
+        vec![(true, false)],
+        vec![(true, true)],
+    ];
+    let tagged = vec![
+        vec![(false, false), (false, true)],
+        vec![(true, false)],
+        vec![(true, true)],
+    ];
+    let unordered = vec![
+        vec![(false, false)],
+        vec![(false, true), (true, false)],
+        vec![(true, true)],
+    ];
+    // Expected classes are independently enumerated from the four (a,b) updates.
+    let cases = [
+        (
+            "List<Bool>",
+            "list<Bool>[s.x,s.y]",
+            r#"["List","Bool"]"#,
+            separate.clone(),
+            false,
+        ),
+        (
+            "List<Bool>",
+            "if s.x then list<Bool>[s.y,s.y] else list<Bool>[s.y]",
+            r#"["List","Bool"]"#,
+            separate.clone(),
+            false,
+        ),
+        (
+            "List<Z>",
+            "if s.x then list<Z>[if s.y then 1 else 0] else list<Z>[]",
+            r#"["List","Z"]"#,
+            tagged.clone(),
+            false,
+        ),
+        (
+            "List<Option<Bool>>",
+            "list<Option<Bool>>[if s.x then some(s.y) else none<Bool>]",
+            r#"["List",["Option","Bool"]]"#,
+            tagged.clone(),
+            false,
+        ),
+        (
+            "(List<Bool>,Option<List<Z>>)",
+            "(if s.x then list<Bool>[s.y] else list<Bool>[],some(list<Z>[0]))",
+            r#"["Tuple",["List","Bool"],["Option",["List","Z"]]]"#,
+            tagged.clone(),
+            false,
+        ),
+        (
+            "Set<Bool>",
+            "set<Bool>{s.x,s.y,s.x}",
+            r#"["Set","Bool"]"#,
+            unordered.clone(),
+            true,
+        ),
+        (
+            "List<Set<Bool>>",
+            "list<Set<Bool>>[set<Bool>{s.x,s.y}]",
+            r#"["List",["Set","Bool"]]"#,
+            unordered.clone(),
+            true,
+        ),
+        (
+            "Set<List<Bool>>",
+            "set<List<Bool>>{list<Bool>[s.x,s.y],list<Bool>[s.y,s.x]}",
+            r#"["Set",["List","Bool"]]"#,
+            unordered,
+            true,
+        ),
+        (
+            "Set<List<Bool>>",
+            "set<List<Bool>>{if s.x then list<Bool>[s.y,s.y] else list<Bool>[s.y]}",
+            r#"["Set",["List","Bool"]]"#,
+            separate,
+            false,
+        ),
+        (
+            "Option<Set<Bool>>",
+            "if s.x then some(set<Bool>{}) else none<Set<Bool>>",
+            r#"["Option",["Set","Bool"]]"#,
+            vec![
+                vec![(false, false), (false, true)],
+                vec![(true, false), (true, true)],
+            ],
+            false,
+        ),
+    ];
+    for (case, (ty, body, wire_type, expected, mixed)) in cases.iter().enumerate() {
+        let dir = law_input(
+            &format!("quotient-container-equality-{case}"),
+            &format!(
+                "view shape(s:State):{ty} = {body};law optional self(s:State):shape(s)=shape(s);law optional hidden(s:State,z:Bool,a:Bool):list<Bool>[s.x,s.y]=list<Bool>[z,a];"
+            ),
+        );
+        let sources = InputSources::from_bytes(
+            vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),
+            std::fs::read(dir.join("a.json")).unwrap(),
+        );
+        let result = evaluate_observed_bytes(
+            sources,
+            &[
+                "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+                "v=evaluate(Pair.shape,s=@v/s)",
+                "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.self)",
+                "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
+            ],
+            &mut Control::new(Limits::default(), |_| Usage::default()),
+        )
+        .unwrap();
+        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answers = arr(get(&wire, "answers"));
+        let value = node(&wire, get(get(&answers[1], "outputs"), "value"));
+        assert_eq!(
+            get(value, "type").value,
+            archsig::json::parse(wire_type.as_bytes()).unwrap().value
+        );
+        assert_eq!(s(get(&answers[2], "status")), "established");
+        for index in [2, 3] {
+            exact_fibers(&wire, index, expected.clone());
+        }
+        let nontrivial = expected.iter().any(|class| class.len() > 1);
+        assert_eq!(
+            s(get(&answers[3], "status")),
+            if nontrivial { "refuted" } else { "established" }
+        );
+        if nontrivial {
+            let data = get(
+                get(node(&wire, &arr(get(&answers[3], "evidence"))[0]), "value"),
+                "data",
+            );
+            let points = [
+                pair(get(node(&wire, get(data, "first")), "value")),
+                pair(get(node(&wire, get(data, "second")), "value")),
+            ];
+            assert_eq!(
+                points,
+                if *mixed {
+                    [(false, true), (true, false)]
+                } else {
+                    [(false, false), (false, true)]
+                }
+            );
+            let view_values = arr(get(data, "view_values"));
+            for reference in view_values {
+                assert_eq!(
+                    get(node(&wire, reference), "type").value,
+                    get(value, "type").value
+                );
+            }
+            for (side, reference) in arr(get(data, "law_values")).iter().enumerate() {
+                let family = arr(get(node(&wire, reference), "value"));
+                assert_eq!(family.len(), 4);
+                let mut keys = vec![];
+                for entry in family {
+                    let entry = arr(entry);
+                    let key = arr(&entry[0]);
+                    assert_eq!(key.len(), 3);
+                    let b = |v: &JNode| match v.value {
+                        JValue::Bool(b) => b,
+                        _ => panic!("Bool"),
+                    };
+                    let (z, a) = (b(&key[1]), b(&key[2]));
+                    keys.push((z, a));
+                    let sides = arr(get(&entry[1], "some"));
+                    assert_eq!(pair(&sides[0]), points[side]);
+                    assert_eq!(pair(&sides[1]), (z, a));
+                }
+                keys.sort();
+                assert_eq!(
+                    keys,
+                    vec![(false, false), (false, true), (true, false), (true, true)]
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
+    use archsig::observed::{
+        control::{Checkpoint, Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        input::InputSources,
+    };
+    use std::{cell::Cell, rc::Rc};
+    let dir = law_input(
+        "quotient-container-stop",
+        "view shape(s:State):Set<Bool> = set<Bool>{s.x,s.y};",
+    );
+    for mode in 0..4 {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let hit = Rc::new(Cell::new(false));
+        let stopped = hit.clone();
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: Some(1),
+            },
+            move |point| {
+                if point == Checkpoint::Quotient {
+                    seen.set(seen.get() + 1);
+                }
+                // Four candidate evaluations precede the first actual fiber comparison.
+                if seen.get() == 5 && point == Checkpoint::FiniteIteration {
+                    stopped.set(true);
+                    match mode {
+                        0 => Usage {
+                            elapsed_ms: 2,
+                            ..Usage::default()
+                        },
+                        1 => Usage {
+                            memory_mib: 2,
+                            ..Usage::default()
+                        },
+                        _ => Usage {
+                            signal: Some(if mode == 2 {
+                                archsig::result::Signal::Int
+                            } else {
+                                archsig::result::Signal::Term
+                            }),
+                            ..Usage::default()
+                        },
+                    }
+                } else {
+                    Usage::default()
+                }
+            },
+        );
+        let sources = InputSources::from_bytes(
+            vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),
+            std::fs::read(dir.join("a.json")).unwrap(),
+        );
+        let result = evaluate_observed_bytes(
+            sources,
+            &[
+                "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+                "q=quotient(Pair.shape,on=$s.domain,s=@v/s)",
+                "later=evaluate(Pair.last,s=@v/s)",
+            ],
+            &mut control,
+        )
+        .unwrap();
+        assert!(hit.get());
+        assert_eq!(count.get(), 5);
+        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answers = arr(get(&wire, "answers"));
+        assert_eq!(s(get(&answers[0], "status")), "established");
+        assert!(has(get(&answers[0], "outputs"), "solutions"));
+        assert!(!has(get(&answers[1], "outputs"), "quotient"));
+        for answer in &answers[1..] {
+            assert_eq!(s(get(answer, "status")), "undetermined");
+            let reason = arr(get(answer, "reasons"))
+                .iter()
+                .find(|r| {
+                    s(get(r, "code"))
+                        == if mode < 2 {
+                            "budget_exhausted"
+                        } else {
+                            "cancelled"
+                        }
+                })
+                .unwrap();
+            let details = get(reason, "details");
+            if mode < 2 {
+                assert_eq!(s(get(details, "limit")), "1");
+                assert_eq!(s(get(details, "observed")), "2");
+                assert_eq!(
+                    s(get(details, "resource")),
+                    if mode == 0 { "time_ms" } else { "memory_mib" }
+                );
+            } else {
+                assert_eq!(
+                    s(get(details, "signal")),
+                    if mode == 2 { "SIGINT" } else { "SIGTERM" }
+                );
+            }
+        }
+    }
+}

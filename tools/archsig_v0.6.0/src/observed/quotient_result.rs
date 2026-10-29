@@ -230,20 +230,31 @@ fn compute(
         let mut descent_pairs = vec![];
         let mut family_values = vec![];
         let mut separating = None;
-        let mut fibers = BTreeMap::<String, Vec<Scalar>>::new();
+        // Setは列挙順が違っても等しい。表示キーでなく型付き等値で分ける。
+        let mut fibers: Vec<(Scalar, Vec<Scalar>)> = vec![];
         for row in table.rows {
             g.tick()?;
-            fibers
-                .entry(row.image.wire().canonical())
-                .or_default()
-                .push(row.parameters);
+            let mut existing = None;
+            for (index, (image, _)) in fibers.iter().enumerate() {
+                c.checkpoint(super::control::Checkpoint::Quotient)?;
+                if super::data::equal(image, &row.image, c)? {
+                    existing = Some(index);
+                    break;
+                }
+            }
+            if let Some(index) = existing {
+                fibers[index].1.push(row.parameters);
+            } else {
+                fibers.push((row.image, vec![row.parameters]));
+            }
         }
+        fibers.sort_by_cached_key(|(image, _)| image.wire().canonical());
         let mut classes = vec![];
         let mut fibers_wire = vec![];
         let mut projection_pairs = vec![];
         let mut arguments = vec![reference, expression];
         let class_type = Type::Set(Box::new(table.parameter_type.clone()));
-        for mut members in fibers.into_values() {
+        for (_, mut members) in fibers {
             g.tick()?;
             members.sort_by_key(|v| v.wire().canonical());
             members.dedup();
@@ -258,7 +269,7 @@ fn compute(
                 family_values.push(first_ref);
                 for (member, point) in members.iter().zip(&points) {
                     let family = &families[&member.wire().canonical()];
-                    if separating.is_none() && family != first_family {
+                    if separating.is_none() && !super::data::equal(family, first_family, c)? {
                         let other = change_result::value(&mut b, family)?;
                         let view = change_result::value(&mut b, &images[&member.wire().canonical()])?;
                         separating = Some((points[0], *point, view, first_ref, other));
