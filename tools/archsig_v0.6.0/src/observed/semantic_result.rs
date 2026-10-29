@@ -117,21 +117,37 @@ fn rename(value: &mut Json, ids: &BTreeMap<String, String>) {
         _ => {}
     });
 }
-fn retain_examples(fields: &mut BTreeMap<String, Json>, examples: &BTreeSet<String>) {
+fn retain_evidence(
+    fields: &mut BTreeMap<String, Json>,
+    examples: &BTreeSet<String>,
+    completions: &BTreeSet<String>,
+) {
     let Some(mut evidence) = fields.remove("evidence") else {
         return;
     };
     let Json::Arr(values) = &mut evidence else {
-        unreachable!()
+        return;
     };
-    values.retain(|value| {
-        let Json::Obj(reference) = value else {
-            return false;
+    let mut counters = vec![];
+    let mut witnesses = vec![];
+    for value in std::mem::take(values) {
+        let Json::Obj(reference) = &value else {
+            continue;
         };
-        matches!(reference.get("node"), Some(Json::Str(id)) if examples.contains(id))
-    });
-    if !values.is_empty() {
-        fields.insert("counterexamples".into(), evidence);
+        let Some(Json::Str(id)) = reference.get("node") else {
+            continue;
+        };
+        if examples.contains(id) {
+            counters.push(value);
+        } else if completions.contains(id) {
+            witnesses.push(value);
+        }
+    }
+    if !counters.is_empty() {
+        fields.insert("counterexamples".into(), Json::Arr(counters));
+    }
+    if !witnesses.is_empty() {
+        fields.insert("evidence".into(), Json::Arr(witnesses));
     }
 }
 /// 同じ観測要求を使用箇所ごとに繰り返さない。補う対象は missing に残す。
@@ -255,12 +271,27 @@ pub(super) fn compact(
             .then(|| format!("n{index}"))
         })
         .collect();
+    // completion_fibersは解族そのものの有限な証拠値。導出木を復元せず保存する。
+    let completions: BTreeSet<_> = old
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| {
+            let Json::Obj(fields) = node else { return None };
+            let Some(Json::Obj(value)) = fields.get("value") else {
+                return None;
+            };
+            (native[index].ty == NodeType::Evidence
+                && value.get("kind") == Some(&Json::str("completion_fibers")))
+            .then(|| format!("n{index}"))
+        })
+        .collect();
     let proofs = native
         .iter()
         .enumerate()
         .filter_map(|(index, node)| {
             let id = format!("n{index}");
-            (node.ty == NodeType::Evidence && !examples.contains(&id)).then_some(id)
+            (node.ty == NodeType::Evidence && !examples.contains(&id) && !completions.contains(&id))
+                .then_some(id)
         })
         .collect();
     // 証明への参照は evidence 欄以外（例: 解集合の certificate）にもある。
@@ -278,7 +309,7 @@ pub(super) fn compact(
         let Json::Obj(answer) = answer else {
             unreachable!()
         };
-        retain_examples(answer, &examples);
+        retain_evidence(answer, &examples, &completions);
         let law_claim = |reference: &Json| {
             let Json::Obj(reference) = reference else {
                 return false;
@@ -332,7 +363,7 @@ pub(super) fn compact(
             fields.remove(key);
         }
         if let Some(Json::Obj(judgment)) = fields.get_mut("judgment") {
-            retain_examples(judgment, &examples);
+            retain_evidence(judgment, &examples, &completions);
         }
         if examples.contains(&format!("n{index}")) {
             fields.insert("type".into(), Json::str("Counterexample"));

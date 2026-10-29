@@ -1552,6 +1552,7 @@ pub(super) struct UniversalWitness {
 /// Node/Answer は外から変更できず、検査済みの入力を所有して由来を保持する。
 #[derive(Debug)]
 pub struct ObservedEvaluation {
+    pub(super) verified_incomplete: Option<super::evaluate::VerifiedIncomplete>,
     pub(super) prepared: PreparedObserved,
     pub(crate) nodes: Vec<Node>,
     pub(crate) answers: Vec<Answer>,
@@ -1571,6 +1572,9 @@ pub struct ObservedEvaluation {
     pub(super) universal_witnesses: Vec<UniversalWitness>,
 }
 impl ObservedEvaluation {
+    pub(crate) fn verified_incomplete(&self) -> Option<&super::evaluate::VerifiedIncomplete> {
+        self.verified_incomplete.as_ref()
+    }
     pub fn status(&self) -> &str {
         self.status
     }

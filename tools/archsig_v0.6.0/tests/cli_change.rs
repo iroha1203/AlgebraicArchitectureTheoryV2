@@ -531,3 +531,58 @@ fn explicitly_bound_external_owner_keeps_its_dependent_law_family() {
         );
     }
 }
+
+#[test]
+fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implemented() {
+    let original = input();
+    let map = String::from_utf8(original.sources().archmap().bytes().to_vec()).unwrap();
+    let missing = map.replace(
+        r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#,
+        "",
+    );
+    assert_ne!(map, missing);
+    let sources = observed::input::InputSources::from_bytes(
+        original
+            .sources()
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.sources().law().bytes().to_vec(),
+        missing.into_bytes(),
+    );
+    let mut control = observed::control::Control::new(observed::control::Limits::default(), |_| {
+        observed::control::Usage::default()
+    });
+    let prepared = observed::prepare_observed(
+        sources,
+        &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
+        &mut control,
+    )
+    .expect("既存の有限owner欠測fixtureは三入力と要求が有効");
+    let result = match observed::evaluate_observed(prepared, &mut control) {
+        Ok(result) => result,
+        Err(observed::EvaluationFailure::NotImplemented {
+            partial, feature, ..
+        }) if feature.contains("存在・一意性は検査済み") => *partial,
+        Err(observed::EvaluationFailure::NotImplemented {
+            declaration,
+            feature,
+            ..
+        }) => {
+            panic!("有限owner補完の計算結果が必要: {declaration}: {feature}")
+        }
+        Err(other) => panic!("予期しない評価失敗: {other:?}"),
+    };
+    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let outputs = get(answer(&wire, "s"), "outputs");
+    let proposition = node(&wire, get(outputs, "proposition"));
+    // 登録Rootはroot一つ。整合するowner補完は一つで、p/q双方をtrueにする解が存在する。
+    assert_eq!(
+        s(get(get(proposition, "judgment"), "status")),
+        "established"
+    );
+}
+
+#[path = "common/owner_completion_change.rs"]
+mod owner_completion;
