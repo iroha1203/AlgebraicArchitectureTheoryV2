@@ -126,8 +126,7 @@ Lean要件を含むPRDでは
 
 - Lean 変更または Lean 達成条件: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従う
   (フル `lake build` はCI結果をreview laneへ渡す。ローカルは focused check / targeted build のみ)。
-- Tooling / measurement handoff 達成条件: [Tool guideline「検証対象の選択」](../../../docs/tool/guideline.md#検証対象の選択)に従い、
-  PRD が指定する contract・version と影響するクレートごとに検証する。
+- Tooling / measurement handoff 達成条件: [Tool guideline「テスト責務と実行経路」](../../../docs/tool/guideline.md#テスト責務と実行経路)に従って検証する。
 - Website 達成条件: local static preview、link / asset / title / layout check
 - 共通scanは `.codex/skills/_shared/refutation-checklist.md` §6 を実行する。
 
