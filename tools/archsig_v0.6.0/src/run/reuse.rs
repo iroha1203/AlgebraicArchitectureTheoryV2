@@ -33,13 +33,14 @@ impl Candidate {
         evaluation: &ObservedEvaluation,
         control: &mut Control,
     ) -> (Vec<Json>, Option<StopReason>) {
-        if let Some(document) = &self.document {
-            if matches!(evaluation.status(), "complete" | "partial") {
-                match verify(document, evaluation, control) {
-                    Ok(()) => {}
-                    Err(Failure::Rejected(message)) => self.reject(message),
-                    Err(Failure::Stopped(reason)) => return (self.rejected, Some(reason)),
-                }
+        if let Some(document) = &self.document
+            && (matches!(evaluation.status(), "complete" | "partial")
+                || evaluation.verified_incomplete().is_some())
+        {
+            match verify(document, evaluation, control) {
+                Ok(()) => {}
+                Err(Failure::Rejected(message)) => self.reject(message),
+                Err(Failure::Stopped(reason)) => return (self.rejected, Some(reason)),
             }
         }
         (self.rejected, None)
@@ -418,6 +419,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
                 .iter()
                 .any(|a| a.status == crate::observed::result::Decision::Refuted),
         ),
+        "error" if evaluation.verified_incomplete().is_some() => 70,
         _ => return Err(invalid("candidate verification is not finalized")),
     };
     if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {

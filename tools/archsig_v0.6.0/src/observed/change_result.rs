@@ -20,6 +20,9 @@ pub(super) mod linear_result;
 #[path = "field_linear_result.rs"]
 pub(super) mod field_linear_result;
 
+#[path = "change_owner_completion.rs"]
+mod owner_completion;
+
 #[derive(Debug)]
 pub(super) struct Source {
     architecture: Architecture,
@@ -43,6 +46,10 @@ impl Data {
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
+    pub(super) fn is_blocked(&self) -> bool {
+        self.part().ty == NodeType::Construction(T::SolutionSet)
+            && self.part().wire == Json::obj([])
+    }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
     }
@@ -55,11 +62,30 @@ impl Data {
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
     }
+    pub(super) fn completion_uniqueness(&self) -> Option<Decision> {
+        if !self.source.parts.iter().any(|part| {
+            part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([])
+        }) {
+            return None;
+        }
+        self.source.parts.iter().find_map(|part| {
+            if matches!(&part.wire, Json::Obj(fields) if fields.get("predicate") == Some(&Json::str("unique_solution"))) {
+                part.judgment.as_ref().map(|j| j.status)
+            } else { None }
+        })
+    }
     pub(super) fn conditions(&self) -> Vec<NodeRef> {
-        if !matches!(
-            self.ty(),
-            NodeType::Construction(T::Repair | T::Architecture)
-        ) {
+        let completion_condition = self.part().ty == NodeType::Proposition
+            && self.source.parts.iter().any(|part| {
+                part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([])
+            })
+            && matches!(&self.part().wire, Json::Obj(fields) if fields.get("predicate") == Some(&Json::str("constructible")));
+        if !completion_condition
+            && !matches!(
+                self.ty(),
+                NodeType::Construction(T::Repair | T::Architecture)
+            )
+        {
             return vec![];
         }
         self.part()
@@ -241,6 +267,9 @@ fn compute_inner(
     c: &mut Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
+        if let Some(result) = owner_completion::compute(env, g, architecture, base, request, c)? {
+            return Ok(result);
+        }
         return Err(ValidationFailure::UnsupportedExpression {
             location: Location::Law { span: (0, 0) },
             feature: "未完成Architecture上のchange候補の公開配送は未実装".into(),
@@ -1238,4 +1267,31 @@ pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact
             ));
         }
         Ok(result)
+}
+
+/// 計算済みの補完証拠を残し、未接続の具体構成を数学的未決へ読み替えない。
+pub(super) fn incomplete_construction(g: &Graph, answer: &Answer) -> Option<(Location, String)> {
+    let node = g.get(answer.claim?).ok()?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return None;
+    };
+    let D::Change(data) = &value.data else {
+        return None;
+    };
+    if !data
+        .source
+        .parts
+        .iter()
+        .any(|part| part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([]))
+    {
+        return None;
+    }
+    Some((
+        Location::Law {
+            span: value.witness.inputs().law().declarations
+                [value.witness.request().declaration()?]
+            .span,
+        },
+        "有限owner補完の存在・一意性は検査済み。共通の候補域・具体修復の公開構成は未実装".into(),
+    ))
 }

@@ -358,6 +358,9 @@ impl ConstructionValue {
         }
     }
     pub fn is_blocked(&self) -> bool {
+        if let ConstructionData::Change(data) = &self.data {
+            return data.is_blocked();
+        }
         matches!(
             self.data,
             ConstructionData::Pending { .. }

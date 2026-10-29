@@ -15,6 +15,7 @@ pub(in crate::observed) struct Search {
     pub bindings: Vec<(String, Scalar)>,
     pub missing: Vec<Fact>,
     pub complete: bool,
+    pub valuation: Vec<(Fact, Scalar)>,
 }
 
 #[cfg(test)]
@@ -113,10 +114,112 @@ mod tests {
                 .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.owner"))
         );
     }
+
+    #[test]
+    fn stored_completion_and_baseline_overrides_survive_solution_resubstitution() {
+        let map = fixture::MAP.replace(r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#, "");
+        assert_ne!(map, fixture::MAP);
+        let inputs = fixture::with_body(
+            &map,
+            "change choose(c:Part,b:Bool) when not c.flag=c with {flag=b};law required valid(c:Part):c.flag;",
+        );
+        let mut c = quiet_for_valuation();
+        let env = Environment::new(&inputs, &mut c).unwrap();
+        let requests = resolve_native_for_test(
+            inputs.law(),
+            inputs.archmap(),
+            &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
+            &mut c,
+        )
+        .unwrap();
+        let witness = ArchitectureWitness::compute(
+            inputs.clone(),
+            &requests.requests()[0],
+            "Selected",
+            &Fact {
+                snapshot: "v".into(),
+                subject: "root".into(),
+                field: None,
+                atom: None,
+            },
+            &mut c,
+        )
+        .unwrap();
+        let p = Scalar::Subject {
+            snapshot: "v".into(),
+            subject: "p".into(),
+            entity: "Pattern.Part".into(),
+        };
+        // Baseline changes an observed true flag to false; the owner case pins q to r2.
+        let valuation = vec![
+            (
+                Fact {
+                    snapshot: "v".into(),
+                    subject: "p".into(),
+                    field: Some("Pattern.Part.flag".into()),
+                    atom: None,
+                },
+                Scalar::Bool(false),
+            ),
+            (
+                Fact {
+                    snapshot: "v".into(),
+                    subject: "q".into(),
+                    field: Some("Pattern.Part.owner".into()),
+                    atom: None,
+                },
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: "r2".into(),
+                    entity: "Pattern.Root".into(),
+                },
+            ),
+        ];
+        let mut case = Environment::with_primitive_valuation(&inputs, &valuation, &mut c).unwrap();
+        case.object = Some(Arc::new(
+            ObjectDomain::from_readings(&inputs, witness.readings(), 0, &mut c).unwrap(),
+        ));
+        let change = &inputs.law().declarations["Selected.choose"];
+        let candidate = change_evaluation::candidate(
+            &case,
+            change,
+            std::slice::from_ref(&p),
+            &[Scalar::Bool(true)],
+        )
+        .unwrap();
+        assert_eq!(candidate.update.state, change_evaluation::State::Ready);
+        let requirements = vec![("Selected.valid".into(), vec![("c".into(), p.clone())])];
+        let member = change_evaluation::solution_row(&case, &candidate, 0, &requirements).unwrap();
+        assert_eq!(member.member, Some(true));
+        let search = Search {
+            linear: None,
+            rational: None,
+            pending_integer: None,
+            candidates: Some(Candidates {
+                subjects: vec![p],
+                parameter_types: vec![Type::Bool],
+                rows: vec![candidate],
+                complete: true,
+            }),
+            solutions: vec![member],
+            requirements,
+            bindings: vec![],
+            missing: vec![],
+            complete: true,
+            valuation,
+        };
+        verify_point(&env, &witness, &search, 0, &mut c).unwrap();
+        let mut lost = search;
+        lost.valuation.clear();
+        assert!(verify_point(&env, &witness, &lost, 0, &mut c).is_err());
+    }
+    fn quiet_for_valuation() -> Control {
+        Control::new(Limits::default(), |_| Usage::default())
+    }
 }
 pub(in crate::observed) struct SearchFailure {
     pub cause: ValidationFailure,
-    pub partial: Search,
+    pub partial: Box<Search>,
 }
 pub(in crate::observed) fn domain(
     environment: &Environment<'_>,
@@ -200,6 +303,17 @@ pub(in crate::observed) fn search(
     request: &Request,
     control: &mut Control,
 ) -> Result<Search, SearchFailure> {
+    search_with_completions(original, graph, witness, request, &[], control)
+}
+
+pub(in crate::observed) fn search_with_completions(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    completions: &[(Fact, Scalar)],
+    control: &mut Control,
+) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
         rational: None,
@@ -210,12 +324,17 @@ pub(in crate::observed) fn search(
         bindings: vec![],
         missing: vec![],
         complete: false,
+        valuation: original
+            .architecture_values()
+            .into_iter()
+            .chain(completions.iter().cloned())
+            .collect(),
     };
     let computed = (|| -> Result<(), ValidationFailure> {
         let inputs = original.inputs;
-        let assignments = original.architecture_values();
-        let mut environment = Environment::try_primitive_valuation(inputs, &assignments, control)?
-            .ok_or("元修復Architectureの代入が不適合")?;
+        let mut environment =
+            Environment::try_primitive_valuation(inputs, &result.valuation, control)?
+                .ok_or("元修復Architectureの代入が不適合")?;
         environment.object = Some(Arc::new(ObjectDomain::from_readings(
             inputs,
             witness.readings(),
@@ -270,6 +389,12 @@ pub(in crate::observed) fn search(
             std::iter::once(construction.root())
                 .chain(construction.local_domain().known())
                 .any(|fact| fact.snapshot == *snapshot && fact.subject == *subject)
+                || construction.local_domain().conditional().iter().any(|member| {
+                    member.subject().snapshot == *snapshot && member.subject().subject == *subject
+                        && completions.iter().any(|(fact, value)| fact == member.owner_slot()
+                            && matches!(value, Scalar::Subject { snapshot, subject, .. }
+                                if *snapshot == member.owner().snapshot && *subject == member.owner().subject))
+                })
         });
         let mut rows = vec![vec![]];
         for parameter in params {
@@ -397,22 +522,53 @@ pub(in crate::observed) fn search(
         Ok(()) => Ok(result),
         Err(cause) => Err(SearchFailure {
             cause,
-            partial: result,
+            partial: Box::new(result),
         }),
     }
 }
 
 pub(in crate::observed) fn verify_point(
-    original:&Environment<'_>, witness:&ArchitectureWitness, search:&Search,
-    point:usize, control:&mut Control,
-) -> Result<(),ValidationFailure> {
+    original: &Environment<'_>,
+    witness: &Arc<ArchitectureWitness>,
+    search: &Search,
+    point: usize,
+    control: &mut Control,
+) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ChangeWitness)?;
-    let assignments=original.architecture_values();
-    let mut environment=Environment::try_primitive_valuation(original.inputs,&assignments,control)?
-        .ok_or("元修復Architectureの代入が不適合")?;
-    environment.object=Some(Arc::new(ObjectDomain::from_readings(original.inputs,witness.readings(),0,control)?));
-    let candidate=search.candidates.as_ref().and_then(|c|c.rows.get(point)).ok_or("整数再検査の点がない")?;
-    let row=change_evaluation::solution_row(&environment,candidate,point,&search.requirements)?;
-    if row.member!=Some(true) {return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());}
+    let mut environment =
+        Environment::try_primitive_valuation(original.inputs, &search.valuation, control)?
+            .ok_or("元修復Architectureの代入が不適合")?;
+    environment.object = Some(Arc::new(ObjectDomain::from_readings(
+        original.inputs,
+        witness.readings(),
+        0,
+        control,
+    )?));
+    let candidates = search.candidates.as_ref().ok_or("再代入の候補表がない")?;
+    let candidate = candidates.rows.get(point).ok_or("再代入の候補点がない")?;
+    let origin = crate::observed::construction_result::Witness::Architecture(Arc::clone(witness));
+    let change = origin
+        .request()
+        .arguments
+        .iter()
+        .find_map(|a| match (&*a.name, &a.value) {
+            ("using", Selector::Declaration { name }) => Some(name),
+            _ => None,
+        })
+        .ok_or("再代入の元changeがない")?;
+    let rebuilt = change_evaluation::candidate(
+        &environment,
+        &original.inputs.law().declarations[change],
+        &candidates.subjects,
+        &candidate.parameters,
+    )?;
+    if rebuilt != *candidate {
+        return Err("再代入のguard・同時更新が元候補と違う".into());
+    }
+    let row =
+        change_evaluation::solution_row(&environment, candidate, point, &search.requirements)?;
+    if row.member != Some(true) {
+        return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());
+    }
     Ok(())
 }

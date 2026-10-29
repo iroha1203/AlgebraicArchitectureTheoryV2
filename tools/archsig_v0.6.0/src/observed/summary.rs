@@ -154,6 +154,15 @@ impl ObservedEvaluation {
                         ),
                     ),
                 ]);
+                if request.kind == crate::observed::request::QuestionKind::Repair
+                    && let Some(reference) = answer.claim
+                    && let Some(Payload::Construction(value)) = &self.nodes[reference.0].payload
+                    && let crate::observed::construction_result::ConstructionData::Change(data) =
+                        &value.data
+                    && let Some(status) = data.completion_uniqueness()
+                {
+                    row.insert("uniqueness".into(), Json::str(status.wire()));
+                }
                 if let Some(reference) = answer.outputs.get("evaluation") {
                     let node = &self.nodes[reference.0];
                     if let Some(super::result::Payload::Evaluation { applicability, .. }) =
