@@ -210,3 +210,6 @@ mod quotient_result;
 mod object_law_map;
 mod object_view_map;
 mod native_source;
+
+#[cfg(test)]
+mod numeric_tuple_change_integration_tests;
