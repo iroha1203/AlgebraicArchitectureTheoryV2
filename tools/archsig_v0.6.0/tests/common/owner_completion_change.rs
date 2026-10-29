@@ -176,7 +176,7 @@ fn finite_owner_completions_keep_empty_subject_product_and_guard_meanings() {
         ("", " when false", "established"),
     ] {
         let j = result(
-            sources(false, change, law, "false", false),
+            sources(true, change, law, "false", false),
             &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
         );
         let e = node(&j, get(get(answer(&j, "r"), "outputs"), "existence"));
@@ -556,36 +556,9 @@ fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_req
 }
 
 #[test]
-fn finite_owner_completion_qualified_delivery_keeps_io_and_signal_precedence() {
-    use archsig::run::{CheckArgs, Io, RunArgs, Signals, run_requests};
-    use std::{io, path::Path, time::Instant};
-    struct RefuseIo(usize);
-    impl Io for RefuseIo {
-        fn create_dir(&mut self, _: &Path) -> io::Result<()> {
-            self.0 += 1;
-            Err(io::ErrorKind::PermissionDenied.into())
-        }
-        fn write(&mut self, _: &Path, _: &[u8]) -> io::Result<()> {
-            unreachable!("create failed")
-        }
-        fn flush(&mut self, _: &Path) -> io::Result<()> {
-            unreachable!("create failed")
-        }
-        fn rename_noreplace(&mut self, _: &Path, _: &Path) -> io::Result<()> {
-            unreachable!("create failed")
-        }
-        fn remove_dir_all(&mut self, _: &Path) -> io::Result<()> {
-            Ok(())
-        }
-    }
-    struct Freeze(Option<archsig::result::Signal>);
-    impl Signals for Freeze {
-        fn freeze(&mut self) -> Option<archsig::result::Signal> {
-            self.0.take()
-        }
-    }
+fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_structure() {
     let source = sources(false, "", "", "c.flag", false);
-    let dir = workdir("owner-delivery-precedence");
+    let dir = workdir("owner-concrete-repair");
     for (name, bytes) in [
         ("d.json", source.definitions()[0].bytes()),
         ("l.law", source.law().bytes()),
@@ -593,47 +566,91 @@ fn finite_owner_completion_qualified_delivery_keeps_io_and_signal_precedence() {
     ] {
         std::fs::write(dir.join(name), bytes).unwrap();
     }
-    let args = |out| RunArgs {
-        inputs: CheckArgs {
-            atom_definitions: vec![dir.join("d.json")],
-            law: dir.join("l.law"),
-            archmap: Some(dir.join("a.json")),
+    let call = |out: &str, reuse: bool| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            "--ask",
+            "applied=check(Selected.valid,on=$r.object,c=@v/q)",
+            "--out",
             out,
-        },
-        asks: vec!["r=repair(Selected.valid,on=@v/root,using=Selected.choose)".into()],
-        reuse: None,
-        time_ms: None,
-        memory_mib: None,
+            "--time-ms",
+            "120000",
+        ];
+        if reuse {
+            args.extend(["--reuse", "out"]);
+        }
+        run(&dir, &args)
     };
-    let mut io = RefuseIo(0);
-    let result = run_requests(
-        &mut io,
-        &mut Freeze(None),
-        &args(Some(dir.join("out"))),
-        Instant::now(),
-        &mut control(),
-    );
-    assert!(
-        io.0 > 0,
-        "qualified mathematical result reaches explicit save"
-    );
-    assert_eq!(result.exit_code, 74);
-    assert!(result.result.is_none());
-    assert!(!dir.join("out").exists());
-    for (signal, code) in [
-        (archsig::result::Signal::Int, 130),
-        (archsig::result::Signal::Term, 143),
-    ] {
-        let mut io = RefuseIo(0);
-        let result = run_requests(
-            &mut io,
-            &mut Freeze(Some(signal)),
-            &args(None),
-            Instant::now(),
-            &mut control(),
+    let first = call("out", false);
+    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    let original = result_json(&dir, &first);
+    let outputs = get(answer(&original, "r"), "outputs");
+    for field in ["repair", "object", "solutions"] {
+        assert!(has(outputs, field), "{field}");
+        assert_eq!(
+            s(get(node(&original, get(outputs, field)), "state")),
+            "value"
         );
-        assert_eq!(result.exit_code, code);
-        assert!(result.result.is_none());
-        assert_eq!(io.0, 0);
     }
+    assert_eq!(
+        s(get(answer(&original, "applied"), "status")),
+        "established"
+    );
+    let object = node(&original, get(outputs, "object"));
+    assert!(
+        arr(get(get(object, "value"), "overrides"))
+            .iter()
+            .all(|row| s(get(get(row, "slot"), "field")) == "Pattern.Part.flag")
+    );
+    let second = call("reuse", true);
+    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
+    let reused = result_json(&dir, &second);
+    assert!(warnings(&reused).is_empty());
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&original, field).value, get(&reused, field).value);
+    }
+
+    let mut damaged = owned(&original);
+    let archsig::canonical::Json::Arr(nodes) = field_mut(&mut damaged, "nodes") else {
+        panic!("nodes")
+    };
+    let configuration = nodes
+        .iter_mut()
+        .find(|node| {
+            let archsig::canonical::Json::Obj(fields) = node else {
+                return false;
+            };
+            fields.get("type") == Some(&archsig::canonical::Json::str("Configuration"))
+        })
+        .unwrap();
+    let archsig::canonical::Json::Arr(family) =
+        field_mut(field_mut(configuration, "value"), "family")
+    else {
+        panic!("family")
+    };
+    family.pop();
+    std::fs::write(
+        dir.join(s(get(&first.receipt, "result"))),
+        damaged.canonical(),
+    )
+    .unwrap();
+    let rejected = call("rechecked", true);
+    assert_eq!(rejected.code, 0, "{}", rejected.stdout);
+    let rechecked = result_json(&dir, &rejected);
+    assert!(!warnings(&rechecked).is_empty());
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&original, field).value, get(&rechecked, field).value);
+    }
+    assert_eq!(
+        std::fs::read(dir.join("a.json")).unwrap(),
+        source.archmap().bytes()
+    );
 }

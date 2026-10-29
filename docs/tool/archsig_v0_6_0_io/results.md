@@ -354,6 +354,14 @@ MapCandidateは原始候補を持つ場合だけdeclaration/subjectを保持す�
 この二欄は両方を持つか、両方を省略する。
 合成候補では両欄を省略して構成のargumentsに全生成元を残す。恒等では両欄を省略してrootへ依存する。
 Architecture.overridesは候補の値であり、元のArchMapを変更しない。
+有限parameterのsolve/repairでは、構成に必要な未観測ownerの整合補完が一元なら、
+その補完で標準構成を再生成できる。元のConfiguration要求にowner slotを保持し、
+FとAtomUniverseは既知の観測Atomだけから作る。確定した所属はownerの観測Atomや
+Architecture.overridesに追加しない。この構成のscopeはall_completionsであり、
+消費時には現在の三入力・元requestから整合補完とConfiguration・Law instance族・
+内部arrowを再生成して照合する。owner以外の欠測を残す構成や、複数のowner補完を
+この経路で完成値にしない。後者の存在・一意性判断はcompletion_fibersで保持する。
+
 Path.generatorsは原始arrowまたはcorrespondence参照の順序列。空列はsource=targetの恒等。
 それぞれの始終点と作用をLawの宣言から復元する。異なる階層の生成元を一つのPathへ混在させない。
 Evaluation.environment省略は原始観測、指定時はそのArchitectureのoverridesを適用した環境を指す。

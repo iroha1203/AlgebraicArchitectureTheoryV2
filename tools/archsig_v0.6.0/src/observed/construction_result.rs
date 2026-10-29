@@ -1077,7 +1077,43 @@ impl ArchitectureWitness {
         root: &Fact,
         control: &mut Control,
     ) -> Result<Arc<Self>, ConstructionFailure> {
-        let construction = construct(&inputs, reading, &root.snapshot, &root.subject, control)?;
+        let mut finite_change = false;
+        if matches!(
+            request.kind,
+            super::request::QuestionKind::Solve | super::request::QuestionKind::Repair
+        ) && let Some(super::request::Selector::Declaration { name }) = request
+            .arguments
+            .iter()
+            .find(|a| a.name == "using")
+            .map(|a| &a.value)
+            && let Some(crate::law::model::Declaration {
+                signature: crate::law::model::Signature::Change { params, .. },
+                ..
+            }) = inputs.law().declarations.get(name)
+        {
+            finite_change = true;
+            for parameter in params.iter().skip(1) {
+                finite_change &=
+                    super::finite::field_completion_supported(&parameter.ty, inputs.law(), control)
+                        .map_err(|failure| match failure {
+                            ValidationFailure::Stop(stop) => ConstructionFailure::Stopped(stop),
+                            other => ConstructionFailure::Inconsistent(format!(
+                                "変更parameter型の有限性検査: {other:?}"
+                            )),
+                        })?;
+            }
+        }
+        let construction = if finite_change {
+            crate::construction::construct_resolving_owners(
+                &inputs,
+                reading,
+                &root.snapshot,
+                &root.subject,
+                control,
+            )?
+        } else {
+            construct(&inputs, reading, &root.snapshot, &root.subject, control)?
+        };
         let readings = object_reading_instances(&inputs, &construction, control)?;
         let mut arrows = vec![];
         for fact in construction.local_domain().known().iter().chain(
@@ -1104,6 +1140,7 @@ impl ArchitectureWitness {
             .map_err(ConstructionFailure::Inconsistent)?
             .ty;
         let mut support = construction.base().known().family().to_vec();
+        support.extend_from_slice(construction.owner_support());
         for snapshot in &inputs.archmap().snapshots {
             for subject in &snapshot.subjects {
                 control.checkpoint(super::control::Checkpoint::ObjectInstances)?;
@@ -1536,6 +1573,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         match &value.witness {
             Witness::Architecture(a) => {
                 scope.readings.insert(a.construction.reading().into());
+                if let Some(owner_scope) = a.construction.owner_scope() { scope.merge(owner_scope); }
             }
             Witness::Map(m) => {
                 scope.readings.insert(m.result.reading().into());

@@ -327,6 +327,10 @@ pub(in crate::observed) fn search_with_completions(
         valuation: original
             .architecture_values()
             .into_iter()
+            .chain(witness.construction().resolved_owners().iter().map(|(field, owner)| {
+                let subject = original.subject(&owner.snapshot, &owner.subject).expect("検査済みowner参照");
+                (field.clone(), Scalar::Subject { snapshot: owner.snapshot.clone(), subject: owner.subject.clone(), entity: subject.ty.clone() })
+            }))
             .chain(completions.iter().cloned())
             .collect(),
     };
