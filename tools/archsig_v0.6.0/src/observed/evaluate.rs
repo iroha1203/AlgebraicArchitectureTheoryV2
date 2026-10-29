@@ -3969,11 +3969,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
     }
 
     #[test]
-    fn affine_normalization_recheck_reconstructs_difference_in_fresh_sessions_and_stops() {
-        use super::super::{
-            affine,
-            control::{Limits, Usage},
-        };
+    fn affine_normalization_cached_recheck_observes_stop_and_freezes_probes() {
+        use super::super::control::{Limits, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = affine_private_example(
@@ -4005,14 +4002,10 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             .recheck_node(&graph, &graph.nodes[normalization], normalization)
             .unwrap();
         let before = probes.get();
-        let failure = affine::with_observer(
-            move |point| {
-                if point == affine::TestPoint::Coefficient {
-                    armed.set(true)
-                }
-            },
-            || environment.recheck_node(&graph, &graph.nodes[normalization], normalization),
-        );
+        // 検査済みの同じGraphは係数計算を再実行しない。共有キャッシュの
+        // 照合にも必須のcheckpointで停止させ、成功結果より停止を優先する。
+        armed.set(true);
+        let failure = environment.recheck_node(&graph, &graph.nodes[normalization], normalization);
         assert!(matches!(
             failure,
             Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
@@ -4554,11 +4547,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     }
 
     #[test]
-    fn affine_scalar_recheck_stop_does_not_reuse_success_memo_or_probe_after_stop() {
-        use super::super::{
-            affine,
-            control::{Limits, Usage},
-        };
+    fn affine_scalar_cached_recheck_observes_stop_and_freezes_probes() {
+        use super::super::control::{Limits, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = affine_private_example(
@@ -4589,14 +4579,10 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             .recheck_node(&graph, &graph.nodes[scalar], scalar)
             .unwrap();
         let before = probes.get();
-        let failure = affine::with_observer(
-            move |point| {
-                if point == affine::TestPoint::Constant {
-                    armed.set(true)
-                }
-            },
-            || environment.recheck_node(&graph, &graph.nodes[scalar], scalar),
-        );
+        // 検査済みの同じGraphは係数計算を再実行しない。共有キャッシュの
+        // 照合にも必須のcheckpointで停止させ、成功結果より停止を優先する。
+        armed.set(true);
+        let failure = environment.recheck_node(&graph, &graph.nodes[scalar], scalar);
         assert!(matches!(
             failure,
             Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
