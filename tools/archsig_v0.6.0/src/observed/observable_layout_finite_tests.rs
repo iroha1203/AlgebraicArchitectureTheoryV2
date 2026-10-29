@@ -477,6 +477,7 @@ fn finite_plan_column_binding_value_provenance_and_completion_forgery_are_reject
 }
 #[test]
 fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_request_context() {
+    use crate::observed::control::{Resource, StopReason};
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -486,10 +487,7 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
     let mut c = Control::new(Limits::default(), move |point| {
-        if matches!(
-            point,
-            Checkpoint::FiniteLawFunction | Checkpoint::EquationPresentation
-        ) {
+        if point == Checkpoint::NativeResultNode {
             count.set(count.get() + 1)
         }
         Usage::default()
@@ -501,22 +499,23 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
         .unwrap();
     let total = seen.get();
     assert!(total > 4);
-    let mut partial = false;
-    let mut end = false;
+    // 計画用checkpointでなく、実nodeの転記直前・直後で止める。
     for mode in 0..4 {
+        let mut partial = false;
+        let mut end = false;
         for at in [1, total / 4, total / 2, 3 * total / 4, total - 1, total] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
+            let probes = Rc::new(Cell::new(0));
+            let samples = probes.clone();
             let mut c = Control::new(
                 Limits {
                     time_ms: (mode == 0).then_some(1),
                     memory_mib: (mode == 1).then_some(1),
                 },
                 move |point| {
-                    if matches!(
-                        point,
-                        Checkpoint::FiniteLawFunction | Checkpoint::EquationPresentation
-                    ) {
+                    samples.set(samples.get() + 1);
+                    if point == Checkpoint::NativeResultNode {
                         count.set(count.get() + 1)
                     }
                     let stop = count.get() >= at;
@@ -533,10 +532,27 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
             );
             let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
             let mut g = copy(&initial, &c);
+            let expected = match mode {
+                0 | 1 => StopReason::BudgetExhausted {
+                    resource: if mode == 0 {
+                        Resource::TimeMs
+                    } else {
+                        Resource::MemoryMib
+                    },
+                    limit: 1,
+                    observed: 1,
+                },
+                2 => StopReason::Cancelled(crate::result::Signal::Int),
+                _ => StopReason::Cancelled(crate::result::Signal::Term),
+            };
             assert!(matches!(
                 retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &mut c),
-                Err(ValidationFailure::Stop(_))
+                Err(ValidationFailure::Stop(reason)) if reason == expected
             ));
+            assert_eq!(seen.get(), at);
+            let frozen = probes.get();
+            assert_eq!(c.checkpoint(Checkpoint::NativeResultNode), Err(expected));
+            assert_eq!(probes.get(), frozen);
             assert_eq!(g.active, initial.active);
             assert!(env.architecture_ref().is_none());
             assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
@@ -552,9 +568,9 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
             end |= g.nodes.len() == full.nodes.len();
             replay(&p, &g);
         }
+        assert!(partial, "mode {mode}");
+        assert!(end, "mode {mode}");
     }
-    assert!(partial);
-    assert!(end);
 }
 
 #[test]

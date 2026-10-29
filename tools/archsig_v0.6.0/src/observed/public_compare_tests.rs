@@ -707,13 +707,20 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
             }
             Usage::default()
         });
+        let mut completed_at = None;
         assert_eq!(
-            crate::observed::data::equal(&left, &right, &probe).unwrap(),
+            crate::observed::data::equal_retained(&left, &right, &probe, |answer| {
+                assert_eq!(answer, expected);
+                assert!(completed_at.replace(count.get()).is_none());
+            })
+            .unwrap(),
             expected
         );
         let total = count.get();
-        assert!(total > 20);
-        for at in [1, total / 2, total - 1, total] {
+        let completed_at = completed_at.unwrap();
+        assert!(completed_at > 1 && completed_at < total);
+        // 完成通知の直前・直後を検査する。外側へ戻るpostは複数あり得る。
+        for at in [1, completed_at, completed_at + 1, total] {
             for mode in 0..4 {
                 let (c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
                 let mut retained = None;
@@ -721,7 +728,14 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
                     retained = Some(v)
                 });
                 assert!(matches!(outcome, Err(ValidationFailure::Stop(_))));
-                assert_eq!(retained, if at == total { Some(expected) } else { None });
+                assert_eq!(
+                    retained,
+                    if at > completed_at {
+                        Some(expected)
+                    } else {
+                        None
+                    }
+                );
                 assert_eq!(count.get(), at);
                 assert!(c.clone().checkpoint(Checkpoint::FiniteIteration).is_err());
                 assert_eq!(count.get(), at);
@@ -729,6 +743,7 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
         }
     }
 }
+
 #[test]
 fn raw_subject_comparison_rechecks_its_request_context_even_for_an_identical_value() {
     let mut r = primitive_example(&[
