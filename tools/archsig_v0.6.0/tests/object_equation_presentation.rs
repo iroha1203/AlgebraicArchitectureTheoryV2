@@ -951,7 +951,13 @@ fn logical_and_normalized_numeric_guard_constants_keep_required_ideals_and_suppo
             if truth { vec![0] } else { vec![] }
         );
         assert_eq!(r.rings()[0].symbols.len(), 1);
-        assert!(!r.rings()[0].symbols[0].readings.is_empty());
+        let symbol = &r.rings()[0].symbols[0];
+        assert_eq!(symbol.slot.subject, "p");
+        assert_eq!(symbol.slot.field, "Pattern.Part.quantity");
+        assert_eq!(number(&symbol.value), Some("\"2\"".into()));
+        assert_eq!(symbol.readings.is_empty(), !truth, "{expression}");
+        assert_eq!(q.component_holds, truth.then_some(false));
+        assert_eq!(number(&q.evaluated_nu), truth.then(|| "\"2\"".into()));
         assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
         r.recheck(i, &mut quiet()).unwrap();
     }
@@ -1031,7 +1037,10 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
             );
             if !truth {
                 assert!(q.operands.is_empty());
-                assert!(q.nu.is_none());
+                assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
+                assert!(q.evaluated_nu.is_none());
+                assert!(q.epsilon_constant.is_none());
+                assert!(q.epsilon_producer.is_none());
                 assert!(q.component_holds.is_none());
             }
             assert_eq!(
@@ -1325,4 +1334,72 @@ fn unobserved_outer_match_keeps_its_slot_without_executing_a_missing_body() {
     assert!(r.rings()[0].evaluation_images.is_none());
     assert!(r.rings()[0].required_generators.is_empty());
     r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn inactive_prime_field_equations_keep_symbolic_arithmetic_without_evaluating_missing_operands() {
+    for (prime, value) in [("2", "1"), ("5", "2")] {
+        let d = fixture::D.replace(r#""type":"Z""#, &format!(r#""type":["Fp","{prime}"]"#));
+        let map = fixture::A.replace(r#""value":"2""#, &format!(r#""value":"{value}""#));
+        for missing in [false, true] {
+            let map = if missing {
+                map.lines()
+                    .filter(|line| !line.contains("\"quantity-p\""))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    .replace(",\n]", "\n]")
+            } else {
+                map.clone()
+            };
+            let i = inputs_with(
+                &d,
+                "law required off(c:Part) when false:c.quantity+1=0;",
+                &map,
+            );
+            let r = run(i.clone());
+            assert!(r.is_complete());
+            assert_eq!(r.status(), S::Ready);
+            assert_eq!(
+                r.occurrences().len(),
+                if missing {
+                    prime.parse::<usize>().unwrap()
+                } else {
+                    1
+                }
+            );
+            for q in r.occurrences() {
+                assert_eq!(q.ty, Type::Fp(prime.into()));
+                assert_eq!(q.guard, G::AlwaysFalse);
+                assert_eq!(q.status, S::NotApplicable);
+                assert_eq!(
+                    terms(q.nu.as_ref().unwrap()),
+                    [(vec![], "\"1\"".into()), (vec![0], "\"1\"".into())]
+                );
+                assert_eq!(q.operands.is_empty(), missing);
+                assert_eq!(
+                    number(&q.epsilon),
+                    (!missing).then(|| if prime == "2" {
+                        "\"0\"".into()
+                    } else {
+                        "\"3\"".into()
+                    })
+                );
+                assert_eq!(q.epsilon_producer.is_none(), missing);
+                assert!(q.evaluated_nu.is_none());
+                assert!(q.component_holds.is_none());
+                assert_eq!(number(&q.residual), Some("\"0\"".into()));
+            }
+            let ring = &r.rings()[0];
+            assert_eq!(ring.ty, Type::Fp(prime.into()));
+            assert!(ring.required_generators.is_empty());
+            assert_eq!(ring.symbols.len(), 1);
+            assert_eq!(ring.symbols[0].slot.field, "Pattern.Part.quantity");
+            assert_eq!(
+                number(&ring.symbols[0].value),
+                (!missing).then(|| format!("\"{value}\""))
+            );
+            assert!(ring.symbols[0].readings.is_empty());
+            r.recheck(i, &mut quiet()).unwrap();
+        }
+    }
 }

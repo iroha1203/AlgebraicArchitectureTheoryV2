@@ -198,6 +198,11 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
                 crate::types::Type::Fp(_) => 2,
                 _ => panic!(),
             };
+            assert!(polynomial(&g, q.polynomial().unwrap().nu.unwrap()).is_empty());
+            assert_eq!(
+                q.polynomial().unwrap().epsilon.is_none(),
+                q.polynomial().unwrap().guard == EquationGuard::OutsideObject
+            );
             assert_eq!(q.polynomial().unwrap().component, [expected]);
             assert_eq!(q.factor, Some(expected));
             assert_eq!(q.polynomial().unwrap().ring, Some(l.data.factors[expected]));

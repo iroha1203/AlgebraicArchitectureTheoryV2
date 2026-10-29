@@ -846,6 +846,12 @@ impl PolynomialFamily {
     }
     fn from_binding(value: &Binding, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
         if let Binding::Family(family) = value { return Ok(Some(family.clone())); }
+        if let Binding::Polynomial(polynomial) = value {
+            return Ok(Some(Self {
+                constant: polynomial.clone(),
+                parameters: vec![],
+            }));
+        }
         let Some((polynomial, form)) = value.split(c)? else { return Ok(None) };
         let Some((constant, parameters)) = form.parameter_coordinates(c).map_err(invalid)? else { return Ok(None) };
         let parameters = parameters.into_iter().map(|(parameter, coefficient)| Ok((parameter, EquationPolynomial::constant(coefficient, c)?))).collect::<Result<_, ConstructionFailure>>()?;
