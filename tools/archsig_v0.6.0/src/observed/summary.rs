@@ -1,11 +1,81 @@
 //! 保存を依頼していないrunの回答表示。計算・後続参照には元の型付き結果を使う。
-use super::result::{Decision, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind};
+use super::result::{
+    Binding, Decision, Fact, Node, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind,
+};
 use crate::canonical::Json;
 use std::collections::BTreeMap;
 
 const EXAMPLE_LIMIT: usize = 3;
 const ITEM_LIMIT: usize = 3;
 
+// 型付き反例は元の参照を借りる。native構成の表示記録だけを変換対象として区別する。
+enum Counterexample<'a> {
+    Comparison {
+        bindings: &'a [Binding],
+        left: NodeRef,
+        right: NodeRef,
+        facts: &'a [Fact],
+    },
+    Native(Json),
+}
+impl<'a> Counterexample<'a> {
+    fn from_payload(payload: &'a Payload) -> Option<Self> {
+        match payload {
+            Payload::Counterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }
+            | Payload::TermCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }
+            | Payload::PathCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }
+            | Payload::OwnedCallCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            } => Some(Self::Comparison {
+                bindings,
+                left: *left,
+                right: *right,
+                facts,
+            }),
+            Payload::ProjectionCounterexample { left, right, facts } => Some(Self::Comparison {
+                bindings: &[],
+                left: *left,
+                right: *right,
+                facts,
+            }),
+            Payload::Construction(value) => Self::from_native(value.wire()),
+            _ => None,
+        }
+    }
+
+    fn from_native(mut value: Json) -> Option<Self> {
+        let Json::Obj(wire) = &mut value else {
+            return None;
+        };
+        if !matches!(wire.get("kind"), Some(Json::Str(kind)) if matches!(kind.as_str(), "counterexample" | "separating_pair"))
+        {
+            return None;
+        }
+        Some(Self::Native(
+            wire.remove("data").expect("native counterexample data"),
+        ))
+    }
+}
+
+// native構成が保持する表示記録の参照を読む。型付きPayloadには使用しない。
 fn node_reference(value: &Json) -> NodeRef {
     let Json::Str(id) = &fields(value).expect("counterexample reference")["node"] else {
         unreachable!("counterexample node ID")
@@ -106,15 +176,17 @@ impl ObservedEvaluation {
                     row.insert("reasons".into(), Json::Arr(reasons));
                 }
                 if answer.status == Decision::Refuted {
-                    // 各構成器が既に使う共通の反例表示を読む。導出グラフは辿らない。
-                    let examples: Vec<_> = answer.evidence.iter().filter_map(|reference| {
-                        let node = &self.nodes[reference.0];
-                        if node.ty != NodeType::Evidence { return None; }
-                        let mut wire = node.payload.as_ref()?.wire();
-                        let Json::Obj(wire) = &mut wire else { return None; };
-                        if !matches!(wire.get("kind"), Some(Json::Str(kind)) if matches!(kind.as_str(), "counterexample" | "separating_pair")) { return None; }
-                        Some((*reference, wire.remove("data").expect("counterexample data")))
-                    }).collect();
+                    let examples: Vec<_> = answer
+                        .evidence
+                        .iter()
+                        .filter_map(|reference| {
+                            let node = &self.nodes[reference.0];
+                            if node.ty != NodeType::Evidence {
+                                return None;
+                            }
+                            Some((node, Counterexample::from_payload(node.payload.as_ref()?)?))
+                        })
+                        .collect();
                     if !examples.is_empty() {
                         row.insert(
                             "counterexamples_total".into(),
@@ -126,7 +198,7 @@ impl ObservedEvaluation {
                                 examples
                                     .into_iter()
                                     .take(EXAMPLE_LIMIT)
-                                    .map(|(reference, data)| self.summary_counterexample(reference, &data))
+                                    .map(|(node, data)| self.summary_counterexample(node, data))
                                     .collect(),
                             ),
                         );
@@ -150,8 +222,27 @@ impl ObservedEvaluation {
         Json::Obj(result)
     }
 
-    fn summary_counterexample(&self, reference: NodeRef, data: &Json) -> Json {
-        let node = &self.nodes[reference.0];
+    fn summary_counterexample(&self, node: &Node, data: Counterexample<'_>) -> Json {
+        match data {
+            Counterexample::Comparison {
+                bindings,
+                left,
+                right,
+                facts,
+            } => self.summary_comparison(
+                node,
+                left,
+                right,
+                bindings
+                    .iter()
+                    .map(|binding| (binding.name.as_str(), binding.value)),
+                facts.iter().map(Fact::wire),
+            ),
+            Counterexample::Native(data) => self.summary_native_counterexample(node, &data),
+        }
+    }
+
+    fn summary_native_counterexample(&self, node: &Node, data: &Json) -> Json {
         let data = fields(data).expect("counterexample data object");
         if let Some(Json::Arr(values)) = data.get("law_values") {
             return Json::obj([
@@ -171,47 +262,56 @@ impl ObservedEvaluation {
         let Json::Arr(facts) = &data["facts"] else {
             unreachable!("counterexample facts")
         };
+        self.summary_comparison(
+            node,
+            node_reference(&data["left"]),
+            node_reference(&data["right"]),
+            bindings.iter().map(|binding| {
+                let binding = fields(binding).expect("counterexample binding");
+                let Json::Str(name) = &binding["name"] else {
+                    unreachable!("binding name")
+                };
+                (name.as_str(), node_reference(&binding["value"]))
+            }),
+            facts.iter().cloned(),
+        )
+    }
+
+    fn summary_comparison<'a>(
+        &self,
+        node: &Node,
+        left: NodeRef,
+        right: NodeRef,
+        bindings: impl ExactSizeIterator<Item = (&'a str, NodeRef)>,
+        facts: impl ExactSizeIterator<Item = Json>,
+    ) -> Json {
         let mut row = BTreeMap::from([
             ("bindings_total".into(), Json::Nat(bindings.len() as u64)),
             (
                 "bindings".into(),
                 Json::Arr(
                     bindings
-                        .iter()
                         .take(ITEM_LIMIT)
-                        .map(|binding| {
-                            let binding = fields(binding).expect("counterexample binding");
-                            let Json::Str(name) = &binding["name"] else {
-                                unreachable!("binding name")
-                            };
-                            let mut row = BTreeMap::from([(
-                                "value".into(),
-                                self.summary_value(node_reference(&binding["value"])),
-                            )]);
+                        .map(|(name, value)| {
+                            let mut row =
+                                BTreeMap::from([("value".into(), self.summary_value(value))]);
                             brief_text(&mut row, "name", name);
                             Json::Obj(row)
                         })
                         .collect(),
                 ),
             ),
-            (
-                "left".into(),
-                self.summary_value(node_reference(&data["left"])),
-            ),
-            (
-                "right".into(),
-                self.summary_value(node_reference(&data["right"])),
-            ),
+            ("left".into(), self.summary_value(left)),
+            ("right".into(), self.summary_value(right)),
             ("facts_total".into(), Json::Nat(facts.len() as u64)),
             (
                 "facts".into(),
                 Json::Arr(
                     facts
-                        .iter()
                         .take(ITEM_LIMIT)
                         .map(|fact| {
                             let mut row = BTreeMap::new();
-                            for (key, value) in fields(fact).expect("counterexample fact") {
+                            for (key, value) in fields(&fact).expect("counterexample fact") {
                                 let Json::Str(value) = value else {
                                     unreachable!("fact identifier")
                                 };
@@ -282,14 +382,17 @@ impl ObservedEvaluation {
         let value = match &node.payload {
             None => None,
             Some(Payload::Construction(value)) if value.is_blocked() => None,
-            Some(Payload::Scalar(value)) => Some(super::path_value::wire(
-                value,
-                &self.nodes[..reference.0],
-                &node.arguments,
-                &super::control::Control::new(super::control::Limits::default(), |_| {
-                    super::control::Usage::default()
-                }),
-            ).expect("挿入時に検査した値の既出 Ref 表示")),
+            Some(Payload::Scalar(value)) => Some(
+                super::path_value::wire(
+                    value,
+                    &self.nodes[..reference.0],
+                    &node.arguments,
+                    &super::control::Control::new(super::control::Limits::default(), |_| {
+                        super::control::Usage::default()
+                    }),
+                )
+                .expect("挿入時に検査した値の既出 Ref 表示"),
+            ),
             Some(payload) => Some(payload.wire()),
         };
         let Some(value) = value.as_ref() else {
@@ -355,3 +458,7 @@ impl ObservedEvaluation {
         Json::Obj(brief)
     }
 }
+
+#[cfg(test)]
+#[path = "summary_tests.rs"]
+mod tests;
