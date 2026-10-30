@@ -634,3 +634,44 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
 
 #[path = "common/owner_completion_change.rs"]
 mod owner_completion;
+
+#[test]
+fn change_projections_expose_the_candidate_base_but_not_state_metadata_or_witnesses() {
+    let input = input();
+    let dir = workdir("change-private-projections");
+    for (name, bytes) in [
+        ("d.json", input.sources().definitions()[0].bytes()),
+        ("a.json", input.sources().archmap().bytes()),
+        ("l.law", input.sources().law().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let solve = "s=solve(Selected.valid,on=@v/root,using=Selected.choose)";
+    let execute = |query: &str| run(&dir, &[
+        "run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law",
+        "--out", "out", "--ask", solve, "--ask", query,
+    ]);
+    for path in [
+        "domain.states.base", "solutions.representation", "solutions.representation.particular",
+        "solutions.representation.directions", "solutions.representation.basis",
+        "solutions.representation.certificate", "solutions.witness",
+    ] {
+        let query = format!("v=evaluate(Selected.flag,on=$s.{path},c=@v/q)");
+        let rejected = without_file_changes(&dir, || execute(&query));
+        let receipt = notified(&dir, &rejected, "invalid", 64);
+        assert!(arr(get(&receipt, "issues")).iter().all(|r| {
+            s(get(r, "code")) == "usage"
+                && s(get(r, "message")).contains("does not expose this projection")
+        }), "{path}: {}", rejected.stdout);
+        assert!(!dir.join("out").exists());
+    }
+    let accepted = execute("v=evaluate(Selected.flag,on=$s.domain.base,c=@v/q)");
+    assert_eq!(accepted.code, 0, "{}", accepted.stdout);
+    let result = result_json(&dir, &accepted);
+    let answer = &arr(get(&result, "answers"))[1];
+    assert_eq!(s(get(answer, "status")), "established");
+    let value_ref = get(get(answer, "outputs"), "value");
+    let value = arr(get(&result, "nodes")).iter()
+        .find(|n| get(n, "id").value == get(value_ref, "node").value).unwrap();
+    assert_eq!(get(value, "value").value, archsig::json::JValue::Bool(false));
+}
