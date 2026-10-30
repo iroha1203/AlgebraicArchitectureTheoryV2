@@ -159,6 +159,8 @@ enum LexicalOrigin {
     },
 }
 
+type ScopedMatchBindings = (usize, BTreeMap<String, SourceValue>);
+
 type SourceCacheEntry = (
     super::call::Context,
     usize,
@@ -7346,7 +7348,7 @@ impl<'a> Environment<'a> {
         id: usize,
         input: &SourceValue,
         variables: &BTreeMap<String, SourceValue>,
-    ) -> Result<Option<(usize, BTreeMap<String, SourceValue>)>, ValidationFailure> {
+    ) -> Result<Option<ScopedMatchBindings>, ValidationFailure> {
         let ExprKind::Match { scrutinee, arms } = &self.inputs.law().exprs[id].kind else {
             return Err("束縛の元式がmatchでない".into());
         };
