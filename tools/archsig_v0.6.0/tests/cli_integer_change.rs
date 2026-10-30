@@ -436,7 +436,7 @@ fn parameter_product_lexical_conjunction_keeps_inconsistent_constraints() {
     }
 }
 #[test]
-fn parameter_product_nonlinear_coefficients_are_not_linear_solutions() {
+fn parameter_product_nonlinear_coefficients_preserve_the_algorithm_reason() {
     let dir = product_input(
         "nonlinear-coefficient",
         "change setpair(s:State,a:Z)=s with{x=a,y=0};",
@@ -444,14 +444,40 @@ fn parameter_product_nonlinear_coefficients_are_not_linear_solutions() {
         "z*s.x*s.x=z",
         false,
     );
-    let result = without_file_changes(&dir, || execute(
-        &dir,
-        "out",
-        &["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"],
-    ));
-    assert_eq!(result.code, 70, "{} {}", result.stdout, result.stderr);
-    notified(&dir, &result, "error", 70);
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+    let asks = [
+        "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+        "n=needed($r)",
+    ];
+    let result = execute(&dir, "out", &asks);
+    assert_eq!(result.code, 2, "{} {}", result.stdout, result.stderr);
+    let j = result_json(&dir, &result);
+    assert_eq!(s(get(&j, "status")), "partial");
+    let answers = arr(get(&j, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "undetermined");
+    assert!(!has(get(&answers[0], "outputs"), "object"));
+    let reason = &arr(get(&answers[0], "reasons"))[0];
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    let details = get(reason, "details");
+    assert_eq!(s(get(details, "method")), "numeric_change_condition");
+    assert_eq!(s(get(details, "question")), "repair");
+    assert_eq!(arr(get(details, "operand_types")).len(), 1);
+    assert_eq!(s(&arr(get(details, "operand_types"))[0]), "Z");
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "law");
+    let span = arr(get(location, "span"));
+    let law = std::fs::read(dir.join("l.law")).unwrap();
+    assert_eq!(
+        &law[num(&span[0]) as usize..num(&span[1]) as usize],
+        b"z*s.x*s.x=z"
+    );
+    assert_eq!(s(get(&answers[1], "status")), "established");
+    let plan = output(&j, 1, "plan");
+    assert!(
+        arr(get(get(plan, "value"), "blockers"))
+            .iter()
+            .any(|r| r.value == reason.value)
+    );
+    product_reuse(&dir, &asks, &j, 2);
 }
 #[test]
 fn universal_integer_law_repairs_finite_and_integer_changes() {

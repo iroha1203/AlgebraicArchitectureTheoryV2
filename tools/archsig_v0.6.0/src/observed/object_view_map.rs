@@ -59,7 +59,7 @@ fn transport(
 }
 pub(super) struct Output {
     pub preserved: bool,
-    pub pending: Option<(crate::issue::Location, Vec<Fact>)>,
+    pub pending: Option<Reason>,
     pub invariants: Vec<NodeRef>,
     pub axes: Vec<Json>,
     pub conditions: Vec<NodeRef>,
@@ -484,6 +484,7 @@ pub(super) fn retain(
     inputs: &Arc<CheckedInputs>,
     declarations: &DeclarationCorrespondence,
     plans: [&Plan; 2],
+    request: &super::request::Request,
     c: &mut Control,
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
@@ -515,10 +516,41 @@ pub(super) fn retain(
             .instances()
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
+        let declaration = &inputs.law().declarations[&instance.declaration().name];
+        let crate::law::model::Signature::View { body, .. } = &declaration.signature else {
+            return Err("元viewのbodyがない".into());
+        };
+        let pending = |method: &str, missing: Vec<Fact>| Reason {
+            kind: if missing.is_empty() {
+                ReasonKind::UnsupportedAlgorithm {
+                    question: request.kind,
+                    operand_types: instance
+                        .parameters()
+                        .iter()
+                        .map(|p| p.ty.clone())
+                        .chain(instance.declaration().returns.iter().cloned())
+                        .collect(),
+                    method: method.into(),
+                }
+            } else {
+                ReasonKind::Missing
+            },
+            request: request.id.clone(),
+            dependencies: vec![axis.invariant],
+            missing,
+            location: Some(crate::issue::Location::Law {
+                span: inputs.law().exprs[*body].span,
+            }),
+        };
+        let mut unsupported_parameter = false;
         for p in instance.parameters() {
             if !supported_parameter(&p.ty, inputs, c)? {
-                return Err("このparameter型のview移送配送は未実装".into());
+                unsupported_parameter = true;
             }
+        }
+        if unsupported_parameter {
+            out.pending.get_or_insert_with(|| pending("view_parameter_domain_transport", vec![]));
+            continue;
         }
         let returns = instance
             .declaration()
@@ -529,7 +561,8 @@ pub(super) fn retain(
             super::value_transport::identity_declarations(returns, inputs.law(), c)?;
         let finite_values = if value_declarations.is_none() {
             if !super::finite::supported(returns, inputs.law(), c)? {
-                return Err("このview値型の全域写像配送は未実装".into());
+                out.pending.get_or_insert_with(|| pending("view_value_domain_transport", vec![]));
+                continue;
             }
             Some(
                 super::value_transport::finite_declaration_value_transport(
@@ -608,15 +641,18 @@ pub(super) fn retain(
                             &instance.declaration().name
                         };
                         let declaration = &inputs.law().declarations[name];
-                        let crate::law::model::Signature::View { body, .. } = &declaration.signature else {
+                        let crate::law::model::Signature::View { body, params, returns } = &declaration.signature else {
                             return Err("元viewのbodyがない".into());
                         };
-                        out.pending.get_or_insert((
-                            crate::issue::Location::Law {
-                                span: inputs.law().exprs[*body].span,
-                            },
-                            missing,
-                        ));
+                        let mut reason = pending("affine_numeric_view_transport", missing);
+                        if let ReasonKind::UnsupportedAlgorithm { operand_types, .. } = &mut reason.kind {
+                            *operand_types = params.iter().map(|p| p.ty.clone())
+                                .chain(std::iter::once(returns.clone())).collect();
+                        }
+                        reason.location = Some(crate::issue::Location::Law {
+                            span: inputs.law().exprs[*body].span,
+                        });
+                        out.pending.get_or_insert(reason);
                         continue;
                     }
                     return Err("未決view保存の配送は未実装".into());

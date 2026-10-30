@@ -801,10 +801,62 @@ pub(super) fn retain(
         if sp.len() != tp.len() || sr.len() != tr.len() {
             return Err("参照射影以外のlocal宣言移送は未実装".into());
         }
-        let coefficient = sp.iter().find_map(|p|
-            numeric_parameters::coefficient_type(&p.ty));
-        let mixed = coefficient.as_ref().is_some_and(|ty|
-            sp.iter().filter_map(|p| numeric_parameters::coefficient_type(&p.ty)).any(|t| t != *ty));
+        let unsupported = |method: &str| Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: request.kind,
+                operand_types: sp
+                    .iter()
+                    .map(|p| p.ty.clone())
+                    .chain(
+                        sr.iter()
+                            .filter_map(|id| inputs.law().expr_type(*id).map(|t| t.erase())),
+                    )
+                    .collect(),
+                method: method.into(),
+            },
+            request: request.id.clone(),
+            dependencies: dependencies.to_vec(),
+            missing: vec![],
+            location: Some(crate::issue::Location::Law { span: source.span }),
+        };
+        for parameter in sp {
+            tick(c)?;
+            if !matches!(parameter.ty, Type::Ref(_))
+                && numeric_parameters::numeric_width(&parameter.ty).is_none()
+                && !super::super::finite::supported(&parameter.ty, inputs.law(), c)?
+            {
+                result.status = merge_status(result.status, Decision::Undetermined);
+                result
+                    .reasons
+                    .push(unsupported("local_parameter_domain_transport"));
+                continue 'declarations;
+            }
+        }
+        let coefficient = sp
+            .iter()
+            .find_map(|p| numeric_parameters::coefficient_type(&p.ty));
+        let mixed = coefficient.as_ref().is_some_and(|ty| {
+            sp.iter()
+                .filter_map(|p| numeric_parameters::coefficient_type(&p.ty))
+                .any(|t| t != *ty)
+        });
+        if coefficient.is_some()
+            && sr.iter().zip(tr).any(|(s, t)| {
+                let ty = inputs.law().expr_type(*s).map(|t| t.erase());
+                ty != inputs.law().expr_type(*t).map(|t| t.erase())
+                    || if mixed {
+                        !matches!(ty, Some(Type::Z | Type::Q))
+                    } else {
+                        ty != coefficient
+                    }
+            })
+        {
+            result.status = merge_status(result.status, Decision::Undetermined);
+            result
+                .reasons
+                .push(unsupported("local_read_coefficient_transport"));
+            continue;
+        }
         let mut reads = vec![];
         for (&s, &t) in sr.iter().zip(tr) {
             if coefficient.is_some() {
@@ -942,13 +994,6 @@ pub(super) fn retain(
             parameter_maps.push(LocalParameter::Reference(map));
         }
         let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Numeric { .. }));
-        if infinite && sr.iter().zip(tr).any(|(s,t)| {
-            let ty = inputs.law().expr_type(*s).map(|t| t.erase());
-            ty != inputs.law().expr_type(*t).map(|t| t.erase())
-                || if mixed { !matches!(ty, Some(Type::Z | Type::Q)) } else { ty != coefficient }
-        }) {
-            return Err("numeric local transport requires reads of its coefficient type".into());
-        }
         let mut guard_expressions = vec![];
         for (guard, params) in [(*sg, sp), (*tg, tp)] {
             if let Some(id) = guard {

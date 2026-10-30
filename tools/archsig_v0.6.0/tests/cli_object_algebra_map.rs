@@ -66,6 +66,74 @@ fn value<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
     get(node(result, reference), "value")
 }
 
+fn assert_unsupported_map(dir: &Path, method: &str, operand: &str, original: &str) {
+    let requests = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+        "n=needed($m)",
+    ];
+    let run = asks(dir, &requests);
+    assert_eq!(run.code, 2, "{} {}", run.stdout, run.stderr);
+    let result = result_json(dir, &run);
+    assert_eq!(s(get(&result, "status")), "partial");
+    let map = answer(&result, "m");
+    assert_eq!(s(get(map, "status")), "undetermined");
+    let outputs = get(map, "outputs");
+    assert!(has(outputs, "candidate"));
+    assert!(has(outputs, "operation"));
+    assert!(!has(outputs, "map"));
+    let reason = arr(get(map, "reasons"))
+        .iter()
+        .find(|r| {
+            s(get(r, "code")) == "unsupported_algorithm"
+                && s(get(get(r, "details"), "method")) == method
+        })
+        .unwrap();
+    let expected = archsig::json::parse(operand.as_bytes()).unwrap();
+    assert!(
+        arr(get(get(reason, "details"), "operand_types"))
+            .iter()
+            .any(|t| t.value == expected.value)
+    );
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "law");
+    let span = arr(get(location, "span"));
+    let law = std::fs::read(dir.join("l.law")).unwrap();
+    let source = std::str::from_utf8(&law[num(&span[0]) as usize..num(&span[1]) as usize]).unwrap();
+    assert!(source.contains(original), "{source}");
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "n"), "status")), "established");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    assert!(
+        arr(get(plan, "blockers"))
+            .iter()
+            .any(|r| r.value == reason.value)
+    );
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
+    let reused = cli::run(dir, &args);
+    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
+    let again = result_json(dir, &reused);
+    for key in ["answers", "nodes", "inputs"] {
+        assert_eq!(get(&result, key).value, get(&again, key).value);
+    }
+}
+
 fn reference_pairs(result: &JNode, map: &JNode) -> Vec<(String, String)> {
     let subject = |reference: &JNode| {
         let scalar = value(result, reference);
@@ -1943,11 +2011,21 @@ fn container_view_map_refutes_changed_list_entries_and_keeps_the_operation() {
 fn reference_containers_do_not_use_same_nominal_type_identity() {
     let dir = finite_view_inputs("reference-container-view", true);
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
-reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#)).unwrap();
-    let run = without_file_changes(&dir, || asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]));
-    notified(&dir, &run, "error", 70);
+reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#
+        ),
+    )
+    .unwrap();
+    assert_unsupported_map(
+        &dir,
+        "view_value_domain_transport",
+        r#"["List",["Ref","Reservations.State"]]"#,
+        "list<State>[s]",
+    );
 }
 
 fn finite_container_parameter_inputs(name: &str, preserve: bool, kind: &str) -> PathBuf {
@@ -2195,14 +2273,12 @@ fn changed_data_payload_refutes_map_and_preserves_configuration_operation() {
 #[test]
 fn an_unused_reference_constructor_does_not_become_an_identity_value_map() {
     let dir = data_view_inputs("data-hidden-reference", true, false, true);
-    let r = asks(
+    assert_unsupported_map(
         &dir,
-        &[
-            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-        ],
+        "view_value_domain_transport",
+        r#"["Tuple",["Data","Reservations.Packet"],["List",["Data","Reservations.Packet"]],["Option",["Data","Reservations.Packet"]],"Z"]"#,
+        "Full(s.free)",
     );
-    assert_eq!(r.code, 70, "{}", r.stdout);
-    assert!(has(&r.receipt, "issues"));
 }
 
 fn finite_data_view_inputs(name: &str) -> PathBuf {
@@ -5686,25 +5762,20 @@ reading After {{{vocabulary} local here(x:{ty}) reads {read};}}"#
             ),
         )
         .unwrap();
-        let run = without_file_changes(&dir, || {
-            cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--ask",
-                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                ],
-            )
-        });
-        assert_eq!(run.code, 70, "{name}: {}", run.stdout);
-        assert!(run.stderr.is_empty());
-        assert!(has(&run.receipt, "issues"));
+        let operand = match name {
+            "rational" => r#""Q""#,
+            "text" => r#""Text""#,
+            "list" => r#"["List","Bool"]"#,
+            "tuple-integer" => r#"["Tuple",["Ref","Reservations.State"],"Z"]"#,
+            "option-rational" => r#"["Option",["Tuple",["Ref","Reservations.State"],"Q"]]"#,
+            _ => unreachable!(),
+        };
+        let method = if name == "rational" {
+            "local_read_coefficient_transport"
+        } else {
+            "local_parameter_domain_transport"
+        };
+        assert_unsupported_map(&dir, method, operand, "reads 0+0");
     }
 }
 
@@ -6076,14 +6147,14 @@ reading After {{{vocabulary} local here(a:State,pick:Option<Bool>,b:State) when 
 }
 
 #[test]
-fn local_infinite_argument_expression_transport_keeps_the_execution_error() {
-    for (name, source_params, target_params, source_read, target_read) in [
-        (
-            "infinite-argument", "items:List<Z>,take:Bool", "items:List<Z>,keep:Bool",
-            "if take then list<Z>[0] else items",
-            "if keep then list<Z>[0] else items",
-        ),
-    ] {
+fn local_infinite_argument_expression_transport_keeps_the_original_reason_and_operation() {
+    for (name, source_params, target_params, source_read, target_read) in [(
+        "infinite-argument",
+        "items:List<Z>,take:Bool",
+        "items:List<Z>,keep:Bool",
+        "if take then list<Z>[0] else items",
+        "if keep then list<Z>[0] else items",
+    )] {
         let (dir, vocabulary) =
             finite_local_parameter_inputs(&format!("local-composite-outside-{name}"));
         std::fs::write(
@@ -6095,25 +6166,12 @@ reading After {{{vocabulary} local here({target_params}) reads {target_read};}}"
             ),
         )
         .unwrap();
-        let run = without_file_changes(&dir, || {
-            cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--ask",
-                    "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                ],
-            )
-        });
-        assert_eq!(run.code, 70, "{name}: {}", run.stdout);
-        assert!(run.stderr.is_empty());
-        assert!(has(&run.receipt, "issues"));
+        assert_unsupported_map(
+            &dir,
+            "local_parameter_domain_transport",
+            r#"["List","Z"]"#,
+            source_read,
+        );
     }
 }
 

@@ -620,7 +620,7 @@ fn compute_inner(
                 )?);
             }
             let views = super::object_view_map::retain(
-                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], c,
+                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], request, c,
             )?;
             preserved &= views.preserved;
             let view_pending = views.pending;
@@ -647,27 +647,29 @@ fn compute_inner(
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;
-            let pending = view_pending.map(|(location, missing)| (location, missing, "affine_numeric_view_transport"))
-                .or_else(|| law_pending.map(|p| (p.location, p.missing, "affine_numeric_law_transport")));
-            if let Some((location, missing, method)) = pending {
-                if declaration_status != Decision::Refuted {
-                    declaration_status = Decision::Undetermined;
-                }
-                declaration_reasons.push(Reason {
-                    kind: if missing.is_empty() {
+            let pending = view_pending.or_else(|| {
+                law_pending.map(|p| Reason {
+                    kind: if p.missing.is_empty() {
                         ReasonKind::UnsupportedAlgorithm {
                             question: request.kind,
                             operand_types: vec![],
-                            method: method.into(),
+                            method: "affine_numeric_law_transport".into(),
                         }
                     } else {
                         ReasonKind::Missing
                     },
                     request: request.id.clone(),
-                    dependencies: vec![left, right],
-                    missing,
-                    location: Some(location),
-                });
+                    dependencies: vec![],
+                    missing: p.missing,
+                    location: Some(p.location),
+                })
+            });
+            if let Some(mut reason) = pending {
+                if declaration_status != Decision::Refuted {
+                    declaration_status = Decision::Undetermined;
+                }
+                reason.dependencies.extend([left, right]);
+                declaration_reasons.push(reason);
             }
             declaration_evidence.extend(transported.evidence);
             declaration_evidence.extend(law_evidence);
