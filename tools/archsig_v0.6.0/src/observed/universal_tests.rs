@@ -2018,3 +2018,44 @@ fn universal_recheck_stop_mode(
     assert_eq!(probes.get(), frozen);
     rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
 }
+
+#[test]
+fn universal_affine_guard_counterexamples_belong_to_the_actual_guard_fiber() {
+    for (ty, guard, rhs, expected) in [
+        ("Z", "n=0", "1", Scalar::Z(0.into())),
+        (
+            "Q",
+            "2*n=rat(1,1)",
+            "rat(1,1)",
+            Scalar::Q(1.into(), 2.into()),
+        ),
+    ] {
+        let result = universal_private_example(
+            &format!("law required example(n:{ty}) when {guard}:n={rhs};"),
+            &["c=check(Calc.example)"],
+        );
+        assert_eq!(result.answers[0].status, Decision::Refuted, "{ty}");
+        let binding = result.answers[0]
+            .evidence
+            .iter()
+            .find_map(|r| {
+                let Some(Payload::Counterexample { bindings, .. }) = &result.nodes[r.0].payload
+                else {
+                    return None;
+                };
+                bindings.iter().find(|b| b.name == "n")
+            })
+            .unwrap();
+        assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
+        completion_mutation(&result, binding.value.0, |nodes| {
+            let Some(Payload::Scalar(value)) = &mut nodes[binding.value.0].payload else {
+                panic!()
+            };
+            *value = if ty == "Q" {
+                Scalar::Q(99.into(), 1.into())
+            } else {
+                Scalar::Z(99.into())
+            };
+        });
+    }
+}

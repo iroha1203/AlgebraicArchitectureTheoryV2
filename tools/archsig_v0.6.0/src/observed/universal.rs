@@ -1723,7 +1723,7 @@ impl Environment<'_> {
                         )?,
                         _ => None,
                     };
-                    let classification = match predicate {
+                    let mut classification = match predicate {
                         Some(predicate)
                             if predicate.op == BinOp::Eq
                                 && !self.universal_has_exists(&plan)?
@@ -1804,7 +1804,7 @@ impl Environment<'_> {
                     if body_value.is_none() {
                         finite_dependency = None;
                     }
-                    let restricted_zero = if guard_value.is_none()
+                    let guarded_truth = if guard_value.is_none()
                         && !self.universal_has_exists(&plan)?
                         && plan.parameters.iter().all(|p| p.numeric())
                         && !analysis.condition_failed
@@ -1822,21 +1822,35 @@ impl Environment<'_> {
                                         &self.control,
                                     )?
                                 {
-                                    numeric_law_function::universal_zero_on_guard(&guard, body, &self.control)?
+                                    numeric_law_function::universal_on_guard(&guard, body, &self.control)?
                                 } else {
-                                    false
+                                    None
                                 }
                             }
-                            _ => false,
+                            _ => None,
                         }
                     } else {
-                        false
+                        None
                     };
-                    let value = if restricted_zero { Some(true) } else if plan.guard.is_some() {
-                        conditional_bool(guard_value, body_value)
-                    } else {
-                        body_value
+                    let conditional_value = match guarded_truth {
+                        Some(numeric_law_function::GuardTruth::Holds) => Some(true),
+                        Some(numeric_law_function::GuardTruth::Refuted(point)) => {
+                            if let Some(classification) = &mut classification {
+                                classification.common_counterexample = Some(point);
+                                Some(false)
+                            } else {
+                                None
+                            }
+                        }
+                        None => None,
                     };
+                    let value = conditional_value.or_else(|| {
+                        if plan.guard.is_some() {
+                            conditional_bool(guard_value, body_value)
+                        } else {
+                            body_value
+                        }
+                    });
                     if let Some(guard) = &guard_analysis {
                         analysis.scope.merge(&guard.scope);
                         analysis.support.extend(guard.support.iter().cloned());

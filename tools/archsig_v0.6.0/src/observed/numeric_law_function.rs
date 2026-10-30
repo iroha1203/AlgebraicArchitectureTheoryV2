@@ -465,17 +465,22 @@ fn restrict_zero(
         zero: body_system,
     }))
 }
-/// 全称binderの出現を同じ位置軸へ移し、同じ正確なfiber検査を使う。
-pub(in crate::observed) fn universal_zero_on_guard(
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) enum GuardTruth {
+    Holds,
+    Refuted(Vec<(affine::Parameter, Scalar)>),
+}
+/// 全称binderの出現を同じ位置軸へ移し、適用fiber内の実反例を求める。
+pub(in crate::observed) fn universal_on_guard(
     guard: &affine::Form,
     body: &affine::Form,
     c: &Control,
-) -> Result<bool, ValidationFailure> {
+) -> Result<Option<GuardTruth>, ValidationFailure> {
     let (Some((ga, gt)), Some((ba, bt))) = (
         guard.parameter_coordinates(c)?,
         body.parameter_coordinates(c)?,
     ) else {
-        return Ok(false);
+        return Ok(None);
     };
     let parameters = gt
         .iter()
@@ -510,7 +515,31 @@ pub(in crate::observed) fn universal_zero_on_guard(
         }
         Ok(form)
     };
-    Ok(restrict_zero(&convert(&ga, &gt)?, &convert(&ba, &bt)?, c)?.is_some())
+    let ground = parameters.first().map(|p| p.kind.ty()).unwrap_or_else(|| {
+        if ga.ty() == Type::Q || ba.ty() == Type::Q {
+            Type::Q
+        } else {
+            Type::Z
+        }
+    });
+    if parameters.iter().any(|p| p.kind.ty() != ground) {
+        return Ok(None);
+    }
+    let basis = parameters
+        .iter()
+        .enumerate()
+        .map(|(argument, parameter)| TermArgument {
+            argument,
+            component: vec![],
+            kind: parameter.kind,
+        })
+        .collect::<Vec<_>>();
+    let guard = system(&convert(&ga, &gt)?, &basis, &ground, c)?;
+    let body = system(&convert(&ba, &bt)?, &basis, &ground, c)?;
+    Ok(Some(match outside(&guard, &body, c)? {
+        None => GuardTruth::Holds,
+        Some(point) => GuardTruth::Refuted(parameters.into_iter().zip(point).collect()),
+    }))
 }
 /// 元のguardと本文を通常Evaluatorで読み、全適用fiber上の零を検査する。
 /// 証明は原式・特解・整数/体kernelを保持し、元の差を零へ書き換えない。
