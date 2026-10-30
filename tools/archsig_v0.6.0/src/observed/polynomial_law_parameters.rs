@@ -99,8 +99,13 @@ pub(super) fn sources(
                 }
             };
             // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
-            symbolic |= source.guard.zero_on_fiber() || !source.difference.parameters.is_empty()
-                || (!source.finite.is_empty() && instance.parameters().iter().any(|p| numeric_parameters::numeric_width(&p.ty).is_some()));
+            symbolic |= source.guard.dynamic()
+                || !source.difference.parameters.is_empty()
+                || (!source.finite.is_empty()
+                    && instance
+                        .parameters()
+                        .iter()
+                        .any(|p| numeric_parameters::numeric_width(&p.ty).is_some()));
             equations.push((i, source));
         }
     }
@@ -136,6 +141,7 @@ pub(super) fn plans(
         })
         .collect::<Result<_, ValidationFailure>>()?;
     let mut result = vec![];
+    let mut indicators = vec![];
     for object in 0..a.readings().objects().len() {
         tick(c)?;
         let originals = super::sources::symbolic_bound(inputs, a.readings(), equations, parts, base, c)?;
@@ -300,10 +306,17 @@ pub(super) fn plans(
                     c,
                 )?)
             };
-            let residual = if outside || source.guard.is_false() || source.guard.zero_on_fiber() {
+            let residual = if outside || source.guard.is_false() || source.guard.zero_at(object,c)? {
                 let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                     .map_err(|e| construction_failure(&e))?;
                 Some(polynomial(parts, base, &zero, *ring, &ty, variables, c)?)
+            } else if source.guard.pending_at(object).is_some() {
+                None
+            } else if source.guard.dynamic() {
+                match epsilon {
+                    Some(epsilon) => Some(guarded_residual(parts, base, original, epsilon, &ty, &mut indicators, c)?),
+                    None => None,
+                }
             } else {
                 epsilon
             };
@@ -354,20 +367,23 @@ pub(super) fn plans(
                     EquationGuard::OutsideObject
                 } else if source.guard.is_false() {
                     EquationGuard::AlwaysFalse
-                } else if source.guard.zero_on_fiber() {
+                } else if source.guard.dynamic() {
                     EquationGuard::Undetermined
                 } else {
                     EquationGuard::AlwaysTrue
                 },
                 status: if outside || source.guard.is_false() {
                     EquationPresentationStatus::NotApplicable
-                } else if missing {
+                } else if missing || source.guard.pending_at(object).is_some() {
                     EquationPresentationStatus::Undetermined
                 } else {
                     EquationPresentationStatus::Ready
                 },
             });
-            if !outside && !source.guard.is_false() && missing {
+            if !outside
+                && !source.guard.is_false()
+                && (missing || source.guard.pending_at(object).is_some())
+            {
                 out.status = EquationPresentationStatus::Undetermined;
             }
         }
@@ -384,6 +400,10 @@ pub(super) fn plans(
             .iter()
             .flat_map(|b| b.variables.iter().map(|v| v.field.clone()))
             .collect::<Vec<_>>();
+        for (_, source) in equations {
+            positions.extend(source.guard.support_at(object).iter().filter(|f| f.field.is_some()).cloned());
+            if let Some(pending) = source.guard.pending_at(object) { positions.extend(pending.missing.iter().cloned()); }
+        }
         positions.sort();
         positions.dedup();
         let dependencies = common::dependencies(inputs, &positions, c, |value| {
@@ -463,12 +483,19 @@ pub(super) fn plans(
                 .iter()
                 .filter(|q| q.ring == Some(*ring))
                 .collect::<Vec<_>>();
-            let missing_positions = coordinates.iter()
+            let mut missing_positions = coordinates.iter()
                 .filter(|q| !matches!(q.guard, EquationGuard::AlwaysFalse | EquationGuard::OutsideObject) && q.epsilon.is_none())
                 .flat_map(|q| equations[q.occurrence].1.ring.symbols.iter())
                 .filter(|s| s.value.is_none())
                 .map(|s| Fact { snapshot: s.slot.snapshot.clone(), subject: s.slot.subject.clone(), field: Some(s.slot.field.clone()), atom: None })
                 .collect::<Vec<_>>();
+            for q in &coordinates {
+                if let Some(pending) = equations[q.occurrence].1.guard.pending_at(object) {
+                    missing_positions.extend(pending.missing.iter().cloned());
+                }
+            }
+            missing_positions.sort();
+            missing_positions.dedup();
             let omissions = dependencies.missing_reasons(inputs, &missing_positions,
                 &out.originals.iter().flat_map(|o| std::iter::once(o.body).chain(o.guard)).collect::<Vec<_>>(),
                 Witness::Architecture(a.clone()).request(), c)?;
@@ -543,4 +570,118 @@ fn parameter_polynomial(
     }
     result.sort_by(|a, b| a.1.cmp(&b.1));
     push(parts, base, Part::Polynomial { ring, parameters: original.parameters.clone(), terms: result }, c)
+}
+
+// Bool全域の型付き写像 false→0,true→1 を元guardへ後合成し、εへ掛ける。
+// 既存StateMap/compose/multiplyの表示だけで、各引数での条件付き残差を保持する。
+fn guarded_residual(
+    parts: &mut Vec<Part>,
+    base: usize,
+    original: &Original,
+    epsilon: NodeRef,
+    ty: &Type,
+    indicators: &mut Vec<(Type, NodeRef)>,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    let Some(index) = epsilon.0.checked_sub(base) else {
+        return Err("条件付きεが計画外".into());
+    };
+    let Some(Part::Polynomial { ring, terms, .. }) = parts.get(index).cloned() else {
+        return Err("条件付きεが多項式でない".into());
+    };
+    if terms.is_empty() {
+        return Ok(epsilon);
+    }
+    let guard = original.guard.ok_or("条件付き数値族の元guardがない")?;
+    let map = if let Some((_, map)) = indicators.iter().find(|(kind, _)| kind == ty) {
+        *map
+    } else {
+        let no = push(parts, base, Part::Scalar(Scalar::Bool(false)), c)?;
+        let yes = push(parts, base, Part::Scalar(Scalar::Bool(true)), c)?;
+        let source = push(
+            parts,
+            base,
+            Part::ReadingDomain {
+                ty: Type::Bool,
+                elements: Some(vec![no, yes]),
+            },
+            c,
+        )?;
+        let target = push(
+            parts,
+            base,
+            Part::ReadingDomain {
+                ty: ty.clone(),
+                elements: None,
+            },
+            c,
+        )?;
+        let zero = push(
+            parts,
+            base,
+            Part::Scalar(super::super::numeric::zero(ty, c)?),
+            c,
+        )?;
+        let one = push(
+            parts,
+            base,
+            Part::Scalar(super::super::numeric::literal("1", ty, c)?),
+            c,
+        )?;
+        let map = push(
+            parts,
+            base,
+            Part::FiniteMap {
+                source,
+                target,
+                pairs: vec![(no, zero), (yes, one)],
+            },
+            c,
+        )?;
+        indicators.push((ty.clone(), map));
+        map
+    };
+    let indicator = push(
+        parts,
+        base,
+        Part::Transform {
+            quantifiers: original.quantifiers.clone(),
+            operation: Transform::Compose,
+            parameters: original.parameters.clone(),
+            ty: ty.clone(),
+            operands: vec![guard, map],
+            bindings: vec![],
+            position: None,
+        },
+        c,
+    )?;
+    let mut guarded = vec![];
+    for (coefficient, powers) in terms {
+        tick(c)?;
+        let coefficient = push(
+            parts,
+            base,
+            Part::Transform {
+                quantifiers: original.quantifiers.clone(),
+                operation: Transform::Multiply,
+                parameters: original.parameters.clone(),
+                ty: ty.clone(),
+                operands: vec![indicator, coefficient],
+                bindings: vec![],
+                position: None,
+            },
+            c,
+        )?;
+        guarded.push((coefficient, powers));
+    }
+    push(
+        parts,
+        base,
+        Part::Polynomial {
+            ring,
+            terms: guarded,
+            parameters: original.parameters.clone(),
+        },
+        c,
+    )
 }

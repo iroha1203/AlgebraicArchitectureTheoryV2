@@ -173,6 +173,7 @@ pub(super) fn closed(
                 continue;
             }
             let mut never_refutes = false;
+            let mut guarded_family = false;
             if let Some(guard) = guard {
                 match guard {
                     EquationGuard::AlwaysFalse | EquationGuard::OutsideObject => continue,
@@ -181,12 +182,14 @@ pub(super) fn closed(
                         let Some(residual) = current.value(Reading::Residual) else {
                             return Ok(None);
                         };
-                        if !origin.zero_residual
+                        if origin.guarded_family {
+                            guarded_family = true;
+                        } else if !origin.zero_residual
                             || constant_nonzero(g, residual, &ty, c)? != Some(false)
                         {
                             return Ok(None);
                         }
-                        never_refutes = true;
+                        never_refutes = !guarded_family;
                     }
                 }
             }
@@ -195,6 +198,8 @@ pub(super) fn closed(
             };
             let when = if never_refutes {
                 Some(false)
+            } else if guarded_family {
+                None
             } else if let Some(value) = constant_nonzero(g, epsilon, &ty, c)? {
                 Some(value)
             } else if !parameters.is_empty() {

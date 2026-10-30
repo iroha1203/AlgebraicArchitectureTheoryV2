@@ -24,6 +24,8 @@ pub(super) struct Origin {
     pub body_allowed: bool,
     /// 元の全引数で適用条件付き残差が零であることを、再検査可能な表示が保持する。
     pub zero_residual: bool,
+    /// 元guardとの型付き合成で条件付き残差の全域関数を保持する。
+    pub guarded_family: bool,
     pub outside: bool,
     pub scope: Scope,
 }

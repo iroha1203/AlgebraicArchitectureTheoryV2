@@ -36,10 +36,11 @@ pub(super) fn parameter_constant_source_value(
     Ok(source.difference.constant.evaluate(&values, c)?.map(|value| value.scalar().clone()))
 }
 pub(in crate::observed) use source_polynomial::{PolynomialFamily, parameter_differences_with_bindings};
+use super::environment::numeric_law_function::GuardValue as GuardFiber;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum ParameterGuard {
     Constant(bool),
-    ZeroOnFiber(Vec<super::environment::numeric_law_function::GuardRestriction>),
+    Fibers(Vec<GuardFiber>),
 }
 impl ParameterGuard {
     pub fn is_true(&self) -> bool {
@@ -48,9 +49,47 @@ impl ParameterGuard {
     pub fn is_false(&self) -> bool {
         matches!(self, Self::Constant(false))
     }
-    pub fn zero_on_fiber(&self) -> bool {
-        matches!(self, Self::ZeroOnFiber(_))
+    pub fn dynamic(&self) -> bool {
+        matches!(self, Self::Fibers(_))
     }
+    pub fn zero_at(
+        &self,
+        object: usize,
+        c: &Control,
+    ) -> Result<bool, super::result::ValidationFailure> {
+        match self {
+            Self::Fibers(v) => match v.get(object).ok_or("数値guardの対象が域外")? {
+                GuardFiber::Outside => Ok(true),
+                GuardFiber::Known { proof, .. } => proof.is_zero(c),
+                GuardFiber::Missing { .. } => Ok(false),
+            },
+            Self::Constant(_) => Ok(false),
+        }
+    }
+    pub fn pending_at(
+        &self,
+        object: usize,
+    ) -> Option<&super::environment::numeric_law_function::Pending> {
+        match self {
+            Self::Fibers(v) => match v.get(object) {
+                Some(GuardFiber::Missing { pending, .. }) => Some(pending),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+    pub fn support_at(&self, object: usize) -> &[Fact] {
+        match self {
+            Self::Fibers(v) => match v.get(object) {
+                Some(GuardFiber::Known { support, .. } | GuardFiber::Missing { support, .. }) => {
+                    support
+                }
+                _ => &[],
+            },
+            _ => &[],
+        }
+    }
+
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
@@ -86,45 +125,42 @@ pub(in crate::observed) fn parameter_source_on_guard_fiber(
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     use crate::construction::readings::InstanceApplication;
     let instance = &readings.instances()[index];
-    if !finite.is_empty()
-        || instance.parameters().is_empty()
-        || !instance
-            .parameters()
-            .iter()
-            .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+    if instance.parameters().is_empty()
+        || !instance.parameters().iter().all(|p| {
+            super::environment::numeric_parameters::numeric_width(&p.ty).is_some()
+                || finite.iter().any(|(name, _)| name == &p.name)
+        })
     {
         return Ok(None);
     }
-    let mut proofs = vec![];
+    let mut fibers = vec![];
+    let mut applicable = false;
     for (object, application) in instance.applications().iter().enumerate() {
         tick(c)?;
         if matches!(application, InstanceApplication::NotApplicable) {
+            fibers.push(GuardFiber::Outside);
             continue;
         }
-        let Some(proof) = super::environment::numeric_law_function::zero_on_guard(
+        applicable = true;
+        let Some(value) = super::environment::numeric_law_function::on_guard(
             inputs,
             readings,
             ObjectEvaluationPosition {
                 object,
                 instance: index,
             },
+            finite,
             c,
         )?
         else {
             return Ok(None);
         };
-        proofs.push(proof);
+        fibers.push(value);
     }
-    if proofs.is_empty() {
+    if !applicable {
         return Ok(None);
     }
-    parameter_source_with_guard(
-        inputs,
-        instance,
-        finite,
-        ParameterGuard::ZeroOnFiber(proofs),
-        c,
-    )
+    parameter_source_with_guard(inputs, instance, finite, ParameterGuard::Fibers(fibers), c)
 }
 fn parameter_source_with_guard(
     inputs: &CheckedInputs,

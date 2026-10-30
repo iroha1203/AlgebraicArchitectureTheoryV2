@@ -1115,4 +1115,53 @@ mod tests {
             }
         }
     }
+    #[test]
+    fn conditional_numeric_values_are_compared_separately_from_zero_sets() {
+        for ty in ["Z", "Q"] {
+            for (source_guard, source_body, target_guard, target_body, zero_equal, value_equal) in [
+                ("n=0", "n=1", "x=0", "x=2", true, Some(false)),
+                ("n=0", "n=1", "x=0", "2*x=1", true, Some(true)),
+                (
+                    "n=0",
+                    "n=0",
+                    "true",
+                    "0=0",
+                    true,
+                    if ty == "Z" { Some(true) } else { None },
+                ),
+                ("2*n=1", "n=1", "2*x=1", "x=2", true, Some(ty == "Z")),
+                ("true", "1=0", "x=0", "1=0", false, Some(false)),
+                ("n=0", "1=0", "true", "1=0", false, Some(false)),
+            ] {
+                let law = include_str!("../../tests/fixtures/object-law-transport.law")
+                    .replace(
+                        "bounded(c: Left.Child): c.count = 2",
+                        &format!("bounded(c: Left.Child,n:{ty}) when {source_guard}:{source_body}"),
+                    )
+                    .replace(
+                        "bounded(d: Right.Child): 2 = 2",
+                        &format!(
+                            "bounded(d: Right.Child,x:{ty}) when {target_guard}:{target_body}"
+                        ),
+                    );
+                let (inputs, mut result) = example_with_law("bounded", &law);
+                let family = result.numeric_family.as_ref().unwrap();
+                assert_eq!(family.equivalent, Some(zero_equal));
+                assert_eq!(
+                    family.value_equal, value_equal,
+                    "{ty}: {source_guard}:{source_body} -> {target_guard}:{target_body}"
+                );
+                assert_eq!(family.value_example.is_none(), value_equal != Some(false));
+                if let Some(point) = &family.value_example {
+                    assert_ne!(point.left, point.right);
+                }
+                result
+                    .recheck(inputs.clone(), &mut Control::unlimited())
+                    .unwrap();
+                result.numeric_family.as_mut().unwrap().value_equal =
+                    Some(value_equal != Some(true));
+                assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+            }
+        }
+    }
 }

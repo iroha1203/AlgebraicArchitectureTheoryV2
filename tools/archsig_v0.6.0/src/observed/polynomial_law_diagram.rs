@@ -86,6 +86,7 @@ enum Transform {
     Equal,
     Difference,
     Multiply,
+    Compose,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ParameterDomain {
@@ -169,6 +170,11 @@ enum Part {
         guard: Option<NodeRef>,
         body: NodeRef,
     },
+    FiniteMap {
+        source: NodeRef,
+        target: NodeRef,
+        pairs: Vec<(NodeRef, NodeRef)>,
+    },
     Domain {
         ring: NodeRef,
         ty: Type,
@@ -218,6 +224,7 @@ impl Part {
             }
             Self::LawInstance { .. } => return NodeType::LawInstance,
             Self::Domain { .. } | Self::ReadingDomain { .. } => return NodeType::Domain,
+            Self::FiniteMap { .. } => T::StateMap,
             Self::Base(_) | Self::Ring { .. } => T::Ring,
             Self::Polynomial { .. } => T::Polynomial,
             Self::Ideal { .. } => T::Ideal,
@@ -251,6 +258,8 @@ impl Part {
                 .chain(std::iter::once(*body))
                 .collect(),
 
+            Self::FiniteMap { source, target, pairs } => [*source, *target].into_iter()
+                .chain(pairs.iter().flat_map(|(a,z)| [*a,*z])).collect(),
             Self::Domain { ring, .. } => vec![*ring],
             Self::Ring { base, .. } => vec![*base],
             Self::Polynomial { ring, terms, .. } => std::iter::once(*ring)
@@ -280,6 +289,7 @@ impl Part {
             Self::Domain { .. } | Self::ReadingDomain { .. } => "domain",
             Self::Base(_) | Self::Ring { .. } => "ring",
             Self::Polynomial { .. } => "polynomial",
+            Self::FiniteMap { .. } => "state_map",
             Self::Ideal { .. } => "ideal",
             Self::Evaluation { .. } => "ring_map",
         }
@@ -328,6 +338,7 @@ impl Part {
                             Transform::Equal => "equal",
                             Transform::Difference => "difference",
                             Transform::Multiply => "multiply",
+                            Transform::Compose => "compose",
                         }),
                     ),
                     ("operands", refs(operands)),
@@ -377,6 +388,10 @@ impl Part {
                 value
             }
 
+            Self::FiniteMap { source, target, pairs } => Json::obj([
+                ("kind", Json::str("finite")), ("source", source.wire()), ("target",target.wire()),
+                ("pairs", Json::Arr(pairs.iter().map(|(a,z)| Json::Arr(vec![a.wire(),z.wire()])).collect())),
+            ]),
             Self::ReadingDomain { ty, elements } => match elements {
                 Some(elements) => Json::obj([
                     ("kind", Json::str("finite")),
@@ -517,8 +532,27 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn guarded_parameter_family(&self) -> bool {
+        let Part::Polynomial { parameters, .. } = self.part() else {
+            return false;
+        };
+        if !self.parameter_family(parameters) {
+            return false;
+        }
+        let reference = NodeRef(self.source.base + self.index);
+        std::iter::once(&self.source.outputs)
+            .chain(self.source.owned_outputs.iter().flatten())
+            .any(|d| {
+                d.coordinates.iter().any(|q| {
+                    q.residual == Some(reference)
+                        && q.guard == EquationGuard::Undetermined
+                        && q.status == EquationPresentationStatus::Ready
+                })
+            })
+    }
     pub(super) fn parameter_difference(&self, c: &mut Control) -> Result<Option<(NodeRef, super::object_equation_presentation::PolynomialFamily)>, ValidationFailure> {
         let Part::Polynomial { ring, parameters, .. } = self.part() else { return Ok(None) };
+        if self.guarded_parameter_family() { return Ok(None); }
         if parameters.is_empty() { return Ok(None); }
         let reference = NodeRef(self.source.base + self.index);
         let diagrams = std::iter::once(&self.source.outputs).chain(self.source.owned_outputs.iter().flatten());
@@ -711,7 +745,20 @@ impl Data {
                             |part| matches!(part, Part::Polynomial { terms, .. } if terms.is_empty()),
                         )
             });
-        let numeric_family = (known_guard || zero_guarded) && original.row.is_none()
+        let guarded_family = diagram.unavailable.is_none()
+            && diagram.coordinates.iter().any(|q| {
+                q.instance == reference
+                    && q.residual
+                        .and_then(|r| r.0.checked_sub(self.source.base))
+                        .is_some_and(|index| {
+                            Data {
+                                source: self.source.clone(),
+                                index,
+                            }
+                            .guarded_parameter_family()
+                        })
+            });
+        let numeric_family = (known_guard || zero_guarded || guarded_family) && original.row.is_none()
             && original.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
@@ -741,8 +788,10 @@ impl Data {
             }),
             outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
             zero_residual: numeric_family && zero_guarded,
-            body_allowed: (numeric_family && (true_guard || zero_guarded)) || reading
-                .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
+            guarded_family: numeric_family && guarded_family,
+            body_allowed: (numeric_family && (true_guard || zero_guarded || guarded_family))
+                || reading
+                    .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))
     }

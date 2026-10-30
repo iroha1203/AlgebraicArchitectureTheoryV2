@@ -12454,3 +12454,123 @@ reading After {{{uses} law required equation(s:State,x:{ty}) when {target_guard}
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn conditional_affine_equation_families_keep_guards_and_actual_counterexamples() {
+    for (case, ty, guard, target_guard, rhs, expected) in [
+        ("integer", "Z", "n=0", "x=0", "1", r#""0""#),
+        (
+            "rational",
+            "Q",
+            "n=rat(1,2)",
+            "x=rat(1,2)",
+            "rat(1,1)",
+            r#"["1","2"]"#,
+        ),
+    ] {
+        let dir = inputs(&format!("conditional-affine-equation-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:{ty}) when {guard}:n={rhs};}}
+reading After {{{uses} law required equation(s:State,x:{ty}) when {target_guard}:x={rhs};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "b=build(Before,on=@v/A)",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "c=check(Before.equation,on=$b.object,s=@v/p)",
+            ],
+        );
+        assert_eq!(run.code, 1, "{case}: {}", run.stdout);
+        let j = result_json(&dir, &run);
+        for id in ["b", "m", "same"] {
+            assert_eq!(
+                s(get(answer(&j, id), "status")),
+                "established",
+                "{case}/{id}"
+            );
+        }
+        assert!(has(get(answer(&j, "b"), "outputs"), "algebra"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "map"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "operation"));
+        let check = answer(&j, "c");
+        assert_eq!(s(get(check, "status")), "refuted");
+        let examples = arr(get(check, "counterexamples"));
+        assert!(!examples.is_empty());
+        let mut actual_binding = false;
+        for example in examples {
+            let data = get(value(&j, example), "data");
+            for binding in arr(get(data, "bindings")) {
+                if s(get(binding, "name")) == "n" {
+                    assert_json(value(&j, get(binding, "value")), expected);
+                    actual_binding = true;
+                }
+            }
+        }
+        assert!(actual_binding);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn conditional_affine_missing_guard_retains_object_and_needed_for_following_check() {
+    let dir = inputs("conditional-affine-missing-guard");
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .lines()
+        .filter(|line| !line.contains("\"id\":\"p-free\""))
+        .collect::<Vec<_>>()
+        .join("\n");
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z) when n=s.free:n=1;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(Before,on=@v/A)",
+            "c=check(Before.equation,on=$b.object,s=@v/p)",
+            "n=needed($b)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    assert!(run.stderr.is_empty());
+    let j = result_json(&dir, &run);
+    let b = answer(&j, "b");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    for id in ["b", "c"] {
+        let a = answer(&j, id);
+        assert_eq!(s(get(a, "status")), "undetermined");
+        let reasons = arr(get(a, "reasons"));
+        assert!(
+            !reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+        );
+        assert!(
+            reasons
+                .iter()
+                .filter(|r| s(get(r, "code")) == "missing_observation")
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|f| s(get(f, "snapshot")) == "v"
+                    && s(get(f, "subject")) == "p"
+                    && s(get(f, "field")) == "Reservations.State.free")
+        );
+    }
+    assert_eq!(s(get(answer(&j, "n"), "status")), "established");
+    std::fs::remove_dir_all(dir).unwrap();
+}

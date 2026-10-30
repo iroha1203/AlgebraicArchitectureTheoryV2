@@ -109,10 +109,46 @@ impl Environment<'_> {
         graph: &Graph,
         plan: &UniversalPlan,
         bindings: &[Binding],
+        analyzed: &UniversalAnalysis,
     ) -> Result<bool, ValidationFailure> {
-        Ok(self
+        if self
             .universal_parameter_equation(graph, plan, bindings)?
-            .is_some_and(|s| s.ring.symbols.iter().any(|s| s.value.is_none())))
+            .is_some_and(|s| s.ring.symbols.iter().any(|s| s.value.is_none()))
+        {
+            return Ok(true);
+        }
+        // 本文の既存アフィン分類と、元guardのアフィン等式の欠測を別々に確認する。
+        // 非対応のguardや本文を、観測不足へ付け替えない。
+        if analyzed.classification.is_none() || analyzed.guard_value.is_some() {
+            return Ok(false);
+        }
+        let Some(guard) = plan.guard else {
+            return Ok(false);
+        };
+        let guard = self
+            .universal_template_source_analysis(
+                graph,
+                plan,
+                self.inputs.law().exprs[guard].span,
+                bindings,
+            )?
+            .analysis;
+        if guard.condition_failed || guard.condition_pending {
+            return Ok(false);
+        }
+        let Some(comparison) = guard.comparison else {
+            return Ok(false);
+        };
+        if comparison.op != BinOp::Eq || !comparison.bound_axes.is_empty() {
+            return Ok(false);
+        }
+        Ok(affine::binary(
+            BinOp::Sub,
+            Some(&comparison.left),
+            Some(&comparison.right),
+            &self.control,
+        )?
+        .is_some_and(|difference| !difference.missing_facts().is_empty()))
     }
     fn universal_parameter_equation(
         &self,
