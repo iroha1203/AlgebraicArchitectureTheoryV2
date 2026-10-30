@@ -516,7 +516,7 @@ pub(super) fn plans(
                                 .iter()
                                 .map(|(_, ty)| ty.clone())
                                 .collect(),
-                            method: "non-affine numeric guard decision".into(),
+                            method: "numeric guard decision".into(),
                         },
                         request: request.id.clone(),
                         dependencies: std::iter::once(out.originals[q.occurrence].body)

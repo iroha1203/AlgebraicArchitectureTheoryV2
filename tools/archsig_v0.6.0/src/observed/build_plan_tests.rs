@@ -1521,3 +1521,94 @@ fn selected_nonlinear_guards_do_not_require_unselected_missing_observations() {
         );
     }
 }
+
+#[test]
+fn unsupported_numeric_guard_conditions_keep_typed_reasons_and_partial_objects() {
+    for (ty, guard) in [
+        ("Z", "n>0"),
+        ("Q", "n>0"),
+        ("Z", "n!=0"),
+        ("Z", "n*n=0 or n*n=1"),
+        ("Z", "n=0 or n=1"),
+        ("Z", "n*n=0 implies n*n=1"),
+        ("Z", "not(n*n=0)"),
+        ("Z", "not(n=0)"),
+    ] {
+        let p = single_part(&format!(
+            "law required guarded(c:Part,n:{ty}) when {guard}:1=0;"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Undetermined, "{guard}");
+        assert!(answer.outputs.contains_key("object"));
+        assert!(!answer.outputs.contains_key("algebra"));
+        assert!(answer.reasons.iter().any(|r| matches!(&r.kind, ReasonKind::UnsupportedAlgorithm {operand_types,..} if operand_types.contains(&if ty=="Z" {crate::types::Type::Z} else {crate::types::Type::Q}))), "{guard}");
+        assert!(
+            !answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing)),
+            "{guard}"
+        );
+    }
+}
+
+#[test]
+fn numeric_guard_boundary_simplifications_keep_affine_and_constant_conditions() {
+    for (guard, body) in [
+        ("not(not(n=0))", "n=0"),
+        ("n=0 or n=0", "n=0"),
+        ("n=0 implies n=0", "0=0"),
+        ("n*n-n*n>0", "1=0"),
+        ("n*n-n*n>=0", "0=0"),
+        ("(n*n-n*n=0) or n*n=1", "0=0"),
+        ("(n*n-n*n=1) and n*n=1", "1=0"),
+    ] {
+        let p = single_part(&format!(
+            "law required guarded(c:Part,n:Z) when {guard}:{body};"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Established, "{guard}");
+        assert!(answer.outputs.contains_key("algebra"));
+        assert!(
+            !answer
+                .reasons
+                .iter()
+                .any(|reason| matches!(reason.kind, ReasonKind::UnsupportedAlgorithm { .. })),
+            "{guard}"
+        );
+    }
+}

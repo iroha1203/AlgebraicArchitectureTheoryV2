@@ -12691,3 +12691,58 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n*n=0:1=0;}}"#
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn numeric_guard_algorithm_boundary_keeps_concrete_checks_and_needed() {
+    let dir = inputs("numeric-guard-algorithm-boundary");
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view plus_one():Z=1; view minus_one():Z=-1; law required equation(s:State,n:Z) when n>0:1=0;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(Before,on=@v/A)",
+            "p=evaluate(Before.plus_one,on=$b.object)",
+            "m=evaluate(Before.minus_one,on=$b.object)",
+            "c=check(Before.equation,on=$b.object,s=@v/p,n=$p.value)",
+            "o=check(Before.equation,on=$b.object,s=@v/p,n=$m.value)",
+            "n=needed($b)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    assert!(run.stderr.is_empty());
+    let j = result_json(&dir, &run);
+    let b = answer(&j, "b");
+    assert_eq!(s(get(b, "status")), "undetermined");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let reasons = arr(get(b, "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+    );
+    for (id, expected) in [("p", "1"), ("m", "-1")] {
+        let a = answer(&j, id);
+        assert_eq!(s(get(a, "status")), "established");
+        assert_eq!(s(value(&j, get(get(a, "outputs"), "value"))), expected);
+    }
+    assert_eq!(s(get(answer(&j, "c"), "status")), "refuted");
+    assert_eq!(s(get(answer(&j, "c"), "applicability")), "applicable");
+    assert_eq!(s(get(answer(&j, "o"), "status")), "established");
+    assert_eq!(s(get(answer(&j, "o"), "applicability")), "not_applicable");
+    let n = answer(&j, "n");
+    assert_eq!(s(get(n, "status")), "established");
+    let plan = value(&j, get(get(n, "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    for reason in reasons {
+        assert!(arr(get(plan, "blockers")).contains(reason));
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
