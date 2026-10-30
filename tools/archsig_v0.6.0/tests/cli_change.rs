@@ -436,31 +436,66 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
     let new = &defs.vocabularies()["Pattern"].digest;
     assert_ne!(old, new);
     let map=String::from_utf8(input.sources().archmap().bytes().to_vec()).unwrap().replace(old,new).replace(r#""atoms":["#,r#""atoms":[{"id":"lp","subject":"p","field":"Pattern.Part.link","value":["v","q"],"origin":"model"},{"id":"lq","subject":"q","field":"Pattern.Part.link","value":["v","p"],"origin":"model"},"#);
-    let law=String::from_utf8(input.sources().law().bytes().to_vec()).unwrap().replace(old,new).replace("change choose(c:Part,b:Bool)=c with {flag=b};","change choose(c:Part)=let ignored=then(identity(c),identity(c.link)) in c with {flag=true};");
-    let dir = workdir("change-invalid-let");
-    for (name, data) in [("d.json", definitions), ("a.json", map), ("l.law", law)] {
-        std::fs::write(dir.join(name), data).unwrap();
+    for (case, body, code, count) in [
+        (
+            "invalid",
+            "change choose(c:Part)=let ignored=then(identity(c),identity(c.link)) in c with {flag=true};",
+            1,
+            0,
+        ),
+        (
+            "mixed",
+            "change choose(c:Part,b:Bool)=let ignored=if b then identity(c) else then(identity(c),identity(c.link)) in c with {flag=true};",
+            0,
+            1,
+        ),
+    ] {
+        let law = String::from_utf8(input.sources().law().bytes().to_vec())
+            .unwrap()
+            .replace(old, new)
+            .replace("change choose(c:Part,b:Bool)=c with {flag=b};", body);
+        let dir = workdir(&format!("change-invalid-let-{case}"));
+        for (name, data) in [("d.json", &definitions), ("a.json", &map), ("l.law", &law)] {
+            std::fs::write(dir.join(name), data).unwrap();
+        }
+        let result = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                "out",
+                "--time-ms",
+                "120000",
+                "--ask",
+                "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            ],
+        );
+        assert_eq!(result.code, code, "{}", result.stdout);
+        let saved = result_json(&dir, &result);
+        let answer = &arr(get(&saved, "answers"))[0];
+        assert_eq!(
+            s(get(answer, "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
+        let outputs = get(answer, "outputs");
+        assert_eq!(has(outputs, "object"), code == 0);
+        let nodes = arr(get(&saved, "nodes"));
+        let domain = nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(get(outputs, "domain"), "node")))
+            .unwrap();
+        let parameters = nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(get(get(domain, "value"), "parameters"), "node")))
+            .unwrap();
+        assert_eq!(arr(get(get(parameters, "value"), "elements")).len(), count);
     }
-    let result = run(
-        &dir,
-        &[
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "out",
-            "--time-ms",
-            "120000",
-            "--ask",
-            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
-        ],
-    );
-    // 条件不成立候補の公開配送は未実装。一意な成立修復へは昇格しない。
-    assert_eq!(result.code, 70, "{}", result.stdout);
 }
 
 #[test]

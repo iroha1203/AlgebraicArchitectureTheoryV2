@@ -313,7 +313,7 @@ fn compute_inner(
         || candidates
             .rows
             .iter()
-            .any(|r| matches!(r.update.state, State::Undetermined | State::ConditionFailed))
+            .any(|r| r.update.state == State::Undetermined)
     {
         return Err(unsupported());
     }
@@ -467,7 +467,7 @@ fn compute_inner(
     }
     for (index, row) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        if row.update.state == State::Excluded {
+        if matches!(row.update.state, State::Excluded | State::ConditionFailed) {
             continue;
         }
         let row_slots = row
