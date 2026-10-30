@@ -743,7 +743,7 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
         return Err("全view族に自己未来Refがある".into());
     }
     let expected = family_node(g, &d.source, &part.children)?;
-    if n != &expected || &expected != n {
+    if n != &expected {
         return Err("全view族の全row/順序/支持/Scope/式が違う".into());
     }
     Ok(())

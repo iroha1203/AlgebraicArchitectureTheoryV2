@@ -91,7 +91,7 @@ pub struct ViewTransportValue {
 }
 impl PartialEq for ViewTransportValue {
     fn eq(&self, other: &Self) -> bool {
-        self.value == other.value && other.value == self.value
+        self.value == other.value
     }
 }
 impl ViewTransportValue {

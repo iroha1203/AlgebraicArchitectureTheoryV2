@@ -37,7 +37,7 @@ pub struct FiniteViewValue {
 }
 impl PartialEq for FiniteViewValue {
     fn eq(&self, other: &Self) -> bool {
-        self.value == other.value && other.value == self.value
+        self.value == other.value
     }
 }
 impl FiniteViewValue {
@@ -145,7 +145,6 @@ impl FiniteObjectView {
 }
 fn same_result(a: &ObservedEvaluation, b: &ObservedEvaluation) -> bool {
     a.nodes == b.nodes
-        && b.nodes == a.nodes
         && a.answers == b.answers
         && a.issues == b.issues
         && a.status() == b.status()
