@@ -5,13 +5,16 @@
 ```text
 archsig check --atom-definition D [--atom-definition D ...] --law L [--archmap A] --out NEW_DIRECTORY
 archsig run --atom-definition D [--atom-definition D ...] --law L --archmap A --ask 'ID=QUESTION' [--ask 'ID=QUESTION' ...]
-            --out NEW_DIRECTORY [--reuse OLD_DIRECTORY]
+            [--out NEW_DIRECTORY] [--reuse OLD_DIRECTORY]
             [--time-ms N] [--memory-mib N]
 archsig version
 ```
 
 これが全コマンドと全flagである。`--atom-definition`と`--ask`を反復でき、問い ID の重複を拒否する。
 単数flagの重複、未知flag、位置引数、必須flagの欠落は`usage`。
+`run`の`--out`は任意で、省略時は回答の状態・値・反例・未決理由を一行の
+`archsig.summary/1`として標準出力へ返す。保存する場合だけ`--out`を指定する。
+`check`は検査結果の保存先として`--out`を必須とする。
 Nは`[1-9][0-9]*`の整数。省略した予算に論理的上限を設けない。
 短縮flag、stdin、暗黙のファイル探索、環境変数による意味の変更を設けない。
 
@@ -260,7 +263,7 @@ symlinkを読込み開始時に解決し、開始時に読み切ったbyte列だ
 HTTP、ZIP、source uriや定義・Law参照からの追加読込みを行わない。
 再利用directoryは通常のdirectoryと下記固定pathの通常ファイルだけを読み、リンク先の追加探索をしない。
 
-outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
+`--out`を指定した場合、outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
 check/runの引数では、既知flagは次の語を値として取り、未知flagは値を取らないものとして読む。
 不正なコマンド引数は標準出力へusageを返し、入力を読まず、directory・result.json・入力コピーを作らない。
 出力先の指定を回復して失敗記録を保存する処理は行わない。
@@ -269,7 +272,8 @@ check/runの引数では、既知flagは次の語を値として取り、未知f
 これらの失敗だけを記録するファイルは作らず、check/runで扱いを分けない。
 check/runとも検査・計算中のSIGINT/SIGTERMを確認したら処理を止め、未完成の検査結果を公開しない。
 
-checkの検査成功結果、およびrunで得た値・命題・反例・診断・解集合・導出は依頼された成果物として保存する。
+checkの検査成功結果、および明示された`--out`へ保存するrunの値・命題・反例・診断・解集合は依頼された成果物である。
+runの保存形式は[型付き結果](results.md#1-resultjson)の値の参照グラフであり、導出・証明は核の検査に保持する。
 数学的な反証・未決は、この計算結果に含める。予算・signal・内部障害で処理が止まっても、
 入力検査と要求解決を終えて既に得た検査済みの計算結果は保持し、未着手の問いへ停止理由を付ける。
 入力検査・要求解決中の停止や、計算結果が一つも得られていない停止はCLI通知のみとする。
@@ -290,10 +294,22 @@ NEW_DIRECTORY/
   result.json            唯一の機械向け結果
 ```
 
-保存するresult.jsonは[型付き結果](results.md)に従う。人向けの計算結果表示はconsumerがこの結果から生成する。
+保存するresult.jsonは[型付き結果](results.md)に従う。runで`--out`を省略した場合は、同じ検査済み計算から直接、短い回答を返す。
+表示用の要約を後続計算の入力へ使わず、全量が必要な値は明示保存した結果から読む。
 宣言の解決説明と導出は、この結果を読むための出力であり、新しいLawや実行計画の入力形式にしない。
 元の宣言は同梱した Atom 定義と Law の byte 列と Location で保持し、説明用の展開によって語彙manifestを変更しない。
-stdoutは完了時に一行だけ出力する。
+stdoutは完了時に一行だけ出力する。`run`の`--out`省略時の計算成果は次の形式とする。
+
+```text
+{format:"archsig.summary/1",status:RunStatus,exit_code:Nat,answers:SummaryAnswer[],issues?:Issue[],warnings?:Issue[]}
+SummaryAnswer = {id:String,question:QuestionKind,status:Decision,outputs:Object,
+                 applicability?:String,uniqueness?:Decision,reasons?:Issue[],counterexamples?:Object[]}
+```
+
+outputsは直接読める型と値を示す。構造値の選択された欄を深さ2まで表示し、集合等は件数を示す。
+反例は3件、各反例の束縛と事実も各3件まで表示する。256 byteを超える値や文字列はbyte数を示す。
+summaryの理由と通知はIssueからdependenciesと導出参照を除いた形とする。要約は候補域や解集合を縮小せず、内部の全量計算と後続参照を維持する。
+保存を依頼した場合、および成果物のない実行失敗の通知は次のreceiptを使う。
 
 ```text
 {"format":"archsig.receipt/1","status":RunStatus,"exit_code":Nat,"result":String?,"issues":Issue[]?}
