@@ -426,6 +426,7 @@ impl Data {
             body: expr(*body)?,
             body_reference: *body,
             guard: guard.map(expr).transpose()?,
+            guard_reference: *guard,
             ready: reading.reading.application == Some(true)
                 && !reading.reading.condition_failed
                 && !reading.reading.condition_pending,

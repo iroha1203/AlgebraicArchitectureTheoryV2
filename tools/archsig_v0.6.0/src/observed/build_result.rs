@@ -409,7 +409,10 @@ fn compute_inner(
             let mut cases = vec![];
             for case in detector.cases {
                 let equal = b.expression("equal", vec![case.lhs, case.rhs], &case.bindings, &detector.parameters)?;
-                let when = b.expression("not", vec![equal], &case.bindings, &detector.parameters)?;
+                let negation = b.expression("not", vec![equal], &case.bindings, &detector.parameters)?;
+                let when = if let Some(guard) = case.guard {
+                    b.expression("and", vec![guard, negation], &case.bindings, &detector.parameters)?
+                } else { negation };
                 let value = case.when.map(|value| b.push(
                     NodeType::Value(Type::Bool),
                     "binding",

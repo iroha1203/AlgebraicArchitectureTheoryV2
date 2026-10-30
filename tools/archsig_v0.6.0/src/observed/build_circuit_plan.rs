@@ -24,6 +24,7 @@ pub(super) struct Case {
     pub location: crate::issue::Location,
     pub epsilon: NodeRef,
     pub when: Option<bool>,
+    pub guard: Option<NodeRef>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -127,9 +128,11 @@ pub(super) fn closed(
             .ok_or("circuitの元Law添字がない")?;
         let mut cases = vec![];
         let parameters = if let Source::Polynomial(q) = &coordinate.source && q.row.is_none() {
-            let parameters = &diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
-                .ok_or("circuitの元parameter宣言がない")?.parameters;
-            if let Some(reference) = q.nu
+            let original = diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
+                .ok_or("circuitの元parameter宣言がない")?;
+            let parameters = &original.parameters;
+            // guardの自由引数もwhenの型域へ保持する。本文の差が定数でも消さない。
+            if original.guard.is_some() { parameters.clone() } else if let Some(reference) = q.nu
                 && let Some(Payload::Construction(value)) = &g.get(reference)?.payload
                 && let D::PolynomialLaw(data) = &value.data
                 && data.parameter_family(parameters) { parameters.clone() } else { vec![] }
@@ -248,6 +251,7 @@ pub(super) fn closed(
                 evaluation,
                 epsilon,
                 when,
+                guard: origin.guard_reference,
                 architecture: source.architecture,
                 bindings: origin.bindings,
                 location,
