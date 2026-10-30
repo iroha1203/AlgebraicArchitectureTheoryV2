@@ -85,7 +85,51 @@ pub(super) fn expression(
     assignments: &[(String, Scalar)],
     c: &mut Control,
 ) -> Result<Source, ConstructionFailure> {
-    let (position, expression) = selection;
+    expression_inner(
+        inputs,
+        readings,
+        (selection.0, selection.1, None),
+        names,
+        target,
+        assignments,
+        c,
+    )
+}
+pub(super) fn guard(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    selection: (ObjectEvaluationPosition, Option<usize>),
+    names: &[(String, String)],
+    target: bool,
+    assignments: &[(String, Scalar)],
+    c: &mut Control,
+) -> Result<(Source, Option<Vec<affine::Form>>), ConstructionFailure> {
+    let mut forms = None;
+    let source = expression_inner(
+        inputs,
+        readings,
+        (selection.0, selection.1, Some(&mut forms)),
+        names,
+        target,
+        assignments,
+        c,
+    )?;
+    Ok((source, forms))
+}
+fn expression_inner(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    selection: (
+        ObjectEvaluationPosition,
+        Option<usize>,
+        Option<&mut Option<Vec<affine::Form>>>,
+    ),
+    names: &[(String, String)],
+    target: bool,
+    assignments: &[(String, Scalar)],
+    c: &mut Control,
+) -> Result<Source, ConstructionFailure> {
+    let (position, expression, forms) = selection;
     let row = readings
         .instances()
         .get(position.instance)
@@ -176,6 +220,16 @@ pub(super) fn expression(
         variable.affine = value.number(c).map_err(invalid)?.map(Box::new);
         variable.symbolic = Some(Box::new(value.clone()));
     }
+    if let Some(forms) = forms {
+        *forms = change_affine::guard_forms(
+            &env,
+            expression,
+            &variables,
+            &Scope::default(),
+            &declaration.reading,
+        )
+        .map_err(invalid)?;
+    }
     Ok(Source::Value(Box::new(
         env.scoped_ast(
             expression,
@@ -186,6 +240,7 @@ pub(super) fn expression(
         .map_err(invalid)?,
     )))
 }
+
 pub(in crate::observed) fn read(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,

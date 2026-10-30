@@ -22,7 +22,8 @@ pub(in crate::observed) struct Pending {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Reading {
-    condition: Option<affine::Form>,
+    // None は未決、空の等式列は全域で真。
+    condition: Option<Vec<affine::Form>>,
     body: Option<affine::Form>,
     restriction: Option<GuardRestriction>,
     residual: Option<affine::Form>,
@@ -115,19 +116,17 @@ fn read(
         Ok(Reading {
             body: None,
             restriction: None,
-            condition: Some(
+            condition: Some(vec![
                 affine::constant(&Scalar::Z(1.into()), c)
                     .map_err(invalid)?
                     .ok_or_else(|| bad("偽の適用式がない"))?,
-            ),
+            ]),
             residual: affine::constant(&zero, c).map_err(invalid)?,
             facts,
             pending: None,
         })
     };
-    let mut condition = affine::constant(&Scalar::Z(0.into()), c)
-        .map_err(invalid)?
-        .ok_or_else(|| bad("真の適用式がない"))?;
+    let mut condition = vec![];
     let mut facts = vec![];
     let unknown = |span, missing, facts, condition| Reading {
         body: None,
@@ -138,7 +137,7 @@ fn read(
         pending: Some(pending(span, missing)),
     };
     if let Some(guard) = guard {
-        let value = match source::expression(
+        let (source, forms) = source::guard(
             inputs,
             readings,
             (position, Some(*guard)),
@@ -146,7 +145,8 @@ fn read(
             target,
             assignments,
             c,
-        )? {
+        )?;
+        let value = match source {
             Source::Outside => return outside(c, facts),
             Source::Unknown => {
                 return Ok(unknown(
@@ -171,42 +171,31 @@ fn read(
             Some(Scalar::Bool(false)) => return outside(c, facts),
             Some(Scalar::Bool(true)) => {}
             _ => {
-                let difference = match &value.comparison {
-                    Some(comparison)
-                        if comparison.op == BinOp::Eq && comparison.bound_axes.is_empty() =>
-                    {
-                        affine::binary(
-                            BinOp::Sub,
-                            Some(&comparison.left),
-                            Some(&comparison.right),
-                            c,
-                        )
-                        .map_err(invalid)?
-                    }
-                    _ => None,
+                let Some(forms) = forms else {
+                    return Ok(unknown(
+                        inputs.law().exprs[*guard].span,
+                        vec![],
+                        facts,
+                        None,
+                    ));
                 };
-                let mut missing = difference
-                    .as_ref()
-                    .map_or_else(Vec::new, |f| f.missing_facts());
+                let mut missing = forms
+                    .iter()
+                    .flat_map(|f| f.missing_facts())
+                    .collect::<Vec<_>>();
                 missing.sort();
                 missing.dedup();
-                let Some(form) = difference else {
-                    return Ok(unknown(
-                        inputs.law().exprs[*guard].span,
-                        missing,
-                        facts,
-                        None,
-                    ));
-                };
-                if form.numeric_parameter_terms(c).map_err(invalid)?.is_none() {
-                    return Ok(unknown(
-                        inputs.law().exprs[*guard].span,
-                        missing,
-                        facts,
-                        None,
-                    ));
+                for form in &forms {
+                    if form.numeric_parameter_terms(c).map_err(invalid)?.is_none() {
+                        return Ok(unknown(
+                            inputs.law().exprs[*guard].span,
+                            missing,
+                            facts,
+                            None,
+                        ));
+                    }
                 }
-                condition = form;
+                condition = forms;
             }
         }
     }
@@ -260,8 +249,8 @@ fn read(
     {
         return Ok(incomplete(residual.missing_facts()));
     }
-    let restriction = if condition.value(c).map_err(invalid)?.is_none() {
-        restrict_zero(&condition, &residual, c).map_err(invalid)?
+    let restriction = if condition_value(&condition, c).map_err(invalid)?.is_none() {
+        restrict_zeros(&condition, &residual, c).map_err(invalid)?
     } else {
         None
     };
@@ -273,7 +262,7 @@ fn read(
                 .map_err(invalid)?
                 .ok_or_else(|| bad("条件付き残差の零がない"))?,
         )
-    } else if condition.value(c).map_err(invalid)?.is_none() {
+    } else if condition_value(&condition, c).map_err(invalid)?.is_none() {
         // 非定数guardのindicatorを線形式へ置き換えない。
         None
     } else {
@@ -324,48 +313,95 @@ fn system(
     ground: &Type,
     c: &Control,
 ) -> Result<System, ValidationFailure> {
-    let (constant, terms) = form
-        .numeric_parameter_terms(c)?
-        .ok_or("数値Lawに未確定の係数がある")?;
-    let zero = numeric::zero(&constant.ty(), c)?;
-    let mut row = vec![];
-    for key in basis {
-        tick(c)?;
-        row.push(
-            terms
-                .iter()
-                .find(|(k, _)| k == key)
-                .map(|(_, v)| v.clone())
-                .unwrap_or_else(|| zero.clone()),
-        );
+    systems(std::slice::from_ref(form), basis, ground, c)
+}
+fn systems(
+    forms: &[affine::Form],
+    basis: &[TermArgument],
+    ground: &Type,
+    c: &Control,
+) -> Result<System, ValidationFailure> {
+    let mut coefficients = vec![];
+    let mut rhs = vec![];
+    for form in forms {
+        let (constant, terms) = form
+            .numeric_parameter_terms(c)?
+            .ok_or("数値Lawに未確定の係数がある")?;
+        let zero = numeric::zero(&constant.ty(), c)?;
+        let mut row = vec![];
+        for key in basis {
+            tick(c)?;
+            row.push(
+                terms
+                    .iter()
+                    .find(|(k, _)| k == key)
+                    .map(|(_, v)| v.clone())
+                    .unwrap_or_else(|| zero.clone()),
+            );
+        }
+        let right = numeric::binary(BinOp::Sub, &zero, &constant, c)?;
+        coefficients.push(row);
+        rhs.push(right);
     }
-    let rhs = numeric::binary(BinOp::Sub, &zero, &constant, c)?;
+    if coefficients.is_empty() {
+        // Systemの行からも列数を読めるよう、全域を零の一行で表す。
+        coefficients.push(vec![numeric::zero(ground, c)?; basis.len()]);
+        rhs.push(numeric::zero(ground, c)?);
+    }
+    solve_system(coefficients, rhs, basis.len(), ground, c)
+}
+fn solve_system(
+    rows: Vec<Vec<Scalar>>,
+    rhs: Vec<Scalar>,
+    cols: usize,
+    ground: &Type,
+    c: &Control,
+) -> Result<System, ValidationFailure> {
     if *ground == Type::Z {
-        row.push(rhs);
-        let mut coefficients = integer_row(&row, c)?;
-        let rhs = coefficients.pop().ok_or("整数Lawの右辺がない")?;
-        let certificate = integer_fiber::solve(
-            &vec![coefficients.clone()],
-            basis.len(),
-            std::slice::from_ref(&rhs),
-            c,
-        )?;
+        let mut matrix = vec![];
+        let mut right = vec![];
+        for (mut row, value) in rows.into_iter().zip(rhs) {
+            tick(c)?;
+            row.push(value);
+            let mut row = integer_row(&row, c)?;
+            right.push(row.pop().ok_or("整数fiberの右辺がない")?);
+            matrix.push(row);
+        }
+        let certificate = integer_fiber::solve(&matrix, cols, &right, c)?;
         Ok(System {
-            coefficients: vec![coefficients.into_iter().map(Scalar::Z).collect()],
-            rhs: vec![Scalar::Z(rhs)],
+            coefficients: matrix
+                .into_iter()
+                .map(|row| row.into_iter().map(Scalar::Z).collect())
+                .collect(),
+            rhs: right.into_iter().map(Scalar::Z).collect(),
             certificate: Certificate::Integer(certificate),
         })
     } else {
-        let coefficients = vec![row.iter().map(rational).collect::<Result<Vec<_>, _>>()?];
-        let rhs = vec![rational(&rhs)?];
-        let certificate = field_fiber::solve(&Type::Q, &coefficients, basis.len(), &rhs, c)?;
+        let rows = rows
+            .iter()
+            .map(|row| row.iter().map(rational).collect::<Result<Vec<_>, _>>())
+            .collect::<Result<Vec<_>, _>>()?;
+        let rhs = rhs.iter().map(rational).collect::<Result<Vec<_>, _>>()?;
+        let certificate = field_fiber::solve(&Type::Q, &rows, cols, &rhs, c)?;
         Ok(System {
-            coefficients,
+            coefficients: rows,
             rhs,
             certificate: Certificate::Field(certificate),
         })
     }
 }
+fn condition_value(forms: &[affine::Form], c: &Control) -> Result<Option<bool>, ValidationFailure> {
+    let mut known = true;
+    for form in forms {
+        match form.value(c)? {
+            Some(value) if value != numeric::zero(&value.ty(), c)? => return Ok(Some(false)),
+            Some(_) => {}
+            None => known = false,
+        }
+    }
+    Ok(known.then_some(true))
+}
+
 impl System {
     fn point(&self) -> Option<Vec<Scalar>> {
         match &self.certificate {
@@ -434,13 +470,13 @@ fn outside(a: &System, b: &System, c: &Control) -> Result<Option<Vec<Scalar>>, V
     Ok(None)
 }
 fn guard_fiber(
-    guard: &affine::Form,
+    guard: &[affine::Form],
     body: &affine::Form,
     c: &Control,
 ) -> Result<Option<GuardRestriction>, ValidationFailure> {
     let mut basis = BTreeSet::new();
     let mut rational = false;
-    for form in [guard, body] {
+    for form in guard.iter().chain(std::iter::once(body)) {
         let Some((constant, terms)) = form.numeric_parameter_terms(c)? else {
             return Ok(None);
         };
@@ -455,7 +491,7 @@ fn guard_fiber(
     if basis.iter().any(|axis| axis.kind.ty() != ground) {
         return Ok(None);
     }
-    let guard_system = system(guard, &basis, &ground, c)?;
+    let guard_system = systems(guard, &basis, &ground, c)?;
     let body_system = system(body, &basis, &ground, c)?;
     Ok(Some(GuardRestriction {
         body: body.clone(),
@@ -475,24 +511,43 @@ impl GuardRestriction {
         Ok(outside(&self.guard, &self.zero, c)?.is_none())
     }
 }
-fn restrict_zero(guard: &affine::Form, body: &affine::Form, c: &Control) -> Result<Option<GuardRestriction>, ValidationFailure> {
-    let Some(proof) = guard_fiber(guard, body, c)? else { return Ok(None) };
-    Ok(if proof.is_zero(c)? { Some(proof) } else { None })
-}
-/// 全称binderの出現を同じ位置軸へ移し、適用fiber内の実反例を求める。
-pub(in crate::observed) fn universal_on_guard(
+#[cfg(test)]
+fn restrict_zero(
     guard: &affine::Form,
     body: &affine::Form,
     c: &Control,
-) -> Result<Option<GuardTruth>, ValidationFailure> {
-    let (Some((ga, gt)), Some((ba, bt))) = (
-        guard.parameter_coordinates(c)?,
-        body.parameter_coordinates(c)?,
-    ) else {
+) -> Result<Option<GuardRestriction>, ValidationFailure> {
+    restrict_zeros(std::slice::from_ref(guard), body, c)
+}
+fn restrict_zeros(
+    guard: &[affine::Form],
+    body: &affine::Form,
+    c: &Control,
+) -> Result<Option<GuardRestriction>, ValidationFailure> {
+    let Some(proof) = guard_fiber(guard, body, c)? else {
         return Ok(None);
     };
-    let parameters = gt
+    Ok(if proof.is_zero(c)? { Some(proof) } else { None })
+}
+/// 全称binderの出現を同じ位置軸へ移し、適用fiber内の実反例を求める。
+pub(in crate::observed) fn universal_on_guards(
+    guard: &[affine::Form],
+    body: &affine::Form,
+    c: &Control,
+) -> Result<Option<GuardTruth>, ValidationFailure> {
+    let Some((ba, bt)) = body.parameter_coordinates(c)? else {
+        return Ok(None);
+    };
+    let mut rows = vec![];
+    for form in guard {
+        let Some(row) = form.parameter_coordinates(c)? else {
+            return Ok(None);
+        };
+        rows.push(row);
+    }
+    let parameters = rows
         .iter()
+        .flat_map(|(_, terms)| terms)
         .chain(&bt)
         .map(|(p, _)| p.clone())
         .collect::<BTreeSet<_>>()
@@ -525,7 +580,7 @@ pub(in crate::observed) fn universal_on_guard(
         Ok(form)
     };
     let ground = parameters.first().map(|p| p.kind.ty()).unwrap_or_else(|| {
-        if ga.ty() == Type::Q || ba.ty() == Type::Q {
+        if rows.iter().any(|(constant, _)| constant.ty() == Type::Q) || ba.ty() == Type::Q {
             Type::Q
         } else {
             Type::Z
@@ -543,7 +598,11 @@ pub(in crate::observed) fn universal_on_guard(
             kind: parameter.kind,
         })
         .collect::<Vec<_>>();
-    let guard = system(&convert(&ga, &gt)?, &basis, &ground, c)?;
+    let guards = rows
+        .iter()
+        .map(|(constant, terms)| convert(constant, terms))
+        .collect::<Result<Vec<_>, _>>()?;
+    let guard = systems(&guards, &basis, &ground, c)?;
     let body = system(&convert(&ba, &bt)?, &basis, &ground, c)?;
     Ok(Some(match outside(&guard, &body, c)? {
         None => GuardTruth::Holds,
@@ -618,37 +677,12 @@ fn intersection(a: &System, b: &System, c: &Control) -> Result<System, Validatio
         rows.push(row.clone());
         rhs.push(value.clone());
     }
-    match (&a.certificate, &b.certificate) {
-        (Certificate::Integer(_), Certificate::Integer(_)) => {
-            let mut matrix = vec![];
-            let mut right = vec![];
-            for (mut row, value) in rows.into_iter().zip(rhs) {
-                tick(c)?;
-                row.push(value);
-                let mut row = integer_row(&row, c)?;
-                right.push(row.pop().ok_or("整数fiberの右辺がない")?);
-                matrix.push(row);
-            }
-            let certificate = integer_fiber::solve(&matrix, cols, &right, c)?;
-            Ok(System {
-                coefficients: matrix
-                    .into_iter()
-                    .map(|row| row.into_iter().map(Scalar::Z).collect())
-                    .collect(),
-                rhs: right.into_iter().map(Scalar::Z).collect(),
-                certificate: Certificate::Integer(certificate),
-            })
-        }
-        (Certificate::Field(_), Certificate::Field(_)) => {
-            let certificate = field_fiber::solve(&Type::Q, &rows, cols, &rhs, c)?;
-            Ok(System {
-                coefficients: rows,
-                rhs,
-                certificate: Certificate::Field(certificate),
-            })
-        }
-        _ => Err("fiberの共通域の係数型が違う".into()),
-    }
+    let ground = match (&a.certificate, &b.certificate) {
+        (Certificate::Integer(_), Certificate::Integer(_)) => Type::Z,
+        (Certificate::Field(_), Certificate::Field(_)) => Type::Q,
+        _ => return Err("fiberの共通域の係数型が違う".into()),
+    };
+    solve_system(rows, rhs, cols, &ground, c)
 }
 // 二つの真のアフィン部分空間は、Z/Qの非空fiber全体を覆わない。
 // p∉a,p∈b,q∈a,q∉bなら、2p-qは同じfiber内で両方の外にある。
@@ -773,7 +807,11 @@ fn assignments(
     Ok(result)
 }
 #[derive(Clone, Copy)]
-enum ComparisonKind { Application, Zero, Value }
+enum ComparisonKind {
+    Application,
+    Zero,
+    Value,
+}
 pub(in crate::observed) fn compare(
     inputs: &CheckedInputs,
     readings: [&ObjectReadingInstances; 2],
@@ -809,8 +847,6 @@ pub(in crate::observed) fn compare_bound(
         condition_systems: None,
     };
     let forms = [
-        result.source.condition.as_ref(),
-        result.target.condition.as_ref(),
         result
             .source
             .body
@@ -824,7 +860,14 @@ pub(in crate::observed) fn compare_bound(
     ];
     let mut rational_ground = false;
     let mut keys = BTreeSet::new();
-    for form in forms.into_iter().flatten() {
+    for form in result
+        .source
+        .condition
+        .iter()
+        .flatten()
+        .chain(result.target.condition.iter().flatten())
+        .chain(forms.into_iter().flatten())
+    {
         let (constant, terms) = form
             .numeric_parameter_terms(c)
             .map_err(invalid)?
@@ -850,9 +893,11 @@ pub(in crate::observed) fn compare_bound(
     }
     let mut points = vec![];
     if let (Some(a), Some(z)) = (&result.source.condition, &result.target.condition) {
-        if let (Some(a), Some(z)) = (a.value(c).map_err(invalid)?, z.value(c).map_err(invalid)?) {
-            let equal = (a == numeric::zero(&a.ty(), c).map_err(invalid)?)
-                == (z == numeric::zero(&z.ty(), c).map_err(invalid)?);
+        if let (Some(a), Some(z)) = (
+            condition_value(a, c).map_err(invalid)?,
+            condition_value(z, c).map_err(invalid)?,
+        ) {
+            let equal = a == z;
             result.applicable = Some(equal);
             if !equal {
                 points.push((
@@ -866,8 +911,8 @@ pub(in crate::observed) fn compare_bound(
                 ));
             }
         } else {
-            let sa = system(a, &result.basis, &ground, c).map_err(invalid)?;
-            let sz = system(z, &result.basis, &ground, c).map_err(invalid)?;
+            let sa = systems(a, &result.basis, &ground, c).map_err(invalid)?;
+            let sz = systems(z, &result.basis, &ground, c).map_err(invalid)?;
             let point = match outside(&sa, &sz, c).map_err(invalid)? {
                 Some(p) => Some(p),
                 None => outside(&sz, &sa, c).map_err(invalid)?,
@@ -989,16 +1034,14 @@ pub(in crate::observed) fn compare_bound(
         )?;
         let (left, right) = if matches!(kind, ComparisonKind::Application) {
             let truth = |reading: &Reading| -> Result<Scalar, ConstructionFailure> {
-                let value = reading
+                let forms = reading
                     .condition
                     .as_ref()
-                    .map(|f| f.value(c))
-                    .transpose()
-                    .map_err(invalid)?
-                    .flatten()
                     .ok_or_else(|| bad("Law反例の適用が未決"))?;
                 Ok(Scalar::Bool(
-                    value == numeric::zero(&value.ty(), c).map_err(invalid)?,
+                    condition_value(forms, c)
+                        .map_err(invalid)?
+                        .ok_or_else(|| bad("Law反例の適用が未決"))?,
                 ))
             };
             (truth(&a)?, truth(&z)?)
@@ -1066,6 +1109,66 @@ pub(in crate::observed) fn compare_bound(
 #[cfg(test)]
 mod guard_tests {
     use super::*;
+    #[test]
+    fn conjunctive_guard_fibers_use_all_rows_and_preserve_integer_solvability() {
+        for kind in [affine::NumberType::Z, affine::NumberType::Q] {
+            let c = Control::unlimited();
+            let axis = |argument| {
+                affine::term_argument(
+                    TermArgument {
+                        argument,
+                        component: vec![],
+                        kind,
+                    },
+                    &c,
+                )
+                .unwrap()
+            };
+            let x = axis(0);
+            let y = axis(1);
+            let number = |n: i64| {
+                affine::constant(
+                    &if kind == affine::NumberType::Z {
+                        Scalar::Z(n.into())
+                    } else {
+                        Scalar::Q(n.into(), 1.into())
+                    },
+                    &c,
+                )
+                .unwrap()
+                .unwrap()
+            };
+            let op = |op, a: &affine::Form, b: &affine::Form| {
+                affine::binary(op, Some(a), Some(b), &c).unwrap().unwrap()
+            };
+            let one = number(1);
+            let x_minus_one = op(BinOp::Sub, &x, &one);
+            assert!(
+                restrict_zeros(&[x.clone(), x_minus_one], &one, &c)
+                    .unwrap()
+                    .is_some()
+            );
+            let y_minus_one = op(BinOp::Sub, &y, &one);
+            let proof = guard_fiber(&[x.clone(), y_minus_one], &op(BinOp::Sub, &x, &y), &c)
+                .unwrap()
+                .unwrap();
+            assert!(!proof.is_zero(&c).unwrap());
+            let point = outside(&proof.guard, &proof.zero, &c).unwrap().unwrap();
+            assert_eq!(
+                point,
+                if kind == affine::NumberType::Z {
+                    vec![Scalar::Z(0.into()), Scalar::Z(1.into())]
+                } else {
+                    vec![Scalar::Q(0.into(), 1.into()), Scalar::Q(1.into(), 1.into())]
+                }
+            );
+            let half = op(BinOp::Sub, &op(BinOp::Mul, &number(2), &x), &one);
+            assert_eq!(
+                restrict_zeros(&[half, y], &one, &c).unwrap().is_some(),
+                kind == affine::NumberType::Z
+            );
+        }
+    }
     #[test]
     fn guard_fiber_zero_requires_every_kernel_direction_and_exact_ground() {
         for kind in [affine::NumberType::Z, affine::NumberType::Q] {
