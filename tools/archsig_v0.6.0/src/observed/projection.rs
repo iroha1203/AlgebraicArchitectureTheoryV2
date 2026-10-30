@@ -237,7 +237,6 @@ fn project_inner(
             _=>Err("CandidateSpace projection is not public".into()),
         },
         (ProjectionType::SolutionSet(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
-        (ProjectionType::StateSpace(root),Field(f)) if f=="base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
         (ProjectionType::StateMap,Field(f)) if matches!(f.as_str(),"source"|"target")=>exact(ProjectionType::Domain),
 
         (ProjectionType::ComposedOperation(shape), Field(f)) => match f.as_str() {

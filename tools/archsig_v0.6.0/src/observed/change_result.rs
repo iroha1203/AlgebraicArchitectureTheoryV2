@@ -148,7 +148,6 @@ impl Data {
                 matches!(field.as_str(), "base" | "parameters" | "states" | "action")
             }
             NodeType::Construction(T::SolutionSet) => field == "domain",
-            NodeType::Construction(T::StateSpace) => field == "base",
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             NodeType::Construction(T::Architecture) => field == "root",
             NodeType::Construction(T::Repair) => matches!(

@@ -282,7 +282,7 @@ checkが検査を完了した後に捕捉signalを反映する場合は、確認
 同じ親に一時directoryを作り、入力コピーと結果を書きflushした後、既存pathを置換しない
 renameで最終directoryを作る。競合してoutが作られた場合も上書きしない。
 出力に失敗した場合は、今回の実行が作成した未完成の一時directoryを片付ける。
-既存のpathや、有効な成果物のあるdirectoryは削除しない。残った成果物や削除できなかったpathはstderrで知らせる。
+既存のpathや、有効な成果物のあるdirectoryは削除しない。削除できなかった一時directoryのpathと原因は、標準出力のreceipt.issuesで知らせる。
 finalizeの状態確定と、その後の配送障害は次節に従う。
 
 ```text
@@ -325,7 +325,7 @@ messageは英語で、原因と問題の引数または入力をその場で理�
 入力IDはlaw、archmap、指定順のdefinition0、definition1、…であり、ファイルコピーがなくてもCLIの指定と対応する。
 成果物のない通知のIssueはノード参照を持たず、dependencies/missingを空とする。
 成果物を伴う通知のノード参照は、そのresult.jsonを指す。正常な完了ではissuesを省略する。
-stderrは進捗と障害の補助説明に使い、エラーの具体的な内容をstderrだけへ隠さない。
+進捗や重複する障害説明をstderrへ追加しない。具体的なエラーは標準出力と終了コードで伝える。
 プログラムはreceiptのstatus/exit_codeとissuesのcode、または保存されたresultのcodeで分岐する。
 
 例えば、出力先を省略したcheckはファイルを作らず、次の一行と終了コード64を返す。
@@ -362,8 +362,8 @@ status/exit_codeを確定する。両方がpendingで受信順を取得できな
 確定後の新しいsignalはこの機械状態に反映せず、result、receipt、正常なプロセス終了codeは同じ確定値を使う。
 公開前のwrite/flush/rename失敗だけは配送失敗への退避とし、最終resultを公開せず、
 作成可能ならresult欄のないerror/74 receiptへioのissuesを入れて出し、74で終了する。
-公開済みresultの後でreceiptのwrite/flushが失敗した場合は、確定済みresultと終了codeを変更せず、
-stderrへ可能な範囲で通知する。receiptを再出力せず、欠落または不完全なreceiptは配送未完了として扱う。
+公開済みresultの後でreceiptのwrite/flushが失敗した場合も、確定済みresultと終了codeを変更しない。
+receiptの再出力やstderrへの追加通知は行わず、欠落または不完全なreceiptは配送未完了として扱う。
 receipt出力に伴うSIGPIPEもこのI/O失敗として捕捉し、確定済み終了codeをsignal既定動作で変更しない。
 全問いが算法非対応でもpartialである。確定反例は有効な結果であり、他の問いが未決でも保持する。
 不正入力・未対応版では数学計算を始めず、標準出力のissuesだけで理由を伝え、結果ファイルを作らない。
