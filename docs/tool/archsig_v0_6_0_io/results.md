@@ -26,7 +26,8 @@ Result = {
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
 SavedAnswer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
                applicability?:String,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[],scope:Scope}
-SavedNode = {id:String,type:Type,state:"value"|"blocked",value?:Payload,
+SavedType = Type | "Counterexample" | "EvaluationResult"
+SavedNode = {id:String,type:SavedType,state:"value"|"blocked",value?:Payload,
              partial?:Partial,conditions:Ref[],judgment?:SavedJudgment,reasons:Issue[]}
 SavedJudgment = {status:Decision,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[]}
 InputIdentity = {id:Id,kind:"atom_definition"|"archmap"|"law",state:"read"|"unread",
@@ -77,6 +78,8 @@ Issue = {code:IssueCode,message:String,location?:Location,request?:String,
 `command=check`ではproducer・usage・limitsと固定reuse metadataを持ち、answers/nodesは空とする。
 `command=run`ではこれら四欄を持たず、SavedAnswerとSavedNodeを使う。
 保存するのは回答から到達する値・条件・反例とその参照である。
+保存専用のCounterexampleのPayloadはEvidenceのcounterexample・completion_pair・separating_pairの値、
+EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とする。
 上記のAnswer・Node・Judgment・Rule、および以降の型付き構成は核が検査する表現を定める。
 保存時は次の射影を適用し、元の三入力と同じsemanticsから内部構成を再検査する。
 

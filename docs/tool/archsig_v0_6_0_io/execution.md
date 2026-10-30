@@ -303,11 +303,13 @@ stdoutは完了時に一行だけ出力する。`run`の`--out`省略時の計�
 ```text
 {format:"archsig.summary/1",status:RunStatus,exit_code:Nat,answers:SummaryAnswer[],issues?:Issue[],warnings?:Issue[]}
 SummaryAnswer = {id:String,question:QuestionKind,status:Decision,outputs:Object,
-                 applicability?:String,uniqueness?:Decision,reasons?:Issue[],counterexamples?:Object[]}
+                 applicability?:String,uniqueness?:Decision,reasons?:Issue[],
+                 counterexamples_total?:Nat,counterexamples?:Object[]}
 ```
 
 outputsは直接読める型と値を示す。構造値の選択された欄を深さ2まで表示し、集合等は件数を示す。
-反例は3件、各反例の束縛と事実も各3件まで表示する。256 byteを超える値や文字列はbyte数を示す。
+反例は3件、各反例の束縛と事実も各3件まで表示し、counterexamples_totalは表示前の全反例数を示す。
+参照を含まないValue型の値、および反例の束縛名・事実の文字列が256 byteを超える場合はbyte数を示す。
 summaryの理由と通知はIssueからdependenciesと導出参照を除いた形とする。要約は候補域や解集合を縮小せず、内部の全量計算と後続参照を維持する。
 保存を依頼した場合、および成果物のない実行失敗の通知は次のreceiptを使う。
 
