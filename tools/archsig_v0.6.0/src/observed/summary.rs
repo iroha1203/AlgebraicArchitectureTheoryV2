@@ -154,6 +154,13 @@ impl ObservedEvaluation {
                         ),
                     ),
                 ]);
+                if request.kind == crate::observed::request::QuestionKind::Solve
+                    && answer.status == Decision::Undetermined
+                    && let Some(reference) = answer.outputs.get("proposition")
+                    && let Some(judgment) = &self.nodes[reference.0].judgment
+                {
+                    row.insert("existence".into(), Json::str(judgment.status.wire()));
+                }
                 if request.kind == crate::observed::request::QuestionKind::Repair
                     && let Some(reference) = answer.claim
                     && let Some(Payload::Construction(value)) = &self.nodes[reference.0].payload

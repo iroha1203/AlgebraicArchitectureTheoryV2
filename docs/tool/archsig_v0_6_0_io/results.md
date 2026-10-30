@@ -841,6 +841,17 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
   これらは補完内の証拠値であり、観測値や通常のArchitecture・CandidateSpace・Assignment・
   SolutionSetの確定値へ昇格しない。証拠内部の表を公開射影へ出さない。
   Repair/objectには全補完で同じ元割当てと更新値の確定を別に要する。
+対象族・Configurationを確定できたArchitectureで、有限の値slotが未観測かつ候補の状態値または
+Law判定に必要な場合も、核は上記の補完表を生成し、
+各補完の元Assignment全体と存在・一意性を再検査する。補完で新たに必要となった有限slotを
+依存へ加え、全caseの判定が完了するまで補完表を再生成する。
+solveのoutputs.propositionは補完全体での存在判断を保持する。具体的なCandidateSpaceや
+SolutionSetの値が欠測に依存する場合は、回答全体とsolution_setのconstructibleをundeterminedとし、
+元slotのmissing_observationを返す。確定した存在命題を未決へ戻さず、表示用の補完値を
+通常の状態値やAssignmentにしない。全補完で空解なら通常のrefutedとして返す。
+repairも存在・一意性の確定と具体的な更新値の確定を区別し、後者が欠測に依存すれば
+Repair/objectを生成せず不足位置を保持する。neededと後続の未生成値依存はその元理由を使う。
+
 - アフィンの証拠では、全補完ωで元の全解が
   `ρ_ω({t | Bt=d(ω)})`、`ρ_ω(t)=p0(ω)+Pt` と一致し、BとPが固定された正確な
   整数ModuleMapであることを原式の正規化から検査する。

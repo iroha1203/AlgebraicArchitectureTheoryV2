@@ -470,6 +470,7 @@ pub(in crate::observed) fn candidate(
 pub(in crate::observed) struct SolutionRow {
     pub candidate: usize,
     pub member: Option<bool>,
+    pub missing: Vec<Fact>,
 }
 
 /// 元parameter点を、同時更新後の全Law instanceに再代入する。
@@ -482,6 +483,7 @@ pub(in crate::observed) fn solution_row(
     let mut row = SolutionRow {
         candidate: point,
         member: None,
+        missing: vec![],
     };
     match candidate.update.state {
         State::Excluded | State::ConditionFailed => {
@@ -516,7 +518,17 @@ pub(in crate::observed) fn solution_row(
             .declarations
             .get(name)
             .ok_or("候補の元Lawがない")?;
-        let law = finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point)?;
+        let outer = updated.missing_slot_reads.replace(Some(BTreeSet::new()));
+        let evaluated =
+            finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point);
+        let missing = updated
+            .missing_slot_reads
+            .replace(outer)
+            .ok_or("候補Lawの不足位置収集がない")?;
+        if let Some(reads) = updated.missing_slot_reads.borrow_mut().as_mut() {
+            reads.extend(missing.iter().cloned());
+        }
+        let law = evaluated?;
         let holds = if law.application == Some(false) {
             Some(true)
         } else if law.application.is_none() || law.condition_pending {
@@ -530,6 +542,9 @@ pub(in crate::observed) fn solution_row(
                 _ => None,
             }
         };
+        if holds.is_none() {
+            row.missing.extend(missing);
+        }
         member = match (member, holds) {
             (Some(false), _) | (_, Some(false)) => Some(false),
             (Some(true), Some(true)) => Some(true),
@@ -537,6 +552,11 @@ pub(in crate::observed) fn solution_row(
         };
     }
     row.member = member;
+    if member.is_some() {
+        row.missing.clear();
+    }
+    row.missing.sort();
+    row.missing.dedup();
     Ok(row)
 }
 

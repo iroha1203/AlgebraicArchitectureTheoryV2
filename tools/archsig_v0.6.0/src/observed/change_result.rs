@@ -267,7 +267,7 @@ fn compute_inner(
     c: &mut Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
-        if let Some(result) = owner_completion::compute(env, g, architecture, base, request, c)? {
+        if let Some(result) = owner_completion::compute(env, g, architecture, base, request, c, &[])? {
             return Ok(result);
         }
         return Err(ValidationFailure::UnsupportedExpression {
@@ -305,18 +305,40 @@ fn compute_inner(
         location: Location::Law { span: (0, 0) },
         feature: "有限changeの未確定候補・解の公開配送は未実装".into(),
     };
-    if !search.complete || search.solutions.iter().any(|r| r.member.is_none()) {
+    let pending = !search.complete
+        || search.solutions.iter().any(|r| r.member.is_none())
+        || search.candidates.as_ref().is_none_or(|table| {
+            !table.complete
+                || table
+                    .rows
+                    .iter()
+                    .any(|row| row.update.state == State::Undetermined)
+        });
+    if pending {
+        let missing = search
+            .missing
+            .iter()
+            .cloned()
+            .chain(
+                search
+                    .candidates
+                    .iter()
+                    .flat_map(|table| &table.rows)
+                    .flat_map(|row| row.update.missing.iter().cloned()),
+            )
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        if architecture.complete
+            && !missing.is_empty()
+            && let Some(result) =
+                owner_completion::compute(env, g, architecture, base, request, c, &missing)?
+        {
+            return Ok(result);
+        }
         return Err(unsupported());
     }
     let candidates = search.candidates.as_ref().ok_or_else(unsupported)?;
-    if !candidates.complete
-        || candidates
-            .rows
-            .iter()
-            .any(|r| r.update.state == State::Undetermined)
-    {
-        return Err(unsupported());
-    }
     let change_name = request
         .arguments
         .iter()
@@ -1288,6 +1310,10 @@ pub(super) fn incomplete_construction(g: &Graph, answer: &Answer) -> Option<(Loc
         .iter()
         .any(|part| part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([]))
     {
+        return None;
+    }
+    if data.source.architecture.complete
+        && answer.reasons.iter().any(|reason| matches!(reason.kind, ReasonKind::Missing)) {
         return None;
     }
     Some((
