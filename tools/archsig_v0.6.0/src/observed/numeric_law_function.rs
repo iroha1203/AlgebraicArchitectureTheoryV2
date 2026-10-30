@@ -626,13 +626,12 @@ fn conditional_outside(
         Some(p) => Some(p),
         None => outside_both(ga, da, gz, c)?,
     };
-    if let Some(p) = &point {
-        if !ga.contains(p, c)?
+    if let Some(p) = &point
+        && (!ga.contains(p, c)?
             || da.contains(p, c)?
-            || (gz.contains(p, c)? && !dz.contains(p, c)?)
-        {
-            return Err("条件付き残差の反例が元の適用域を分離しない".into());
-        }
+            || (gz.contains(p, c)? && !dz.contains(p, c)?))
+    {
+        return Err("条件付き残差の反例が元の適用域を分離しない".into());
     }
     Ok(point)
 }
