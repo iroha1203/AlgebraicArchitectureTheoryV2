@@ -99,32 +99,30 @@ fn atomic_bool_bound_keys_literals_and_parenthesized_equality_keep_their_types()
     }
 }
 #[test]
-fn atomic_bool_compound_named_and_quantified_bodies_stay_unsupported() {
-    use archsig::observed::{
-        control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
-        result::EvaluationFailure,
-    };
-    for (params, body) in [
-        ("s:State", "s.x and s.y"),
-        ("s:State", "not s.x"),
-        ("s:State", "if s.y then s.x else false"),
-        ("s:State", "first(s)"),
-        ("s:State", "forall b:Bool . b"),
-        ("s:State,b:Bool", "b"),
+fn compound_bool_observations_preserve_equality_values() {
+    for (params, body, expected) in [
+        ("s:State", "s.x and s.y", "refuted"),
+        ("s:State", "not s.x", "established"),
+        ("s:State", "if s.y then s.x else false", "refuted"),
+        ("s:State", "first(s)", "established"),
+        ("s:State", "forall b:Bool . b", "established"),
+        ("s:State,b:Bool", "b", "established"),
+        ("s:State", "(s.y=s.y) and true", "refuted"),
+        ("s:State", "if true then s.y=s.y else true", "refuted"),
+        ("s:State", "forall b:Bool . (s.y=b)", "refuted"),
     ] {
         let extra = format!("view first(s:State):Bool=s.x;law optional test({params}):{body};");
-        let result = evaluate_observed_bytes(
-            bool_fixture::sources("", &extra),
+        let result = bool_result(
+            &extra,
             &[
                 "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
                 "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.test)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
         );
-        assert!(
-            matches!(result, Err(EvaluationFailure::NotImplemented { .. })),
-            "{body}: {result:?}"
+        assert_eq!(
+            s(get(&arr(get(&result, "answers"))[1], "status")),
+            expected,
+            "{body}"
         );
     }
 }
@@ -291,6 +289,210 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
             _ => vec!["cancelled", "SIGTERM"],
         } {
             assert!(reasons.contains(expected), "{reasons}");
+        }
+    }
+}
+
+#[test]
+fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
+    use archsig::observed::{
+        control::{Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        input::InputSources,
+    };
+    for (body, expected) in [
+        ("if false then s.y else s.x", "established"),
+        ("if true then s.x else s.y", "established"),
+        ("false and s.y", "established"),
+        ("true or s.y", "established"),
+        ("if s.y then true else true", "undetermined"),
+        ("true and s.y", "undetermined"),
+        ("forall b:Bool . s.y or b", "undetermined"),
+    ] {
+        let original = bool_fixture::sources(
+            "",
+            &format!("view first(s:State):Bool=s.x;law optional test(s:State):{body};"),
+        );
+        let law = String::from_utf8(original.law().bytes().to_vec())
+            .unwrap()
+            .replace("with{x=a,y=b}", "with{x=a}");
+        let map = String::from_utf8(original.archmap().bytes().to_vec())
+            .unwrap()
+            .replace(
+                r#",{"id":"y","subject":"s","field":"Pair.State.y","value":false,"origin":"o"}"#,
+                "",
+            );
+        let result = evaluate_observed_bytes(
+            InputSources::from_bytes(
+                original
+                    .definitions()
+                    .iter()
+                    .map(|d| d.bytes().to_vec())
+                    .collect(),
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+                "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.test)",
+            ],
+            &mut Control::new(Limits::default(), |_| Usage::default()),
+        )
+        .unwrap();
+        let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answer = &arr(get(&result, "answers"))[1];
+        assert_eq!(s(get(answer, "status")), expected, "{body}");
+        if expected == "undetermined" {
+            assert!(!has(get(answer, "outputs"), "quotient"));
+        }
+    }
+}
+
+#[test]
+fn compound_named_boundary_and_quantified_values_are_explicit() {
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;view same(s:State):Bool=s.y=s.y;law optional named(s:State):same(s);law optional quantified(s:State):forall b:Bool . s.y=b;",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "named=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.named)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.quantified)",
+        ],
+    );
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[1], "status")),
+        "established"
+    );
+    let answer = &arr(get(&result, "answers"))[2];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    let witness = node(&result, &arr(get(answer, "evidence"))[0]);
+    let families = arr(get(get(get(witness, "value"), "data"), "law_values"));
+    for family in families {
+        let family = arr(get(node(&result, family), "value"));
+        let observations = arr(get(&arr(&family[0])[1], "some"));
+        assert_eq!(observations.len(), 2);
+        let mut bindings = vec![];
+        for observation in observations {
+            let pair = arr(observation);
+            let operands = arr(&pair[1]);
+            assert_eq!(pair[0].value, operands[1].value);
+            bindings.push(matches!(pair[0].value, JValue::Bool(true)));
+        }
+        assert!(bindings.contains(&false) && bindings.contains(&true));
+    }
+}
+
+#[test]
+fn compound_cli_refutation_save_reuse_and_tamper() {
+    let dir = law_input(
+        "quotient-compound-cli",
+        "law optional wrapped(s:State):(s.x=s.x) and true;law optional indexed(s:State):forall b:Bool . s.x=b;",
+    );
+    let asks = [
+        "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.wrapped)",
+        "indexed=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.indexed)",
+    ];
+    let first = execute(&dir, "out", &asks, None);
+    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let repeated = execute(&dir, "reused", &asks, Some("out"));
+    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
+    let reused = result_json(&dir, &repeated);
+    for key in ["answers", "nodes"] {
+        assert_eq!(get(&result, key).value, get(&reused, key).value);
+    }
+    let path = dir.join(s(get(&first.receipt, "result")));
+    let saved = std::fs::read_to_string(&path).unwrap();
+    for (index, changed) in [
+        saved.replace("refuted", "established"),
+        saved.replace("false", "true"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        assert_ne!(saved, changed);
+        std::fs::write(&path, changed).unwrap();
+        let rejected = execute(&dir, &format!("tampered-{index}"), &asks, Some("out"));
+        assert_eq!(rejected.code, 1, "{} {}", rejected.stdout, rejected.stderr);
+        let rebuilt = result_json(&dir, &rejected);
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&rebuilt, key).value);
+        }
+        assert!(!warnings(&rebuilt).is_empty());
+        assert_eq!(
+            s(get(get(&warnings(&rebuilt)[0], "details"), "argument")),
+            "--reuse"
+        );
+    }
+}
+
+#[test]
+fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
+    use archsig::observed::{
+        control::{Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        result::EvaluationFailure,
+    };
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;law optional empty_family(s:State):forall b in list<Bool>[] . b;",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.empty_family)",
+        ],
+    );
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[1], "status")),
+        "established"
+    );
+    let map = node(&result, get(quotient(&result, 1), "descent"));
+    for entry in arr(get(get(map, "value"), "pairs")) {
+        let family = arr(get(node(&result, &arr(entry)[1]), "value"));
+        assert!(arr(get(&arr(&family[0])[1], "some")).is_empty());
+    }
+    let result = evaluate_observed_bytes(
+        bool_fixture::sources(
+            "",
+            "view first(s:State):Bool=s.x;law optional infinite(s:State):forall z:Z . forall w:Z . true;",
+        ),
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.infinite)",
+        ],
+        &mut Control::new(Limits::default(), |_| Usage::default()),
+    );
+    assert!(
+        matches!(result, Err(EvaluationFailure::NotImplemented { .. })),
+        "{result:?}"
+    );
+}
+
+#[test]
+fn compound_nested_finite_quantifiers_keep_every_binding_and_operand() {
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;law optional nested(s:State):forall b:Bool . forall c:Bool . (s.y,b)=(c,b);",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.nested)",
+        ],
+    );
+    let answer = &arr(get(&result, "answers"))[1];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    let witness = node(&result, &arr(get(answer, "evidence"))[0]);
+    for family in arr(get(get(get(witness, "value"), "data"), "law_values")) {
+        let family = arr(get(node(&result, family), "value"));
+        let outer = arr(get(&arr(&family[0])[1], "some"));
+        assert_eq!(outer.len(), 2);
+        for b in outer {
+            let b = arr(b);
+            let inner = arr(&b[1]);
+            assert_eq!(inner.len(), 2);
+            for c in inner {
+                let c = arr(c);
+                let operands = arr(&c[1]);
+                assert_eq!(arr(&operands[0])[1].value, b[0].value);
+                assert_eq!(arr(&operands[1])[0].value, c[0].value);
+                assert_eq!(arr(&operands[1])[1].value, b[0].value);
+            }
         }
     }
 }
