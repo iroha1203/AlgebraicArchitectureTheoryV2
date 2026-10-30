@@ -11308,3 +11308,273 @@ reading After {{{vocabulary} local here(a:Option<Bool>,b:Option<Bool>) {tg} read
         assert!(arr(get(plan, "requirements")).is_empty());
     }
 }
+
+fn finite_reference_view_inputs(name: &str, case: &str) -> PathBuf {
+    let dir = finite_view_inputs(name, true);
+    if case != "nonbijective" {
+        let mut map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(
+                r#""value":[[["v","e"],["v","f"]]]"#,
+                r#""value":[[["v","e"],["v","e"]]]"#,
+            )
+            .replace(
+                r#""value":[[["v","p"],["v","r"]],[["v","q"],["v","s"]],[["v","u"],["v","w"]]]"#,
+                r#""value":[[["v","p"],["v","p"]],[["v","q"],["v","q"]],[["v","u"],["v","u"]]]"#,
+            )
+            .replace(
+                r#""field":"Reservations.Migration.to","value":["v","B"]"#,
+                r#""field":"Reservations.Migration.to","value":["v","A"]"#,
+            );
+        if case == "cycle" {
+            map = map.lines().filter(|line| !line.contains(r#""id":"e","type""#)
+                && !line.contains(r#""subject":"e""#)).collect::<Vec<_>>().join("\n")
+                .replace(r#""value":[[["v","e"],["v","e"]]]"#, r#""value":[]"#)
+                .replace(r#""value":[[["v","p"],["v","p"]],[["v","q"],["v","q"]],[["v","u"],["v","u"]]]"#,
+                    r#""value":[[["v","p"],["v","q"]],[["v","q"],["v","u"]],[["v","u"],["v","p"]]]"#);
+        }
+        std::fs::write(dir.join("a.json"), map).unwrap();
+    }
+    dir
+}
+
+#[test]
+fn finite_reference_view_maps_check_the_full_type_and_keep_nonbijective_operations() {
+    for case in ["nonbijective", "identity", "cycle"] {
+        let preserved = case != "nonbijective";
+        let dir = finite_reference_view_inputs(&format!("finite-reference-view-{case}"), case);
+        let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} view echo(s:State):State=s;}}
+reading After {{{vocabulary} view echo(s:State):State=s;}}"#
+            ),
+        )
+        .unwrap();
+        let r = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(r.code, if preserved { 0 } else { 1 }, "{}", r.stdout);
+        let j = result_json(&dir, &r);
+        let m = answer(&j, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            if preserved { "established" } else { "refuted" }
+        );
+        assert_eq!(has(get(m, "outputs"), "map"), preserved);
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        if preserved {
+            let map = value(&j, get(get(m, "outputs"), "map"));
+            let invariant = value(&j, &arr(get(map, "invariants"))[0]);
+            let equivalence = value(&j, get(invariant, "values"));
+            for field in ["forward", "inverse"] {
+                let values = value(&j, get(equivalence, field));
+                let pairs = arr(get(values, "subjects"));
+                assert_eq!(pairs.len(), 6);
+                for pair in pairs {
+                    let from = arr(value(&j, &arr(pair)[0]));
+                    let to = arr(value(&j, &arr(pair)[1]));
+                    assert_eq!(s(&from[0]), "v");
+                    assert_eq!(s(&to[0]), "v");
+                    let expected = if case == "identity" {
+                        s(&from[1])
+                    } else {
+                        match (field, s(&from[1])) {
+                            ("forward", "p") | ("inverse", "u") => "q",
+                            ("forward", "q") | ("inverse", "p") => "u",
+                            ("forward", "u") | ("inverse", "q") => "p",
+                            (_, other) => other,
+                        }
+                    };
+                    assert_eq!(s(&to[1]), expected);
+                }
+            }
+            if case == "cycle" {
+                let repeat = |out: &str| {
+                    cli::run(
+                        &dir,
+                        &[
+                            "run",
+                            "--atom-definition",
+                            "d.json",
+                            "--archmap",
+                            "a.json",
+                            "--law",
+                            "l.law",
+                            "--out",
+                            out,
+                            "--reuse",
+                            "out",
+                            "--ask",
+                            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                            "--ask",
+                            "same=compare($m.operation,to=$m.operation,kind=action)",
+                        ],
+                    )
+                };
+                let valid = repeat("again");
+                assert_eq!(valid.code, 0, "{}", valid.stdout);
+                let again = result_json(&dir, &valid);
+                assert!(warnings(&again).is_empty());
+                for key in ["answers", "nodes"] {
+                    assert_eq!(get(&j, key).value, get(&again, key).value);
+                }
+                let forward = value(&j, get(equivalence, "forward"));
+                let first = &arr(get(forward, "subjects"))[0];
+                let from = s(get(&arr(first)[0], "node"));
+                let to = s(get(&arr(first)[1], "node"));
+                assert_ne!(from, to);
+                let pattern = format!(r#""subjects":[[{{"node":"{from}"}},{{"node":"{to}"}}]"#);
+                let changed = format!(r#""subjects":[[{{"node":"{from}"}},{{"node":"{from}"}}]"#);
+                let file = dir.join("out/result.json");
+                let before = std::fs::read_to_string(&file).unwrap();
+                let id = s(get(get(equivalence, "forward"), "node"));
+                let anchor = format!(r#""id":"{id}""#);
+                assert_eq!(before.matches(&anchor).count(), 1);
+                let start = before.find(&anchor).unwrap();
+                let (prefix, node_and_rest) = before.split_at(start);
+                assert!(node_and_rest.contains(&pattern));
+                std::fs::write(
+                    file,
+                    format!("{prefix}{}", node_and_rest.replacen(&pattern, &changed, 1)),
+                )
+                .unwrap();
+                let tampered = repeat("rejected");
+                assert_eq!(tampered.code, 0, "{}", tampered.stdout);
+                let rejected = result_json(&dir, &tampered);
+                assert!(!warnings(&rejected).is_empty());
+                for key in ["answers", "nodes"] {
+                    assert_eq!(get(&j, key).value, get(&rejected, key).value);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn finite_reference_composites_keep_the_full_type_and_unselected_constructors() {
+    let dir = finite_reference_view_inputs("finite-reference-composite", "cycle");
+    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let definition = old.replacen("\"declarations\": [", r#""declarations": [{"kind":"data","name":"Reservations.RefBox","meaning":"有限の参照箱。","constructors":[{"name":"Empty","arguments":[],"meaning":"空。"},{"name":"Held","arguments":[["Ref","Reservations.State"]],"meaning":"参照。"}]},"#, 1);
+    let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let old_checked = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies()["Reservations"].digest;
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(&old_checked.vocabularies()["Reservations"].digest, digest);
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):(Option<State>,RefBox)=(some(s),Held(s));}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):(Option<State>,RefBox)=(some(s),Held(s));}}"#
+    );
+    let evaluated = archsig::observed::evaluate_observed_bytes(
+        archsig::observed::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
+        &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+        &mut archsig::observed::control::Control::unlimited(),
+    ).unwrap();
+    let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+    let m = answer(&j, "m");
+    assert_eq!(s(get(m, "status")), "established");
+    let map = value(&j, get(get(m, "outputs"), "map"));
+    let invariant = value(&j, &arr(get(map, "invariants"))[0]);
+    let equivalence = value(&j, get(invariant, "values"));
+    for field in ["forward", "inverse"] {
+        let values = value(&j, get(equivalence, field));
+        assert_eq!(arr(get(values, "subjects")).len(), 6);
+        let declarations = arr(get(values, "declarations"));
+        for name in [
+            "Reservations.RefBox",
+            "Reservations.RefBox.Empty",
+            "Reservations.RefBox.Held",
+        ] {
+            assert!(
+                declarations
+                    .iter()
+                    .any(|pair| s(&arr(pair)[0]) == name && s(&arr(pair)[1]) == name)
+            );
+        }
+        assert_json(
+            get(values, "source_type"),
+            r#"["Option",["Tuple",["Option",["Ref","Reservations.State"]],["Data","Reservations.RefBox"]]]"#,
+        );
+    }
+    for field in ["left_inverse", "right_inverse"] {
+        let p = node(&j, get(equivalence, field));
+        assert_eq!(s(get(get(p, "judgment"), "status")), "established");
+    }
+}
+
+#[test]
+fn uninhabited_constructor_branches_still_require_the_whole_reference_action() {
+    for case in ["cycle", "nonbijective"] {
+        let dir = finite_reference_view_inputs(&format!("finite-reference-empty-{case}"), case);
+        let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+        let entries = r#"{"kind":"entity","name":"Reservations.Void","meaning":"空の参照域。","parameters":[],"fields":[],"alignments":[]},{"kind":"data","name":"Reservations.Hidden","meaning":"無住の枝を持つ箱。","constructors":[{"name":"Empty","arguments":[],"meaning":"空。"},{"name":"Held","arguments":[["Ref","Reservations.State"],["Ref","Reservations.Void"]],"meaning":"無住。"}]}"#;
+        let definition = old.replacen(
+            "\"declarations\": [",
+            &format!("\"declarations\": [{entries},"),
+            1,
+        );
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let old_checked = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies()["Reservations"].digest;
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(&old_checked.vocabularies()["Reservations"].digest, digest);
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):Hidden=Empty;}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):Hidden=Empty;}}"#
+        );
+        let evaluated = archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+              "same=compare($m.operation,to=$m.operation,kind=action)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap();
+        let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        assert_eq!(
+            s(get(m, "status")),
+            if case == "cycle" {
+                "established"
+            } else {
+                "refuted"
+            }
+        );
+        assert_eq!(has(get(m, "outputs"), "map"), case == "cycle");
+        if case == "cycle" {
+            let map = value(&j, get(get(m, "outputs"), "map"));
+            for invariant in arr(get(map, "invariants")) {
+                let invariant = value(&j, invariant);
+                let eq = value(&j, get(invariant, "values"));
+                for field in ["forward", "inverse"] {
+                    let action = value(&j, get(eq, field));
+                    assert_eq!(arr(get(action, "subjects")).len(), 6);
+                    let declarations = arr(get(action, "declarations"));
+                    for name in [
+                        "Reservations.State",
+                        "Reservations.Void",
+                        "Reservations.Hidden.Held",
+                    ] {
+                        assert!(
+                            declarations
+                                .iter()
+                                .any(|p| s(&arr(p)[0]) == name && s(&arr(p)[1]) == name)
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
