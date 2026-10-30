@@ -231,6 +231,11 @@ fn execute(
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
+#[path = "../tests/common/watchdog.rs"]
+mod test_watchdog;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use archsig::observed::control::{Checkpoint, StopReason};
@@ -532,7 +537,7 @@ mod tests {
                     include_bytes!("../tests/fixtures/counter.archmap.json"),
                 )
                 .unwrap();
-                let mut child = Running(
+                let child = Running(
                     Command::new(std::env::current_exe().unwrap())
                         .current_dir(&dir)
                         .args([
@@ -549,19 +554,35 @@ mod tests {
                         .spawn()
                         .unwrap(),
                 );
-                let mut stdout = BufReader::new(child.0.stdout.take().unwrap());
-                loop {
-                    let mut line = String::new();
-                    assert!(stdout.read_line(&mut line).unwrap() > 0, "同期合図前に終了");
-                    if line.trim() == "ARCHSIG_READY" {
-                        break;
-                    }
-                }
-                kill(Pid::from_raw(child.0.id().try_into().unwrap()), signal).unwrap();
-                child.0.stdin.take().unwrap().write_all(b"x").unwrap();
-                let mut receipt = String::new();
-                stdout.read_to_string(&mut receipt).unwrap();
-                assert_eq!(child.0.wait().unwrap().code(), Some(code));
+                let (status, timed_out, receipt) = std::thread::scope(|scope| {
+                    // Drop the child before scope joins readers on a synchronization failure.
+                    let mut child = child;
+                    let mut stdout = BufReader::new(child.0.stdout.take().unwrap());
+                    let (ready, received) = std::sync::mpsc::sync_channel(1);
+                    let reader = scope.spawn(move || {
+                        loop {
+                            let mut line = String::new();
+                            assert!(stdout.read_line(&mut line).unwrap() > 0, "同期合図前に終了");
+                            if line.trim() == "ARCHSIG_READY" {
+                                break;
+                            }
+                        }
+                        ready.send(()).unwrap();
+                        let mut receipt = String::new();
+                        stdout.read_to_string(&mut receipt).unwrap();
+                        receipt
+                    });
+                    received
+                        .recv_timeout(std::time::Duration::from_secs(30))
+                        .expect("signal child readiness deadline");
+                    kill(Pid::from_raw(child.0.id().try_into().unwrap()), signal).unwrap();
+                    child.0.stdin.take().unwrap().write_all(b"x").unwrap();
+                    let (status, timed_out) =
+                        test_watchdog::wait(&mut child.0, std::time::Duration::from_secs(30)).unwrap();
+                    (status, timed_out, reader.join().unwrap())
+                });
+                assert!(!timed_out, "signal child did not exit");
+                assert_eq!(status.code(), Some(code));
                 assert_eq!(receipt.matches('\n').count(), 1);
                 let receipt = parse(receipt.trim_end().as_bytes()).unwrap();
                 assert_eq!(text(field(&receipt, "status")), "interrupted");

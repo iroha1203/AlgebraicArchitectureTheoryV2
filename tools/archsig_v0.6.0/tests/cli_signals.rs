@@ -1,6 +1,9 @@
 //! 実製品バイナリのsignalと配送を、満杯のstdoutで同期する。
 #![cfg(unix)]
 mod common;
+#[allow(dead_code)]
+#[path = "common/watchdog.rs"]
+mod watchdog;
 use archsig::json::parse;
 use common::cli::*;
 use nix::sys::signal::{Signal, kill};
@@ -107,14 +110,23 @@ fn signals_after_publication_keep_result_receipt_and_exit_frozen() {
     );
     send(&child.0, Signal::SIGTERM);
     send(&child.0, Signal::SIGINT);
-    let mut bytes = Vec::new();
-    reader.read_to_end(&mut bytes).unwrap();
+    let (status, timed_out, bytes) = std::thread::scope(|scope| {
+        let mut child = child;
+        let output = scope.spawn(move || {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).unwrap();
+            bytes
+        });
+        let (status, timed_out) = watchdog::wait(&mut child.0, Duration::from_secs(30)).unwrap();
+        (status, timed_out, output.join().unwrap())
+    });
+    assert!(!timed_out, "child did not exit after receipt delivery");
     assert!(bytes[..count].iter().all(|b| *b == b'x'));
     let line = std::str::from_utf8(&bytes[count..]).unwrap();
     assert_eq!(line.matches('\n').count(), 1);
     let receipt = parse(line.trim_end().as_bytes()).unwrap();
     let result = parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
-    assert_eq!(child.0.wait().unwrap().code(), Some(1));
+    assert_eq!(status.code(), Some(1));
     for doc in [&receipt, &result] {
         assert_eq!(s(get(doc, "status")), "complete");
         assert_eq!(num(get(doc, "exit_code")), 1);
@@ -139,15 +151,19 @@ fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
     );
     // 読取側を閉じ、receiptのwriteによるEPIPE/SIGPIPEを実際に発生させる。
     drop(child.0.stdout.take());
-    let mut stderr = String::new();
-    child
-        .0
-        .stderr
-        .take()
-        .unwrap()
-        .read_to_string(&mut stderr)
-        .unwrap();
-    assert_eq!(child.0.wait().unwrap().code(), Some(2));
+    let (status, timed_out, stderr) = std::thread::scope(|scope| {
+        let mut child = child;
+        let mut pipe = child.0.stderr.take().unwrap();
+        let output = scope.spawn(move || {
+            let mut stderr = String::new();
+            pipe.read_to_string(&mut stderr).unwrap();
+            stderr
+        });
+        let (status, timed_out) = watchdog::wait(&mut child.0, Duration::from_secs(30)).unwrap();
+        (status, timed_out, output.join().unwrap())
+    });
+    assert!(!timed_out, "child did not exit after broken stdout");
+    assert_eq!(status.code(), Some(2));
     assert!(stderr.is_empty());
     let result = parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&result, "status")), "partial");
