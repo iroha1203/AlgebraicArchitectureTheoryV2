@@ -154,6 +154,68 @@ fn observation(
                     .map(|(l, r)| Scalar::Tuple(vec![l, r]));
                 Ok((Type::Tuple(vec![ty.clone(), ty]), value))
             }
+            ExprKind::Match { scrutinee, arms } => {
+                let ty = law
+                    .expr_type(*scrutinee)
+                    .ok_or("match判別値型がない")?
+                    .clone();
+                if !exact_type(&ty, law, c)? {
+                    return Err(unsupported("このmatch判別値型の商は未実装"));
+                }
+                let input = child(*scrutinee).and_then(|i| nodes[i].value.as_ref());
+                let selected = data::select(law, expression, input, c)?;
+                let (observed_type, observed) = if ty == Type::Bool {
+                    observation(law, *scrutinee, child(*scrutinee), nodes, c)?
+                } else {
+                    (ty, input.cloned())
+                };
+                let mut types = vec![observed_type];
+                let mut complete = observed.is_some();
+                let mut values = observed.into_iter().collect::<Vec<_>>();
+                complete &= node.is_some_and(|n| n.value.is_some()) && selected.is_some();
+                if let Some(node) = node {
+                    complete &= node
+                        .children
+                        .iter()
+                        .filter(|i| arms.iter().any(|arm| arm.body == nodes[**i].expression))
+                        .count()
+                        == 1;
+                }
+                for (index, arm) in arms.iter().enumerate() {
+                    let selected_here = selected == Some(index);
+                    let occurrence = if selected_here { child(arm.body) } else { None };
+                    let (ty, value) = observation(law, arm.body, occurrence, nodes, c)?;
+                    if selected_here {
+                        complete &= value.is_some();
+                        if let (Some(input), Some(occurrence)) = (input, occurrence) {
+                            for (name, expected) in
+                                data::bindings(law, expression, index, input, c)?
+                            {
+                                let actual = nodes[occurrence]
+                                    .bindings
+                                    .iter()
+                                    .find(|(n, _)| *n == name)
+                                    .map(|(_, v)| v);
+                                complete &= match actual {
+                                    Some(actual) => data::equal(&expected, actual, c)?,
+                                    None => false,
+                                };
+                            }
+                        } else {
+                            complete = false;
+                        }
+                    }
+                    types.push(Type::Option(Box::new(ty.clone())));
+                    values.push(Scalar::Option {
+                        element: ty,
+                        value: value.map(Box::new),
+                    });
+                }
+                Ok((
+                    Type::Tuple(types),
+                    complete.then_some(Scalar::Tuple(values)),
+                ))
+            }
             ExprKind::Quant { .. } => {
                 let spec = quantifier::spec(law, expression, c)?;
                 let (body_type, _) = observation(law, spec.body, None, nodes, c)?;
@@ -211,7 +273,6 @@ fn observation(
                         then_branch,
                         else_branch,
                     } => vec![*cond, *then_branch, *else_branch],
-                    ExprKind::Match { .. } => return Err(unsupported("商のmatch観測は未実装")),
                     _ => vec![],
                 };
                 if children.is_empty() {
