@@ -2018,3 +2018,81 @@ fn universal_recheck_stop_mode(
     assert_eq!(probes.get(), frozen);
     rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
 }
+
+#[test]
+fn universal_affine_guard_counterexamples_belong_to_the_actual_guard_fiber() {
+    for (ty, guard, rhs, expected) in [
+        ("Z", "n=0", "1", Scalar::Z(0.into())),
+        (
+            "Q",
+            "2*n=rat(1,1)",
+            "rat(1,1)",
+            Scalar::Q(1.into(), 2.into()),
+        ),
+    ] {
+        let result = universal_private_example(
+            &format!("law required example(n:{ty}) when {guard}:n={rhs};"),
+            &["c=check(Calc.example)"],
+        );
+        assert_eq!(result.answers[0].status, Decision::Refuted, "{ty}");
+        let binding = result.answers[0]
+            .evidence
+            .iter()
+            .find_map(|r| {
+                let Some(Payload::Counterexample { bindings, .. }) = &result.nodes[r.0].payload
+                else {
+                    return None;
+                };
+                bindings.iter().find(|b| b.name == "n")
+            })
+            .unwrap();
+        assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
+        completion_mutation(&result, binding.value.0, |nodes| {
+            let Some(Payload::Scalar(value)) = &mut nodes[binding.value.0].payload else {
+                panic!()
+            };
+            *value = if ty == "Q" {
+                Scalar::Q(99.into(), 1.into())
+            } else {
+                Scalar::Z(99.into())
+            };
+        });
+    }
+}
+
+#[test]
+fn universal_guard_counterexamples_keep_unused_scalar_and_nested_tuple_parameters() {
+    let result = universal_private_example(
+        "law required example(n:Z,m:Q,p:(Z,(Z,Z))) when n=0:n=1;",
+        &["c=check(Calc.example)"],
+    );
+    assert_eq!(
+        result.answers[0].status,
+        Decision::Refuted,
+        "issues={:?} reasons={:?}",
+        result.issues,
+        result.answers[0].reasons
+    );
+    let bindings = result.answers[0]
+        .evidence
+        .iter()
+        .find_map(|r| match &result.nodes[r.0].payload {
+            Some(Payload::Counterexample { bindings, .. }) => Some(bindings),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(
+        bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+        ["n", "m", "p"]
+    );
+    for (binding, expected) in bindings.iter().zip([
+        Scalar::Z(0.into()),
+        Scalar::Q(0.into(), 1.into()),
+        Scalar::Tuple(vec![
+            Scalar::Z(0.into()),
+            Scalar::Tuple(vec![Scalar::Z(0.into()), Scalar::Z(0.into())]),
+        ]),
+    ]) {
+        assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
+    }
+}
