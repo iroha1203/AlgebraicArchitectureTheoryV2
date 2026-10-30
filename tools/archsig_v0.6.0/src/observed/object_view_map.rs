@@ -190,8 +190,7 @@ fn supported_parameter(
 ) -> Result<bool, ValidationFailure> {
     Ok(
         super::environment::numeric_parameters::numeric_width(ty).is_some()
-            || (super::finite::supported(ty, inputs.law(), c)?
-                && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some()),
+            || super::finite::supported(ty, inputs.law(), c)?,
     )
 }
 pub(super) fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
@@ -570,14 +569,9 @@ pub(super) fn retain(
             let ti = t
                 .target_instance()
                 .ok_or("先view instance未完成の配送は未実装")?;
-            if instance.parameters().len() != ti.parameters().len()
-                || instance
-                    .parameters()
-                    .iter()
-                    .zip(ti.parameters())
-                    .any(|(s, t)| s.ty.erase() != t.ty.erase())
-            {
-                return Err("対応parameterの型が異なるview移送配送は未実装".into());
+            // 型の対応と全域の順逆像は、kernelのFiniteViewTypeMapが検査する。
+            if instance.parameters().len() != ti.parameters().len() {
+                return Err("対応viewのparameter数が違う".into());
             }
             if ti.declaration().returns.as_ref() != Some(target_returns) {
                 out.preserved = false;

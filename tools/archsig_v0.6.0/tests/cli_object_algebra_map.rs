@@ -12292,3 +12292,116 @@ reading After {{{uses} law required equation(s:State,x:Z) when true: x-x=0;}}"#
     assert!(!arr(get(plan, "requirements")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn finite_reference_view_parameters_follow_the_whole_typed_bijection() {
+    for case in ["identity", "cycle", "nonbijective"] {
+        let dir =
+            finite_reference_view_inputs(&format!("finite-reference-view-parameter-{case}"), case);
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view flag(s:State,candidate:Option<State>):Bool=candidate=some(s);}}
+reading After {{{uses} view flag(t:State,renamed:Option<State>):Bool=renamed=some(t);}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        let preserved = case != "nonbijective";
+        assert_eq!(
+            run.code,
+            if preserved { 0 } else { 1 },
+            "{case}: {}",
+            run.stdout
+        );
+        let j = result_json(&dir, &run);
+        let m = answer(&j, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            if preserved { "established" } else { "refuted" }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), preserved);
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn finite_reference_view_parameters_use_the_declared_entity_correspondence() {
+    let dir = workdir("finite-reference-view-parameter-entities");
+    let left = include_bytes!("fixtures/object-law-transport.atoms.json");
+    let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
+    let initial = archsig::definition::check_definitions(&[
+        ("left", left.as_slice()),
+        ("right", right.as_slice()),
+    ])
+    .unwrap();
+    let ld = &initial.vocabularies()["Left"].digest;
+    let rd = &initial.vocabularies()["Right"].digest;
+    let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd);
+    let definitions = archsig::definition::check_definitions(&[
+        ("left", left.as_slice()),
+        ("right", right.as_slice()),
+        ("bridge", bridge.as_bytes()),
+    ])
+    .unwrap();
+    let bd = &definitions.vocabularies()["Bridge"].digest;
+    for (name, bytes) in [
+        ("left.json", left.as_slice()),
+        ("right.json", right.as_slice()),
+        ("bridge.json", bridge.as_bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let map = include_str!("fixtures/object-view-transport.archmap.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd)
+        .replace("@BRIDGE_DIGEST@", bd);
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let uses = format!(
+        r#"use vocabulary Left version "1" digest "{ld}";use vocabulary Right version "1" digest "{rd}";use vocabulary Bridge version "1" digest "{bd}";"#
+    );
+    std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view flag(c:Left.Child,candidate:Option<Left.Child>):Bool=candidate=some(c);}}
+reading After {{{uses} view flag(d:Right.Child,renamed:Option<Right.Child>):Bool=renamed=some(d);}}"#)).unwrap();
+    let run = cli::run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "left.json",
+            "--atom-definition",
+            "right.json",
+            "--atom-definition",
+            "bridge.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--ask",
+            "m=map(Bridge.Move,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "--ask",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let j = result_json(&dir, &run);
+    let m = answer(&j, "m");
+    assert_eq!(s(get(m, "status")), "established");
+    assert!(has(get(m, "outputs"), "map"));
+    assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+    std::fs::remove_dir_all(dir).unwrap();
+}
