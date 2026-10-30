@@ -4034,8 +4034,8 @@ fn change_transport_let_if_updates_keep_whole_sources_and_simultaneous_values() 
             "if n then s with {free=1} else s with {held=2}",
             "if k then t with {free=1} else t with {held=2}",
             false,
-            2,
-            "undetermined",
+            0,
+            "established",
         ),
     ] {
         let dir = finite_view_inputs(&format!("change-lexical-{case}"), true);

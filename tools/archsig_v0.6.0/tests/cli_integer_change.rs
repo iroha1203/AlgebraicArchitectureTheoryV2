@@ -720,36 +720,94 @@ fn integer_local_instances_have_independent_parameter_axes() {
 }
 
 #[test]
-fn nonlinear_change_is_not_misreported_as_an_integer_affine_solution() {
+fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() {
     let dir = input(
         "integer-nonlinear",
         "change setpair(s:State,a:Z,b:Z)=s with{x=a*a,y=b};",
     );
-    let r = without_file_changes(&dir, || execute(
-        &dir,
-        "out",
+    let sources = archsig::observed::input::InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let observed = archsig::observed::evaluate_observed_bytes(
+        sources,
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-    ));
-    assert_eq!(r.code, 70, "{} {}", r.stdout, r.stderr);
-    notified(&dir, &r, "error", 70);
-    // 先行する回答があっても、実行エラーを保存成果物として公開しない。
-    let r = without_file_changes(&dir, || execute(&dir, "after-value", &[
-        "v=evaluate(Pair.first,s=@pair/s)",
-        "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-    ]));
-    notified(&dir, &r, "error", 70);
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    // 先行する欠測のノード参照も、成果物のないエラー通知へ漏らさない。
-    let map = std::fs::read_to_string(dir.join("a.json")).unwrap();
-    let map = map.replace(r#"{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},"#, "");
-    std::fs::write(dir.join("a.json"), map).unwrap();
-    let r = without_file_changes(&dir, || execute(&dir, "after-missing", &[
-        "v=evaluate(Pair.first,s=@pair/s)",
-        "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-    ]));
-    let receipt = notified(&dir, &r, "error", 70);
-    assert!(arr(get(&receipt, "issues")).iter().all(|issue| s(get(issue, "code")) == "internal"));
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+        &mut archsig::observed::control::Control::new(Default::default(), |_| Default::default()),
+    )
+    .unwrap();
+    assert_eq!(observed.status(), "partial");
+    let internal = archsig::json::parse(observed.wire().canonical().as_bytes()).unwrap();
+    let reason = &arr(get(&arr(get(&internal, "answers"))[0], "reasons"))[0];
+    let source = node(&internal, &arr(get(reason, "dependencies"))[0]);
+    let parameters = arr(get(get(source, "value"), "parameters"));
+    assert_eq!(
+        parameters
+            .iter()
+            .map(|p| s(get(p, "name")))
+            .collect::<Vec<_>>(),
+        ["a", "b"]
+    );
+    assert!(parameters.iter().all(|p| s(get(p, "type")) == "Z"));
+    for (case, prior) in [
+        ("alone", false),
+        ("after-value", true),
+        ("after-missing", true),
+    ] {
+        if case == "after-missing" {
+            let map=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#"{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"},"#, "");
+            std::fs::write(dir.join("a.json"), map).unwrap();
+        }
+        let mut asks = vec![];
+        if prior {
+            asks.push("v=evaluate(Pair.first,s=@pair/s)");
+        }
+        asks.extend([
+            "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+            "n=needed($s)",
+        ]);
+        let r = execute(&dir, case, &asks);
+        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        assert_eq!(s(get(&j, "status")), "partial");
+        let answers = arr(get(&j, "answers"));
+        let solver = &answers[usize::from(prior)];
+        assert_eq!(s(get(solver, "status")), "undetermined");
+        assert!(!has(get(solver, "outputs"), "object"));
+        let unsupported = arr(get(solver, "reasons"))
+            .iter()
+            .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+            .unwrap();
+        let details = get(unsupported, "details");
+        assert_eq!(s(get(details, "method")), "nonlinear_numeric_change");
+        assert_eq!(s(&arr(get(details, "operand_types"))[0]), "Z");
+        assert!(has(unsupported, "location"));
+        assert!(arr(get(unsupported, "dependencies")).is_empty());
+        assert!(
+            !arr(get(&j, "issues"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "internal")
+        );
+        let needed = &answers[usize::from(prior) + 1];
+        assert_eq!(s(get(needed, "status")), "established");
+        assert!(
+            format!("{:?}", node(&j, get(get(needed, "outputs"), "plan")))
+                .contains("nonlinear_numeric_change")
+        );
+        if prior {
+            let v = &answers[0];
+            if case == "after-value" {
+                assert_eq!(s(get(v, "status")), "established");
+                assert_eq!(
+                    s(get(node(&j, get(get(v, "outputs"), "value")), "value")),
+                    "0"
+                );
+            } else {
+                assert_eq!(s(get(v, "status")), "undetermined");
+                assert!(format!("{:?}", get(v, "reasons")).contains("missing_observation"));
+            }
+        }
+    }
 }
 
 #[test]
@@ -1451,4 +1509,120 @@ fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
         get(node(&j, &families[0]), "value").value,
         get(node(&j, &families[1]), "value").value
     );
+}
+
+#[test]
+fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason() {
+    for (case, change, requirement) in [
+        (
+            "nonlinear-law",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};",
+            "law required total(s:State):s.x*s.x+s.y=1;",
+        ),
+        (
+            "conditional-law",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};",
+            "law required total(s:State) when (s.x>0):s.x+s.y=1;",
+        ),
+        (
+            "conditional-law-universal",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};",
+            "law required total(c:State,z:Z) when (c.x>z):c.x+c.y=1;",
+        ),
+        (
+            "conditional-change",
+            "change setpair(s:State,a:Z,b:Z)=if (a>0) then s with{x=a,y=b} else s with{x=b,y=a};",
+            "law required total(s:State):s.x+s.y=1;",
+        ),
+    ] {
+        let dir = input(case, change);
+        let law = std::fs::read_to_string(dir.join("l.law"))
+            .unwrap()
+            .replace("law required total(s:State):s.x+s.y=1;", requirement);
+        std::fs::write(dir.join("l.law"), &law).unwrap();
+        let query = if case.ends_with("universal") {
+            "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,c=@pair/s)"
+        } else {
+            "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"
+        };
+        if case.starts_with("conditional-") {
+            let sources = archsig::observed::input::InputSources::from_bytes(
+                vec![std::fs::read(dir.join("d.json")).unwrap()],
+                law.as_bytes().to_vec(),
+                std::fs::read(dir.join("a.json")).unwrap(),
+            );
+            let evaluated = archsig::observed::evaluate_observed_bytes(
+                sources,
+                &[query],
+                &mut archsig::observed::control::Control::new(Default::default(), |_| {
+                    Default::default()
+                }),
+            )
+            .unwrap();
+            let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let a = &arr(get(&internal, "answers"))[0];
+            let reason = arr(get(a, "reasons"))
+                .iter()
+                .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+                .unwrap();
+            let source = get(
+                node(&internal, &arr(get(reason, "dependencies"))[0]),
+                "value",
+            );
+            assert_eq!(
+                get(get(source, "location"), "span"),
+                get(get(reason, "location"), "span")
+            );
+            let span = arr(get(get(source, "location"), "span"));
+            let expression = &law[num(&span[0]) as usize..num(&span[1]) as usize];
+            assert!(
+                expression.contains(if case == "conditional-change" {
+                    "a>0"
+                } else if case.ends_with("universal") {
+                    "c.x>"
+                } else {
+                    "s.x>"
+                }),
+                "{expression}"
+            );
+            let params = arr(get(source, "parameters"));
+            assert_eq!(
+                params.iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(),
+                if case == "conditional-change" {
+                    vec!["a", "b"]
+                } else if case.ends_with("universal") {
+                    vec!["z"]
+                } else {
+                    vec![]
+                }
+            );
+            assert!(params.iter().all(|p| s(get(p, "type")) == "Z"));
+            assert_eq!(
+                s(get(&arr(get(source, "bindings"))[0], "name")),
+                if case.ends_with("universal") {
+                    "c"
+                } else {
+                    "s"
+                }
+            );
+        }
+        let r = execute(&dir, "out", &[query, "n=needed($s)"]);
+        assert_eq!(r.code, 2, "{case}: {} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let a = &arr(get(&j, "answers"))[0];
+        let reason = arr(get(a, "reasons"))
+            .iter()
+            .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+            .unwrap();
+        assert_eq!(
+            s(get(get(reason, "details"), "method")),
+            "numeric_change_condition"
+        );
+        assert!(has(reason, "location"));
+        assert!(
+            !arr(get(&j, "issues"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "internal")
+        );
+    }
 }

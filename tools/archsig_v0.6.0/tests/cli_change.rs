@@ -383,7 +383,7 @@ fn change_dependency_cycles_are_rejected_before_output_type_resolution() {
 }
 
 #[test]
-fn unimplemented_change_preserves_the_evaluation_api_failure_class() {
+fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
     let input = input();
     for missing in [false, true] {
         let law = String::from_utf8(input.sources().law().bytes().to_vec()).unwrap();
@@ -413,7 +413,20 @@ fn unimplemented_change_preserves_the_evaluation_api_failure_class() {
             &mut control,
         )
         .unwrap();
-        let failure = observed::evaluate_observed(prepared, &mut control).unwrap_err();
+        let evaluated = observed::evaluate_observed(prepared, &mut control);
+        if missing {
+            let evaluated = evaluated.unwrap();
+            assert_eq!(evaluated.status(), "partial");
+            let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let a = &arr(get(&j, "answers"))[0];
+            assert_eq!(s(get(a, "status")), "undetermined");
+            let existence = node(&j, get(get(a, "outputs"), "proposition"));
+            assert_eq!(s(get(get(existence, "judgment"), "status")), "established");
+            assert!(format!("{:?}", get(a, "reasons")).contains("missing_observation"));
+            assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
+            continue;
+        }
+        let failure = evaluated.unwrap_err();
         let observed::EvaluationFailure::NotImplemented {
             declaration,
             partial,

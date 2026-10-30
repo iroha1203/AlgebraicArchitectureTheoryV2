@@ -130,8 +130,12 @@ fn equations(
             _ => {
                 let Some(p) = v
                     .comparison
+                    .as_ref()
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
                 else {
+                    if change_affine::numeric_condition(env, id, &v)? {
+                        missing.unsupported=Some("numeric_change_condition");
+                    }
                     return Err(unsupported(
                         env,
                         id,
@@ -311,6 +315,9 @@ fn compute_inner(
                         Some(Scalar::Bool(false)) => *else_branch,
                         _ => {
                             missing.expression = Some(*cond);
+                            if change_affine::numeric_condition(env, *cond, &v)? {
+                                missing.unsupported=Some("numeric_change_condition");
+                            }
                             return Err(unsupported(env, *cond, "有理changeの未確定分岐は未実装"));
                         }
                     };
@@ -334,6 +341,9 @@ fn compute_inner(
                         let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
+                            if matches!(env.inputs.law().expr_type(*id), Some(Type::Q)) {
+                                missing.unsupported=Some("nonlinear_numeric_change");
+                            }
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
                         })?;
                         coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
@@ -509,7 +519,13 @@ fn requirement_equations(
                 _ => {
                     missing.expression = Some(*guard);
                     missing.bindings = bindings.clone();
-                    missing.parameters.clear();
+                    missing.parameters = law_params.iter()
+                        .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                        .map(|p| (p.name.clone(), p.ty.clone()))
+                        .collect();
+                    if change_affine::numeric_condition(env, *guard, &v)? {
+                        missing.unsupported=Some("numeric_change_condition");
+                    }
                     return Err(unsupported(
                         env,
                         *guard,

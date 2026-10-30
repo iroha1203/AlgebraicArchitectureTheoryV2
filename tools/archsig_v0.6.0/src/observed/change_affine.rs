@@ -35,6 +35,7 @@ pub(in crate::observed) struct Pending {
     pub scope: Scope,
     pub universal: Vec<Parameter>,
     pub coefficient_type: Option<Type>,
+    pub unsupported: Option<&'static str>,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
@@ -124,6 +125,27 @@ fn coordinates(
             )
         })
 }
+pub(super) fn numeric_condition(
+    env: &Environment<'_>,
+    mut id: usize,
+    value: &SourceValue,
+) -> Result<bool, ValidationFailure> {
+    if value.comparison.is_some() {
+        return Ok(true);
+    }
+    loop {
+        env.tick()?;
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(body) | ExprKind::Let { body, .. } => id = *body,
+            ExprKind::Binary { lhs, rhs, .. } => {
+                return Ok([lhs, rhs]
+                    .iter()
+                    .all(|id| matches!(env.inputs.law().expr_type(**id), Some(Type::Z | Type::Q))));
+            }
+            _ => return Ok(false),
+        }
+    }
+}
 fn equations(
     env: &Environment<'_>,
     id: usize,
@@ -178,8 +200,12 @@ fn equations(
             _ => {
                 let Some(p) = v
                     .comparison
+                    .as_ref()
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
                 else {
+                    if numeric_condition(env, id, &v)? {
+                        missing.unsupported=Some("numeric_change_condition");
+                    }
                     return Err(unsupported(
                         env,
                         id,
@@ -408,6 +434,10 @@ fn collect_updates(
                     Some(Scalar::Bool(true)) => *then_branch,
                     Some(Scalar::Bool(false)) => *else_branch,
                     _ => {
+                        missing.expression = Some(*cond);
+                        if numeric_condition(env, *cond, &v)? {
+                            missing.unsupported=Some("numeric_change_condition");
+                        }
                         return Err(unsupported(
                             env,
                             *cond,
@@ -441,6 +471,9 @@ fn collect_updates(
                     missing.scope.merge(&v.scope);
                     usable(env, *id, &v)?;
                     let form = v.affine.ok_or_else(|| {
+                        if matches!(env.inputs.law().expr_type(*id), Some(Type::Z | Type::Q)) {
+                            missing.unsupported = Some("nonlinear_numeric_change");
+                        }
                         unsupported(env, *id, "数値changeの更新式がアフィンでない")
                     })?;
                     if axes.first().is_some_and(|axis| axis.kind == NumberType::Q) {
@@ -826,6 +859,15 @@ fn requirement_equations(
                 Some(Scalar::Bool(false)) => continue,
                 Some(Scalar::Bool(true)) => {}
                 _ => {
+                    missing.expression = Some(*guard);
+                    missing.bindings = bindings.clone();
+                    missing.parameters = law_params.iter()
+                        .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                        .map(|p| (p.name.clone(), p.ty.clone()))
+                        .collect();
+                    if numeric_condition(env, *guard, &v)? {
+                        missing.unsupported=Some("numeric_change_condition");
+                    }
                     return Err(unsupported(
                         env,
                         *guard,

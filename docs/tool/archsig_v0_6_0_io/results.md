@@ -412,7 +412,8 @@ sourceは同じchangeのbody全体を指すsource型Expressionとし、parameter
 fieldは第1参照引数の型の更新可能fieldの完全名で、返り型はそのfieldの型とする。
 let束縛、ifの実選択、同時更新前の値、guardと適合条件を元changeから再評価する。
 guardが偽なら更新値を作らず、必要な条件・値が未知なら未決を保持する。
-分岐間の更新field集合が同じ場合を扱い、plain withの右辺Sourceは従来の形式を保つ。
+分岐間の更新field集合は和集合を取り、選択した枝で更新されないfieldは元の値を保持する。
+plain withの右辺Sourceは従来の形式を保つ。
 object_readingは標準適用域上の宣言読取りで、viewでは非適用をnone、適用をsome(value)とする
 Option返り型、Lawでは適用時の原式成立・非適用時trueを返すBool型を持つ。
 parametersは残るscalar等の値parameterで、bindingsの参照を保ってその型の全域を動く。
