@@ -19,6 +19,7 @@ pub(super) struct Origin {
     pub body: usize,
     pub body_reference: NodeRef,
     pub guard: Option<usize>,
+    pub guard_reference: Option<NodeRef>,
     pub ready: bool,
     pub body_allowed: bool,
     /// 元の全引数で適用条件付き残差が零であることを、再検査可能な表示が保持する。

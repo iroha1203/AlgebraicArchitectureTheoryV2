@@ -732,6 +732,7 @@ impl Data {
             body: expr(*body)?,
             body_reference: *body,
             guard: guard.map(expr).transpose()?,
+            guard_reference: *guard,
             ready: numeric_family || reading.is_some_and(|r| {
                 matches!(
                     r.application,

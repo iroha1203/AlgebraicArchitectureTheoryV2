@@ -24,6 +24,7 @@ pub(super) struct Case {
     pub location: crate::issue::Location,
     pub epsilon: NodeRef,
     pub when: Option<bool>,
+    pub guard: Option<NodeRef>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -69,7 +70,7 @@ fn constant_nonzero(
     let D::PolynomialLaw(data) = &v.data else {
         return Err("circuitの成分残差が既存の環表示でない".into());
     };
-    let (_, terms) = data.polynomial().ok_or("circuitの残差に多項式がない")?;
+    let Some((_, terms)) = data.polynomial() else { return Ok(None) };
     let zero = numeric::zero(ty, c)?;
     let mut nonzero = false;
     for (coefficient, powers) in terms {
@@ -127,9 +128,11 @@ pub(super) fn closed(
             .ok_or("circuitの元Law添字がない")?;
         let mut cases = vec![];
         let parameters = if let Source::Polynomial(q) = &coordinate.source && q.row.is_none() {
-            let parameters = &diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
-                .ok_or("circuitの元parameter宣言がない")?.parameters;
-            if let Some(reference) = q.nu
+            let original = diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
+                .ok_or("circuitの元parameter宣言がない")?;
+            let parameters = &original.parameters;
+            // guardの自由引数もwhenの型域へ保持する。本文の差が定数でも消さない。
+            if original.guard.is_some() { parameters.clone() } else if let Some(reference) = q.nu
                 && let Some(Payload::Construction(value)) = &g.get(reference)?.payload
                 && let D::PolynomialLaw(data) = &value.data
                 && data.parameter_family(parameters) { parameters.clone() } else { vec![] }
@@ -192,14 +195,15 @@ pub(super) fn closed(
             };
             let when = if never_refutes {
                 Some(false)
+            } else if let Some(value) = constant_nonzero(g, epsilon, &ty, c)? {
+                Some(value)
             } else if !parameters.is_empty() {
                 let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
                 let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
                 if !data.parameter_family(&parameters) { return Ok(None); }
                 None
             } else {
-                let Some(value) = constant_nonzero(g, epsilon, &ty, c)? else { return Ok(None) };
-                Some(value)
+                return Ok(None);
             };
             let pattern = patterns
                 .rows
@@ -248,6 +252,7 @@ pub(super) fn closed(
                 evaluation,
                 epsilon,
                 when,
+                guard: origin.guard_reference,
                 architecture: source.architecture,
                 bindings: origin.bindings,
                 location,
