@@ -496,9 +496,38 @@ pub(super) fn plans(
             }
             missing_positions.sort();
             missing_positions.dedup();
-            let omissions = dependencies.missing_reasons(inputs, &missing_positions,
+            let mut omissions = dependencies.missing_reasons(inputs, &missing_positions,
                 &out.originals.iter().flat_map(|o| std::iter::once(o.body).chain(o.guard)).collect::<Vec<_>>(),
                 Witness::Architecture(a.clone()).request(), c)?;
+            let request_witness = Witness::Architecture(a.clone());
+            let request = request_witness.request();
+            for q in &coordinates {
+                if let Some(pending) = equations[q.occurrence]
+                    .1
+                    .guard
+                    .pending_at(object)
+                    .filter(|pending| pending.unsupported_numeric)
+                {
+                    omissions.push(Reason {
+                        kind: ReasonKind::UnsupportedAlgorithm {
+                            question: request.kind,
+                            operand_types: out.originals[q.occurrence]
+                                .parameters
+                                .iter()
+                                .map(|(_, ty)| ty.clone())
+                                .collect(),
+                            method: "non-affine numeric guard decision".into(),
+                        },
+                        request: request.id.clone(),
+                        dependencies: std::iter::once(out.originals[q.occurrence].body)
+                            .chain(out.originals[q.occurrence].guard)
+                            .collect(),
+                        missing: vec![],
+                        location: Some(pending.location.clone()),
+                    });
+                }
+            }
+            sort_reasons(&mut omissions);
             let presentation = push(
                 parts,
                 base,

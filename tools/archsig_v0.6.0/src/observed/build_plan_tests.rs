@@ -1274,7 +1274,7 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
 
 #[test]
 fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_object() {
-    for guard in ["n=c.quantity", "n=c.quantity and n=0"] {
+    for (guard, unsupported) in [("n=c.quantity", false), ("n=c.quantity and n=0", false), ("(n-c.quantity)*(n-c.quantity)=0", true)] {
         let inputs = fixture::inputs(
             true,
             false,
@@ -1322,11 +1322,89 @@ fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_obj
                         && f.subject == "q"
                         && f.field.as_deref() == Some("Family.Part.quantity")))
         );
+        // 別の対象で係数が観測済みなら、非線形guardの算法理由も独立に残る。
+        assert_eq!(answer.reasons.iter().any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. })), unsupported, "{guard}");
+    }
+}
+
+#[test]
+fn nonlinear_guard_keeps_the_original_algorithm_reason_and_partial_object() {
+    for (ty, guard) in [
+        ("Z", "n*n=0"),
+        ("Q", "n*n=0"),
+        ("Z", "n=1 and n*n=0"),
+        ("Z", "let a=n in a*a=0"),
+        ("Z", "let a=n*n in a=0"),
+    ] {
+        let p = single_part(&format!(
+            "law required guarded(c:Part,n:{ty}) when {guard}:1=0;"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Undetermined, "{ty}: {guard}");
+        assert!(answer.outputs.contains_key("object"));
+        assert!(!answer.outputs.contains_key("algebra"));
+        let reasons = answer.reasons.iter().filter(|reason| matches!(&reason.kind,
+            ReasonKind::UnsupportedAlgorithm { operand_types, .. } if operand_types.contains(&if ty == "Z" { crate::types::Type::Z } else { crate::types::Type::Q }))).collect::<Vec<_>>();
+        assert!(!reasons.is_empty(), "{ty}: {guard}");
+        assert!(reasons.iter().all(|reason| !reason.dependencies.is_empty()
+            && reason.location.is_some()
+            && reason.missing.is_empty()));
+    }
+}
+
+#[test]
+fn cancelled_polynomial_guard_uses_the_required_affine_algorithm() {
+    for (guard, status) in [
+        ("n*n-n*n=0", Decision::Established),
+        ("n*n-n*n=1", Decision::Established),
+        ("let a=n*n in a-a=0", Decision::Established),
+        ("(let a=n*n in a)-(let a=n*n in a)=0", Decision::Established),
+    ] {
+        let p = single_part(&format!(
+            "law required guarded(c:Part,n:Z) when {guard}:0=0;"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, status, "{guard}");
+        assert!(answer.outputs.contains_key("algebra"));
         assert!(
             !answer
                 .reasons
                 .iter()
-                .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+                .any(|reason| matches!(reason.kind, ReasonKind::UnsupportedAlgorithm { .. }))
         );
     }
 }

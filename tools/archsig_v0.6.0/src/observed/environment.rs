@@ -74,6 +74,8 @@ pub(super) mod quotient_evaluation;
 pub(super) mod local_read;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
+#[path = "numeric_guard.rs"]
+mod numeric_guard;
 #[path = "numeric_law_function.rs"]
 pub(super) mod numeric_law_function;
 #[path = "numeric_object_function.rs"]

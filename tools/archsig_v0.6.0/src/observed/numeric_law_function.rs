@@ -19,6 +19,7 @@ use num_traits::One;
 pub(in crate::observed) struct Pending {
     pub location: crate::issue::Location,
     pub missing: Vec<Fact>,
+    pub unsupported_numeric: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Reading {
@@ -82,6 +83,7 @@ fn pending(span: (usize, usize), missing: Vec<Fact>) -> Pending {
     Pending {
         location: crate::issue::Location::Law { span },
         missing,
+        unsupported_numeric: false,
     }
 }
 fn read(
@@ -137,7 +139,7 @@ fn read(
         pending: Some(pending(span, missing)),
     };
     if let Some(guard) = guard {
-        let (source, forms) = source::guard(
+        let (source, analysis) = source::guard(
             inputs,
             readings,
             (position, Some(*guard)),
@@ -162,7 +164,7 @@ fn read(
         if value.condition_failed || value.condition_pending {
             return Ok(unknown(
                 inputs.law().exprs[*guard].span,
-                vec![],
+                analysis.missing,
                 facts,
                 None,
             ));
@@ -171,13 +173,17 @@ fn read(
             Some(Scalar::Bool(false)) => return outside(c, facts),
             Some(Scalar::Bool(true)) => {}
             _ => {
-                let Some(forms) = forms else {
-                    return Ok(unknown(
+                let Some(forms) = analysis.forms else {
+                    let mut reading = unknown(
                         inputs.law().exprs[*guard].span,
-                        vec![],
+                        analysis.missing,
                         facts,
                         None,
-                    ));
+                    );
+                    if let Some(pending) = &mut reading.pending {
+                        pending.unsupported_numeric = analysis.unsupported_numeric;
+                    }
+                    return Ok(reading);
                 };
                 let mut missing = forms
                     .iter()
@@ -616,7 +622,7 @@ pub(in crate::observed) enum GuardValue {
         proof: Box<GuardRestriction>,
         support: Vec<Fact>,
     },
-    Missing {
+    Pending {
         pending: Pending,
         support: Vec<Fact>,
     },
@@ -639,10 +645,10 @@ pub(in crate::observed) fn on_guard(
         .collect::<Vec<_>>();
     let reading = read(inputs, readings, position, &names, false, finite, c)?;
     if let Some(pending) = reading.pending {
-        return Ok(if pending.missing.is_empty() {
+        return Ok(if pending.missing.is_empty() && !pending.unsupported_numeric {
             None
         } else {
-            Some(GuardValue::Missing {
+            Some(GuardValue::Pending {
                 pending,
                 support: reading.facts,
             })

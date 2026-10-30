@@ -12651,3 +12651,43 @@ reading After {{{uses} law required equation(s:State,x:Z,y:Z) when {target}:{tar
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn nonlinear_numeric_guard_keeps_partial_build_and_original_needed_blocker() {
+    let dir = inputs("nonlinear-numeric-guard-partial-build");
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z) when n*n=0:1=0;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(&dir, &["b=build(Before,on=@v/A)", "n=needed($b)"]);
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    assert!(run.stderr.is_empty());
+    let j = result_json(&dir, &run);
+    let b = answer(&j, "b");
+    assert_eq!(s(get(b, "status")), "undetermined");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let reasons = arr(get(b, "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+    );
+    let n = answer(&j, "n");
+    assert_eq!(s(get(n, "status")), "established");
+    let plan = value(&j, get(get(n, "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    let blockers = arr(get(plan, "blockers"));
+    for reason in reasons {
+        assert!(
+            blockers.contains(reason),
+            "元の式・位置・依存を含む理由を保持する"
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
