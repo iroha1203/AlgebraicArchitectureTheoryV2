@@ -46,6 +46,7 @@ pub(in crate::observed) struct Family {
     systems: Option<(System, System)>,
     pub applicable: Option<bool>,
     pub equivalent: Option<bool>,
+    pub implies: Option<bool>,
     pub example: Option<Counterexample>,
     pub application_example: Option<Counterexample>,
     pub pending: Option<Pending>,
@@ -420,6 +421,7 @@ pub(in crate::observed) fn compare(
     let mut result = Family {
         applicable: a.application.zip(z.application).map(|(a, z)| a == z),
         equivalent: None,
+        implies: None,
         example: None,
         application_example: None,
         pending: a.pending.clone().or_else(|| z.pending.clone()),
@@ -470,9 +472,13 @@ pub(in crate::observed) fn compare(
         }
         let sa = system(a, &result.basis, &ground, c).map_err(invalid)?;
         let sz = system(z, &result.basis, &ground, c).map_err(invalid)?;
-        point = match outside(&sa, &sz, c).map_err(invalid)? {
+        // 違反の含意は「先の零集合が元の零集合に含まれる」の一方向。
+        // 含意が偽なら、その方向の点を選んで公開反例と一致させる。
+        let implication_counterexample = outside(&sz, &sa, c).map_err(invalid)?;
+        result.implies = Some(implication_counterexample.is_none());
+        point = match implication_counterexample {
             Some(point) => Some(point),
-            None => outside(&sz, &sa, c).map_err(invalid)?,
+            None => outside(&sa, &sz, c).map_err(invalid)?,
         };
         result.equivalent = Some(point.is_none());
         result.systems = Some((sa, sz));

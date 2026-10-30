@@ -626,7 +626,14 @@ pub(super) fn retain(
                 ("applicable", applicable.wire()),
                 ("equivalent", equivalent.wire()),
             ]));
-            rows.push((oi, oj, equivalent, numeric.map(|_| holds_equal), evidence));
+            let numeric_conditions = numeric
+                .map(|f| {
+                    f.implies
+                        .map(|implies| (holds_equal, implies))
+                        .ok_or("数値Lawの含意が未決")
+                })
+                .transpose()?;
+            rows.push((oi, oj, equivalent, numeric_conditions, evidence));
         }
         let zi = target_index.ok_or("Law移送の全対象表が空")?;
         let mut target_instances = vec![];
@@ -721,7 +728,7 @@ pub(super) fn retain(
                         tp,
                     ],
                     match numeric {
-                        Some(equal) => equal,
+                        Some((equal, _)) => equal,
                         None => {
                             sc.map(|r| r.value.ok_or("元circuitの真値が未決"))
                                 .transpose()?
@@ -740,7 +747,9 @@ pub(super) fn retain(
                         instance.parameters(),
                     );
                 }
-                if let Some(evidence) = evidence.filter(|_| numeric == Some(false)) {
+                if let Some(evidence) =
+                    evidence.filter(|_| numeric.is_some_and(|(equal, _)| !equal))
+                {
                     attach(b, equivalent, evidence)?;
                 }
                 zeros.push(Json::obj([
@@ -774,7 +783,7 @@ pub(super) fn retain(
                         "implies",
                         vec![sc.when, tc.when],
                         match numeric {
-                            Some(equal) => equal,
+                            Some((_, implies)) => implies,
                             None => {
                                 !sc.value.ok_or("元circuitの真値が未決")?
                                     || tc.value.ok_or("先circuitの真値が未決")?
@@ -812,7 +821,9 @@ pub(super) fn retain(
                             );
                         }
                     }
-                    if let Some(evidence) = evidence.filter(|_| numeric == Some(false)) {
+                    if let Some(evidence) =
+                        evidence.filter(|_| numeric.is_some_and(|(_, implies)| !implies))
+                    {
                         attach(b, implies, evidence)?;
                     }
                     cases.push(Json::obj([

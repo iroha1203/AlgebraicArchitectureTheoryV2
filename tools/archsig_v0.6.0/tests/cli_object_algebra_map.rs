@@ -12062,10 +12062,10 @@ reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
                     "{case}"
                 );
                 if case == "both-universally-false" {
-                    assert_json(left, r#""0""#);
-                    assert_json(right, r#""-1""#);
+                    assert_json(left, r#""1""#);
+                    assert_json(right, r#""0""#);
                     let n = bindings.iter().find(|b| s(get(b, "name")) == "n").unwrap();
-                    assert_json(value(&j, get(n, "value")), r#""1""#);
+                    assert_json(value(&j, get(n, "value")), r#""2""#);
                 }
             }
         }
@@ -12130,5 +12130,69 @@ reading After {{{uses} law required equation(s:State,x:Z) when true: {};}}"#,
                 assert!(refuted > 0 && refuted < zeros);
             }
         }
+    }
+}
+
+#[test]
+fn numeric_law_circuit_implication_uses_directional_inclusion_and_its_own_witness() {
+    for (case, params, renamed, source, target, implies) in [
+        ("empty-target", "n:Z", "x:Z", "n=0", "2*x=1", "established"),
+        ("false-source", "n:Z", "x:Z", "n=n", "x=1", "established"),
+        ("reverse", "n:Z", "x:Z", "2*n=1", "x=0", "refuted"),
+        (
+            "incomparable",
+            "n:Z,m:Z",
+            "x:Z,y:Z",
+            "n=0",
+            "y=0",
+            "refuted",
+        ),
+    ] {
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,{params}):{source};}}
+reading After {{{uses} law required equation(s:State,{renamed}):{target};}}"#
+        );
+        let result=archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(
+                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), "refuted", "{case}");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert!(!has(get(m, "outputs"), "map"));
+        let mut count = 0;
+        for node in arr(get(&j, "nodes")) {
+            if !matches!(&get(node,"type").value,archsig::json::JValue::Str(t) if t=="Proposition")
+                || s(get(get(node, "value"), "predicate")) != "implies"
+            {
+                continue;
+            }
+            count += 1;
+            assert_eq!(s(get(get(node, "judgment"), "status")), implies, "{case}");
+            if implies == "refuted" {
+                let evidence = arr(get(node, "evidence"));
+                assert!(!evidence.is_empty(), "{case}");
+                for e in evidence {
+                    let data = get(value(&j, e), "data");
+                    assert_ne!(
+                        s(value(&j, get(data, "left"))),
+                        "0",
+                        "{case}: source violation must hold"
+                    );
+                    assert_eq!(
+                        s(value(&j, get(data, "right"))),
+                        "0",
+                        "{case}: target violation must fail"
+                    );
+                }
+            }
+        }
+        assert!(count > 0, "{case}");
     }
 }

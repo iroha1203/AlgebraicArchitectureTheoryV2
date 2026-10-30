@@ -810,7 +810,7 @@ mod tests {
                 "bounded(d: Right.Child): 2 = 2",
                 "bounded(d: Right.Child, x: Z): x = 2",
             );
-        for mode in 0..4 {
+        for mode in 0..5 {
             let (inputs, mut result) = example_with_law("bounded", &law);
             assert_eq!(
                 result.outcome(),
@@ -823,6 +823,7 @@ mod tests {
                 0 => result.outcome = LawTransportOutcome::Preserved,
                 1 => result.numeric_family.as_mut().unwrap().equivalent = Some(true),
                 2 => result.numeric_family.as_mut().unwrap().applicable = Some(false),
+                3 => result.numeric_family.as_mut().unwrap().implies = Some(true),
                 _ => {
                     result
                         .numeric_family
