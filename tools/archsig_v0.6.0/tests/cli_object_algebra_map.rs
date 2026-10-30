@@ -11578,3 +11578,49 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";view b
         }
     }
 }
+
+#[test]
+fn finite_law_parameters_preserve_each_assignment_and_reject_equal_universal_falsity() {
+    for (case, source, target, status) in [
+        ("taut", "b or not b", "b or not b", "established"),
+        ("varying", "b", "b", "established"),
+        ("different", "b", "not b", "refuted"),
+    ] {
+        let dir = inputs(&format!("finite-law-parameter-{case}"));
+        let target = target.replace("b", "flag");
+        let header = "use vocabulary Reservations version \"1\" digest \"sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff\";";
+        std::fs::write(dir.join("l.law"), format!(
+            "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Before {{ {header} law required taut(s:State,b:Bool): {source}; }} reading After {{ {header} law required taut(s:State,flag:Bool): {target}; }}"
+        )).unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(
+            run.code,
+            if status == "established" { 0 } else { 1 },
+            "{case}: {}",
+            run.stdout
+        );
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let outputs = get(answer(&result, "m"), "outputs");
+        get(outputs, "operation");
+        if status == "established" {
+            let map = value(&result, get(outputs, "map"));
+            assert_eq!(arr(get(map, "circuits")).len(), 4);
+            let equations = value(&result, get(map, "equations"));
+            assert_eq!(arr(get(equations, "indices")).len(), 2);
+            for index in arr(get(equations, "indices")) {
+                assert_eq!(arr(get(index, "components")).len(), 2);
+            }
+        } else {
+            assert!(!has(outputs, "map"));
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

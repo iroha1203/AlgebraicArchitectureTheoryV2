@@ -1,4 +1,4 @@
-//! 閉じたLawの実評価と既存buildの全成分・全patternを公開移送表へ接続する。
+//! Lawの全引数の実評価と既存buildの全成分・全patternを公開移送表へ接続する。
 use super::{
     build_plan::Plan,
     build_result::Builder,
@@ -132,6 +132,94 @@ fn same_origin(
             return Ok(false);
         };
         if snapshot != &b.subject().snapshot || subject != &b.subject().subject {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+// 有限parameterを代入済みの成分は、元instanceの固定参照束縛を保つ。
+fn contains_origin(
+    g: &Graph,
+    r: NodeRef,
+    instance: &ObjectInstance,
+) -> Result<bool, ValidationFailure> {
+    let o = law_evaluation::origin(g, r)?.ok_or("Law成分の元添字がない")?;
+    if o.declaration != instance.declaration().name {
+        return Ok(false);
+    }
+    for binding in instance.bindings() {
+        let Some(actual) = o
+            .bindings
+            .iter()
+            .find(|b| b.name == binding.parameter().name)
+        else {
+            return Ok(false);
+        };
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = g.scalar(actual.value)?
+        else {
+            return Ok(false);
+        };
+        if snapshot != &binding.subject().snapshot || subject != &binding.subject().subject {
+            return Ok(false);
+        }
+    }
+    Ok(o.bindings.iter().all(|b| {
+        instance
+            .bindings()
+            .iter()
+            .any(|fixed| fixed.parameter().name == b.name)
+            || instance.parameters().iter().any(|p| p.name == b.name)
+    }))
+}
+fn matching_component(
+    g: &Graph,
+    source: &Detector,
+    target: &Detector,
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    if source.component != target.component {
+        return Ok(false);
+    }
+    let a = law_evaluation::origin(g, source.index)?.ok_or("元成分の添字がない")?;
+    let z = law_evaluation::origin(g, target.index)?.ok_or("先成分の添字がない")?;
+    let pair = declarations
+        .candidates()
+        .iter()
+        .filter_map(|d| d.pair())
+        .find(|p| p.source() == a.declaration)
+        .ok_or("成分宣言の対応がない")?;
+    if pair.target() != z.declaration || a.bindings.len() != z.bindings.len() {
+        return Ok(false);
+    }
+    for binding in &a.bindings {
+        tick(c)?;
+        let Some((_, name)) = pair
+            .parameters()
+            .iter()
+            .find(|(name, _)| name == &binding.name)
+        else {
+            return Ok(false);
+        };
+        let Some(image) = z.bindings.iter().find(|b| &b.name == name) else {
+            return Ok(false);
+        };
+        let moved = super::value_transport::candidate_image(
+            inputs,
+            declarations,
+            &a.declaration,
+            g.scalar(binding.value)?,
+            c,
+        )
+        .map_err(|e| {
+            c.stop_reason()
+                .map(ValidationFailure::Stop)
+                .unwrap_or_else(|| format!("成分の引数移送: {e:?}").into())
+        })?;
+        if !super::data::equal(&moved, g.scalar(image.value)?, c)? {
             return Ok(false);
         }
     }
@@ -334,7 +422,11 @@ pub(super) fn retain(
             ("fields", Json::Arr(vec![])),
         ]));
     }
-    if !declarations.candidates().iter().any(|d| d.source().kind == "law") {
+    if !declarations
+        .candidates()
+        .iter()
+        .any(|d| d.source().kind == "law")
+    {
         return Ok(out);
     }
     let [a, z] = plans;
@@ -356,9 +448,6 @@ pub(super) fn retain(
             return Err("元Lawのinstance対応が一意でない".into());
         };
         let instance = &ar.instances()[*instance_index];
-        if !instance.parameters().is_empty() {
-            return Err("parameterを残すLaw移送の配送は未実装".into());
-        }
         let mut target_index = None;
         let mut holds = vec![];
         let mut rows = vec![];
@@ -366,12 +455,18 @@ pub(super) fn retain(
         for (oi, object) in at.objects.iter().enumerate() {
             tick(c)?;
             let transfer = transport(env, inputs, declarations, oi, *instance_index, c)?;
+            if matches!(
+                transfer.outcome(),
+                object_law_transport::LawTransportOutcome::Refuted(
+                    object_law_transport::LawConditionFailure::ParameterType { .. }
+                )
+            ) {
+                out.preserved = false;
+                return Ok(out);
+            }
             let ti = transfer
                 .target_instance()
                 .ok_or("移送先Law instance未完成の配送は未実装")?;
-            if !ti.parameters().is_empty() {
-                return Err("移送先Lawのparameter配送は未実装".into());
-            }
             let zi = locate(b.g, &zt.indices, ti)?;
             // required statusの不一致ではkernelは値の比較を始めない。
             // 確定した構成失敗を未実装エラーへ変換しない。
@@ -396,39 +491,68 @@ pub(super) fn retain(
                 .position(|o| o.identity() == target_object)
                 .ok_or("Law移送の対象像が表にない")?;
             let target = &zt.objects[oj];
-            let sr = transfer
-                .source_reading()
-                .ok_or("元Law読取り未完成の配送は未実装")?;
-            let tr = transfer
-                .target_reading()
-                .ok_or("先Law読取り未完成の配送は未実装")?;
             if required.is_none() {
                 required = Some(proof(
                     b,
                     &mut out,
                     "required_iff",
                     vec![*index, zt.indices[zi]],
-                    sr.required() == tr.required(),
-                )?)
+                    instance.declaration().role == ti.declaration().role,
+                )?);
             }
-            let app = sr
-                .application()
-                .value()
-                .zip(tr.application().value())
-                .ok_or("Law適用条件の未決配送は未実装")?;
-            let value = sr
-                .conditional()
-                .zip(tr.conditional())
-                .ok_or("Law成立の未決配送は未実装")?;
+            let (applicable_equal, holds_equal) = if let Some(family) = transfer.family() {
+                if matches!(
+                    transfer.outcome(),
+                    object_law_transport::LawTransportOutcome::Undetermined
+                ) {
+                    return Err("Law族の全域比較が未決".into());
+                }
+                let mut app = true;
+                let mut holds = true;
+                for row in family.rows() {
+                    tick(c)?;
+                    let a = row
+                        .source()
+                        .application()
+                        .value()
+                        .zip(row.target().application().value())
+                        .ok_or("Law族の適用条件が未決")?;
+                    let h = row
+                        .source()
+                        .conditional()
+                        .zip(row.target().conditional())
+                        .ok_or("Law族の成立が未決")?;
+                    app &= a.0 == a.1;
+                    holds &= h.0 == h.1;
+                }
+                (app, holds)
+            } else {
+                let sr = transfer
+                    .source_reading()
+                    .ok_or("元Law読取り未完成の配送は未実装")?;
+                let tr = transfer
+                    .target_reading()
+                    .ok_or("先Law読取り未完成の配送は未実装")?;
+                let app = sr
+                    .application()
+                    .value()
+                    .zip(tr.application().value())
+                    .ok_or("Law適用条件の未決配送は未実装")?;
+                let value = sr
+                    .conditional()
+                    .zip(tr.conditional())
+                    .ok_or("Law成立の未決配送は未実装")?;
+                (app.0 == app.1, value.0 == value.1)
+            };
             let args = vec![*index, zt.indices[zi], object.object, target.object];
             let applicable = proof(
                 b,
                 &mut out,
                 "applicability_iff",
                 args.clone(),
-                app.0 == app.1,
+                applicable_equal,
             )?;
-            let equivalent = proof(b, &mut out, "equation_holds_iff", args, value.0 == value.1)?;
+            let equivalent = proof(b, &mut out, "equation_holds_iff", args, holds_equal)?;
             holds.push(Json::obj([
                 ("source", object.object.wire()),
                 ("target", target.object.wire()),
@@ -458,7 +582,7 @@ pub(super) fn retain(
         let mut source_components = vec![];
         let mut target_components = vec![];
         for d in &ad {
-            if same_origin(b.g, d.index, instance)? {
+            if contains_origin(b.g, d.index, instance)? {
                 let moved =
                     crate::construction::maps::moved_declaration_type(&d.ty, &mu, &alpha, c)
                         .map_err(|e| {
@@ -470,7 +594,7 @@ pub(super) fn retain(
             }
         }
         for d in &zd {
-            if same_origin(b.g, d.index, target_instance)? {
+            if contains_origin(b.g, d.index, target_instance)? {
                 target_components.push((d.component.clone(), d.ty.clone()))
             }
         }
@@ -481,16 +605,23 @@ pub(super) fn retain(
         let mut components = vec![];
         for source in &ad {
             tick(c)?;
-            if !same_origin(b.g, source.index, instance)? {
+            if !contains_origin(b.g, source.index, instance)? {
                 continue;
             }
             let targets = zd
                 .iter()
-                .filter(|d| d.component == source.component)
-                .filter_map(|d| match same_origin(b.g, d.index, target_instance) {
-                    Ok(true) => Some(Ok(d)),
-                    Ok(false) => None,
-                    Err(e) => Some(Err(e)),
+                .filter_map(|d| {
+                    match contains_origin(b.g, d.index, target_instance).and_then(|yes| {
+                        if yes {
+                            matching_component(b.g, source, d, inputs, declarations, c)
+                        } else {
+                            Ok(false)
+                        }
+                    }) {
+                        Ok(true) => Some(Ok(d)),
+                        Ok(false) => None,
+                        Err(e) => Some(Err(e)),
+                    }
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let [target] = targets.as_slice() else {
@@ -514,11 +645,11 @@ pub(super) fn retain(
                     "residual_zero_iff",
                     vec![
                         a.equations.ok_or("元方程式族がない")?,
-                        *index,
+                        source.index,
                         so,
                         sp,
                         z.equations.ok_or("先方程式族がない")?,
-                        zt.indices[zi],
+                        target.index,
                         to,
                         tp,
                     ],
