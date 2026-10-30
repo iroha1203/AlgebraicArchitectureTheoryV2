@@ -23,6 +23,7 @@ pub(in crate::observed) struct Pending {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Reading {
     condition: Option<affine::Form>,
+    body: Option<affine::Form>,
     restriction: Option<GuardRestriction>,
     residual: Option<affine::Form>,
     facts: Vec<Fact>,
@@ -110,6 +111,7 @@ fn read(
     let outside = |c: &Control, facts: Vec<Fact>| -> Result<Reading, ConstructionFailure> {
         let zero = numeric::zero(&zero_type, c).map_err(invalid)?;
         Ok(Reading {
+            body: None,
             restriction: None,
             condition: Some(
                 affine::constant(&Scalar::Z(1.into()), c)
@@ -126,6 +128,7 @@ fn read(
         .ok_or_else(|| bad("真の適用式がない"))?;
     let mut facts = vec![];
     let unknown = |span, missing, facts, condition| Reading {
+        body: None,
         restriction: None,
         condition,
         residual: None,
@@ -260,21 +263,25 @@ fn read(
     } else {
         None
     };
+    let body = Some(residual.clone());
     let residual = if restriction.is_some() {
         let zero = numeric::zero(&zero_type, c).map_err(invalid)?;
-        affine::constant(&zero, c)
-            .map_err(invalid)?
-            .ok_or_else(|| bad("条件付き残差の零がない"))?
+        Some(
+            affine::constant(&zero, c)
+                .map_err(invalid)?
+                .ok_or_else(|| bad("条件付き残差の零がない"))?,
+        )
     } else if condition.value(c).map_err(invalid)?.is_none() {
         // 非定数guardのindicatorを線形式へ置き換えない。
-        return Ok(incomplete(vec![]));
+        None
     } else {
-        residual
+        Some(residual)
     };
     Ok(Reading {
         condition: Some(condition),
+        body,
         restriction,
-        residual: Some(residual),
+        residual,
         facts,
         pending: None,
     })
@@ -522,6 +529,113 @@ pub(in crate::observed) fn zero_on_guard(
         .collect::<Vec<_>>();
     Ok(read(inputs, readings, position, &names, false, &[], c)?.restriction)
 }
+// 有限個の等式を同じ正確なfiberへまとめる。guardの共通域に使う。
+fn intersection(a: &System, b: &System, c: &Control) -> Result<System, ValidationFailure> {
+    let cols = a.coefficients.first().ok_or("fiberの行がない")?.len();
+    let mut rows = vec![];
+    let mut rhs = vec![];
+    for (row, value) in a
+        .coefficients
+        .iter()
+        .zip(&a.rhs)
+        .chain(b.coefficients.iter().zip(&b.rhs))
+    {
+        tick(c)?;
+        if row.len() != cols {
+            return Err("fiberの共通域の列数が違う".into());
+        }
+        rows.push(row.clone());
+        rhs.push(value.clone());
+    }
+    match (&a.certificate, &b.certificate) {
+        (Certificate::Integer(_), Certificate::Integer(_)) => {
+            let mut matrix = vec![];
+            let mut right = vec![];
+            for (mut row, value) in rows.into_iter().zip(rhs) {
+                tick(c)?;
+                row.push(value);
+                let mut row = integer_row(&row, c)?;
+                right.push(row.pop().ok_or("整数fiberの右辺がない")?);
+                matrix.push(row);
+            }
+            let certificate = integer_fiber::solve(&matrix, cols, &right, c)?;
+            Ok(System {
+                coefficients: matrix
+                    .into_iter()
+                    .map(|row| row.into_iter().map(Scalar::Z).collect())
+                    .collect(),
+                rhs: right.into_iter().map(Scalar::Z).collect(),
+                certificate: Certificate::Integer(certificate),
+            })
+        }
+        (Certificate::Field(_), Certificate::Field(_)) => {
+            let certificate = field_fiber::solve(&Type::Q, &rows, cols, &rhs, c)?;
+            Ok(System {
+                coefficients: rows,
+                rhs,
+                certificate: Certificate::Field(certificate),
+            })
+        }
+        _ => Err("fiberの共通域の係数型が違う".into()),
+    }
+}
+// 二つの真のアフィン部分空間は、Z/Qの非空fiber全体を覆わない。
+// p∉a,p∈b,q∈a,q∉bなら、2p-qは同じfiber内で両方の外にある。
+fn outside_both(
+    base: &System,
+    a: &System,
+    b: &System,
+    c: &Control,
+) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
+    let Some(p) = outside(base, a, c)? else {
+        return Ok(None);
+    };
+    if !b.contains(&p, c)? {
+        return Ok(Some(p));
+    }
+    let Some(q) = outside(base, b, c)? else {
+        return Ok(None);
+    };
+    if !a.contains(&q, c)? {
+        return Ok(Some(q));
+    }
+    let point = p
+        .iter()
+        .zip(q)
+        .map(|(p, q)| {
+            tick(c)?;
+            numeric::binary(BinOp::Add, p, &numeric::binary(BinOp::Sub, p, &q, c)?, c)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    if !base.contains(&point, c)? || a.contains(&point, c)? || b.contains(&point, c)? {
+        return Err("二つの零fiberを分離する元点の再検査に失敗した".into());
+    }
+    Ok(Some(point))
+}
+// 条件付き残差が非零の族はG\D。包含の反例は
+// (Ga∩Dz)\Da と Ga\(Da∪Gz) の二つに分け、元の全域で検査する。
+fn conditional_outside(
+    ga: &System,
+    da: &System,
+    gz: &System,
+    dz: &System,
+    c: &Control,
+) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
+    let common = intersection(ga, dz, c)?;
+    let point = match outside(&common, da, c)? {
+        Some(p) => Some(p),
+        None => outside_both(ga, da, gz, c)?,
+    };
+    if let Some(p) = &point {
+        if !ga.contains(p, c)?
+            || da.contains(p, c)?
+            || (gz.contains(p, c)? && !dz.contains(p, c)?)
+        {
+            return Err("条件付き残差の反例が元の適用域を分離しない".into());
+        }
+    }
+    Ok(point)
+}
 fn assignments(
     inputs: &CheckedInputs,
     row: &crate::construction::readings::ObjectInstance,
@@ -608,8 +722,16 @@ pub(in crate::observed) fn compare(
     let forms = [
         result.source.condition.as_ref(),
         result.target.condition.as_ref(),
-        result.source.residual.as_ref(),
-        result.target.residual.as_ref(),
+        result
+            .source
+            .body
+            .as_ref()
+            .or(result.source.residual.as_ref()),
+        result
+            .target
+            .body
+            .as_ref()
+            .or(result.target.residual.as_ref()),
     ];
     let mut rational_ground = false;
     let mut keys = BTreeSet::new();
@@ -668,14 +790,41 @@ pub(in crate::observed) fn compare(
             result.condition_systems = Some((sa, sz));
         }
     }
-    if let (Some(a), Some(z)) = (&result.source.residual, &result.target.residual) {
+    let body_forms = if result.condition_systems.is_some() {
+        (
+            result
+                .source
+                .body
+                .as_ref()
+                .or(result.source.residual.as_ref()),
+            result
+                .target
+                .body
+                .as_ref()
+                .or(result.target.residual.as_ref()),
+        )
+    } else {
+        (
+            result.source.residual.as_ref(),
+            result.target.residual.as_ref(),
+        )
+    };
+    if let (Some(a), Some(z)) = body_forms {
         let sa = system(a, &result.basis, &ground, c).map_err(invalid)?;
         let sz = system(z, &result.basis, &ground, c).map_err(invalid)?;
-        let implication_counterexample = outside(&sz, &sa, c).map_err(invalid)?;
+        let implication_counterexample = match &result.condition_systems {
+            Some((ga, gz)) => conditional_outside(ga, &sa, gz, &sz, c),
+            None => outside(&sz, &sa, c),
+        }
+        .map_err(invalid)?;
         result.implies = Some(implication_counterexample.is_none());
         let point = match implication_counterexample {
             Some(p) => Some(p),
-            None => outside(&sa, &sz, c).map_err(invalid)?,
+            None => match &result.condition_systems {
+                Some((ga, gz)) => conditional_outside(gz, &sz, ga, &sa, c),
+                None => outside(&sa, &sz, c),
+            }
+            .map_err(invalid)?,
         };
         result.equivalent = Some(point.is_none());
         if let Some(point) = point {
@@ -842,6 +991,75 @@ mod guard_tests {
                 restrict_zero(&guard, &form(1), &c).unwrap().is_some(),
                 kind == affine::NumberType::Z
             );
+        }
+    }
+    #[test]
+    fn conditional_fiber_inclusion_checks_both_nonzero_branches() {
+        for kind in [affine::NumberType::Z, affine::NumberType::Q] {
+            let c = Control::unlimited();
+            let keys = [
+                TermArgument {
+                    argument: 0,
+                    component: vec![],
+                    kind,
+                },
+                TermArgument {
+                    argument: 1,
+                    component: vec![],
+                    kind,
+                },
+            ];
+            let x = affine::term_argument(keys[0].clone(), &c).unwrap();
+            let y = affine::term_argument(keys[1].clone(), &c).unwrap();
+            let n = |v: i64| {
+                if kind == affine::NumberType::Z {
+                    Scalar::Z(v.into())
+                } else {
+                    Scalar::Q(v.into(), 1.into())
+                }
+            };
+            let form = |v| affine::constant(&n(v), &c).unwrap().unwrap();
+            let op = |op, a: &affine::Form, b: &affine::Form| {
+                affine::binary(op, Some(a), Some(b), &c).unwrap().unwrap()
+            };
+            let ground = kind.ty();
+            let sys = |f: &affine::Form| system(f, &keys, &ground, &c).unwrap();
+            let all = sys(&form(0));
+            let empty = sys(&form(1));
+            let gx = sys(&x);
+            let dy = sys(&y);
+            let twice_y = sys(&op(BinOp::Mul, &form(2), &y));
+            assert!(
+                conditional_outside(&gx, &dy, &gx, &twice_y, &c)
+                    .unwrap()
+                    .is_none()
+            );
+            assert!(
+                conditional_outside(&gx, &twice_y, &gx, &dy, &c)
+                    .unwrap()
+                    .is_none()
+            );
+            assert!(
+                conditional_outside(&gx, &dy, &all, &dy, &c)
+                    .unwrap()
+                    .is_none()
+            );
+            let point = conditional_outside(&all, &dy, &gx, &dy, &c)
+                .unwrap()
+                .unwrap();
+            assert_ne!(point[0], n(0));
+            assert_ne!(point[1], n(0));
+            assert!(
+                conditional_outside(&gx, &gx, &empty, &empty, &c)
+                    .unwrap()
+                    .is_none()
+            );
+            let half = sys(&op(BinOp::Sub, &op(BinOp::Mul, &form(2), &x), &form(1)));
+            let point = conditional_outside(&half, &empty, &empty, &empty, &c).unwrap();
+            assert_eq!(point.is_some(), kind == affine::NumberType::Q);
+            if let Some(point) = point {
+                assert_eq!(point[0], Scalar::Q(1.into(), 2.into()));
+            }
         }
     }
 }

@@ -1055,4 +1055,64 @@ mod tests {
         }
     }
 
+    #[test]
+    fn conditional_affine_families_compare_nonzero_guarded_bodies_and_recheck_points() {
+        for ty in ["Z", "Q"] {
+            for (
+                source_guard,
+                source_body,
+                target_guard,
+                target_body,
+                applicable,
+                equivalent,
+                implies,
+            ) in [
+                ("n=0", "n=1", "x=0", "2*x=2", true, true, true),
+                ("n=0", "n=1", "x=0", "x=0", true, false, false),
+                ("n=0", "n=1", "true", "x=1", false, false, true),
+                ("true", "n=1", "x=0", "x=1", false, false, false),
+                ("2*n=1", "n=1", "2*x=1", "x=0", true, true, true),
+            ] {
+                let law = include_str!("../../tests/fixtures/object-law-transport.law")
+                    .replace(
+                        "bounded(c: Left.Child): c.count = 2",
+                        &format!(
+                            "bounded(c: Left.Child,n:{ty}) when {source_guard}: {source_body}"
+                        ),
+                    )
+                    .replace(
+                        "bounded(d: Right.Child): 2 = 2",
+                        &format!(
+                            "bounded(d: Right.Child,x:{ty}) when {target_guard}: {target_body}"
+                        ),
+                    );
+                let (inputs, mut result) = example_with_law("bounded", &law);
+                let family = result.numeric_family.as_ref().unwrap();
+                assert_eq!(
+                    family.applicable,
+                    Some(applicable),
+                    "{source_guard}: {source_body} -> {target_guard}: {target_body}"
+                );
+                assert_eq!(family.equivalent, Some(equivalent));
+                assert_eq!(family.implies, Some(implies));
+                if !equivalent {
+                    assert!(family.example.is_some());
+                }
+                result
+                    .recheck(inputs.clone(), &mut Control::unlimited())
+                    .unwrap();
+                if !equivalent {
+                    result
+                        .numeric_family
+                        .as_mut()
+                        .unwrap()
+                        .example
+                        .as_mut()
+                        .unwrap()
+                        .left = Scalar::Z(42.into());
+                    assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+                }
+            }
+        }
+    }
 }
