@@ -183,6 +183,11 @@ pub struct ObjectViewTransport {
     target_value: Option<ViewTransportValue>,
     outcome: ViewTransportOutcome,
     family: Option<FiniteViewTransport>,
+    numeric_counterexample: Option<super::environment::numeric_view_function::Counterexample>,
+    numeric_family: Option<(
+        super::environment::numeric_view_function::Reading,
+        super::environment::numeric_view_function::Reading,
+    )>,
 }
 /// 未着手の比較に結論を与えず、検査済みの構成・評価・値を保持する。
 #[derive(Debug)]
@@ -289,6 +294,21 @@ impl ObjectViewTransport {
     pub fn target_value(&self) -> Option<&ViewTransportValue> {
         self.target_value.as_ref()
     }
+    pub(super) fn numeric_counterexample(
+        &self,
+    ) -> Option<&super::environment::numeric_view_function::Counterexample> {
+        self.numeric_counterexample.as_ref()
+    }
+    pub(super) fn numeric_pending(&self) -> Option<(bool, Vec<super::result::Fact>)> {
+        use super::environment::numeric_view_function::Reading;
+        let (a, z) = self.numeric_family.as_ref()?;
+        for (reading, target) in [(a, false), (z, true)] {
+            if let Reading::Unknown(facts) = reading {
+                return Some((target, facts.clone()));
+            }
+        }
+        None
+    }
     pub fn outcome(&self) -> &ViewTransportOutcome {
         &self.outcome
     }
@@ -322,6 +342,8 @@ impl ObjectViewTransport {
                     || self.source_value != r.source_value
                     || self.image != r.image
                     || self.target_value != r.target_value
+                    || self.numeric_family != r.numeric_family
+                    || self.numeric_counterexample != r.numeric_counterexample
                     || self.outcome != r.outcome);
             tick(c)?;
             Ok(equal)
@@ -497,6 +519,8 @@ fn checked_view_transport(
         target_value: None,
         outcome: ViewTransportOutcome::Undetermined,
         family: None,
+        numeric_family: None,
+        numeric_counterexample: None,
     };
     let mut decided = false;
     let calculated = (|| -> Result<(), ObjectViewTransportFailure> {
@@ -547,6 +571,90 @@ fn checked_view_transport(
             tick(c)?;
             return Ok(());
         };
+        let numeric_return = match r.instance().declaration().returns.as_ref() {
+            Some(ty) => numeric::is_numeric_type(ty, c).map_err(invalid)?,
+            None => false,
+        };
+        if !r.instance().parameters().is_empty()
+            && r.instance()
+                .parameters()
+                .iter()
+                .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+            && r.target_instance().is_some_and(|i| {
+                i.parameters()
+                    .iter()
+                    .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+            })
+            && numeric_return
+        {
+            use super::environment::numeric_view_function::{self as functions, Reading};
+            let equivalence = numeric_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?;
+            r.equivalence = Some(ViewValueEquivalence::Numeric(Box::new(equivalence)));
+            let a = functions::read(
+                &inputs,
+                &r.source_readings,
+                object,
+                instance,
+                pair.parameters(),
+                false,
+                c,
+            )?;
+            let z = functions::read(
+                &inputs,
+                &r.target_readings,
+                to,
+                ti,
+                pair.parameters(),
+                true,
+                c,
+            )?;
+            r.outcome = match (&a, &z) {
+                (Reading::Unknown(_), _) | (_, Reading::Unknown(_)) => ViewTransportOutcome::Undetermined,
+                (Reading::Outside, Reading::Outside) => ViewTransportOutcome::Preserved,
+                (Reading::Value(a), Reading::Value(z)) => {
+                    use super::term::affine::{Comparison, compare};
+                    match compare(a, z, inputs.law(), c).map_err(invalid)? {
+                        Comparison::Same => ViewTransportOutcome::Preserved,
+                        Comparison::Different(unit) => {
+                            use crate::construction::readings::ObjectEvaluationPosition;
+                            r.numeric_counterexample = Some(functions::counterexample(
+                                &inputs,
+                                &r.source_readings,
+                                &r.target_readings,
+                                [
+                                    ObjectEvaluationPosition { object, instance },
+                                    ObjectEvaluationPosition {
+                                        object: to,
+                                        instance: ti,
+                                    },
+                                ],
+                                pair.parameters(),
+                                unit.as_ref(),
+                                c,
+                            )?);
+                            ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+                        }
+                        Comparison::Unsupported => {
+                            return Err(ConstructionFailure::Inconsistent(
+                                "数値viewの正規形が数値比較に未対応".into(),
+                            )
+                            .into());
+                        }
+                    }
+                }
+                _ => ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability),
+            };
+            r.numeric_family = Some((a, z));
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
         if !r.instance().parameters().is_empty() {
             family::evaluate(Arc::clone(&inputs), &mut r, to, ti, c)?;
             decided = true;

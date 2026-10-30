@@ -621,12 +621,14 @@ fn compute_inner(
                 env, &mut b, &origin.shared_inputs(), &declarations, [a, z], c,
             )?;
             preserved &= views.preserved;
+            let view_pending = views.pending;
+            let view_evidence = views.evidence;
             let mut signature_dependencies = views.conditions.clone();
             signature_dependencies.extend(views.axis_dependencies);
             invariant_maps.extend(views.invariants);
             dependencies.extend(views.conditions);
             dependencies.extend(invariant_maps.iter().copied());
-            if views.preserved {
+            if views.preserved && view_pending.is_none() {
                 signature = Some(b.push(
                     NodeType::Construction(T::SignatureMap),
                     "signature_map",
@@ -643,7 +645,28 @@ fn compute_inner(
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;
+            if let Some((location, missing)) = view_pending {
+                if declaration_status != Decision::Refuted {
+                    declaration_status = Decision::Undetermined;
+                }
+                declaration_reasons.push(Reason {
+                    kind: if missing.is_empty() {
+                        ReasonKind::UnsupportedAlgorithm {
+                            question: request.kind,
+                            operand_types: vec![],
+                            method: "affine_numeric_view_transport".into(),
+                        }
+                    } else {
+                        ReasonKind::Missing
+                    },
+                    request: request.id.clone(),
+                    dependencies: vec![left, right],
+                    missing,
+                    location: Some(location),
+                });
+            }
             declaration_evidence = transported.evidence;
+            declaration_evidence.extend(view_evidence);
             dependencies.extend(declaration_transports.iter().copied());
             dependencies.extend(declaration_evidence.iter().copied());
             dependencies.extend(declaration_reasons.iter().flat_map(|r| r.dependencies.iter().copied()));

@@ -59,10 +59,81 @@ fn transport(
 }
 pub(super) struct Output {
     pub preserved: bool,
+    pub pending: Option<(crate::issue::Location, Vec<Fact>)>,
     pub invariants: Vec<NodeRef>,
     pub axes: Vec<Json>,
     pub conditions: Vec<NodeRef>,
+    pub evidence: Vec<NodeRef>,
     pub axis_dependencies: Vec<NodeRef>,
+}
+fn counterexample(
+    b: &mut Builder<'_>,
+    example: &super::environment::numeric_view_function::Counterexample,
+    source: &Type,
+    target: &Type,
+    inputs: &[NodeRef],
+) -> Result<NodeRef, ValidationFailure> {
+    let mut bindings = vec![];
+    let mut dependencies = inputs.to_vec();
+    for (name, value) in &example.bindings {
+        let r = b.push(
+            NodeType::Value(value.ty()),
+            "binding",
+            value.wire(),
+            inputs.to_vec(),
+            Some(value.clone()),
+            None,
+        )?;
+        dependencies.push(r);
+        bindings.push(Json::obj([
+            ("name", Json::str(name)),
+            ("type", value.ty().wire()),
+            ("value", r.wire()),
+        ]));
+    }
+    let mut values = vec![];
+    for (ty, value) in [(source, &example.left), (target, &example.right)] {
+        let Type::Option(element) = ty else {
+            return Err("数値反例の読取り型がOptionでない".into());
+        };
+        let value = Scalar::Option {
+            element: (**element).clone(),
+            value: Some(Box::new(value.clone())),
+        };
+        let r = b.push(
+            NodeType::Value(ty.clone()),
+            "binding",
+            value.wire(),
+            inputs.to_vec(),
+            Some(value),
+            None,
+        )?;
+        dependencies.push(r);
+        values.push(r);
+    }
+    b.push(
+        NodeType::Evidence,
+        "evidence",
+        Json::obj([
+            ("kind", Json::str("counterexample")),
+            (
+                "data",
+                Json::obj([
+                    ("bindings", Json::Arr(bindings)),
+                    ("paths", Json::Arr(vec![])),
+                    ("left", values[0].wire()),
+                    ("right", values[1].wire()),
+                    (
+                        "facts",
+                        Json::Arr(example.facts.iter().map(Fact::wire).collect()),
+                    ),
+                ]),
+            ),
+        ]),
+        dependencies,
+        None,
+        None,
+    )
 }
 fn field<'a>(v: &'a Json, name: &str) -> Result<&'a Json, ValidationFailure> {
     let Json::Obj(v) = v else {
@@ -114,9 +185,16 @@ fn proposition(
     out.conditions.push(r);
     Ok(r)
 }
-fn finite_parameter(ty: &Type, inputs: &CheckedInputs, c: &mut Control) -> Result<bool, ValidationFailure> {
-    Ok(super::finite::supported(ty, inputs.law(), c)?
-        && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some())
+fn supported_parameter(
+    ty: &Type,
+    inputs: &CheckedInputs,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    Ok(
+        super::environment::numeric_parameters::numeric_width(ty).is_some()
+            || (super::finite::supported(ty, inputs.law(), c)?
+                && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some()),
+    )
 }
 fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
     let p = &mut b.parts[r.0 - b.base];
@@ -413,9 +491,11 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         preserved: true,
+        pending: None,
         invariants: vec![],
         axes: vec![],
         conditions: vec![],
+        evidence: vec![],
         axis_dependencies: vec![],
     };
     if !declarations
@@ -439,7 +519,7 @@ pub(super) fn retain(
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
         for p in instance.parameters() {
-            if !finite_parameter(&p.ty, inputs, c)? {
+            if !supported_parameter(&p.ty, inputs, c)? {
                 return Err("このparameter型のview移送配送は未実装".into());
             }
         }
@@ -529,6 +609,24 @@ pub(super) fn retain(
                 ViewTransportOutcome::Preserved => true,
                 ViewTransportOutcome::Refuted(_) => false,
                 ViewTransportOutcome::Undetermined => {
+                    if let Some((target, missing)) = t.numeric_pending() {
+                        let name = if target {
+                            &ti.declaration().name
+                        } else {
+                            &instance.declaration().name
+                        };
+                        let declaration = &inputs.law().declarations[name];
+                        let crate::law::model::Signature::View { body, .. } = &declaration.signature else {
+                            return Err("元viewのbodyがない".into());
+                        };
+                        out.pending.get_or_insert((
+                            crate::issue::Location::Law {
+                                span: inputs.law().exprs[*body].span,
+                            },
+                            missing,
+                        ));
+                        continue;
+                    }
                     return Err("未決view保存の配送は未実装".into());
                 }
             };
@@ -538,7 +636,11 @@ pub(super) fn retain(
                 ta.invariant,
                 ta.signature,
                 preserved,
+                t.numeric_counterexample().cloned(),
             ));
+        }
+        if rows.is_empty() && out.pending.is_some() {
+            continue;
         }
         let first = rows.first().ok_or("view移送の対象族が空")?;
         let target_invariant = first.2;
@@ -580,15 +682,31 @@ pub(super) fn retain(
         )?;
         let mut checks = vec![];
         let mut coordinate_checks = vec![];
-        for (so, to, _, _, holds) in rows {
+        for (so, to, _, _, holds, example) in rows {
             tick(c)?;
             let se = expression(b.g, axis.invariant, so)?;
             let te = expression(b.g, target_invariant, to)?;
             let args = vec![se, te, forward];
+            let evidence = example
+                .as_ref()
+                .map(|example| counterexample(b, example, &ty, &target_ty, &args))
+                .transpose()?;
             let commutes = proposition(b, &mut out, "invariant_transport", args.clone(), holds)?;
             quantify_parameters(b, commutes, instance.parameters());
             let coordinate = proposition(b, &mut out, "signature_transport", args, holds)?;
             quantify_parameters(b, coordinate, instance.parameters());
+            if let Some(evidence) = evidence {
+                out.evidence.push(evidence);
+                for r in [commutes, coordinate] {
+                    let part = &mut b.parts[r.0 - b.base];
+                    part.evidence.push(evidence);
+                    part.judgment
+                        .as_mut()
+                        .ok_or("数値反例の判断がない")?
+                        .evidence
+                        .push(evidence);
+                }
+            }
             checks.push(Json::obj([
                 ("source", so.wire()),
                 ("target", to.wire()),
@@ -626,7 +744,7 @@ pub(super) fn retain(
             selected_values,
             selected(b.g, axis.signature)? == selected(b.g, target_signature)?,
         )?;
-        if out.preserved {
+        if out.preserved && out.pending.is_none() {
             out.invariants.push(
                 b.push(
                     NodeType::Construction(T::InvariantMap),
