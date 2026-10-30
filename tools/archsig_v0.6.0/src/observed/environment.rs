@@ -74,6 +74,8 @@ pub(super) mod quotient_evaluation;
 pub(super) mod local_read;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
+#[path = "numeric_view_function.rs"]
+pub(super) mod numeric_view_function;
 #[path = "numeric_parameters.rs"]
 pub(super) mod numeric_parameters;
 #[path = "relation_instances.rs"]

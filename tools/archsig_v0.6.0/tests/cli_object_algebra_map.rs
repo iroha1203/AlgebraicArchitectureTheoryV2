@@ -11624,3 +11624,166 @@ fn finite_law_parameters_preserve_each_assignment_and_reject_equal_universal_fal
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn numeric_view_parameters_use_exact_functions_and_keep_the_operation_on_refutation() {
+    for (case, ty, source, target, status) in [
+        ("integer", "Z", "z", "renamed", "established"),
+        (
+            "rational",
+            "Q",
+            "z+rat(1,3)",
+            "renamed+rat(1,3)",
+            "established",
+        ),
+        ("different", "Z", "z", "2*renamed", "refuted"),
+        ("nonlinear", "Z", "z*z", "renamed*renamed", "undetermined"),
+    ] {
+        let dir = inputs(&format!("numeric-view-parameter-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view affine(s:State,z:{ty}):{ty}={source};}}
+reading After {{{uses} view affine(s:State,renamed:{ty}):{ty}={target};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(
+            run.code,
+            match status {
+                "established" => 0,
+                "refuted" => 1,
+                _ => 2,
+            },
+            "{case}: {}",
+            run.stdout
+        );
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), status);
+        if status == "undetermined" {
+            let reason = arr(get(answer(&result, "m"), "reasons"))
+                .iter()
+                .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+                .unwrap();
+            let location = get(reason, "location");
+            assert_eq!(s(get(location, "input")), "law");
+            let span = arr(get(location, "span"));
+            let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+            assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], source);
+        }
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let outputs = get(answer(&result, "m"), "outputs");
+        assert!(has(outputs, "operation"));
+        assert_eq!(has(outputs, "map"), status == "established");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn numeric_view_functions_keep_nested_axes_and_exact_cancellation() {
+    for (case, source_params, target_params, returns, source, target, status) in [
+        (
+            "nested",
+            "z:(Z,(Z,Z))",
+            "renamed:(Z,(Z,Z))",
+            "(Z,(Z,Z))",
+            "z",
+            "renamed",
+            "established",
+        ),
+        (
+            "cancel",
+            "a:Z,b:Z",
+            "x:Z,y:Z",
+            "(Z,Z)",
+            "(a+2*b,a-a)",
+            "(x+2*y,0)",
+            "established",
+        ),
+        (
+            "observed-offset",
+            "z:Z",
+            "renamed:Z",
+            "Z",
+            "z+s.free",
+            "renamed+s.free",
+            "refuted",
+        ),
+        (
+            "coefficient",
+            "a:Z,b:Z",
+            "x:Z,y:Z",
+            "(Z,Z)",
+            "(a+2*b,a-a)",
+            "(x+3*y,0)",
+            "refuted",
+        ),
+    ] {
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view affine(s:State,{source_params}):{returns}={source};}}
+reading After {{{uses} view affine(s:State,{target_params}):{returns}={target};}}"#
+        );
+        let result=archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(
+                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap();
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), status, "{case}");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), status == "established");
+    }
+}
+
+#[test]
+fn numeric_view_function_stops_keep_the_checked_operation() {
+    use archsig::observed::control::{Checkpoint, Control, Limits, Usage};
+    for stop_at in [1, 8] {
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} view affine(s:State,z:Z):Z=z+1;}}
+reading After {{{uses} view affine(s:State,renamed:Z):Z=renamed+1;}}"#
+        );
+        let mut seen = 0;
+        let mut control = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObjectViewTransportFamily {
+                seen += 1;
+            }
+            Usage {
+                elapsed_ms: 0,
+                memory_mib: 0,
+                signal: (seen == stop_at).then_some(archsig::result::Signal::Term),
+            }
+        });
+        let result=archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(
+                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &mut control,
+        ).unwrap();
+        assert_eq!(result.status(), "interrupted", "{stop_at}");
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), "undetermined");
+        let outputs = get(m, "outputs");
+        assert!(has(outputs, "operation"));
+        assert!(!has(outputs, "map"));
+        assert!(!has(outputs, "proposition"));
+    }
+}

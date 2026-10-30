@@ -59,6 +59,7 @@ fn transport(
 }
 pub(super) struct Output {
     pub preserved: bool,
+    pub pending: Option<(crate::issue::Location, Vec<Fact>)>,
     pub invariants: Vec<NodeRef>,
     pub axes: Vec<Json>,
     pub conditions: Vec<NodeRef>,
@@ -114,9 +115,16 @@ fn proposition(
     out.conditions.push(r);
     Ok(r)
 }
-fn finite_parameter(ty: &Type, inputs: &CheckedInputs, c: &mut Control) -> Result<bool, ValidationFailure> {
-    Ok(super::finite::supported(ty, inputs.law(), c)?
-        && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some())
+fn supported_parameter(
+    ty: &Type,
+    inputs: &CheckedInputs,
+    c: &mut Control,
+) -> Result<bool, ValidationFailure> {
+    Ok(
+        super::environment::numeric_parameters::numeric_width(ty).is_some()
+            || (super::finite::supported(ty, inputs.law(), c)?
+                && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some()),
+    )
 }
 fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
     let p = &mut b.parts[r.0 - b.base];
@@ -413,6 +421,7 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         preserved: true,
+        pending: None,
         invariants: vec![],
         axes: vec![],
         conditions: vec![],
@@ -439,7 +448,7 @@ pub(super) fn retain(
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
         for p in instance.parameters() {
-            if !finite_parameter(&p.ty, inputs, c)? {
+            if !supported_parameter(&p.ty, inputs, c)? {
                 return Err("このparameter型のview移送配送は未実装".into());
             }
         }
@@ -529,6 +538,19 @@ pub(super) fn retain(
                 ViewTransportOutcome::Preserved => true,
                 ViewTransportOutcome::Refuted(_) => false,
                 ViewTransportOutcome::Undetermined => {
+                    if let Some(missing) = t.numeric_pending() {
+                        let declaration = &inputs.law().declarations[&instance.declaration().name];
+                        let crate::law::model::Signature::View { body, .. } = &declaration.signature else {
+                            return Err("元viewのbodyがない".into());
+                        };
+                        out.pending.get_or_insert((
+                            crate::issue::Location::Law {
+                                span: inputs.law().exprs[*body].span,
+                            },
+                            missing,
+                        ));
+                        continue;
+                    }
                     return Err("未決view保存の配送は未実装".into());
                 }
             };
@@ -539,6 +561,9 @@ pub(super) fn retain(
                 ta.signature,
                 preserved,
             ));
+        }
+        if rows.is_empty() && out.pending.is_some() {
+            continue;
         }
         let first = rows.first().ok_or("view移送の対象族が空")?;
         let target_invariant = first.2;
@@ -626,7 +651,7 @@ pub(super) fn retain(
             selected_values,
             selected(b.g, axis.signature)? == selected(b.g, target_signature)?,
         )?;
-        if out.preserved {
+        if out.preserved && out.pending.is_none() {
             out.invariants.push(
                 b.push(
                     NodeType::Construction(T::InvariantMap),
