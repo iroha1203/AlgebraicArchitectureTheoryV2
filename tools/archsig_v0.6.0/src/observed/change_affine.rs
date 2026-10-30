@@ -434,6 +434,7 @@ fn collect_updates(
                     Some(Scalar::Bool(true)) => *then_branch,
                     Some(Scalar::Bool(false)) => *else_branch,
                     _ => {
+                        missing.expression = Some(*cond);
                         if numeric_condition(env, *cond, &v)? {
                             missing.unsupported=Some("numeric_change_condition");
                         }

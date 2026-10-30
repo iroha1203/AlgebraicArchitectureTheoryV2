@@ -1545,7 +1545,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
         } else {
             "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"
         };
-        if case.starts_with("conditional-law") {
+        if case.starts_with("conditional-") {
             let sources = archsig::observed::input::InputSources::from_bytes(
                 vec![std::fs::read(dir.join("d.json")).unwrap()],
                 law.as_bytes().to_vec(),
@@ -1576,7 +1576,9 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let span = arr(get(get(source, "location"), "span"));
             let expression = &law[num(&span[0]) as usize..num(&span[1]) as usize];
             assert!(
-                expression.contains(if case.ends_with("universal") {
+                expression.contains(if case == "conditional-change" {
+                    "a>0"
+                } else if case.ends_with("universal") {
                     "c.x>"
                 } else {
                     "s.x>"
@@ -1586,7 +1588,9 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let params = arr(get(source, "parameters"));
             assert_eq!(
                 params.iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(),
-                if case.ends_with("universal") {
+                if case == "conditional-change" {
+                    vec!["a", "b"]
+                } else if case.ends_with("universal") {
                     vec!["z"]
                 } else {
                     vec![]
