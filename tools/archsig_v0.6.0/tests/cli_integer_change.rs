@@ -1525,6 +1525,11 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             "law required total(s:State) when (s.x>0):s.x+s.y=1;",
         ),
         (
+            "conditional-law-universal",
+            "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};",
+            "law required total(c:State,z:Z) when (c.x>z):c.x+c.y=1;",
+        ),
+        (
             "conditional-change",
             "change setpair(s:State,a:Z,b:Z)=if (a>0) then s with{x=a,y=b} else s with{x=b,y=a};",
             "law required total(s:State):s.x+s.y=1;",
@@ -1534,15 +1539,70 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
         let law = std::fs::read_to_string(dir.join("l.law"))
             .unwrap()
             .replace("law required total(s:State):s.x+s.y=1;", requirement);
-        std::fs::write(dir.join("l.law"), law).unwrap();
-        let r = execute(
-            &dir,
-            "out",
-            &[
-                "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-                "n=needed($s)",
-            ],
-        );
+        std::fs::write(dir.join("l.law"), &law).unwrap();
+        let query = if case.ends_with("universal") {
+            "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,c=@pair/s)"
+        } else {
+            "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"
+        };
+        if case.starts_with("conditional-law") {
+            let sources = archsig::observed::input::InputSources::from_bytes(
+                vec![std::fs::read(dir.join("d.json")).unwrap()],
+                law.as_bytes().to_vec(),
+                std::fs::read(dir.join("a.json")).unwrap(),
+            );
+            let evaluated = archsig::observed::evaluate_observed_bytes(
+                sources,
+                &[query],
+                &mut archsig::observed::control::Control::new(Default::default(), |_| {
+                    Default::default()
+                }),
+            )
+            .unwrap();
+            let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let a = &arr(get(&internal, "answers"))[0];
+            let reason = arr(get(a, "reasons"))
+                .iter()
+                .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+                .unwrap();
+            let source = get(
+                node(&internal, &arr(get(reason, "dependencies"))[0]),
+                "value",
+            );
+            assert_eq!(
+                get(get(source, "location"), "span"),
+                get(get(reason, "location"), "span")
+            );
+            let span = arr(get(get(source, "location"), "span"));
+            let expression = &law[num(&span[0]) as usize..num(&span[1]) as usize];
+            assert!(
+                expression.contains(if case.ends_with("universal") {
+                    "c.x>"
+                } else {
+                    "s.x>"
+                }),
+                "{expression}"
+            );
+            let params = arr(get(source, "parameters"));
+            assert_eq!(
+                params.iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(),
+                if case.ends_with("universal") {
+                    vec!["z"]
+                } else {
+                    vec![]
+                }
+            );
+            assert!(params.iter().all(|p| s(get(p, "type")) == "Z"));
+            assert_eq!(
+                s(get(&arr(get(source, "bindings"))[0], "name")),
+                if case.ends_with("universal") {
+                    "c"
+                } else {
+                    "s"
+                }
+            );
+        }
+        let r = execute(&dir, "out", &[query, "n=needed($s)"]);
         assert_eq!(r.code, 2, "{case}: {} {}", r.stdout, r.stderr);
         let j = result_json(&dir, &r);
         let a = &arr(get(&j, "answers"))[0];

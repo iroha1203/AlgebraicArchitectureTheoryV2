@@ -519,7 +519,10 @@ fn requirement_equations(
                 _ => {
                     missing.expression = Some(*guard);
                     missing.bindings = bindings.clone();
-                    missing.parameters.clear();
+                    missing.parameters = law_params.iter()
+                        .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                        .map(|p| (p.name.clone(), p.ty.clone()))
+                        .collect();
                     if change_affine::numeric_condition(env, *guard, &v)? {
                         missing.unsupported=Some("numeric_change_condition");
                     }

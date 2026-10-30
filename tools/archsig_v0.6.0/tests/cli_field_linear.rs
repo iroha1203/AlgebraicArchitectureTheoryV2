@@ -1499,3 +1499,38 @@ fn rational_nonlinear_change_is_algorithm_unknown_and_keeps_the_prior_value() {
             .any(|r| s(get(r, "code")) == "internal")
     );
 }
+
+#[test]
+fn rational_unknown_guard_keeps_its_own_source_bindings_and_free_parameter() {
+    let sources = input_sources(
+        "change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(c:State,z:Q) when (c.x>z):c.x+c.y=1;",
+    );
+    let law = std::str::from_utf8(sources.law().bytes())
+        .unwrap()
+        .to_owned();
+    let evaluated = archsig::observed::evaluate_observed_bytes(
+        sources,
+        &["s=solve(Pair.total,on=@v/s,using=Pair.choose,c=@v/s)"],
+        &mut archsig::observed::control::Control::new(Default::default(), |_| Default::default()),
+    )
+    .unwrap();
+    assert_eq!(evaluated.status(), "partial");
+    let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+    let a = &arr(get(&j, "answers"))[0];
+    let reason = arr(get(a, "reasons"))
+        .iter()
+        .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+        .unwrap();
+    let source = get(node(&j, &arr(get(reason, "dependencies"))[0]), "value");
+    assert_eq!(
+        get(get(source, "location"), "span"),
+        get(get(reason, "location"), "span")
+    );
+    let span = arr(get(get(source, "location"), "span"));
+    assert!(law[num(&span[0]) as usize..num(&span[1]) as usize].contains("c.x>z"));
+    let parameters = arr(get(source, "parameters"));
+    assert_eq!(parameters.len(), 1);
+    assert_eq!(s(get(&parameters[0], "name")), "z");
+    assert_eq!(s(get(&parameters[0], "type")), "Q");
+    assert_eq!(s(get(&arr(get(source, "bindings"))[0], "name")), "c");
+}

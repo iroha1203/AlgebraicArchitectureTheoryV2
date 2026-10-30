@@ -858,6 +858,12 @@ fn requirement_equations(
                 Some(Scalar::Bool(false)) => continue,
                 Some(Scalar::Bool(true)) => {}
                 _ => {
+                    missing.expression = Some(*guard);
+                    missing.bindings = bindings.clone();
+                    missing.parameters = law_params.iter()
+                        .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                        .map(|p| (p.name.clone(), p.ty.clone()))
+                        .collect();
                     if numeric_condition(env, *guard, &v)? {
                         missing.unsupported=Some("numeric_change_condition");
                     }
