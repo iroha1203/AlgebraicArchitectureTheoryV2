@@ -115,6 +115,9 @@ fn residual(
     };
     match (&l.data, &r.data) {
         (D::PolynomialLaw(l), D::PolynomialLaw(r)) => {
+            if l.guarded_parameter_family() || r.guarded_parameter_family() {
+                return Ok(None);
+            }
             match (l.parameter_difference(c)?, r.parameter_difference(c)?) {
                 (Some((lr, left)), Some((rr, right))) => {
                     if lr != rr {
@@ -238,6 +241,81 @@ pub(super) fn compare(
             if !pattern(pa)?.same_pattern(pattern(pb)?) {
                 continue;
             }
+            let numeric_family = |index: NodeRef,
+                                  c: &mut Control|
+             -> Result<
+                Option<super::environment::numeric_law_function::Family>,
+                ValidationFailure,
+            > {
+                let position = |object: usize| {
+                    layout.data.objects[object]
+                        .coordinates
+                        .iter()
+                        .find_map(|q| {
+                            if q.index != index {
+                                return None;
+                            }
+                            if let super::observable_layout::Source::Polynomial(p) = &q.source {
+                                Some(p.position)
+                            } else {
+                                None
+                            }
+                        })
+                };
+                if let (Some(left), Some(right)) = (position(a), position(b)) {
+                    let readings = plan.architecture.witness.readings();
+                    let names = readings.instances()[left.instance]
+                        .declaration()
+                        .parameters
+                        .iter()
+                        .map(|(name, _)| (name.clone(), name.clone()))
+                        .collect::<Vec<_>>();
+                    let finite =
+                        |object: usize| -> Result<Vec<(String, Scalar)>, ValidationFailure> {
+                            let coordinate = layout.data.objects[object]
+                                .coordinates
+                                .iter()
+                                .find(|q| q.index == index)
+                                .ok_or("数値族の元座標がない")?;
+                            let super::observable_layout::Source::Polynomial(q) =
+                                &coordinate.source
+                            else {
+                                return Err("数値族が多項式の座標でない".into());
+                            };
+                            let origin = super::law_evaluation::origin(g, q.instance)?
+                                .ok_or("数値族の元束縛がない")?;
+                            let instance = &readings.instances()[q.position.instance];
+                            origin
+                                .bindings
+                                .iter()
+                                .filter(|binding| {
+                                    instance.parameters().iter().any(|p| p.name == binding.name)
+                                })
+                                .map(|binding| {
+                                    Ok((binding.name.clone(), g.scalar(binding.value)?.clone()))
+                                })
+                                .collect()
+                        };
+                    let source_bound = finite(a)?;
+                    let target_bound = finite(b)?;
+                    let family = super::environment::numeric_law_function::compare_bound(
+                        env.inputs,
+                        [readings, readings],
+                        [left, right],
+                        &names,
+                        [&source_bound, &target_bound],
+                        c,
+                    )
+                    .map_err(|e| match e {
+                        crate::construction::ConstructionFailure::Stopped(s) => {
+                            ValidationFailure::Stop(s)
+                        }
+                        e => format!("数値guardの全域互換性: {e:?}").into(),
+                    })?;
+                    return Ok(Some(family));
+                }
+                Ok(None)
+            };
             let mut inputs = vec![objects.objects[a], objects.objects[b], pa, pb];
             let mut values = vec![];
             for axis in &views.axes {
@@ -262,46 +340,11 @@ pub(super) fn compare(
                 let mut equal = evaluation(env, g, l, r, c)?;
                 let index = laws.indices[column];
                 if equal.is_none()
-                    && super::law_evaluation::origin(g, index)?.is_some_and(|o| o.zero_residual)
+                    && super::law_evaluation::origin(g, index)?
+                        .is_some_and(|o| o.zero_residual || o.guarded_family)
+                    && let Some(family) = numeric_family(index, c)?
                 {
-                    let position = |object: usize| {
-                        layout.data.objects[object]
-                            .coordinates
-                            .iter()
-                            .find_map(|q| {
-                                if q.index != index {
-                                    return None;
-                                }
-                                if let super::observable_layout::Source::Polynomial(p) = &q.source {
-                                    Some(p.position)
-                                } else {
-                                    None
-                                }
-                            })
-                    };
-                    if let (Some(left), Some(right)) = (position(a), position(b)) {
-                        let readings = plan.architecture.witness.readings();
-                        let names = readings.instances()[left.instance]
-                            .declaration()
-                            .parameters
-                            .iter()
-                            .map(|(name, _)| (name.clone(), name.clone()))
-                            .collect::<Vec<_>>();
-                        let family = super::environment::numeric_law_function::compare(
-                            env.inputs,
-                            [readings, readings],
-                            [left, right],
-                            &names,
-                            c,
-                        )
-                        .map_err(|e| match e {
-                            crate::construction::ConstructionFailure::Stopped(s) => {
-                                ValidationFailure::Stop(s)
-                            }
-                            e => format!("数値guardの全域互換性: {e:?}").into(),
-                        })?;
-                        equal = all([family.applicable, family.equivalent]);
-                    }
+                    equal = all([family.applicable, family.equivalent]);
                 }
                 values.push(equal);
             }
@@ -316,9 +359,17 @@ pub(super) fn compare(
                     return Err("build互換性の残差添字が違う".into());
                 }
                 match (l.value(Reading::Residual), r.value(Reading::Residual)) {
-                    (Some(l), Some(r)) => {
-                        inputs.extend([l, r]);
-                        values.push(residual(env, g, l, r, c)?);
+                    (Some(left), Some(right)) => {
+                        inputs.extend([left, right]);
+                        let mut equal = residual(env, g, left, right, c)?;
+                        if equal.is_none()
+                            && super::law_evaluation::origin(g, l.index)?
+                                .is_some_and(|o| o.guarded_family)
+                            && let Some(family) = numeric_family(l.index, c)?
+                        {
+                            equal = family.value_equal;
+                        }
+                        values.push(equal);
                     }
                     _ => values.push(None),
                 }

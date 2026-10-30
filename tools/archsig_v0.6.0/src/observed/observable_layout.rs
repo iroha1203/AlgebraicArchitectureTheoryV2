@@ -228,7 +228,7 @@ fn compute_polynomial(
             let index = base
                 .originals
                 .iter()
-                .find(|o| o.row.is_none() && o.instance == original.instance)
+                .find(|o| o.row.is_none() && o.instance == original.instance && o.finite == original.finite)
                 .ok_or("Observableの共通Law添字がない")?;
             if !table.indices.contains(&index.reference) {
                 return Err("Observableの座標が共通Law表にない".into());
@@ -251,11 +251,12 @@ fn compute_polynomial(
                     types.push((q.ty.clone(), ring));
                 }
             }
-            let zero_residual = if let Some(reference) = q.residual {
+            let known_residual = if let Some(reference) = q.residual {
                 match &g.get(reference)?.payload {
                     Some(Payload::Construction(value)) => match &value.data {
                         D::PolynomialLaw(data) => {
                             data.polynomial().is_some_and(|(_, terms)| terms.is_empty())
+                                || data.guarded_parameter_family()
                         }
                         _ => false,
                     },
@@ -279,7 +280,7 @@ fn compute_polynomial(
                     q.status,
                     EquationPresentationStatus::Ready | EquationPresentationStatus::NotApplicable
                 )
-                && (q.guard != EquationGuard::Undetermined || zero_residual);
+                && (q.guard != EquationGuard::Undetermined || known_residual);
             let canonical_row = if index.parameters.is_empty() {
                 Some(0)
             } else {

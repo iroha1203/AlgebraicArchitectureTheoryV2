@@ -866,7 +866,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
                     )
                     .unwrap()
                     .unwrap();
-                assert!(source.guard.zero_on_fiber());
+                assert!(source.guard.zero_at(q.position.object, &quiet()).unwrap());
                 assert_eq!(source.difference.parameters.len(), 1);
                 assert_eq!(source.difference.parameters[0].0.name, "n");
                 let constant = if ty == "Z" {
@@ -1009,4 +1009,322 @@ fn guarded_circuit_when_keeps_the_original_application_expression() {
         }
         assert!(cases > 0);
     }
+}
+
+#[test]
+fn guarded_numeric_residuals_use_typed_boolean_maps_and_keep_raw_equations() {
+    use crate::observed::observable_layout::Reading;
+    use crate::{canonical::Json, types::Type};
+    for ty in ["Z", "Q"] {
+        for body in ["n=1", "1=0"] {
+            let p = single_part(&format!(
+                "law required reflexive(c:Part,n:{ty}) when n=0:{body};"
+            ));
+            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let mut g = graph(&p);
+            let plan = prepare(
+                &env,
+                &mut g,
+                p.shared_inputs(),
+                &p.requests().requests()[0],
+                &mut quiet(),
+            )
+            .unwrap();
+            let layout = plan.polynomial.as_ref().unwrap();
+            assert!(layout.data.complete);
+            let reference = |value: &Json| {
+                let Json::Obj(fields) = value else { panic!() };
+                let Json::Str(id) = &fields["node"] else {
+                    panic!()
+                };
+                NodeRef(id.strip_prefix('n').unwrap().parse().unwrap())
+            };
+            let wire = |r: NodeRef| {
+                let Some(Payload::Construction(v)) = &g.get(r).unwrap().payload else {
+                    panic!()
+                };
+                let value = v.wire();
+                let Json::Obj(ref fields) = value else {
+                    panic!()
+                };
+                fields.clone()
+            };
+            let mut checked = 0;
+            for object in &layout.data.objects {
+                for coordinate in &object.coordinates {
+                    let super::super::observable_layout::Source::Polynomial(q) = &coordinate.source
+                    else {
+                        panic!()
+                    };
+                    if q.guard==crate::observed::object_equation_presentation::EquationGuard::OutsideObject {continue;}
+                    checked += 1;
+                    let nu = coordinate.value(Reading::Nu).unwrap();
+                    let epsilon = coordinate.value(Reading::Epsilon).unwrap();
+                    let residual = coordinate.value(Reading::Residual).unwrap();
+                    assert_ne!(residual, nu);
+                    assert_ne!(residual, epsilon);
+                    let Some(Payload::Construction(v)) = &g.get(residual).unwrap().payload else {
+                        panic!()
+                    };
+                    let D::PolynomialLaw(data) = &v.data else {
+                        panic!()
+                    };
+                    assert!(data.guarded_parameter_family());
+                    assert!(data.parameter_difference(&mut quiet()).unwrap().is_none());
+                    for r in [nu, epsilon, residual] {
+                        env.recheck_node(&g, g.get(r).unwrap(), r.0).unwrap();
+                    }
+                    let residual = wire(residual);
+                    let Json::Arr(terms) = &residual["terms"] else {
+                        panic!()
+                    };
+                    let [Json::Obj(term)] = terms.as_slice() else {
+                        panic!()
+                    };
+                    let coefficient = reference(&term["coefficient"]);
+                    assert_eq!(
+                        g.get(coefficient).unwrap().ty,
+                        NodeType::Expression(q.ty.clone())
+                    );
+                    let multiply = wire(coefficient);
+                    assert_eq!(multiply["operation"], Json::str("multiply"));
+                    let Json::Arr(operands) = &multiply["operands"] else {
+                        panic!()
+                    };
+                    let [indicator, _] = operands.as_slice() else {
+                        panic!()
+                    };
+                    let indicator = reference(indicator);
+                    assert_eq!(
+                        g.get(indicator).unwrap().ty,
+                        NodeType::Expression(q.ty.clone())
+                    );
+                    let compose = wire(indicator);
+                    assert_eq!(compose["operation"], Json::str("compose"));
+                    let Json::Arr(operands) = &compose["operands"] else {
+                        panic!()
+                    };
+                    let [guard, map] = operands.as_slice() else {
+                        panic!()
+                    };
+                    let guard = reference(guard);
+                    assert_eq!(g.get(guard).unwrap().ty, NodeType::Expression(Type::Bool));
+                    assert_eq!(
+                        crate::observed::law_evaluation::origin(&g, q.instance)
+                            .unwrap()
+                            .unwrap()
+                            .guard_reference,
+                        Some(guard)
+                    );
+                    let map = reference(map);
+                    assert_eq!(g.get(map).unwrap().ty, NodeType::Construction(T::StateMap));
+                    let map = wire(map);
+                    assert_eq!(map["kind"], Json::str("finite"));
+                    let source = wire(reference(&map["source"]));
+                    assert_eq!(source["type"], Type::Bool.wire());
+                    let target = wire(reference(&map["target"]));
+                    assert_eq!(target["type"], q.ty.wire());
+                    let Json::Arr(pairs) = &map["pairs"] else {
+                        panic!()
+                    };
+                    assert_eq!(pairs.len(), 2);
+                    for (pair, (boolean, number)) in pairs.iter().zip([(false, "0"), (true, "1")]) {
+                        let Json::Arr(pair) = pair else { panic!() };
+                        let [from, to] = pair.as_slice() else {
+                            panic!()
+                        };
+                        assert_eq!(g.scalar(reference(from)).unwrap(), &Scalar::Bool(boolean));
+                        let expected =
+                            crate::observed::numeric::literal(number, &q.ty, &quiet()).unwrap();
+                        assert_eq!(g.scalar(reference(to)).unwrap(), &expected);
+                    }
+                    let source=crate::observed::object_equation_presentation::parameter_source_on_guard_fiber(
+                        &p.shared_inputs(),plan.architecture.witness.readings(),q.position.instance,&[],&mut quiet()
+                    ).unwrap().unwrap();
+                    assert!(source.guard.dynamic());
+                    assert!(!source.guard.zero_at(q.position.object, &quiet()).unwrap());
+                }
+            }
+            assert!(checked > 0);
+            let circuits =
+                crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+                    .unwrap()
+                    .unwrap();
+            assert!(
+                circuits
+                    .iter()
+                    .flat_map(|d| &d.cases)
+                    .all(|c| c.when.is_none())
+            );
+            assert!(circuits.iter().any(|d| !d.cases.is_empty()));
+        }
+    }
+}
+
+#[test]
+fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
+    use crate::observed::{
+        object_equation_presentation::EquationGuard, observable_layout::Reading,
+    };
+    let p =
+        single_part("law required reflexive(c:Part,n:Z,b:Bool) when if b then n=0 else false:n=1;");
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let mut g = graph(&p);
+    let plan = prepare(
+        &env,
+        &mut g,
+        p.shared_inputs(),
+        &p.requests().requests()[0],
+        &mut quiet(),
+    )
+    .unwrap();
+    let layout = plan.polynomial.as_ref().unwrap();
+    assert!(layout.data.complete);
+    let mut applicable = false;
+    let mut actual_position = None;
+    let mut outside = false;
+    for object in &layout.data.objects {
+        for coordinate in &object.coordinates {
+            let super::super::observable_layout::Source::Polynomial(q) = &coordinate.source else {
+                panic!()
+            };
+            if q.guard == EquationGuard::OutsideObject {
+                continue;
+            }
+            let origin = crate::observed::law_evaluation::origin(&g, q.instance)
+                .unwrap()
+                .unwrap();
+            let binding = origin.bindings.iter().find(|b| b.name == "b").unwrap();
+            let canonical = crate::observed::law_evaluation::origin(&g, coordinate.index)
+                .unwrap()
+                .unwrap();
+            let canonical = canonical.bindings.iter().find(|b| b.name == "b").unwrap();
+            assert_eq!(
+                g.scalar(canonical.value).unwrap(),
+                g.scalar(binding.value).unwrap()
+            );
+            match q.guard {
+                EquationGuard::AlwaysFalse => {
+                    outside = true;
+                    assert_eq!(g.scalar(binding.value).unwrap(), &Scalar::Bool(false));
+                    assert!(coordinate.value(Reading::Epsilon).is_none());
+                }
+                EquationGuard::Undetermined => {
+                    applicable = true;
+                    actual_position.get_or_insert(q.position);
+                    assert_eq!(g.scalar(binding.value).unwrap(), &Scalar::Bool(true));
+                    assert!(origin.guarded_family);
+                    let r = coordinate.value(Reading::Residual).unwrap();
+                    let Some(Payload::Construction(value)) = &g.get(r).unwrap().payload else {
+                        panic!()
+                    };
+                    let D::PolynomialLaw(data) = &value.data else {
+                        panic!()
+                    };
+                    assert!(data.guarded_parameter_family());
+                    env.recheck_node(&g, g.get(r).unwrap(), r.0).unwrap();
+                }
+                _ => panic!("unexpected guard {:?}", q.guard),
+            }
+        }
+    }
+    assert!(applicable && outside);
+    let position = actual_position.unwrap();
+    let readings = plan.architecture.witness.readings();
+    let names = readings.instances()[position.instance]
+        .declaration()
+        .parameters
+        .iter()
+        .map(|(name, _)| (name.clone(), name.clone()))
+        .collect::<Vec<_>>();
+    for source_value in [false, true] {
+        let source = vec![("b".into(), Scalar::Bool(source_value))];
+        let target = vec![("b".into(), Scalar::Bool(true))];
+        let family = crate::observed::environment::numeric_law_function::compare_bound(
+            &p.shared_inputs(),
+            [readings, readings],
+            [position, position],
+            &names,
+            [&source, &target],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(family.applicable, Some(source_value));
+        assert_eq!(family.equivalent, Some(source_value));
+        assert_eq!(family.value_equal, Some(source_value));
+        if !source_value {
+            let point = family.value_example.as_ref().unwrap();
+            assert!(point.bindings.contains(&("n".into(), Scalar::Z(0.into()))));
+            assert!(point.bindings.contains(&("b".into(), Scalar::Bool(false))));
+            assert_eq!(point.left, Scalar::Z(0.into()));
+            assert_eq!(point.right, Scalar::Z((-1).into()));
+        }
+    }
+    let answer = crate::observed::build_result::retain_plan(
+        &env,
+        &mut g,
+        plan,
+        &p.requests().requests()[0],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(answer.status, Decision::Established);
+    assert!(answer.outputs.contains_key("algebra"));
+}
+
+#[test]
+fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_object() {
+    let inputs = fixture::inputs(
+        true,
+        false,
+        "law required guarded(c:Part,n:Z) when n=c.quantity:n=1;",
+    );
+    let requests = resolve_native_for_test(
+        inputs.law(),
+        inputs.archmap(),
+        &["b=build(Selected,on=@v/root)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let p = PreparedObserved {
+        inputs,
+        requests,
+        object: None,
+    };
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let mut g = graph(&p);
+    let plan = prepare(
+        &env,
+        &mut g,
+        p.shared_inputs(),
+        &p.requests().requests()[0],
+        &mut quiet(),
+    )
+    .unwrap();
+    let answer = crate::observed::build_result::retain_plan(
+        &env,
+        &mut g,
+        plan,
+        &p.requests().requests()[0],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(answer.status, Decision::Undetermined);
+    assert!(answer.outputs.contains_key("object"));
+    assert!(!answer.outputs.contains_key("algebra"));
+    assert!(
+        answer
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Missing)
+                && r.missing.iter().any(|f| f.snapshot == "v"
+                    && f.subject == "q"
+                    && f.field.as_deref() == Some("Family.Part.quantity")))
+    );
+    assert!(
+        !answer
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
 }

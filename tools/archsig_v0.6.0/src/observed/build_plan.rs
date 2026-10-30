@@ -86,9 +86,22 @@ pub(super) fn prepare_architecture(
     let mut equations = None;
     let mut views = None;
     let mut predicates = vec![];
+    let mut partial_presentations = vec![];
     if architecture.complete {
         tick(c)?;
+        let start = g.nodes.len();
         laws = law_table::retain(env, g, inputs.clone(), reference, c)?.map(Arc::new);
+        if laws.is_none() {
+            for (i, node) in g.nodes.iter().enumerate().skip(start) {
+                tick(c)?;
+                if node.ty == NodeType::Construction(T::EquationPresentation)
+                    && node.arguments.first() == Some(&reference)
+                    && matches!(&node.payload,Some(Payload::Construction(v)) if matches!(v.data,D::PolynomialLaw(_)))
+                {
+                    partial_presentations.push(NodeRef(i));
+                }
+            }
+        }
         objects = if let Some(table) = &laws {
             Some(retained_objects(g, table)?)
         } else {
@@ -143,6 +156,7 @@ pub(super) fn prepare_architecture(
         }
     }
     dependencies.extend(equations);
+    dependencies.extend(partial_presentations);
     if let Some(views) = &views {
         for axis in &views.axes {
             dependencies.extend([axis.invariant, axis.signature]);

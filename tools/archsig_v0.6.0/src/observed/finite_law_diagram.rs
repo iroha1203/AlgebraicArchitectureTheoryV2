@@ -431,6 +431,7 @@ impl Data {
                 && !reading.reading.condition_failed
                 && !reading.reading.condition_pending,
             zero_residual: false,
+            guarded_family: false,
             body_allowed: reading.reading.guard != Some(false),
             outside: reading.reading.application == Some(false)
                 && !reading.reading.condition_failed && !reading.reading.condition_pending,

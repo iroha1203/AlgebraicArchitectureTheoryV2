@@ -56,9 +56,11 @@ pub(in crate::observed) struct Family {
     condition_systems: Option<(System, System)>,
     pub applicable: Option<bool>,
     pub equivalent: Option<bool>,
+    pub value_equal: Option<bool>,
     pub implies: Option<bool>,
     pub example: Option<Counterexample>,
     pub application_example: Option<Counterexample>,
+    pub value_example: Option<Counterexample>,
     pub pending: Option<Pending>,
 }
 fn bad(s: &str) -> ConstructionFailure {
@@ -431,7 +433,7 @@ fn outside(a: &System, b: &System, c: &Control) -> Result<Option<Vec<Scalar>>, V
     }
     Ok(None)
 }
-fn restrict_zero(
+fn guard_fiber(
     guard: &affine::Form,
     body: &affine::Form,
     c: &Control,
@@ -455,9 +457,6 @@ fn restrict_zero(
     }
     let guard_system = system(guard, &basis, &ground, c)?;
     let body_system = system(body, &basis, &ground, c)?;
-    if outside(&guard_system, &body_system, c)?.is_some() {
-        return Ok(None);
-    }
     Ok(Some(GuardRestriction {
         body: body.clone(),
         basis,
@@ -470,6 +469,15 @@ pub(in crate::observed) enum GuardTruth {
     Holds,
     /// guardまたは本文に現れる軸の部分割当て。元の全binder列へ上書きして使う。
     Refuted(Vec<(affine::Parameter, Scalar)>),
+}
+impl GuardRestriction {
+    pub(in crate::observed) fn is_zero(&self, c: &Control) -> Result<bool, ValidationFailure> {
+        Ok(outside(&self.guard, &self.zero, c)?.is_none())
+    }
+}
+fn restrict_zero(guard: &affine::Form, body: &affine::Form, c: &Control) -> Result<Option<GuardRestriction>, ValidationFailure> {
+    let Some(proof) = guard_fiber(guard, body, c)? else { return Ok(None) };
+    Ok(if proof.is_zero(c)? { Some(proof) } else { None })
 }
 /// 全称binderの出現を同じ位置軸へ移し、適用fiber内の実反例を求める。
 pub(in crate::observed) fn universal_on_guard(
@@ -542,14 +550,27 @@ pub(in crate::observed) fn universal_on_guard(
         Some(point) => GuardTruth::Refuted(parameters.into_iter().zip(point).collect()),
     }))
 }
-/// 元のguardと本文を通常Evaluatorで読み、全適用fiber上の零を検査する。
-/// 証明は原式・特解・整数/体kernelを保持し、元の差を零へ書き換えない。
-pub(in crate::observed) fn zero_on_guard(
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) enum GuardValue {
+    Outside,
+    Known {
+        proof: Box<GuardRestriction>,
+        support: Vec<Fact>,
+    },
+    Missing {
+        pending: Pending,
+        support: Vec<Fact>,
+    },
+}
+/// 元のguardと本文を通常Evaluatorで読み、全適用fiberの正確な表示を保持する。
+/// 原式・特解・整数/体kernelを保持し、元の差を零へ書き換えない。
+pub(in crate::observed) fn on_guard(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     position: ObjectEvaluationPosition,
+    finite: &[(String, Scalar)],
     c: &mut Control,
-) -> Result<Option<GuardRestriction>, ConstructionFailure> {
+) -> Result<Option<GuardValue>, ConstructionFailure> {
     let row = &readings.instances()[position.instance];
     let names = row
         .declaration()
@@ -557,7 +578,27 @@ pub(in crate::observed) fn zero_on_guard(
         .iter()
         .map(|(n, _)| (n.clone(), n.clone()))
         .collect::<Vec<_>>();
-    Ok(read(inputs, readings, position, &names, false, &[], c)?.restriction)
+    let reading = read(inputs, readings, position, &names, false, finite, c)?;
+    if let Some(pending) = reading.pending {
+        return Ok(if pending.missing.is_empty() {
+            None
+        } else {
+            Some(GuardValue::Missing {
+                pending,
+                support: reading.facts,
+            })
+        });
+    }
+    let (Some(guard), Some(body)) = (reading.condition, reading.body.or(reading.residual)) else {
+        return Ok(None);
+    };
+    let Some(proof) = guard_fiber(&guard, &body, c).map_err(invalid)? else {
+        return Ok(None);
+    };
+    Ok(Some(GuardValue::Known {
+        proof: Box::new(proof),
+        support: reading.facts,
+    }))
 }
 // 有限個の等式を同じ正確なfiberへまとめる。guardの共通域に使う。
 fn intersection(a: &System, b: &System, c: &Control) -> Result<System, ValidationFailure> {
@@ -671,10 +712,15 @@ fn assignments(
     names: &[(String, String)],
     basis: &[TermArgument],
     point: &[Scalar],
+    bound: &[(String, Scalar)],
     c: &Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
-    let mut result = vec![];
-    for p in row.parameters() {
+    let mut result = bound.to_vec();
+    for p in row
+        .parameters()
+        .iter()
+        .filter(|p| !bound.iter().any(|(name, _)| name == &p.name))
+    {
         tick(c)?;
         let argument = names
             .iter()
@@ -726,6 +772,8 @@ fn assignments(
     }
     Ok(result)
 }
+#[derive(Clone, Copy)]
+enum ComparisonKind { Application, Zero, Value }
 pub(in crate::observed) fn compare(
     inputs: &CheckedInputs,
     readings: [&ObjectReadingInstances; 2],
@@ -733,14 +781,26 @@ pub(in crate::observed) fn compare(
     names: &[(String, String)],
     c: &mut Control,
 ) -> Result<Family, ConstructionFailure> {
-    let a = read(inputs, readings[0], positions[0], names, false, &[], c)?;
-    let z = read(inputs, readings[1], positions[1], names, true, &[], c)?;
+    compare_bound(inputs, readings, positions, names, [&[], &[]], c)
+}
+pub(in crate::observed) fn compare_bound(
+    inputs: &CheckedInputs,
+    readings: [&ObjectReadingInstances; 2],
+    positions: [ObjectEvaluationPosition; 2],
+    names: &[(String, String)],
+    bound: [&[(String, Scalar)]; 2],
+    c: &mut Control,
+) -> Result<Family, ConstructionFailure> {
+    let a = read(inputs, readings[0], positions[0], names, false, bound[0], c)?;
+    let z = read(inputs, readings[1], positions[1], names, true, bound[1], c)?;
     let mut result = Family {
         applicable: None,
         equivalent: None,
+        value_equal: None,
         implies: None,
         example: None,
         application_example: None,
+        value_example: None,
         pending: a.pending.clone().or_else(|| z.pending.clone()),
         source: a,
         target: z,
@@ -796,7 +856,7 @@ pub(in crate::observed) fn compare(
             result.applicable = Some(equal);
             if !equal {
                 points.push((
-                    true,
+                    ComparisonKind::Application,
                     result
                         .basis
                         .iter()
@@ -814,7 +874,7 @@ pub(in crate::observed) fn compare(
             };
             result.applicable = Some(point.is_none());
             if let Some(point) = point {
-                points.push((true, point));
+                points.push((ComparisonKind::Application, point));
             }
             result.condition_systems = Some((sa, sz));
         }
@@ -857,16 +917,49 @@ pub(in crate::observed) fn compare(
         };
         result.equivalent = Some(point.is_none());
         if let Some(point) = point {
-            points.push((false, point));
+            points.push((ComparisonKind::Zero, point));
+        }
+        if a.ty(c).map_err(invalid)? == z.ty(c).map_err(invalid)? {
+            let difference = affine::binary(BinOp::Sub, Some(a), Some(z), c)
+                .map_err(invalid)?
+                .ok_or_else(|| bad("数値残差族の差がアフィンでない"))?;
+            let zero_difference =
+                system(&difference, &result.basis, &ground, c).map_err(invalid)?;
+            let value_point = if let Some((ga, gz)) = &result.condition_systems {
+                let common = intersection(ga, gz, c).map_err(invalid)?;
+                match outside(&common, &zero_difference, c).map_err(invalid)? {
+                    Some(point) => Some(point),
+                    None => match outside_both(ga, &sa, gz, c).map_err(invalid)? {
+                        Some(point) => Some(point),
+                        None => outside_both(gz, &sz, ga, c).map_err(invalid)?,
+                    },
+                }
+            } else {
+                let zero = numeric::zero(&ground, c).map_err(invalid)?;
+                let zero = affine::constant(&zero, c)
+                    .map_err(invalid)?
+                    .ok_or_else(|| bad("数値全域の零がない"))?;
+                outside(
+                    &system(&zero, &result.basis, &ground, c).map_err(invalid)?,
+                    &zero_difference,
+                    c,
+                )
+                .map_err(invalid)?
+            };
+            result.value_equal = Some(value_point.is_none());
+            if let Some(point) = value_point {
+                points.push((ComparisonKind::Value, point));
+            }
         }
         result.systems = Some((sa, sz));
     }
-    for (application, point) in points {
+    for (kind, point) in points {
         let row = &readings[0].instances()[positions[0].instance];
         let bindings =
-            assignments(inputs, row, names, &result.basis, &point, c).map_err(invalid)?;
-        let target_bindings = bindings
+            assignments(inputs, row, names, &result.basis, &point, bound[0], c).map_err(invalid)?;
+        let mut target_bindings = bindings
             .iter()
+            .filter(|(name, _)| !bound[0].iter().any(|(fixed, _)| fixed == name))
             .map(|(name, v)| {
                 names
                     .iter()
@@ -875,6 +968,7 @@ pub(in crate::observed) fn compare(
                     .ok_or_else(|| bad("数値Law反例の先引数がない"))
             })
             .collect::<Result<Vec<_>, _>>()?;
+        target_bindings.extend_from_slice(bound[1]);
         let a = read(
             inputs,
             readings[0],
@@ -893,7 +987,7 @@ pub(in crate::observed) fn compare(
             &target_bindings,
             c,
         )?;
-        let (left, right) = if application {
+        let (left, right) = if matches!(kind, ComparisonKind::Application) {
             let truth = |reading: &Reading| -> Result<Scalar, ConstructionFailure> {
                 let value = reading
                     .condition
@@ -925,8 +1019,9 @@ pub(in crate::observed) fn compare(
                 .map_err(invalid)?
                 .flatten()
                 .ok_or_else(|| bad("先Law反例の再代入値がない"))?;
-            if (left == numeric::zero(&left.ty(), c).map_err(invalid)?)
-                == (right == numeric::zero(&right.ty(), c).map_err(invalid)?)
+            if matches!(kind, ComparisonKind::Zero)
+                && (left == numeric::zero(&left.ty(), c).map_err(invalid)?)
+                    == (right == numeric::zero(&right.ty(), c).map_err(invalid)?)
             {
                 return Err(bad("数値Lawのfiber反例が元式の零性を分離しない"));
             }
@@ -959,10 +1054,10 @@ pub(in crate::observed) fn compare(
             right,
             facts,
         };
-        if application {
-            result.application_example = Some(example);
-        } else {
-            result.example = Some(example);
+        match kind {
+            ComparisonKind::Application => result.application_example = Some(example),
+            ComparisonKind::Zero => result.example = Some(example),
+            ComparisonKind::Value => result.value_example = Some(example),
         }
     }
     Ok(result)
