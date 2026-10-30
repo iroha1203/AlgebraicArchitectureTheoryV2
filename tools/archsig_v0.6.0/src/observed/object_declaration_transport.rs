@@ -835,20 +835,11 @@ pub(super) fn retain(
         let coefficient = sp
             .iter()
             .find_map(|p| numeric_parameters::coefficient_type(&p.ty));
-        let mixed = coefficient.as_ref().is_some_and(|ty| {
-            sp.iter()
-                .filter_map(|p| numeric_parameters::coefficient_type(&p.ty))
-                .any(|t| t != *ty)
-        });
         if coefficient.is_some()
             && sr.iter().zip(tr).any(|(s, t)| {
                 let ty = inputs.law().expr_type(*s).map(|t| t.erase());
                 ty != inputs.law().expr_type(*t).map(|t| t.erase())
-                    || if mixed {
-                        !matches!(ty, Some(Type::Z | Type::Q))
-                    } else {
-                        ty != coefficient
-                    }
+                    || !matches!(ty, Some(Type::Z | Type::Q))
             })
         {
             result.status = merge_status(result.status, Decision::Undetermined);

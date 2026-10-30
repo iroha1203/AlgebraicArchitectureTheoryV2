@@ -630,7 +630,7 @@ fn compute_inner(
             invariant_maps.extend(views.invariants);
             dependencies.extend(views.conditions);
             dependencies.extend(invariant_maps.iter().copied());
-            if views.preserved && view_pending.is_none() {
+            if views.preserved && view_pending.is_empty() {
                 signature = Some(b.push(
                     NodeType::Construction(T::SignatureMap),
                     "signature_map",
@@ -647,29 +647,29 @@ fn compute_inner(
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;
-            let pending = view_pending.or_else(|| {
-                law_pending.map(|p| Reason {
-                    kind: if p.missing.is_empty() {
-                        ReasonKind::UnsupportedAlgorithm {
-                            question: request.kind,
-                            operand_types: vec![],
-                            method: "affine_numeric_law_transport".into(),
-                        }
-                    } else {
-                        ReasonKind::Missing
-                    },
-                    request: request.id.clone(),
-                    dependencies: vec![],
-                    missing: p.missing,
-                    location: Some(p.location),
-                })
+            let pending = law_pending.map(|p| Reason {
+                kind: if p.missing.is_empty() {
+                    ReasonKind::UnsupportedAlgorithm {
+                        question: request.kind,
+                        operand_types: vec![],
+                        method: "affine_numeric_law_transport".into(),
+                    }
+                } else {
+                    ReasonKind::Missing
+                },
+                request: request.id.clone(),
+                dependencies: vec![],
+                missing: p.missing,
+                location: Some(p.location),
             });
-            if let Some(mut reason) = pending {
+            for mut reason in view_pending.into_iter().chain(pending) {
                 if declaration_status != Decision::Refuted {
                     declaration_status = Decision::Undetermined;
                 }
                 reason.dependencies.extend([left, right]);
-                declaration_reasons.push(reason);
+                if !declaration_reasons.contains(&reason) {
+                    declaration_reasons.push(reason);
+                }
             }
             declaration_evidence.extend(transported.evidence);
             declaration_evidence.extend(law_evidence);

@@ -59,7 +59,7 @@ fn transport(
 }
 pub(super) struct Output {
     pub preserved: bool,
-    pub pending: Option<Reason>,
+    pub pending: Vec<Reason>,
     pub invariants: Vec<NodeRef>,
     pub axes: Vec<Json>,
     pub conditions: Vec<NodeRef>,
@@ -489,7 +489,7 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         preserved: true,
-        pending: None,
+        pending: vec![],
         invariants: vec![],
         axes: vec![],
         conditions: vec![],
@@ -549,7 +549,8 @@ pub(super) fn retain(
             }
         }
         if unsupported_parameter {
-            out.pending.get_or_insert_with(|| pending("view_parameter_domain_transport", vec![]));
+            out.pending
+                .push(pending("view_parameter_domain_transport", vec![]));
             continue;
         }
         let returns = instance
@@ -561,7 +562,8 @@ pub(super) fn retain(
             super::value_transport::identity_declarations(returns, inputs.law(), c)?;
         let finite_values = if value_declarations.is_none() {
             if !super::finite::supported(returns, inputs.law(), c)? {
-                out.pending.get_or_insert_with(|| pending("view_value_domain_transport", vec![]));
+                out.pending
+                    .push(pending("view_value_domain_transport", vec![]));
                 continue;
             }
             Some(
@@ -652,7 +654,7 @@ pub(super) fn retain(
                         reason.location = Some(crate::issue::Location::Law {
                             span: inputs.law().exprs[*body].span,
                         });
-                        out.pending.get_or_insert(reason);
+                        out.pending.push(reason);
                         continue;
                     }
                     return Err("未決view保存の配送は未実装".into());
@@ -667,7 +669,7 @@ pub(super) fn retain(
                 t.numeric_counterexample().cloned(),
             ));
         }
-        if rows.is_empty() && out.pending.is_some() {
+        if rows.is_empty() && !out.pending.is_empty() {
             continue;
         }
         let first = rows.first().ok_or("view移送の対象族が空")?;
@@ -772,7 +774,7 @@ pub(super) fn retain(
             selected_values,
             selected(b.g, axis.signature)? == selected(b.g, target_signature)?,
         )?;
-        if out.preserved && out.pending.is_none() {
+        if out.preserved && out.pending.is_empty() {
             out.invariants.push(
                 b.push(
                     NodeType::Construction(T::InvariantMap),

@@ -5743,9 +5743,102 @@ reading After {{{vocabulary} local here(unused:Unit,y:State,pick:Option<Bool>,le
 }
 
 #[test]
+fn unused_numeric_local_parameters_keep_constant_reads_decidable() {
+    for (ty, read, target, code) in [
+        ("Q", "0+0", "0", 0),
+        ("Q", "0+0", "1", 1),
+        ("Z", "rat(0,1)", "rat(0,1)", 0),
+    ] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("unused-number-local-{ty}-{code}"));
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(x:{ty}) reads {read};}}
+reading After {{{vocabulary} local here(y:{ty}) reads {target};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ],
+        );
+        assert_eq!(run.code, code, "{ty}/{code}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let map = answer(&result, "m");
+        assert_eq!(
+            s(get(map, "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
+        assert_eq!(has(get(map, "outputs"), "map"), code == 0);
+        assert!(
+            arr(get(map, "reasons"))
+                .iter()
+                .all(|r| s(get(r, "code")) != "unsupported_algorithm")
+        );
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "blockers")).is_empty());
+        if code == 1 {
+            let example = get(value(&result, &arr(get(map, "counterexamples"))[0]), "data");
+            assert_json(value(&result, get(example, "left")), r#""0""#);
+            assert_json(value(&result, get(example, "right")), r#""1""#);
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn multiple_unsupported_views_keep_each_original_reason() {
+    let dir = finite_view_inputs("multiple-unsupported-views", true);
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];view refs2(s:State):List<State> = list<State>[s,s];}}
+reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];view refs2(s:State):List<State> = list<State>[s,s];}}"#)).unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "n=needed($m)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = answer(&result, "m");
+    let reasons = arr(get(map, "reasons"));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    for expected in ["list<State>[s]", "list<State>[s,s]"] {
+        let matching: Vec<_> = reasons
+            .iter()
+            .filter(|r| {
+                if s(get(r, "code")) != "unsupported_algorithm" {
+                    return false;
+                }
+                let span = arr(get(get(r, "location"), "span"));
+                &law[num(&span[0]) as usize..num(&span[1]) as usize] == expected
+            })
+            .collect();
+        assert!(!matching.is_empty(), "missing {expected}");
+        assert!(matching.iter().all(|reason| {
+            arr(get(plan, "blockers"))
+                .iter()
+                .any(|b| b.value == reason.value)
+        }));
+    }
+    assert!(has(get(map, "outputs"), "operation"));
+    assert!(!has(get(map, "outputs"), "map"));
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn local_finite_parameter_extension_keeps_other_domains_unsupported() {
     for (name, ty, read) in [
-        ("rational", "Q", "0+0"),
         ("text", "Text", "0+0"),
         ("list", "List<Bool>", "0+0"),
         ("tuple-integer", "(State,Z)", "0+0"),
@@ -5763,18 +5856,13 @@ reading After {{{vocabulary} local here(x:{ty}) reads {read};}}"#
         )
         .unwrap();
         let operand = match name {
-            "rational" => r#""Q""#,
             "text" => r#""Text""#,
             "list" => r#"["List","Bool"]"#,
             "tuple-integer" => r#"["Tuple",["Ref","Reservations.State"],"Z"]"#,
             "option-rational" => r#"["Option",["Tuple",["Ref","Reservations.State"],"Q"]]"#,
             _ => unreachable!(),
         };
-        let method = if name == "rational" {
-            "local_read_coefficient_transport"
-        } else {
-            "local_parameter_domain_transport"
-        };
+        let method = "local_parameter_domain_transport";
         assert_unsupported_map(&dir, method, operand, "reads 0+0");
     }
 }
