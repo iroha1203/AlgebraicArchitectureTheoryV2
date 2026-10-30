@@ -110,6 +110,15 @@ pub(super) fn guard_forms(
     base: &Scope,
     reading: &str,
 ) -> Result<Option<Vec<Form>>, ValidationFailure> {
+    Ok(super::numeric_guard::analyze(env, id, vars, base, reading)?.forms)
+}
+pub(super) fn affine_guard_forms(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    base: &Scope,
+    reading: &str,
+) -> Result<Option<Vec<Form>>, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
         let value = env.scoped_ast(id, vars, base, reading)?;
@@ -140,7 +149,7 @@ pub(super) fn guard_forms(
             .map(|form| vec![form]));
         }
         match &env.inputs.law().exprs[id].kind {
-            ExprKind::Group(body) => guard_forms(env, *body, vars, base, reading),
+            ExprKind::Group(body) => affine_guard_forms(env, *body, vars, base, reading),
             ExprKind::Let { name, value, body } => {
                 let value = env.scoped_ast(*value, vars, base, reading)?;
                 if value.condition_failed || value.condition_pending {
@@ -148,15 +157,15 @@ pub(super) fn guard_forms(
                 }
                 let mut vars = vars.clone();
                 vars.insert(name.name.clone(), value);
-                guard_forms(env, *body, &vars, base, reading)
+                affine_guard_forms(env, *body, &vars, base, reading)
             }
             ExprKind::Binary {
                 op: BinOp::And,
                 lhs,
                 rhs,
             } => {
-                let left = guard_forms(env, *lhs, vars, base, reading)?;
-                let right = guard_forms(env, *rhs, vars, base, reading)?;
+                let left = affine_guard_forms(env, *lhs, vars, base, reading)?;
+                let right = affine_guard_forms(env, *rhs, vars, base, reading)?;
                 Ok(match (left, right) {
                     (Some(mut left), Some(right)) => {
                         left.extend(right);

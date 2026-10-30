@@ -1,9 +1,9 @@
-//! 通常評価の数値guardを正規化し、非線形の未対応理由を部分表示に残す。
+//! 通常評価の数値guardを正規化し、対応範囲と未決理由を部分表示に残す。
 use super::*;
 use crate::construction::ConstructionFailure;
 use crate::law::ast::UnOp;
 use crate::observed::{
-    affine::{self, Form, TermArgument},
+    affine::{self, Form},
     equation_polynomial::EquationPolynomial as Polynomial,
 };
 
@@ -13,9 +13,61 @@ pub(super) struct Analysis {
     pub unsupported_numeric: bool,
     pub missing: Vec<Fact>,
 }
+fn constant_guard(value: bool, control: &Control) -> Result<Analysis, ValidationFailure> {
+    Ok(Analysis {
+        forms: Some(if value {
+            vec![]
+        } else {
+            vec![affine::constant(&Scalar::Z(1.into()), control)?.ok_or("偽guardの定数がない")?]
+        }),
+        ..Analysis::default()
+    })
+}
+fn constant_forms(
+    forms: &Option<Vec<Form>>,
+    control: &Control,
+) -> Result<Option<bool>, ValidationFailure> {
+    let Some(forms) = forms else {
+        return Ok(None);
+    };
+    let mut known = true;
+    for form in forms {
+        control
+            .clone()
+            .checkpoint(crate::observed::control::Checkpoint::ObjectLawFamily)?;
+        match form.value(control)? {
+            Some(value) if value != numeric::zero(&value.ty(), control)? => return Ok(Some(false)),
+            Some(_) => (),
+            None => known = false,
+        }
+    }
+    Ok(known.then_some(true))
+}
+fn numeric_forms(forms: &Option<Vec<Form>>, control: &Control) -> Result<bool, ValidationFailure> {
+    let Some(forms) = forms else {
+        return Ok(false);
+    };
+    for form in forms {
+        if form.numeric_parameter_terms(control)?.is_none()
+            && form.parameter_coordinates(control)?.is_none()
+        {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+fn negated(value: Analysis, control: &Control) -> Result<Analysis, ValidationFailure> {
+    if let Some(holds) = constant_forms(&value.forms, control)? {
+        return constant_guard(!holds, control);
+    }
+    Ok(Analysis {
+        unsupported_numeric: value.unsupported_numeric || numeric_forms(&value.forms, control)?,
+        ..Analysis::default()
+    })
+}
 #[derive(Clone, Default)]
 struct Normalized {
-    basis: Vec<TermArgument>,
+    basis: Vec<Form>,
     bindings: BTreeMap<String, Polynomial>,
 }
 fn invalid(error: ConstructionFailure) -> ValidationFailure {
@@ -53,7 +105,7 @@ fn analyze_inner(
 ) -> Result<Analysis, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
-        if let Some(forms) = change_affine::guard_forms(env, id, vars, base, reading)? {
+        if let Some(forms) = change_affine::affine_guard_forms(env, id, vars, base, reading)? {
             return Ok(Analysis {
                 forms: Some(forms),
                 ..Analysis::default()
@@ -109,27 +161,74 @@ fn analyze_inner(
                 vars.insert(name.name.clone(), value);
                 analyze_inner(env, *body, &vars, base, reading, &mut normalized)
             }
+            ExprKind::Unary {
+                op: UnOp::Not,
+                operand,
+            } => {
+                let mut child = *operand;
+                while let ExprKind::Group(body) = env.inputs.law().exprs[child].kind {
+                    env.tick()?;
+                    child = body;
+                }
+                if let ExprKind::Unary {
+                    op: UnOp::Not,
+                    operand,
+                } = env.inputs.law().exprs[child].kind
+                {
+                    return analyze_inner(env, operand, vars, base, reading, normalized);
+                }
+                let value = analyze_inner(env, *operand, vars, base, reading, normalized)?;
+                negated(value, &env.control)
+            }
             ExprKind::Binary {
-                op: BinOp::And,
+                op: op @ (BinOp::And | BinOp::Or | BinOp::Implies),
                 lhs,
                 rhs,
             } => {
                 let left = analyze_inner(env, *lhs, vars, base, reading, normalized)?;
                 let right = analyze_inner(env, *rhs, vars, base, reading, normalized)?;
+                let a = constant_forms(&left.forms, &env.control)?;
+                let z = constant_forms(&right.forms, &env.control)?;
+                match (*op, a, z) {
+                    (BinOp::And, Some(false), _) | (BinOp::And, _, Some(false)) => {
+                        return constant_guard(false, &env.control);
+                    }
+                    (BinOp::Or, Some(true), _)
+                    | (BinOp::Or, _, Some(true))
+                    | (BinOp::Implies, Some(false), _)
+                    | (BinOp::Implies, _, Some(true)) => return constant_guard(true, &env.control),
+                    (BinOp::And, Some(true), _)
+                    | (BinOp::Or, Some(false), _)
+                    | (BinOp::Implies, Some(true), _) => return Ok(right),
+                    (BinOp::And, _, Some(true)) | (BinOp::Or, _, Some(false)) => return Ok(left),
+                    (BinOp::Implies, _, Some(false)) => return negated(left, &env.control),
+                    _ => (),
+                }
+                if *op == BinOp::Implies && left.forms.is_some() && left.forms == right.forms {
+                    return constant_guard(true, &env.control);
+                }
+                let unsupported_numeric = left.unsupported_numeric
+                    || right.unsupported_numeric
+                    || (*op != BinOp::And
+                        && numeric_forms(&left.forms, &env.control)?
+                        && numeric_forms(&right.forms, &env.control)?
+                        && left.forms != right.forms);
+                let forms = match (left.forms, right.forms) {
+                    (Some(mut left), Some(right)) if *op == BinOp::And => {
+                        left.extend(right);
+                        Some(left)
+                    }
+                    (Some(left), Some(right)) if left == right => Some(left),
+                    _ => None,
+                };
                 Ok(Analysis {
-                    forms: match (left.forms, right.forms) {
-                        (Some(mut left), Some(right)) => {
-                            left.extend(right);
-                            Some(left)
-                        }
-                        _ => None,
-                    },
-                    unsupported_numeric: left.unsupported_numeric || right.unsupported_numeric,
+                    forms,
+                    unsupported_numeric,
                     missing: vec![],
                 })
             }
             ExprKind::Binary {
-                op: BinOp::Eq,
+                op: op @ (BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge),
                 lhs,
                 rhs,
             } => {
@@ -142,6 +241,24 @@ fn analyze_inner(
                 let difference = left
                     .binary(BinOp::Sub, &right, &mut env.control.clone())
                     .map_err(invalid)?;
+                if *op != BinOp::Eq {
+                    if let Some(value) = difference
+                        .evaluate(&[], &mut env.control.clone())
+                        .map_err(invalid)?
+                    {
+                        let zero = numeric::zero(&difference.ty, &env.control)?;
+                        let Scalar::Bool(holds) =
+                            numeric::binary(*op, value.scalar(), &zero, &env.control)?
+                        else {
+                            return Err("数値比較がBoolでない".into());
+                        };
+                        return constant_guard(holds, &env.control);
+                    }
+                    return Ok(Analysis {
+                        unsupported_numeric: true,
+                        ..Analysis::default()
+                    });
+                }
                 if difference.terms.iter().any(|term| term.variables.len() > 1) {
                     return Ok(Analysis {
                         unsupported_numeric: true,
@@ -155,8 +272,7 @@ fn analyze_inner(
                     let coefficient = affine::constant(term.coefficient.scalar(), &env.control)?
                         .ok_or("数値guardの係数がない")?;
                     let value = if let Some(index) = term.variables.first() {
-                        let argument =
-                            affine::term_argument(normalized.basis[*index].clone(), &env.control)?;
+                        let argument = normalized.basis[*index].clone();
                         affine::binary(
                             BinOp::Mul,
                             Some(&coefficient),
@@ -199,9 +315,34 @@ fn polynomial(
                 .map(Some)
                 .map_err(invalid);
         }
-        if let Some(form) = value.affine.as_deref()
-            && let Some((constant, terms)) = form.numeric_parameter_terms(&env.control)?
-        {
+        let coordinates = if let Some(form) = value.affine.as_deref() {
+            if let Some((constant, terms)) = form.numeric_parameter_terms(&env.control)? {
+                let terms = terms
+                    .into_iter()
+                    .map(|(argument, coefficient)| {
+                        Ok((affine::term_argument(argument, &env.control)?, coefficient))
+                    })
+                    .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                Some((constant, terms))
+            } else if let Some((constant, terms)) = form.parameter_coordinates(&env.control)? {
+                let terms = terms
+                    .into_iter()
+                    .map(|(parameter, coefficient)| {
+                        Ok((
+                            affine::parameter(&parameter.kind.ty(), &parameter, &env.control)?
+                                .ok_or("数値binderの形式がない")?,
+                            coefficient,
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                Some((constant, terms))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        if let Some((constant, terms)) = coordinates {
             let mut control = env.control.clone();
             let mut result = Polynomial::constant(constant, &mut control).map_err(invalid)?;
             for (argument, coefficient) in terms {
