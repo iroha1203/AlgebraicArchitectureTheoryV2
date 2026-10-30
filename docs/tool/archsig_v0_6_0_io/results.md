@@ -18,7 +18,8 @@ Result = {
   status:RunStatus, exit_code:Nat, inputs:InputIdentity[],
   declarations?:DeclarationInfo[], vocabularies?:{manifest:Vocabulary,digest:Digest,location:Location}[],
   requests:Request[], answers:Answer[], nodes:Node[], issues:Issue[],
-  reuse:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
+  reuse?:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
+  warnings?:Issue[],
   usage:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
   limits:{time_ms?:DecimalNat,memory_mib?:DecimalNat}
 }
@@ -160,6 +161,13 @@ counterexample では bindings と facts から subject・field・入力 Atom �
 
 保存形式は archsig.result/3。result/2 の再利用候補は版不一致として記録し、現在の三入力から
 再計算する。semantics は archsig/0.6.0 のままであり、問いや Law の意味は変更しない。
+
+runの再利用候補は現在入力から再計算した結果と照合する。runは`reuse`欄を出力せず、
+拒否した候補だけを`warnings`へ記録する。各警告はIssueのusage形式で、
+`details.argument="--reuse"`と拒否理由のmessageを持つ。警告がなければ`warnings`も省略する。
+通常の標準出力と保存したresult.jsonで同じ規則を使い、警告だけでは状態・終了コードを変えない。
+checkの`reuse`は`requested=false`、両件数0、`rejected=[]`の固定metadataである。
+再検査と決定性の条件は[実行 §7](execution.md#7-版正規化再利用)に従う。
 
 ## 2. 回答、条件、導出
 
