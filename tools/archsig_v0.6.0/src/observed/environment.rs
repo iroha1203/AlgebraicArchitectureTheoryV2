@@ -6704,6 +6704,15 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
+        self.analyze_source_with_guard(graph, span, bindings, None)
+    }
+    fn analyze_source_with_guard(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+        forms: Option<&mut Option<Vec<super::affine::Form>>>,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
         let mut declaration = None;
         for d in self.inputs.law().declarations.values() {
             self.tick()?;
@@ -7083,6 +7092,10 @@ impl<'a> Environment<'a> {
             .copied()
             .or(dotted.map(|(id, _)| id))
         {
+            if let Some(forms) = forms {
+                *forms =
+                    change_affine::guard_forms(self, id, &variables, &base, &declaration.reading)?;
+            }
             let SourceValue {
                 condition_failed,
                 condition_pending,

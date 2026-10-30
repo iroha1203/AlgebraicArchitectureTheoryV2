@@ -101,6 +101,75 @@ fn usable(env: &Environment<'_>, id: usize, v: &SourceValue) -> Result<(), Valid
     }
     Ok(())
 }
+/// 通常Evaluatorの束縛で、アフィン等式の連言を元の行列式へ分解する。
+/// 非対応の論理式は部分的な連立系として受け入れない。
+pub(super) fn guard_forms(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    base: &Scope,
+    reading: &str,
+) -> Result<Option<Vec<Form>>, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        let value = env.scoped_ast(id, vars, base, reading)?;
+        if value.condition_failed || value.condition_pending {
+            return Ok(None);
+        }
+        if let Some(Scalar::Bool(holds)) = value.known_value {
+            return Ok(Some(if holds {
+                vec![]
+            } else {
+                vec![
+                    affine::constant(&Scalar::Z(Z::one()), &env.control)?
+                        .ok_or("偽guardの数値定数がない")?,
+                ]
+            }));
+        }
+        if let Some(comparison) = value
+            .comparison
+            .as_ref()
+            .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
+        {
+            return Ok(affine::binary(
+                BinOp::Sub,
+                Some(&comparison.left),
+                Some(&comparison.right),
+                &env.control,
+            )?
+            .map(|form| vec![form]));
+        }
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(body) => guard_forms(env, *body, vars, base, reading),
+            ExprKind::Let { name, value, body } => {
+                let value = env.scoped_ast(*value, vars, base, reading)?;
+                if value.condition_failed || value.condition_pending {
+                    return Ok(None);
+                }
+                let mut vars = vars.clone();
+                vars.insert(name.name.clone(), value);
+                guard_forms(env, *body, &vars, base, reading)
+            }
+            ExprKind::Binary {
+                op: BinOp::And,
+                lhs,
+                rhs,
+            } => {
+                let left = guard_forms(env, *lhs, vars, base, reading)?;
+                let right = guard_forms(env, *rhs, vars, base, reading)?;
+                Ok(match (left, right) {
+                    (Some(mut left), Some(right)) => {
+                        left.extend(right);
+                        Some(left)
+                    }
+                    _ => None,
+                })
+            }
+            _ => Ok(None),
+        }
+    })
+}
+
 #[derive(Clone, Copy)]
 enum Axes<'a> { Parameters(&'a [Parameter]), State(&'a [Fact]) }
 impl Axes<'_> {

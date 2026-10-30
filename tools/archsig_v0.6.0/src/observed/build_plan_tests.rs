@@ -1274,57 +1274,59 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
 
 #[test]
 fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_object() {
-    let inputs = fixture::inputs(
-        true,
-        false,
-        "law required guarded(c:Part,n:Z) when n=c.quantity:n=1;",
-    );
-    let requests = resolve_native_for_test(
-        inputs.law(),
-        inputs.archmap(),
-        &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
-    )
-    .unwrap();
-    let p = PreparedObserved {
-        inputs,
-        requests,
-        object: None,
-    };
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let mut g = graph(&p);
-    let plan = prepare(
-        &env,
-        &mut g,
-        p.shared_inputs(),
-        &p.requests().requests()[0],
-        &mut quiet(),
-    )
-    .unwrap();
-    let answer = crate::observed::build_result::retain_plan(
-        &env,
-        &mut g,
-        plan,
-        &p.requests().requests()[0],
-        &mut quiet(),
-    )
-    .unwrap();
-    assert_eq!(answer.status, Decision::Undetermined);
-    assert!(answer.outputs.contains_key("object"));
-    assert!(!answer.outputs.contains_key("algebra"));
-    assert!(
-        answer
-            .reasons
-            .iter()
-            .any(|r| matches!(r.kind, ReasonKind::Missing)
-                && r.missing.iter().any(|f| f.snapshot == "v"
-                    && f.subject == "q"
-                    && f.field.as_deref() == Some("Family.Part.quantity")))
-    );
-    assert!(
-        !answer
-            .reasons
-            .iter()
-            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-    );
+    for guard in ["n=c.quantity", "n=c.quantity and n=0"] {
+        let inputs = fixture::inputs(
+            true,
+            false,
+            &format!("law required guarded(c:Part,n:Z) when {guard}:n=1;"),
+        );
+        let requests = resolve_native_for_test(
+            inputs.law(),
+            inputs.archmap(),
+            &["b=build(Selected,on=@v/root)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        let p = PreparedObserved {
+            inputs,
+            requests,
+            object: None,
+        };
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.contains_key("object"));
+        assert!(!answer.outputs.contains_key("algebra"));
+        assert!(
+            answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing)
+                    && r.missing.iter().any(|f| f.snapshot == "v"
+                        && f.subject == "q"
+                        && f.field.as_deref() == Some("Family.Part.quantity")))
+        );
+        assert!(
+            !answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+        );
+    }
 }

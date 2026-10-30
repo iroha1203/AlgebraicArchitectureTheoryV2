@@ -12574,3 +12574,80 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n=s.free:n=1;}}"
     assert_eq!(s(get(answer(&j, "n"), "status")), "established");
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn conjunctive_affine_guards_build_map_and_check_the_actual_system() {
+    for (case, guard, target, body, target_body, status, exit) in [
+        (
+            "empty",
+            "n=0 and n=1",
+            "x=0 and x=1",
+            "1=0",
+            "1=0",
+            "established",
+            0,
+        ),
+        (
+            "point",
+            "let k=n in (k=0 and m=1)",
+            "x=0 and y=1",
+            "n=m",
+            "x=y",
+            "refuted",
+            1,
+        ),
+    ] {
+        let dir = inputs(&format!("conjunctive-affine-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z,m:Z) when {guard}:{body};}}
+reading After {{{uses} law required equation(s:State,x:Z,y:Z) when {target}:{target_body};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "b=build(Before,on=@v/A)",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "c=check(Before.equation,on=$b.object,s=@v/p)",
+            ],
+        );
+        assert_eq!(run.code, exit, "{case}: {}", run.stdout);
+        assert!(run.stderr.is_empty());
+        let j = result_json(&dir, &run);
+        for id in ["b", "m", "same"] {
+            assert_eq!(
+                s(get(answer(&j, id), "status")),
+                "established",
+                "{case}/{id}"
+            );
+        }
+        assert!(has(get(answer(&j, "b"), "outputs"), "algebra"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "map"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "operation"));
+        let check = answer(&j, "c");
+        assert_eq!(s(get(check, "status")), status);
+        if exit == 0 {
+            assert!(!has(check, "counterexamples"));
+        } else {
+            let examples = arr(get(check, "counterexamples"));
+            assert!(!examples.is_empty());
+            for example in examples {
+                let data = get(value(&j, example), "data");
+                for (name, expected) in [("n", r#""0""#), ("m", r#""1""#)] {
+                    let binding = arr(get(data, "bindings"))
+                        .iter()
+                        .find(|b| s(get(b, "name")) == name)
+                        .unwrap();
+                    assert_json(value(&j, get(binding, "value")), expected);
+                }
+            }
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

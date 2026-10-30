@@ -2096,3 +2096,52 @@ fn universal_guard_counterexamples_keep_unused_scalar_and_nested_tuple_parameter
         assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
     }
 }
+
+#[test]
+fn universal_conjunctive_guards_solve_the_whole_system_and_keep_all_binders() {
+    for (guard, expected) in [
+        ("n=0 and n=1", Decision::Established),
+        ("let zero=n in (zero=0 and m=1)", Decision::Refuted),
+    ] {
+        let result = universal_private_example(
+            &format!("law required example(n:Z,m:Z,u:Q,p:(Z,(Z,Z))) when {guard}:n=m;"),
+            &["c=check(Calc.example)"],
+        );
+        assert_eq!(
+            result.answers[0].status, expected,
+            "{guard}: {:?}",
+            result.answers[0].reasons
+        );
+        let examples = result.answers[0]
+            .evidence
+            .iter()
+            .filter_map(|r| match &result.nodes[r.0].payload {
+                Some(Payload::Counterexample { bindings, .. }) => Some(bindings),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        if expected == Decision::Established {
+            assert!(examples.is_empty());
+        } else {
+            assert!(!examples.is_empty());
+            for bindings in examples {
+                assert_eq!(
+                    bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+                    ["n", "m", "u", "p"]
+                );
+                let expected = [
+                    Scalar::Z(0.into()),
+                    Scalar::Z(1.into()),
+                    Scalar::Q(0.into(), 1.into()),
+                    Scalar::Tuple(vec![
+                        Scalar::Z(0.into()),
+                        Scalar::Tuple(vec![Scalar::Z(0.into()), Scalar::Z(0.into())]),
+                    ]),
+                ];
+                for (binding, expected) in bindings.iter().zip(expected) {
+                    assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
+                }
+            }
+        }
+    }
+}

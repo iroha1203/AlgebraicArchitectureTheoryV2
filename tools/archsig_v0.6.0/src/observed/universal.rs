@@ -125,30 +125,20 @@ impl Environment<'_> {
         let Some(guard) = plan.guard else {
             return Ok(false);
         };
+        let mut forms = None;
         let guard = self
-            .universal_template_source_analysis(
+            .universal_template_with_guard(
                 graph,
                 plan,
                 self.inputs.law().exprs[guard].span,
                 bindings,
+                Some(&mut forms),
             )?
             .analysis;
         if guard.condition_failed || guard.condition_pending {
             return Ok(false);
         }
-        let Some(comparison) = guard.comparison else {
-            return Ok(false);
-        };
-        if comparison.op != BinOp::Eq || !comparison.bound_axes.is_empty() {
-            return Ok(false);
-        }
-        Ok(affine::binary(
-            BinOp::Sub,
-            Some(&comparison.left),
-            Some(&comparison.right),
-            &self.control,
-        )?
-        .is_some_and(|difference| !difference.missing_facts().is_empty()))
+        Ok(forms.is_some_and(|forms| forms.iter().any(|form| !form.missing_facts().is_empty())))
     }
     fn universal_parameter_equation(
         &self,
@@ -1486,6 +1476,16 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
+        self.universal_template_with_guard(graph, plan, span, bindings, None)
+    }
+    fn universal_template_with_guard(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        span: (usize, usize),
+        bindings: &[Binding],
+        forms: Option<&mut Option<Vec<affine::Form>>>,
+    ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
         self.with_universal_graph(
             graph,
             AnalysisContext {
@@ -1497,7 +1497,7 @@ impl Environment<'_> {
                 calls: Vec::new(),
                 iterations: Vec::new(),
             },
-            || self.universal_analyze_at(graph, span, bindings),
+            || self.universal_analyze_at(graph, span, bindings, forms),
         )
     }
     pub(in crate::observed) fn universal_source_analysis(
@@ -1520,7 +1520,7 @@ impl Environment<'_> {
                     domains,
                     self.universal_completions(template),
                 )?,
-                || self.universal_analyze_at(graph, span, bindings),
+                || self.universal_analyze_at(graph, span, bindings, None),
             )
         })
     }
@@ -1529,9 +1529,14 @@ impl Environment<'_> {
         graph: &Graph,
         span: (usize, usize),
         bindings: &[Binding],
+        forms: Option<&mut Option<Vec<affine::Form>>>,
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
         self.tick()?;
-        let analysis = self.universal_source_with_context(graph, span, bindings)?;
+        let analysis = if forms.is_some() {
+            self.universal_source_with_guard(graph, span, bindings, forms)?
+        } else {
+            self.universal_source_with_context(graph, span, bindings)?
+        };
         let mut parameters = Vec::new();
         let law = self.inputs.law();
         let declaration = law
@@ -1623,6 +1628,15 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
+        self.universal_source_with_guard(graph, span, bindings, None)
+    }
+    fn universal_source_with_guard(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+        forms: Option<&mut Option<Vec<affine::Form>>>,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
         let context = self.current_context(graph);
         let previous = self.scoped_context.replace(Some(context));
         let previous_completion = self.completion_values.replace(Vec::new());
@@ -1630,7 +1644,7 @@ impl Environment<'_> {
             if let Some(case) = context.case {
                 *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
             }
-            let mut analysis = self.analyze_source_uncached(graph, span, bindings)?;
+            let mut analysis = self.analyze_source_with_guard(graph, span, bindings, forms)?;
             // 同じslotの相関を既存族で消去できた場合だけ元bodyの値を確定する。
             // 元の読取り・欠測・Scopeは保持し、観測値は補わない。
             let plan = self
@@ -1710,13 +1724,15 @@ impl Environment<'_> {
                     self.universal_completions(template),
                 )?,
                 || {
+                    let mut guard_forms = None;
                     let guard_analysis = plan
                         .guard
                         .map(|guard| {
-                            self.universal_uncached_source(
+                            self.universal_source_with_guard(
                                 graph,
                                 self.inputs.law().exprs[guard].span,
                                 bindings,
+                                Some(&mut guard_forms),
                             )
                         })
                         .transpose()?;
@@ -1846,22 +1862,9 @@ impl Environment<'_> {
                         && !analysis.condition_failed
                         && !analysis.condition_pending
                     {
-                        match (guard_analysis.as_ref(), difference.as_ref()) {
-                            (Some(guard), Some(body)) if !guard.condition_failed && !guard.condition_pending => {
-                                if let Some(comparison) = &guard.comparison
-                                    && comparison.op == BinOp::Eq
-                                    && comparison.bound_axes.is_empty()
-                                    && let Some(guard) = affine::binary(
-                                        BinOp::Sub,
-                                        Some(&comparison.left),
-                                        Some(&comparison.right),
-                                        &self.control,
-                                    )?
-                                {
-                                    numeric_law_function::universal_on_guard(&guard, body, &self.control)?
-                                } else {
-                                    None
-                                }
+                        match (guard_forms.as_ref(), difference.as_ref()) {
+                            (Some(guard), Some(body)) => {
+                                numeric_law_function::universal_on_guards(guard, body, &self.control)?
                             }
                             _ => None,
                         }
@@ -1960,7 +1963,7 @@ impl Environment<'_> {
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
             || {
-                let mut result = self.universal_analyze_at(graph, span, original_bindings)?;
+                let mut result = self.universal_analyze_at(graph, span, original_bindings, None)?;
                 for binding in bindings
                     .iter()
                     .filter(|binding| !original_bindings.contains(binding))
