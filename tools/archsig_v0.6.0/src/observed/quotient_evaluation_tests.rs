@@ -185,3 +185,41 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
         }
     }
 }
+
+#[test]
+fn quantified_observation_requires_recorded_complete_finite_bindings() {
+    let i = check_inputs(
+        fixture::sources("", "law optional finite(s:State):forall b:Bool . b;"),
+        &mut quiet(),
+    )
+    .unwrap();
+    let Signature::Law { body, .. } = i.law().declarations["Pair.finite"].signature else {
+        panic!("law")
+    };
+    let mut nodes = vec![EvaluationNode {
+        expression: body,
+        bindings: vec![],
+        value: Some(Scalar::Bool(true)),
+        residual: None,
+        scope: Scope::default(),
+        children: vec![],
+        finite_bindings: None,
+    }];
+    assert!(
+        observation(i.law(), body, Some(0), &nodes, &mut quiet())
+            .unwrap()
+            .1
+            .is_none()
+    );
+    nodes[0].finite_bindings = Some(vec![Scalar::Bool(false), Scalar::Bool(true)]);
+    assert!(
+        observation(i.law(), body, Some(0), &nodes, &mut quiet())
+            .unwrap()
+            .1
+            .is_none()
+    );
+    nodes[0].finite_bindings = Some(vec![]);
+    assert!(
+        matches!(observation(i.law(),body,Some(0),&nodes,&mut quiet()).unwrap().1,Some(Scalar::Set { ref items,.. }) if items.is_empty())
+    );
+}

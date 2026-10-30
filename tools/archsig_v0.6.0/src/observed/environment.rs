@@ -7327,11 +7327,12 @@ impl<'a> Environment<'a> {
         let recording = self.evaluation_capture.borrow().as_ref()
             .is_some_and(|capture| !capture.stack.is_empty() || capture.selected.contains(&id));
         if !recording { return self.scoped_ast_cached(id, variables, base, reading); }
-        self.evaluation_capture.borrow_mut().as_mut().ok_or("評価出現収集がない")?.stack.push(vec![]);
+        self.evaluation_capture.borrow_mut().as_mut().ok_or("評価出現収集がない")?.stack.push(quotient_evaluation::EvaluationFrame::default());
         let result = self.scoped_ast_cached(id, variables, base, reading);
         let mut capture = self.evaluation_capture.borrow_mut();
         let capture = capture.as_mut().ok_or("評価出現収集が消えた")?;
-        let children = capture.stack.pop().ok_or("評価出現の親がない")?;
+        let frame = capture.stack.pop().ok_or("評価出現の親がない")?;
+        let children = frame.children;
         if let Ok(value) = &result {
             let residual = if let ExprKind::Binary {op:BinOp::Eq,lhs,rhs} = self.inputs.law().exprs[id].kind {
                 let ty = self.inputs.law().expr_type(lhs).ok_or("残差の元型がない")?;
@@ -7344,9 +7345,9 @@ impl<'a> Environment<'a> {
             capture.nodes.push(quotient_evaluation::EvaluationNode {
                 expression:id,
                 bindings:variables.iter().filter_map(|(name,v)|v.known_value.as_ref().map(|v|(name.clone(),v.clone()))).collect(),
-                value:value.known_value.clone(),residual,scope:value.scope.clone(),children,
+                value:value.known_value.clone(),residual,scope:value.scope.clone(),children,finite_bindings:frame.finite_bindings,
             });
-            if let Some(parent) = capture.stack.last_mut() { parent.push(index); } else { capture.roots.push(index); }
+            if let Some(parent) = capture.stack.last_mut() { parent.children.push(index); } else { capture.roots.push(index); }
         }
         result
     }
@@ -8443,6 +8444,9 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
+            if let Some(frame) = self.evaluation_capture.borrow_mut().as_mut().and_then(|capture| capture.stack.last_mut()) {
+                frame.finite_bindings = Some(items.clone());
+            }
             let mut condition_failed = input.condition_failed;
             let mut condition_pending = input.condition_pending;
             let mut support = input.support.clone();

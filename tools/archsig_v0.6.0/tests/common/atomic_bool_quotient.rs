@@ -108,6 +108,7 @@ fn compound_bool_observations_preserve_equality_values() {
         ("s:State", "forall b:Bool . b", "established"),
         ("s:State,b:Bool", "b", "established"),
         ("s:State", "(s.y=s.y) and true", "refuted"),
+        ("s:State", "if true then s.y=s.y else true", "refuted"),
         ("s:State", "forall b:Bool . (s.y=b)", "refuted"),
     ] {
         let extra = format!("view first(s:State):Bool=s.x;law optional test({params}):{body};");
@@ -401,9 +402,96 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
     }
     let path = dir.join(s(get(&first.receipt, "result")));
     let saved = std::fs::read_to_string(&path).unwrap();
-    let changed = saved.replace("refuted", "established");
-    assert_ne!(saved, changed);
-    std::fs::write(path, changed).unwrap();
-    let rejected = execute(&dir, "tampered", &asks, Some("out"));
-    assert_eq!(rejected.code, 1, "{} {}", rejected.stdout, rejected.stderr);
+    for (index, changed) in [
+        saved.replace("refuted", "established"),
+        saved.replace("false", "true"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        assert_ne!(saved, changed);
+        std::fs::write(&path, changed).unwrap();
+        let rejected = execute(&dir, &format!("tampered-{index}"), &asks, Some("out"));
+        assert_eq!(rejected.code, 1, "{} {}", rejected.stdout, rejected.stderr);
+        let rebuilt = result_json(&dir, &rejected);
+        for key in ["answers", "nodes"] {
+            assert_eq!(get(&result, key).value, get(&rebuilt, key).value);
+        }
+        assert!(!warnings(&rebuilt).is_empty());
+        assert_eq!(
+            s(get(get(&warnings(&rebuilt)[0], "details"), "argument")),
+            "--reuse"
+        );
+    }
+}
+
+#[test]
+fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
+    use archsig::observed::{
+        control::{Control, Limits, Usage},
+        evaluate::evaluate_observed_bytes,
+        result::EvaluationFailure,
+    };
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;law optional empty_family(s:State):forall b in list<Bool>[] . b;",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.empty_family)",
+        ],
+    );
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[1], "status")),
+        "established"
+    );
+    let map = node(&result, get(quotient(&result, 1), "descent"));
+    for entry in arr(get(get(map, "value"), "pairs")) {
+        let family = arr(get(node(&result, &arr(entry)[1]), "value"));
+        assert!(arr(get(&arr(&family[0])[1], "some")).is_empty());
+    }
+    let result = evaluate_observed_bytes(
+        bool_fixture::sources(
+            "",
+            "view first(s:State):Bool=s.x;law optional infinite(s:State):forall z:Z . forall w:Z . true;",
+        ),
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.infinite)",
+        ],
+        &mut Control::new(Limits::default(), |_| Usage::default()),
+    );
+    assert!(
+        matches!(result, Err(EvaluationFailure::NotImplemented { .. })),
+        "{result:?}"
+    );
+}
+
+#[test]
+fn compound_nested_finite_quantifiers_keep_every_binding_and_operand() {
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;law optional nested(s:State):forall b:Bool . forall c:Bool . (s.y,b)=(c,b);",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.nested)",
+        ],
+    );
+    let answer = &arr(get(&result, "answers"))[1];
+    assert_eq!(s(get(answer, "status")), "refuted");
+    let witness = node(&result, &arr(get(answer, "evidence"))[0]);
+    for family in arr(get(get(get(witness, "value"), "data"), "law_values")) {
+        let family = arr(get(node(&result, family), "value"));
+        let outer = arr(get(&arr(&family[0])[1], "some"));
+        assert_eq!(outer.len(), 2);
+        for b in outer {
+            let b = arr(b);
+            let inner = arr(&b[1]);
+            assert_eq!(inner.len(), 2);
+            for c in inner {
+                let c = arr(c);
+                let operands = arr(&c[1]);
+                assert_eq!(arr(&operands[0])[1].value, b[0].value);
+                assert_eq!(arr(&operands[1])[0].value, c[0].value);
+                assert_eq!(arr(&operands[1])[1].value, b[0].value);
+            }
+        }
+    }
 }

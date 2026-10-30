@@ -18,13 +18,19 @@ pub(in crate::observed) struct EvaluationNode {
     pub residual: Option<Scalar>,
     pub scope: Scope,
     pub children: Vec<usize>,
+    pub finite_bindings: Option<Vec<Scalar>>,
 }
 /// 通常評価で実際に読んだ子出現だけを、子が先になる順序で受け取る。
+#[derive(Default)]
+pub(super) struct EvaluationFrame {
+    pub children: Vec<usize>,
+    pub finite_bindings: Option<Vec<Scalar>>,
+}
 pub(super) struct EvaluationCapture {
     pub selected: Vec<usize>,
     pub nodes: Vec<EvaluationNode>,
     pub roots: Vec<usize>,
-    pub stack: Vec<Vec<usize>>,
+    pub stack: Vec<EvaluationFrame>,
 }
 pub(in crate::observed) struct LawRow {
     pub evaluations: Vec<EvaluationNode>,
@@ -153,7 +159,8 @@ fn observation(
                 let (body_type, _) = observation(law, spec.body, None, nodes, c)?;
                 let element = Type::Tuple(vec![spec.element, body_type]);
                 let mut items = vec![];
-                let mut complete = node.is_some_and(|n| n.value.is_some());
+                let mut complete =
+                    node.is_some_and(|n| n.value.is_some() && n.finite_bindings.is_some());
                 if let Some(node) = node {
                     for i in &node.children {
                         if nodes[*i].expression != spec.body {
@@ -170,6 +177,15 @@ fn observation(
                         } else {
                             complete = false;
                         }
+                    }
+                }
+                if let Some(expected) = node.and_then(|n| n.finite_bindings.as_ref()) {
+                    complete &= expected.len() == items.len();
+                    for (expected, actual) in expected.iter().zip(&items) {
+                        let Scalar::Tuple(pair) = actual else {
+                            unreachable!()
+                        };
+                        complete &= data::equal(expected, &pair[0], c)?;
                     }
                 }
                 let value = if complete {
