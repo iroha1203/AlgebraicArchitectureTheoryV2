@@ -1271,6 +1271,10 @@ pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact
 
 /// 計算済みの補完証拠を残し、未接続の具体構成を数学的未決へ読み替えない。
 pub(super) fn incomplete_construction(g: &Graph, answer: &Answer) -> Option<(Location, String)> {
+    // 確定した反証の配送は具体的な候補域・修復対象の構成を要しない。
+    if answer.status == Decision::Refuted {
+        return None;
+    }
     let node = g.get(answer.claim?).ok()?;
     let Some(Payload::Construction(value)) = &node.payload else {
         return None;
