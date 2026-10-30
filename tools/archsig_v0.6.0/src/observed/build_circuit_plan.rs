@@ -70,7 +70,7 @@ fn constant_nonzero(
     let D::PolynomialLaw(data) = &v.data else {
         return Err("circuitの成分残差が既存の環表示でない".into());
     };
-    let (_, terms) = data.polynomial().ok_or("circuitの残差に多項式がない")?;
+    let Some((_, terms)) = data.polynomial() else { return Ok(None) };
     let zero = numeric::zero(ty, c)?;
     let mut nonzero = false;
     for (coefficient, powers) in terms {
@@ -195,14 +195,15 @@ pub(super) fn closed(
             };
             let when = if never_refutes {
                 Some(false)
+            } else if let Some(value) = constant_nonzero(g, epsilon, &ty, c)? {
+                Some(value)
             } else if !parameters.is_empty() {
                 let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
                 let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
                 if !data.parameter_family(&parameters) { return Ok(None); }
                 None
             } else {
-                let Some(value) = constant_nonzero(g, epsilon, &ty, c)? else { return Ok(None) };
-                Some(value)
+                return Ok(None);
             };
             let pattern = patterns
                 .rows

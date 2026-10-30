@@ -927,82 +927,86 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
 #[test]
 fn guarded_circuit_when_keeps_the_original_application_expression() {
     use crate::canonical::Json;
-    let p = single_part("law required reflexive(c:Part,n:Z) when n=0: n=0;");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let mut g = graph(&p);
-    let plan = prepare(
-        &env,
-        &mut g,
-        p.shared_inputs(),
-        &p.requests().requests()[0],
-        &mut quiet(),
-    )
-    .unwrap();
-    let answer = crate::observed::build_result::retain_plan(
-        &env,
-        &mut g,
-        plan,
-        &p.requests().requests()[0],
-        &mut quiet(),
-    )
-    .unwrap();
-    assert_eq!(answer.status, Decision::Established);
-    let reference = |value: &Json| {
-        let Json::Obj(fields) = value else { panic!() };
-        let Json::Str(id) = &fields["node"] else {
-            panic!()
+    for (guard_text, body) in [("n=0", "n=0"), ("n=0", "n-n=0"), ("true", "n-n=0")] {
+        let p = single_part(&format!(
+            "law required reflexive(c:Part,n:Z) when {guard_text}: {body};"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        let reference = |value: &Json| {
+            let Json::Obj(fields) = value else { panic!() };
+            let Json::Str(id) = &fields["node"] else {
+                panic!()
+            };
+            NodeRef(id.strip_prefix('n').unwrap().parse().unwrap())
         };
-        NodeRef(id.strip_prefix('n').unwrap().parse().unwrap())
-    };
-    let wire = |r: NodeRef| {
-        let Some(Payload::Construction(value)) = &g.get(r).unwrap().payload else {
-            panic!()
+        let wire = |r: NodeRef| {
+            let Some(Payload::Construction(value)) = &g.get(r).unwrap().payload else {
+                panic!()
+            };
+            let value = value.wire();
+            let Json::Obj(fields) = &value else { panic!() };
+            fields.clone()
         };
-        let value = value.wire();
-        let Json::Obj(fields) = &value else { panic!() };
-        fields.clone()
-    };
-    let mut cases = 0;
-    for node in &g.nodes {
-        if node.ty != NodeType::Construction(T::CircuitCase) {
-            continue;
+        let mut cases = 0;
+        for node in &g.nodes {
+            if node.ty != NodeType::Construction(T::CircuitCase) {
+                continue;
+            }
+            cases += 1;
+            let Some(Payload::Construction(value)) = &node.payload else {
+                panic!()
+            };
+            let value = value.wire();
+            let Json::Obj(case) = &value else { panic!() };
+            let when = wire(reference(&case["when"]));
+            assert_eq!(when["operation"], Json::str("and"));
+            assert_eq!(
+                when["parameters"],
+                Json::Arr(vec![Json::obj([
+                    ("name", Json::str("n")),
+                    ("type", Json::str("Z"))
+                ])])
+            );
+            let Json::Arr(operands) = &when["operands"] else {
+                panic!()
+            };
+            assert_eq!(operands.len(), 2);
+            let guard = wire(reference(&operands[0]));
+            assert_eq!(guard["kind"], Json::str("source"));
+            let Json::Obj(location) = &guard["location"] else {
+                panic!()
+            };
+            let Json::Arr(span) = &location["span"] else {
+                panic!()
+            };
+            let (Json::Nat(start), Json::Nat(end)) = (&span[0], &span[1]) else {
+                panic!()
+            };
+            assert_eq!(
+                &p.shared_inputs().sources().law().bytes()[*start as usize..*end as usize],
+                guard_text.as_bytes()
+            );
+            let negation = wire(reference(&operands[1]));
+            assert_eq!(negation["operation"], Json::str("not"));
         }
-        cases += 1;
-        let Some(Payload::Construction(value)) = &node.payload else {
-            panic!()
-        };
-        let value = value.wire();
-        let Json::Obj(case) = &value else { panic!() };
-        let when = wire(reference(&case["when"]));
-        assert_eq!(when["operation"], Json::str("and"));
-        assert_eq!(
-            when["parameters"],
-            Json::Arr(vec![Json::obj([
-                ("name", Json::str("n")),
-                ("type", Json::str("Z"))
-            ])])
-        );
-        let Json::Arr(operands) = &when["operands"] else {
-            panic!()
-        };
-        assert_eq!(operands.len(), 2);
-        let guard = wire(reference(&operands[0]));
-        assert_eq!(guard["kind"], Json::str("source"));
-        let Json::Obj(location) = &guard["location"] else {
-            panic!()
-        };
-        let Json::Arr(span) = &location["span"] else {
-            panic!()
-        };
-        let (Json::Nat(start), Json::Nat(end)) = (&span[0], &span[1]) else {
-            panic!()
-        };
-        assert_eq!(
-            &p.shared_inputs().sources().law().bytes()[*start as usize..*end as usize],
-            b"n=0"
-        );
-        let negation = wire(reference(&operands[1]));
-        assert_eq!(negation["operation"], Json::str("not"));
+        assert!(cases > 0);
     }
-    assert!(cases > 0);
 }
