@@ -135,10 +135,10 @@ pub(super) fn constraints(
             }
         }
         (Shape::Operation(a), Shape::Operation(b)) => {
-            if mode == "relation" {
-                return Err(ResolveFailure::NotApplicable { request: request.id.clone(), kind: "compare".into(), architecture_environment: false });
+            if mode == "relation" && (a.reading != a.to_reading || b.reading != b.to_reading) {
+                return Err(error(&request.id, "to", "relation comparison requires one reading"));
             }
-            if mode == "action"
+            if matches!(mode, "action" | "relation")
                 && (a.source != b.source
                     || a.target != b.target
                     || a.reading != b.reading

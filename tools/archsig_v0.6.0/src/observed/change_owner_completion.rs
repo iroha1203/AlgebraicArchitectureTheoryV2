@@ -105,7 +105,7 @@ pub(super) fn compute(
     let mut counts = vec![];
     let mut arguments = vec![expression, solutions];
     let mut common: Option<change_search::Search> = None;
-    let mut common_states = !value_fields.is_empty();
+    let mut common_states = architecture.complete && !value_fields.is_empty();
     for value_ in enumeration.values {
         c.checkpoint(Checkpoint::Completion)?;
         let values = if fields.len() == 1 {
@@ -137,31 +137,29 @@ pub(super) fn compute(
             .candidates
             .as_ref()
             .ok_or("owner補完に有限候補表がない")?;
-        if !value_fields.is_empty() {
-            let additional = search
-                .missing
+        let additional = search
+            .missing
+            .iter()
+            .cloned()
+            .chain(
+                candidates
+                    .rows
+                    .iter()
+                    .flat_map(|row| row.update.missing.iter().cloned()),
+            )
+            .filter(|fact| !fields.contains(fact))
+            .collect::<BTreeSet<_>>();
+        if !additional.is_empty() {
+            let expanded = fields
                 .iter()
                 .cloned()
-                .chain(
-                    candidates
-                        .rows
-                        .iter()
-                        .flat_map(|row| row.update.missing.iter().cloned()),
-                )
-                .filter(|fact| !fields.contains(fact))
-                .collect::<BTreeSet<_>>();
-            if !additional.is_empty() {
-                let expanded = fields
-                    .iter()
-                    .cloned()
-                    .chain(additional)
-                    .collect::<BTreeSet<_>>()
-                    .into_iter()
-                    .collect::<Vec<_>>();
-                return stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-                    compute(env, g, architecture, base, request, c, &expanded)
-                });
-            }
+                .chain(additional)
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            return stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                compute(env, g, architecture, base, request, c, &expanded)
+            });
         }
         if !search.complete
             || !candidates.complete
@@ -344,22 +342,8 @@ pub(super) fn compute(
                     span: declaration.span,
                 }),
             }]
-        } else if !value_fields.is_empty() {
-            vec![reason.clone()]
         } else {
-            let mut reasons = vec![Reason {
-                kind: ReasonKind::Internal("repair concrete construction (not implemented)".into()),
-                request: request.id.clone(),
-                dependencies: vec![certificate],
-                missing: vec![],
-                location: Some(Location::Law {
-                    span: declaration.span,
-                }),
-            }];
-            if unique_status == Decision::Undetermined {
-                reasons.push(reason.clone());
-            }
-            reasons
+            vec![reason.clone()]
         };
         b.parts[claim.0 - base].reasons = reasons.clone();
         b.parts[claim.0 - base]
@@ -369,7 +353,7 @@ pub(super) fn compute(
             .reasons = reasons.clone();
         outputs.insert("proposition".into(), claim);
         (claim, status, reasons)
-    } else if !value_fields.is_empty() && existence_status != Decision::Refuted {
+    } else if existence_status != Decision::Refuted {
         // The existence judgment is complete; concrete state values still depend on missing input.
         let label = value(&mut b, &Scalar::Text("solution_set".into()))?;
         let claim = b.proposition(

@@ -391,9 +391,6 @@ fn compute(
                     else {
                         return Err(unsupported("局所Lawのparameter域が未確定"));
                     };
-                    if values.is_empty() {
-                        return Err(unsupported("空のinstance族の局所系は未実装"));
-                    }
                     universal.push((p, Some(values.clone())));
                     values
                 };

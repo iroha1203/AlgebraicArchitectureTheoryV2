@@ -1302,38 +1302,3 @@ pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact
         }
         Ok(result)
 }
-
-/// 計算済みの補完証拠を残し、未接続の具体構成を数学的未決へ読み替えない。
-pub(super) fn incomplete_construction(g: &Graph, answer: &Answer) -> Option<(Location, String)> {
-    // 確定した反証の配送は具体的な候補域・修復対象の構成を要しない。
-    if answer.status == Decision::Refuted {
-        return None;
-    }
-    let node = g.get(answer.claim?).ok()?;
-    let Some(Payload::Construction(value)) = &node.payload else {
-        return None;
-    };
-    let D::Change(data) = &value.data else {
-        return None;
-    };
-    if !data
-        .source
-        .parts
-        .iter()
-        .any(|part| part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([]))
-    {
-        return None;
-    }
-    if data.source.architecture.complete
-        && answer.reasons.iter().any(|reason| matches!(reason.kind, ReasonKind::Missing)) {
-        return None;
-    }
-    Some((
-        Location::Law {
-            span: value.witness.inputs().law().declarations
-                [value.witness.request().declaration()?]
-            .span,
-        },
-        "有限owner補完の存在・一意性は検査済み。共通の候補域・具体修復の公開構成は未実装".into(),
-    ))
-}

@@ -851,6 +851,8 @@ solveのoutputs.propositionは補完全体での存在判断を保持する。�
 SolutionSetの値が欠測に依存する場合は、回答全体とsolution_setのconstructibleをundeterminedとし、
 元slotのmissing_observationを返す。確定した存在命題を未決へ戻さず、表示用の補完値を
 通常の状態値やAssignmentにしない。全補完で空解なら通常のrefutedとして返す。
+有限owner補完で対象族が変わる場合も、追加で読む有限値slotを同じ補完表へ含める。
+補完によって具体的な候補域や修復対象が変わることは不足情報として保持し、実行失敗にしない。
 repairも存在・一意性の確定と具体的な更新値の確定を区別し、後者が欠測に依存すれば
 Repair/objectを生成せず不足位置を保持する。neededと後続の未生成値依存はその元理由を使う。
 

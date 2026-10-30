@@ -56,15 +56,15 @@ fn completed_with_structure_only_owner(structure_only: bool) -> ObservedEvaluati
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
         &mut quiet(),
     )
-    .unwrap_err();
-    let crate::observed::EvaluationFailure::NotImplemented {
-        partial, feature, ..
-    } = result
-    else {
-        panic!("段階2の構成は未実装")
-    };
-    assert!(feature.contains("存在・一意性は検査済み"), "{feature}");
-    *partial
+    .unwrap();
+    assert_eq!(result.status(), "partial");
+    assert!(
+        !result
+            .issues
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+    );
+    result
 }
 fn rebuild(result: &ObservedEvaluation, nodes: &[Node]) -> Result<Graph, ValidationFailure> {
     let mut c = quiet();
@@ -160,9 +160,8 @@ fn finite_owner_completion_recheck_regenerates_missing_duplicate_assignment_and_
 }
 
 #[test]
-fn finite_owner_completion_later_validation_failure_revokes_delivery_qualification() {
+fn finite_owner_partial_result_keeps_later_validation_failure_internal() {
     let normal = completed();
-    assert!(normal.verified_incomplete().is_some());
     let prepared = crate::observed::prepare_observed(
         normal.prepared.inputs().sources().clone(),
         &[
@@ -177,12 +176,9 @@ fn finite_owner_completion_later_validation_failure_revokes_delivery_qualificati
         &mut quiet(),
         "fail",
     )
-    .unwrap_err();
-    let crate::observed::EvaluationFailure::NotImplemented { partial, .. } = failed else {
-        panic!("先の構成未完成を保持")
-    };
+    .unwrap();
+    let partial = failed;
     assert_eq!(partial.status(), "error");
-    assert!(partial.verified_incomplete().is_none());
     assert!(!partial.answers[0].outputs.is_empty());
     assert!(partial.answers[1].outputs.is_empty());
 }
@@ -486,11 +482,10 @@ fn finite_owner_completion_stop_before_owner_agreement_publishes_no_repair() {
             .iter()
             .any(|n| n.ty == NodeType::Construction(T::Repair))
     );
-    assert!(result.verified_incomplete().is_none());
 }
 
 #[test]
-fn finite_owner_completion_qualified_delivery_keeps_io_and_signal_precedence() {
+fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
     use crate::run::{CheckArgs, Io, RunArgs, Signals, run_requests};
     use std::{io, path::Path, time::Instant};
     struct RefuseIo(usize);
@@ -527,8 +522,7 @@ fn finite_owner_completion_qualified_delivery_keeps_io_and_signal_precedence() {
             .count(),
         2
     );
-    assert_eq!(baseline.status(), "error");
-    assert!(baseline.verified_incomplete().is_some());
+    assert_eq!(baseline.status(), "partial");
     assert!(!baseline.answers[0].outputs.contains_key("repair"));
     assert!(!baseline.answers[0].outputs.contains_key("object"));
     let source = baseline.prepared.inputs().sources();
@@ -566,7 +560,7 @@ fn finite_owner_completion_qualified_delivery_keeps_io_and_signal_precedence() {
     );
     assert!(
         io.0 > 0,
-        "qualified mathematical result reaches explicit save"
+        "partial mathematical result reaches explicit save"
     );
     assert_eq!(result.exit_code, 74);
     assert!(result.result.is_none());

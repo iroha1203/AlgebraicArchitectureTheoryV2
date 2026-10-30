@@ -784,7 +784,8 @@ pub(super) fn evaluate(
         .map_err(|e| ValidationFailure::Internal(format!("比較kind: {e:?}")))?
         .to_owned();
     if kind == "relation" {
-        let (Scalar::Path(a),Scalar::Path(b))=(graph.scalar(left)?,graph.scalar(right)?) else { return Err("relationの元Pathがない".into()); };
+        let a = relations::operand_path(graph, left)?;
+        let b = relations::operand_path(graph, right)?;
         if a.reading==b.reading && a.object()==b.object() && a.target()==b.target() {
             return relations::evaluate(prepared,env,graph,r,left,right,control);
         }
@@ -880,7 +881,7 @@ pub(super) fn evaluate(
     } else {
         let a = super::public_compose::op(graph, left)?;
         let b = super::public_compose::op(graph, right)?;
-        if kind == "action" && (a.source() != b.source() || a.target() != b.target()) {
+        if matches!(kind.as_str(), "action" | "relation") && (a.source() != b.source() || a.target() != b.target()) {
             let (asource, atarget, _, _) = super::public_compose::components(graph, left)?;
             let (bsource, btarget, _, _) = super::public_compose::components(graph, right)?;
             incompatible = Some(if a.source() != b.source() {

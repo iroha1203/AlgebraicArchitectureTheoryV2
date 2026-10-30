@@ -479,3 +479,71 @@ fn composition_claims_and_failure_reasons_use_the_closed_construction_name() {
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn operation_relation_compares_original_words_and_applies_declared_rewrites() {
+    for declared in [false, true] {
+        let dir = inputs(&format!("operation-relation-{declared}"), A);
+        let law = if declared {
+            std::str::from_utf8(L).unwrap().replace("view holdings", "relation aliases(m:Migration,n:Migration) when m.from=n.from and m.to=n.to:path(m)=path(n);view holdings")
+        } else {
+            std::str::from_utf8(L).unwrap().to_owned()
+        };
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let r = asks(
+            &dir,
+            &[
+                M,
+                N,
+                "mm=map(Reservations.Migration,on=@v/mm,reading=Reservations)",
+                C,
+                "alias=compose($mm.operation,then=$n.operation)",
+                "self=compare($m.operation,to=$m.operation,kind=relation)",
+                "same=compare($c.operation,to=$alias.operation,kind=relation)",
+            ],
+        );
+        let j = saved(&dir, &r, "complete", if declared { 0 } else { 1 });
+        assert_eq!(s(get(answer(&j, "self"), "status")), "established");
+        assert_eq!(
+            s(get(answer(&j, "same"), "status")),
+            if declared { "established" } else { "refuted" }
+        );
+        let images = |id| {
+            get(
+                value(
+                    &j,
+                    get(
+                        value(&j, get(get(answer(&j, id), "outputs"), "operation")),
+                        "action",
+                    ),
+                ),
+                "images",
+            )
+        };
+        assert_eq!(images("c"), images("alias"));
+        assert_ne!(
+            get(
+                value(&j, get(get(answer(&j, "c"), "outputs"), "operation")),
+                "word"
+            ),
+            get(
+                value(&j, get(get(answer(&j, "alias"), "outputs"), "operation")),
+                "word"
+            )
+        );
+    }
+    let dir = inputs("operation-relation-endpoints", A);
+    let r = asks(
+        &dir,
+        &[
+            M,
+            N,
+            "different=compare($m.operation,to=$n.operation,kind=relation)",
+        ],
+    );
+    let j = saved(&dir, &r, "complete", 1);
+    let a = answer(&j, "different");
+    assert_eq!(s(get(a, "status")), "refuted");
+    assert!(!has(get(a, "outputs"), "comparison"));
+    assert!(format!("{:?}", get(a, "reasons")).contains("condition_failed"));
+}
