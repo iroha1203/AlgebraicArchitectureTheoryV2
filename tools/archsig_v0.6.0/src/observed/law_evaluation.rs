@@ -21,6 +21,8 @@ pub(super) struct Origin {
     pub guard: Option<usize>,
     pub ready: bool,
     pub body_allowed: bool,
+    /// 元の全引数の生差が零であることを、再検査可能な方程式表示が保持する。
+    pub zero_body: bool,
     pub outside: bool,
     pub scope: Scope,
 }

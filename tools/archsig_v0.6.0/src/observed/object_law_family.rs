@@ -418,12 +418,11 @@ pub(in crate::observed) fn constant_numeric_family(
     else { return Ok(None) };
     let symbolic_constant = super::super::object_equation_presentation::parameter_constant_source_value(g.prepared().inputs(), e.instance(), c)?;
     if symbolic_constant.is_none() {
-    // この共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
+    // 本文の共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
     // 観測時の定数へ畳んで記号的な差と取り違えない。
     let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
     let mut pending = vec![(*body, names.clone())];
     let mut helpers = std::collections::BTreeSet::new();
-    if let Some(guard) = guard { pending.push((*guard, names)); }
     while let Some((id, names)) = pending.pop() {
         tick(c)?;
         match &law.exprs[id].kind {
@@ -478,13 +477,10 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let Some(root) = g.answers.first().and_then(|a| a.outputs.get("evaluation")).copied() else { return Ok(None) };
     let node = g.nodes.get(root.0).ok_or_else(|| inconsistent("元数値族の評価がない"))?;
-    if (symbolic_constant.is_none() && node.support.iter().any(|f| f.field.is_some()))
-        || node.reasons.iter().any(|reason| symbolic_constant.is_none()
-            || !matches!(reason.kind, super::super::result::ReasonKind::Missing)) { return Ok(None) }
-    let Some(Payload::Evaluation { parts, applicability: "applicable", .. }) = &node.payload else { return Ok(None) };
+    let Some(Payload::Evaluation { parts, applicability: "applicable" | "undetermined", .. }) = &node.payload else { return Ok(None) };
     let part = match (guard, parts.as_slice()) {
         (None, [body]) => body,
-        (Some(_), [guard, body]) if matches!(guard.value.and_then(|value| g.nodes.get(value.0)).and_then(|node| node.payload.as_ref()), Some(Payload::Scalar(Scalar::Bool(true)))) => body,
+        (Some(_), [_, body]) => body,
         _ => return Ok(None),
     };
     let Some(residual) = part.residual else { return Ok(None) };
@@ -495,6 +491,30 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
     if !matches!(value.ty(), Type::Z | Type::Q) { return Ok(None) }
+    let zero_body = guard.is_some()
+        && matches!(value, Scalar::Z(n) | Scalar::Q(n, _) if n == &num_bigint::BigInt::from(0));
+    // 全域で零と実評価した本文ではguardの真偽に依存しない。guardの支持・
+    // 欠測は元評価へ残し、未観測guardを真や偽へ補わない。
+    if (symbolic_constant.is_none() && !zero_body && node.support.iter().any(|f| f.field.is_some()))
+        || node.reasons.iter().any(|reason| {
+            (symbolic_constant.is_none() && !zero_body)
+                || !matches!(reason.kind, super::super::result::ReasonKind::Missing)
+        })
+    {
+        return Ok(None);
+    }
+    if let (Some(_), [guard, _]) = (guard, parts.as_slice()) {
+        let guard_true = matches!(
+            guard
+                .value
+                .and_then(|value| g.nodes.get(value.0))
+                .and_then(|node| node.payload.as_ref()),
+            Some(Payload::Scalar(Scalar::Bool(true)))
+        );
+        if !guard_true && !zero_body {
+            return Ok(None);
+        }
+    }
     if symbolic_constant.as_ref().is_some_and(|constant| constant != value) {
         return Err(inconsistent("元記号差と数値族の実残差が違う"));
     }

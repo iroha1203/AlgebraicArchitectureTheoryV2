@@ -33,8 +33,8 @@ impl Environment<'_> {
         span: (usize, usize),
     ) -> Result<bool, ValidationFailure> {
         // 全域関数のSourceは通常のguard評価より先に構成される。
-        // 真であることを入力式から全parameter上で再計算できる場合に限り、
-        // その本文を構成できる。固定Architectureの読取りはこの全域計算の
+        // guardが全域で真、または元評価から本文の差が全域で零と検証された
+        // 場合に、その本文を構成できる。後者はguardの真偽を確定しない。固定Architectureの読取りはこの全域計算の
         // 入力であり、未観測値や一つのparameter代入を真として補完しない。
         if let Some(inputs) = frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
             && let Some(guard) = inputs.origin.guard
@@ -50,7 +50,9 @@ impl Environment<'_> {
                     && plan.parameters.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                 {
                     let guard = self.universal_template_source_analysis(graph, &plan, guard_span, &inputs.bindings)?;
-                    if guard.analysis.known_value == Some(Scalar::Bool(true)) {
+                    if guard.analysis.known_value == Some(Scalar::Bool(true))
+                        || inputs.origin.zero_body
+                    {
                         return Ok(true);
                     }
                 }

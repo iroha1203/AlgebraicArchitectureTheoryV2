@@ -22,7 +22,7 @@ pub(in crate::observed) struct Pending {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Reading {
-    application: Option<bool>,
+    condition: Option<affine::Form>,
     residual: Option<affine::Form>,
     facts: Vec<Fact>,
     pending: Option<Pending>,
@@ -44,6 +44,7 @@ pub(in crate::observed) struct Family {
     target: Reading,
     basis: Vec<TermArgument>,
     systems: Option<(System, System)>,
+    condition_systems: Option<(System, System)>,
     pub applicable: Option<bool>,
     pub equivalent: Option<bool>,
     pub implies: Option<bool>,
@@ -85,21 +86,44 @@ fn read(
     let crate::law::model::Signature::Law { body, guard, .. } = &declaration.signature else {
         return Err(bad("数値Lawを選択する"));
     };
+    let zero_type =
+        match crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? {
+            Some(id) => match inputs.law().exprs[id].kind {
+                crate::law::ast::ExprKind::Binary { lhs, .. } => inputs
+                    .law()
+                    .expr_type(lhs)
+                    .cloned()
+                    .filter(|t| matches!(t, Type::Z | Type::Q))
+                    .unwrap_or(Type::Z),
+                _ => Type::Z,
+            },
+            None => Type::Z,
+        };
     let outside = |c: &Control, facts: Vec<Fact>| -> Result<Reading, ConstructionFailure> {
+        let zero = numeric::zero(&zero_type, c).map_err(invalid)?;
         Ok(Reading {
-            application: Some(false),
-            residual: Some(
-                affine::constant(&Scalar::Z(0.into()), c)
+            condition: Some(
+                affine::constant(&Scalar::Z(1.into()), c)
                     .map_err(invalid)?
-                    .ok_or_else(|| bad("零の数値式がない"))?,
+                    .ok_or_else(|| bad("偽の適用式がない"))?,
             ),
+            residual: affine::constant(&zero, c).map_err(invalid)?,
             facts,
             pending: None,
         })
     };
+    let mut condition = affine::constant(&Scalar::Z(0.into()), c)
+        .map_err(invalid)?
+        .ok_or_else(|| bad("真の適用式がない"))?;
     let mut facts = vec![];
+    let unknown = |span, missing, facts, condition| Reading {
+        condition,
+        residual: None,
+        facts,
+        pending: Some(pending(span, missing)),
+    };
     if let Some(guard) = guard {
-        match source::expression(
+        let value = match source::expression(
             inputs,
             readings,
             (position, Some(*guard)),
@@ -110,52 +134,64 @@ fn read(
         )? {
             Source::Outside => return outside(c, facts),
             Source::Unknown => {
-                return Ok(Reading {
-                    application: None,
-                    residual: None,
+                return Ok(unknown(
+                    inputs.law().exprs[*guard].span,
+                    vec![],
                     facts,
-                    pending: Some(pending(inputs.law().exprs[*guard].span, vec![])),
-                });
+                    None,
+                ));
             }
-            Source::Value(value) => {
-                facts.extend(value.support.iter().cloned());
-                if value.condition_failed || value.condition_pending {
-                    return Ok(Reading {
-                        application: None,
-                        residual: None,
-                        facts,
-                        pending: Some(pending(inputs.law().exprs[*guard].span, vec![])),
-                    });
-                }
-                match value.known_value {
-                    Some(Scalar::Bool(false)) => return outside(c, facts),
-                    Some(Scalar::Bool(true)) => {}
-                    _ => {
-                        let mut missing = match &value.comparison {
-                            Some(comparison) => match affine::binary(
-                                BinOp::Sub,
-                                Some(&comparison.left),
-                                Some(&comparison.right),
-                                c,
-                            )
-                            .map_err(invalid)?
-                            {
-                                Some(difference) => difference.missing_facts(),
-                                None => vec![],
-                            },
-                            None => vec![],
-                        };
-                        missing.sort();
-                        missing.dedup();
-
-                        return Ok(Reading {
-                            application: None,
-                            residual: None,
-                            facts,
-                            pending: Some(pending(inputs.law().exprs[*guard].span, missing)),
-                        });
+            Source::Value(value) => value,
+        };
+        facts.extend(value.support.iter().cloned());
+        if value.condition_failed || value.condition_pending {
+            return Ok(unknown(
+                inputs.law().exprs[*guard].span,
+                vec![],
+                facts,
+                None,
+            ));
+        }
+        match value.known_value {
+            Some(Scalar::Bool(false)) => return outside(c, facts),
+            Some(Scalar::Bool(true)) => {}
+            _ => {
+                let difference = match &value.comparison {
+                    Some(comparison)
+                        if comparison.op == BinOp::Eq && comparison.bound_axes.is_empty() =>
+                    {
+                        affine::binary(
+                            BinOp::Sub,
+                            Some(&comparison.left),
+                            Some(&comparison.right),
+                            c,
+                        )
+                        .map_err(invalid)?
                     }
+                    _ => None,
+                };
+                let mut missing = difference
+                    .as_ref()
+                    .map_or_else(Vec::new, |f| f.missing_facts());
+                missing.sort();
+                missing.dedup();
+                let Some(form) = difference else {
+                    return Ok(unknown(
+                        inputs.law().exprs[*guard].span,
+                        missing,
+                        facts,
+                        None,
+                    ));
+                };
+                if form.numeric_parameter_terms(c).map_err(invalid)?.is_none() {
+                    return Ok(unknown(
+                        inputs.law().exprs[*guard].span,
+                        missing,
+                        facts,
+                        None,
+                    ));
                 }
+                condition = form;
             }
         }
     }
@@ -169,33 +205,28 @@ fn read(
         c,
     )? {
         Source::Outside => return outside(c, facts),
-        Source::Unknown => {
-            return Ok(Reading {
-                application: None,
-                residual: None,
-                facts,
-                pending: Some(pending(inputs.law().exprs[*body].span, vec![])),
-            });
-        }
+        Source::Unknown => return Ok(unknown(inputs.law().exprs[*body].span, vec![], facts, None)),
         Source::Value(value) => *value,
     };
     facts.extend(value.support);
     facts.sort();
     facts.dedup();
-    let unknown = |missing| Reading {
-        application: Some(true),
-        residual: None,
-        facts: facts.clone(),
-        pending: Some(pending(inputs.law().exprs[*body].span, missing)),
+    let incomplete = |missing| {
+        unknown(
+            inputs.law().exprs[*body].span,
+            missing,
+            facts.clone(),
+            Some(condition.clone()),
+        )
     };
     if value.condition_failed || value.condition_pending {
-        return Ok(unknown(vec![]));
+        return Ok(incomplete(vec![]));
     }
     let Some(comparison) = value.comparison else {
-        return Ok(unknown(vec![]));
+        return Ok(incomplete(vec![]));
     };
     if comparison.op != BinOp::Eq || !comparison.bound_axes.is_empty() {
-        return Ok(unknown(vec![]));
+        return Ok(incomplete(vec![]));
     }
     let Some(residual) = affine::binary(
         BinOp::Sub,
@@ -205,22 +236,32 @@ fn read(
     )
     .map_err(invalid)?
     else {
-        return Ok(unknown(vec![]));
+        return Ok(incomplete(vec![]));
     };
     if residual
         .numeric_parameter_terms(c)
         .map_err(invalid)?
         .is_none()
     {
-        return Ok(unknown(residual.missing_facts()));
+        return Ok(incomplete(residual.missing_facts()));
+    }
+    // 非定数guardのindicatorを線形式へ置き換えない。全域で零の本文だけは
+    // guardの真偽を保ったまま、条件付き残差も正確に零と決められる。
+    if condition.value(c).map_err(invalid)?.is_none()
+        && residual.value(c).map_err(invalid)?.is_none_or(
+            |v| !matches!(&v,Scalar::Z(n)|Scalar::Q(n,_) if n==&num_bigint::BigInt::from(0)),
+        )
+    {
+        return Ok(incomplete(vec![]));
     }
     Ok(Reading {
-        application: Some(true),
+        condition: Some(condition),
         residual: Some(residual),
         facts,
         pending: None,
     })
 }
+
 fn rational(value: &Scalar) -> Result<Scalar, ValidationFailure> {
     match value {
         Scalar::Z(n) => Ok(Scalar::Q(n.clone(), 1.into())),
@@ -436,7 +477,7 @@ pub(in crate::observed) fn compare(
     let a = read(inputs, readings[0], positions[0], names, false, &[], c)?;
     let z = read(inputs, readings[1], positions[1], names, true, &[], c)?;
     let mut result = Family {
-        applicable: a.application.zip(z.application).map(|(a, z)| a == z),
+        applicable: None,
         equivalent: None,
         implies: None,
         example: None,
@@ -446,69 +487,85 @@ pub(in crate::observed) fn compare(
         target: z,
         basis: vec![],
         systems: None,
+        condition_systems: None,
     };
-    let mut point = None;
-    if result.applicable.is_some()
-        && let (Some(a), Some(z)) = (&result.source.residual, &result.target.residual)
-    {
-        let at = a
+    let forms = [
+        result.source.condition.as_ref(),
+        result.target.condition.as_ref(),
+        result.source.residual.as_ref(),
+        result.target.residual.as_ref(),
+    ];
+    let mut rational_ground = false;
+    let mut keys = BTreeSet::new();
+    for form in forms.into_iter().flatten() {
+        let (constant, terms) = form
             .numeric_parameter_terms(c)
             .map_err(invalid)?
-            .ok_or_else(|| bad("元Lawの係数がない"))?;
-        let zt = z
-            .numeric_parameter_terms(c)
-            .map_err(invalid)?
-            .ok_or_else(|| bad("先Lawの係数がない"))?;
-        result.basis =
-            at.1.iter()
-                .chain(&zt.1)
-                .map(|(k, _)| k.clone())
-                .collect::<BTreeSet<_>>()
-                .into_iter()
-                .collect();
-        let ground = result
-            .basis
-            .first()
-            .map(|k| k.kind.ty())
-            .unwrap_or_else(|| {
-                if at.0.ty() == Type::Q || zt.0.ty() == Type::Q {
-                    Type::Q
-                } else {
-                    Type::Z
-                }
-            });
-        if result.basis.iter().any(|k| k.kind.ty() != ground) {
-            result.pending = Some(pending(
-                inputs.law().declarations[&readings[0].instances()[positions[0].instance]
-                    .declaration()
-                    .name]
-                    .span,
-                vec![],
-            ));
-            return Ok(result);
+            .ok_or_else(|| bad("数値Lawの係数がない"))?;
+        rational_ground |= constant.ty() == Type::Q;
+        keys.extend(terms.into_iter().map(|(k, _)| k));
+    }
+    result.basis = keys.into_iter().collect();
+    let ground = result
+        .basis
+        .first()
+        .map(|k| k.kind.ty())
+        .unwrap_or(if rational_ground { Type::Q } else { Type::Z });
+    if result.basis.iter().any(|k| k.kind.ty() != ground) {
+        result.pending = Some(pending(
+            inputs.law().declarations[&readings[0].instances()[positions[0].instance]
+                .declaration()
+                .name]
+                .span,
+            vec![],
+        ));
+        return Ok(result);
+    }
+    let mut points = vec![];
+    if let (Some(a), Some(z)) = (&result.source.condition, &result.target.condition) {
+        if let (Some(a), Some(z)) = (a.value(c).map_err(invalid)?, z.value(c).map_err(invalid)?) {
+            let equal = (a == numeric::zero(&a.ty(), c).map_err(invalid)?)
+                == (z == numeric::zero(&z.ty(), c).map_err(invalid)?);
+            result.applicable = Some(equal);
+            if !equal {
+                points.push((
+                    true,
+                    result
+                        .basis
+                        .iter()
+                        .map(|axis| numeric::zero(&axis.kind.ty(), c))
+                        .collect::<Result<Vec<_>, _>>()
+                        .map_err(invalid)?,
+                ));
+            }
+        } else {
+            let sa = system(a, &result.basis, &ground, c).map_err(invalid)?;
+            let sz = system(z, &result.basis, &ground, c).map_err(invalid)?;
+            let point = match outside(&sa, &sz, c).map_err(invalid)? {
+                Some(p) => Some(p),
+                None => outside(&sz, &sa, c).map_err(invalid)?,
+            };
+            result.applicable = Some(point.is_none());
+            if let Some(point) = point {
+                points.push((true, point));
+            }
+            result.condition_systems = Some((sa, sz));
         }
+    }
+    if let (Some(a), Some(z)) = (&result.source.residual, &result.target.residual) {
         let sa = system(a, &result.basis, &ground, c).map_err(invalid)?;
         let sz = system(z, &result.basis, &ground, c).map_err(invalid)?;
-        // 違反の含意は「先の零集合が元の零集合に含まれる」の一方向。
-        // 含意が偽なら、その方向の点を選んで公開反例と一致させる。
         let implication_counterexample = outside(&sz, &sa, c).map_err(invalid)?;
         result.implies = Some(implication_counterexample.is_none());
-        point = match implication_counterexample {
-            Some(point) => Some(point),
+        let point = match implication_counterexample {
+            Some(p) => Some(p),
             None => outside(&sa, &sz, c).map_err(invalid)?,
         };
         result.equivalent = Some(point.is_none());
+        if let Some(point) = point {
+            points.push((false, point));
+        }
         result.systems = Some((sa, sz));
-    }
-    let mut points = point.into_iter().map(|p| (false, p)).collect::<Vec<_>>();
-    if result.applicable == Some(false) {
-        let point = result
-            .basis
-            .iter()
-            .map(|axis| numeric::zero(&axis.kind.ty(), c))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(invalid)?;
-        points.push((true, point));
     }
     for (application, point) in points {
         let row = &readings[0].instances()[positions[0].instance];
@@ -543,10 +600,20 @@ pub(in crate::observed) fn compare(
             c,
         )?;
         let (left, right) = if application {
-            (
-                Scalar::Bool(a.application.ok_or_else(|| bad("元Law反例の適用が未決"))?),
-                Scalar::Bool(z.application.ok_or_else(|| bad("先Law反例の適用が未決"))?),
-            )
+            let truth = |reading: &Reading| -> Result<Scalar, ConstructionFailure> {
+                let value = reading
+                    .condition
+                    .as_ref()
+                    .map(|f| f.value(c))
+                    .transpose()
+                    .map_err(invalid)?
+                    .flatten()
+                    .ok_or_else(|| bad("Law反例の適用が未決"))?;
+                Ok(Scalar::Bool(
+                    value == numeric::zero(&value.ty(), c).map_err(invalid)?,
+                ))
+            };
+            (truth(&a)?, truth(&z)?)
         } else {
             let left = a
                 .residual

@@ -748,3 +748,43 @@ fn required_numeric_tuple_missing_needed_rechecks_original_answers() {
         g.universal_witnesses[ordinal].caller = saved;
     }
 }
+
+#[test]
+fn numeric_guarded_zero_body_keeps_the_complete_zero_equation_family() {
+    for (ty, zero) in [("Z", "0"), ("Q", "rat(0,1)")] {
+        let p = single_part(&format!(
+            "law required reflexive(c:Part,n:{ty}) when n={zero}: n-n={zero};"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert!(
+            plan.equations.is_some(),
+            "the guarded residual is zero for every argument"
+        );
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+            .unwrap()
+            .unwrap();
+        assert_eq!(circuits.len(), 1);
+        for case in &circuits[0].cases {
+            assert_eq!(case.when, Some(false));
+        }
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        assert!(answer.outputs.contains_key("algebra"));
+    }
+}

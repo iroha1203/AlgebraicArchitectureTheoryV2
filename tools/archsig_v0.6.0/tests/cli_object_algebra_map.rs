@@ -12196,3 +12196,99 @@ reading After {{{uses} law required equation(s:State,{renamed}):{target};}}"#
         assert!(count > 0, "{case}");
     }
 }
+
+#[test]
+fn numeric_guarded_zero_map_preserves_application_functions_and_following_operation() {
+    for (case, target, status, exit) in [
+        ("same", "x=0", "established", 0),
+        ("different", "true", "refuted", 1),
+    ] {
+        let dir = inputs(&format!("numeric-guarded-zero-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z) when n=0: n-n=0;}}
+reading After {{{uses} law required equation(s:State,x:Z) when {target}: x-x=0;}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(run.code, exit, "{case}: {}", run.stdout);
+        let j = result_json(&dir, &run);
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), status);
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), exit == 0);
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        if exit == 1 {
+            let examples = arr(get(m, "counterexamples"));
+            assert!(!examples.is_empty());
+            for example in examples {
+                let data = get(value(&j, example), "data");
+                let bindings = arr(get(data, "bindings"));
+                let n = bindings.iter().find(|b| s(get(b, "name")) == "n").unwrap();
+                assert_json(value(&j, get(n, "value")), r#""1""#);
+                assert_json(value(&j, get(data, "left")), "false");
+                assert_json(value(&j, get(data, "right")), "true");
+            }
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn numeric_guarded_zero_missing_guard_keeps_the_observation_requirement_and_operation() {
+    let dir = inputs("numeric-guarded-zero-missing");
+    let archmap = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .lines()
+        .filter(|l| !l.contains("\"id\":\"p-free\""))
+        .collect::<Vec<_>>()
+        .join("\n");
+    std::fs::write(dir.join("a.json"), archmap).unwrap();
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z) when s.free=0: n-n=0;}}
+reading After {{{uses} law required equation(s:State,x:Z) when true: x-x=0;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    assert!(run.stderr.is_empty());
+    let j = result_json(&dir, &run);
+    let m = answer(&j, "m");
+    assert_eq!(s(get(m, "status")), "undetermined");
+    assert!(has(get(m, "outputs"), "operation"));
+    assert!(!has(get(m, "outputs"), "map"));
+    assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+    let missing = arr(get(m, "reasons"))
+        .iter()
+        .filter(|r| s(get(r, "code")) == "missing_observation")
+        .flat_map(|r| arr(get(r, "missing")))
+        .collect::<Vec<_>>();
+    assert!(missing.iter().any(|f| s(get(f, "snapshot")) == "v"
+        && s(get(f, "subject")) == "p"
+        && s(get(f, "field")) == "Reservations.State.free"));
+    let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+    assert!(!arr(get(plan, "requirements")).is_empty());
+    std::fs::remove_dir_all(dir).unwrap();
+}
