@@ -177,7 +177,7 @@ struct ValueAction {
     subjects: Vec<(NodeRef, NodeRef)>,
     declarations: Vec<(String, String)>,
 }
-// 全値の順逆は既存核で検査済み。ここではその作用を公開表へ接続する。
+// 型構造に現れる全参照域を検査し、無住の枝の参照も公開表へ接続する。
 fn finite_action(
     b: &mut Builder<'_>,
     inputs: &CheckedInputs,
@@ -185,86 +185,19 @@ fn finite_action(
     values: &super::value_transport::FiniteValueTransport,
     dependencies: &[NodeRef],
     c: &mut Control,
-) -> Result<ValueAction, ValidationFailure> {
-    let mut subjects = std::collections::BTreeSet::new();
-    let mut pending = values
-        .source()
-        .iter()
-        .map(|v| v.scalar())
-        .collect::<Vec<_>>();
-    while let Some(value) = pending.pop() {
-        tick(c)?;
-        match value {
-            Scalar::Subject {
-                snapshot,
-                subject,
-                entity,
-            } => {
-                subjects.insert((snapshot.clone(), subject.clone(), entity.clone()));
-            }
-            Scalar::Tuple(items)
-            | Scalar::List { items, .. }
-            | Scalar::Set { items, .. }
-            | Scalar::Data { args: items, .. } => pending.extend(items),
-            Scalar::Option {
-                value: Some(value), ..
-            } => pending.push(value),
-            Scalar::Map { pairs, .. } => pending.extend(pairs.iter().flat_map(|(a, z)| [a, z])),
-            _ => {}
-        }
-    }
+) -> Result<Option<ValueAction>, ValidationFailure> {
     let mut action = ValueAction {
         subjects: vec![],
         declarations: vec![],
     };
-    for (snapshot, subject, entity) in subjects {
-        tick(c)?;
-        let source = Scalar::Subject {
-            snapshot,
-            subject,
-            entity,
-        };
-        let image = super::value_transport::candidate_image(
-            inputs,
-            declarations,
-            values.declaration(),
-            &source,
-            c,
-        )
-        .map_err(|e| {
-            c.stop_reason()
-                .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| format!("有限view値の参照移送: {e:?}").into())
-        })?;
-        if !matches!(image, Scalar::Subject { .. }) {
-            return Err("有限view参照の像が参照でない".into());
-        }
-        let mut refs = vec![];
-        for value in [source, image] {
-            refs.push(b.push(
-                NodeType::Value(value.ty()),
-                "binding",
-                value.wire(),
-                dependencies.to_vec(),
-                Some(value),
-                None,
-            )?);
-        }
-        action.subjects.push((refs[0], refs[1]));
-    }
+    let mut references = std::collections::BTreeSet::new();
     let mut families = std::collections::BTreeSet::new();
     let mut pending = vec![values.source_type()];
     while let Some(ty) = pending.pop() {
         tick(c)?;
         match ty {
             Type::Ref(entity) => {
-                let target = declarations
-                    .types()
-                    .iter()
-                    .find(|(s, _)| s == entity)
-                    .map(|(_, z)| z)
-                    .unwrap_or(entity);
-                action.declarations.push((entity.clone(), target.clone()));
+                references.insert(entity.clone());
             }
             Type::Tuple(items) => pending.extend(items),
             Type::Option(item) | Type::List(item) | Type::Set(item) => pending.push(item),
@@ -281,10 +214,50 @@ fn finite_action(
             _ => {}
         }
     }
+    for entity in references {
+        tick(c)?;
+        let transport =
+            crate::construction::maps::reference_type_transport(inputs, declarations, &entity, c)
+                .map_err(|e| {
+                    c.stop_reason()
+                        .map(ValidationFailure::Stop)
+                        .unwrap_or_else(|| format!("有限view参照型の全域検査: {e:?}").into())
+                })?;
+        if transport.bijection().is_none() {
+            return Ok(None);
+        }
+        action
+            .declarations
+            .push((entity.clone(), transport.target_type().to_owned()));
+        for (source, target) in transport.source().iter().zip(transport.images()) {
+            tick(c)?;
+            let mut refs = vec![];
+            for (fact, entity) in [
+                (source, transport.source_type()),
+                (target, transport.target_type()),
+            ] {
+                let value = Scalar::Subject {
+                    snapshot: fact.snapshot.clone(),
+                    subject: fact.subject.clone(),
+                    entity: entity.into(),
+                };
+                refs.push(b.push(
+                    NodeType::Value(value.ty()),
+                    "binding",
+                    value.wire(),
+                    dependencies.to_vec(),
+                    Some(value),
+                    None,
+                )?);
+            }
+            action.subjects.push((refs[0], refs[1]));
+        }
+    }
     action.declarations.sort();
     action.declarations.dedup();
-    Ok(action)
+    Ok(Some(action))
 }
+
 fn reject_equivalence(
     b: &mut Builder<'_>,
     out: &mut Output,
@@ -583,7 +556,7 @@ pub(super) fn retain(
                 declarations,
             }
         } else {
-            finite_action(
+            let Some(action) = finite_action(
                 b,
                 inputs,
                 declarations,
@@ -591,6 +564,11 @@ pub(super) fn retain(
                 &[axis.invariant, target_invariant],
                 c,
             )?
+            else {
+                reject_equivalence(b, &mut out, [&ty, &target_ty], axis.invariant)?;
+                return Ok(out);
+            };
+            action
         };
         let (values, forward) = equivalence(
             b,

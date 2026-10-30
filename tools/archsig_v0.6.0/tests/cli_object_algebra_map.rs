@@ -11510,3 +11510,71 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";view b
         assert_eq!(s(get(get(p, "judgment"), "status")), "established");
     }
 }
+
+#[test]
+fn uninhabited_constructor_branches_still_require_the_whole_reference_action() {
+    for case in ["cycle", "nonbijective"] {
+        let dir = finite_reference_view_inputs(&format!("finite-reference-empty-{case}"), case);
+        let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+        let entries = r#"{"kind":"entity","name":"Reservations.Void","meaning":"空の参照域。","parameters":[],"fields":[],"alignments":[]},{"kind":"data","name":"Reservations.Hidden","meaning":"無住の枝を持つ箱。","constructors":[{"name":"Empty","arguments":[],"meaning":"空。"},{"name":"Held","arguments":[["Ref","Reservations.State"],["Ref","Reservations.Void"]],"meaning":"無住。"}]}"#;
+        let definition = old.replacen(
+            "\"declarations\": [",
+            &format!("\"declarations\": [{entries},"),
+            1,
+        );
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let old_checked = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies()["Reservations"].digest;
+        let map = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(&old_checked.vocabularies()["Reservations"].digest, digest);
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):Hidden=Empty;}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):Hidden=Empty;}}"#
+        );
+        let evaluated = archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+              "same=compare($m.operation,to=$m.operation,kind=action)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap();
+        let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        assert_eq!(
+            s(get(m, "status")),
+            if case == "cycle" {
+                "established"
+            } else {
+                "refuted"
+            }
+        );
+        assert_eq!(has(get(m, "outputs"), "map"), case == "cycle");
+        if case == "cycle" {
+            let map = value(&j, get(get(m, "outputs"), "map"));
+            for invariant in arr(get(map, "invariants")) {
+                let invariant = value(&j, invariant);
+                let eq = value(&j, get(invariant, "values"));
+                for field in ["forward", "inverse"] {
+                    let action = value(&j, get(eq, field));
+                    assert_eq!(arr(get(action, "subjects")).len(), 6);
+                    let declarations = arr(get(action, "declarations"));
+                    for name in [
+                        "Reservations.State",
+                        "Reservations.Void",
+                        "Reservations.Hidden.Held",
+                    ] {
+                        assert!(
+                            declarations
+                                .iter()
+                                .any(|p| s(&arr(p)[0]) == name && s(&arr(p)[1]) == name)
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
