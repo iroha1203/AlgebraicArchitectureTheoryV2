@@ -291,10 +291,33 @@ fn compute_inner(
                     part.arguments.push(architecture.reference);
                     part.scope.merge(&g.get(architecture.reference)?.scope);
                     let scope = part.scope.clone();
-                    let reasons = vec![
-                        Reason {kind:ReasonKind::Missing,request:request.id.clone(),dependencies:vec![expression],missing:failure.partial.missing,location:Some(location.clone())},
-                        Reason {kind:ReasonKind::UnsupportedAlgorithm {question:request.kind,operand_types:vec![pending.coefficient_type.clone().unwrap_or(Type::Z)],method:if pending.coefficient_type==Some(Type::Q) {"rational_change".into()} else {"integer_change".into()}},request:request.id.clone(),dependencies:vec![expression],missing:vec![],location:Some(location)},
-                    ];
+                    let mut reasons = vec![];
+                    if !failure.partial.missing.is_empty() {
+                        reasons.push(Reason {
+                            kind: ReasonKind::Missing,
+                            request: request.id.clone(),
+                            dependencies: vec![expression],
+                            missing: failure.partial.missing,
+                            location: Some(location.clone()),
+                        });
+                    }
+                    reasons.push(Reason {
+                        kind: ReasonKind::UnsupportedAlgorithm {
+                            question: request.kind,
+                            operand_types: vec![pending.coefficient_type.clone().unwrap_or(Type::Z)],
+                            method: pending.unsupported.map(str::to_owned).unwrap_or_else(|| {
+                                if pending.coefficient_type == Some(Type::Q) {
+                                    "rational_change".into()
+                                } else {
+                                    "integer_change".into()
+                                }
+                            }),
+                        },
+                        request: request.id.clone(),
+                        dependencies: vec![expression],
+                        missing: vec![],
+                        location: Some(location.clone()),
+                    });
                     return Ok((b.parts,Answer {id:request.id.clone(),status:Decision::Undetermined,outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons,scope},None));
                 }
             }

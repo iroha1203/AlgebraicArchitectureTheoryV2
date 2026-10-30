@@ -405,3 +405,58 @@ fn identical_completed_updates_deliver_native_repair_without_observing_missing_i
     let original = std::fs::read_to_string(dir.join("a.json")).unwrap();
     assert!(!original.contains("Engine.Compiler.operator"));
 }
+
+#[test]
+fn finite_branch_updates_preserve_unchanged_coordinates_in_each_candidate() {
+    let dir = setup("true");
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("change keep(c:Compiler)=c with{operator=c.operator}","change keep(c:Compiler,b:Bool)=if b then c with{operator=AddOp} else c with{source=Lit(2)}");
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let map=std::fs::read_to_string(dir.join("a.json")).unwrap().replace("\"atoms\":[",r#""atoms":[{"id":"operator","subject":"add","field":"Engine.Compiler.operator","value":{"tag":"SubtractOp","args":[]},"origin":"model"},"#);
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let r = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "s=solve(Engine.valid,on=@engine/add,using=Engine.keep,c=@engine/add)",
+            "--out",
+            "out",
+        ],
+    );
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let a = &arr(get(&j, "answers"))[0];
+    assert_eq!(s(get(a, "status")), "established");
+    let domain = get(node(&j, get(get(a, "outputs"), "domain")), "value");
+    let action = get(node(&j, get(domain, "action")), "value");
+    let pairs = arr(get(action, "pairs"));
+    assert_eq!(pairs.len(), 2);
+    let mut parameters = vec![];
+    for pair in pairs {
+        let pair = arr(pair);
+        let point = arr(get(node(&j, &pair[0]), "value"));
+        let archsig::json::JValue::Bool(parameter) = point[0].value else {
+            panic!("Bool parameter")
+        };
+        parameters.push(parameter);
+        let state = arr(get(node(&j, &pair[1]), "value"));
+        assert_eq!(state.len(), 2);
+        assert_eq!(
+            s(get(&state[0], "tag")),
+            if parameter { "AddOp" } else { "SubtractOp" }
+        );
+        assert_eq!(s(get(&state[1], "tag")), "Lit");
+        assert_eq!(
+            s(&arr(get(&state[1], "args"))[0]),
+            if parameter { "1" } else { "2" }
+        );
+    }
+    parameters.sort();
+    assert_eq!(parameters, vec![false, true]);
+}

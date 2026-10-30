@@ -181,6 +181,8 @@ fn finite_owner_partial_result_keeps_later_validation_failure_internal() {
     assert_eq!(partial.status(), "error");
     assert!(!partial.answers[0].outputs.is_empty());
     assert!(partial.answers[1].outputs.is_empty());
+    assert!(partial.contexts.iter().all(|context| context.request == 0));
+    rebuild(&partial, &partial.nodes).expect("検査済みの先行結果だけを再構成できる");
 }
 
 #[test]

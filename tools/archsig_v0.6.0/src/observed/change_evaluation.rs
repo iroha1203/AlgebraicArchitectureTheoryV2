@@ -286,7 +286,7 @@ pub(in crate::observed) fn update_shape(
         return Err("更新座標の宣言がchangeでない".into());
     };
     let mut pending = vec![*body];
-    let mut fields: Option<Vec<String>> = None;
+    let mut fields = BTreeSet::new();
     let mut base = None;
     while let Some(id) = pending.pop() {
         environment.tick()?;
@@ -303,27 +303,14 @@ pub(in crate::observed) fn update_shape(
                 updates,
             } => {
                 base.get_or_insert(*target);
-                let mut names = updates
-                    .iter()
-                    .map(|(f, _)| f.name.clone())
-                    .collect::<Vec<_>>();
-                names.sort();
-                if fields.as_ref().is_some_and(|prior| prior != &names) {
-                    return Err(ValidationFailure::UnsupportedExpression {
-                        location: Location::Law {
-                            span: declaration.span,
-                        },
-                        feature: "state tables for changes with different update slot sets across branches are not implemented".into(),
-                    });
-                }
-                fields = Some(names);
+                fields.extend(updates.iter().map(|(field, _)| field.name.clone()));
             }
             _ => return Err("検査済みchangeの更新座標がない".into()),
         }
     }
     Ok((
         base.ok_or("changeの更新先出現がない")?,
-        fields.ok_or("changeの更新座標がない")?,
+        fields.into_iter().collect(),
     ))
 }
 
@@ -409,61 +396,105 @@ pub(in crate::observed) fn candidates(
 
 /// 一つの元parameter点を全instanceへ同時代入する。全域の算法と再代入で共用する。
 pub(in crate::observed) fn candidate(
-    environment: &Environment<'_>, declaration: &Declaration,
-    subjects: &[Scalar], parameters: &[Scalar],
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    subjects: &[Scalar],
+    parameters: &[Scalar],
 ) -> Result<Candidate, ValidationFailure> {
     let Signature::Change { params, .. } = &declaration.signature else {
         return Err("候補の元宣言がchangeでない".into());
     };
-    let first=params.first().ok_or("changeの第一parameterがない")?;
-    if parameters.len()!=subjects.len()*(params.len()-1) {
+    let first = params.first().ok_or("changeの第一parameterがない")?;
+    if parameters.len() != subjects.len() * (params.len() - 1) {
         return Err("元parameter点の次元が違う".into());
     }
-            let mut update = Update {
-                state: State::Ready,
-                values: vec![],
-                missing: vec![],
-                support: vec![],
-                scope: Scope::default(),
+    let mut update = Update {
+        state: State::Ready,
+        values: vec![],
+        missing: vec![],
+        support: vec![],
+        scope: Scope::default(),
+    };
+    let mut values = BTreeMap::<Fact, Scalar>::new();
+    for (index, subject) in subjects.iter().enumerate() {
+        let start = index * (params.len() - 1);
+        let bindings = std::iter::once((first.name.clone(), subject.clone()))
+            .chain(
+                params
+                    .iter()
+                    .skip(1)
+                    .zip(&parameters[start..start + params.len() - 1])
+                    .map(|(p, v)| (p.name.clone(), v.clone())),
+            )
+            .collect::<Vec<_>>();
+        let item = evaluate(environment, declaration, &bindings)?;
+        update.support.extend(item.support.iter().cloned());
+        update.scope.merge(&item.scope);
+        update.missing.extend(item.missing);
+        update.state = match (&update.state, &item.state) {
+            (State::ConditionFailed, _) | (_, State::ConditionFailed) => State::ConditionFailed,
+            (State::Excluded, _) | (_, State::Excluded) => State::Excluded,
+            (State::Undetermined, _) | (_, State::Undetermined) => State::Undetermined,
+            _ => State::Ready,
+        };
+        for (position, value) in item.values {
+            if let Some(previous) = values.get(&position) {
+                if !data::equal(previous, &value, &environment.control)? {
+                    update.state = State::ConditionFailed;
+                }
+            } else {
+                values.insert(position, value);
+            }
+        }
+    }
+    // Fixed coordinates are read after merging all actual simultaneous updates.
+    // An unchanged coordinate from one instance must not conflict with another update.
+    if matches!(update.state, State::Ready | State::Undetermined) {
+        let fields = update_fields(environment, declaration)?;
+        for subject in subjects {
+            let Scalar::Subject {
+                snapshot,
+                subject: id,
+                entity,
+            } = subject
+            else {
+                return Err("候補の変更対象がsubjectでない".into());
             };
-            let mut values = BTreeMap::<Fact, Scalar>::new();
-            for (index, subject) in subjects.iter().enumerate() {
-                let start = index * (params.len() - 1);
-                let bindings = std::iter::once((first.name.clone(), subject.clone()))
-                    .chain(
-                        params
-                            .iter()
-                            .skip(1)
-                            .zip(&parameters[start..start + params.len() - 1])
-                            .map(|(p, v)| (p.name.clone(), v.clone())),
-                    )
-                    .collect::<Vec<_>>();
-                let item = evaluate(environment, declaration, &bindings)?;
-                update.support.extend(item.support.iter().cloned());
-                update.scope.merge(&item.scope);
-                update.missing.extend(item.missing);
-                update.state = match (&update.state, &item.state) {
-                    (State::ConditionFailed, _) | (_, State::ConditionFailed) => {
-                        State::ConditionFailed
-                    }
-                    (State::Excluded, _) | (_, State::Excluded) => State::Excluded,
-                    (State::Undetermined, _) | (_, State::Undetermined) => State::Undetermined,
-                    _ => State::Ready,
+            for name in &fields {
+                environment.tick()?;
+                let fact = Fact {
+                    snapshot: snapshot.clone(),
+                    subject: id.clone(),
+                    field: Some(format!("{entity}.{name}")),
+                    atom: None,
                 };
-                for (position, value) in item.values {
-                    if let Some(previous) = values.get(&position) {
-                        if !data::equal(previous, &value, &environment.control)? {
-                            update.state = State::ConditionFailed;
-                        }
-                    } else {
-                        values.insert(position, value);
-                    }
+                if values.contains_key(&fact) {
+                    continue;
+                }
+                let old = environment.scoped_field(
+                    known(subject.clone()),
+                    name,
+                    &Scope::default(),
+                    &declaration.reading,
+                    declaration.span,
+                )?;
+                update.retain(&old);
+                update.support.extend(old.support);
+                if let Some(value) = old.known_value {
+                    values.insert(fact, value);
+                } else {
+                    update.missing.push(fact);
                 }
             }
-            update.values = values.into_iter().collect();
-            update.missing.sort();
-            update.missing.dedup();
-    Ok(Candidate { parameters: parameters.to_vec(), update })
+        }
+    }
+    update.values = values.into_iter().collect();
+    update.missing.sort();
+    update.missing.dedup();
+    Ok(Candidate {
+        parameters: parameters.to_vec(),
+        update,
+    })
 }
 
 #[derive(Clone, PartialEq, Eq)]

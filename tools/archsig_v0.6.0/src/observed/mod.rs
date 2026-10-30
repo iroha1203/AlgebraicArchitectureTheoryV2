@@ -57,6 +57,8 @@ mod value_equality;
 pub(crate) mod value_transport;
 mod view_family;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
+#[cfg(test)]
+pub(crate) use evaluate::evaluate_observed_with_rejected_answer;
 pub use result::{EvaluationFailure, ObservedEvaluation};
 pub mod input;
 pub mod projection;

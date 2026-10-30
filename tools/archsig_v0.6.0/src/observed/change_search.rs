@@ -443,7 +443,7 @@ pub(in crate::observed) fn search_with_completions(
         if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
             let mut pending = change_affine::Pending::default();
             let computed = change_affine::compute(&environment,change,&subjects,&result.requirements,&mut pending);
-            if !pending.facts.is_empty() {
+            if !pending.facts.is_empty() || pending.unsupported.is_some() {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer = Some(pending);
             }
@@ -470,7 +470,7 @@ pub(in crate::observed) fn search_with_completions(
         if change_params.iter().skip(1).any(|p|p.ty==Type::Q) {
             let mut pending=change_affine::Pending::default();
             let computed=field_change::compute(&environment,change,&subjects,&result.requirements,&mut pending);
-            if !pending.facts.is_empty() {
+            if !pending.facts.is_empty() || pending.unsupported.is_some() {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer=Some(pending);
             }

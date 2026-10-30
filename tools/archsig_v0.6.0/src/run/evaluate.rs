@@ -220,7 +220,7 @@ fn deliver(
         .issues
         .iter()
         .any(|issue| matches!(issue.kind, ReasonKind::Internal(_)));
-    if internal || status == Status::Error
+    if ((internal || status == Status::Error) && evaluation.nodes.is_empty())
         || (status == Status::Interrupted && evaluation.nodes.is_empty())
     {
         // 保存しない計算の参照や未決理由は通知へ持ち出さず、停止原因だけを返す。
@@ -337,3 +337,7 @@ fn deliver(
         },
     )
 }
+
+#[cfg(test)]
+#[path = "evaluate_tests.rs"]
+mod tests;

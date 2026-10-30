@@ -2846,6 +2846,17 @@ fn evaluate_observed_with_validator(
     let mut answers: Vec<Option<Answer>> = vec![None; prepared.requests().requests().len()];
     let mut issues = Vec::new();
     let mut internal = false;
+    let sizes = |graph: &Graph| {
+        (
+            graph.nodes.len(),
+            graph.frames.len(),
+            graph.iterations.len(),
+            graph.instances.len(),
+            graph.cases.len(),
+            graph.universal_witnesses.len(),
+        )
+    };
+    let mut verified_prefix = (0, 0, 0, 0, 0, 0);
     let mut not_implemented = None;
     {
         let environment = Environment::with_prepared(&prepared, control).ok();
@@ -2961,6 +2972,7 @@ fn evaluate_observed_with_validator(
                             issues.push(Reason::stopped(&request.id, stop));
                         }
                         graph.checked_answers.push((index, answer.clone()));
+                        verified_prefix = sizes(&graph);
                         answers[index] = Some(answer);
                     }
                     Err(failure) => {
@@ -2998,6 +3010,7 @@ fn evaluate_observed_with_validator(
                 match super::needed::evaluate(&mut graph, environment, request, control) {
                     Ok((answer, stopped)) => {
                         graph.checked_answers.push((index, answer.clone()));
+                        verified_prefix = sizes(&graph);
                         answers[index] = Some(answer);
                         if let Some(reason) = stopped {
                             issues.push(Reason::stopped(&request.id, reason));
@@ -3116,6 +3129,7 @@ fn evaluate_observed_with_validator(
                         .graph
                         .checked_answers
                         .push((index, answer.clone()));
+                    verified_prefix = sizes(evaluator.graph);
                     answers[index] = Some(answer);
                     if let Err(reason) = evaluator.tick(Checkpoint::FiniteIteration) {
                         let Failure::Stop(reason) = reason else {
@@ -3182,6 +3196,45 @@ fn evaluate_observed_with_validator(
             }
         }
     }
+    if internal {
+        // Only completed, validated answers qualify the graph prefix for delivery.
+        let (nodes, frames, iterations, instances, cases, universal) = verified_prefix;
+        graph.nodes.truncate(nodes);
+        graph.contexts.truncate(nodes);
+        graph.frames.truncate(frames);
+        graph.iterations.truncate(iterations);
+        graph.instances.truncate(instances);
+        graph.cases.truncate(cases);
+        graph.universal_witnesses.truncate(universal);
+        let checked = graph
+            .checked_answers
+            .iter()
+            .map(|(index, _)| *index)
+            .collect::<std::collections::BTreeSet<_>>();
+        for (index, answer) in answers.iter_mut().enumerate() {
+            if checked.contains(&index) {
+                continue;
+            }
+            let answer = answer.as_mut().expect("依存順は全要求を含む");
+            answer.outputs.clear();
+            answer.claim = None;
+            answer.evidence.clear();
+            answer.scope = Scope::default();
+            answer.reasons.retain(|reason| {
+                matches!(reason.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_))
+            });
+            for reason in &mut answer.reasons {
+                reason.dependencies.clear();
+                reason.missing.clear();
+            }
+        }
+        issues.retain(|reason| {
+            matches!(reason.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_))
+                || checked
+                    .iter()
+                    .any(|i| prepared.requests().requests()[*i].id == reason.request)
+        });
+    }
     sort_reasons(&mut issues);
     let answers: Vec<_> = answers
         .into_iter()
@@ -3230,7 +3283,7 @@ fn evaluate_observed_with_validator(
 }
 
 #[cfg(test)]
-pub(super) fn evaluate_observed_with_rejected_answer(
+pub(crate) fn evaluate_observed_with_rejected_answer(
     prepared: PreparedObserved,
     control: &mut Control,
     rejected: &str,

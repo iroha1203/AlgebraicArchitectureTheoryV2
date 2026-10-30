@@ -1459,3 +1459,43 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
         }
     }
 }
+
+#[test]
+fn rational_nonlinear_change_is_algorithm_unknown_and_keeps_the_prior_value() {
+    let dir = input(
+        "rational-nonlinear",
+        "change choose(s:State,a:Q,b:Q)=s with{x=a*a,y=b};law required total(s:State):s.x+s.y=1;",
+    );
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "v=evaluate(Pair.x,s=@v/s)",
+            "s=solve(Pair.total,on=@v/s,using=Pair.choose,s=@v/s)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let answers = arr(get(&j, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "established");
+    let value = get(output(&j, 0, "value"), "value");
+    assert_eq!(s(&arr(value)[0]), "0");
+    assert_eq!(s(&arr(value)[1]), "1");
+    let reason = arr(get(&answers[1], "reasons"))
+        .iter()
+        .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+        .unwrap();
+    assert_eq!(
+        s(get(get(reason, "details"), "method")),
+        "nonlinear_numeric_change"
+    );
+    assert_eq!(
+        s(&arr(get(get(reason, "details"), "operand_types"))[0]),
+        "Q"
+    );
+    assert!(
+        !arr(get(&j, "issues"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "internal")
+    );
+}
