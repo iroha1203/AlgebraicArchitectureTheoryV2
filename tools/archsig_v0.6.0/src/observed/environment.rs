@@ -7120,16 +7120,16 @@ impl<'a> Environment<'a> {
             )) = direct_field
             {
                 let field = self.field(snapshot, subject, &format!("{entity}.{name}"))?;
-                match &field.slot {
-                    Slot::Missing => Some(PendingMissing {
-                        fact: Fact {
-                            snapshot: snapshot.clone(),
-                            subject: subject.clone(),
-                            field: Some(field.name.clone()),
-                            atom: None,
-                        },
-                    }),
-                    Slot::Known { .. } => None,
+                let fact = Fact {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: Some(field.name.clone()),
+                    atom: None,
+                };
+                if matches!(&field.slot, Slot::Missing) && self.architecture_value(&fact).is_none() {
+                    Some(PendingMissing { fact })
+                } else {
+                    None
                 }
             } else {
                 None

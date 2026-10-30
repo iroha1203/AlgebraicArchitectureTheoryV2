@@ -1,4 +1,4 @@
-//! 有限owner補完の各候補族を再生成し、具体構成と別に存在・一意性を検査する。
+//! 有限補完の各候補族を再生成し、具体構成と別に存在・一意性を検査する。
 use super::*;
 use crate::observed::{data, environment::change_evaluation};
 use std::collections::BTreeSet;
@@ -23,17 +23,22 @@ pub(super) fn compute(
     base: usize,
     request: &Request,
     c: &mut Control,
+    value_fields: &[Fact],
 ) -> Result<Option<Computed>, ValidationFailure> {
-    let fields = architecture
-        .witness
-        .construction()
-        .local_domain()
-        .conditional()
-        .iter()
-        .map(|member| member.owner_slot().clone())
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>();
+    let fields = if value_fields.is_empty() {
+        architecture
+            .witness
+            .construction()
+            .local_domain()
+            .conditional()
+            .iter()
+            .map(|member| member.owner_slot().clone())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>()
+    } else {
+        value_fields.to_vec()
+    };
     if fields.is_empty()
         || architecture.reasons.iter().any(|reason| {
             !matches!(reason.kind, ReasonKind::Missing)
@@ -47,7 +52,13 @@ pub(super) fn compute(
     let Signature::Law { body, params, .. } = &declaration.signature else {
         return Err("補完solveがLawでない".into());
     };
-    let enumeration = env.completion_assignments(&fields, &mut |_, _| {})?;
+    let enumeration = match env.completion_assignments(&fields, &mut |_, _| {}) {
+        Ok(enumeration) => enumeration,
+        Err(ValidationFailure::UnsupportedExpression { .. }) if !value_fields.is_empty() => {
+            return Ok(None);
+        }
+        Err(failure) => return Err(failure),
+    };
     if enumeration.values.is_empty() {
         return Err("検査済み入力のowner補完が空".into());
     }
@@ -93,6 +104,8 @@ pub(super) fn compute(
     let mut cases = vec![];
     let mut counts = vec![];
     let mut arguments = vec![expression, solutions];
+    let mut common: Option<change_search::Search> = None;
+    let mut common_states = !value_fields.is_empty();
     for value_ in enumeration.values {
         c.checkpoint(Checkpoint::Completion)?;
         let values = if fields.len() == 1 {
@@ -124,6 +137,32 @@ pub(super) fn compute(
             .candidates
             .as_ref()
             .ok_or("owner補完に有限候補表がない")?;
+        if !value_fields.is_empty() {
+            let additional = search
+                .missing
+                .iter()
+                .cloned()
+                .chain(
+                    candidates
+                        .rows
+                        .iter()
+                        .flat_map(|row| row.update.missing.iter().cloned()),
+                )
+                .filter(|fact| !fields.contains(fact))
+                .collect::<BTreeSet<_>>();
+            if !additional.is_empty() {
+                let expanded = fields
+                    .iter()
+                    .cloned()
+                    .chain(additional)
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
+                    .collect::<Vec<_>>();
+                return stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                    compute(env, g, architecture, base, request, c, &expanded)
+                });
+            }
+        }
         if !search.complete
             || !candidates.complete
             || search.linear.is_some()
@@ -192,11 +231,44 @@ pub(super) fn compute(
             // 重複した表示を解の数にしない。比較対象は元subjectと元parameter値。
             assignments.push(Json::Arr(entries));
         }
+        if common_states && let Some(previous_search) = &common {
+            let previous = previous_search
+                .candidates
+                .as_ref()
+                .ok_or("共通候補表がない")?;
+            common_states = previous.subjects == candidates.subjects
+                && previous.parameter_types == candidates.parameter_types
+                && previous.rows.len() == candidates.rows.len()
+                && previous.rows.iter().zip(&candidates.rows).all(|(a, b)| {
+                    a.parameters == b.parameters
+                        && a.update.state == b.update.state
+                        && a.update.values == b.update.values
+                })
+                && previous_search
+                    .solutions
+                    .iter()
+                    .map(|r| (r.candidate, r.member))
+                    .eq(search.solutions.iter().map(|r| (r.candidate, r.member)));
+        }
         counts.push(assignments.len());
         cases.push(Json::obj([
             ("values", refs(&values)),
             ("assignments", Json::Arr(assignments)),
         ]));
+        if common_states && common.is_none() {
+            common = Some(search);
+        }
+    }
+    if common_states {
+        let search = common.ok_or("有限補完の共通候補表がない")?;
+        let mut result = super::render_search(env, g, architecture, base, request, c, search)?;
+        for part in &mut result.0 {
+            part.scope.merge(&enumeration.scope);
+            part.scope.completions = true;
+        }
+        result.1.scope.merge(&enumeration.scope);
+        result.1.scope.completions = true;
+        return Ok(Some(result));
     }
     let certificate = b.push(
         NodeType::Evidence,
@@ -272,6 +344,8 @@ pub(super) fn compute(
                     span: declaration.span,
                 }),
             }]
+        } else if !value_fields.is_empty() {
+            vec![reason.clone()]
         } else {
             let mut reasons = vec![Reason {
                 kind: ReasonKind::Internal("repair concrete construction (not implemented)".into()),
@@ -295,6 +369,22 @@ pub(super) fn compute(
             .reasons = reasons.clone();
         outputs.insert("proposition".into(), claim);
         (claim, status, reasons)
+    } else if !value_fields.is_empty() && existence_status != Decision::Refuted {
+        // The existence judgment is complete; concrete state values still depend on missing input.
+        let label = value(&mut b, &Scalar::Text("solution_set".into()))?;
+        let claim = b.proposition(
+            "constructible",
+            vec![label],
+            vec![existence, certificate],
+            Decision::Undetermined,
+        )?;
+        let part = &mut b.parts[claim.0 - base];
+        part.reasons = vec![reason.clone()];
+        part.judgment
+            .as_mut()
+            .ok_or("有限補完の構成判断がない")?
+            .reasons = vec![reason.clone()];
+        (claim, Decision::Undetermined, vec![reason])
     } else {
         (
             existence,

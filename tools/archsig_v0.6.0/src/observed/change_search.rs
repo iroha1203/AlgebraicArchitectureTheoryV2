@@ -462,7 +462,7 @@ pub(in crate::observed) fn search_with_completions(
                 let candidate=change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?;
                 // この段階は線形系の全解表示を準備する。具体点の通常Law再検査と
                 // その確定直後の公開はchange_resultが順に行う。
-                candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
+                candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true),missing:vec![]});
             }
             result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
             return Ok(());
@@ -488,7 +488,7 @@ pub(in crate::observed) fn search_with_completions(
             for (i,parameters) in points.into_iter().enumerate() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
                 candidates.rows.push(change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?);
-                result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
+                result.solutions.push(SolutionRow{candidate:i,member:Some(true),missing:vec![]});
             }
             result.candidates=Some(candidates);result.rational=Some(linear);result.complete=true;
             return Ok(());
@@ -510,12 +510,11 @@ pub(in crate::observed) fn search_with_completions(
             .enumerate()
         {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
-            result.solutions.push(change_evaluation::solution_row(
-                &environment,
-                candidate,
-                point,
-                &result.requirements,
-            )?);
+            let row = change_evaluation::solution_row(
+                &environment, candidate, point, &result.requirements,
+            )?;
+            result.missing.extend(row.missing.iter().cloned());
+            result.solutions.push(row);
         }
         result.complete = true;
         Ok(())
