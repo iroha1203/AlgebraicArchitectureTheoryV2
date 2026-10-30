@@ -620,7 +620,7 @@ fn compute_inner(
                 )?);
             }
             let views = super::object_view_map::retain(
-                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], c,
+                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], request, c,
             )?;
             preserved &= views.preserved;
             let view_pending = views.pending;
@@ -630,7 +630,7 @@ fn compute_inner(
             invariant_maps.extend(views.invariants);
             dependencies.extend(views.conditions);
             dependencies.extend(invariant_maps.iter().copied());
-            if views.preserved && view_pending.is_none() {
+            if views.preserved && view_pending.is_empty() {
                 signature = Some(b.push(
                     NodeType::Construction(T::SignatureMap),
                     "signature_map",
@@ -647,27 +647,29 @@ fn compute_inner(
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;
-            let pending = view_pending.map(|(location, missing)| (location, missing, "affine_numeric_view_transport"))
-                .or_else(|| law_pending.map(|p| (p.location, p.missing, "affine_numeric_law_transport")));
-            if let Some((location, missing, method)) = pending {
+            let pending = law_pending.map(|p| Reason {
+                kind: if p.missing.is_empty() {
+                    ReasonKind::UnsupportedAlgorithm {
+                        question: request.kind,
+                        operand_types: vec![],
+                        method: "affine_numeric_law_transport".into(),
+                    }
+                } else {
+                    ReasonKind::Missing
+                },
+                request: request.id.clone(),
+                dependencies: vec![],
+                missing: p.missing,
+                location: Some(p.location),
+            });
+            for mut reason in view_pending.into_iter().chain(pending) {
                 if declaration_status != Decision::Refuted {
                     declaration_status = Decision::Undetermined;
                 }
-                declaration_reasons.push(Reason {
-                    kind: if missing.is_empty() {
-                        ReasonKind::UnsupportedAlgorithm {
-                            question: request.kind,
-                            operand_types: vec![],
-                            method: method.into(),
-                        }
-                    } else {
-                        ReasonKind::Missing
-                    },
-                    request: request.id.clone(),
-                    dependencies: vec![left, right],
-                    missing,
-                    location: Some(location),
-                });
+                reason.dependencies.extend([left, right]);
+                if !declaration_reasons.contains(&reason) {
+                    declaration_reasons.push(reason);
+                }
             }
             declaration_evidence.extend(transported.evidence);
             declaration_evidence.extend(law_evidence);
