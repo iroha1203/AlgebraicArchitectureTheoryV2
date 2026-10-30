@@ -12,7 +12,7 @@ unpaired surrogate を拒否する。`null` は使わない。省略可能 field
 空配列は宣言型で読み、欠測と区別する。object key 順は意味を持たない。
 文字列を正規化したり case folding したりしない。
 
-format は Atom 定義=`archsig.atom-definition/1`、ArchMap=`archsig.archmap/2`、Law=`archsig.law/2`、結果=`archsig.result/3`。
+format は Atom 定義=`archsig.atom-definition/1`、ArchMap=`archsig.archmap/2`、Law=`archsig.law/2`、保存結果=`archsig.result/4`。
 schema の版は各 format、共通の原始型・評価・核の構成規則の意味の版は `archsig/0.6.0`。全入力の semantics を一致させる。
 未知版は `unsupported_version`、対応版の未知 field や宣言は不正入力。
 同じ semantics の意味を実装版によって変更しない。変更には別の semantics を用いる。

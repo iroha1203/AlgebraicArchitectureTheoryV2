@@ -78,7 +78,7 @@ website と Claude 側の文書・skill は別作業とする。
 | --- | --- | --- |
 | 引数と入力 | 全 flag の検査、明示された複数定義、三入力の検査順と同じ開始時 byte 列、未使用宣言も含む検査 | [実行 §1・§5・§7](../tool/archsig_v0_6_0_io/execution.md)、[定義 §4](../tool/archsig_v0_6_0_io/definitions.md#4-検査と責務) |
 | 問いと依存 | 後方参照、依存順と回答指定順、explicit/defaulted、型・owner、循環、静的拒否と動的不適合の区別 | [実行 §§2–3](../tool/archsig_v0_6_0_io/execution.md#2-問いの構文と参照) |
-| 結果と由来 | result/3 の全必須欄、元入力コピー・digest・Location、型付き DAG、反例・欠測の追跡・Scope・理由、表示用証人の非消費 | [結果 §§1–6](../tool/archsig_v0_6_0_io/results.md) |
+| 結果と由来 | result/4 の全必須欄、元入力コピー・digest・Location、型付き値の参照、反例・欠測の追跡・Scope・理由、表示用証人の非消費 | [結果 §§1–6](../tool/archsig_v0_6_0_io/results.md) |
 | 終了コード | 確定反証と未決、入力不正・版非対応・I/O・内部障害・予算・signal の区別、および併発時の優先順位 | [実行 §6](../tool/archsig_v0_6_0_io/execution.md#6-状態終了コード予算) |
 | 出力配送 | 既存出力の保護、一時 directory と flush/非置換 rename、一行 receipt、stderr、公開前後の配送失敗 | [実行 §§5–6](../tool/archsig_v0_6_0_io/execution.md#5-ファイル操作と出力) |
 | 中断 | 入力検査・要求解決・評価・再利用を含む soft limit、確定済み結果の保持、finalize の状態確定、signal と SIGPIPE | [実行 §6](../tool/archsig_v0_6_0_io/execution.md#6-状態終了コード予算) |
@@ -101,7 +101,8 @@ v0.5.x との互換性の判断は[製品コンセプト §7](../tool/archsig_v0
 v0.6.0 の既存全量入力、意味の版、receipt/1、check/version の通常の用途を保つ。
 ArchMap は[入力 §2](../tool/archsig_v0_6_0_io/inputs.md#2-archmap-の-schema)の
 基準 snapshot と差分による略記も共通読込で展開し、別ツールでの手動展開を要求しない。
-保存結果は result/3 とし、run の重複する支持集合・静的解決表を外す。旧 result/2 の
+保存結果は result/4 とし、runの値・条件・反例の参照を保持する。導出・証明は内部で検査し、
+通常表示と保存結果へ複製しない。旧 result/2・result/3 の
 再利用候補は版不一致として記録し、現在の三入力から再計算する。
 失敗通知は、標準出力へ具体的なエラーを返す新しい仕様へ実装を合わせる。
 `run` を usage で拒否する現行の試験は、新しい正常経路と実際の不正要求の試験へ置き換える。
@@ -135,7 +136,8 @@ ArchMap は[入力 §2](../tool/archsig_v0_6_0_io/inputs.md#2-archmap-の-schema
 AC2・AC4–8 で要求の成立・反例・不足情報を区別し、AC9 で判断の根拠を元入力まで確認できることを確かめる。
 
 - **AC1 コマンド面:** 全3コマンドと[実行 §1](../tool/archsig_v0_6_0_io/execution.md#1-コマンド)の
-  全 flag を扱う。複数定義、複数 ask、必須欠落、単数重複、未知 flag、位置引数、予算の文法を
+  全 flag を扱う。runの任意--out省略時はsummary/1、指定時は保存結果とreceiptを返す。
+  複数定義、複数 ask、必須欠落、単数重複、未知 flag、位置引数、予算の文法を
   正常系・拒否系で検証する。check は ArchMap の有無とも成功時に問いの出力を持たず、version は指定の一行と exit0。
   ArchMap の全量と基準版＋差分を check/run で受け入れ、同じ版のモデル・評価結果が一致すること、
   未変更の継承と追加・置換・削除、Atom 削除時の欠測、基準参照と差分の不正拒否を独立入力で検証する。
@@ -169,8 +171,9 @@ AC2・AC4–8 で要求の成立・反例・不足情報を区別し、AC9 で�
   [必須決定範囲](../tool/archsig_v0_6_0_io/computations.md#9-v060-の必須決定範囲)の各手続きに、
   小さい exact fixture と検査可能な値・証拠を用意する。必須算法の未実装を unsupported_algorithm で埋めない。
   仕様上の算法非対応の例では原式・型・域・理由を保持する。
-- **AC9 公開結果:** 全12問の生成出力について、型、Ref、導出 DAG、原式の出現、Scope、
-  条件、反例、未決理由から入力コピーへ戻れる。ノードごとの支持集合と全入力の静的解決表を
+- **AC9 公開結果:** 全12問について、型、Ref、値・条件・反例と入力コピーの対応を確認し、内部の導出DAG・原式の出現・Scopeと、
+  未決理由を検査する。通常表示は短い回答、明示保存は値の参照グラフとし、
+  導出・証明・ノードごとの支持集合と全入力の静的解決表を
   run の回答へ複製せず、静的解決の説明は check に保持する。成果物のない静的検査失敗に空の結果ファイルを要求しない。
   表示用の特解・基底・証人から後続 Law の束縛を作る抜け道を、[公開射影](../tool/archsig_v0_6_0_io/results.md#公開する意味上の射影)の拒否系で確認する。
 - **AC10 終了と配送:** [実行 §§5–6](../tool/archsig_v0_6_0_io/execution.md#5-ファイル操作と出力)の

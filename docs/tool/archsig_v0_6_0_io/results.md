@@ -13,17 +13,23 @@ Pは同文書のTypeの別名であり、宣言metadataではOwnedを許し、�
 
 ```text
 Result = {
-  format:"archsig.result/3", semantics:"archsig/0.6.0",
-  producer:{version:String,build:String}, command:"check"|"run",
+  format:"archsig.result/4", semantics:"archsig/0.6.0",
+  producer?:{version:String,build:String}, command:"check"|"run",
   status:RunStatus, exit_code:Nat, inputs:InputIdentity[],
   declarations?:DeclarationInfo[], vocabularies?:{manifest:Vocabulary,digest:Digest,location:Location}[],
-  requests:Request[], answers:Answer[], nodes:Node[], issues:Issue[],
+  requests:Request[], answers:SavedAnswer[], nodes:SavedNode[], issues:Issue[],
   reuse?:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
   warnings?:Issue[],
-  usage:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
-  limits:{time_ms?:DecimalNat,memory_mib?:DecimalNat}
+  usage?:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
+  limits?:{time_ms?:DecimalNat,memory_mib?:DecimalNat}
 }
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
+SavedAnswer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
+               applicability?:String,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[],scope:Scope}
+SavedType = Type | "Counterexample" | "EvaluationResult"
+SavedNode = {id:String,type:SavedType,state:"value"|"blocked",value?:Payload,
+             partial?:Partial,conditions:Ref[],judgment?:SavedJudgment,reasons:Issue[]}
+SavedJudgment = {status:Decision,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[]}
 InputIdentity = {id:Id,kind:"atom_definition"|"archmap"|"law",state:"read"|"unread",
                  bytes_digest?:Digest,model_digest?:Digest,path?:String}
 DeclarationInfo = {name:QName,kind:DeclarationKind,parameters:Parameter[],
@@ -68,6 +74,29 @@ Location = {input:Id,pointer?:String,span?:[Nat,Nat],line?:Nat,column?:Nat}
 Issue = {code:IssueCode,message:String,location?:Location,request?:String,
          dependencies:Ref[],missing:FactPointer[],details:IssueDetails}
 ```
+
+`command=check`ではproducer・usage・limitsと固定reuse metadataを持ち、answers/nodesは空とする。
+`command=run`ではこれら四欄を持たず、SavedAnswerとSavedNodeを使う。
+保存するのは回答から到達する値・条件・反例とその参照である。
+保存専用のCounterexampleのPayloadはEvidenceのcounterexample・completion_pair・separating_pairの値、
+EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とする。
+上記のAnswer・Node・Judgment・Rule、および以降の型付き構成は核が検査する表現を定める。
+保存時は次の射影を適用し、元の三入力と同じsemanticsから内部構成を再検査する。
+
+| 内部の検査表現 | runの保存表現 |
+| --- | --- |
+| nodeのrule・arguments・evidence・scope・support | 欄を持たない。値の参照とconditionsは保持する |
+| 証明Evidenceとその参照 | 除く。counterexample・completion_pair・separating_pairはCounterexample型としてcounterexamplesへ、completion_fibersはevidenceへ保持する |
+| Law成立だけのclaim/proposition | 回答のstatusへ反映し、重複する参照を除く |
+| 回答のevaluation | applicabilityと、存在すればoutputs.environmentへ射影する |
+| Evaluation値 | EvaluationResult型でapplicability・bindings・value・environmentを保持する |
+| LawInstance値 | name・role・bindings・parametersを保持する |
+| Issueの導出依存 | dependenciesを空にし、details内の導出参照を除く。元のmissing位置と具体的な理由は保持する |
+
+到達しないnodeを除き、同じ型・値・環・基底・関係を持つ表示だけを共有する。
+保存用node IDはこの値グラフの参照であり、内部導出の番号と一致することを要求しない。
+数学的な値・型・全解・条件・反例の検査と、後続要求が消費する型付き結果は射影前に保持する。
+通常の短い回答表示は[実行 §5](execution.md#5-ファイル操作と出力)に従う。
 
 Vocabulary と VocabularyBinding は [Atom 定義](definitions.md#1-ファイルと識別)の schema を使う。
 QuestionKindとFieldは[固定12問](execution.md#3-固定の12の問い)のkindと出力fieldに限定する。
@@ -152,14 +181,15 @@ Law は宣言全体の span、Atom 定義は該当宣言 object の JSON Pointer
 省略されたguardや生成した対応に架空の入力位置を与えず、補完の出所を規則名で区別する。
 constructorのDeclarationInfo.locationは定義の該当 constructor object、readingはそのreading全体を指す。
 FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測slot。
-ノードごとの支持集合は出力しない。反例は judgment.evidence から種類ごとの Evidence を辿る。
+ノードごとの支持集合は出力しない。反例は回答またはjudgmentのcounterexamplesから辿る。
 counterexample では bindings と facts から subject・field・入力 Atom を特定し、origin/source へ戻る。
 他の証拠も下記の型付き参照と元の式・入力コピーを使って検査する。
 欠測は Issue.missing と needed の requirements から元の未観測 slot を辿る。
-値と条件の根拠は rule.location、型付き arguments、conditions、evidence と入力コピーで検査する。
-この DAG は正当化の依存関係を表し、実行履歴ではない。
+値と条件の内部検査はrule.location、型付きarguments、conditions、evidenceと開始時の三入力を使う。
+この導出DAGは核に保持する。保存値は型付き参照・条件・反例・元入力のコピーから読み、
+必要な再検査は同じ定義・Law・ArchMapと問いを再入力して行う。
 
-保存形式は archsig.result/3。result/2 の再利用候補は版不一致として記録し、現在の三入力から
+保存形式は archsig.result/4。result/2・result/3の再利用候補は版不一致として警告し、現在の三入力から
 再計算する。semantics は archsig/0.6.0 のままであり、問いや Law の意味は変更しない。
 
 runの再利用候補は現在入力から再計算した結果と照合する。runは`reuse`欄を出力せず、
