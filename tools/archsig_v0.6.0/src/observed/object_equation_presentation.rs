@@ -61,7 +61,7 @@ impl ParameterGuard {
             Self::Fibers(v) => match v.get(object).ok_or("数値guardの対象が域外")? {
                 GuardFiber::Outside => Ok(true),
                 GuardFiber::Known { proof, .. } => proof.is_zero(c),
-                GuardFiber::Missing { .. } => Ok(false),
+                GuardFiber::Pending { .. } => Ok(false),
             },
             Self::Constant(_) => Ok(false),
         }
@@ -72,7 +72,7 @@ impl ParameterGuard {
     ) -> Option<&super::environment::numeric_law_function::Pending> {
         match self {
             Self::Fibers(v) => match v.get(object) {
-                Some(GuardFiber::Missing { pending, .. }) => Some(pending),
+                Some(GuardFiber::Pending { pending, .. }) => Some(pending),
                 _ => None,
             },
             _ => None,
@@ -81,7 +81,7 @@ impl ParameterGuard {
     pub fn support_at(&self, object: usize) -> &[Fact] {
         match self {
             Self::Fibers(v) => match v.get(object) {
-                Some(GuardFiber::Known { support, .. } | GuardFiber::Missing { support, .. }) => {
+                Some(GuardFiber::Known { support, .. } | GuardFiber::Pending { support, .. }) => {
                     support
                 }
                 _ => &[],

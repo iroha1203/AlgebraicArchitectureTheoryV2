@@ -1034,24 +1034,38 @@ pub(super) fn with_missing<T>(
     missing: &mut Pending,
     operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
 ) -> Result<T, ValidationFailure> {
+    let (result, reads) = capture_missing(env, || operation(missing))?;
+    if result.is_err() {
+        missing.facts.extend(reads);
+    }
+    result
+}
+
+pub(super) fn capture_missing<T>(
+    env: &Environment<'_>,
+    operation: impl FnOnce() -> T,
+) -> Result<(T, Vec<Fact>), ValidationFailure> {
     let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    let result = operation(missing);
+    let result = operation();
     let reads = env
         .missing_slot_reads
         .replace(outer)
-        .ok_or("数値変更の不足位置収集がない")?;
+        .ok_or("数値式の不足位置収集がない")?;
     if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
-    if result.is_err() {
-        missing.facts.extend(reads.into_iter().filter(|fact| {
-            !env.primitive_valuation
-                .as_ref()
-                .is_some_and(|values| values.contains_key(fact))
-                && !env.affine_valuation.contains_key(fact)
-        }));
-    }
-    result
+    Ok((
+        result,
+        reads
+            .into_iter()
+            .filter(|fact| {
+                !env.primitive_valuation
+                    .as_ref()
+                    .is_some_and(|values| values.contains_key(fact))
+                    && !env.affine_valuation.contains_key(fact)
+            })
+            .collect(),
+    ))
 }
 
 impl NumericGuard {

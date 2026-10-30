@@ -103,8 +103,8 @@ pub(super) fn guard(
     target: bool,
     assignments: &[(String, Scalar)],
     c: &mut Control,
-) -> Result<(Source, Option<Vec<affine::Form>>), ConstructionFailure> {
-    let mut forms = None;
+) -> Result<(Source, super::numeric_guard::Analysis), ConstructionFailure> {
+    let mut forms = super::numeric_guard::Analysis::default();
     let source = expression_inner(
         inputs,
         readings,
@@ -122,7 +122,7 @@ fn expression_inner(
     selection: (
         ObjectEvaluationPosition,
         Option<usize>,
-        Option<&mut Option<Vec<affine::Form>>>,
+        Option<&mut super::numeric_guard::Analysis>,
     ),
     names: &[(String, String)],
     target: bool,
@@ -221,7 +221,7 @@ fn expression_inner(
         variable.symbolic = Some(Box::new(value.clone()));
     }
     if let Some(forms) = forms {
-        *forms = change_affine::guard_forms(
+        *forms = super::numeric_guard::analyze(
             &env,
             expression,
             &variables,

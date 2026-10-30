@@ -74,6 +74,8 @@ pub(super) mod quotient_evaluation;
 pub(super) mod local_read;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
+#[path = "numeric_guard.rs"]
+mod numeric_guard;
 #[path = "numeric_law_function.rs"]
 pub(super) mod numeric_law_function;
 #[path = "numeric_object_function.rs"]
@@ -156,6 +158,8 @@ enum LexicalOrigin {
         binder: data::Binder,
     },
 }
+
+type ScopedMatchBindings = (usize, BTreeMap<String, SourceValue>);
 
 type SourceCacheEntry = (
     super::call::Context,
@@ -7338,6 +7342,82 @@ impl<'a> Environment<'a> {
             .collect::<Result<Vec<_>, _>>()?;
         f.apply_symbolic(&args, law, &self.control)
     }
+    // 通常Evaluatorと数値guardが同じ選択arm・pattern束縛を使う。
+    fn scoped_match_bindings(
+        &self,
+        id: usize,
+        input: &SourceValue,
+        variables: &BTreeMap<String, SourceValue>,
+    ) -> Result<Option<ScopedMatchBindings>, ValidationFailure> {
+        let ExprKind::Match { scrutinee, arms } = &self.inputs.law().exprs[id].kind else {
+            return Err("束縛の元式がmatchでない".into());
+        };
+        use super::term::affine::Value;
+        let selection = if let Some(value) = &input.known_value {
+            match data::select(self.inputs.law(), id, Some(value), &self.control)? {
+                Some(arm) => Some((
+                    arm,
+                    data::bindings(self.inputs.law(), id, arm, value, &self.control)?
+                        .into_iter()
+                        .map(|(name, value)| (name, Value::Known(value)))
+                        .collect(),
+                )),
+                None => None,
+            }
+        } else {
+            let ty = self
+                .inputs
+                .law()
+                .expr_type(*scrutinee)
+                .ok_or("検査済matchの元型がない")?;
+            let value = input
+                .symbolic
+                .as_deref()
+                .cloned()
+                .unwrap_or_else(|| Value::Unsupported(ty.clone()));
+            data::select_partial(
+                arms,
+                &value,
+                &self.control,
+                &Value::data_parts,
+                &|span, c| data::resolved(self.inputs.law(), span, c),
+            )?
+        };
+        let Some((arm, bindings)) = selection else {
+            return Ok(None);
+        };
+        let mut local = self.copy_variables(variables)?;
+        for (name, value) in bindings {
+            let (known, symbolic, affine) = match &value {
+                Value::Known(value) => (Some(value.clone()), None, None),
+                _ => {
+                    let known = value.known(&self.control)?;
+                    let affine = value.number(&self.control)?.map(Box::new);
+                    (known, Some(Box::new(value)), affine)
+                }
+            };
+            if local
+                .insert(
+                    name,
+                    SourceValue {
+                        condition_failed: false,
+                        condition_pending: false,
+                        symbolic,
+                        comparison: None,
+                        affine,
+                        scope: input.scope.clone(),
+                        known_value: known.clone(),
+                        support: input.support.clone(),
+                        scalar_scope: known.map(|_| input.scope.clone()),
+                    },
+                )
+                .is_some()
+            {
+                return Err("pattern名が重複する".into());
+            }
+        }
+        Ok(Some((arm, local)))
+    }
     fn scoped_ast(
         &self, id: usize, variables: &BTreeMap<String, SourceValue>, base: &Scope, reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
@@ -7675,19 +7755,7 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Match { scrutinee, arms } => {
                     let input = self.scoped_ast(*scrutinee, variables, base, reading)?;
-                    use super::term::affine::Value;
-                    let selection = if let Some(value) = &input.known_value {
-                        match data::select(self.inputs.law(), id, Some(value), &self.control)? {
-                            Some(arm) => Some((arm, data::bindings(self.inputs.law(), id, arm, value, &self.control)?.into_iter().map(|(name, value)| (name, Value::Known(value))).collect())),
-                            None => None,
-                        }
-                    } else {
-                        let ty = self.inputs.law().expr_type(*scrutinee).ok_or("検査済matchの元型がない")?;
-                        let value = input.symbolic.as_deref().cloned().unwrap_or_else(|| Value::Unsupported(ty.clone()));
-                        data::select_partial(arms, &value, &self.control, &Value::data_parts, &|span, c| data::resolved(self.inputs.law(), span, c))?
-                    };
-                    let Some((arm, bindings)) = selection
-                    else {
+                    let Some((arm, local)) = self.scoped_match_bindings(id, &input, variables)? else {
                         return Ok(SourceValue {
                             symbolic: None,
                             comparison: None,
@@ -7696,36 +7764,6 @@ impl<'a> Environment<'a> {
                             ..input
                         });
                     };
-                    let mut local = self.copy_variables(variables)?;
-                    for (name, value) in bindings {
-                        let (known, symbolic, affine) = match &value {
-                            Value::Known(value) => (Some(value.clone()), None, None),
-                            _ => {
-                                let known = value.known(&self.control)?;
-                                let affine = value.number(&self.control)?.map(Box::new);
-                                (known, Some(Box::new(value)), affine)
-                            }
-                        };
-                        if local
-                            .insert(
-                                name,
-                                SourceValue {
-                                    condition_failed: false,
-                                    condition_pending: false,
-                                    symbolic,
-                                    comparison: None,
-                                    affine,
-                                    scope: input.scope.clone(),
-                                    known_value: known.clone(),
-                                    support: input.support.clone(),
-                                    scalar_scope: known.map(|_| input.scope.clone()),
-                                },
-                            )
-                            .is_some()
-                        {
-                            return Err("pattern名が重複する".into());
-                        }
-                    }
                     let body = self.scoped_ast(arms[arm].body, &local, base, reading)?;
                     let mut scope = input.scope;
                     scope.merge(&body.scope);
