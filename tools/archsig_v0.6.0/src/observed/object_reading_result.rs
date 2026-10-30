@@ -343,7 +343,7 @@ pub(super) fn validate(g: &Graph, n: &Node, at: usize) -> Result<(), ValidationF
                     }
                     let expected = p.scalar_node()?;
                     let actual = g.get(*r)?;
-                    if actual != &expected || &expected != actual {
+                    if actual != &expected {
                         return Err("view全体評価のOption値が元bodyと違う".into());
                     }
                 }
@@ -354,7 +354,7 @@ pub(super) fn validate(g: &Graph, n: &Node, at: usize) -> Result<(), ValidationF
         }
         _ => return Err("view全体評価のpayloadが違う".into()),
     };
-    if n != &expected || &expected != n {
+    if n != &expected {
         return Err("view全体評価の型/元式/辺/出現/metadataが違う".into());
     }
     Ok(())

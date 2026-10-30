@@ -80,7 +80,6 @@ pub(super) fn same_evaluation(a: Option<&ObjectEvaluation>, b: Option<&ObjectEva
                 ) => a == b,
                 (ObjectEvaluationOutcome::Evaluated(a), ObjectEvaluationOutcome::Evaluated(b)) => {
                     a.nodes == b.nodes
-                        && b.nodes == a.nodes
                         && a.answers == b.answers
                         && a.issues == b.issues
                         && a.status == b.status

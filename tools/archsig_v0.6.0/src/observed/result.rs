@@ -357,7 +357,24 @@ impl PartialEq for Scalar {
                     codomain: e,
                     pairs: f,
                 },
-            ) => a == d && b == e && c.len() == f.len() && c.iter().all(|pair| f.contains(pair)),
+            ) => {
+                if a != d || b != e || c.len() != f.len() {
+                    return false;
+                }
+                // Compare each pair once: repeating recursive containment in both
+                // directions would double work at every nested container level.
+                let mut covered = vec![false; f.len()];
+                c.iter().all(|pair| {
+                    let mut found = false;
+                    for (index, candidate) in f.iter().enumerate() {
+                        if pair == candidate {
+                            covered[index] = true;
+                            found = true;
+                        }
+                    }
+                    found
+                }) && covered.into_iter().all(|matched| matched)
+            }
             (
                 Self::List {
                     element: a,
@@ -377,7 +394,22 @@ impl PartialEq for Scalar {
                     element: c,
                     items: d,
                 },
-            ) => a == c && b.len() == d.len() && b.iter().all(|value| d.contains(value)),
+            ) => {
+                if a != c || b.len() != d.len() {
+                    return false;
+                }
+                let mut covered = vec![false; d.len()];
+                b.iter().all(|value| {
+                    let mut found = false;
+                    for (index, candidate) in d.iter().enumerate() {
+                        if value == candidate {
+                            covered[index] = true;
+                            found = true;
+                        }
+                    }
+                    found
+                }) && covered.into_iter().all(|matched| matched)
+            }
             (
                 Self::Option {
                     element: a,
@@ -4830,6 +4862,133 @@ impl Graph {
 #[cfg(test)]
 mod invariant_tests {
     use super::*;
+
+    fn bool_set(values: &[bool]) -> Scalar {
+        Scalar::Set {
+            element: Type::Bool,
+            items: values.iter().copied().map(Scalar::Bool).collect(),
+        }
+    }
+
+    fn bool_map(values: &[(bool, bool)]) -> Scalar {
+        Scalar::Map {
+            domain: Type::Bool,
+            codomain: Type::Bool,
+            pairs: values
+                .iter()
+                .map(|&(k, v)| (Scalar::Bool(k), Scalar::Bool(v)))
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn raw_scalar_set_equality_is_symmetric_and_preserves_type_length_and_order_independence() {
+        let duplicate = bool_set(&[false, false]);
+        let distinct = bool_set(&[false, true]);
+        assert_ne!(duplicate, distinct);
+        assert_ne!(distinct, duplicate);
+        assert_ne!(duplicate, bool_set(&[false]));
+        assert_eq!(distinct, bool_set(&[true, false]));
+        assert_eq!(bool_set(&[true, false]), distinct);
+        assert_ne!(
+            bool_set(&[]),
+            Scalar::Set {
+                element: Type::Unit,
+                items: vec![]
+            }
+        );
+    }
+
+    #[test]
+    fn raw_scalar_map_equality_is_symmetric_and_preserves_type_length_and_order_independence() {
+        let duplicate = bool_map(&[(false, false), (false, false)]);
+        let distinct = bool_map(&[(false, false), (true, true)]);
+        assert_ne!(duplicate, distinct);
+        assert_ne!(distinct, duplicate);
+        assert_ne!(duplicate, bool_map(&[(false, false)]));
+        assert_eq!(distinct, bool_map(&[(true, true), (false, false)]));
+        assert_eq!(bool_map(&[(true, true), (false, false)]), distinct);
+        assert_ne!(
+            bool_map(&[]),
+            Scalar::Map {
+                domain: Type::Unit,
+                codomain: Type::Bool,
+                pairs: vec![]
+            }
+        );
+        assert_ne!(
+            bool_map(&[]),
+            Scalar::Map {
+                domain: Type::Bool,
+                codomain: Type::Unit,
+                pairs: vec![]
+            }
+        );
+    }
+
+    #[test]
+    fn raw_scalar_nested_option_tuple_equality_keeps_container_symmetry() {
+        let nested = |set, map| Scalar::Option {
+            element: Type::Tuple(vec![
+                Type::Set(Box::new(Type::Bool)),
+                Type::Map(Box::new(Type::Bool), Box::new(Type::Bool)),
+            ]),
+            value: Some(Box::new(Scalar::Tuple(vec![set, map]))),
+        };
+        let valid = nested(
+            bool_set(&[false, true]),
+            bool_map(&[(false, false), (true, true)]),
+        );
+        let reordered = nested(
+            bool_set(&[true, false]),
+            bool_map(&[(true, true), (false, false)]),
+        );
+        assert_eq!(valid, reordered);
+        assert_eq!(reordered, valid);
+        for forged in [
+            nested(
+                bool_set(&[false, false]),
+                bool_map(&[(false, false), (true, true)]),
+            ),
+            nested(
+                bool_set(&[false, true]),
+                bool_map(&[(false, false), (false, false)]),
+            ),
+        ] {
+            assert_ne!(forged, valid);
+            assert_ne!(valid, forged);
+        }
+    }
+
+    #[test]
+    fn raw_scalar_deep_singleton_containers_compare_without_repeating_subtrees() {
+        let mut left = bool_set(&[false, true]);
+        let mut right = bool_set(&[true, false]);
+        for _ in 0..32 {
+            let ty = left.ty();
+            left = Scalar::Set {
+                element: ty.clone(),
+                items: vec![left],
+            };
+            right = Scalar::Set {
+                element: ty,
+                items: vec![right],
+            };
+            let ty = left.ty();
+            left = Scalar::Map {
+                domain: Type::Bool,
+                codomain: ty.clone(),
+                pairs: vec![(Scalar::Bool(false), left)],
+            };
+            right = Scalar::Map {
+                domain: Type::Bool,
+                codomain: ty,
+                pairs: vec![(Scalar::Bool(false), right)],
+            };
+        }
+        assert_eq!(left, right);
+        assert_eq!(right, left);
+    }
 
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {

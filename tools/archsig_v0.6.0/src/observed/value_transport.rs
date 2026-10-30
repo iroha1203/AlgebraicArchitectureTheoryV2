@@ -28,8 +28,7 @@ pub struct FiniteTransportValue {
 }
 impl PartialEq for FiniteTransportValue {
     fn eq(&self, other: &Self) -> bool {
-        // 型域外の候補にも用いる。重複を含む改変による一方向の包含を等値にしない。
-        self.value == other.value && other.value == self.value
+        self.value == other.value
     }
 }
 impl FiniteTransportValue {
