@@ -1,4 +1,4 @@
-//! viewの値保存と型全域の構造的恒等を公開Invariant/Signatureへ接続する。
+//! viewの値保存と型全域の写像を公開Invariant/Signatureへ接続する。
 use super::{
     build_plan::Plan,
     build_result::Builder,
@@ -152,7 +152,7 @@ fn inverse(
 ) -> Result<NodeRef, ValidationFailure> {
     let r = proposition(b, out, "inverse_maps", maps.to_vec(), true)?;
     let p = &mut b.parts[r.0 - b.base];
-    // 恒等の両逆性は標本ではなく、このOption型の全域について成立する。
+    // 両逆性は標本ではなく、このOption型の全域について検査している。
     p.scope.assignments = true;
     let q = Quantifier {
         kind: crate::law::ast::QuantKind::Forall,
@@ -173,16 +173,156 @@ fn inverse(
     ]);
     Ok(r)
 }
+struct ValueAction {
+    subjects: Vec<(NodeRef, NodeRef)>,
+    declarations: Vec<(String, String)>,
+}
+// 全値の順逆は既存核で検査済み。ここではその作用を公開表へ接続する。
+fn finite_action(
+    b: &mut Builder<'_>,
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    values: &super::value_transport::FiniteValueTransport,
+    dependencies: &[NodeRef],
+    c: &mut Control,
+) -> Result<ValueAction, ValidationFailure> {
+    let mut subjects = std::collections::BTreeSet::new();
+    let mut pending = values
+        .source()
+        .iter()
+        .map(|v| v.scalar())
+        .collect::<Vec<_>>();
+    while let Some(value) = pending.pop() {
+        tick(c)?;
+        match value {
+            Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => {
+                subjects.insert((snapshot.clone(), subject.clone(), entity.clone()));
+            }
+            Scalar::Tuple(items)
+            | Scalar::List { items, .. }
+            | Scalar::Set { items, .. }
+            | Scalar::Data { args: items, .. } => pending.extend(items),
+            Scalar::Option {
+                value: Some(value), ..
+            } => pending.push(value),
+            Scalar::Map { pairs, .. } => pending.extend(pairs.iter().flat_map(|(a, z)| [a, z])),
+            _ => {}
+        }
+    }
+    let mut action = ValueAction {
+        subjects: vec![],
+        declarations: vec![],
+    };
+    for (snapshot, subject, entity) in subjects {
+        tick(c)?;
+        let source = Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        };
+        let image = super::value_transport::candidate_image(
+            inputs,
+            declarations,
+            values.declaration(),
+            &source,
+            c,
+        )
+        .map_err(|e| {
+            c.stop_reason()
+                .map(ValidationFailure::Stop)
+                .unwrap_or_else(|| format!("有限view値の参照移送: {e:?}").into())
+        })?;
+        if !matches!(image, Scalar::Subject { .. }) {
+            return Err("有限view参照の像が参照でない".into());
+        }
+        let mut refs = vec![];
+        for value in [source, image] {
+            refs.push(b.push(
+                NodeType::Value(value.ty()),
+                "binding",
+                value.wire(),
+                dependencies.to_vec(),
+                Some(value),
+                None,
+            )?);
+        }
+        action.subjects.push((refs[0], refs[1]));
+    }
+    let mut families = std::collections::BTreeSet::new();
+    let mut pending = vec![values.source_type()];
+    while let Some(ty) = pending.pop() {
+        tick(c)?;
+        match ty {
+            Type::Ref(entity) => {
+                let target = declarations
+                    .types()
+                    .iter()
+                    .find(|(s, _)| s == entity)
+                    .map(|(_, z)| z)
+                    .unwrap_or(entity);
+                action.declarations.push((entity.clone(), target.clone()));
+            }
+            Type::Tuple(items) => pending.extend(items),
+            Type::Option(item) | Type::List(item) | Type::Set(item) => pending.push(item),
+            Type::Map(a, z) => pending.extend([a.as_ref(), z.as_ref()]),
+            Type::Data(family) if families.insert(family.clone()) => {
+                action.declarations.push((family.clone(), family.clone()));
+                for constructor in super::data::constructors(inputs.law(), family)? {
+                    tick(c)?;
+                    let name = format!("{family}.{}", constructor.name);
+                    action.declarations.push((name.clone(), name));
+                    pending.extend(&constructor.arguments);
+                }
+            }
+            _ => {}
+        }
+    }
+    action.declarations.sort();
+    action.declarations.dedup();
+    Ok(action)
+}
+fn reject_equivalence(
+    b: &mut Builder<'_>,
+    out: &mut Output,
+    types: [&Type; 2],
+    origin: NodeRef,
+) -> Result<(), ValidationFailure> {
+    let label = b.push(
+        NodeType::Value(Type::Text),
+        "binding",
+        Json::str("value_equivalence"),
+        vec![origin],
+        Some(Scalar::Text("value_equivalence".into())),
+        None,
+    )?;
+    let mut args = vec![label];
+    for ty in types {
+        args.push(b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
+            vec![origin],
+            None,
+            None,
+        )?);
+    }
+    proposition(b, out, "constructible", args, false)?;
+    Ok(())
+}
 fn equivalence(
     b: &mut Builder<'_>,
     out: &mut Output,
-    ty: &Type,
+    types: [&Type; 2],
     source: NodeRef,
     target: NodeRef,
-    declarations: &[(String, String)],
+    action: &ValueAction,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     let mut domains = vec![];
-    for origin in [source, target] {
+    for (origin, ty) in [source, target].into_iter().zip(types) {
         domains.push(b.push(
             NodeType::Domain,
             "domain",
@@ -193,27 +333,61 @@ fn equivalence(
         )?);
     }
     let mut maps = vec![];
-    for (a, z) in [(domains[0], domains[1]), (domains[1], domains[0])] {
-        maps.push(b.push(
-            NodeType::Construction(T::ValueMap),
-            "value_map",
-            Json::obj([
-                ("source", a.wire()),
-                ("target", z.wire()),
-                ("source_type", ty.wire()),
-                ("target_type", ty.wire()),
-                ("subjects", Json::Arr(vec![])),
-                ("declarations", Json::Arr(declarations.iter().map(|(a,z)| Json::Arr(vec![Json::str(a),Json::str(z)])).collect())),
-                ("generators", Json::Arr(vec![])),
-            ]),
-            vec![a, z],
-            None,
-            None,
-        )?);
+    for (direction, (a, z)) in [(domains[0], domains[1]), (domains[1], domains[0])]
+        .into_iter()
+        .enumerate()
+    {
+        let subjects = action
+            .subjects
+            .iter()
+            .map(|(a, z)| if direction == 0 { (*a, *z) } else { (*z, *a) })
+            .collect::<Vec<_>>();
+        let declarations = action
+            .declarations
+            .iter()
+            .map(|(a, z)| if direction == 0 { (a, z) } else { (z, a) })
+            .collect::<Vec<_>>();
+        maps.push(
+            b.push(
+                NodeType::Construction(T::ValueMap),
+                "value_map",
+                Json::obj([
+                    ("source", a.wire()),
+                    ("target", z.wire()),
+                    ("source_type", types[direction].wire()),
+                    ("target_type", types[1 - direction].wire()),
+                    (
+                        "subjects",
+                        Json::Arr(
+                            subjects
+                                .iter()
+                                .map(|(a, z)| Json::Arr(vec![a.wire(), z.wire()]))
+                                .collect(),
+                        ),
+                    ),
+                    (
+                        "declarations",
+                        Json::Arr(
+                            declarations
+                                .iter()
+                                .map(|(a, z)| Json::Arr(vec![Json::str(*a), Json::str(*z)]))
+                                .collect(),
+                        ),
+                    ),
+                    ("generators", Json::Arr(vec![])),
+                ]),
+                [a, z]
+                    .into_iter()
+                    .chain(subjects.iter().flat_map(|(a, z)| [*a, *z]))
+                    .collect(),
+                None,
+                None,
+            )?,
+        );
     }
-    // 値型・constructorの恒等をOptionへ持ち上げる。NoneもSomeの全元も固定する。
-    let left = inverse(b, out, [maps[0], maps[1]], ty, source)?;
-    let right = inverse(b, out, [maps[1], maps[0]], ty, source)?;
+    // 検査済みの型全域の順逆作用をOptionへ持ち上げ、Noneを固定する。
+    let left = inverse(b, out, [maps[0], maps[1]], types[0], source)?;
+    let right = inverse(b, out, [maps[1], maps[0]], types[1], target)?;
     let r = b.push(
         NodeType::Construction(T::ValueEquivalence),
         "value_equivalence",
@@ -235,6 +409,7 @@ fn equivalence(
     )?;
     Ok((r, maps[0]))
 }
+
 fn expression(
     g: &Graph,
     invariant: NodeRef,
@@ -300,10 +475,42 @@ pub(super) fn retain(
             .returns
             .as_ref()
             .ok_or("元viewの返り型がない")?;
-        let Some(value_declarations) = super::value_transport::identity_declarations(returns, inputs.law(), c)? else {
-            return Err("このview値型の全域写像配送は未実装".into());
+        let value_declarations =
+            super::value_transport::identity_declarations(returns, inputs.law(), c)?;
+        let finite_values = if value_declarations.is_none() {
+            if !super::finite::supported(returns, inputs.law(), c)? {
+                return Err("このview値型の全域写像配送は未実装".into());
+            }
+            Some(
+                super::value_transport::finite_declaration_value_transport(
+                    inputs,
+                    declarations,
+                    &instance.declaration().name,
+                    super::value_transport::DeclarationValuePosition::Return,
+                    c,
+                )
+                .map_err(|e| {
+                    c.stop_reason()
+                        .map(ValidationFailure::Stop)
+                        .unwrap_or_else(|| format!("有限view値の全域検査: {e:?}").into())
+                })?,
+            )
+        } else {
+            None
         };
         let ty = Type::Option(Box::new(returns.clone()));
+        let target_returns = finite_values
+            .as_ref()
+            .map(|v| v.target_type())
+            .unwrap_or(returns);
+        let target_ty = Type::Option(Box::new(target_returns.clone()));
+        if finite_values
+            .as_ref()
+            .is_some_and(|v| v.bijection().is_none())
+        {
+            reject_equivalence(b, &mut out, [&ty, &target_ty], axis.invariant)?;
+            return Ok(out);
+        }
         let mut target_axis = None;
         let mut rows = vec![];
         for (oi, source_object) in ao.objects.iter().enumerate() {
@@ -321,7 +528,7 @@ pub(super) fn retain(
             {
                 return Err("対応parameterの型が異なるview移送配送は未実装".into());
             }
-            if ti.declaration().returns.as_ref() != Some(returns) {
+            if ti.declaration().returns.as_ref() != Some(target_returns) {
                 out.preserved = false;
                 return Ok(out);
             }
@@ -366,11 +573,33 @@ pub(super) fn retain(
         let source_wire = wire(b.g, axis.invariant)?;
         let target_wire = wire(b.g, target_invariant)?;
         if field(&source_wire, "returns")? != &ty.wire()
-            || field(&target_wire, "returns")? != &ty.wire()
+            || field(&target_wire, "returns")? != &target_ty.wire()
         {
             return Err("viewのOption読取り型が元返り型と違う".into());
         }
-        let (values, forward) = equivalence(b, &mut out, &ty, axis.invariant, target_invariant, &value_declarations)?;
+        let action = if let Some(declarations) = value_declarations {
+            ValueAction {
+                subjects: vec![],
+                declarations,
+            }
+        } else {
+            finite_action(
+                b,
+                inputs,
+                declarations,
+                finite_values.as_ref().ok_or("有限view値写像がない")?,
+                &[axis.invariant, target_invariant],
+                c,
+            )?
+        };
+        let (values, forward) = equivalence(
+            b,
+            &mut out,
+            [&ty, &target_ty],
+            axis.invariant,
+            target_invariant,
+            &action,
+        )?;
         let mut checks = vec![];
         let mut coordinate_checks = vec![];
         for (so, to, _, _, holds) in rows {
