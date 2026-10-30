@@ -302,6 +302,82 @@ fn certificate(model: &Congruence, index: usize) -> Result<Scalar, ValidationFai
         Scalar::Z(class.into()),
     ]))
 }
+// Consume the checked Operation itself; retain its word and actual total action.
+pub(super) fn operand_path(
+    graph: &Graph,
+    reference: NodeRef,
+) -> Result<crate::observed::path_value::PathValue, ValidationFailure> {
+    if let Ok(Scalar::Path(path)) = graph.scalar(reference) {
+        return Ok(path.as_ref().clone());
+    }
+    let operation = crate::observed::public_compose::op(graph, reference)?;
+    let inputs = value(graph, reference)?.witness.inputs();
+    let scalar = |fact: &crate::construction::FactPointer| -> Result<Scalar, ValidationFailure> {
+        let subject = inputs
+            .archmap()
+            .snapshots
+            .iter()
+            .flat_map(|s| &s.subjects)
+            .find(|s| s.snapshot == fact.snapshot && s.id == fact.subject)
+            .ok_or("操作の元subjectがない")?;
+        Ok(Scalar::Subject {
+            snapshot: fact.snapshot.clone(),
+            subject: fact.subject.clone(),
+            entity: subject.ty.clone(),
+        })
+    };
+    let fact = |p: &crate::construction::FactPointer| Fact {
+        snapshot: p.snapshot.clone(),
+        subject: p.subject.clone(),
+        field: p.field.clone(),
+        atom: p.atom.clone(),
+    };
+    let source = operation.source();
+    let target = operation.target();
+    let root = scalar(source.subject())?;
+    let Scalar::Subject {
+        snapshot,
+        subject,
+        entity,
+    } = &root
+    else {
+        return Err("操作のsourceが原始参照でない".into());
+    };
+    let generators = operation
+        .word()
+        .iter()
+        .map(scalar)
+        .collect::<Result<Vec<_>, _>>()?;
+    let mut action = operation
+        .map()
+        .candidate()
+        .universe()
+        .iter()
+        .zip(operation.map().candidate().images())
+        .map(|(from, to)| (fact(from), fact(to)))
+        .collect::<Vec<_>>();
+    action.sort_by(|a, b| a.0.cmp(&b.0));
+    let (carrier, images) = action.into_iter().unzip();
+    let step = if let Some(generator) = generators.first() {
+        Some(Box::new(crate::observed::path_value::Step {
+            generator: generator.clone(),
+            word_tail: generators[1..].to_vec(),
+            target: scalar(target.subject())?,
+            carrier,
+            images,
+        }))
+    } else {
+        None
+    };
+    Ok(crate::observed::path_value::PathValue {
+        reading: source.reading().into(),
+        snapshot: snapshot.clone(),
+        subject: subject.clone(),
+        entity: entity.clone(),
+        step,
+    })
+}
+
 fn queries(
     graph: &Graph,
     left: NodeRef,
@@ -311,11 +387,9 @@ fn queries(
         .into_iter()
         .map(|r| {
             let node = graph.get(r)?;
-            let Scalar::Path(path) = graph.scalar(r)? else {
-                return Err("relationの現在operandがPathでない".into());
-            };
+            let path = operand_path(graph, r)?;
             Ok(QueryPath {
-                path: path.as_ref().clone(),
+                path,
                 support: node.support.clone(),
                 scope: node.scope.clone(),
             })
@@ -1194,9 +1268,6 @@ pub(in crate::observed) fn validate_incompatible(
     graph: &Graph,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    let (Scalar::Path(a), Scalar::Path(b)) = (graph.scalar(w.left)?, graph.scalar(w.right)?) else {
-        return Err("元relationのPathがない".into());
-    };
     let (x, y) = w.incompatible.ok_or("relationの元不適合条件がない")?;
     if w.equal.is_some()
         || w.value_plan.is_some()
@@ -1217,6 +1288,29 @@ pub(in crate::observed) fn validate_incompatible(
     if w.support != support || w.scope != scope {
         return Err("relation不適合の元支持・Scopeが違う".into());
     }
+    if graph.get(w.left)?.ty == NodeType::Construction(T::Operation) {
+        let a = crate::observed::public_compose::op(graph, w.left)?;
+        let b = crate::observed::public_compose::op(graph, w.right)?;
+        let (asource, atarget, _, _) = crate::observed::public_compose::components(graph, w.left)?;
+        let (bsource, btarget, _, _) = crate::observed::public_compose::components(graph, w.right)?;
+        let expected = if a.source() != b.source() {
+            Some((asource, bsource))
+        } else if a.target() != b.target() {
+            Some((atarget, btarget))
+        } else {
+            None
+        };
+        if expected.is_none()
+            || w.incompatible != expected
+            || w.equal.is_some()
+            || w.kind != "relation"
+        {
+            return Err("relationの元Operation端点が違う".into());
+        }
+        return Ok(());
+    }
+    let a = operand_path(graph, w.left)?;
+    let b = operand_path(graph, w.right)?;
     let expected = if a.object() != b.object() {
         Some((a.object(), b.object()))
     } else if a.target() != b.target() {

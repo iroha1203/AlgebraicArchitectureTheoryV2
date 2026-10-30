@@ -288,9 +288,7 @@ pub(in crate::observed) fn validate_node(
     {
         return Err("元relation Sourceの証人に比較結論を混入した".into());
     }
-    let Scalar::Path(path) = graph.scalar(w.left)? else {
-        return Err("元relation比較のPathがない".into());
-    };
+    let path = relations::operand_path(graph, w.left)?;
     if family(w)?.table.reading() != path.reading {
         return Err("relation族が比較operandのreadingと違う".into());
     }
@@ -878,9 +876,7 @@ pub(in crate::observed) fn prepare_sources(
     right: NodeRef,
     control: &mut Control,
 ) -> Result<(Arc<CompareWitness>, Domains), ValidationFailure> {
-    let Scalar::Path(path) = graph.scalar(left)? else {
-        return Err("元relationのPathがない".into());
-    };
+    let path = relations::operand_path(graph, left)?;
     let table = super::super::environment::relation_instances::relation_instances(
         prepared.inputs(),
         &path.reading,

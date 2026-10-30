@@ -2822,13 +2822,6 @@ impl Evaluator<'_, '_> {
     }
 }
 
-/// 通常の構成・回答再検査を終えた実装未完成成果だけに与える内部資格。
-/// CLIや保存候補はこの値を構成できない。
-#[derive(Debug)]
-pub(crate) struct VerifiedIncomplete {
-    _validated: (),
-}
-
 pub fn evaluate_observed(
     prepared: PreparedObserved,
     control: &mut Control,
@@ -2854,7 +2847,6 @@ fn evaluate_observed_with_validator(
     let mut issues = Vec::new();
     let mut internal = false;
     let mut not_implemented = None;
-    let mut verified_incomplete = None;
     {
         let environment = Environment::with_prepared(&prepared, control).ok();
         for &index in prepared.requests().evaluation_order() {
@@ -2963,19 +2955,6 @@ fn evaluate_observed_with_validator(
                                 }
                                 continue;
                             }
-                        }
-                        if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair)
-                            && control.stop_reason().is_none()
-                            && let Some((location, feature)) =
-                                super::change_result::incomplete_construction(&graph, &answer)
-                        {
-                            verified_incomplete = Some(VerifiedIncomplete { _validated: () });
-                            issues.push(Reason::internal(&request.id, feature.clone()));
-                            not_implemented = Some((
-                                request.declaration().unwrap_or(request.kind.wire()).into(),
-                                location,
-                                feature,
-                            ));
                         }
                         issues.extend(answer.reasons.iter().cloned());
                         if let Some(stop) = control.stop_reason() {
@@ -3219,12 +3198,7 @@ fn evaluate_observed_with_validator(
     } else {
         "complete"
     };
-    // 後続の実検証失敗があれば、先に得た資格を配送へ持ち出さない。
-    if internal {
-        verified_incomplete = None;
-    }
     let evaluation = ObservedEvaluation {
-        verified_incomplete,
         prepared,
         nodes: graph.nodes.into_vec(),
         #[cfg(test)]

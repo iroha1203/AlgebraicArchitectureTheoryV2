@@ -53,18 +53,8 @@ fn sources(
 }
 fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
     let prepared = observed::prepare_observed(sources, asks, &mut control()).unwrap();
-    let result = observed::evaluate_observed(prepared, &mut control());
-    let evaluation = match result {
-        Ok(evaluation) => {
-            assert_eq!(evaluation.status(), "complete");
-            evaluation
-        }
-        Err(observed::EvaluationFailure::NotImplemented { partial, feature, .. }) => {
-            assert!(feature.contains("存在・一意性は検査済み"), "{feature}");
-            *partial
-        }
-        Err(failure) => panic!("unexpected failure: {failure:?}"),
-    };
+    let evaluation = observed::evaluate_observed(prepared, &mut control()).unwrap();
+    assert!(!evaluation.wire().canonical().contains("not implemented"));
     archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
 fn control() -> Control {
@@ -298,7 +288,7 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
         run(&dir, &args)
     };
     let first = call("out", false);
-    assert_eq!(first.code, 70, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 2, "{} {}", first.stdout, first.stderr);
     assert!(
         has(&first.receipt, "result"),
         "{} {:?}",
@@ -320,9 +310,9 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
         "Pattern.Part.owner"
     );
     assert!(!arr(get(&requirements[0], "dependents")).is_empty());
-    assert!(format!("{:?}", get(get(plan, "value"), "blockers")).contains("not implemented"));
+    assert!(!format!("{:?}", get(get(plan, "value"), "blockers")).contains("not implemented"));
     let second = call("reuse", true);
-    assert_eq!(second.code, 70, "{} {}", second.stdout, second.stderr);
+    assert_eq!(second.code, 2, "{} {}", second.stdout, second.stderr);
     let reused = result_json(&dir, &second);
     assert!(warnings(&reused).is_empty(), "{:?}", warnings(&reused));
     for key in ["answers", "nodes"] {
@@ -331,7 +321,7 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
 }
 
 #[test]
-fn finite_owner_completion_empty_observation_is_invalid_and_other_missing_is_not_exhausted() {
+fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_domains() {
     let source = sources(false, "", "", "c.flag", false);
     let map=String::from_utf8(source.archmap().bytes().to_vec()).unwrap()
         .replace(r#"{"id":"root","type":"Pattern.Root","origin":"model"},"#,"")
@@ -379,12 +369,20 @@ fn finite_owner_completion_empty_observation_is_invalid_and_other_missing_is_not
             law.into_bytes(),
             map.into_bytes(),
         );
-        let failure = observed::evaluate_observed_bytes(
+        let evaluated = observed::evaluate_observed_bytes(
             input,
             &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
             &mut control(),
-        )
-        .unwrap_err();
+        );
+        if additional {
+            let evaluated = evaluated.unwrap();
+            let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            assert_eq!(s(get(answer(&j, "r"), "status")), "refuted");
+            assert!(!has(get(answer(&j, "r"), "outputs"), "object"));
+            assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
+            continue;
+        }
+        let failure = evaluated.unwrap_err();
         let observed::EvaluationFailure::NotImplemented {
             partial, feature, ..
         } = failure
@@ -400,7 +398,7 @@ fn finite_owner_completion_empty_observation_is_invalid_and_other_missing_is_not
 }
 
 #[test]
-fn finite_owner_completion_missing_guard_stays_uncompleted_without_an_excluding_sibling() {
+fn finite_owner_completion_missing_finite_guard_is_exhausted_without_an_excluding_sibling() {
     let source = sources(false, " when c.flag", "", "true", false);
     let original = String::from_utf8(source.archmap().bytes().to_vec()).unwrap();
     let map=original.replace(r#"{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"model"},"#, "")
@@ -416,20 +414,23 @@ fn finite_owner_completion_missing_guard_stays_uncompleted_without_an_excluding_
         source.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let failure = observed::evaluate_observed_bytes(
+    let completed = observed::evaluate_observed_bytes(
         input,
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
         &mut control(),
     )
-    .unwrap_err();
-    let observed::EvaluationFailure::NotImplemented {
-        partial, feature, ..
-    } = failure
-    else {
-        panic!("未完のguardを全検査としない")
-    };
-    assert!(!feature.contains("存在・一意性は検査済み"), "{feature}");
-    assert!(!partial.wire().canonical().contains("completion_fibers"));
+    .unwrap();
+    let j = archsig::json::parse(completed.wire().canonical().as_bytes()).unwrap();
+    assert_eq!(s(get(answer(&j, "r"), "status")), "refuted");
+    assert_eq!(unique(&j), "refuted");
+    let mut counts = arr(get(get(get(evidence(&j), "value"), "data"), "cases"))
+        .iter()
+        .map(|c| arr(get(c, "assignments")).len())
+        .collect::<Vec<_>>();
+    counts.sort();
+    assert_eq!(counts, vec![0, 4]);
+    assert!(!has(get(answer(&j, "r"), "outputs"), "object"));
+    assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
 }
 
 fn owned(node: &archsig::json::JNode) -> archsig::canonical::Json {
@@ -453,7 +454,7 @@ fn field_mut<'a>(
     fields.get_mut(key).unwrap()
 }
 #[test]
-fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_request_tamper() {
+fn finite_owner_completion_partial_save_is_explicit_and_reuse_rejects_case_and_request_tamper() {
     use archsig::canonical::Json as J;
     let source = sources(true, "", "", "c.flag", false);
     let dir = workdir("owner-explicit-save");
@@ -479,8 +480,8 @@ fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_req
         "120000",
     ];
     let no_out = run(&dir, &args);
-    assert_eq!(no_out.code, 70, "{}", no_out.stdout);
-    assert_eq!(s(get(&no_out.receipt, "status")), "error");
+    assert_eq!(no_out.code, 2, "{}", no_out.stdout);
+    assert_eq!(s(get(&no_out.receipt, "status")), "partial");
     let answer = &arr(get(&no_out.receipt, "answers"))[0];
     assert_eq!(s(get(answer, "uniqueness")), "established");
     assert_eq!(
@@ -499,10 +500,10 @@ fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_req
     let mut saved_args = args.to_vec();
     saved_args.extend(["--out", "out"]);
     let first = run(&dir, &saved_args);
-    assert_eq!(first.code, 70, "{}", first.stdout);
+    assert_eq!(first.code, 2, "{}", first.stdout);
     let original = result_json(&dir, &first);
-    assert_eq!(s(get(&original, "status")), "error");
-    assert_eq!(num(get(&original, "exit_code")), 70);
+    assert_eq!(s(get(&original, "status")), "partial");
+    assert_eq!(num(get(&original, "exit_code")), 2);
     assert_eq!(unique(&original), "established");
     let path = dir.join(s(get(&first.receipt, "result")));
     let saved = owned(&original);
@@ -535,7 +536,7 @@ fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_req
         let mut repeated = args.to_vec();
         repeated.extend(["--out", &out, "--reuse", "out"]);
         let result = run(&dir, &repeated);
-        assert_eq!(result.code, 70, "{}", result.stdout);
+        assert_eq!(result.code, 2, "{}", result.stdout);
         let result = result_json(&dir, &result);
         assert!(
             warnings(&result)
@@ -546,17 +547,20 @@ fn finite_owner_completion_error_save_is_explicit_and_reuse_rejects_case_and_req
             assert_eq!(get(&original, key).value, get(&result, key).value);
         }
     }
-    // 非ownerの未知guardは検査済み成果の資格を得ず、--outを指定しても保存しない。
+    // 有限Boolの未知guardも全補完を検査し、不足を通常の計算成果として保存する。
     let source = sources(false, " when c.flag", "", "true", false);
     let map=String::from_utf8(source.archmap().bytes().to_vec()).unwrap().replace(r#"{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"model"},"#, "");
     std::fs::write(dir.join("l.law"), source.law().bytes()).unwrap();
     std::fs::write(dir.join("a.json"), map).unwrap();
     let mut rejected = args.to_vec();
-    rejected.extend(["--out", "unqualified"]);
+    rejected.extend(["--out", "guard-refuted"]);
     let result = run(&dir, &rejected);
-    assert_eq!(result.code, 70, "{}", result.stdout);
-    assert!(!has(&result.receipt, "result"));
-    assert!(!dir.join("unqualified").exists());
+    assert_eq!(result.code, 1, "{}", result.stdout);
+    assert!(has(&result.receipt, "result"));
+    assert!(dir.join("guard-refuted").exists());
+    let saved = result_json(&dir, &result);
+    assert_eq!(s(get(&arr(get(&saved, "answers"))[0], "status")), "refuted");
+    assert!(!format!("{:?}", get(&saved, "issues")).contains("internal"));
 }
 
 #[test]
@@ -716,4 +720,43 @@ fn finite_owner_definitive_repair_refutations_are_results_without_common_objects
             }
         );
     }
+}
+
+#[test]
+fn finite_owner_and_value_completions_close_actual_read_dependencies() {
+    let source = sources(true, " when c.flag and b", "", "true", false);
+    let original = String::from_utf8(source.archmap().bytes().to_vec()).unwrap();
+    let map = original.replace(
+        r#"{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"model"},"#,
+        "",
+    );
+    assert_ne!(map, original);
+    let source = InputSources::from_bytes(
+        source
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        source.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let j = result(
+        source,
+        &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
+    );
+    assert_eq!(s(get(&j, "status")), "partial");
+    assert_eq!(unique(&j), "undetermined");
+    let a = answer(&j, "r");
+    assert_eq!(s(get(a, "status")), "undetermined");
+    assert!(!has(get(a, "outputs"), "object"));
+    assert!(!has(get(a, "outputs"), "repair"));
+    let data = get(get(evidence(&j), "value"), "data");
+    assert_eq!(arr(get(data, "fields")).len(), 2);
+    let mut counts = arr(get(data, "cases"))
+        .iter()
+        .map(|c| arr(get(c, "assignments")).len())
+        .collect::<Vec<_>>();
+    counts.sort();
+    assert_eq!(counts, vec![0, 0, 0, 1]);
+    assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
 }
