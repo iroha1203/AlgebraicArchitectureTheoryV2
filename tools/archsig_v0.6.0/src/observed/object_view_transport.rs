@@ -183,10 +183,10 @@ pub struct ObjectViewTransport {
     target_value: Option<ViewTransportValue>,
     outcome: ViewTransportOutcome,
     family: Option<FiniteViewTransport>,
-    numeric_counterexample: Option<super::environment::numeric_view_function::Counterexample>,
+    numeric_counterexample: Option<super::environment::numeric_object_function::Counterexample>,
     numeric_family: Option<(
-        super::environment::numeric_view_function::Reading,
-        super::environment::numeric_view_function::Reading,
+        super::environment::numeric_object_function::Reading,
+        super::environment::numeric_object_function::Reading,
     )>,
 }
 /// 未着手の比較に結論を与えず、検査済みの構成・評価・値を保持する。
@@ -296,11 +296,11 @@ impl ObjectViewTransport {
     }
     pub(super) fn numeric_counterexample(
         &self,
-    ) -> Option<&super::environment::numeric_view_function::Counterexample> {
+    ) -> Option<&super::environment::numeric_object_function::Counterexample> {
         self.numeric_counterexample.as_ref()
     }
     pub(super) fn numeric_pending(&self) -> Option<(bool, Vec<super::result::Fact>)> {
-        use super::environment::numeric_view_function::Reading;
+        use super::environment::numeric_object_function::Reading;
         let (a, z) = self.numeric_family.as_ref()?;
         for (reading, target) in [(a, false), (z, true)] {
             if let Reading::Unknown(facts) = reading {
@@ -587,7 +587,7 @@ fn checked_view_transport(
             })
             && numeric_return
         {
-            use super::environment::numeric_view_function::{self as functions, Reading};
+            use super::environment::numeric_object_function::{self as functions, Reading};
             let equivalence = numeric_declaration_value_transport(
                 &inputs,
                 declarations,

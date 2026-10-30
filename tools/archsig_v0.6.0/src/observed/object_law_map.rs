@@ -76,6 +76,8 @@ pub(super) struct Output {
     pub circuits: Vec<NodeRef>,
     pub invariants: Vec<NodeRef>,
     pub conditions: Vec<NodeRef>,
+    pub pending: Option<super::environment::numeric_law_function::Pending>,
+    pub evidence: Vec<NodeRef>,
 }
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuitTransport)?;
@@ -245,7 +247,7 @@ struct Case {
     object: NodeRef,
     pattern: NodeRef,
     when: NodeRef,
-    value: bool,
+    value: Option<bool>,
 }
 struct Detector {
     reference: NodeRef,
@@ -283,9 +285,6 @@ fn detectors(
         let r = reference(r)?;
         g.expect(r, &NodeType::Construction(T::CircuitDetector))?;
         let v = wire(g, r)?;
-        if !array(field(&v, "parameters")?)?.is_empty() {
-            return Err("parameterを残すLaw移送の配送は未実装".into());
-        }
         let mut cases = vec![];
         for r in array(field(&v, "cases")?)? {
             tick(c)?;
@@ -293,15 +292,24 @@ fn detectors(
             g.expect(r, &NodeType::Construction(T::CircuitCase))?;
             let v = wire(g, r)?;
             let evaluation = wire(g, reference(field(&v, "refutation")?)?)?;
-            let Scalar::Bool(value) = g.scalar(reference(field(&evaluation, "value")?)?)? else {
-                return Err("閉じたcircuitの実真値がない".into());
+            let Json::Obj(evaluation) = &evaluation else {
+                return Err("circuitの評価がrecordでない".into());
             };
+            let value = evaluation
+                .get("value")
+                .map(|r| -> Result<bool, ValidationFailure> {
+                    match g.scalar(reference(r)?)? {
+                        Scalar::Bool(v) => Ok(*v),
+                        _ => Err("circuitの実真値がBoolでない".into()),
+                    }
+                })
+                .transpose()?;
             cases.push(Case {
                 reference: r,
                 object: reference(field(&v, "object")?)?,
                 pattern: reference(field(&v, "pattern")?)?,
                 when: reference(field(&v, "when")?)?,
-                value: *value,
+                value,
             });
         }
         let (index, component, lhs) = match &coordinate.source {
@@ -362,6 +370,16 @@ fn proof(
     out.conditions.push(r);
     Ok(r)
 }
+fn attach(b: &mut Builder<'_>, r: NodeRef, evidence: NodeRef) -> Result<(), ValidationFailure> {
+    let part = &mut b.parts[r.0 - b.base];
+    part.evidence.push(evidence);
+    part.judgment
+        .as_mut()
+        .ok_or("数値Law反例の判断がない")?
+        .evidence
+        .push(evidence);
+    Ok(())
+}
 fn path(b: &mut Builder<'_>, p: &Json, parent: NodeRef) -> Result<NodeRef, ValidationFailure> {
     let mut items = vec![];
     for n in array(p)? {
@@ -400,6 +418,8 @@ pub(super) fn retain(
         circuits: vec![],
         invariants: vec![],
         conditions: vec![],
+        pending: None,
+        evidence: vec![],
     };
     if declarations.candidates().is_empty() {
         return Ok(out);
@@ -500,7 +520,17 @@ pub(super) fn retain(
                     instance.declaration().role == ti.declaration().role,
                 )?);
             }
-            let (applicable_equal, holds_equal) = if let Some(family) = transfer.family() {
+            let numeric = transfer.numeric_family();
+            if let Some(pending) = numeric.and_then(|f| f.pending.as_ref()) {
+                out.pending = Some(pending.clone());
+                return Ok(out);
+            }
+            let (applicable_equal, holds_equal) = if let Some(family) = numeric {
+                (
+                    family.applicable.ok_or("数値Lawの適用が未決")?,
+                    family.equivalent.ok_or("数値Lawの零集合比較が未決")?,
+                )
+            } else if let Some(family) = transfer.family() {
                 if matches!(
                     transfer.outcome(),
                     object_law_transport::LawTransportOutcome::Undetermined
@@ -545,6 +575,32 @@ pub(super) fn retain(
                 (app.0 == app.1, value.0 == value.1)
             };
             let args = vec![*index, zt.indices[zi], object.object, target.object];
+            let evidence = numeric
+                .and_then(|f| f.example.as_ref())
+                .map(|e| {
+                    super::object_view_map::counterexample(
+                        b,
+                        e,
+                        &e.left.ty(),
+                        &e.right.ty(),
+                        &args,
+                        false,
+                    )
+                })
+                .transpose()?;
+            let application_evidence = numeric
+                .and_then(|f| f.application_example.as_ref())
+                .map(|e| {
+                    super::object_view_map::counterexample(
+                        b,
+                        e,
+                        &e.left.ty(),
+                        &e.right.ty(),
+                        &args,
+                        false,
+                    )
+                })
+                .transpose()?;
             let applicable = proof(
                 b,
                 &mut out,
@@ -553,13 +609,31 @@ pub(super) fn retain(
                 applicable_equal,
             )?;
             let equivalent = proof(b, &mut out, "equation_holds_iff", args, holds_equal)?;
+            if numeric.is_some() {
+                for r in [applicable, equivalent] {
+                    super::object_view_map::quantify_parameters(b, r, instance.parameters());
+                }
+            }
+            for (r, evidence) in [(applicable, application_evidence), (equivalent, evidence)] {
+                if let Some(evidence) = evidence {
+                    out.evidence.push(evidence);
+                    attach(b, r, evidence)?;
+                }
+            }
             holds.push(Json::obj([
                 ("source", object.object.wire()),
                 ("target", target.object.wire()),
                 ("applicable", applicable.wire()),
                 ("equivalent", equivalent.wire()),
             ]));
-            rows.push((oi, oj, equivalent));
+            let numeric_conditions = numeric
+                .map(|f| {
+                    f.implies
+                        .map(|implies| (holds_equal, implies))
+                        .ok_or("数値Lawの含意が未決")
+                })
+                .transpose()?;
+            rows.push((oi, oj, equivalent, numeric_conditions, evidence));
         }
         let zi = target_index.ok_or("Law移送の全対象表が空")?;
         let mut target_instances = vec![];
@@ -631,7 +705,7 @@ pub(super) fn retain(
             let tp = path(b, &target.component, target.reference)?;
             let mut zeros = vec![];
             let mut cases = vec![];
-            for &(oi, oj, _) in &rows {
+            for &(oi, oj, _, numeric, evidence) in &rows {
                 tick(c)?;
                 let so = at.objects[oi].object;
                 let to = zt.objects[oj].object;
@@ -653,8 +727,31 @@ pub(super) fn retain(
                         to,
                         tp,
                     ],
-                    sc.is_some_and(|r| r.value) == tc.is_some_and(|r| r.value),
+                    match numeric {
+                        Some((equal, _)) => equal,
+                        None => {
+                            sc.map(|r| r.value.ok_or("元circuitの真値が未決"))
+                                .transpose()?
+                                .unwrap_or(false)
+                                == tc
+                                    .map(|r| r.value.ok_or("先circuitの真値が未決"))
+                                    .transpose()?
+                                    .unwrap_or(false)
+                        }
+                    },
                 )?;
+                if numeric.is_some() {
+                    super::object_view_map::quantify_parameters(
+                        b,
+                        equivalent,
+                        instance.parameters(),
+                    );
+                }
+                if let Some(evidence) =
+                    evidence.filter(|_| numeric.is_some_and(|(equal, _)| !equal))
+                {
+                    attach(b, equivalent, evidence)?;
+                }
                 zeros.push(Json::obj([
                     ("source", so.wire()),
                     ("target", to.wire()),
@@ -685,20 +782,50 @@ pub(super) fn retain(
                         &mut out,
                         "implies",
                         vec![sc.when, tc.when],
-                        !sc.value || tc.value,
+                        match numeric {
+                            Some((_, implies)) => implies,
+                            None => {
+                                !sc.value.ok_or("元circuitの真値が未決")?
+                                    || tc.value.ok_or("先circuitの真値が未決")?
+                            }
+                        },
                     )?;
                     let mut accepts = false;
                     for case in &target.cases {
                         tick(c)?;
-                        accepts |= case.value && pattern(b.g, case.pattern, tc.pattern)?;
+                        if numeric.is_some() {
+                            accepts |=
+                                case.when == tc.when && pattern(b.g, case.pattern, tc.pattern)?;
+                        } else {
+                            accepts |= case.value.ok_or("先circuitの真値が未決")?
+                                && pattern(b.g, case.pattern, tc.pattern)?;
+                        }
                     }
                     let accepted = proof(
                         b,
                         &mut out,
                         "circuit_accepts",
                         vec![target.reference, tc.pattern, tc.when],
-                        !tc.value || accepts,
+                        if numeric.is_some() {
+                            accepts
+                        } else {
+                            !tc.value.ok_or("先circuitの真値が未決")? || accepts
+                        },
                     )?;
+                    if numeric.is_some() {
+                        for r in [implies, accepted] {
+                            super::object_view_map::quantify_parameters(
+                                b,
+                                r,
+                                instance.parameters(),
+                            );
+                        }
+                    }
+                    if let Some(evidence) =
+                        evidence.filter(|_| numeric.is_some_and(|(_, implies)| !implies))
+                    {
+                        attach(b, implies, evidence)?;
+                    }
                     cases.push(Json::obj([
                         ("source_object", so.wire()),
                         ("target_object", to.wire()),
@@ -747,7 +874,7 @@ pub(super) fn retain(
             .ok_or("先述語Invariantがない")?;
         let checks = rows
             .iter()
-            .map(|&(i, j, e)| {
+            .map(|&(i, j, e, _, _)| {
                 Json::obj([
                     ("source", at.objects[i].object.wire()),
                     ("target", zt.objects[j].object.wire()),

@@ -1,4 +1,4 @@
-//! 元viewを既存Termの全域係数比較と零・単位点の再代入へ接続する。
+//! 数値Law/viewの元式を同じ対象・引数環境で読み、実引数で再代入する。
 use super::*;
 use crate::construction::{
     ConstructionFailure,
@@ -24,7 +24,7 @@ pub(in crate::observed) struct Counterexample {
     pub right: Scalar,
     pub facts: Vec<Fact>,
 }
-enum Source {
+pub(super) enum Source {
     Outside,
     Value(Box<SourceValue>),
     Unknown,
@@ -35,7 +35,7 @@ fn invalid(e: ValidationFailure) -> ConstructionFailure {
         e => ConstructionFailure::Inconsistent(format!("数値viewの元式: {e:?}")),
     }
 }
-fn fixed_bindings(
+pub(super) fn fixed_bindings(
     row: &crate::construction::readings::ObjectInstance,
     c: &Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
@@ -66,6 +66,26 @@ fn source(
     assignments: &[(String, Scalar)],
     c: &mut Control,
 ) -> Result<Source, ConstructionFailure> {
+    expression(
+        inputs,
+        readings,
+        (position, None),
+        names,
+        target,
+        assignments,
+        c,
+    )
+}
+pub(super) fn expression(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    selection: (ObjectEvaluationPosition, Option<usize>),
+    names: &[(String, String)],
+    target: bool,
+    assignments: &[(String, Scalar)],
+    c: &mut Control,
+) -> Result<Source, ConstructionFailure> {
+    let (position, expression) = selection;
     let row = readings
         .instances()
         .get(position.instance)
@@ -85,11 +105,26 @@ fn source(
         .declarations
         .get(&row.declaration().name)
         .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewの宣言がない".into()))?;
-    let crate::law::model::Signature::View { params, body, .. } = &declaration.signature else {
-        return Err(ConstructionFailure::InvalidSelection(
-            "数値viewを選択する".into(),
-        ));
+    let (params, body) = match &declaration.signature {
+        crate::law::model::Signature::View { params, body, .. }
+        | crate::law::model::Signature::Law { params, body, .. } => (params, *body),
+        _ => {
+            return Err(ConstructionFailure::InvalidSelection(
+                "数値のLaw/viewを選択する".into(),
+            ));
+        }
     };
+    let expression = expression.unwrap_or(body);
+    let selected = inputs
+        .law()
+        .exprs
+        .get(expression)
+        .ok_or_else(|| ConstructionFailure::Inconsistent("数値読取りの元式がない".into()))?;
+    if selected.span.0 < declaration.span.0 || selected.span.1 > declaration.span.1 {
+        return Err(ConstructionFailure::Inconsistent(
+            "数値読取りの元式が別宣言に属する".into(),
+        ));
+    }
     let mut env = Environment::new(inputs, c).map_err(ConstructionFailure::from)?;
     env.object = Some(Arc::new(
         ObjectDomain::from_readings(inputs, readings, position.object, c).map_err(invalid)?,
@@ -142,8 +177,13 @@ fn source(
         variable.symbolic = Some(Box::new(value.clone()));
     }
     Ok(Source::Value(Box::new(
-        env.scoped_ast(*body, &variables, &Scope::default(), &declaration.reading)
-            .map_err(invalid)?,
+        env.scoped_ast(
+            expression,
+            &variables,
+            &Scope::default(),
+            &declaration.reading,
+        )
+        .map_err(invalid)?,
     )))
 }
 pub(in crate::observed) fn read(

@@ -597,13 +597,15 @@ fn compute_inner(
                 c,
             )?;
             preserved &= laws.preserved;
+            let law_pending = laws.pending;
+            let law_evidence = laws.evidence;
             declaration_rows.extend(laws.declarations);
             circuit_maps = laws.circuits;
             invariant_maps = laws.invariants;
             dependencies.extend(laws.conditions);
             dependencies.extend(circuit_maps.iter().copied());
             dependencies.extend(invariant_maps.iter().copied());
-            if laws.preserved {
+            if laws.preserved && law_pending.is_none() {
                 equation_map = Some(b.push(
                     NodeType::Construction(T::EquationMap),
                     "equation_map",
@@ -645,7 +647,9 @@ fn compute_inner(
             declaration_transports = transported.transports;
             declaration_status = transported.status;
             declaration_reasons = transported.reasons;
-            if let Some((location, missing)) = view_pending {
+            let pending = view_pending.map(|(location, missing)| (location, missing, "affine_numeric_view_transport"))
+                .or_else(|| law_pending.map(|p| (p.location, p.missing, "affine_numeric_law_transport")));
+            if let Some((location, missing, method)) = pending {
                 if declaration_status != Decision::Refuted {
                     declaration_status = Decision::Undetermined;
                 }
@@ -654,7 +658,7 @@ fn compute_inner(
                         ReasonKind::UnsupportedAlgorithm {
                             question: request.kind,
                             operand_types: vec![],
-                            method: "affine_numeric_view_transport".into(),
+                            method: method.into(),
                         }
                     } else {
                         ReasonKind::Missing
@@ -665,7 +669,8 @@ fn compute_inner(
                     location: Some(location),
                 });
             }
-            declaration_evidence = transported.evidence;
+            declaration_evidence.extend(transported.evidence);
+            declaration_evidence.extend(law_evidence);
             declaration_evidence.extend(view_evidence);
             dependencies.extend(declaration_transports.iter().copied());
             dependencies.extend(declaration_evidence.iter().copied());
