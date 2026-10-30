@@ -732,6 +732,17 @@ mod tests {
         )
     }
     fn example_with_law(name: &str, law: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
+        example_with_sources(
+            name,
+            law,
+            include_str!("../../tests/fixtures/object-view-transport.archmap.json"),
+        )
+    }
+    fn example_with_sources(
+        name: &str,
+        law: &str,
+        archmap: &str,
+    ) -> (Arc<CheckedInputs>, ObjectLawTransport) {
         let left = include_bytes!("../../tests/fixtures/object-law-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/object-law-transport-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -757,9 +768,7 @@ mod tests {
                 InputSources::from_bytes(
                     vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
                     expand(law),
-                    expand(include_str!(
-                        "../../tests/fixtures/object-view-transport.archmap.json"
-                    )),
+                    expand(archmap),
                 ),
                 &mut Control::unlimited(),
             )
@@ -797,6 +806,47 @@ mod tests {
             .unwrap();
         let r = object_law_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
         (i, r)
+    }
+
+    #[test]
+    fn numeric_guard_keeps_missing_fact_separate_from_algorithm_support() {
+        let law = include_str!("../../tests/fixtures/object-law-transport.law")
+            .replace(
+                "bounded(c: Left.Child): c.count = 2",
+                "bounded(c: Left.Child, n: Z) when c.count = 2: n = 0",
+            )
+            .replace(
+                "bounded(d: Right.Child): 2 = 2",
+                "bounded(d: Right.Child, x: Z): x = 0",
+            );
+        let archmap = include_str!("../../tests/fixtures/object-view-transport.archmap.json")
+            .lines()
+            .filter(|l| !l.contains("\"id\":\"p-count\""))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let (inputs, result) = example_with_sources("bounded", &law, &archmap);
+        assert_eq!(result.outcome(), &LawTransportOutcome::Undetermined);
+        let pending = result
+            .numeric_family
+            .as_ref()
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap();
+        assert_eq!(pending.missing.len(), 1);
+        let fact = &pending.missing[0];
+        assert_eq!(fact.snapshot, "v");
+        assert_eq!(fact.subject, "p");
+        assert_eq!(fact.field.as_deref(), Some("Left.Child.count"));
+        assert!(fact.atom.is_none());
+        let crate::issue::Location::Law { span } = pending.location else {
+            panic!("guard location")
+        };
+        assert_eq!(
+            &inputs.sources().law().bytes()[span.0..span.1],
+            b"c.count = 2"
+        );
+        result.recheck(inputs, &mut Control::unlimited()).unwrap();
     }
 
     #[test]

@@ -131,11 +131,28 @@ fn read(
                     Some(Scalar::Bool(false)) => return outside(c, facts),
                     Some(Scalar::Bool(true)) => {}
                     _ => {
+                        let mut missing = match &value.comparison {
+                            Some(comparison) => match affine::binary(
+                                BinOp::Sub,
+                                Some(&comparison.left),
+                                Some(&comparison.right),
+                                c,
+                            )
+                            .map_err(invalid)?
+                            {
+                                Some(difference) => difference.missing_facts(),
+                                None => vec![],
+                            },
+                            None => vec![],
+                        };
+                        missing.sort();
+                        missing.dedup();
+
                         return Ok(Reading {
                             application: None,
                             residual: None,
                             facts,
-                            pending: Some(pending(inputs.law().exprs[*guard].span, vec![])),
+                            pending: Some(pending(inputs.law().exprs[*guard].span, missing)),
                         });
                     }
                 }
