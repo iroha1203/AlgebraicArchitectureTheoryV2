@@ -223,3 +223,75 @@ fn quantified_observation_requires_recorded_complete_finite_bindings() {
         matches!(observation(i.law(),body,Some(0),&nodes,&mut quiet()).unwrap().1,Some(Scalar::Set { ref items,.. }) if items.is_empty())
     );
 }
+
+#[test]
+fn match_observation_rejects_wrong_pattern_binding_and_extra_arm_capture() {
+    let i = check_inputs(
+        fixture::sources(
+            "",
+            "law optional matched(s:State):match Token.Left(true) {Left(v)=>v=v;_=>true;};",
+        ),
+        &mut quiet(),
+    )
+    .unwrap();
+    let Signature::Law { body, .. } = i.law().declarations["Pair.matched"].signature else {
+        panic!("law")
+    };
+    let ExprKind::Match {
+        scrutinee,
+        ref arms,
+    } = i.law().exprs[body].kind
+    else {
+        panic!("match")
+    };
+    let ExprKind::Binary { lhs, rhs, .. } = i.law().exprs[arms[0].body].kind else {
+        panic!("eq")
+    };
+    let node = |expression, value, children, bindings| EvaluationNode {
+        expression,
+        value: Some(value),
+        children,
+        bindings,
+        residual: None,
+        scope: Scope::default(),
+        finite_bindings: None,
+    };
+    let mut nodes = vec![
+        node(
+            scrutinee,
+            data("Pair.Token.Left", vec![Scalar::Bool(true)]),
+            vec![],
+            vec![],
+        ),
+        node(lhs, Scalar::Bool(true), vec![], vec![]),
+        node(rhs, Scalar::Bool(true), vec![], vec![]),
+        node(
+            arms[0].body,
+            Scalar::Bool(true),
+            vec![1, 2],
+            vec![("v".into(), Scalar::Bool(false))],
+        ),
+        node(body, Scalar::Bool(true), vec![0, 3], vec![]),
+    ];
+    assert!(
+        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+            .unwrap()
+            .1
+            .is_none()
+    );
+    nodes[3].bindings[0].1 = Scalar::Bool(true);
+    assert!(
+        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+            .unwrap()
+            .1
+            .is_some()
+    );
+    nodes.push(node(arms[1].body, Scalar::Bool(true), vec![], vec![]));
+    nodes[4].children.push(5);
+    assert!(
+        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+            .unwrap()
+            .1
+            .is_none()
+    );
+}

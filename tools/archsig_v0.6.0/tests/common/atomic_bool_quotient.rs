@@ -308,6 +308,15 @@ fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
         ("if s.y then true else true", "undetermined"),
         ("true and s.y", "undetermined"),
         ("forall b:Bool . s.y or b", "undetermined"),
+        (
+            "match Token.Left(s.x) { Left(v)=>v; _=>s.y; }",
+            "established",
+        ),
+        (
+            "match Token.Left(s.x) { Left(v)=>s.y; _=>false; }",
+            "undetermined",
+        ),
+        ("match some(s.y) { value=>true; }", "undetermined"),
     ] {
         let original = bool_fixture::sources(
             "",
@@ -385,12 +394,13 @@ fn compound_named_boundary_and_quantified_values_are_explicit() {
 fn compound_cli_refutation_save_reuse_and_tamper() {
     let dir = law_input(
         "quotient-compound-cli",
-        "law optional wrapped(s:State):(s.x=s.x) and true;law optional indexed(s:State):forall b:Bool . s.x=b;",
+        "law optional wrapped(s:State):(s.x=s.x) and true;law optional indexed(s:State):forall b:Bool . s.x=b;law optional matched(s:State):match some(s.x) { value=>value=value; };",
     );
     let asks = [
         "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.wrapped)",
         "indexed=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.indexed)",
+        "matched=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.matched)",
     ];
     let first = execute(&dir, "out", &asks, None);
     assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
@@ -494,5 +504,71 @@ fn compound_nested_finite_quantifiers_keep_every_binding_and_operand() {
                 assert_eq!(arr(&operands[1])[1].value, b[0].value);
             }
         }
+    }
+}
+
+#[test]
+fn match_law_preserves_selected_equality_and_discriminant() {
+    for (body, expected) in [
+        ("match (s.y=s.y) { b=>b; }", "refuted"),
+        (
+            "match (if s.y then Token.Left(true) else Token.Right(true)) {Left(v)=>true;Right(v)=>true;_=>true;}",
+            "refuted",
+        ),
+        ("match some(s.y) { value => value=some(s.y); }", "refuted"),
+        (
+            "match Token.Left(s.y) { Left(v)=>v=v; _=>true; }",
+            "refuted",
+        ),
+        (
+            "match Token.Left(s.x) { Left(v)=>v=v; _=>true; }",
+            "established",
+        ),
+    ] {
+        let result = bool_result(
+            &format!("view first(s:State):Bool=s.x;law optional matched(s:State):{body};"),
+            &[
+                "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+                "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.matched)",
+            ],
+        );
+        assert_eq!(
+            s(get(&arr(get(&result, "answers"))[1], "status")),
+            expected,
+            "{body}"
+        );
+    }
+}
+
+#[test]
+fn match_witness_keeps_pattern_position_and_named_return_boundary() {
+    let result = bool_result(
+        "view first(s:State):Bool=s.x;view wrapped(s:State):Bool=match Token.Left(s.y) {Left(v)=>v=v;_=>true;};law optional named(s:State):wrapped(s);law optional matched(s:State):match Token.Both(s.y,s.x) {Both(right,left)=>right=left;_=>true;};law optional nested(s:State):match Token.Left(s.y) {Left(v)=>if s.x then v=v else match some(v) {q=>q=q;};_=>true;};",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "named=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.named)",
+            "matched=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.matched)",
+            "nested=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.nested)",
+        ],
+    );
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[1], "status")), "established");
+    for index in [2, 3] {
+        assert_eq!(s(get(&answers[index], "status")), "refuted");
+    }
+    let witness = node(&result, &arr(get(&answers[2], "evidence"))[0]);
+    let data = get(get(witness, "value"), "data");
+    let first = pair(get(node(&result, get(data, "first")), "value"));
+    let second = pair(get(node(&result, get(data, "second")), "value"));
+    assert_eq!(first.0, second.0);
+    assert_ne!(first.1, second.1);
+    for (family, candidate) in arr(get(data, "law_values")).iter().zip([first, second]) {
+        let family = arr(get(node(&result, family), "value"));
+        let observation = arr(get(&arr(&family[0])[1], "some"));
+        assert_eq!(observation.len(), 3);
+        let operands = arr(get(&observation[1], "some"));
+        assert_eq!(operands[0].value, JValue::Bool(candidate.1));
+        assert_eq!(operands[1].value, JValue::Bool(candidate.0));
+        assert!(has(&observation[2], "none"));
     }
 }
