@@ -11909,3 +11909,226 @@ reading After {{{uses} view affine(s:State,renamed:Z):Z=renamed+1;}}"#
         assert!(!has(outputs, "proposition"));
     }
 }
+
+#[test]
+fn numeric_law_parameters_preserve_pointwise_truth_and_keep_the_operation() {
+    for (case, source, target, status) in [
+        (
+            "taut",
+            "z*(s.free-s.free)=0",
+            "renamed*(s.free-s.free)=0",
+            "established",
+        ),
+        ("different", "z=s.free", "renamed=s.free", "refuted"),
+    ] {
+        let dir = inputs(&format!("numeric-law-parameter-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,z:Z):{source};}}
+reading After {{{uses} law required equation(s:State,renamed:Z):{target};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(
+            run.code,
+            if status == "established" { 0 } else { 1 },
+            "{case}: {}",
+            run.stdout
+        );
+        let j = result_json(&dir, &run);
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), status);
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+        let outputs = get(m, "outputs");
+        assert!(has(outputs, "operation"));
+        assert_eq!(has(outputs, "map"), status == "established");
+        if status == "refuted" {
+            assert!(!arr(get(m, "counterexamples")).is_empty());
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples() {
+    for (case, a, z, left, right, expected) in [
+        ("proportional", "n:Z", "x:Z", "n=1", "2*x=2", "established"),
+        ("empty-z", "n:Z", "x:Z", "2*n=1", "4*x=1", "established"),
+        (
+            "nonempty-q",
+            "n:Q",
+            "x:Q",
+            "rat(2,1)*n=rat(1,1)",
+            "rat(4,1)*x=rat(1,1)",
+            "refuted",
+        ),
+        (
+            "both-universally-false",
+            "n:Z",
+            "x:Z",
+            "n=1",
+            "x=2",
+            "refuted",
+        ),
+        ("kernel", "n:Z,m:Z", "x:Z,y:Z", "n=0", "y=0", "refuted"),
+        (
+            "full-kernel",
+            "n:Z,m:Z",
+            "x:Z,y:Z",
+            "n+m=0",
+            "2*x+2*y=0",
+            "established",
+        ),
+        (
+            "nested",
+            "n:(Z,(Z,Z))",
+            "x:(Z,(Z,Z))",
+            "n.1.1=0",
+            "2*x.1.1=0",
+            "established",
+        ),
+        (
+            "nested-difference",
+            "n:(Z,(Z,Z))",
+            "x:(Z,(Z,Z))",
+            "n.1.1=0",
+            "x.1.0=0",
+            "refuted",
+        ),
+        (
+            "unused-q",
+            "n:Z,m:Q",
+            "x:Z,y:Q",
+            "n=1",
+            "2*x=2",
+            "established",
+        ),
+    ] {
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,{a}):{left};}}
+reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
+        );
+        let result=archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(
+                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), expected, "{case}");
+        assert!(has(get(m, "outputs"), "operation"), "{case}");
+        assert_eq!(
+            has(get(m, "outputs"), "map"),
+            expected == "established",
+            "{case}"
+        );
+        if expected == "refuted" {
+            let evidence = arr(get(m, "evidence"));
+            assert!(!evidence.is_empty(), "{case}");
+            for example in evidence {
+                let example = value(&j, example);
+                assert_eq!(s(get(example, "kind")), "counterexample");
+                let data = get(example, "data");
+                let left = value(&j, get(data, "left"));
+                let right = value(&j, get(data, "right"));
+                let zero = |v: &JNode| match &v.value {
+                    archsig::json::JValue::Str(n) => n == "0",
+                    archsig::json::JValue::Arr(v) => s(&v[0]) == "0",
+                    _ => panic!("{case}: numeric counterexample {v:?}"),
+                };
+                assert_ne!(
+                    zero(left),
+                    zero(right),
+                    "{case}: counterexample must separate zero sets"
+                );
+                let bindings = arr(get(data, "bindings"));
+                assert_eq!(
+                    bindings.len(),
+                    if a.contains(",m:") { 3 } else { 2 },
+                    "{case}"
+                );
+                if case == "both-universally-false" {
+                    assert_json(left, r#""0""#);
+                    assert_json(right, r#""-1""#);
+                    let n = bindings.iter().find(|b| s(get(b, "name")) == "n").unwrap();
+                    assert_json(value(&j, get(n, "value")), r#""1""#);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn numeric_law_guard_applicability_and_zero_equivalence_remain_separate() {
+    for (guard, body, status, equivalent) in [
+        ("false", "n-n=0", "refuted", "established"),
+        ("false", "n=0", "refuted", "refuted"),
+    ] {
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:Z) when {guard}: {body};}}
+reading After {{{uses} law required equation(s:State,x:Z) when true: {};}}"#,
+            body.replace('n', "x")
+        );
+        let result=archsig::observed::evaluate_observed_bytes(
+            archsig::observed::input::InputSources::from_bytes(
+                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            &["base=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After)","m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &mut archsig::observed::control::Control::unlimited(),
+        ).unwrap_or_else(|e|panic!("{guard}: {e:?}"));
+        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let m = answer(&j, "m");
+        assert_eq!(s(get(m, "status")), status, "{guard} / {body}");
+        let base = answer(&j, "base");
+        assert_eq!(
+            has(get(m, "outputs"), "operation"),
+            has(get(base, "outputs"), "operation")
+        );
+        assert!(!has(get(m, "outputs"), "map"));
+        if status == "refuted" {
+            assert!(has(get(m, "outputs"), "operation"));
+            assert!(!arr(get(m, "evidence")).is_empty());
+            let mut zeros = 0;
+            let mut refuted = 0;
+            for node in arr(get(&j, "nodes")) {
+                if !matches!(&get(node,"type").value,archsig::json::JValue::Str(t) if t=="Proposition")
+                {
+                    continue;
+                }
+                let predicate = s(get(get(node, "value"), "predicate"));
+                if predicate == "residual_zero_iff" {
+                    zeros += 1;
+                    let status = s(get(get(node, "judgment"), "status"));
+                    if status == "refuted" {
+                        refuted += 1;
+                    } else {
+                        assert_eq!(status, "established");
+                    }
+                }
+            }
+            assert!(zeros > 0);
+            // 別対象に属するinstanceは両側とも適用外で、残差は零を保つ。
+            if equivalent == "established" {
+                assert_eq!(refuted, 0);
+            } else {
+                assert!(refuted > 0 && refuted < zeros);
+            }
+        }
+    }
+}

@@ -185,6 +185,8 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
     }
 }
 
+pub(in crate::observed) type NumericParameterTerms = (Scalar, Vec<(TermArgument, Scalar)>);
+
 impl Form {
     /// 元のparameter軸だけを持つ数値関数を、値へ潰さず取り出す。
     pub(in crate::observed) fn parameter_coordinates(&self, c: &Control) -> Result<Option<(Scalar, Vec<(Parameter, Scalar)>)>, ValidationFailure> {
@@ -194,6 +196,22 @@ impl Form {
             tick(c)?;
             let Symbol::Parameter(parameter) = symbol else { return Ok(None) };
             coefficients.push((parameter.clone(), coefficient.clone()));
+        }
+        Ok(Some((self.constant.clone(), coefficients)))
+    }
+    /// 元の数値引数位置だけを持つ式の、正確な係数を取り出す。
+    pub(in crate::observed) fn numeric_parameter_terms(
+        &self,
+        c: &Control,
+    ) -> Result<Option<NumericParameterTerms>, ValidationFailure> {
+        self.check(c)?;
+        let mut coefficients = vec![];
+        for (symbol, coefficient) in &self.coefficients {
+            tick(c)?;
+            let Symbol::TermArgument(argument) = symbol else {
+                return Ok(None);
+            };
+            coefficients.push((argument.clone(), coefficient.clone()));
         }
         Ok(Some((self.constant.clone(), coefficients)))
     }

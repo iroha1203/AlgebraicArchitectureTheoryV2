@@ -7,7 +7,7 @@ use super::{
 use crate::{law::ast::BinOp, types::Type};
 use num_traits::{One, Signed, Zero};
 pub(super) type Matrix = Vec<Vec<Scalar>>;
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Fiber {
     pub reduced: Matrix,
     pub left: Matrix,

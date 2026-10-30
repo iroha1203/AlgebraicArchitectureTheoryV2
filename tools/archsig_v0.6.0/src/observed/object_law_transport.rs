@@ -30,7 +30,7 @@ mod family;
 pub use family::{
     FiniteLawFamily, LawParameterComparison, LawReadingDomain, LawReadingFamily, LawReadingRow,
 };
-pub(super) use family::{compare_native_readings, read_native_family, constant_numeric_family};
+pub(super) use family::{compare_native_readings, constant_numeric_family, read_native_family};
 
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {
@@ -137,6 +137,7 @@ pub struct ObjectLawTransport {
     source_reading: Option<LawBooleanReading>,
     target_reading: Option<LawBooleanReading>,
     family: Option<FiniteLawFamily>,
+    numeric_family: Option<super::environment::numeric_law_function::Family>,
     outcome: LawTransportOutcome,
 }
 #[derive(Debug)]
@@ -420,6 +421,7 @@ fn checked_transport(
         source_reading: None,
         target_reading: None,
         family: None,
+        numeric_family: None,
         outcome: LawTransportOutcome::Undetermined,
     };
     let mut decided = false;
@@ -477,6 +479,40 @@ fn checked_transport(
                 source: source_required,
                 target: target_required,
             });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if !r.instance().parameters().is_empty()
+            && r.instance()
+                .parameters()
+                .iter()
+                .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+        {
+            let family = super::environment::numeric_law_function::compare(
+                &inputs,
+                [&r.source_readings, &r.target_readings],
+                [
+                    crate::construction::readings::ObjectEvaluationPosition { object, instance },
+                    crate::construction::readings::ObjectEvaluationPosition {
+                        object: to,
+                        instance: ti,
+                    },
+                ],
+                pair.parameters(),
+                c,
+            )?;
+            r.outcome = match (family.applicable, family.equivalent) {
+                (Some(false), _) => {
+                    LawTransportOutcome::Refuted(LawConditionFailure::Applicability)
+                }
+                (Some(true), Some(false)) => {
+                    LawTransportOutcome::Refuted(LawConditionFailure::Holds)
+                }
+                (Some(true), Some(true)) => LawTransportOutcome::Preserved,
+                _ => LawTransportOutcome::Undetermined,
+            };
+            r.numeric_family = Some(family);
             decided = true;
             tick(c)?;
             return Ok(());
@@ -604,6 +640,11 @@ impl ObjectLawTransport {
     pub fn family(&self) -> Option<&FiniteLawFamily> {
         self.family.as_ref()
     }
+    pub(super) fn numeric_family(
+        &self,
+    ) -> Option<&super::environment::numeric_law_function::Family> {
+        self.numeric_family.as_ref()
+    }
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
@@ -621,6 +662,7 @@ impl ObjectLawTransport {
             || !same_evaluation(self.target.as_ref(), r.target.as_ref())
             || self.source_reading != r.source_reading
             || self.target_reading != r.target_reading
+            || self.numeric_family != r.numeric_family
             || self.family != r.family
             || self.outcome != r.outcome
         {
@@ -684,6 +726,12 @@ mod tests {
     };
     use crate::observed::input::{InputSources, check_inputs};
     pub(super) fn example(name: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
+        example_with_law(
+            name,
+            include_str!("../../tests/fixtures/object-law-transport.law"),
+        )
+    }
+    fn example_with_law(name: &str, law: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
         let left = include_bytes!("../../tests/fixtures/object-law-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/object-law-transport-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -708,9 +756,7 @@ mod tests {
             check_inputs(
                 InputSources::from_bytes(
                     vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
-                    expand(include_str!(
-                        "../../tests/fixtures/object-law-transport.law"
-                    )),
+                    expand(law),
                     expand(include_str!(
                         "../../tests/fixtures/object-view-transport.archmap.json"
                     )),
@@ -751,6 +797,48 @@ mod tests {
             .unwrap();
         let r = object_law_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
         (i, r)
+    }
+
+    #[test]
+    fn numeric_family_recheck_rejects_forged_decision_application_and_witness() {
+        let law = include_str!("../../tests/fixtures/object-law-transport.law")
+            .replace(
+                "bounded(c: Left.Child): c.count = 2",
+                "bounded(c: Left.Child, n: Z): n = 1",
+            )
+            .replace(
+                "bounded(d: Right.Child): 2 = 2",
+                "bounded(d: Right.Child, x: Z): x = 2",
+            );
+        for mode in 0..4 {
+            let (inputs, mut result) = example_with_law("bounded", &law);
+            assert_eq!(
+                result.outcome(),
+                &LawTransportOutcome::Refuted(LawConditionFailure::Holds)
+            );
+            result
+                .recheck(inputs.clone(), &mut Control::unlimited())
+                .unwrap();
+            match mode {
+                0 => result.outcome = LawTransportOutcome::Preserved,
+                1 => result.numeric_family.as_mut().unwrap().equivalent = Some(true),
+                2 => result.numeric_family.as_mut().unwrap().applicable = Some(false),
+                _ => {
+                    result
+                        .numeric_family
+                        .as_mut()
+                        .unwrap()
+                        .example
+                        .as_mut()
+                        .unwrap()
+                        .left = Scalar::Z(8.into())
+                }
+            }
+            assert!(
+                result.recheck(inputs, &mut Control::unlimited()).is_err(),
+                "mode={mode}"
+            );
+        }
     }
 
     #[test]

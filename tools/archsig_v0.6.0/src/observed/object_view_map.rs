@@ -66,12 +66,13 @@ pub(super) struct Output {
     pub evidence: Vec<NodeRef>,
     pub axis_dependencies: Vec<NodeRef>,
 }
-fn counterexample(
+pub(super) fn counterexample(
     b: &mut Builder<'_>,
-    example: &super::environment::numeric_view_function::Counterexample,
+    example: &super::environment::numeric_object_function::Counterexample,
     source: &Type,
     target: &Type,
     inputs: &[NodeRef],
+    optional: bool,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut bindings = vec![];
     let mut dependencies = inputs.to_vec();
@@ -93,13 +94,10 @@ fn counterexample(
     }
     let mut values = vec![];
     for (ty, value) in [(source, &example.left), (target, &example.right)] {
-        let Type::Option(element) = ty else {
-            return Err("数値反例の読取り型がOptionでない".into());
-        };
-        let value = Scalar::Option {
-            element: (**element).clone(),
-            value: Some(Box::new(value.clone())),
-        };
+        let value = if optional {
+            let Type::Option(element) = ty else { return Err("数値反例の読取り型がOptionでない".into()) };
+            Scalar::Option { element: (**element).clone(), value: Some(Box::new(value.clone())) }
+        } else { value.clone() };
         let r = b.push(
             NodeType::Value(ty.clone()),
             "binding",
@@ -196,7 +194,7 @@ fn supported_parameter(
                 && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some()),
     )
 }
-fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
+pub(super) fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
     let p = &mut b.parts[r.0 - b.base];
     let mut quantifiers = vec![];
     for parameter in parameters {
@@ -689,7 +687,7 @@ pub(super) fn retain(
             let args = vec![se, te, forward];
             let evidence = example
                 .as_ref()
-                .map(|example| counterexample(b, example, &ty, &target_ty, &args))
+                .map(|example| counterexample(b, example, &ty, &target_ty, &args, true))
                 .transpose()?;
             let commutes = proposition(b, &mut out, "invariant_transport", args.clone(), holds)?;
             quantify_parameters(b, commutes, instance.parameters());
