@@ -12405,3 +12405,52 @@ reading After {{{uses} view flag(d:Right.Child,renamed:Option<Right.Child>):Bool
     assert_eq!(s(get(answer(&j, "same"), "status")), "established");
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn affine_guard_fibers_deliver_build_map_and_following_operations() {
+    for (case, ty, guard, body, target_guard, target_body) in [
+        ("integer", "Z", "n=0", "n=0", "x=0", "x=0"),
+        ("empty-integer", "Z", "2*n=1", "n=0", "2*x=1", "x=0"),
+        (
+            "rational",
+            "Q",
+            "n=rat(1,2)",
+            "rat(2,1)*n=rat(1,1)",
+            "x=rat(1,2)",
+            "rat(2,1)*x=rat(1,1)",
+        ),
+    ] {
+        let dir = inputs(&format!("guard-affine-fiber-{case}"));
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required equation(s:State,n:{ty}) when {guard}: {body};}}
+reading After {{{uses} law required equation(s:State,x:{ty}) when {target_guard}: {target_body};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks(
+            &dir,
+            &[
+                "b=build(Before,on=@v/A)",
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+        );
+        assert_eq!(run.code, 0, "{case}: {}", run.stdout);
+        let j = result_json(&dir, &run);
+        for id in ["b", "m", "same"] {
+            assert_eq!(
+                s(get(answer(&j, id), "status")),
+                "established",
+                "{case}/{id}"
+            );
+        }
+        assert!(has(get(answer(&j, "b"), "outputs"), "algebra"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "map"));
+        assert!(has(get(answer(&j, "m"), "outputs"), "operation"));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

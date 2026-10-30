@@ -169,24 +169,30 @@ pub(super) fn closed(
             if origin.outside || !origin.body_allowed {
                 continue;
             }
+            let mut never_refutes = false;
             if let Some(guard) = guard {
                 match guard {
                     EquationGuard::AlwaysFalse | EquationGuard::OutsideObject => continue,
                     EquationGuard::AlwaysTrue => (),
                     EquationGuard::StateDependent | EquationGuard::Undetermined => {
-                        let Some(epsilon) = current.value(Reading::Epsilon) else {
+                        let Some(residual) = current.value(Reading::Residual) else {
                             return Ok(None);
                         };
-                        if constant_nonzero(g, epsilon, &ty, c)? != Some(false) {
+                        if !origin.zero_residual
+                            || constant_nonzero(g, residual, &ty, c)? != Some(false)
+                        {
                             return Ok(None);
                         }
+                        never_refutes = true;
                     }
                 }
             }
             let Some(epsilon) = current.value(Reading::Epsilon) else {
                 return Ok(None);
             };
-            let when = if !parameters.is_empty() {
+            let when = if never_refutes {
+                Some(false)
+            } else if !parameters.is_empty() {
                 let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
                 let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
                 if !data.parameter_family(&parameters) { return Ok(None); }

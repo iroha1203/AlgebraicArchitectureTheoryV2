@@ -78,10 +78,28 @@ pub(super) fn sources(
         }
         for finite in cases {
             tick(c)?;
-            let Some(source) = parameter_source_difference_bound(inputs, instance, &finite, c)
-                .map_err(|e| construction_failure(&e))? else { return Ok(None) };
+            let source = match parameter_source_difference_bound(inputs, instance, &finite, c)
+                .map_err(|e| construction_failure(&e))?
+            {
+                Some(source) => source,
+                None => {
+                    let Some(source) =
+                        super::super::object_equation_presentation::parameter_source_on_guard_fiber(
+                            inputs,
+                            a.readings(),
+                            i,
+                            &finite,
+                            c,
+                        )
+                        .map_err(|e| construction_failure(&e))?
+                    else {
+                        return Ok(None);
+                    };
+                    source
+                }
+            };
             // 正規化で数値軸が消えても、有限値で固定した各ケースの元量化を保持する。
-            symbolic |= !source.difference.parameters.is_empty()
+            symbolic |= source.guard.zero_on_fiber() || !source.difference.parameters.is_empty()
                 || (!source.finite.is_empty() && instance.parameters().iter().any(|p| numeric_parameters::numeric_width(&p.ty).is_some()));
             equations.push((i, source));
         }
@@ -250,7 +268,7 @@ pub(super) fn plans(
                 InstanceApplication::NotApplicable
             );
             let missing = source.ring.symbols.iter().any(|s| s.value.is_none());
-            let epsilon = if outside || !source.guard || missing {
+            let epsilon = if outside || source.guard.is_false() || missing {
                 None
             } else if observation_free_difference(source) {
                 Some(nu)
@@ -282,7 +300,7 @@ pub(super) fn plans(
                     c,
                 )?)
             };
-            let residual = if outside || !source.guard {
+            let residual = if outside || source.guard.is_false() || source.guard.zero_on_fiber() {
                 let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
                     .map_err(|e| construction_failure(&e))?;
                 Some(polynomial(parts, base, &zero, *ring, &ty, variables, c)?)
@@ -334,12 +352,14 @@ pub(super) fn plans(
                 witness: Some(witness),
                 guard: if outside {
                     EquationGuard::OutsideObject
-                } else if !source.guard {
+                } else if source.guard.is_false() {
                     EquationGuard::AlwaysFalse
+                } else if source.guard.zero_on_fiber() {
+                    EquationGuard::Undetermined
                 } else {
                     EquationGuard::AlwaysTrue
                 },
-                status: if outside || !source.guard {
+                status: if outside || source.guard.is_false() {
                     EquationPresentationStatus::NotApplicable
                 } else if missing {
                     EquationPresentationStatus::Undetermined
@@ -347,7 +367,7 @@ pub(super) fn plans(
                     EquationPresentationStatus::Ready
                 },
             });
-            if !outside && source.guard && missing {
+            if !outside && !source.guard.is_false() && missing {
                 out.status = EquationPresentationStatus::Undetermined;
             }
         }
@@ -444,7 +464,7 @@ pub(super) fn plans(
                 .filter(|q| q.ring == Some(*ring))
                 .collect::<Vec<_>>();
             let missing_positions = coordinates.iter()
-                .filter(|q| q.guard == EquationGuard::AlwaysTrue && q.epsilon.is_none())
+                .filter(|q| !matches!(q.guard, EquationGuard::AlwaysFalse | EquationGuard::OutsideObject) && q.epsilon.is_none())
                 .flat_map(|q| equations[q.occurrence].1.ring.symbols.iter())
                 .filter(|s| s.value.is_none())
                 .map(|s| Fact { snapshot: s.slot.snapshot.clone(), subject: s.slot.subject.clone(), field: Some(s.slot.field.clone()), atom: None })

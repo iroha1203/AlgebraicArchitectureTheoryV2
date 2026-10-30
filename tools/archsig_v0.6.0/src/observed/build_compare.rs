@@ -262,7 +262,7 @@ pub(super) fn compare(
                 let mut equal = evaluation(env, g, l, r, c)?;
                 let index = laws.indices[column];
                 if equal.is_none()
-                    && super::law_evaluation::origin(g, index)?.is_some_and(|o| o.zero_body)
+                    && super::law_evaluation::origin(g, index)?.is_some_and(|o| o.zero_residual)
                 {
                     let position = |object: usize| {
                         layout.data.objects[object]

@@ -429,7 +429,7 @@ impl Data {
             ready: reading.reading.application == Some(true)
                 && !reading.reading.condition_failed
                 && !reading.reading.condition_pending,
-            zero_body: false,
+            zero_residual: false,
             body_allowed: reading.reading.guard != Some(false),
             outside: reading.reading.application == Some(false)
                 && !reading.reading.condition_failed && !reading.reading.condition_pending,

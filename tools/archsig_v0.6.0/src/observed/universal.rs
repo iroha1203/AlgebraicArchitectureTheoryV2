@@ -233,7 +233,7 @@ impl Environment<'_> {
                     }
                     other => ValidationFailure::Internal(format!("欠測係数の元式照合: {other:?}")),
                 })?;
-            return Ok(source.filter(|s| s.guard));
+            return Ok(source.filter(|s| s.guard.is_true()));
         }
         Ok(None)
     }
@@ -1804,7 +1804,35 @@ impl Environment<'_> {
                     if body_value.is_none() {
                         finite_dependency = None;
                     }
-                    let value = if plan.guard.is_some() {
+                    let restricted_zero = if guard_value.is_none()
+                        && !self.universal_has_exists(&plan)?
+                        && plan.parameters.iter().all(|p| p.numeric())
+                        && !analysis.condition_failed
+                        && !analysis.condition_pending
+                    {
+                        match (guard_analysis.as_ref(), difference.as_ref()) {
+                            (Some(guard), Some(body)) if !guard.condition_failed && !guard.condition_pending => {
+                                if let Some(comparison) = &guard.comparison
+                                    && comparison.op == BinOp::Eq
+                                    && comparison.bound_axes.is_empty()
+                                    && let Some(guard) = affine::binary(
+                                        BinOp::Sub,
+                                        Some(&comparison.left),
+                                        Some(&comparison.right),
+                                        &self.control,
+                                    )?
+                                {
+                                    numeric_law_function::universal_zero_on_guard(&guard, body, &self.control)?
+                                } else {
+                                    false
+                                }
+                            }
+                            _ => false,
+                        }
+                    } else {
+                        false
+                    };
+                    let value = if restricted_zero { Some(true) } else if plan.guard.is_some() {
                         conditional_bool(guard_value, body_value)
                     } else {
                         body_value

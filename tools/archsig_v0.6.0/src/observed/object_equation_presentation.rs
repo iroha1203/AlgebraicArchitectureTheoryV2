@@ -30,38 +30,160 @@ pub(super) fn parameter_constant_source_value(
     inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let Some(source) = parameter_source_difference(inputs, instance, c)? else { return Ok(None) };
-    if !source.guard { return Ok(None) }
+    if !source.guard.is_true() { return Ok(None) }
     if !source.difference.parameters.is_empty() { return Ok(None) }
     let values: Vec<_> = source.ring.symbols.iter().map(|symbol| symbol.value.clone()).collect();
     Ok(source.difference.constant.evaluate(&values, c)?.map(|value| value.scalar().clone()))
 }
 pub(in crate::observed) use source_polynomial::{PolynomialFamily, parameter_differences_with_bindings};
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) enum ParameterGuard {
+    Constant(bool),
+    ZeroOnFiber(Vec<super::environment::numeric_law_function::GuardRestriction>),
+}
+impl ParameterGuard {
+    pub fn is_true(&self) -> bool {
+        matches!(self, Self::Constant(true))
+    }
+    pub fn is_false(&self) -> bool {
+        matches!(self, Self::Constant(false))
+    }
+    pub fn zero_on_fiber(&self) -> bool {
+        matches!(self, Self::ZeroOnFiber(_))
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ParameterEquation {
-    pub guard: bool,
+    pub guard: ParameterGuard,
     pub finite: Vec<(String, Scalar)>,
     pub ring: EquationRing,
     pub difference: PolynomialFamily,
 }
 pub(in crate::observed) fn parameter_source_difference(
-    inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance, c: &mut Control,
+    inputs: &CheckedInputs,
+    instance: &crate::construction::readings::ObjectInstance,
+    c: &mut Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     parameter_source_difference_bound(inputs, instance, &[], c)
 }
 pub(in crate::observed) fn parameter_source_difference_bound(
-    inputs: &CheckedInputs, instance: &crate::construction::readings::ObjectInstance,
-    finite: &[(String, Scalar)], c: &mut Control,
+    inputs: &CheckedInputs,
+    instance: &crate::construction::readings::ObjectInstance,
+    finite: &[(String, Scalar)],
+    c: &mut Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
-    let crate::law::model::Signature::Law { body, .. } = &inputs.law().declarations
-        .get(&instance.declaration().name).ok_or_else(|| bad("元数値Lawの宣言がない"))?.signature else { return Ok(None) };
-    let Some(guard) = source_polynomial::guard_value_bound(inputs, instance, finite, c)? else { return Ok(None) };
-    let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? else { return Ok(None) };
-    let ExprKind::Binary { lhs: left, rhs: right, .. } = inputs.law().exprs[eq].kind else { return Ok(None) };
-    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else { return Ok(None) };
-    let mut ring = EquationRing { ty: ty.clone(), symbols: vec![], evaluation_images: Some(vec![]), required_generators: vec![] };
-    let Some(source) = source_polynomial::family_operands_bound(inputs, instance, left, right, &[], &mut ring, finite, c)? else { return Ok(None) };
-    Ok(Some(ParameterEquation { guard, finite: finite.to_vec(), ring, difference: source.difference }))
+    let Some(guard) = source_polynomial::guard_value_bound(inputs, instance, finite, c)? else {
+        return Ok(None);
+    };
+    parameter_source_with_guard(inputs, instance, finite, ParameterGuard::Constant(guard), c)
 }
+pub(in crate::observed) fn parameter_source_on_guard_fiber(
+    inputs: &CheckedInputs,
+    readings: &crate::construction::readings::ObjectReadingInstances,
+    index: usize,
+    finite: &[(String, Scalar)],
+    c: &mut Control,
+) -> Result<Option<ParameterEquation>, ConstructionFailure> {
+    use crate::construction::readings::InstanceApplication;
+    let instance = &readings.instances()[index];
+    if !finite.is_empty()
+        || instance.parameters().is_empty()
+        || !instance
+            .parameters()
+            .iter()
+            .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+    {
+        return Ok(None);
+    }
+    let mut proofs = vec![];
+    for (object, application) in instance.applications().iter().enumerate() {
+        tick(c)?;
+        if matches!(application, InstanceApplication::NotApplicable) {
+            continue;
+        }
+        let Some(proof) = super::environment::numeric_law_function::zero_on_guard(
+            inputs,
+            readings,
+            ObjectEvaluationPosition {
+                object,
+                instance: index,
+            },
+            c,
+        )?
+        else {
+            return Ok(None);
+        };
+        proofs.push(proof);
+    }
+    if proofs.is_empty() {
+        return Ok(None);
+    }
+    parameter_source_with_guard(
+        inputs,
+        instance,
+        finite,
+        ParameterGuard::ZeroOnFiber(proofs),
+        c,
+    )
+}
+fn parameter_source_with_guard(
+    inputs: &CheckedInputs,
+    instance: &crate::construction::readings::ObjectInstance,
+    finite: &[(String, Scalar)],
+    guard: ParameterGuard,
+    c: &mut Control,
+) -> Result<Option<ParameterEquation>, ConstructionFailure> {
+    let crate::law::model::Signature::Law { body, .. } = &inputs
+        .law()
+        .declarations
+        .get(&instance.declaration().name)
+        .ok_or_else(|| bad("元数値Lawの宣言がない"))?
+        .signature
+    else {
+        return Ok(None);
+    };
+    let Some(eq) = crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)?
+    else {
+        return Ok(None);
+    };
+    let ExprKind::Binary {
+        lhs: left,
+        rhs: right,
+        ..
+    } = inputs.law().exprs[eq].kind
+    else {
+        return Ok(None);
+    };
+    let Some(ty @ (Type::Z | Type::Q)) = inputs.law().expr_type(left) else {
+        return Ok(None);
+    };
+    let mut ring = EquationRing {
+        ty: ty.clone(),
+        symbols: vec![],
+        evaluation_images: Some(vec![]),
+        required_generators: vec![],
+    };
+    let Some(source) = source_polynomial::family_operands_bound(
+        inputs,
+        instance,
+        left,
+        right,
+        &[],
+        &mut ring,
+        finite,
+        c,
+    )?
+    else {
+        return Ok(None);
+    };
+    Ok(Some(ParameterEquation {
+        guard,
+        finite: finite.to_vec(),
+        ring,
+        difference: source.difference,
+    }))
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EquationSlot {
     pub snapshot: String,
