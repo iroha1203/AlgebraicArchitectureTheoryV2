@@ -468,6 +468,7 @@ fn restrict_zero(
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum GuardTruth {
     Holds,
+    /// guardまたは本文に現れる軸の部分割当て。元の全binder列へ上書きして使う。
     Refuted(Vec<(affine::Parameter, Scalar)>),
 }
 /// 全称binderの出現を同じ位置軸へ移し、適用fiber内の実反例を求める。

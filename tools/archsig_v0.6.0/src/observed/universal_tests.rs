@@ -2059,3 +2059,40 @@ fn universal_affine_guard_counterexamples_belong_to_the_actual_guard_fiber() {
         });
     }
 }
+
+#[test]
+fn universal_guard_counterexamples_keep_unused_scalar_and_nested_tuple_parameters() {
+    let result = universal_private_example(
+        "law required example(n:Z,m:Q,p:(Z,(Z,Z))) when n=0:n=1;",
+        &["c=check(Calc.example)"],
+    );
+    assert_eq!(
+        result.answers[0].status,
+        Decision::Refuted,
+        "issues={:?} reasons={:?}",
+        result.issues,
+        result.answers[0].reasons
+    );
+    let bindings = result.answers[0]
+        .evidence
+        .iter()
+        .find_map(|r| match &result.nodes[r.0].payload {
+            Some(Payload::Counterexample { bindings, .. }) => Some(bindings),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(
+        bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+        ["n", "m", "p"]
+    );
+    for (binding, expected) in bindings.iter().zip([
+        Scalar::Z(0.into()),
+        Scalar::Q(0.into(), 1.into()),
+        Scalar::Tuple(vec![
+            Scalar::Z(0.into()),
+            Scalar::Tuple(vec![Scalar::Z(0.into()), Scalar::Z(0.into())]),
+        ]),
+    ]) {
+        assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
+    }
+}

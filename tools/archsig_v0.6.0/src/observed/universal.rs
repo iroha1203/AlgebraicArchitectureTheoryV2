@@ -1836,7 +1836,18 @@ impl Environment<'_> {
                         Some(numeric_law_function::GuardTruth::Holds) => Some(true),
                         Some(numeric_law_function::GuardTruth::Refuted(point)) => {
                             if let Some(classification) = &mut classification {
-                                classification.common_counterexample = Some(point);
+                                let assignment = classification
+                                    .common_counterexample
+                                    .as_mut()
+                                    .ok_or("条件付き反例の元全binder割当てがない")?;
+                                for (parameter, value) in point {
+                                    self.tick()?;
+                                    let (_, target) = assignment
+                                        .iter_mut()
+                                        .find(|(p, _)| *p == parameter)
+                                        .ok_or("条件付き反例の軸が元全binder割当てにない")?;
+                                    *target = value;
+                                }
                                 Some(false)
                             } else {
                                 None
