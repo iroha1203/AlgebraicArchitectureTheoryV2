@@ -117,15 +117,21 @@ fn residual(
         (D::PolynomialLaw(l), D::PolynomialLaw(r)) => {
             match (l.parameter_difference(c)?, r.parameter_difference(c)?) {
                 (Some((lr, left)), Some((rr, right))) => {
-                    if lr != rr { return Err("build互換性の数値族が別環に属する".into()); }
+                    if lr != rr {
+                        return Err("build互換性の数値族が別環に属する".into());
+                    }
                     return Ok(Some(left == right));
                 }
                 (Some((ring, _)), None) => {
-                    if r.polynomial().map(|p| p.0) != Some(ring) { return Err("build互換性の残差が別環に属する".into()); }
+                    if r.polynomial().map(|p| p.0) != Some(ring) {
+                        return Err("build互換性の残差が別環に属する".into());
+                    }
                     return Ok(Some(false));
                 }
                 (None, Some((ring, _))) => {
-                    if l.polynomial().map(|p| p.0) != Some(ring) { return Err("build互換性の残差が別環に属する".into()); }
+                    if l.polynomial().map(|p| p.0) != Some(ring) {
+                        return Err("build互換性の残差が別環に属する".into());
+                    }
                     return Ok(Some(false));
                 }
                 (None, None) => (),
@@ -251,9 +257,53 @@ pub(super) fn compare(
             }
             let left = laws.objects.get(a).ok_or("buildの元Law行がない")?;
             let right = laws.objects.get(b).ok_or("buildの先Law行がない")?;
-            for (&l, &r) in left.evaluations.iter().zip(&right.evaluations) {
+            for (column, (&l, &r)) in left.evaluations.iter().zip(&right.evaluations).enumerate() {
                 inputs.extend([l, r]);
-                values.push(evaluation(env, g, l, r, c)?);
+                let mut equal = evaluation(env, g, l, r, c)?;
+                let index = laws.indices[column];
+                if equal.is_none()
+                    && super::law_evaluation::origin(g, index)?.is_some_and(|o| o.zero_body)
+                {
+                    let position = |object: usize| {
+                        layout.data.objects[object]
+                            .coordinates
+                            .iter()
+                            .find_map(|q| {
+                                if q.index != index {
+                                    return None;
+                                }
+                                if let super::observable_layout::Source::Polynomial(p) = &q.source {
+                                    Some(p.position)
+                                } else {
+                                    None
+                                }
+                            })
+                    };
+                    if let (Some(left), Some(right)) = (position(a), position(b)) {
+                        let readings = plan.architecture.witness.readings();
+                        let names = readings.instances()[left.instance]
+                            .declaration()
+                            .parameters
+                            .iter()
+                            .map(|(name, _)| (name.clone(), name.clone()))
+                            .collect::<Vec<_>>();
+                        let family = super::environment::numeric_law_function::compare(
+                            env.inputs,
+                            [readings, readings],
+                            [left, right],
+                            &names,
+                            c,
+                        )
+                        .map_err(|e| match e {
+                            crate::construction::ConstructionFailure::Stopped(s) => {
+                                ValidationFailure::Stop(s)
+                            }
+                            e => format!("数値guardの全域互換性: {e:?}").into(),
+                        })?;
+                        equal = all([family.applicable, family.equivalent]);
+                    }
+                }
+                values.push(equal);
             }
             let left = &layout.data.objects[a].coordinates;
             let right = &layout.data.objects[b].coordinates;

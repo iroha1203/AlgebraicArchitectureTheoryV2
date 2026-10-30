@@ -173,7 +173,14 @@ pub(super) fn closed(
                 match guard {
                     EquationGuard::AlwaysFalse | EquationGuard::OutsideObject => continue,
                     EquationGuard::AlwaysTrue => (),
-                    EquationGuard::StateDependent | EquationGuard::Undetermined => return Ok(None),
+                    EquationGuard::StateDependent | EquationGuard::Undetermined => {
+                        let Some(epsilon) = current.value(Reading::Epsilon) else {
+                            return Ok(None);
+                        };
+                        if constant_nonzero(g, epsilon, &ty, c)? != Some(false) {
+                            return Ok(None);
+                        }
+                    }
                 }
             }
             let Some(epsilon) = current.value(Reading::Epsilon) else {

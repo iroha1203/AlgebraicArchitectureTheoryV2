@@ -251,6 +251,19 @@ fn compute_polynomial(
                     types.push((q.ty.clone(), ring));
                 }
             }
+            let zero_difference = if let Some(reference) = q.nu {
+                match &g.get(reference)?.payload {
+                    Some(Payload::Construction(value)) => match &value.data {
+                        D::PolynomialLaw(data) => {
+                            data.polynomial().is_some_and(|(_, terms)| terms.is_empty())
+                        }
+                        _ => false,
+                    },
+                    _ => false,
+                }
+            } else {
+                false
+            };
             // 全域AAT読取りに要る条件付きresidualと、原式差εの計算を区別する。
             // 非適用のεは未生成のまま残し、νの表示と既知residual零で接続する。
             complete &= factor.is_some()
@@ -266,7 +279,7 @@ fn compute_polynomial(
                     q.status,
                     EquationPresentationStatus::Ready | EquationPresentationStatus::NotApplicable
                 )
-                && q.guard != EquationGuard::Undetermined;
+                && (q.guard != EquationGuard::Undetermined || zero_difference);
             let canonical_row = if index.parameters.is_empty() {
                 Some(0)
             } else {

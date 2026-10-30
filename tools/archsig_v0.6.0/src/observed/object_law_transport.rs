@@ -809,6 +809,87 @@ mod tests {
     }
 
     #[test]
+    fn affine_guard_zero_sets_preserve_application_and_recheck_actual_witnesses() {
+        for (ty, zero, guard, target, equal, witness) in [
+            ("Z", "0", "n=0", "x=0", true, None),
+            ("Z", "0", "2*n=0", "x=0", true, None),
+            ("Z", "0", "n=0", "x=1", false, Some(Scalar::Z(0.into()))),
+            ("Z", "0", "n=0", "true", false, Some(Scalar::Z(1.into()))),
+            (
+                "Q",
+                "rat(0,1)",
+                "n=rat(1,2)",
+                "rat(2,1)*x=rat(1,1)",
+                true,
+                None,
+            ),
+            (
+                "Q",
+                "rat(0,1)",
+                "n=rat(1,2)",
+                "x=rat(1,4)",
+                false,
+                Some(Scalar::Q(1.into(), 2.into())),
+            ),
+        ] {
+            let law = include_str!("../../tests/fixtures/object-law-transport.law")
+                .replace(
+                    "bounded(c: Left.Child): c.count = 2",
+                    &format!("bounded(c: Left.Child,n:{ty}) when {guard}: n-n={zero}"),
+                )
+                .replace(
+                    "bounded(d: Right.Child): 2 = 2",
+                    &format!("bounded(d: Right.Child,x:{ty}) when {target}: x-x={zero}"),
+                );
+            let (inputs, result) = example_with_law("bounded", &law);
+            assert_eq!(
+                result.outcome(),
+                &if equal {
+                    LawTransportOutcome::Preserved
+                } else {
+                    LawTransportOutcome::Refuted(LawConditionFailure::Applicability)
+                },
+                "{guard}/{target}"
+            );
+            let family = result.numeric_family.as_ref().unwrap();
+            assert_eq!(family.equivalent, Some(true));
+            assert_eq!(family.implies, Some(true));
+            assert_eq!(family.application_example.is_some(), !equal);
+            if let Some(expected) = witness {
+                let example = family.application_example.as_ref().unwrap();
+                assert_eq!(
+                    example.bindings.iter().find(|(n, _)| n == "n").unwrap().1,
+                    expected
+                );
+                assert_ne!(example.left, example.right);
+                assert!(matches!(
+                    (&example.left, &example.right),
+                    (Scalar::Bool(_), Scalar::Bool(_))
+                ));
+            }
+            result.recheck(inputs, &mut Control::unlimited()).unwrap();
+        }
+        let law = include_str!("../../tests/fixtures/object-law-transport.law")
+            .replace(
+                "bounded(c: Left.Child): c.count = 2",
+                "bounded(c: Left.Child,n:Q) when false: n=rat(0,1)",
+            )
+            .replace(
+                "bounded(d: Right.Child): 2 = 2",
+                "bounded(d: Right.Child,x:Q) when true: x=rat(0,1)",
+            );
+        let (inputs, result) = example_with_law("bounded", &law);
+        let family = result.numeric_family.as_ref().unwrap();
+        assert_eq!(family.applicable, Some(false));
+        assert_eq!(family.equivalent, Some(false));
+        assert_eq!(family.implies, Some(true));
+        let example = family.example.as_ref().unwrap();
+        assert_eq!(example.left, Scalar::Q(0.into(), 1.into()));
+        assert_eq!(example.right, Scalar::Q(1.into(), 1.into()));
+        result.recheck(inputs, &mut Control::unlimited()).unwrap();
+    }
+
+    #[test]
     fn numeric_guard_keeps_missing_fact_separate_from_algorithm_support() {
         let law = include_str!("../../tests/fixtures/object-law-transport.law")
             .replace(

@@ -683,7 +683,18 @@ impl Data {
             && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysTrue));
         let known_guard = true_guard || (self.source.core.is_none() && diagram.unavailable.is_none()
             && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysFalse));
-        let numeric_family = known_guard && original.row.is_none()
+        let zero_guarded = diagram.unavailable.is_none()
+            && diagram.coordinates.iter().any(|q| {
+                q.instance == reference
+                    && q.status == EquationPresentationStatus::Ready
+                    && q.nu
+                        .and_then(|r| r.0.checked_sub(self.source.base))
+                        .and_then(|i| self.source.parts.get(i))
+                        .is_some_and(
+                            |part| matches!(part, Part::Polynomial { terms, .. } if terms.is_empty()),
+                        )
+            });
+        let numeric_family = (known_guard || zero_guarded) && original.row.is_none()
             && original.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
@@ -711,7 +722,8 @@ impl Data {
                 )
             }),
             outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
-            body_allowed: (numeric_family && true_guard) || reading
+            zero_body: numeric_family && zero_guarded,
+            body_allowed: (numeric_family && (true_guard || zero_guarded)) || reading
                 .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))
