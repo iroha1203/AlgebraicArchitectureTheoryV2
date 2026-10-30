@@ -622,6 +622,7 @@ fn compute_inner(
             )?;
             preserved &= views.preserved;
             let view_pending = views.pending;
+            let view_evidence = views.evidence;
             let mut signature_dependencies = views.conditions.clone();
             signature_dependencies.extend(views.axis_dependencies);
             invariant_maps.extend(views.invariants);
@@ -665,6 +666,7 @@ fn compute_inner(
                 });
             }
             declaration_evidence = transported.evidence;
+            declaration_evidence.extend(view_evidence);
             dependencies.extend(declaration_transports.iter().copied());
             dependencies.extend(declaration_evidence.iter().copied());
             dependencies.extend(declaration_reasons.iter().flat_map(|r| r.dependencies.iter().copied()));

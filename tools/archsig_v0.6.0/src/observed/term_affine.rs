@@ -289,7 +289,7 @@ impl Value {
             _ => Ok(None),
         }
     }
-    fn at(
+    pub(in crate::observed) fn at(
         &self,
         unit: Option<&forms::TermArgument>,
         c: &Control,
@@ -460,7 +460,7 @@ pub(in crate::observed) fn operation(
         )
     })
 }
-fn domain(
+pub(in crate::observed) fn domain(
     t: &Type,
     argument: usize,
     path: &[usize],
@@ -521,12 +521,12 @@ fn domain(
         }
     })
 }
-enum Comparison {
+pub(in crate::observed) enum Comparison {
     Same,
     Different(Option<forms::TermArgument>),
     Unsupported,
 }
-fn compare(
+pub(in crate::observed) fn compare(
     a: &Value,
     b: &Value,
     law: &CheckedLaw,

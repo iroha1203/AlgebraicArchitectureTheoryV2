@@ -183,6 +183,7 @@ pub struct ObjectViewTransport {
     target_value: Option<ViewTransportValue>,
     outcome: ViewTransportOutcome,
     family: Option<FiniteViewTransport>,
+    numeric_counterexample: Option<super::environment::numeric_view_function::Counterexample>,
     numeric_family: Option<(
         super::environment::numeric_view_function::Reading,
         super::environment::numeric_view_function::Reading,
@@ -293,20 +294,20 @@ impl ObjectViewTransport {
     pub fn target_value(&self) -> Option<&ViewTransportValue> {
         self.target_value.as_ref()
     }
-    pub(super) fn numeric_pending(&self) -> Option<Vec<super::result::Fact>> {
+    pub(super) fn numeric_counterexample(
+        &self,
+    ) -> Option<&super::environment::numeric_view_function::Counterexample> {
+        self.numeric_counterexample.as_ref()
+    }
+    pub(super) fn numeric_pending(&self) -> Option<(bool, Vec<super::result::Fact>)> {
         use super::environment::numeric_view_function::Reading;
         let (a, z) = self.numeric_family.as_ref()?;
-        let mut missing = vec![];
-        let mut pending = false;
-        for reading in [a, z] {
+        for (reading, target) in [(a, false), (z, true)] {
             if let Reading::Unknown(facts) = reading {
-                pending = true;
-                missing.extend(facts.iter().cloned());
+                return Some((target, facts.clone()));
             }
         }
-        missing.sort();
-        missing.dedup();
-        pending.then_some(missing)
+        None
     }
     pub fn outcome(&self) -> &ViewTransportOutcome {
         &self.outcome
@@ -342,6 +343,7 @@ impl ObjectViewTransport {
                     || self.image != r.image
                     || self.target_value != r.target_value
                     || self.numeric_family != r.numeric_family
+                    || self.numeric_counterexample != r.numeric_counterexample
                     || self.outcome != r.outcome);
             tick(c)?;
             Ok(equal)
@@ -518,6 +520,7 @@ fn checked_view_transport(
         outcome: ViewTransportOutcome::Undetermined,
         family: None,
         numeric_family: None,
+        numeric_counterexample: None,
     };
     let mut decided = false;
     let calculated = (|| -> Result<(), ObjectViewTransportFailure> {
@@ -614,9 +617,36 @@ fn checked_view_transport(
             r.outcome = match (&a, &z) {
                 (Reading::Unknown(_), _) | (_, Reading::Unknown(_)) => ViewTransportOutcome::Undetermined,
                 (Reading::Outside, Reading::Outside) => ViewTransportOutcome::Preserved,
-                (Reading::Value(a), Reading::Value(z)) if a == z => ViewTransportOutcome::Preserved,
-                (Reading::Value(_), Reading::Value(_)) => {
-                    ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+                (Reading::Value(a), Reading::Value(z)) => {
+                    use super::term::affine::{Comparison, compare};
+                    match compare(a, z, inputs.law(), c).map_err(invalid)? {
+                        Comparison::Same => ViewTransportOutcome::Preserved,
+                        Comparison::Different(unit) => {
+                            use crate::construction::readings::ObjectEvaluationPosition;
+                            r.numeric_counterexample = Some(functions::counterexample(
+                                &inputs,
+                                &r.source_readings,
+                                &r.target_readings,
+                                [
+                                    ObjectEvaluationPosition { object, instance },
+                                    ObjectEvaluationPosition {
+                                        object: to,
+                                        instance: ti,
+                                    },
+                                ],
+                                pair.parameters(),
+                                unit.as_ref(),
+                                c,
+                            )?);
+                            ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+                        }
+                        Comparison::Unsupported => {
+                            return Err(ConstructionFailure::Inconsistent(
+                                "数値viewの正規形が数値比較に未対応".into(),
+                            )
+                            .into());
+                        }
+                    }
                 }
                 _ => ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability),
             };

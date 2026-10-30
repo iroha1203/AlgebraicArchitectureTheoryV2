@@ -11638,6 +11638,14 @@ fn numeric_view_parameters_use_exact_functions_and_keep_the_operation_on_refutat
         ),
         ("different", "Z", "z", "2*renamed", "refuted"),
         ("nonlinear", "Z", "z*z", "renamed*renamed", "undetermined"),
+        ("source-nonlinear", "Z", "z*z", "renamed", "undetermined"),
+        (
+            "target-nonlinear",
+            "Z",
+            "z",
+            "renamed*renamed",
+            "undetermined",
+        ),
     ] {
         let dir = inputs(&format!("numeric-view-parameter-{case}"));
         let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -11678,7 +11686,27 @@ reading After {{{uses} view affine(s:State,renamed:{ty}):{ty}={target};}}"#
             assert_eq!(s(get(location, "input")), "law");
             let span = arr(get(location, "span"));
             let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
-            assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], source);
+            let expected = if case == "target-nonlinear" {
+                target
+            } else {
+                source
+            };
+            assert_eq!(
+                &law[num(&span[0]) as usize..num(&span[1]) as usize],
+                expected
+            );
+        }
+        if status == "refuted" {
+            let examples = arr(get(answer(&result, "m"), "counterexamples"));
+            assert!(!examples.is_empty());
+            for example in examples {
+                let data = get(value(&result, example), "data");
+                let bindings = arr(get(data, "bindings"));
+                let z = bindings.iter().find(|b| s(get(b, "name")) == "z").unwrap();
+                assert_eq!(s(value(&result, get(z, "value"))), "1");
+                assert_json(value(&result, get(data, "left")), r#"{"some":"1"}"#);
+                assert_json(value(&result, get(data, "right")), r#"{"some":"2"}"#);
+            }
         }
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         let outputs = get(answer(&result, "m"), "outputs");
@@ -11719,6 +11747,33 @@ fn numeric_view_functions_keep_nested_axes_and_exact_cancellation() {
             "refuted",
         ),
         (
+            "zero-point",
+            "z:Z",
+            "renamed:Z",
+            "Z",
+            "z+1",
+            "renamed+2",
+            "refuted",
+        ),
+        (
+            "rational-point",
+            "z:Q",
+            "renamed:Q",
+            "Q",
+            "z",
+            "rat(2,1)*renamed",
+            "refuted",
+        ),
+        (
+            "nested-point",
+            "z:(Z,(Z,Z))",
+            "renamed:(Z,(Z,Z))",
+            "(Z,(Z,Z))",
+            "z",
+            "(renamed.0,(renamed.1.0,2*renamed.1.1))",
+            "refuted",
+        ),
+        (
             "coefficient",
             "a:Z,b:Z",
             "x:Z,y:Z",
@@ -11746,6 +11801,73 @@ reading After {{{uses} view affine(s:State,{target_params}):{returns}={target};}
         assert_eq!(s(get(m, "status")), status, "{case}");
         assert!(has(get(m, "outputs"), "operation"));
         assert_eq!(has(get(m, "outputs"), "map"), status == "established");
+        if status == "refuted" {
+            let examples = arr(get(m, "evidence"));
+            assert!(!examples.is_empty(), "{case}");
+            for example in examples {
+                let proof = value(&j, example);
+                assert_eq!(s(get(proof, "kind")), "counterexample");
+                let data = get(proof, "data");
+                let bindings = arr(get(data, "bindings"));
+                let parameter = |name: &str| {
+                    value(
+                        &j,
+                        get(
+                            bindings.iter().find(|b| s(get(b, "name")) == name).unwrap(),
+                            "value",
+                        ),
+                    )
+                };
+                let left = value(&j, get(data, "left"));
+                let right = value(&j, get(data, "right"));
+                assert_ne!(left.value, right.value);
+                match case {
+                    "zero-point" => {
+                        assert_json(parameter("z"), r#""0""#);
+                        assert_json(left, r#"{"some":"1"}"#);
+                        assert_json(right, r#"{"some":"2"}"#);
+                    }
+                    "rational-point" => {
+                        assert_json(parameter("z"), r#"["1","1"]"#);
+                        assert_json(left, r#"{"some":["1","1"]}"#);
+                        assert_json(right, r#"{"some":["2","1"]}"#);
+                    }
+                    "nested-point" => {
+                        assert_json(parameter("z"), r#"["0",["0","1"]]"#);
+                        assert_json(left, r#"{"some":["0",["0","1"]]}"#);
+                        assert_json(right, r#"{"some":["0",["0","2"]]}"#);
+                    }
+                    "coefficient" => {
+                        assert_json(parameter("a"), r#""0""#);
+                        assert_json(parameter("b"), r#""1""#);
+                        assert_json(left, r#"{"some":["2","0"]}"#);
+                        assert_json(right, r#"{"some":["3","0"]}"#);
+                    }
+                    "observed-offset" => {
+                        assert_json(parameter("z"), r#""0""#);
+                        let subject = s(&arr(parameter("s"))[1]);
+                        let (source, target, left_value, right_value) = match subject {
+                            "p" => ("p", "r", "2", "4"),
+                            "q" => ("q", "s", "1", "3"),
+                            other => panic!("unexpected source state {other}"),
+                        };
+                        assert_eq!(s(get(left, "some")), left_value);
+                        assert_eq!(s(get(right, "some")), right_value);
+                        let facts = arr(get(data, "facts"));
+                        for subject in [source, target] {
+                            let atom = format!("{subject}-free");
+                            assert!(facts.iter().any(|f| has(f, "field")
+                                && has(f, "atom")
+                                && s(get(f, "snapshot")) == "v"
+                                && s(get(f, "subject")) == subject
+                                && s(get(f, "field")) == "Reservations.State.free"
+                                && s(get(f, "atom")) == atom));
+                        }
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
     }
 }
 
