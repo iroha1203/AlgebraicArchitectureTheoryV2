@@ -385,11 +385,12 @@ fn compound_named_boundary_and_quantified_values_are_explicit() {
 fn compound_cli_refutation_save_reuse_and_tamper() {
     let dir = law_input(
         "quotient-compound-cli",
-        "law optional wrapped(s:State):(s.x=s.x) and true;",
+        "law optional wrapped(s:State):(s.x=s.x) and true;law optional indexed(s:State):forall b:Bool . s.x=b;",
     );
     let asks = [
         "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.wrapped)",
+        "indexed=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.indexed)",
     ];
     let first = execute(&dir, "out", &asks, None);
     assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
