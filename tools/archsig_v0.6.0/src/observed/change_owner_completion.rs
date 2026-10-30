@@ -104,6 +104,8 @@ pub(super) fn compute(
     let mut cases = vec![];
     let mut counts = vec![];
     let mut arguments = vec![expression, solutions];
+    let mut common: Option<change_search::Search> = None;
+    let mut common_states = !value_fields.is_empty();
     for value_ in enumeration.values {
         c.checkpoint(Checkpoint::Completion)?;
         let values = if fields.len() == 1 {
@@ -229,11 +231,44 @@ pub(super) fn compute(
             // 重複した表示を解の数にしない。比較対象は元subjectと元parameter値。
             assignments.push(Json::Arr(entries));
         }
+        if common_states && let Some(previous_search) = &common {
+            let previous = previous_search
+                .candidates
+                .as_ref()
+                .ok_or("共通候補表がない")?;
+            common_states = previous.subjects == candidates.subjects
+                && previous.parameter_types == candidates.parameter_types
+                && previous.rows.len() == candidates.rows.len()
+                && previous.rows.iter().zip(&candidates.rows).all(|(a, b)| {
+                    a.parameters == b.parameters
+                        && a.update.state == b.update.state
+                        && a.update.values == b.update.values
+                })
+                && previous_search
+                    .solutions
+                    .iter()
+                    .map(|r| (r.candidate, r.member))
+                    .eq(search.solutions.iter().map(|r| (r.candidate, r.member)));
+        }
         counts.push(assignments.len());
         cases.push(Json::obj([
             ("values", refs(&values)),
             ("assignments", Json::Arr(assignments)),
         ]));
+        if common_states && common.is_none() {
+            common = Some(search);
+        }
+    }
+    if common_states {
+        let search = common.ok_or("有限補完の共通候補表がない")?;
+        let mut result = super::render_search(env, g, architecture, base, request, c, search)?;
+        for part in &mut result.0 {
+            part.scope.merge(&enumeration.scope);
+            part.scope.completions = true;
+        }
+        result.1.scope.merge(&enumeration.scope);
+        result.1.scope.completions = true;
+        return Ok(Some(result));
     }
     let certificate = b.push(
         NodeType::Evidence,

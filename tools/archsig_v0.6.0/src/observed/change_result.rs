@@ -338,7 +338,19 @@ fn compute_inner(
         }
         return Err(unsupported());
     }
-    let candidates = search.candidates.as_ref().ok_or_else(unsupported)?;
+    render_search(env, g, architecture, base, request, c, search)
+}
+
+pub(super) fn render_search(
+    env: &Environment<'_>,
+    g: &Graph,
+    architecture: &Architecture,
+    base: usize,
+    request: &Request,
+    c: &mut Control,
+    search: change_search::Search,
+) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
+    let candidates = search.candidates.as_ref().ok_or("有限候補表がない")?;
     let change_name = request
         .arguments
         .iter()

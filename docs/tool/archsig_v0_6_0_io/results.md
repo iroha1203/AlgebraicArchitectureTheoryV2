@@ -845,6 +845,8 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
 Law判定に必要な場合も、核は上記の補完表を生成し、
 各補完の元Assignment全体と存在・一意性を再検査する。補完で新たに必要となった有限slotを
 依存へ加え、全caseの判定が完了するまで補完表を再生成する。
+全caseで同じ候補・更新値・Law判定の表が得られた場合は、その確定表から通常の
+CandidateSpace・SolutionSet・Repair/objectを構成する。元入力の欠測slotを観測済みにしない。
 solveのoutputs.propositionは補完全体での存在判断を保持する。具体的なCandidateSpaceや
 SolutionSetの値が欠測に依存する場合は、回答全体とsolution_setのconstructibleをundeterminedとし、
 元slotのmissing_observationを返す。確定した存在命題を未決へ戻さず、表示用の補完値を

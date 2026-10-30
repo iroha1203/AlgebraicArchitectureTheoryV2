@@ -366,3 +366,42 @@ fn finite_completion_discovers_selected_reads_and_ignores_unselected_missing_slo
         );
     }
 }
+
+#[test]
+fn identical_completed_updates_deliver_native_repair_without_observing_missing_input() {
+    let dir = setup("true");
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace(
+        "operator=c.operator",
+        "operator=match c.operator {AddOp => AddOp; SubtractOp => AddOp;}",
+    );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let result = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "r=repair(Engine.valid,on=@engine/add,using=Engine.keep,c=@engine/add)",
+            "--ask",
+            "v=evaluate(Engine.op,on=$r.object,c=@engine/add)",
+            "--out",
+            "out",
+        ],
+    );
+    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
+    let saved = result_json(&dir, &result);
+    let answers = arr(get(&saved, "answers"));
+    let repair = &answers[0];
+    assert_eq!(s(get(repair, "status")), "established");
+    assert!(has(get(repair, "outputs"), "object"));
+    let value = node(&saved, get(get(&answers[1], "outputs"), "value"));
+    assert_eq!(s(get(get(value, "value"), "tag")), "AddOp");
+    // The original input is still missing the operator; only the change supplies its override.
+    let original = std::fs::read_to_string(dir.join("a.json")).unwrap();
+    assert!(!original.contains("Engine.Compiler.operator"));
+}
