@@ -1008,4 +1008,51 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn affine_guard_fiber_truth_rechecks_original_applications_and_counterexamples() {
+        for (target_guard, target_body, preserved) in [("x=0", "x-x=0", true), ("true", "x=0", false)] {
+            let law = include_str!("../../tests/fixtures/object-law-transport.law")
+                .replace(
+                    "bounded(c: Left.Child): c.count = 2",
+                    "bounded(c: Left.Child,n:Z) when n=0: n=0",
+                )
+                .replace(
+                    "bounded(d: Right.Child): 2 = 2",
+                    &format!("bounded(d: Right.Child,x:Z) when {target_guard}: {target_body}"),
+                );
+            let (inputs, mut result) = example_with_law("bounded", &law);
+            assert_eq!(
+                result.outcome(),
+                &if preserved {
+                    LawTransportOutcome::Preserved
+                } else {
+                    LawTransportOutcome::Refuted(LawConditionFailure::Applicability)
+                }
+            );
+            let family = result.numeric_family.as_ref().unwrap();
+            assert_eq!(family.applicable, Some(preserved));
+            assert_eq!(family.equivalent, Some(preserved));
+            if !preserved {
+                let point = family.example.as_ref().unwrap();
+                assert_eq!(point.left, Scalar::Z(0.into()));
+                assert_eq!(point.right, Scalar::Z(1.into()));
+                assert_eq!(
+                    point
+                        .bindings
+                        .iter()
+                        .find(|(name, _)| name == "n")
+                        .unwrap()
+                        .1,
+                    Scalar::Z(1.into())
+                );
+            }
+            result
+                .recheck(inputs.clone(), &mut Control::unlimited())
+                .unwrap();
+            result.numeric_family.as_mut().unwrap().equivalent = Some(!preserved);
+            assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+        }
+    }
+
 }

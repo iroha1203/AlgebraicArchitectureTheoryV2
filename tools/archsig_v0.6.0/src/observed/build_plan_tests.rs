@@ -788,3 +788,138 @@ fn numeric_guarded_zero_body_keeps_the_complete_zero_equation_family() {
         assert!(answer.outputs.contains_key("algebra"));
     }
 }
+
+#[test]
+fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
+    use crate::observed::observable_layout::Reading;
+    for (ty, guard, body) in [
+        ("Z", "n=0", "n=0"),
+        ("Q", "n=rat(1,2)", "rat(2,1)*n=rat(1,1)"),
+    ] {
+        let p = single_part(&format!(
+            "law required reflexive(c:Part,n:{ty}) when {guard}: {body};"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let layout = plan.polynomial.as_ref().unwrap();
+        let mut checked = 0;
+        for object in &layout.data.objects {
+            for coordinate in &object.coordinates {
+                let super::super::observable_layout::Source::Polynomial(q) = &coordinate.source
+                else {
+                    panic!()
+                };
+                if q.guard
+                    == super::super::object_equation_presentation::EquationGuard::OutsideObject
+                {
+                    continue;
+                }
+                checked += 1;
+                assert_eq!(
+                    q.guard,
+                    super::super::object_equation_presentation::EquationGuard::Undetermined
+                );
+                let residual = coordinate.value(Reading::Residual).unwrap();
+                for kind in [Reading::Nu, Reading::Epsilon] {
+                    let original = coordinate.value(kind).unwrap();
+                    assert_ne!(original, residual);
+                    let Some(Payload::Construction(value)) = &g.get(original).unwrap().payload
+                    else {
+                        panic!()
+                    };
+                    let D::PolynomialLaw(data) = &value.data else {
+                        panic!()
+                    };
+                    assert!(data.parameter_family(&[(
+                        "n".into(),
+                        if ty == "Z" {
+                            crate::types::Type::Z
+                        } else {
+                            crate::types::Type::Q
+                        }
+                    )]));
+                    env.recheck_node(&g, g.get(original).unwrap(), original.0)
+                        .unwrap();
+                }
+                let Some(Payload::Construction(value)) = &g.get(residual).unwrap().payload else {
+                    panic!()
+                };
+                let D::PolynomialLaw(data) = &value.data else {
+                    panic!()
+                };
+                assert!(data.polynomial().unwrap().1.is_empty());
+                let source =
+                    super::super::object_equation_presentation::parameter_source_on_guard_fiber(
+                        &p.shared_inputs(),
+                        plan.architecture.witness.readings(),
+                        q.position.instance,
+                        &[],
+                        &mut quiet(),
+                    )
+                    .unwrap()
+                    .unwrap();
+                assert!(source.guard.zero_on_fiber());
+                assert_eq!(source.difference.parameters.len(), 1);
+                assert_eq!(source.difference.parameters[0].0.name, "n");
+                let constant = if ty == "Z" {
+                    Scalar::Z(0.into())
+                } else {
+                    Scalar::Q((-1).into(), 1.into())
+                };
+                let coefficient = if ty == "Z" {
+                    Scalar::Z(1.into())
+                } else {
+                    Scalar::Q(2.into(), 1.into())
+                };
+                assert_eq!(
+                    source
+                        .difference
+                        .constant
+                        .evaluate(&[], &mut quiet())
+                        .unwrap()
+                        .unwrap()
+                        .scalar(),
+                    &constant
+                );
+                assert_eq!(
+                    source.difference.parameters[0]
+                        .1
+                        .evaluate(&[], &mut quiet())
+                        .unwrap()
+                        .unwrap()
+                        .scalar(),
+                    &coefficient
+                );
+            }
+        }
+        assert!(checked > 0);
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+            .unwrap()
+            .unwrap();
+        assert!(!circuits[0].cases.is_empty());
+        assert!(
+            circuits[0]
+                .cases
+                .iter()
+                .all(|case| case.when == Some(false))
+        );
+        let answer = crate::observed::build_result::retain_plan(
+            &env,
+            &mut g,
+            plan,
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        assert!(answer.outputs.contains_key("algebra"));
+    }
+}

@@ -529,8 +529,25 @@ impl Data {
                 let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance).ok_or("数値族の元出現がない")?;
                 if !self.parameter_family(&original.parameters) { return Ok(None); }
                 let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
-                let mut source = super::object_equation_presentation::parameter_source_difference_bound(&self.source.inputs, instance, &original.finite, c)
-                    .map_err(|e| construction_failure(&e))?.ok_or("数値族の原式差がない")?;
+                let mut source = match super::object_equation_presentation::parameter_source_difference_bound(
+                    &self.source.inputs,
+                    instance,
+                    &original.finite,
+                    c,
+                )
+                .map_err(|e| construction_failure(&e))?
+                {
+                    Some(source) => source,
+                    None => super::object_equation_presentation::parameter_source_on_guard_fiber(
+                        &self.source.inputs,
+                        self.source.architecture.readings(),
+                        original.instance,
+                        &original.finite,
+                        c,
+                    )
+                    .map_err(|e| construction_failure(&e))?
+                    .ok_or("数値族の原式差がない")?,
+                };
                 if !source.ring.symbols.is_empty() {
                     let values = source.ring.symbols.iter().map(|s| s.value.clone()).collect::<Vec<_>>();
                     let value = source.difference.constant.evaluate(&values, c).map_err(|e| construction_failure(&e))?
@@ -687,7 +704,7 @@ impl Data {
             && diagram.coordinates.iter().any(|q| {
                 q.instance == reference
                     && q.status == EquationPresentationStatus::Ready
-                    && q.nu
+                    && q.residual
                         .and_then(|r| r.0.checked_sub(self.source.base))
                         .and_then(|i| self.source.parts.get(i))
                         .is_some_and(
@@ -722,7 +739,7 @@ impl Data {
                 )
             }),
             outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
-            zero_body: numeric_family && zero_guarded,
+            zero_residual: numeric_family && zero_guarded,
             body_allowed: (numeric_family && (true_guard || zero_guarded)) || reading
                 .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,

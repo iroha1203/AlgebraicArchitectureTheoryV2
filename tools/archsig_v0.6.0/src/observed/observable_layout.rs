@@ -251,7 +251,7 @@ fn compute_polynomial(
                     types.push((q.ty.clone(), ring));
                 }
             }
-            let zero_difference = if let Some(reference) = q.nu {
+            let zero_residual = if let Some(reference) = q.residual {
                 match &g.get(reference)?.payload {
                     Some(Payload::Construction(value)) => match &value.data {
                         D::PolynomialLaw(data) => {
@@ -279,7 +279,7 @@ fn compute_polynomial(
                     q.status,
                     EquationPresentationStatus::Ready | EquationPresentationStatus::NotApplicable
                 )
-                && (q.guard != EquationGuard::Undetermined || zero_difference);
+                && (q.guard != EquationGuard::Undetermined || zero_residual);
             let canonical_row = if index.parameters.is_empty() {
                 Some(0)
             } else {

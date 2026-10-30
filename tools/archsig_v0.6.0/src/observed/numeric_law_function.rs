@@ -23,9 +23,17 @@ pub(in crate::observed) struct Pending {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Reading {
     condition: Option<affine::Form>,
+    restriction: Option<GuardRestriction>,
     residual: Option<affine::Form>,
     facts: Vec<Fact>,
     pending: Option<Pending>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct GuardRestriction {
+    body: affine::Form,
+    basis: Vec<TermArgument>,
+    guard: System,
+    zero: System,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Certificate {
@@ -102,6 +110,7 @@ fn read(
     let outside = |c: &Control, facts: Vec<Fact>| -> Result<Reading, ConstructionFailure> {
         let zero = numeric::zero(&zero_type, c).map_err(invalid)?;
         Ok(Reading {
+            restriction: None,
             condition: Some(
                 affine::constant(&Scalar::Z(1.into()), c)
                     .map_err(invalid)?
@@ -117,6 +126,7 @@ fn read(
         .ok_or_else(|| bad("真の適用式がない"))?;
     let mut facts = vec![];
     let unknown = |span, missing, facts, condition| Reading {
+        restriction: None,
         condition,
         residual: None,
         facts,
@@ -245,17 +255,25 @@ fn read(
     {
         return Ok(incomplete(residual.missing_facts()));
     }
-    // 非定数guardのindicatorを線形式へ置き換えない。全域で零の本文だけは
-    // guardの真偽を保ったまま、条件付き残差も正確に零と決められる。
-    if condition.value(c).map_err(invalid)?.is_none()
-        && residual.value(c).map_err(invalid)?.is_none_or(
-            |v| !matches!(&v,Scalar::Z(n)|Scalar::Q(n,_) if n==&num_bigint::BigInt::from(0)),
-        )
-    {
+    let restriction = if condition.value(c).map_err(invalid)?.is_none() {
+        restrict_zero(&condition, &residual, c).map_err(invalid)?
+    } else {
+        None
+    };
+    let residual = if restriction.is_some() {
+        let zero = numeric::zero(&zero_type, c).map_err(invalid)?;
+        affine::constant(&zero, c)
+            .map_err(invalid)?
+            .ok_or_else(|| bad("条件付き残差の零がない"))?
+    } else if condition.value(c).map_err(invalid)?.is_none() {
+        // 非定数guardのindicatorを線形式へ置き換えない。
         return Ok(incomplete(vec![]));
-    }
+    } else {
+        residual
+    };
     Ok(Reading {
         condition: Some(condition),
+        restriction,
         residual: Some(residual),
         facts,
         pending: None,
@@ -405,6 +423,104 @@ fn outside(a: &System, b: &System, c: &Control) -> Result<Option<Vec<Scalar>>, V
         }
     }
     Ok(None)
+}
+fn restrict_zero(
+    guard: &affine::Form,
+    body: &affine::Form,
+    c: &Control,
+) -> Result<Option<GuardRestriction>, ValidationFailure> {
+    let mut basis = BTreeSet::new();
+    let mut rational = false;
+    for form in [guard, body] {
+        let Some((constant, terms)) = form.numeric_parameter_terms(c)? else {
+            return Ok(None);
+        };
+        rational |= constant.ty() == Type::Q;
+        basis.extend(terms.into_iter().map(|(axis, _)| axis));
+    }
+    let basis: Vec<_> = basis.into_iter().collect();
+    let ground = basis
+        .first()
+        .map(|axis| axis.kind.ty())
+        .unwrap_or(if rational { Type::Q } else { Type::Z });
+    if basis.iter().any(|axis| axis.kind.ty() != ground) {
+        return Ok(None);
+    }
+    let guard_system = system(guard, &basis, &ground, c)?;
+    let body_system = system(body, &basis, &ground, c)?;
+    if outside(&guard_system, &body_system, c)?.is_some() {
+        return Ok(None);
+    }
+    Ok(Some(GuardRestriction {
+        body: body.clone(),
+        basis,
+        guard: guard_system,
+        zero: body_system,
+    }))
+}
+/// 全称binderの出現を同じ位置軸へ移し、同じ正確なfiber検査を使う。
+pub(in crate::observed) fn universal_zero_on_guard(
+    guard: &affine::Form,
+    body: &affine::Form,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    let (Some((ga, gt)), Some((ba, bt))) = (
+        guard.parameter_coordinates(c)?,
+        body.parameter_coordinates(c)?,
+    ) else {
+        return Ok(false);
+    };
+    let parameters = gt
+        .iter()
+        .chain(&bt)
+        .map(|(p, _)| p.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let convert = |constant: &Scalar,
+                   terms: &[(affine::Parameter, Scalar)]|
+     -> Result<affine::Form, ValidationFailure> {
+        let mut form = affine::constant(constant, c)?.ok_or("fiberの定数型が数値でない")?;
+        for (parameter, coefficient) in terms {
+            tick(c)?;
+            let position = parameters
+                .iter()
+                .position(|p| p == parameter)
+                .ok_or("fiberの元binderがない")?;
+            let axis = affine::term_argument(
+                TermArgument {
+                    argument: position,
+                    component: vec![],
+                    kind: parameter.kind,
+                },
+                c,
+            )?;
+            let coefficient = affine::constant(coefficient, c)?.ok_or("fiberの係数が数値でない")?;
+            let term = affine::binary(BinOp::Mul, Some(&axis), Some(&coefficient), c)?
+                .ok_or("fiberの項がアフィンでない")?;
+            form = affine::binary(BinOp::Add, Some(&form), Some(&term), c)?
+                .ok_or("fiberの和がアフィンでない")?;
+        }
+        Ok(form)
+    };
+    Ok(restrict_zero(&convert(&ga, &gt)?, &convert(&ba, &bt)?, c)?.is_some())
+}
+/// 元のguardと本文を通常Evaluatorで読み、全適用fiber上の零を検査する。
+/// 証明は原式・特解・整数/体kernelを保持し、元の差を零へ書き換えない。
+pub(in crate::observed) fn zero_on_guard(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    position: ObjectEvaluationPosition,
+    c: &mut Control,
+) -> Result<Option<GuardRestriction>, ConstructionFailure> {
+    let row = &readings.instances()[position.instance];
+    let names = row
+        .declaration()
+        .parameters
+        .iter()
+        .map(|(n, _)| (n.clone(), n.clone()))
+        .collect::<Vec<_>>();
+    Ok(read(inputs, readings, position, &names, false, &[], c)?.restriction)
 }
 fn assignments(
     inputs: &CheckedInputs,
@@ -672,4 +788,60 @@ pub(in crate::observed) fn compare(
         }
     }
     Ok(result)
+}
+
+#[cfg(test)]
+mod guard_tests {
+    use super::*;
+    #[test]
+    fn guard_fiber_zero_requires_every_kernel_direction_and_exact_ground() {
+        for kind in [affine::NumberType::Z, affine::NumberType::Q] {
+            let c = Control::unlimited();
+            let x = affine::term_argument(
+                TermArgument {
+                    argument: 0,
+                    component: vec![],
+                    kind,
+                },
+                &c,
+            )
+            .unwrap();
+            let y = affine::term_argument(
+                TermArgument {
+                    argument: 1,
+                    component: vec![],
+                    kind,
+                },
+                &c,
+            )
+            .unwrap();
+            let number = |n: i64| {
+                if kind == affine::NumberType::Z {
+                    Scalar::Z(n.into())
+                } else {
+                    Scalar::Q(n.into(), 1.into())
+                }
+            };
+            let form = |n| affine::constant(&number(n), &c).unwrap().unwrap();
+            let binary = |op, a: &affine::Form, b: &affine::Form| {
+                affine::binary(op, Some(a), Some(b), &c).unwrap().unwrap()
+            };
+            assert!(restrict_zero(&x, &x, &c).unwrap().is_some());
+            assert!(restrict_zero(&x, &y, &c).unwrap().is_none());
+            assert!(
+                restrict_zero(&x, &binary(BinOp::Sub, &x, &form(1)), &c)
+                    .unwrap()
+                    .is_none()
+            );
+            let twice_x = binary(BinOp::Mul, &form(2), &x);
+            let guard = binary(BinOp::Sub, &twice_x, &form(1));
+            let body = binary(BinOp::Sub, &binary(BinOp::Mul, &form(4), &x), &form(2));
+            assert!(restrict_zero(&guard, &body, &c).unwrap().is_some());
+            // 2x=1 has no integer point, but the rational fiber contains x=1/2.
+            assert_eq!(
+                restrict_zero(&guard, &form(1), &c).unwrap().is_some(),
+                kind == affine::NumberType::Z
+            );
+        }
+    }
 }
