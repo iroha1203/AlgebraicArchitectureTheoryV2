@@ -54,14 +54,18 @@ fn sources(
 fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
     let prepared = observed::prepare_observed(sources, asks, &mut control()).unwrap();
     let result = observed::evaluate_observed(prepared, &mut control());
-    let observed::EvaluationFailure::NotImplemented {
-        partial, feature, ..
-    } = result.unwrap_err()
-    else {
-        panic!("Stage2の具体構成は未実装")
+    let evaluation = match result {
+        Ok(evaluation) => {
+            assert_eq!(evaluation.status(), "complete");
+            evaluation
+        }
+        Err(observed::EvaluationFailure::NotImplemented { partial, feature, .. }) => {
+            assert!(feature.contains("存在・一意性は検査済み"), "{feature}");
+            *partial
+        }
+        Err(failure) => panic!("unexpected failure: {failure:?}"),
     };
-    assert!(feature.contains("存在・一意性は検査済み"), "{feature}");
-    archsig::json::parse(partial.wire().canonical().as_bytes()).unwrap()
+    archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
 fn control() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -653,4 +657,63 @@ fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_struct
         std::fs::read(dir.join("a.json")).unwrap(),
         source.archmap().bytes()
     );
+}
+
+#[test]
+fn finite_owner_definitive_repair_refutations_are_results_without_common_objects() {
+    for (body, existence) in [("true", "established"), ("false", "refuted")] {
+        let input = sources(true, "", "", body, false);
+        let dir = workdir(&format!("owner-refuted-{body}"));
+        for (name, bytes) in [
+            ("d.json", input.definitions()[0].bytes()),
+            ("l.law", input.law().bytes()),
+            ("a.json", input.archmap().bytes()),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        let run = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+                "--out",
+                "out",
+            ],
+        );
+        assert_eq!(run.code, 1, "{}", run.stdout);
+        let saved = result_json(&dir, &run);
+        assert_eq!(s(get(&saved, "status")), "complete");
+        let answer = answer(&saved, "r");
+        assert_eq!(s(get(answer, "status")), "refuted");
+        let outputs = get(answer, "outputs");
+        assert!(!has(outputs, "repair") && !has(outputs, "object"));
+        let existence_node = node(&saved, get(outputs, "existence"));
+        assert_eq!(s(get(get(existence_node, "judgment"), "status")), existence);
+        assert!(
+            arr(get(&saved, "issues"))
+                .iter()
+                .all(|issue| s(get(issue, "code")) != "internal")
+        );
+        let data = get(get(evidence(&saved), "value"), "data");
+        let mut counts: Vec<_> = arr(get(data, "cases"))
+            .iter()
+            .map(|case| arr(get(case, "assignments")).len())
+            .collect();
+        counts.sort();
+        assert_eq!(
+            counts,
+            if body == "true" {
+                vec![2, 4]
+            } else {
+                vec![0, 0]
+            }
+        );
+    }
 }
