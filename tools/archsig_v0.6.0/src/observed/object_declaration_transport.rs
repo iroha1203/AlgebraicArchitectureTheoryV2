@@ -830,10 +830,13 @@ pub(super) fn retain(
                 None => false,
             };
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
-                if read_parameter(inputs, t, tp, c)? != Some(position) {
+                if read_parameter(inputs, t, tp, c)? == Some(position) {
+                    reads.push(Read::Projection(position));
+                } else if expression_read {
+                    reads.push(Read::Expression);
+                } else {
                     return Err("異なる引数射影のlocal read移送は未実装".into());
                 }
-                reads.push(Read::Projection(position));
             } else if let (Some((a, source)), Some((z, target))) =
                 (field_read(inputs, s, sp, c)?, field_read(inputs, t, tp, c)?)
             {

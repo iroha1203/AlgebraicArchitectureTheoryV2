@@ -6076,15 +6076,8 @@ reading After {{{vocabulary} local here(a:State,pick:Option<Bool>,b:State) when 
 }
 
 #[test]
-fn local_composite_reads_do_not_accept_unimplemented_expression_transports() {
+fn local_infinite_argument_expression_transport_keeps_the_execution_error() {
     for (name, source_params, target_params, source_read, target_read) in [
-        (
-            "different-position",
-            "x:Option<Bool>,y:Option<Bool>",
-            "a:Option<Bool>,b:Option<Bool>",
-            "x",
-            "b",
-        ),
         (
             "infinite-argument", "items:List<Z>,take:Bool", "items:List<Z>,keep:Bool",
             "if take then list<Z>[0] else items",
@@ -11261,5 +11254,57 @@ reading After {{{vocabulary} local here(m:Z,keep:Bool,y:Q) when {target_guard} r
         assert_eq!(repeated.code, code, "{}", repeated.stdout);
         let again = result_json(&dir, &repeated);
         for key in ["answers", "nodes"] { assert_eq!(get(&j, key).value, get(&again, key).value); }
+    }
+}
+
+#[test]
+fn local_parameter_positions_compare_all_finite_arguments_and_preserve_the_base_operation() {
+    for guarded in [false, true] {
+        let (dir, vocabulary) =
+            finite_local_parameter_inputs(&format!("local-different-finite-positions-{guarded}"));
+        let sg = if guarded { "when x=y" } else { "" };
+        let tg = if guarded { "when a=b" } else { "" };
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(x:Option<Bool>,y:Option<Bool>) {sg} reads x;}}
+reading After {{{vocabulary} local here(a:Option<Bool>,b:Option<Bool>) {tg} reads b;}}"#
+            ),
+        )
+        .unwrap();
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, if guarded { 0 } else { 1 }, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(
+            s(get(m, "status")),
+            if guarded { "established" } else { "refuted" }
+        );
+        assert!(has(get(m, "outputs"), "operation"));
+        assert_eq!(has(get(m, "outputs"), "map"), guarded);
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        if !guarded {
+            let data = get(value(&result, &arr(get(m, "counterexamples"))[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2);
+            for ((binding, name), expected) in bindings
+                .iter()
+                .zip(["x", "y"])
+                .zip([r#"{"none":true}"#, r#"{"some":false}"#])
+            {
+                assert_eq!(s(get(binding, "name")), name);
+                assert_json(value(&result, get(binding, "value")), expected);
+            }
+            assert_json(value(&result, get(data, "left")), r#"{"none":true}"#);
+            assert_json(value(&result, get(data, "right")), r#"{"some":false}"#);
+        }
+        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+        assert!(arr(get(plan, "requirements")).is_empty());
     }
 }
