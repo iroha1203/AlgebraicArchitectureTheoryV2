@@ -1464,7 +1464,9 @@ fn quotient_integer_infeasible_guard_preserves_inapplicable_family() {
 }
 #[test]
 fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
-    use archsig::{control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes};
+    use archsig::{
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
+    };
     // Argument order is (b,a), while the state is (x,y)=(a,b).
     let dir = input("integer-conditional-image", "change choose(s:State,b:Z,a:Z)=s with{x=a,y=b};view odd(s:State):Z=2*s.x+1;law optional active(s:State) when s.x=1:s.x=s.x;law optional bad(s:State) when s.x=1:s.y=s.y;");
     let sources = InputSources::from_bytes(
@@ -1589,9 +1591,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let evaluated = archsig::observed::evaluate_observed_bytes(
                 sources,
                 &[query],
-                &mut archsig::control::Control::new(Default::default(), |_| {
-                    Default::default()
-                }),
+                &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
             )
             .unwrap();
             let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();

@@ -22,9 +22,7 @@ impl Builder<'_> {
             )
             .map_err(|e| match e {
                 crate::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-                crate::control::CheckFailure::Input(_) => {
-                    "多項式operandの原始型がない".into()
-                }
+                crate::control::CheckFailure::Input(_) => "多項式operandの原始型がない".into(),
             })
     }
     fn put(&mut self, part: Part) -> Result<NodeRef, ValidationFailure> {

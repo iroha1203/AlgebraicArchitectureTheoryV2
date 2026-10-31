@@ -496,7 +496,10 @@ fn checked_transport(
                 &inputs,
                 [&r.source_readings, &r.target_readings],
                 [
-                    crate::observed::object_evaluation_table::ObjectEvaluationPosition { object, instance },
+                    crate::observed::object_evaluation_table::ObjectEvaluationPosition {
+                        object,
+                        instance,
+                    },
                     crate::observed::object_evaluation_table::ObjectEvaluationPosition {
                         object: to,
                         instance: ti,

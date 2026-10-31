@@ -1,4 +1,8 @@
 //! 宣言の型構造に沿う値移送と、有限域での順逆検査。
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use super::{
     data, finite,
     result::{Fact, Scalar, ValidationFailure},
@@ -10,10 +14,6 @@ use crate::{
         maps::{ConfigurationOperation, DeclarationCorrespondence},
     },
     types::Type,
-};
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
 };
 use std::collections::{BTreeMap, BTreeSet};
 

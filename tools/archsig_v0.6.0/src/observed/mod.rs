@@ -38,7 +38,7 @@ mod object_reading_evaluation;
 mod object_reading_result;
 mod object_transport;
 pub mod object_view_compatibility;
-pub mod object_view_family;
+pub(crate) mod object_view_family;
 pub mod object_view_transport;
 mod observable_layout;
 mod path_compose;

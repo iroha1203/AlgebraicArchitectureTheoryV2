@@ -48,7 +48,9 @@ fn terms(p: &EquationPolynomial) -> Vec<(Vec<usize>, String)> {
         .map(|t| (t.variables.clone(), t.coefficient.wire().canonical()))
         .collect()
 }
-fn number(v: &Option<archsig::observed::numeric_transport::NumericTransportValue>) -> Option<String> {
+fn number(
+    v: &Option<archsig::observed::numeric_transport::NumericTransportValue>,
+) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
 #[test]

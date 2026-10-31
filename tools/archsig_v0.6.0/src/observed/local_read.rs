@@ -782,10 +782,10 @@ fn affine_read_image(
     read_type: &Type,
     c: &mut Control,
 ) -> Result<(NodeRef, Vec<Fact>, crate::observed::field_fiber::Matrix), ValidationFailure> {
-    use crate::observed::{change_result::field_linear_result as scalar_wire, numeric};
     use crate::observed::{
         change_result::linear_result as wire, construction_result::ConstructionType as CT,
     };
+    use crate::observed::{numeric, change_result::field_linear_result as scalar_wire};
     let slots = visible
         .iter()
         .filter(|f| free.contains(f))
@@ -1771,10 +1771,7 @@ pub(in crate::observed) fn affine_transport(
     expressions: [usize; 2],
     ty: &Type,
 ) -> Result<AffineTransport, ValidationFailure> {
-    use crate::observed::{
-        affine,
-        environment::{change_affine, numeric_parameters},
-    };
+    use crate::observed::{affine, environment::{change_affine, numeric_parameters}};
     let mut out = AffineTransport {
         status: Decision::Established,
         point: None,

@@ -296,8 +296,7 @@ fn fibers(
     let mut equation = vec![];
     let mut semantic = vec![];
     for (support, reading) in supports.iter().zip(readings) {
-        c.clone()
-            .checkpoint(crate::control::Checkpoint::Localize)?;
+        c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
         let positions = model
             .action
             .slots

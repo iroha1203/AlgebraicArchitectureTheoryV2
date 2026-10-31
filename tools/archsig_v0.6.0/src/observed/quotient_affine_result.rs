@@ -2,7 +2,7 @@
 use super::*;
 use crate::observed::{
     change_result::field_linear_result as scalar_wire,
-    change_result::{CandidateInput, linear_result as linear},
+    change_result::{linear_result as linear, CandidateInput},
     environment::quotient_affine,
     environment::quotient_affine::coefficients,
     numeric,

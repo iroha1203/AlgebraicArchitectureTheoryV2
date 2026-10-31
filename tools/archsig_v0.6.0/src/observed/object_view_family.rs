@@ -8,15 +8,15 @@ use super::{
     result::{Fact, ObservedEvaluation, Scalar, Scope, ValidationFailure},
 };
 use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
+use crate::{
     construction::{
         ConstructionFailure,
         readings::{ObjectInstance, ObjectReadingInstances},
     },
     law::model::Param,
-};
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
 };
 use std::sync::Arc;
 
@@ -467,16 +467,16 @@ pub(super) fn evaluate_finite_view(
 
 #[cfg(test)]
 mod tests {
+    use crate::{
+        control::{Limits, Usage},
+        input::{InputSources, check_inputs},
+    };
     use super::super::{
         object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
         result::Payload,
     };
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
-    use crate::{
-        control::{Limits, Usage},
-        input::{InputSources, check_inputs},
-    };
     pub(super) fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }

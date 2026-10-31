@@ -1,11 +1,11 @@
 //! 有限局所状態を実Operationの位置対応に沿って運ぶ。
 use super::integer::{Renaming, dependencies, list, record, reference_value};
 use super::*;
+use std::collections::BTreeSet;
 use crate::observed::integer_fiber::{self, Matrix};
 use crate::observed::local_result::integer as affine;
 use crate::observed::local_result::rational as rational_affine;
 use rational_affine::integer_fiber as rational_fiber;
-use std::collections::BTreeSet;
 pub(super) struct Maps {
     pub global: Vec<(NodeRef, NodeRef)>,
     pub matching: Vec<(NodeRef, NodeRef)>,

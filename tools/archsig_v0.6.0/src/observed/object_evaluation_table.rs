@@ -1,4 +1,8 @@
 //! 全対象と全instanceの実評価を、元の適用状態と導出のまま保持する。
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use super::{
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
@@ -7,10 +11,6 @@ use super::{
     object_transport::same_evaluation,
 };
 use crate::construction::{ConstructionFailure, readings::ObjectReadingInstances};
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

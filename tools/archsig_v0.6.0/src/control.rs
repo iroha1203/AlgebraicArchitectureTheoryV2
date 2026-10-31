@@ -173,7 +173,10 @@ impl StopReason {
                 limit,
                 observed,
             } => (
-                format!("computation budget exhausted: {} limit {limit}, observed {observed}", resource.wire()),
+                format!(
+                    "computation budget exhausted: {} limit {limit}, observed {observed}",
+                    resource.wire()
+                ),
                 Json::obj([
                     ("resource", Json::str(resource.wire())),
                     ("limit", Json::str(limit.to_string())),

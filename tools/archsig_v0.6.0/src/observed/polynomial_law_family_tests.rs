@@ -332,8 +332,12 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     let sources = p.inputs.sources();
     let map = std::str::from_utf8(sources.archmap().bytes()).unwrap();
     let inputs = crate::input::InputSources::new(
-        sources.definitions().to_vec(), sources.law().clone(),
-        crate::input::InputBytes::new(sources.archmap().id(), map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes()),
+        sources.definitions().to_vec(),
+        sources.law().clone(),
+        crate::input::InputBytes::new(
+            sources.archmap().id(),
+            map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes(),
+        ),
     );
     p.inputs = Arc::new(crate::input::check_inputs(inputs, &mut quiet()).unwrap());
     p.requests = resolve_native_for_test(p.inputs.law(), p.inputs.archmap(), &["b=build(Selected,on=@v/root)"], &mut quiet()).unwrap();

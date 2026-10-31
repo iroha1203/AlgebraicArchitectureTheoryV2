@@ -1162,7 +1162,9 @@ fn guarded_numeric_residuals_use_typed_boolean_maps_and_keep_raw_equations() {
 
 #[test]
 fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
-    use crate::observed::{object_equation_presentation::EquationGuard, observable_layout::Reading};
+    use crate::observed::{
+        object_equation_presentation::EquationGuard, observable_layout::Reading,
+    };
     let p =
         single_part("law required reflexive(c:Part,n:Z,b:Bool) when if b then n=0 else false:n=1;");
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

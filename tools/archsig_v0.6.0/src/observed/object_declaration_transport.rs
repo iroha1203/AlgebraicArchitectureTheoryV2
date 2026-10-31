@@ -5,8 +5,8 @@ use crate::{
         ast::ExprKind,
         model::{Param, Signature},
     },
-    observed::environment::numeric_parameters,
     types::Type,
+    observed::environment::numeric_parameters,
 };
 use std::collections::BTreeSet;
 #[path = "object_local_field_transport.rs"]

@@ -2,10 +2,7 @@
 #[allow(dead_code)]
 #[path = "common/cli.rs"]
 mod cli;
-use archsig::{
-    definition,
-    json::{JNode, JValue},
-};
+use archsig::{definition, json::{JNode, JValue}};
 use cli::*;
 fn input(name: &str) -> std::path::PathBuf {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの条件。","parameters":[],"fields":[{"name":"x","type":"Bool","meaning":"第一条件。"},{"name":"y","type":"Bool","meaning":"第二条件。"}],"alignments":[]}]}]}"#;

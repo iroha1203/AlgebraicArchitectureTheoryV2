@@ -71,8 +71,7 @@ pub(in crate::observed::local_result) fn coordinates(
 ) -> Result<Matrix, ValidationFailure> {
     let mut result = vec![vec![Z::zero(); cols]; rank];
     for j in 0..cols {
-        c.clone()
-            .checkpoint(crate::control::Checkpoint::Localize)?;
+        c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
         let rhs = values.iter().map(|r| r[j].clone()).collect::<Vec<_>>();
         let fiber = integer_fiber::solve(basis, rank, &rhs, c)?;
         let point = fiber.particular.ok_or("局所制限が係数の像に入らない")?;
@@ -190,8 +189,7 @@ pub(in crate::observed::local_result) fn glues(
     let mut rhs = vec![];
     for (a, i) in sources.iter().enumerate() {
         for (b, j) in sources.iter().enumerate().skip(a + 1) {
-            c.clone()
-                .checkpoint(crate::control::Checkpoint::Localize)?;
+            c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
             let intersection = diagram.intersections[*i][*j];
             let left_map = &diagram.state_restrictions[&(intersection, *i)];
             let right_map = &diagram.state_restrictions[&(intersection, *j)];

@@ -4,8 +4,6 @@ use crate::input::InputBytes;
 use crate::law::model::{DeclarationInfo, Param, Signature};
 use maps::ObjectIdentity;
 
-
-
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MembershipCondition {

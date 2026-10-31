@@ -198,8 +198,7 @@ fn execute(
     match parse_args(args) {
         Ok(Command::Version) => (None, VERSION_LINE),
         Ok(Command::Check(check)) => {
-            let mut control =
-                signals.control(started, archsig::control::Limits::default());
+            let mut control = signals.control(started, archsig::control::Limits::default());
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 run_check(&mut io, &mut *signals, &check, started, &mut control)
             }));
@@ -326,10 +325,7 @@ mod tests {
 
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
-        let mut control = signals.control(
-            Instant::now(),
-            archsig::control::Limits::default(),
-        );
+        let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
@@ -361,10 +357,7 @@ mod tests {
                 )),
                 frozen: None,
             };
-            let mut control = signals.control(
-                Instant::now(),
-                archsig::control::Limits::default(),
-            );
+            let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
             assert_eq!(
                 control.checkpoint(Checkpoint::LawSemantics),
                 Err(StopReason::Cancelled(expected))
