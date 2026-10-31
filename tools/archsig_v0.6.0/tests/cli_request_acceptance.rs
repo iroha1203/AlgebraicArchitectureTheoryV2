@@ -1,6 +1,4 @@
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 #[path = "common/request_acceptance_data.rs"]
 mod fixture;
 use archsig::{

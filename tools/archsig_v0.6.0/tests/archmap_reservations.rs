@@ -1,6 +1,6 @@
 //! AC4: Reservations の ArchMap の変種。補完の存在、Map の全域性、所属、端点不保存、語彙 binding。
 
-mod common;
+use crate::common;
 use archsig::archmap::Slot;
 use archsig::issue::Code;
 use common::*;

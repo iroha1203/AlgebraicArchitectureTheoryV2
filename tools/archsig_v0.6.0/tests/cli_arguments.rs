@@ -1,5 +1,5 @@
 //! 引数fixtureの明示期待値で、実CLIのusage通知と既存データ保護を検査する。
-mod common;
+use crate::common;
 use archsig::json::{JNode, parse};
 use common::cli::*;
 use std::{
@@ -125,7 +125,6 @@ fn each_required_flag_missing_is_reported_without_files() {
             assert_eq!(s(get(value, "type")), "Z");
             assert_eq!(s(get(value, "value")), "2");
             assert_eq!(tree(&dir), before, "通常実行がfile/directoryを変更した");
-            eprintln!("run without --out: {} stdout bytes", r.stdout.len());
         } else {
             usage(&dir, &args, case);
         }

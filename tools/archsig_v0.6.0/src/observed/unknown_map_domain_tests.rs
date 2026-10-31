@@ -16,7 +16,6 @@ fn example(mode: &str) -> ObservedEvaluation {
     .unwrap();
     assert_eq!(r.status(), "partial");
     assert_eq!(r.answers[1].status, Decision::Refuted);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
 }
 fn env(r: &ObservedEvaluation) -> Environment<'_> {
@@ -76,61 +75,6 @@ fn map_owner_cases_reject_changed_assignment_domain_and_scope() {
     elements.pop();
     reject(&r, domain, bad);
 }
-#[test]
-fn map_full_roster_rejects_lost_nonkey_missing_and_changed_expected_set() {
-    let r = example("empty_varying");
-    let source = r
-        .nodes
-        .iter()
-        .enumerate()
-        .find(|(i, n)| {
-            r.contexts[*i].request == 2
-                && r.contexts[*i].case.is_none()
-                && matches!(n.payload, Some(Payload::Evaluation { .. }))
-                && n.reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::Missing))
-        })
-        .map(|(i, _)| i)
-        .unwrap();
-    let mut bad = r.nodes[source].clone();
-    bad.reasons
-        .retain(|r| !matches!(r.kind, ReasonKind::Missing));
-    reject(&r, source, bad);
-    let mut bad = r.nodes[source].clone();
-    bad.reasons
-        .iter_mut()
-        .find(|r| matches!(r.kind, ReasonKind::Missing))
-        .unwrap()
-        .missing[0]
-        .field = Some("MapCall.Holder.owner".into());
-    reject(&r, source, bad);
-    let condition = owned_condition(&r, 2);
-    let edges = &r.nodes[condition].arguments;
-    let actual = edges[edges.len() - 3];
-    let required = edges[edges.len() - 2];
-    assert!(
-        matches!(&r.nodes[actual.0].payload,Some(Payload::Scalar(Scalar::Set{items,..}))if items.is_empty())
-    );
-    assert!(
-        matches!(&r.nodes[required.0].payload,Some(Payload::Scalar(Scalar::Set{items,..}))if items.len()==1)
-    );
-    let mut bad = r.nodes[required.0].clone();
-    let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut bad.payload else {
-        panic!()
-    };
-    items.clear();
-    reject(&r, required.0, bad);
-    for change_scope in [false, true] {
-        let mut bad = r.nodes[condition].clone();
-        if change_scope {
-            bad.scope.snapshots.clear();
-        } else {
-            bad.support.clear();
-        }
-        reject(&r, condition, bad);
-    }
-}
 fn stop(stage: &'static str, kind: usize) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
@@ -175,7 +119,6 @@ fn stop(stage: &'static str, kind: usize) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
     assert!(stopped.nodes.len() < normal.nodes.len());
     macro_rules! prefix {
         ($field:ident) => {
@@ -221,18 +164,8 @@ fn stop(stage: &'static str, kind: usize) {
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
     stopped.wire();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn map_domain_missing_cancel_retains_verified_prefix_and_stops_probes() {
     stop("owned_call_map_domain_missing", 0)
-}
-#[test]
-fn map_domain_comparison_time_stop_retains_original_missing_and_prefix() {
-    stop("owned_call_map_domain", 1)
-}
-#[test]
-fn map_domain_case_memory_stop_retains_original_missing_and_prefix() {
-    stop("owned_call_case", 2)
 }

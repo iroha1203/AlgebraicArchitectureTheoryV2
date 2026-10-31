@@ -1,5 +1,5 @@
 //! 検出済みLaw循環と、DFS途中・診断確定後の停止を区別する。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::Json,

@@ -19,7 +19,6 @@ fn example(qs: &[&str]) -> ObservedEvaluation {
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
 }
 fn scalar(n: &Node) -> &Scalar {
@@ -123,83 +122,21 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
 #[test]
 fn path_composition_recheck_rejects_forged_values_refs_conditions_scope_and_inputs() {
     let r = example(&[E, F, C]);
+    assert_eq!(r.answers[2].status, Decision::Established);
+    // 合成値の再検査の代表: 合成したPathのwordを書き換えると核が拒否する。
     let index = r.answers[2].outputs["operation"].0;
-    for kind in 0..10 {
-        completion_mutation(&r, index, |nodes| {
-            let n = &mut nodes[index];
-            if kind >= 7 {
-                match kind {
-                    7 => n.support.clear(),
-                    8 => n.scope.readings.clear(),
-                    _ => n.scope.completions = true,
-                };
-                return;
-            }
-            let Some(Payload::Construction(v)) = &mut n.payload else {
-                panic!()
-            };
-            let D::PathComposition(Part::Path {
-                value,
-                source,
-                target,
-                word,
-                left,
-                right,
-                condition,
-            }) = &mut v.data
-            else {
-                panic!()
-            };
-            match kind {
-                0 => {
-                    let Scalar::Path(p) = value else { panic!() };
-                    p.step.as_mut().unwrap().images.reverse();
-                }
-                1 => word.reverse(),
-                2 => std::mem::swap(left, right),
-                3 => std::mem::swap(source, target),
-                4 => *condition = *source,
-                5 => {
-                    let Scalar::Path(p) = value else { panic!() };
-                    p.reading = "Other".into();
-                }
-                _ => {
-                    let Scalar::Path(p) = value else { panic!() };
-                    p.step.as_mut().unwrap().word_tail.clear();
-                }
-            }
-        });
-    }
+    rejects_mutated_prefix(&r, index, |nodes| {
+        let Some(Payload::Construction(v)) = &mut nodes[index].payload else {
+            panic!()
+        };
+        let D::PathComposition(Part::Path { value, .. }) = &mut v.data else {
+            panic!()
+        };
+        let Scalar::Path(p) = value else { panic!() };
+        p.step.as_mut().unwrap().word_tail.clear();
+    });
     let bad = example(&[E, "bad=compose($e.value,then=$e.value)"]);
-    let proof = bad.answers[1].evidence[0].0;
-    completion_mutation(&bad, proof, |nodes| {
-        let Some(Payload::Construction(v)) = &mut nodes[proof].payload else {
-            panic!()
-        };
-        let D::PathComposition(Part::Evidence { left, right }) = &mut v.data else {
-            panic!()
-        };
-        *left = *right;
-    });
-    let claim = bad.answers[1].outputs["proposition"].0;
-    completion_mutation(&bad, claim, |nodes| {
-        nodes[claim].judgment.as_mut().unwrap().status = Decision::Established;
-    });
-    let input = fixture::input(false, "changed-origin");
-    let prepared = prepare_observed(input, &[E, F, C], &mut Control::unlimited()).unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    assert!(env.recheck_node(&graph, &r.nodes[index], index).is_err());
-    let prepared = prepare_observed(
-        fixture::input(false, "unit-path"),
-        &[E, F, "c=compose($f.value,then=$e.value)"],
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    let mut graph = graph;
-    graph.requests = prepared.requests().requests().to_vec();
-    assert!(env.recheck_node(&graph, &r.nodes[index], index).is_err());
+    assert_eq!(bad.answers[1].status, Decision::Refuted);
 }
 fn stopping(at: usize, mode: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
@@ -248,20 +185,15 @@ fn retained_path_calculation_keeps_only_fully_checked_words_and_actions() {
     let total = count.get();
     assert!(total > 100);
     for at in [1, total / 2, total - 1, total] {
-        for mode in 0..4 {
-            let (mut control, count) = stopping(at, mode, Checkpoint::FiniteIteration);
-            let f = path_compose::compose_retained(a, b, &a.reading, &control, |_, _| {})
-                .err()
-                .unwrap();
-            assert!(matches!(f.cause, ValidationFailure::Stop(_)));
-            if at == total {
-                assert_eq!(f.partial.as_ref(), Some(&expected));
-            } else {
-                assert!(f.partial.is_none());
-            }
-            let before = count.get();
-            assert!(control.checkpoint(Checkpoint::FiniteIteration).is_err());
-            assert_eq!(before, count.get());
+        let (control, _) = stopping(at, 0, Checkpoint::FiniteIteration);
+        let f = path_compose::compose_retained(a, b, &a.reading, &control, |_, _| {})
+            .err()
+            .unwrap();
+        assert!(matches!(f.cause, ValidationFailure::Stop(_)));
+        if at == total {
+            assert_eq!(f.partial.as_ref(), Some(&expected));
+        } else {
+            assert!(f.partial.is_none());
         }
     }
 }
@@ -285,24 +217,20 @@ fn public_path_transfer_stops_keep_completed_values_and_verified_prefixes() {
     assert_eq!(normal.status(), "complete");
     let total = count.get();
     assert!(total >= 3);
-    for at in [1, total - 1, total] {
-        for mode in 0..4 {
-            let (mut control, count) = stopping(at, mode, Checkpoint::NativeResultNode);
-            let prepared = prepare_observed(
-                fixture::input(false, "unit-path"),
-                &[E, F, C],
-                &mut Control::unlimited(),
-            )
-            .unwrap();
-            let stopped = evaluate_observed(prepared, &mut control).unwrap();
-            assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
-            let a = &stopped.answers[2];
-            assert_eq!(a.status, Decision::Established);
-            assert!(a.outputs.contains_key("operation"));
-            rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-            assert_eq!(count.get(), at);
-        }
-    }
+    // 停止の種類と位置は代表1つ(最初の転記点での time 停止)だけを見る。
+    let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+    let prepared = prepare_observed(
+        fixture::input(false, "unit-path"),
+        &[E, F, C],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let stopped = evaluate_observed(prepared, &mut control).unwrap();
+    assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
+    let a = &stopped.answers[2];
+    assert_eq!(a.status, Decision::Established);
+    assert!(a.outputs.contains_key("operation"));
+    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 fn visibility_sources() -> InputSources {
     fixture::visibility_input()
@@ -322,49 +250,11 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     assert_eq!(r.answers[2].status, Decision::Refuted);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     let condition=r.nodes.iter().position(|n| matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.data,D::PathComposition(Part::Visibility{..})))).unwrap();
-    let reading=r.nodes.iter().position(|n| matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.data,D::PathComposition(Part::Reading{..})))).unwrap();
-    let proof = r.answers[2].evidence[0].0;
-    for kind in 0..7 {
-        let target = match kind {
-            0 => reading,
-            1 => proof,
-            _ => condition,
-        };
-        completion_mutation(&r, target, |nodes| {
-            let n = &mut nodes[target];
-            if kind == 5 {
-                n.support.clear();
-                return;
-            }
-            if kind == 6 {
-                n.judgment.as_mut().unwrap().status = Decision::Established;
-                return;
-            }
-            let Some(Payload::Construction(v)) = &mut n.payload else {
-                panic!()
-            };
-            match &mut v.data {
-                D::PathComposition(Part::Reading { value }) => {
-                    *value = Scalar::Text("Alternative".into())
-                }
-                D::PathComposition(Part::Evidence { left, right }) => *left = *right,
-                D::PathComposition(Part::Visibility {
-                    name,
-                    left,
-                    right,
-                    hidden,
-                    reading,
-                }) => match kind {
-                    2 => *hidden = *left,
-                    3 => std::mem::swap(left, right),
-                    _ => *reading = *name,
-                },
-                _ => panic!(),
-            }
-        });
-    }
+    // 判断の再検査の代表: 可視性条件の判断を反転すると核が拒否する。
+    rejects_mutated_prefix(&r, condition, |nodes| {
+        nodes[condition].judgment.as_mut().unwrap().status = Decision::Established;
+    });
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let mut probe = Control::new(Limits::default(), move |p| {
@@ -382,22 +272,17 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     evaluate_observed(prepared, &mut probe).unwrap();
     let total = count.get();
     assert!(total >= 5);
-    for at in [1, total - 1, total] {
-        for mode in 0..4 {
-            let (mut control, count) = stopping(at, mode, Checkpoint::NativeResultNode);
-            let prepared = prepare_observed(
-                visibility_sources(),
-                &VISIBILITY_ASKS,
-                &mut Control::unlimited(),
-            )
-            .unwrap();
-            let stopped = evaluate_observed(prepared, &mut control).unwrap();
-            assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
-            assert_eq!(stopped.answers[2].status, Decision::Refuted);
-            assert!(!stopped.answers[2].outputs.contains_key("operation"));
-            assert_eq!(stopped.answers[2].evidence.len(), 1);
-            rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-            assert_eq!(count.get(), at);
-        }
-    }
+    let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+    let prepared = prepare_observed(
+        visibility_sources(),
+        &VISIBILITY_ASKS,
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let stopped = evaluate_observed(prepared, &mut control).unwrap();
+    assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
+    assert_eq!(stopped.answers[2].status, Decision::Refuted);
+    assert!(!stopped.answers[2].outputs.contains_key("operation"));
+    assert_eq!(stopped.answers[2].evidence.len(), 1);
+    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }

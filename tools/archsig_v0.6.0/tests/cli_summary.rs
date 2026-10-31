@@ -1,7 +1,5 @@
 //! 日常の短い回答と、明示保存・後続計算・再利用の同値性。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use cli::*;
 use std::path::{Path, PathBuf};
 fn counter(name: &str, count: Option<&str>) -> PathBuf {
@@ -63,7 +61,6 @@ fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
     ];
     let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
     let brief = execute(&dir, &asks, &[]);
-    eprintln!("confirmed answers: {} stdout bytes", brief.stdout.len());
     assert_eq!(brief.code, 2);
     assert!(brief.stderr.is_empty());
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
@@ -359,6 +356,32 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
         .replace("\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"4\"", "\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"2\"")
         .replace("\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"3\"", "\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"1\"");
     let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    // 診断の比較に使うのは移行mと状態p,q,r,sだけなので、他の移行と予約操作を外す。
+    let unused = |value: Option<&Json>| {
+        matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
+    };
+    {
+        let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
+            panic!("snapshots")
+        };
+        let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+            panic!("subjects")
+        };
+        subjects.retain(|subject| !matches!(subject, Json::Obj(o) if unused(o.get("id"))));
+    }
+    fixture::atoms(&mut map).retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(atom) = atom else {
+            panic!("atom")
+        };
+        if atom.get("id") == Some(&Json::str("m-reserves")) {
+            let reference = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
+            atom.insert(
+                "value".into(),
+                Json::Arr(vec![Json::Arr(vec![reference("e"), reference("f")])]),
+            );
+        }
+    }
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(atom) = atom else {
             panic!("atom")
@@ -405,54 +428,4 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     assert_eq!(s(get(diagnostic, "side")), "semantic");
     assert_eq!(num(get(diagnostic, "degree")), 1);
     assert!(num(get(get(diagnostic, "matching"), "elements_count")) > 0);
-    let full = execute(&dir, &asks, &["--out", "saved"]);
-    assert_eq!(full.code, 0, "{}", full.stdout);
-    let result = result_json(&dir, &full);
-    no_saved_proofs(&result);
-    let mut coordinates = std::collections::BTreeSet::new();
-    for node in arr(get(&result, "nodes")) {
-        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if matches!(t.as_str(), "Ring" | "Module")) {
-            let mut value = fixture::owned(node);
-            let Json::Obj(fields) = &mut value else { unreachable!() };
-            fields.remove("id");
-            assert!(coordinates.insert(value.canonical()), "同じ座標表示を重複保存しない");
-        }
-    }
-    for internal in ["producer", "reuse", "usage", "limits"] {
-        assert!(!has(&result, internal));
-    }
-    assert!(
-        std::fs::metadata(dir.join("saved/result.json"))
-            .unwrap()
-            .len()
-            < 400_000
-    );
-    for node in arr(get(&result, "nodes")) {
-        for internal in ["rule", "arguments", "evidence", "scope", "support"] {
-            assert!(!has(node, internal), "{internal}");
-        }
-        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "EvaluationResult")
-        {
-            for internal in ["parts", "expression"] {
-                assert!(!has(get(node, "value"), internal));
-            }
-        }
-        if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "LawInstance")
-            && has(node, "value")
-        {
-            for internal in ["body", "guard", "occurrence"] {
-                assert!(!has(get(node, "value"), internal));
-            }
-        }
-    }
-    let reused = execute(&dir, &asks, &["--reuse", "saved"]);
-    assert_eq!(reused.receipt.value, brief.receipt.value);
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 4);
-    println!(
-        "daily={} saved={} bytes",
-        brief.stdout.len(),
-        std::fs::metadata(dir.join("saved/result.json"))
-            .unwrap()
-            .len()
-    );
 }

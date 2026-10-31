@@ -1,5 +1,5 @@
 //! receiptから得たdigestを入力者が貼り直す経路を確かめる。
-mod common;
+use crate::common;
 use archsig::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};

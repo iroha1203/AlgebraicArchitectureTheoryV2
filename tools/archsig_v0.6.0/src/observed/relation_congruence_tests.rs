@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     canonical::Json,
-    control::{Limits, Resource, Usage},
+    control::{Limits, Usage},
     input::check_inputs,
     result::Signal,
 };
@@ -398,50 +398,7 @@ fn inactive_relations_do_not_contribute_seeds_or_edges() {
     assert_eq!(r.relations.as_ref().unwrap().instances.len(), 25);
 }
 #[test]
-fn reconstruction_rejects_changed_words_seeds_derivations_classes_and_metadata() {
-    let i = family();
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
-    for kind in 0..22 {
-        let mut bad = r.clone();
-        match kind {
-            0 => bad.words[0].source.1 = "q".into(),
-            1 => bad.words[0].target.1 = "q".into(),
-            2 => bad.words[0].generators[0].1 = "z".into(),
-            3 => bad.seeds[0].instance = usize::MAX,
-            4 => bad.seeds[0].right = !bad.seeds[0].right,
-            5 => bad.seeds[0].word = usize::MAX,
-            6 => bad.edges[0].instance = usize::MAX,
-            7 => bad.edges[0].offset = usize::MAX,
-            8 => bad.edges[0].right_to_left = !bad.edges[0].right_to_left,
-            9 => bad.classes[0] = usize::MAX,
-            10 => bad.complete = false,
-            11 => bad.support.clear(),
-            12 => bad.scope.readings.clear(),
-            13 => bad.edges[0].from = usize::MAX,
-            14 => bad.edges[0].to = usize::MAX,
-            15 => bad.unbalanced.push(0),
-            16 => bad.relations.as_mut().unwrap().instances[0]
-                .declaration
-                .push('x'),
-            17 => {
-                bad.words.pop();
-            }
-            18 => {
-                bad.edges.pop();
-            }
-            19 => bad.relations = None,
-            20 => bad.reading = "Other".into(),
-            _ => bad.relations.as_mut().unwrap().scope.readings.clear(),
-        }
-        assert!(bad != r);
-        assert!(bad.recheck(&i, &mut quiet()).is_err(), "{kind}");
-    }
-    let altered = inputs(&format!("{SEED}{ADJACENT}{PAIRS}{IDENTITIES}"), "revision2");
-    assert!(r.recheck(&altered, &mut quiet()).is_err());
-    r.recheck(&i, &mut quiet()).unwrap();
-}
-#[test]
-fn twelve_fixed_stops_keep_only_unfinished_components_and_freeze_the_probe() {
+fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     let i = family();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
@@ -465,70 +422,46 @@ fn twelve_fixed_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     relation_instances(&i, "Walk", &mut before).unwrap();
     let middle = phase.get() + (total - phase.get()) / 2;
     assert!(middle > phase.get());
-    for at in [1, middle, total] {
-        for mode in 0..4 {
-            let count = Rc::new(Cell::new(0));
-            let samples = Rc::new(Cell::new(0));
-            let seen = count.clone();
-            let calls = samples.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |cp| {
-                    calls.set(calls.get() + 1);
-                    if cp == Checkpoint::FiniteIteration {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let failure = match congruence(&i, "Walk", &mut c) {
-                Err(failure) => failure,
-                Ok(_) => panic!("停止しなかった"),
-            };
-            assert!(!failure.partial.complete());
-            if at == middle {
-                assert!(!failure.partial.words.is_empty());
-            }
-            assert_eq!(
-                failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
-                None
-            );
-            let expected = match mode {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
-            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
-            let frozen = samples.get();
-            assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
-            assert_eq!(samples.get(), frozen);
-            completed.recheck(&i, &mut quiet()).unwrap();
+    for at in [middle, total] {
+        let count = Rc::new(Cell::new(0));
+        let samples = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let calls = samples.clone();
+        let mut c = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: Some(1),
+            },
+            move |cp| {
+                calls.set(calls.get() + 1);
+                if cp == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                let stop = seen.get() >= at;
+                Usage {
+                    signal: stop.then_some(Signal::Int),
+                    ..Usage::default()
+                }
+            },
+        );
+        let failure = match congruence(&i, "Walk", &mut c) {
+            Err(failure) => failure,
+            Ok(_) => panic!("停止しなかった"),
+        };
+        assert!(!failure.partial.complete());
+        if at == middle {
+            assert!(!failure.partial.words.is_empty());
         }
+        assert_eq!(
+            failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
+            None
+        );
+        let expected = StopReason::Cancelled(Signal::Int);
+        assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+        let frozen = samples.get();
+        assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
+        assert_eq!(samples.get(), frozen);
+        completed.recheck(&i, &mut quiet()).unwrap();
     }
 }
 

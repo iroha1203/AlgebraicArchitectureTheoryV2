@@ -1,4 +1,3 @@
-mod common;
 #[path = "common/reference_completions.rs"]
 mod fixture;
 use archsig::{

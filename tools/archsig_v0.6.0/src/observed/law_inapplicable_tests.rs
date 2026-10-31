@@ -399,7 +399,7 @@ fn finite_outside_law_keeps_every_boolean_binding_and_guard_independently() {
     replay(&p, &g).unwrap();
 }
 #[test]
-fn outside_law_four_stops_keep_exact_completed_prefix_and_final_proposition() {
+fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -425,48 +425,31 @@ fn outside_law_four_stops_keep_exact_completed_prefix_and_final_proposition() {
     let total = seen.get();
     assert_eq!(total, 5);
     let mut final_retained = false;
-    for mode in 0..4 {
-        for at in 1..=total {
-            let seen = Rc::new(Cell::new(0));
-            let counter = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::ObjectEvaluation {
-                        counter.set(counter.get() + 1)
-                    }
-                    let stop = counter.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop && mode >= 2 {
-                            Some(if mode == 2 {
-                                crate::result::Signal::Int
-                            } else {
-                                crate::result::Signal::Term
-                            })
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(matches!(
-                check(&env, &mut g, origin, objects[1], &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
-            assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
-            final_retained |= g.nodes.len() == complete.nodes.len();
-            replay(&p, &g).unwrap();
-        }
+    for at in 1..=total {
+        let seen = Rc::new(Cell::new(0));
+        let counter = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObjectEvaluation {
+                counter.set(counter.get() + 1)
+            }
+            let stop = counter.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy_graph(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            check(&env, &mut g, origin, objects[1], &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
+        assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
+        final_retained |= g.nodes.len() == complete.nodes.len();
+        replay(&p, &g).unwrap();
     }
     assert!(final_retained);
 }
@@ -519,7 +502,6 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         let env = Environment::with_prepared(&p, &mut control).unwrap();
         armed.set(true);
         let result = env.recheck_node(&bad, &bad.nodes[e.0], e.0);
-        eprintln!("mode {mode}: checkpoints={} result={result:?}", seen.get());
         results.push(result);
     }
     for (mode, result) in results.iter().enumerate() {

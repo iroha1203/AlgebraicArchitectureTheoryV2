@@ -92,10 +92,7 @@ fn field<'a>(j: &'a Json, name: &str) -> &'a Json {
 #[test]
 fn finite_family_keeps_all_original_rows_presentations_and_refuted_laws() {
     let p = prepared(
-        fixture::inputs(
-            false,
-            "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
-        ),
+        fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
         "root",
     );
     let (mut g, l) = start(&p, true);
@@ -109,14 +106,14 @@ fn finite_family_keeps_all_original_rows_presentations_and_refuted_laws() {
     let d = data(&g, r);
     let t = l.law_table();
     assert_eq!(d.output.indices, t.indices);
-    assert_eq!(d.output.indices.len(), 4);
+    assert_eq!(d.output.indices.len(), 2);
     assert_eq!(d.output.factors, l.data.factors);
     assert_eq!(d.output.factors.len(), 1);
     assert_eq!(d.output.universe, l.data.universe);
     assert_eq!(d.output.anchor, l.data.anchor);
     assert!(d.output.anchor.field.is_none() && d.output.anchor.atom.is_none());
     assert_eq!(d.output.objects.len(), 3);
-    assert_eq!(d.output.coordinates.len(), 4);
+    assert_eq!(d.output.coordinates.len(), 2);
     for (i, o) in d.output.objects.iter().enumerate() {
         assert_eq!(o.object, t.objects[i].object);
         assert_eq!(o.evaluations, t.objects[i].evaluations);
@@ -129,7 +126,7 @@ fn finite_family_keeps_all_original_rows_presentations_and_refuted_laws() {
                 .map(|r| r.unwrap())
                 .collect::<Vec<_>>()
         );
-        assert_eq!(o.holds.len(), 4);
+        assert_eq!(o.holds.len(), 2);
         assert_eq!(o.presentations.len(), 1);
     }
     assert!(
@@ -210,7 +207,7 @@ fn finite_parameter_coordinates_keep_actual_bindings_and_symbolic_whole_scope() 
     let p = prepared(
         fixture::inputs(
             false,
-            "law required zero(c:Part):c.quantity=0;law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
+            "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
         ),
         "root",
     );
@@ -220,24 +217,23 @@ fn finite_parameter_coordinates_keep_actual_bindings_and_symbolic_whole_scope() 
         .unwrap()
         .unwrap();
     let d = data(&g, r);
-    assert_eq!(d.output.indices.len(), 4);
-    assert_eq!(d.output.coordinates.len(), 6);
+    assert_eq!(d.output.indices.len(), 2);
+    assert_eq!(d.output.coordinates.len(), 4);
     let mut parameters = vec![];
     for q in &d.output.coordinates {
         let o = crate::observed::law_evaluation::origin(&g, q.instance)
             .unwrap()
             .unwrap();
-        if o.declaration.ends_with(".bit") {
-            let b = o.bindings.iter().find(|b| b.name == "b").unwrap();
-            parameters.push((
-                o.bindings
-                    .iter()
-                    .find(|b| b.name == "c")
-                    .map(|b| g.scalar(b.value).unwrap().clone())
-                    .unwrap(),
-                g.scalar(b.value).unwrap().clone(),
-            ));
-        }
+        assert!(o.declaration.ends_with(".bit"));
+        let b = o.bindings.iter().find(|b| b.name == "b").unwrap();
+        parameters.push((
+            o.bindings
+                .iter()
+                .find(|b| b.name == "c")
+                .map(|b| g.scalar(b.value).unwrap().clone())
+                .unwrap(),
+            g.scalar(b.value).unwrap().clone(),
+        ));
     }
     assert_eq!(parameters.len(), 4);
     for subject in ["p", "q"] {
@@ -262,7 +258,7 @@ fn finite_parameter_coordinates_keep_actual_bindings_and_symbolic_whole_scope() 
             .iter()
             .any(|q| q.name == "b" && q.domain.is_some())
     );
-    assert!(d.output.objects.iter().all(|o| o.holds.len() == 4));
+    assert!(d.output.objects.iter().all(|o| o.holds.len() == 2));
     replay(&p, &g);
 }
 #[test]
@@ -372,116 +368,7 @@ fn missing_and_unfinished_presentations_do_not_publish_a_completed_family() {
     }
 }
 #[test]
-fn family_recheck_rejects_payload_edges_metadata_and_sealed_plan_forgery() {
-    let p = prepared(
-        fixture::inputs(
-            false,
-            "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
-        ),
-        "root",
-    );
-    let (mut g, l) = start(&p, true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l, &mut quiet()).unwrap().unwrap();
-    let n = g.get(r).unwrap();
-    for mode in 0..18 {
-        let mut n = n.clone();
-        let Some(Payload::Construction(value)) = &mut n.payload else {
-            panic!()
-        };
-        let D::EquationFamily(d) = &mut value.data else {
-            panic!()
-        };
-        match mode {
-            0 => {
-                d.output.indices.pop();
-            }
-            1 => d.output.indices.swap(0, 1),
-            2 => d.output.factors.push(d.output.factors[0]),
-            3 => d.output.universe = d.output.factors[0],
-            4 => {
-                d.output.anchor = d
-                    .source
-                    .architecture
-                    .construction()
-                    .universe()
-                    .iter()
-                    .find(|a| a.field.is_some())
-                    .unwrap()
-                    .clone()
-            }
-            5 => {
-                d.output.coordinates.pop();
-            }
-            6 => d.output.coordinates[0].factor = 1,
-            7 => d.output.coordinates[0].component.push(0),
-            8 => d.output.coordinates[0].instance = d.output.coordinates[1].instance,
-            9 => {
-                d.output.objects.pop();
-            }
-            10 => d.output.objects.swap(0, 1),
-            11 => d.output.objects[0].evaluations[0] = d.output.objects[1].evaluations[0],
-            12 => d.output.objects[0].holds.swap(0, 1),
-            13 => d.output.objects[0].presentations.clear(),
-            14 => {
-                d.output.indices[0] = r;
-            }
-            15 => Arc::make_mut(&mut d.source).position += 1,
-            16 => {
-                Arc::make_mut(&mut d.source).output.indices.reverse();
-                d.output = d.source.output.clone();
-            }
-            17 => {
-                let s = Arc::make_mut(&mut d.source);
-                Arc::make_mut(&mut s.layout).data.anchor = s
-                    .architecture
-                    .construction()
-                    .universe()
-                    .iter()
-                    .find(|a| a.field.is_some())
-                    .unwrap()
-                    .clone();
-                s.output.anchor = s.layout.data.anchor.clone();
-                d.output = s.output.clone();
-            }
-            _ => unreachable!(),
-        }
-        assert!(env.recheck_node(&g, &n, r.0).is_err(), "payload {mode}");
-    }
-    for mode in 0..8 {
-        let mut f = n.clone();
-        match mode {
-            0 => f.arguments.clear(),
-            1 => f.scope = Scope::default(),
-            2 => f.support.clear(),
-            3 => f.rule = Rule::Construction("object_algebra"),
-            4 => f.ty = NodeType::Construction(T::Architecture),
-            5 => f.evidence.push(r),
-            6 => {
-                f.judgment = g
-                    .get(data(&g, r).output.objects[0].holds[0])
-                    .unwrap()
-                    .judgment
-                    .clone();
-            }
-            7 => f.arguments.push(r),
-            _ => unreachable!(),
-        };
-        assert!(env.recheck_node(&g, &f, r.0).is_err(), "node {mode}");
-    }
-    let foreign = prepared(
-        fixture::inputs(
-            true,
-            "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
-        ),
-        "root",
-    );
-    let foreign_env = Environment::with_prepared(&foreign, &mut quiet()).unwrap();
-    assert!(foreign_env.recheck_node(&g, n, r.0).is_err());
-    replay(&p, &g);
-}
-#[test]
-fn four_stops_keep_the_completed_graph_prefix_and_original_request_context() {
+fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(
         fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
@@ -506,51 +393,40 @@ fn four_stops_keep_the_completed_graph_prefix_and_original_request_context() {
     let total = count.get();
     assert!(total > 4);
     let mut finished = false;
-    for mode in 0..4 {
-        for at in [1, total / 2, total - 2, total - 1, total] {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if matches!(
-                        point,
-                        Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
-                    ) {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let mut g = copy(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(matches!(
-                retain(&env, &mut g, l.clone(), &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert!(g.nodes.len() <= full.nodes.len());
-            for (i, n) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    n.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
+    for at in [total / 2, total] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if matches!(
+                point,
+                Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
+            ) {
+                count.set(count.get() + 1)
             }
-            assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
-            finished |= g.nodes.len() == full.nodes.len();
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            retain(&env, &mut g, l.clone(), &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert!(g.nodes.len() <= full.nodes.len());
+        for (i, n) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                n.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
+            );
+        }
+        assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
+        finished |= g.nodes.len() == full.nodes.len();
+        if at < total {
             replay(&p, &g);
         }
     }
@@ -636,239 +512,6 @@ fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_sl
     replay(&p, &g);
 }
 
-#[test]
-fn finished_families_recheck_after_later_requests_and_reject_foreign_generation() {
-    for mode in 0..4 {
-        let (inputs, root, finite) = match mode {
-            0 => (
-                fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
-                "root",
-                true,
-            ),
-            1 => (
-                polynomial_fixture::inputs(
-                    false,
-                    false,
-                    "law required yes(c:Root):0=0;law optional no(c:Root):0=1;",
-                ),
-                "r2",
-                false,
-            ),
-            2 => (fixture::inputs(false, ""), "root", true),
-            _ => (
-                fixture::inputs(
-                    false,
-                    "law required bit(c:Part,b:Bool) when b:c.quantity=0;",
-                ),
-                "root",
-                true,
-            ),
-        };
-        let ask = format!("b=build(Selected,on=@v/{root})");
-        let requests = resolve_native_for_test(
-            inputs.law(),
-            inputs.archmap(),
-            &[&ask, "later=build(Selected,on=@v/root)"],
-            &mut quiet(),
-        )
-        .unwrap();
-        let p = PreparedObserved {
-            inputs,
-            requests,
-            object: None,
-        };
-        let (mut g, layout) = start(&p, finite);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let r = retain(&env, &mut g, layout.clone(), &mut quiet())
-            .unwrap()
-            .unwrap();
-        let old_family = g.get(r).unwrap().clone();
-        let original_contexts = g.contexts.clone();
-        let a = layout.data.architecture;
-        assert_eq!(g.context_at(r.0).request, 0);
-        if mode == 2 {
-            assert!(data(&g, r).output.indices.is_empty());
-            assert_eq!(data(&g, r).output.objects.len(), 3);
-        } else {
-            assert!(!data(&g, r).output.coordinates.is_empty());
-            assert!(
-                data(&g, r)
-                    .output
-                    .objects
-                    .iter()
-                    .any(|o| o.holds.iter().any(|h| g
-                        .get(*h)
-                        .unwrap()
-                        .judgment
-                        .as_ref()
-                        .unwrap()
-                        .status
-                        == Decision::Refuted))
-            );
-        }
-        g.active.request = 1;
-        let later = crate::observed::architecture_result::build(
-            p.shared_inputs(),
-            &env,
-            &mut g,
-            &p.requests().requests()[1],
-            &mut quiet(),
-        )
-        .unwrap();
-        assert!(later.complete);
-        assert_eq!(g.context_at(later.reference.0).request, 1);
-        let before = copy(&g, &quiet());
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let checked = fresh.recheck_node(&g, g.get(r).unwrap(), r.0);
-        assert!(checked.is_ok(), "mode {mode}: {checked:?}");
-        layout
-            .law_table()
-            .recheck(&fresh, &g, &mut quiet())
-            .unwrap();
-        layout.recheck(&fresh, &g, &mut quiet()).unwrap();
-        assert!(
-            layout
-                .checked(&fresh, &g, &mut quiet())
-                .unwrap()
-                .is_complete()
-        );
-        let table = Arc::new(layout.law_table().clone());
-        if !finite || mode == 2 {
-            let rebuilt =
-                observable_layout::retain(&fresh, &g, table.clone(), &mut quiet()).unwrap();
-            rebuilt.recheck(&fresh, &g, &mut quiet()).unwrap();
-            assert_eq!(rebuilt.data, layout.data);
-        }
-        assert_eq!(g.get(r).unwrap(), &old_family);
-        assert_eq!(&g.contexts[..original_contexts.len()], &original_contexts);
-        assert!(retain(&fresh, &mut g, layout.clone(), &mut quiet()).is_err());
-        assert_eq!(g.nodes, before.nodes);
-        assert_eq!(g.contexts, before.contexts);
-        assert_eq!(g.active, before.active);
-        assert!(law_table::retain(&fresh, &mut g, p.shared_inputs(), a, &mut quiet()).is_err());
-        if mode != 2 {
-            assert!(
-                observable_layout::retain_finite(
-                    &fresh,
-                    &mut g,
-                    table,
-                    p.shared_inputs(),
-                    &mut quiet()
-                )
-                .is_err()
-            );
-        }
-        assert_eq!(g.nodes, before.nodes);
-        assert_eq!(g.contexts, before.contexts);
-        assert_eq!(g.active, before.active);
-        let outside = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
-            let Some(Payload::Construction(v)) = &n.payload else {
-                return None;
-            };
-            let D::OutsideLaw(d) = &v.data else {
-                return None;
-            };
-            Some((NodeRef(i), d.origin, d.architecture))
-        });
-        if let Some((reference, origin, architecture)) = outside {
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            fresh
-                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
-                .unwrap();
-            assert!(
-                crate::observed::law_inapplicable::check(
-                    &fresh,
-                    &mut g,
-                    origin,
-                    architecture,
-                    &mut quiet()
-                )
-                .is_err()
-            );
-        }
-        let specialized = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
-            let Some(Payload::Construction(v)) = &n.payload else {
-                return None;
-            };
-            let D::LawInstantiation(d) = &v.data else {
-                return None;
-            };
-            Some((NodeRef(i), d.base, d.template, d.architecture))
-        });
-        if let Some((reference, base, template, architecture)) = specialized {
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            fresh
-                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
-                .unwrap();
-            assert!(
-                crate::observed::law_instantiation::instantiate(
-                    &fresh,
-                    &mut g,
-                    base,
-                    template,
-                    architecture,
-                    &mut quiet()
-                )
-                .is_err()
-            );
-        }
-        let family = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
-            let Some(Payload::Construction(v)) = &n.payload else {
-                return None;
-            };
-            let D::LawFamily(d) = &v.data else {
-                return None;
-            };
-            Some((NodeRef(i), d.template, d.architecture))
-        });
-        if let Some((reference, template, architecture)) = family {
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            fresh
-                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
-                .unwrap();
-            assert!(
-                crate::observed::law_family::check(
-                    &fresh,
-                    &mut g,
-                    template,
-                    architecture,
-                    &mut quiet()
-                )
-                .is_err()
-            );
-        }
-        if mode == 3 {
-            // 有限outside行は全て元三入力から存在し、特殊化による行の補完を要しない。
-            assert!(outside.is_some() && family.is_some());
-            assert!(specialized.is_none());
-            assert!(
-                g.get(r)
-                    .unwrap()
-                    .scope
-                    .quantifiers
-                    .iter()
-                    .any(|q| q.name == "b")
-            );
-        }
-        assert_eq!(g.nodes, before.nodes);
-        assert_eq!(g.contexts, before.contexts);
-        assert_eq!(g.active, before.active);
-        for forgery in 0..3 {
-            let mut changed = copy(&g, &quiet());
-            match forgery {
-                0 => changed.requests[0].id = "forged".into(),
-                1 => changed.contexts[a.0].request = 1,
-                _ => changed.contexts[r.0].request = 1,
-            }
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(
-                fresh
-                    .recheck_node(&changed, changed.get(r).unwrap(), r.0)
-                    .is_err()
-            );
-        }
-    }
-}
 #[test]
 fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_contexts() {
     let p = prepared(

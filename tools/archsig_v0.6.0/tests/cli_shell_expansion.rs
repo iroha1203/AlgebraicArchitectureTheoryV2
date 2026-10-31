@@ -1,5 +1,5 @@
 //! Handleが消えた形への案内を実CLIで確かめる。
-mod common;
+use crate::common;
 use common::cli::*;
 use std::path::PathBuf;
 

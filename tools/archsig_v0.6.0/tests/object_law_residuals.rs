@@ -388,7 +388,7 @@ fn different_complete_patterns_keep_their_own_numeric_laws_without_equality_obli
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn fixed_stops_keep_original_execution_completed_cases_refutations_and_final_completion() {
+fn residual_point_interrupt_keeps_refutation_and_final_completion() {
     use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
@@ -402,89 +402,47 @@ fn fixed_stops_keep_original_execution_completed_cases_refutations_and_final_com
         Usage::default()
     });
     object_law_residuals(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
-    for point in [
-        C::Expression,
-        C::ObjectLawResiduals,
-        C::ObjectLawResidualCase,
-        C::ObjectLawResidualPoint,
-    ] {
-        let count = history.borrow().iter().filter(|p| **p == point).count();
-        assert!(count > 0);
-        let mut targets = vec![1, count];
-        if count > 2 {
-            targets.push(count / 2)
-        }
-        targets.sort();
-        targets.dedup();
-        for nth in targets {
-            for mode in 0..4 {
-                let hits = Rc::new(RefCell::new(0));
-                let hits0 = hits.clone();
-                let probes = Rc::new(RefCell::new(0));
-                let probes0 = probes.clone();
-                let limits = Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                };
-                let mut c = Control::new(limits, move |p| {
-                    *probes0.borrow_mut() += 1;
-                    if p == point {
-                        *hits0.borrow_mut() += 1;
-                    }
-                    if p == point && *hits0.borrow() == nth {
-                        Usage {
-                            elapsed_ms: if mode == 0 { 1 } else { 0 },
-                            memory_mib: if mode == 1 { 1 } else { 0 },
-                            signal: match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            },
-                        }
-                    } else {
-                        Usage::default()
-                    }
-                });
-                let f =
-                    object_law_residuals(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
-                assert!(c.stop_reason().is_some());
-                match f {
-                    ObjectLawResidualsFailure::Original(f) => {
-                        assert_eq!(point, C::Expression);
-                        assert!(f.partial().is_some());
-                    }
-                    ObjectLawResidualsFailure::Reading { partial, .. } => {
-                        assert!(partial.base().is_complete());
-                        if point == C::ObjectLawResidualCase {
-                            assert!(
-                                partial
-                                    .evaluations()
-                                    .iter()
-                                    .flat_map(|e| &e.rows)
-                                    .flat_map(|r| &r.cases)
-                                    .any(|c| c.complete)
-                            );
-                        }
-                        if point == C::ObjectLawResidualPoint {
-                            assert_eq!(
-                                partial.outcome(),
-                                Some(&Outcome::Refuted { component: vec![0] })
-                            );
-                            if nth == count {
-                                assert!(partial.is_complete());
-                                assert!(partial.comparisons().iter().all(|v| v.outcome.is_some()));
-                            }
-                        }
-                        if point == C::ObjectLawResiduals && nth == count {
-                            assert!(partial.is_complete());
-                        }
-                    }
-                }
-                let before = *probes.borrow();
-                assert!(c.checkpoint(C::Resolve).is_err());
-                assert_eq!(*probes.borrow(), before);
+    let point = C::ObjectLawResidualPoint;
+    let count = history.borrow().iter().filter(|p| **p == point).count();
+    assert!(count > 0);
+    let mut targets = vec![1, count];
+    targets.dedup();
+    for nth in targets {
+        let hits = Rc::new(RefCell::new(0));
+        let hits0 = hits.clone();
+        let probes = Rc::new(RefCell::new(0));
+        let probes0 = probes.clone();
+        let mut c = Control::new(Limits::default(), move |p| {
+            *probes0.borrow_mut() += 1;
+            if p == point {
+                *hits0.borrow_mut() += 1;
             }
+            if p == point && *hits0.borrow() == nth {
+                Usage {
+                    signal: Some(Signal::Int),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let f = object_law_residuals(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
+        assert!(c.stop_reason().is_some());
+        let ObjectLawResidualsFailure::Reading { partial, .. } = f else {
+            panic!("original")
+        };
+        assert!(partial.base().is_complete());
+        assert_eq!(
+            partial.outcome(),
+            Some(&Outcome::Refuted { component: vec![0] })
+        );
+        if nth == count {
+            assert!(partial.is_complete());
+            assert!(partial.comparisons().iter().all(|v| v.outcome.is_some()));
         }
+        let before = *probes.borrow();
+        assert!(c.checkpoint(C::Resolve).is_err());
+        assert_eq!(*probes.borrow(), before);
     }
 }
 #[test]

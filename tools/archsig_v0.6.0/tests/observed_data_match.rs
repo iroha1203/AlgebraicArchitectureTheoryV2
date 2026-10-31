@@ -1,5 +1,5 @@
 //! AC4の非再帰Dataと既知値match。独立した三入力から元式・型・支持・停止prefixを読む。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

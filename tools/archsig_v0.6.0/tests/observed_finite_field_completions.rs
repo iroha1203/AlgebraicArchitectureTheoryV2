@@ -1,5 +1,5 @@
 //! 原始Fp欠測の共有補完を三入力から読み、元体・slot・whole・証拠と停止prefixを検査する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

@@ -1,4 +1,3 @@
-mod common;
 #[path = "common/dependent_owner_completions.rs"]
 mod fixture;
 use archsig::{
@@ -573,29 +572,22 @@ fn dependent_owner_map_and_arrow_constraints_keep_original_missing_and_known_sup
 
 #[test]
 fn dependent_owner_later_parameter_discovery_keeps_each_original_slot_and_whole() {
-    for missing_flag in [false, true] {
-        let j = run(fixture::nested(missing_flag), &["all=check(Inspect.each)"]);
-        assert_eq!(
-            f(answer(&j, "all"), "status"),
-            &Json::str(if missing_flag {
-                "refuted"
-            } else {
-                "established"
-            }),
-            "{j:?}"
-        );
-        original_missing(&j, "all", "p", "Dep.Child.owner");
-        original_missing(&j, "all", "l", "Dep.Leaf.owner");
-        let ds = completion_domains(&j);
-        assert!(
-            ds.iter()
-                .any(|d| arr(f(f(d, "value"), "elements")).len()
-                    == if missing_flag { 18 } else { 9 })
-        );
-        if missing_flag {
-            original_missing(&j, "all", "l", "Dep.Leaf.ok");
-        }
-    }
+    // 後のparameterで見つかるownerの欠測も、元のslotごとに補完して全体で成立を判定する。
+    // 既知反例と欠測が混ざる反証は
+    // dependent_owner_mixed_bool_and_known_counterexamples_keep_whole_semantics が確かめる。
+    let j = run(fixture::nested(false), &["all=check(Inspect.each)"]);
+    assert_eq!(
+        f(answer(&j, "all"), "status"),
+        &Json::str("established"),
+        "{j:?}"
+    );
+    original_missing(&j, "all", "p", "Dep.Child.owner");
+    original_missing(&j, "all", "l", "Dep.Leaf.owner");
+    let ds = completion_domains(&j);
+    assert!(
+        ds.iter()
+            .any(|d| arr(f(f(d, "value"), "elements")).len() == 9)
+    );
 }
 
 #[test]

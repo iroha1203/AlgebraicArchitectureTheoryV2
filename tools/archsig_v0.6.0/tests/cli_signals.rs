@@ -1,6 +1,6 @@
 //! 実製品バイナリのsignalと配送を、満杯のstdoutで同期する。
 #![cfg(unix)]
-mod common;
+use crate::common;
 #[allow(dead_code)]
 #[path = "common/watchdog.rs"]
 mod watchdog;

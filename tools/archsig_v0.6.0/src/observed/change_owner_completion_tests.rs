@@ -14,6 +14,22 @@ fn completed() -> ObservedEvaluation {
     completed_with_structure_only_owner(false)
 }
 fn completed_with_structure_only_owner(structure_only: bool) -> ObservedEvaluation {
+    let result = evaluate_observed_bytes(
+        owner_sources(structure_only),
+        &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "partial");
+    assert!(
+        !result
+            .issues
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+    );
+    result
+}
+fn owner_sources(structure_only: bool) -> InputSources {
     let definitions = fixture::D.replace(
         r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,
         r#"{"name":"flag","type":"Bool","meaning":"条件。"}"#,
@@ -46,25 +62,11 @@ fn completed_with_structure_only_owner(structure_only: bool) -> ObservedEvaluati
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";change choose(c:Part,b:Bool)=c with{{flag=b}};law required valid(c:Part):c.flag;}}"
     );
-    let inputs = InputSources::from_bytes(
+    InputSources::from_bytes(
         vec![definitions.into_bytes()],
         law.into_bytes(),
         map.into_bytes(),
-    );
-    let result = evaluate_observed_bytes(
-        inputs,
-        &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut quiet(),
     )
-    .unwrap();
-    assert_eq!(result.status(), "partial");
-    assert!(
-        !result
-            .issues
-            .iter()
-            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
-    );
-    result
 }
 fn rebuild(result: &ObservedEvaluation, nodes: &[Node]) -> Result<Graph, ValidationFailure> {
     let mut c = quiet();
@@ -308,8 +310,7 @@ fn finite_owner_completion_same_assignment_does_not_determine_configuration() {
 }
 
 fn single_root_sources() -> InputSources {
-    let baseline = completed();
-    let original = baseline.prepared.inputs().sources();
+    let original = owner_sources(false);
     let map = std::str::from_utf8(original.archmap().bytes())
         .unwrap()
         .replace(r#"{"id":"other","type":"Pattern.Root","origin":"o"},"#, "");

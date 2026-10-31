@@ -1,6 +1,6 @@
 //! AC3: 解決の追跡。短形と明示形、既定規則、暗黙 align、constructor metadata、Location。
 
-mod common;
+use crate::common;
 use archsig::law::CheckedLaw;
 use archsig::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use archsig::types::Type;

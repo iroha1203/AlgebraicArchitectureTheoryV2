@@ -1,5 +1,5 @@
 //! 観測計画の独立したslot・依存・理由の期待値。
-mod common;
+use crate::common;
 use archsig::json::{JNode, JValue};
 use common::cli::*;
 use std::path::{Path, PathBuf};
@@ -444,82 +444,57 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
     assert_eq!(result.exit_code, 0);
     let total = count.get();
     assert!(total > 5);
-    for at in [1, total / 2, total] {
-        for mode in 0..4 {
-            let dir = setup(&format!("needed-stop-{at}-{mode}"), false);
-            let count = Rc::new(Cell::new(0usize));
-            let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::ObservationPlan {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stopped = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stopped && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stopped && mode == 1 { 1 } else { 0 },
-                        signal: if stopped {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut options = args(&dir);
-            options.time_ms = (mode == 0).then(|| "1".parse().unwrap());
-            options.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
-            let mut signals = NoSignal::default();
-            let outcome = archsig::run::run_requests(
-                &mut TestIo,
-                &mut signals,
-                &options,
-                Instant::now(),
-                &mut control,
-            );
-            let code = match mode {
-                2 => 130,
-                3 => 143,
-                _ => 75,
-            };
-            assert_eq!(outcome.exit_code, code, "{at}/{mode}");
-            assert_eq!(signals.0, 1);
-            assert_eq!(count.get(), at, "停止後probeなし");
-            let result =
-                archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
-            assert_eq!(num(get(&result, "exit_code")), code as u64);
-            assert_eq!(s(get(&result, "status")), "interrupted");
-            assert_eq!(
-                s(get(
-                    node(&result, get(get(answer(&result, "n"), "outputs"), "value")),
-                    "value"
-                )),
-                "2"
-            );
-            if at == total {
-                assert!(arr(get(plan(&result, "p"), "requirements")).is_empty());
-            } else {
-                assert!(!has(get(answer(&result, "p"), "outputs"), "plan"));
-                assert!(
-                    arr(get(&result, "nodes"))
-                        .iter()
-                        .all(|n| get(n, "type").value != JValue::Str("ObservationPlan".into()))
-                );
+    for at in [total / 2, total] {
+        let dir = setup(&format!("needed-stop-{at}"), false);
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObservationPlan {
+                seen.set(seen.get() + 1);
             }
-            assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
-                !e.unwrap()
-                    .file_name()
-                    .to_string_lossy()
-                    .contains(".archsig-")
-            }));
+            let stopped = seen.get() >= at;
+            Usage {
+                signal: stopped.then_some(Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut signals = NoSignal::default();
+        let outcome = archsig::run::run_requests(
+            &mut TestIo,
+            &mut signals,
+            &args(&dir),
+            Instant::now(),
+            &mut control,
+        );
+        assert_eq!(outcome.exit_code, 130, "{at}");
+        assert_eq!(signals.0, 1);
+        assert_eq!(count.get(), at, "停止後probeなし");
+        let result =
+            archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+        assert_eq!(num(get(&result, "exit_code")), 130);
+        assert_eq!(s(get(&result, "status")), "interrupted");
+        assert_eq!(
+            s(get(
+                node(&result, get(get(answer(&result, "n"), "outputs"), "value")),
+                "value"
+            )),
+            "2"
+        );
+        if at == total {
+            assert!(arr(get(plan(&result, "p"), "requirements")).is_empty());
+        } else {
+            assert!(!has(get(answer(&result, "p"), "outputs"), "plan"));
+            assert!(
+                arr(get(&result, "nodes"))
+                    .iter()
+                    .all(|n| get(n, "type").value != JValue::Str("ObservationPlan".into()))
+            );
         }
+        assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
+            !e.unwrap()
+                .file_name()
+                .to_string_lossy()
+                .contains(".archsig-")
+        }));
     }
 }

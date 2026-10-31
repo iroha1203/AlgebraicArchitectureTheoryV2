@@ -1,5 +1,5 @@
 //! byte 入力の既存検査から、観測要求の束縛・依存・公開射影を接続する。
-mod common;
+use crate::common;
 use archsig::{
     archmap::CheckedArchMap,
     control::{Control, Limits, StopReason, Usage},

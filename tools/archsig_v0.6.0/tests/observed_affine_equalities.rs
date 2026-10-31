@@ -1,5 +1,5 @@
 //! 欠測 Z/Q を残す元左右と、定数差による Eq/Ne の導出を三入力 byte から検査する。
-mod common;
+use crate::common;
 
 use archsig::{
     archmap::Slot,

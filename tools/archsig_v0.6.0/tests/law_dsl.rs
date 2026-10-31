@@ -1,6 +1,6 @@
 //! AC2: DSL 全体の検査。両規範例、全構文の正例、各種の負例。
 
-mod common;
+use crate::common;
 use archsig::issue::Code;
 use archsig::types::Type;
 use common::law_definitions::*;

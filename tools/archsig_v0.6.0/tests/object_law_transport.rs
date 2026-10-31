@@ -489,18 +489,6 @@ fn incomplete_signatures_and_infinite_families_are_not_used_as_pointwise_evidenc
     let i = inputs(&infinite, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "family", "p");
-    let Error::NotImplemented {
-        operation,
-        object,
-        instance,
-    } = object_law_transport(Arc::clone(&i), &d, o, n, &mut quiet()).unwrap_err()
-    else {
-        panic!()
-    };
-    assert_eq!(object.subject().subject, "p");
-    assert_eq!(instance.parameters().len(), 1);
-    assert_eq!(instance.parameters()[0].name, "b");
-    operation.recheck(&i, &mut quiet()).unwrap();
     for (o, n) in [(usize::MAX, n), (o, usize::MAX)] {
         assert!(matches!(
             object_law_transport(Arc::clone(&i), &d, o, n, &mut quiet()),

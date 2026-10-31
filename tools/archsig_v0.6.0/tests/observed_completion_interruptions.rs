@@ -1,5 +1,5 @@
 //! 小さい三入力の補完検査で、内部の停止を入力不整合へ読み替えない。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::Json,

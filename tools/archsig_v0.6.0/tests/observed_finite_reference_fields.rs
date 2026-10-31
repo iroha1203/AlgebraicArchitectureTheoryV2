@@ -1,4 +1,3 @@
-mod common;
 #[path = "common/finite_reference_fields.rs"]
 mod fixture;
 use archsig::{
@@ -515,15 +514,22 @@ fn finite_owned_field_values_keep_known_map_totality_and_raw_missing_slots() {
 }
 #[test]
 fn finite_reference_field_law_families_keep_full_numeric_axes_and_known_counterexamples() {
+    // 反例fixtureはh.flagだけを欠き、Fields.Holder.chosenは全Holderで欠く。numericはflagを読まないので、
+    // 同じ入力で数値軸つきLaw全体の成立と既知反例による反証を一度に確かめる。
     let j = run(
-        fixture::input(false, false, false),
-        &["all=check(Inspect.each)", "numeric=check(Inspect.numeric)"],
+        fixture::counterexample(false),
+        &[
+            "numeric=check(Inspect.numeric)",
+            "flags=check(Inspect.flags)",
+            "later=evaluate(Inspect.seed)",
+        ],
     );
-    for id in ["all", "numeric"] {
-        assert_eq!(f(answer(&j, id), "status"), &Json::str("established"));
-        for s in ["h", "k"] {
-            original_missing(&j, id, s, "Fields.Holder.chosen");
-        }
+    assert_eq!(
+        f(answer(&j, "numeric"), "status"),
+        &Json::str("established")
+    );
+    for s in ["h", "k"] {
+        original_missing(&j, "numeric", s, "Fields.Holder.chosen");
     }
     for (name, ty) in [("z", "Z"), ("q", "Q")] {
         assert!(
@@ -534,42 +540,36 @@ fn finite_reference_field_law_families_keep_full_numeric_axes_and_known_countere
                     && f(v, "kind") == &Json::str("forall"))
         );
     }
-    for reverse in [false, true] {
-        let j = run(
-            fixture::counterexample(reverse),
-            &["flags=check(Inspect.flags)", "later=evaluate(Inspect.seed)"],
+    assert_eq!(f(answer(&j, "flags"), "status"), &Json::str("refuted"));
+    assert_eq!(value(&j, "later"), &Json::str("1"));
+    original_missing(&j, "flags", "h", "Fields.Holder.flag");
+    original_missing(&j, "flags", "h", "Fields.Holder.chosen");
+    let ns = nodes(&j);
+    let fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("k")),
+        ("field", Json::str("Fields.Holder.flag")),
+        ("atom", Json::str("k-flag")),
+    ]);
+    let actual:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("counterexample")))).filter(|n|arr(f(f(f(n,"value"),"data"),"facts")).contains(&fact)).collect();
+    assert!(!actual.is_empty());
+    for n in actual {
+        let d = f(f(n, "value"), "data");
+        assert_eq!(
+            f(ns[text(f(f(d, "left"), "node"))], "value"),
+            &Json::Bool(false)
         );
-        assert_eq!(f(answer(&j, "flags"), "status"), &Json::str("refuted"));
-        assert_eq!(value(&j, "later"), &Json::str("1"));
-        original_missing(&j, "flags", "h", "Fields.Holder.flag");
-        original_missing(&j, "flags", "h", "Fields.Holder.chosen");
-        let ns = nodes(&j);
-        let fact = Json::obj([
-            ("snapshot", Json::str("v")),
-            ("subject", Json::str("k")),
-            ("field", Json::str("Fields.Holder.flag")),
-            ("atom", Json::str("k-flag")),
-        ]);
-        let actual:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("counterexample")))).filter(|n|arr(f(f(f(n,"value"),"data"),"facts")).contains(&fact)).collect();
-        assert!(!actual.is_empty());
-        for n in actual {
-            let d = f(f(n, "value"), "data");
-            assert_eq!(
-                f(ns[text(f(f(d, "left"), "node"))], "value"),
-                &Json::Bool(false)
-            );
-            assert_eq!(
-                f(ns[text(f(f(d, "right"), "node"))], "value"),
-                &Json::Bool(true)
-            );
-            assert!(
-                arr(f(d, "bindings"))
-                    .iter()
-                    .any(|v| f(v, "name") == &Json::str("h")
-                        && f(ns[text(f(f(v, "value"), "node"))], "value")
-                            == &fixture::reference("v", "k"))
-            );
-        }
+        assert_eq!(
+            f(ns[text(f(f(d, "right"), "node"))], "value"),
+            &Json::Bool(true)
+        );
+        assert!(
+            arr(f(d, "bindings"))
+                .iter()
+                .any(|v| f(v, "name") == &Json::str("h")
+                    && f(ns[text(f(f(v, "value"), "node"))], "value")
+                        == &fixture::reference("v", "k"))
+        );
     }
 }
 #[test]

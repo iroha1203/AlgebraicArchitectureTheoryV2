@@ -1,5 +1,5 @@
 //! 元 byte span と、人が読む1始まりの Unicode scalar 位置。
-mod common;
+use crate::common;
 use archsig::json::{JNode, JValue};
 use common::cli::*;
 
@@ -252,12 +252,25 @@ view label(): Text = "日本🦀"; local here(t:State) reads t;
 }}
 "#
     );
+    // 位置の確認には状態の数は要らないので、対応 u→w を外した状態4つの観測を使う。
+    let map = include_str!("fixtures/object-configuration-map.archmap.json")
+        .lines()
+        .filter(|line| {
+            !line.contains(r#""id":"u","type":"#)
+                && !line.contains(r#""id":"w","type":"#)
+                && !line.contains(r#""subject":"u""#)
+                && !line.contains(r#""subject":"w""#)
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(r#",[["v","u"],["v","w"]]"#, "")
+        .replace(",\n]", "\n]");
     let (dir, r) = invoke(
         "saved-run-source-locations",
         "run",
         include_bytes!("fixtures/reservations.atoms.json"),
         law.as_bytes(),
-        include_bytes!("fixtures/object-configuration-map.archmap.json"),
+        map.as_bytes(),
         Some(
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         ),

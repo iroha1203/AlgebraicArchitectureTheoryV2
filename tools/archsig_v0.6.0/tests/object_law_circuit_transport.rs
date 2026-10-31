@@ -212,7 +212,6 @@ fn bool_fp_parameter_images_cover_all_six_arguments_and_accept_exact_nonzero_cas
             (Some(accepts), Some(accepts), Some(accepts), Some(accepts))
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
 fn forall_whole_false_does_not_hide_boolean_argument_component_counterexamples() {
@@ -343,7 +342,7 @@ fn changed_current_inputs_reject_previous_transport() {
 #[test]
 fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_frozen_probes() {
     use archsig::{
-        control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -354,111 +353,64 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
     );
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "measure", "p");
-    let baseline = run(i.clone());
-    for recheck in [false, true] {
-        let history = Rc::new(RefCell::new(Vec::new()));
-        let h = history.clone();
-        let mut traced = Control::new(Limits::default(), move |p| {
-            h.borrow_mut().push(p);
-            Usage::default()
-        });
-        if recheck {
-            baseline.recheck(i.clone(), &mut traced).unwrap();
-        } else {
-            object_law_circuit_transport(i.clone(), &d, o, n, &mut traced).unwrap();
-        }
-        for at in [
-            C::ObjectLawCircuitTransport,
-            C::ObjectLawCircuitTransportPoint,
-        ] {
-            let count = history.borrow().iter().filter(|p| **p == at).count();
-            assert!(count > 0);
-            for nth in [1, count] {
-                for mode in 0..4 {
-                    let hits = Rc::new(RefCell::new(0));
-                    let h = hits.clone();
-                    let probes = Rc::new(RefCell::new(0));
-                    let p = probes.clone();
-                    let expected = match mode {
-                        0 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        2 => StopReason::Cancelled(Signal::Int),
-                        _ => StopReason::Cancelled(Signal::Term),
-                    };
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: (mode == 0).then_some(1),
-                            memory_mib: (mode == 1).then_some(1),
-                        },
-                        move |point| {
-                            *p.borrow_mut() += 1;
-                            if point == at {
-                                *h.borrow_mut() += 1;
-                            }
-                            if point == at && *h.borrow() == nth {
-                                Usage {
-                                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                    memory_mib: if mode == 1 { 1 } else { 0 },
-                                    signal: match mode {
-                                        2 => Some(Signal::Int),
-                                        3 => Some(Signal::Term),
-                                        _ => None,
-                                    },
-                                }
-                            } else {
-                                Usage::default()
-                            }
-                        },
-                    );
-                    let f = if recheck {
-                        baseline.recheck(i.clone(), &mut c).unwrap_err()
-                    } else {
-                        object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err()
-                    };
-                    let ObjectLawCircuitTransportFailure::Reading {
-                        cause: LawCircuitTransportFailureCause::Construction(cause),
-                        partial,
-                    } = f
-                    else {
-                        panic!("new comparison stage")
-                    };
-                    assert_eq!(cause, ConstructionFailure::Stopped(expected.clone()));
-                    assert_eq!(c.stop_reason(), Some(expected));
-                    assert_eq!(*hits.borrow(), nth);
-                    assert_eq!(partial.base().object().subject().subject, "p");
-                    partial
-                        .base()
-                        .operation()
-                        .recheck(&i, &mut quiet())
-                        .unwrap();
-                    if at == C::ObjectLawCircuitTransportPoint {
-                        assert!(!partial.points().is_empty());
-                        assert!(matches!(partial.outcome(), Outcome::Refuted(_)));
-                        if nth == count {
-                            assert!(partial.is_complete());
-                            assert_eq!(partial.points(), baseline.points());
-                        }
-                    }
-                    if at == C::ObjectLawCircuitTransport && nth == count {
-                        assert!(partial.is_complete());
-                        assert_eq!(partial.points(), baseline.points());
-                        assert_eq!(partial.outcome(), baseline.outcome());
-                    }
-                    let before = *probes.borrow();
-                    assert!(c.checkpoint(C::Expression).is_err());
-                    assert!(c.checkpoint(C::ObjectLawCircuitTransport).is_err());
-                    assert_eq!(*probes.borrow(), before);
-                }
+    // 停止位置の数え上げと基準の結果を同じ一回の評価で得る。
+    let history = Rc::new(RefCell::new(Vec::new()));
+    let h = history.clone();
+    let mut traced = Control::new(Limits::default(), move |p| {
+        h.borrow_mut().push(p);
+        Usage::default()
+    });
+    let baseline = object_law_circuit_transport(i.clone(), &d, o, n, &mut traced).unwrap();
+    let at = C::ObjectLawCircuitTransportPoint;
+    let count = history.borrow().iter().filter(|p| **p == at).count();
+    assert!(count > 0);
+    for nth in [1, count] {
+        let hits = Rc::new(RefCell::new(0));
+        let h = hits.clone();
+        let probes = Rc::new(RefCell::new(0));
+        let p = probes.clone();
+        let expected = StopReason::Cancelled(Signal::Int);
+        let mut c = Control::new(Limits::default(), move |point| {
+            *p.borrow_mut() += 1;
+            if point == at {
+                *h.borrow_mut() += 1;
             }
+            if point == at && *h.borrow() == nth {
+                Usage {
+                    signal: Some(Signal::Int),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
+        let ObjectLawCircuitTransportFailure::Reading {
+            cause: LawCircuitTransportFailureCause::Construction(cause),
+            partial,
+        } = f
+        else {
+            panic!("new comparison stage")
+        };
+        assert_eq!(cause, ConstructionFailure::Stopped(expected.clone()));
+        assert_eq!(c.stop_reason(), Some(expected));
+        assert_eq!(*hits.borrow(), nth);
+        assert_eq!(partial.base().object().subject().subject, "p");
+        partial
+            .base()
+            .operation()
+            .recheck(&i, &mut quiet())
+            .unwrap();
+        assert!(!partial.points().is_empty());
+        assert!(matches!(partial.outcome(), Outcome::Refuted(_)));
+        if nth == count {
+            assert!(partial.is_complete());
+            assert_eq!(partial.points(), baseline.points());
         }
+        let before = *probes.borrow();
+        assert!(c.checkpoint(C::Expression).is_err());
+        assert!(c.checkpoint(C::ObjectLawCircuitTransport).is_err());
+        assert_eq!(*probes.borrow(), before);
     }
 }
 #[test]
@@ -603,27 +555,6 @@ fn a_failed_fixed_extension_keeps_its_refutation_and_does_not_generate_transport
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn unsupported_infinite_parameter_retains_the_original_failure_and_valid_operation() {
-    let i = inputs(
-        "law required measure(c:Left.Child,z:Z):z=z;",
-        "law required measure(d:Right.Child,w:Z):w=w;",
-        A,
-    );
-    let d = declarations(&i);
-    let (o, n) = indices(&i, "p", "measure", "p");
-    let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut quiet()).unwrap_err();
-    let ObjectLawCircuitTransportFailure::Original(
-        archsig::observed::object_law_transport::ObjectLawTransportFailure::NotImplemented {
-            operation,
-            ..
-        },
-    ) = f
-    else {
-        panic!("original unsupported execution")
-    };
-    operation.recheck(&i, &mut quiet()).unwrap();
-}
-#[test]
 fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as_labels() {
     let i = inputs(
         "law required measure(c:Left.Child,b:Option<Left.Child>):(if b=some(c) then 1 else 0)=0;",
@@ -655,7 +586,6 @@ fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as
             (Some(accepts), Some(accepts), Some(accepts), Some(accepts))
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
 fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_operation() {

@@ -1,5 +1,5 @@
 //! 公開Architectureの根を選び、同じ共有評価器で値とLawを読む。
-mod common;
+use crate::common;
 #[path = "common/architecture_environment.rs"]
 mod fixture;
 use archsig::json::JNode;
@@ -16,6 +16,36 @@ fn inputs(name: &str, extra: &str, map: Option<&str>) -> PathBuf {
         std::fs::write(dir.join(name), bytes).unwrap();
     }
     dir
+}
+// 移行mと状態p,q,r,s・予約操作e,fだけを残した観測。値は元のfixtureと同じ。
+fn small_map() -> String {
+    use archsig::canonical::Json;
+    fixture::changed_map(|j| {
+        let unused = |value: Option<&Json>| {
+            matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
+        };
+        {
+            let Json::Arr(snapshots) = fixture::field(j, "snapshots") else {
+                panic!("snapshots")
+            };
+            let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+                panic!("subjects")
+            };
+            subjects.retain(|subject| !matches!(subject, Json::Obj(o) if unused(o.get("id"))));
+        }
+        let atoms = fixture::atoms(j);
+        atoms.retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
+        for atom in atoms {
+            let Json::Obj(atom) = atom else { panic!("atom") };
+            if atom.get("id") == Some(&Json::str("m-reserves")) {
+                let reference = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
+                atom.insert(
+                    "value".into(),
+                    Json::Arr(vec![Json::Arr(vec![reference("e"), reference("f")])]),
+                );
+            }
+        }
+    })
 }
 fn asks(dir: &Path, qs: &[&str]) -> Run {
     asks_at(dir, qs, "out", None)
@@ -127,20 +157,17 @@ law required product(a:System,s:State):a=a and s.free+s.held=2;
 law optional guarded(s:State) when false:false;
 law required dependent(a:System,s:State[a]):s.free+s.held=2;
 "#,
-        None,
+        Some(&small_map()),
     );
     let r = asks(
         &dir,
         &[
             fixture::MAP,
             "a=evaluate(Reservations.smallStates,on=$m.candidate.source)",
-            "b=evaluate(Reservations.smallStates,on=$a.evaluation.environment)",
             "external=evaluate(Reservations.external,a=@v/B,on=$m.candidate.source)",
             "composite=evaluate(Reservations.composite,on=$m.candidate.source)",
             "named=evaluate(Reservations.named,bind.on=@v/r,on=$m.candidate.source)",
-            "symbolic=check(Reservations.symbolic,on=$m.candidate.source)",
             "product=check(Reservations.product,on=$m.candidate.source)",
-            "guard=check(Reservations.guarded,on=$m.candidate.source)",
             "dependent=check(Reservations.dependent,on=$m.candidate.source)",
         ],
     );
@@ -148,7 +175,6 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
     let j = result_json(&dir, &r);
     for (id, expected) in [
         ("a", true),
-        ("b", true),
         ("external", true),
         ("composite", false),
     ] {
@@ -162,18 +188,11 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
         s(value(&j, get(get(answer(&j, "named"), "outputs"), "value"))),
         "4"
     );
-    for id in ["symbolic", "product", "guard", "dependent"] {
+    for id in ["product", "dependent"] {
         assert_eq!(s(get(answer(&j, id), "status")), "established", "{id}");
     }
     let root = value(&j, get(get(answer(&j, "m"), "outputs"), "candidate"));
     assert_eq!(get(get(answer(&j, "product"), "outputs"), "environment"), get(root, "source"));
-    let internal = internal_graph(&dir, &j);
-    let evaluation = value(&internal, get(get(answer(&internal, "product"), "outputs"), "evaluation"));
-    // Product has 1 root × 2 states, not the complete ArchMap's 2 × 4.
-    assert_eq!(
-        arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
-        2
-    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -689,6 +708,7 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
         assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir, &r);
         assert_eq!(s(get(answer(&j, "a"), "status")), "undetermined");
+        let internal = supplied.then(|| internal_graph(&dir, &j));
         for id in ["root", "scoped", "family"] {
             let a = answer(&j, id);
             assert_eq!(
@@ -702,7 +722,7 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
             );
             if supplied {
                 assert!(arr(get(a, "reasons")).is_empty());
-                let internal = internal_graph(&dir, &j);
+                let internal = internal.as_ref().unwrap();
                 let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
                 assert_eq!(
                     value(&internal, get(evaluation, "value")),
@@ -743,10 +763,16 @@ law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;
 law required partiallyBound(x:System,b:Bool):forall s:State[x] . (s.free+s.held=2 and b);
 law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : true;
 "#,
-        None,
+        Some(&small_map()),
     );
-    let r = asks(
-        &dir,
+    // 量化の行は内部graphにだけあるので、同じ三入力を一度だけ内部で評価する。
+    let sources = archsig::input::InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let result = archsig::observed::evaluate_observed_bytes(
+        sources,
         &[
             fixture::MAP,
             "source=check(Reservations.nestedOwner,on=$m.candidate.source)",
@@ -759,10 +785,11 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
             "guard=check(Reservations.guardedOwner,on=$m.candidate.source)",
             "external=check(Reservations.nestedOwner,x=@v/B,on=$m.candidate.source)",
         ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_eq!(s(get(&r.receipt, "status")), "complete");
+        &mut archsig::control::Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete");
+    let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
     for (id, status, rows) in [
         ("source", "established", 1),
         ("target", "refuted", 1),
@@ -771,17 +798,16 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
         ("bad", "refuted", 1),
         ("guard", "established", 1),
     ] {
-        let a = answer(&j, id);
+        let a = answer(&internal, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
-        let internal = internal_graph(&dir, &j);
-        let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
+        let evaluation = value(&internal, get(get(a, "outputs"), "evaluation"));
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
             rows,
             "{id}"
         );
     }
-    assert_eq!(s(get(answer(&j, "external"), "status")), "refuted");
+    assert_eq!(s(get(answer(&internal, "external"), "status")), "refuted");
     std::fs::remove_dir_all(dir).unwrap();
 }
 

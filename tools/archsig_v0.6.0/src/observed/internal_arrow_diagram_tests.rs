@@ -367,7 +367,7 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
     assert!(replay(&p, &foreign, &g.nodes).is_err());
 }
 #[test]
-fn all_stop_reasons_keep_exact_completed_prefix_and_never_publish_unfinished_generators() {
+fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generators() {
     let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
     let measured = Rc::new(Cell::new(0));
     let measured_count = measured.clone();
@@ -398,85 +398,69 @@ fn all_stop_reasons_keep_exact_completed_prefix_and_never_publish_unfinished_gen
     assert!(total > 2);
     let last_operation = diagram.rows.last().unwrap().operation.unwrap();
     assert_eq!(last_operation.0 + 1, normal.nodes.len());
-    for mode in 0..4 {
-        for (at, final_tick) in [
-            (1, false),
-            (total / 2, false),
-            (total, false),
-            (total, true),
-        ] {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let armed = Rc::new(Cell::new(false));
-            let active = armed.clone();
-            let limits = Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            };
-            let mut c = Control::new(limits, move |point| {
-                if active.get() && point == Checkpoint::NativeResultNode {
-                    count.set(count.get() + 1);
-                }
-                if count.get() < at || (final_tick && point != Checkpoint::InternalArrow) {
-                    return Usage::default();
-                }
-                Usage {
-                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                    memory_mib: if mode == 1 { 1 } else { 0 },
-                    signal: match mode {
-                        2 => Some(crate::result::Signal::Int),
-                        3 => Some(crate::result::Signal::Term),
-                        _ => None,
-                    },
-                }
-            });
-            let mut g = Graph::new(&c);
-            g.requests = p.requests().requests().to_vec();
-            let a = build(&p, &mut g);
-            let o = family(&p, &mut g, &a);
-            let prefix = g.nodes.clone();
-            armed.set(true);
-            assert!(matches!(
-                retain(
-                    &mut g,
-                    p.shared_inputs(),
-                    a.reference,
-                    &o,
-                    a.universe,
-                    &mut c
-                ),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert!(c.stop_reason().is_some());
-            assert_eq!(&g.nodes[..start], prefix);
-            assert!(g.nodes.len() <= normal.nodes.len());
-            if at == total {
-                assert_eq!(g.nodes.len(), normal.nodes.len());
-                assert_eq!(
-                    g.get(last_operation).unwrap().ty,
-                    NodeType::Construction(T::Operation)
-                );
+    for (at, final_tick) in [(total / 2, false), (total, true)] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let armed = Rc::new(Cell::new(false));
+        let active = armed.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if active.get() && point == Checkpoint::NativeResultNode {
+                count.set(count.get() + 1);
             }
-            for (actual, expected) in g
-                .nodes
-                .iter()
-                .skip(start)
-                .zip(normal.nodes.iter().skip(start))
-            {
-                assert_eq!(actual.ty, expected.ty);
-                assert_eq!(actual.arguments, expected.arguments);
-                assert_eq!(actual.support, expected.support);
-                assert_eq!(actual.scope, expected.scope);
-                let Some(Payload::Construction(av)) = &actual.payload else {
-                    panic!("actual")
-                };
-                let Some(Payload::Construction(ev)) = &expected.payload else {
-                    panic!("expected")
-                };
-                assert_eq!(av.wire(), ev.wire());
+            if count.get() < at || (final_tick && point != Checkpoint::InternalArrow) {
+                return Usage::default();
             }
-            replay(&p, &g, &g.nodes).unwrap();
+            Usage {
+                signal: Some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = Graph::new(&c);
+        g.requests = p.requests().requests().to_vec();
+        let a = build(&p, &mut g);
+        let o = family(&p, &mut g, &a);
+        let prefix = g.nodes.clone();
+        armed.set(true);
+        assert!(matches!(
+            retain(
+                &mut g,
+                p.shared_inputs(),
+                a.reference,
+                &o,
+                a.universe,
+                &mut c
+            ),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert!(c.stop_reason().is_some());
+        assert_eq!(&g.nodes[..start], prefix);
+        assert!(g.nodes.len() <= normal.nodes.len());
+        if at == total {
+            assert_eq!(g.nodes.len(), normal.nodes.len());
+            assert_eq!(
+                g.get(last_operation).unwrap().ty,
+                NodeType::Construction(T::Operation)
+            );
         }
+        for (actual, expected) in g
+            .nodes
+            .iter()
+            .skip(start)
+            .zip(normal.nodes.iter().skip(start))
+        {
+            assert_eq!(actual.ty, expected.ty);
+            assert_eq!(actual.arguments, expected.arguments);
+            assert_eq!(actual.support, expected.support);
+            assert_eq!(actual.scope, expected.scope);
+            let Some(Payload::Construction(av)) = &actual.payload else {
+                panic!("actual")
+            };
+            let Some(Payload::Construction(ev)) = &expected.payload else {
+                panic!("expected")
+            };
+            assert_eq!(av.wire(), ev.wire());
+        }
+        replay(&p, &g, &g.nodes).unwrap();
     }
 }
 

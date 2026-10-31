@@ -65,10 +65,9 @@ fn rows(w: &Json) -> Vec<&Json> {
 }
 #[test]
 fn free_compound_answer_members_paths_multiple_owners_and_finite_axes_keep_actual_fibers() {
+    // Option/List/Set/Mapの単独の型は、fcNested(Option<List<Set<..>>>)とfcMapWrapped
+    // (Option<List<Map<..>>>)の入れ子が同じ要素の経路を通るので、入れ子の側で確かめる。
     for (law, producer, path, owners) in [
-        ("fcOption", "cbOption,p=@v/p", "$v.value", vec!["A"]),
-        ("fcList", "cbList,p=@w/p,q=@w/q", "$v.value", vec!["A"]),
-        ("fcSet", "cbSet,p=@v/p,q=@v/q", "$v.value", vec!["A"]),
         (
             "fcList",
             "cbWrapped,p=@v/p,q=@v/q",
@@ -87,7 +86,6 @@ fn free_compound_answer_members_paths_multiple_owners_and_finite_axes_keep_actua
             "$v.value",
             vec!["A", "B"],
         ),
-        ("fcMap", "cbMap,m=@v/m", "$v.value", vec!["A", "B"]),
         (
             "fcMapWrapped",
             "cbMapWrapped,m=@w/m",

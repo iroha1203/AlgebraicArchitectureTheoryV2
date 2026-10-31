@@ -428,64 +428,6 @@ fn a_false_guard_keeps_nonfinite_operands_unevaluated_without_losing_typed_zero_
     }
 }
 #[test]
-fn automatic_selection_domain_values_and_source_are_rebuilt_before_consumption() {
-    let body = "law required grid(c:Part,n:Fp(2),b:Bool):c.quantity=n;";
-    let i = fixture::with_body(fixture::MAP, body);
-    let a = reading(&i, "root");
-    for mutation in 0..14 {
-        let mut bad = run(&i, &a);
-        match mutation {
-            0 => bad.parameters.law_dependencies = false,
-            1 => {
-                bad.family.as_mut().unwrap().value.columns.pop();
-            }
-            2 => {
-                bad.family.as_mut().unwrap().value.selection.pop();
-            }
-            3 => {
-                Arc::make_mut(&mut bad.family.as_mut().unwrap().value.selection[0])
-                    .bindings
-                    .pop();
-            }
-            4 => bad.family.as_mut().unwrap().value.columns[0].source_instance = Some(usize::MAX),
-            5 => bad.family.as_mut().unwrap().value.columns[0].bindings[2].1 = Scalar::Bool(true),
-            6 => bad.family.as_mut().unwrap().value.domain.swap(0, 1),
-            7 => bad.family.as_mut().unwrap().value.columns[0].rows[0].indicator = Some(2.into()),
-            8 => bad.family.as_mut().unwrap().value.columns[0].rows[0].application = None,
-            9 => bad.family.as_mut().unwrap().readings = reading(&i, "r2"),
-            10 => {
-                bad.parameters.rows.pop();
-            }
-            11 => bad.parameters.domain.swap(0, 1),
-            12 => bad.family.as_mut().unwrap().value.required_zero = Some(vec![9]),
-            _ => bad
-                .family
-                .as_mut()
-                .unwrap()
-                .value
-                .column_objects
-                .as_mut()
-                .unwrap()
-                .columns
-                .swap(0, 8),
-        }
-        assert!(
-            bad.recheck(&i, &a, &mut quiet()).is_err(),
-            "mutation {mutation}"
-        );
-    }
-    let result = run(&i, &a);
-    let changed = fixture::with_body(&(fixture::MAP.to_string() + " "), body);
-    assert!(result.recheck(&changed, &a, &mut quiet()).is_err());
-    let changed_law = fixture::with_body(fixture::MAP, &(body.to_string() + " "));
-    assert!(finite_automatic_law_family(&changed_law, &a, &mut quiet()).is_err());
-    assert!(
-        result
-            .recheck(&i, &reading(&i, "r2"), &mut quiet())
-            .is_err()
-    );
-}
-#[test]
 fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};

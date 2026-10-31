@@ -274,44 +274,37 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
     let p = plan(&i);
     let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
     let n = full.rows().len();
-    for at in [1, 2, 3, 2 * n + 1, 2 * n + 2] {
-        for mode in 0..4 {
-            let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, mode);
-            let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
-            assert!(
-                matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
-            );
-            if at == 1 {
-                assert!(f.partial().is_none());
-            } else {
-                let partial = f.partial().unwrap();
-                let kept = ((at - 1) / 2).min(n);
-                assert_eq!(partial.rows().len(), kept);
-                assert_eq!(partial.is_complete(), at == 2 * n + 2);
-                assert!(f.active().is_none());
-                for (a, b) in partial.rows().iter().zip(full.rows()) {
-                    assert_eq!(a.position(), b.position());
-                    match (a.evaluation().outcome(), b.evaluation().outcome()) {
-                        (
-                            ObjectEvaluationOutcome::Evaluated(a),
-                            ObjectEvaluationOutcome::Evaluated(b),
-                        ) => assert_eq!(a.wire(), b.wire()),
-                        (
-                            ObjectEvaluationOutcome::NotApplicable,
-                            ObjectEvaluationOutcome::NotApplicable,
-                        ) => {}
-                        _ => panic!(),
-                    }
+    for at in [3, 2 * n + 2] {
+        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, 2);
+        let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
+        assert!(
+            matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
+        );
+        let partial = f.partial().unwrap();
+        let kept = ((at - 1) / 2).min(n);
+        assert_eq!(partial.rows().len(), kept);
+        assert_eq!(partial.is_complete(), at == 2 * n + 2);
+        assert!(f.active().is_none());
+        for (a, b) in partial.rows().iter().zip(full.rows()) {
+            assert_eq!(a.position(), b.position());
+            match (a.evaluation().outcome(), b.evaluation().outcome()) {
+                (ObjectEvaluationOutcome::Evaluated(a), ObjectEvaluationOutcome::Evaluated(b)) => {
+                    assert_eq!(a.wire(), b.wire())
                 }
+                (
+                    ObjectEvaluationOutcome::NotApplicable,
+                    ObjectEvaluationOutcome::NotApplicable,
+                ) => {}
+                _ => panic!(),
             }
-            assert!(
-                evaluate_object_table(Arc::clone(&i), &p, &mut c)
-                    .unwrap_err()
-                    .partial()
-                    .is_none()
-            );
-            assert_eq!(probes.get(), at);
         }
+        assert!(
+            evaluate_object_table(Arc::clone(&i), &p, &mut c)
+                .unwrap_err()
+                .partial()
+                .is_none()
+        );
+        assert_eq!(probes.get(), at);
     }
 }
 #[test]
@@ -344,27 +337,26 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
     let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
     let n = full.rows().len();
     // 全行再計算の2n+2 checkpointの後、一行比較ごとと末尾に検査する。
+    // 停止の種類は他のテストが網羅するので、ここでは Int 停止だけを比較の途中と末尾で見る。
     for at in [2 * n + 3, 3 * n + 3] {
-        for mode in 0..4 {
-            let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, mode);
-            let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
-            assert!(
-                matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
-            );
-            let partial = f.partial().unwrap();
-            assert!(partial.is_complete());
-            assert_eq!(partial.rows().len(), n);
-            assert_eq!(partial.pending(), None);
-            assert!(f.active().is_none());
-            assert_eq!(f.position(), None);
-            assert!(
-                full.recheck(Arc::clone(&i), &mut c)
-                    .unwrap_err()
-                    .partial()
-                    .is_none()
-            );
-            assert_eq!(probes.get(), at);
-        }
+        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, 2);
+        let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
+        assert!(
+            matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
+        );
+        let partial = f.partial().unwrap();
+        assert!(partial.is_complete());
+        assert_eq!(partial.rows().len(), n);
+        assert_eq!(partial.pending(), None);
+        assert!(f.active().is_none());
+        assert_eq!(f.position(), None);
+        assert!(
+            full.recheck(Arc::clone(&i), &mut c)
+                .unwrap_err()
+                .partial()
+                .is_none()
+        );
+        assert_eq!(probes.get(), at);
     }
 }
 

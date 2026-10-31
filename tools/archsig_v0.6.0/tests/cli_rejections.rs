@@ -1,6 +1,6 @@
 //! 拒否の stdout code・位置・終了コードと、失敗成果物の非生成。
 
-mod common;
+use crate::common;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 

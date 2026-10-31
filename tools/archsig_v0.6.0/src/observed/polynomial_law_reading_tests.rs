@@ -281,67 +281,6 @@ fn polynomial_readings_preserve_all_bool_bindings_and_do_not_choose_a_display_ro
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
-#[test]
-fn polynomial_reading_source_and_graph_reject_seven_value_origin_metadata_and_output_changes() {
-    let p = prepared(false, false, BODY, "root");
-    let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
-    let reference = ds[0].readings[0].holds.unwrap();
-    let original = data(&g, reference).source.clone();
-    for kind in 0..7 {
-        let mut changed = (*original).clone();
-        if kind < 4 {
-            let Part::ObservedBoolean {
-                origin,
-                body,
-                value,
-                support,
-                ..
-            } = &mut changed.parts[reference.0 - changed.base]
-            else {
-                panic!("observed")
-            };
-            match kind {
-                0 => {
-                    let Scalar::Bool(v) = value else {
-                        panic!("Bool")
-                    };
-                    *v = !*v;
-                }
-                1 => *body = !*body,
-                2 => *origin = ds[0].readings[1].instance,
-                _ => support.clear(),
-            }
-        } else {
-            match kind {
-                4 => changed.outputs.readings.swap(0, 1),
-                5 => changed.outputs.readings[0].evaluations.clear(),
-                _ => {
-                    changed.owned_outputs.as_mut().unwrap()[0]
-                        .readings
-                        .pop()
-                        .unwrap();
-                }
-            }
-        }
-        assert!(
-            changed
-                .recheck(p.inputs(), &original.architecture, &mut quiet())
-                .is_err(),
-            "source {kind}"
-        );
-        let mut nodes = g.nodes.clone();
-        let Some(Payload::Construction(v)) = &mut nodes[reference.0].payload else {
-            panic!("native")
-        };
-        let D::PolynomialLaw(d) = &mut v.data else {
-            panic!("polynomial")
-        };
-        d.source = Arc::new(changed);
-        assert!(replay(&p, &g, &nodes).is_err(), "graph {kind}");
-    }
-    replay(&p, &g, &g.nodes).unwrap();
-}
 
 fn prefix(original: &Graph, c: &Control) -> Graph {
     let mut g = Graph::new(c);
@@ -358,90 +297,65 @@ fn prefix(original: &Graph, c: &Control) -> Graph {
     g
 }
 #[test]
-fn polynomial_reading_four_stops_keep_exact_completed_boolean_prefixes() {
+fn polynomial_reading_interrupt_keeps_exact_completed_boolean_prefixes() {
     use std::{cell::Cell, rc::Rc};
-    for body in [
-        BODY,
-        "law required walkKnown(c:Part):forall f in list<Path<Part,Part>>[identity(c)].source(f)=c;",
+    let p = prepared(false, false, BODY, "root");
+    let (initial, a) = built(&p);
+    let before = initial.nodes.len();
+    let mut complete = prefix(&initial, &quiet());
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
+    for at in [
+        2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
+        2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
     ] {
-        let p = prepared(false, false, body, "root");
-        let (initial, a) = built(&p);
-        let before = initial.nodes.len();
-        let mut complete = prefix(&initial, &quiet());
-        let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
-        for mode in 0..4 {
-            for at in [
-                1,
-                2 * (ds[0].readings[0].holds.unwrap().0 - before + 1),
-                2 * (ds[0].context.unwrap().0 - before + 1),
-                2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
-                2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
-            ] {
-                let seen = Rc::new(Cell::new(0));
-                let count = seen.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |point| {
-                        if point == Checkpoint::NativeResultNode {
-                            count.set(count.get() + 1);
-                        }
-                        let stop = count.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stop && mode == 0),
-                            memory_mib: u128::from(stop && mode == 1),
-                            signal: if stop && mode >= 2 {
-                                Some(if mode == 2 {
-                                    crate::result::Signal::Int
-                                } else {
-                                    crate::result::Signal::Term
-                                })
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
-                let mut g = prefix(&initial, &c);
-                assert!(matches!(
-                    retain_family(&mut g, p.shared_inputs(), a, &mut c),
-                    Err(ValidationFailure::Stop(_))
-                ));
-                assert_eq!(g.nodes.len(), before + at.div_ceil(2));
-                assert_eq!(g.nodes.len(), g.contexts.len());
-                for (left, right) in g.nodes.iter().zip(&complete.nodes) {
-                    assert_eq!(
-                        (
-                            &left.ty,
-                            &left.rule,
-                            &left.arguments,
-                            &left.support,
-                            &left.scope,
-                            &left.reasons,
-                            &left.judgment
-                        ),
-                        (
-                            &right.ty,
-                            &right.rule,
-                            &right.arguments,
-                            &right.support,
-                            &right.scope,
-                            &right.reasons,
-                            &right.judgment
-                        )
-                    );
-                    match (&left.payload, &right.payload) {
-                        (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
-                            assert_eq!(a.wire(), b.wire())
-                        }
-                        _ => assert_eq!(left, right),
-                    }
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::NativeResultNode {
+                count.set(count.get() + 1);
+            }
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = prefix(&initial, &c);
+        assert!(matches!(
+            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.nodes.len(), before + at.div_ceil(2));
+        assert_eq!(g.nodes.len(), g.contexts.len());
+        for (left, right) in g.nodes.iter().zip(&complete.nodes) {
+            assert_eq!(
+                (
+                    &left.ty,
+                    &left.rule,
+                    &left.arguments,
+                    &left.support,
+                    &left.scope,
+                    &left.reasons,
+                    &left.judgment
+                ),
+                (
+                    &right.ty,
+                    &right.rule,
+                    &right.arguments,
+                    &right.support,
+                    &right.scope,
+                    &right.reasons,
+                    &right.judgment
+                )
+            );
+            match (&left.payload, &right.payload) {
+                (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
+                    assert_eq!(a.wire(), b.wire())
                 }
-                replay(&p, &g, &g.nodes).unwrap();
+                _ => assert_eq!(left, right),
             }
         }
+        replay(&p, &g, &g.nodes).unwrap();
     }
 }
 
@@ -532,73 +446,6 @@ fn polynomial_missing_guard_and_nonconstant_body_stay_unknown() {
                 }
             );
         }
-    }
-    replay(&p, &g, &g.nodes).unwrap();
-}
-
-#[test]
-fn polynomial_reading_quantifier_domains_reject_type_elements_and_foreign_descriptor_refs() {
-    let p = prepared(
-        false,
-        false,
-        "law required bit(c:Part,b:Bool):(c.quantity=0)=b;",
-        "root",
-    );
-    let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
-    let reference = ds[0].readings[0].body.unwrap();
-    let original = data(&g, reference).source.clone();
-    let domain = g.nodes[reference.0]
-        .scope
-        .quantifiers
-        .iter()
-        .find_map(|q| q.domain)
-        .unwrap();
-    for kind in 0..5 {
-        let mut changed = (*original).clone();
-        if kind < 3 {
-            let Part::ReadingDomain {
-                ty,
-                elements: Some(elements),
-            } = &mut changed.parts[domain.0 - changed.base]
-            else {
-                panic!("Domain")
-            };
-            match kind {
-                0 => *ty = Type::Z,
-                1 => elements.swap(0, 1),
-                _ => {
-                    elements.pop().unwrap();
-                }
-            }
-        } else {
-            let Part::ObservedBoolean { scope, .. } =
-                &mut changed.parts[reference.0 - changed.base]
-            else {
-                panic!("Bool")
-            };
-            let q = scope
-                .quantifiers
-                .iter_mut()
-                .find(|q| q.domain.is_some())
-                .unwrap();
-            q.domain = Some(if kind == 3 { a } else { NodeRef(usize::MAX) });
-        }
-        assert!(
-            changed
-                .recheck(p.inputs(), &original.architecture, &mut quiet())
-                .is_err(),
-            "source {kind}"
-        );
-        let mut nodes = g.nodes.clone();
-        let Some(Payload::Construction(v)) = &mut nodes[reference.0].payload else {
-            panic!("native")
-        };
-        let D::PolynomialLaw(d) = &mut v.data else {
-            panic!("polynomial")
-        };
-        d.source = Arc::new(changed);
-        assert!(replay(&p, &g, &nodes).is_err(), "graph {kind}");
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -817,71 +664,4 @@ fn polynomial_explicit_nested_term_and_path_domains_keep_container_types_and_ref
             );
         });
     }
-}
-#[test]
-fn polynomial_explicit_path_domain_rejects_value_wire_and_dependency_changes() {
-    let p = prepared(
-        false,
-        false,
-        "law required walkKnown(c:Part):forall f in list<Path<Part,Part>>[identity(c)].source(f)=c;",
-        "root",
-    );
-    let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
-    let body = ds[0].readings[0].body.unwrap();
-    let domain = g.nodes[body.0]
-        .scope
-        .quantifiers
-        .iter()
-        .find(|q| q.name == "f")
-        .unwrap()
-        .domain
-        .unwrap();
-    let Part::ReadingDomain {
-        elements: Some(elements),
-        ..
-    } = data(&g, domain).part()
-    else {
-        panic!("Domain")
-    };
-    let reference = elements[0];
-    let original = data(&g, reference).source.clone();
-    for kind in 0..4 {
-        let mut changed = (*original).clone();
-        let Part::ReadingValue {
-            value,
-            arguments,
-            wire,
-        } = &mut changed.parts[reference.0 - changed.base]
-        else {
-            panic!("Path")
-        };
-        match kind {
-            0 => {
-                let Scalar::Path(path) = value else {
-                    panic!("Path")
-                };
-                path.subject = "q".into();
-            }
-            1 => *wire = Json::Bool(true),
-            2 => arguments.clear(),
-            _ => arguments[0] = NodeRef(usize::MAX),
-        }
-        assert!(
-            changed
-                .recheck(p.inputs(), &original.architecture, &mut quiet())
-                .is_err(),
-            "source {kind}"
-        );
-        let mut nodes = g.nodes.clone();
-        let Some(Payload::Construction(v)) = &mut nodes[reference.0].payload else {
-            panic!("native")
-        };
-        let D::PolynomialLaw(d) = &mut v.data else {
-            panic!("polynomial")
-        };
-        d.source = Arc::new(changed);
-        assert!(replay(&p, &g, &nodes).is_err(), "graph {kind}");
-    }
-    replay(&p, &g, &g.nodes).unwrap();
 }

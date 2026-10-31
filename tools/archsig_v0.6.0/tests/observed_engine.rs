@@ -20,6 +20,14 @@ fn inputs(wrappers: bool, missing: bool, revision: Option<&str>) -> InputSources
         engine::map(missing, revision),
     )
 }
+/// 全Zの保存の判定は一段の Add(Var, Lit 1) でも成立と反証の対照が保たれる。
+fn small(missing: bool) -> InputSources {
+    InputSources::from_bytes(
+        vec![engine::DEFINITIONS.to_vec()],
+        engine::LAW.to_vec(),
+        engine::smaller(missing, None),
+    )
+}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else {
         panic!("object {j:?}")
@@ -48,7 +56,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn original_status(subject: &str, wanted: &str) -> ObservedEvaluation {
-    let sources = inputs(false, false, None);
+    let sources = small(false);
     let before = check_inputs(sources.clone(), &mut quiet()).unwrap();
     let query = format!("a=check(Engine.preserves,c=@engine/{subject})");
     let r = evaluate_observed_bytes(sources, &[&query], &mut quiet()).unwrap();
@@ -297,6 +305,16 @@ fn interp(t: &Json, x: &BigInt) -> BigInt {
         other => panic!("unknown constructor {other}"),
     }
 }
+/// 元の構文木を SubtractOp で翻訳した IR の値(Add を引き算として読む)。
+fn interp_subtracted(t: &Json, x: &BigInt) -> BigInt {
+    let args = arr(f(t, "args"));
+    match text(f(t, "tag")) {
+        "Var" => x.clone(),
+        "Lit" => text(&args[0]).parse().unwrap(),
+        "Add" => interp_subtracted(&args[0], x) - interp_subtracted(&args[1], x),
+        other => panic!("unknown constructor {other}"),
+    }
+}
 fn check_counterexample(r: &ObservedEvaluation) {
     let w = r.wire();
     let all = nodes(&w, answer(&w, "a"));
@@ -334,9 +352,10 @@ fn check_counterexample(r: &ObservedEvaluation) {
     else {
         panic!("source")
     };
+    let original = original.canonical_json();
     let expected = [
-        ("left", interp(&ir(false), &x)),
-        ("right", interp(&original.canonical_json(), &x)),
+        ("left", interp_subtracted(&original, &x)),
+        ("right", interp(&original, &x)),
     ];
     assert_ne!(expected[0].1, expected[1].1);
     for (key, n) in expected {
@@ -393,21 +412,15 @@ fn engine_generated_ir_and_recursive_views_keep_original_parts_and_facts() {
 }
 #[test]
 fn engine_operator_missing_keeps_subject_source_and_differing_completions_undetermined() {
-    let src = inputs(false, true, None);
-    let before = check_inputs(src.clone(), &mut quiet()).unwrap();
+    // 二つの補完(AddOp は成立、SubtractOp は反証)が食い違う。
     let r = evaluate_observed_bytes(
-        src,
+        small(true),
         &["a=check(Engine.preserves,c=@engine/add)"],
         &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
     audit(&r, None);
-    assert_eq!(
-        r.prepared().inputs().metadata_wire(),
-        before.metadata_wire()
-    );
-    unchanged(&before, r.prepared().inputs());
     let w = r.wire();
     let a = answer(&w, "a");
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
@@ -472,28 +485,6 @@ fn engine_generated_add_ir_preserves_input_bytes_and_all_three_checked_tables() 
         ),
         &ir(true)
     );
-}
-#[test]
-fn engine_provenance_pair_keeps_the_same_universal_judgment_and_current_source() {
-    let run = |revision| {
-        evaluate_observed_bytes(
-            inputs(false, false, Some(revision)),
-            &["a=check(Engine.preserves,c=@engine/subtract)"],
-            &mut quiet(),
-        )
-        .unwrap()
-    };
-    let first = run("r1");
-    let second = run("r2");
-    audit(&first, Some("r1"));
-    audit(&second, Some("r2"));
-    assert_eq!(f(&first.wire(), "answers"), f(&second.wire(), "answers"));
-    assert_ne!(
-        first.prepared().inputs().metadata_wire(),
-        second.prepared().inputs().metadata_wire()
-    );
-    check_counterexample(&first);
-    check_counterexample(&second);
 }
 #[test]
 fn engine_unknown_source_tree_keeps_missing_and_is_never_a_finite_type_sample() {

@@ -1,5 +1,5 @@
 //! 必須の字句拒否を確定した直後にも、元診断と共有停止理由を保持する。
-mod common;
+use crate::common;
 use archsig::{
     archmap::check_archmap,
     control::{Checkpoint, Control, Limits, StopReason, Usage},

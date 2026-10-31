@@ -1,6 +1,6 @@
 //! AC4・6・7: 独立定義の推移的 binding、未使用語彙、観測 Term の namespace scope。
 
-mod common;
+use crate::common;
 use archsig::archmap::{CheckedArchMap, Slot, Value, check_archmap};
 use archsig::definition::CheckedDefinitions;
 use archsig::issue::{Code, Issue};
