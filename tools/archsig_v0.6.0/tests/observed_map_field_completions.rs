@@ -545,7 +545,7 @@ fn map_field_cross_snapshot_keys_and_current_provenance_keep_every_full_table() 
     original_missing(&j, "same", "h", "MapFields.Holder.table");
 }
 #[test]
-fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples_in_both_orders() {
+fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples() {
     // 反例fixtureはh.flagだけを欠き、MapFields.Holder.tableは全Holderで欠く。numericはflagを読まないので、
     // 同じ入力で数値軸つきLaw全体の成立と既知反例による反証を一度に確かめる。
     let j = run(

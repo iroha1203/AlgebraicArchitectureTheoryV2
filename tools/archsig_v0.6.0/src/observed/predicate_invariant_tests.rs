@@ -358,7 +358,7 @@ fn a_later_build_reads_saved_predicates_without_regenerating_or_rebinding_them()
     }
 }
 #[test]
-fn four_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefixes() {
+fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefixes() {
     use std::{
         cell::{Cell, RefCell},
         rc::Rc,
