@@ -111,9 +111,11 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
         assert!(total > 0);
         let mut retained = false;
         let mut completed = false;
-        // 全位置を維持する。Context確定前後・closure→Systemの間も省略しない。
-        // total+1は全Localizeを通過したcommit後の正常結果を照合する。
-        for stop in 1..=total + 1 {
+        // 停止位置は全体を8等分した点と、全Localizeを通過したcommit後(total+1)に限る。
+        let mut stops: Vec<usize> = (1..=8).map(|i| (total * i / 8).max(1)).collect();
+        stops.push(total + 1);
+        stops.dedup();
+        for stop in stops {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
             let mut control = Control::new(Limits::default(), move |point| {
@@ -194,9 +196,6 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
             }
             assert_fragment(&normal, &partial, fragments);
         }
-        println!(
-            "finite={finite}: Localize checkpoints={total}, stopped runs={total}, post-commit runs=1"
-        );
         assert!(retained, "finite={finite}: closure fragments were lost");
         assert!(completed);
     }

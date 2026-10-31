@@ -19,5 +19,5 @@ stacker = "0.1"
 name = "integration"
 path = "tests/integration.rs"
 
-[profile.test]
-debug = "line-tables-only"
+[profile.dev]
+debug = false

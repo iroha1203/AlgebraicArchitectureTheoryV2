@@ -18,6 +18,30 @@ jobs:
       - name: Test ArchSig
         run: cargo test --manifest-path tools/archsig/Cargo.toml
 
+  archsig-v060:
+    name: archsig v0.6.0 cargo test (${{ matrix.partition }}/6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        partition: [1, 2, 3, 4, 5, 6]
+    env:
+      CARGO_INCREMENTAL: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest@0.9
+
+      - name: Test ArchSig v0.6.0
+        run: >-
+          cargo nextest run --manifest-path tools/archsig_v0.6.0/Cargo.toml
+          --no-fail-fast --partition count:${{ matrix.partition }}/6
+
   fieldsig:
     name: fieldsig cargo test
     runs-on: ubuntu-latest
