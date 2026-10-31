@@ -1,8 +1,8 @@
 //! 共通原始定義の型適格性・所属・対応・有限 data の検査。
 //! 原始署名・Type・実入力位置から直接検査し、解決した構造を同じ表へ保持する。
 use super::*;
-use crate::json::InputError;
 use crate::control::{Checkpoint, Control};
+use crate::json::InputError;
 use crate::{prime::is_prime_controlled, types::Type};
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet};

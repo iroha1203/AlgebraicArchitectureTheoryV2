@@ -1,8 +1,8 @@
 //! JSON 読込み(入力仕様 §1)。UTF-8・BOM・重複 key・unpaired surrogate を検査し、
 //! 構文エラーは byte 区間、それ以外は JSON Pointer で位置を返す。
 
-use crate::issue::{Code, Issue, Location};
 use crate::control::{CheckFailure, Checkpoint, Control};
+use crate::issue::{Code, Issue, Location};
 
 impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
     fn from(issue: Box<Issue>) -> Self {

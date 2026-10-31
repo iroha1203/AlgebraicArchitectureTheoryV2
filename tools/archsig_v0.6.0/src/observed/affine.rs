@@ -3,11 +3,8 @@
 use crate::control::{Checkpoint, Control};
 
 use super::{
-
     numeric,
-
     result::{Fact, Scalar, ValidationFailure},
-
 };
 use crate::{
     law::ast::{BinOp, UnOp},

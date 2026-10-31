@@ -9,8 +9,8 @@ use super::{
     observable_layout::{Layout, Source as CoordinateSource},
     result::*,
 };
-use crate::control::{Checkpoint, Control};
 use crate::canonical::Json;
+use crate::control::{Checkpoint, Control};
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;

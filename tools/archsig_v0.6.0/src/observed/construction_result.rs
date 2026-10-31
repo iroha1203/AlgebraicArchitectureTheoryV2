@@ -1,6 +1,4 @@
 //! native構成の不変な検査結果を、公開DAGの型付きrecordとして保持する。
-use crate::control::{Control, StopReason};
-use crate::input::CheckedInputs;
 use super::{
     projection::{MapProjection, ProjectionStep, ProjectionType},
     request::Request,
@@ -10,6 +8,8 @@ use super::{
     },
 };
 use crate::construction::{ConstructionFailure, construct, readings::object_reading_instances};
+use crate::control::{Control, StopReason};
+use crate::input::CheckedInputs;
 use crate::{
     canonical::Json,
     construction::{

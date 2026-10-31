@@ -1,8 +1,4 @@
 //! 実Operationに沿って数値成分の零性と有限detectorの受理を検査する。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     object_law_circuits::{
         LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitsCondition, ObjectLawCircuits,
@@ -17,6 +13,10 @@ use crate::{
     construction::{ConstructionFailure, maps::DeclarationCorrespondence},
     observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {

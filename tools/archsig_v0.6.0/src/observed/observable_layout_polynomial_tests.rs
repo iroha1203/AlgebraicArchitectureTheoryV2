@@ -1,6 +1,6 @@
-use crate::input::CheckedInputs;
 use super::super::law_table;
 use super::*;
+use crate::input::CheckedInputs;
 use crate::{
     control::{Limits, Usage},
     observed::{PreparedObserved, request::resolve_native_for_test},

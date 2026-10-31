@@ -1,8 +1,8 @@
 //! Law の字句(Law 仕様 §1)。空白と `//` コメントを除き、字句列を元の順に保持する。
 
+use crate::control::{Checkpoint, Control};
 use crate::issue::{Code, Issue};
 use crate::json::InputError;
-use crate::control::{Checkpoint, Control};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenKind {

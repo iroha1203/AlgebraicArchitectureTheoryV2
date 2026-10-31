@@ -10,12 +10,12 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
-    input::CheckedInputs,
-};
-use crate::{
     canonical::Json,
     construction::{ConstructionFailure, maps::ConfigurationOperation},
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]

@@ -913,11 +913,7 @@ fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evide
 
 fn reservations_private_stop_usage(
     kind: usize,
-) -> (
-    crate::control::Limits,
-    crate::control::Usage,
-    StopReason,
-) {
+) -> (crate::control::Limits, crate::control::Usage, StopReason) {
     use crate::control::{Limits, Resource, Usage};
     match kind {
         0 => (

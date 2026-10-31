@@ -11,10 +11,10 @@ pub use output::peak_rss_bytes;
 
 use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
+use crate::control::{CheckFailure, Control, StopReason};
 use crate::definition::check_definitions_controlled;
 use crate::issue::Code;
 use crate::law::check_law_controlled;
-use crate::control::{CheckFailure, Control, StopReason};
 use crate::result::*;
 use output::{finalize, out_ok, usage_without_result};
 use std::path::{Path, PathBuf};

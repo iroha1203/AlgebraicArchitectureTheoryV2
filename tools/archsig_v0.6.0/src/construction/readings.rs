@@ -1,7 +1,7 @@
 //! 標準対象域に適用されるLaw/viewの参照束縛と、未代入の全域値parameter。
 use super::*;
-use crate::law::model::{DeclarationInfo, Param, Signature};
 use crate::input::InputBytes;
+use crate::law::model::{DeclarationInfo, Param, Signature};
 use maps::ObjectIdentity;
 
 

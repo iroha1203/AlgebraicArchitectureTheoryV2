@@ -247,8 +247,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
 
 #[test]
 fn architecture_on_resolution_stops_are_latched_before_evaluation() {
-    let inputs =
-        crate::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
+    let inputs = crate::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
     let qs = [
         fixture::MAP,
         "v=evaluate(Reservations.no,on=$m.candidate.source)",

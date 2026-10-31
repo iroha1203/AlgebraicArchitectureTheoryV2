@@ -1,8 +1,4 @@
 //! 参照を含まない数値型の恒等写像を、有限標本を使わず型の全域に構成する。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     numeric,
     result::{Scalar, ValidationFailure},
@@ -16,6 +12,10 @@ use crate::{
         maps::{ConfigurationOperation, DeclarationCorrespondence},
     },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]

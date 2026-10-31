@@ -14,16 +14,16 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
-use crate::{
     archmap::Slot,
     canonical::Json,
     issue::Location,
     law::{ast::Role, model::Signature},
     result::location_wire,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 

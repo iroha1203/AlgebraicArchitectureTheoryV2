@@ -14,26 +14,26 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
-use crate::{
     canonical::Json,
     issue::Location,
     law::{ast::Role, model::Signature},
     result::location_wire,
     types::Type,
 };
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use std::sync::Arc;
 
 #[path = "polynomial_law_family.rs"]
 mod family;
+#[path = "polynomial_law_parameters.rs"]
+mod parameters;
 #[path = "polynomial_law_reading.rs"]
 mod reading;
 #[path = "polynomial_law_sources.rs"]
 mod sources;
-#[path = "polynomial_law_parameters.rs"]
-mod parameters;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;

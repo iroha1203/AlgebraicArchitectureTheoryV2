@@ -1,8 +1,4 @@
 //! 不変の原始観測表からの参照・slot 読取りと、生成 leaf の元入力照合。
-use crate::{
-    control::{Checkpoint, Control, StopReason},
-    input::CheckedInputs,
-};
 use super::{
     data, numeric, quantifier,
     request::{QuestionKind, Request, Selector},
@@ -14,16 +10,20 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
-#[path = "object_view_family_environment.rs"]
-mod object_view_family;
-#[path = "object_reading_environment.rs"]
-mod object_reading_environment;
-#[path = "law_evaluation_environment.rs"]
-mod law_evaluation;
-#[path = "architecture_environment.rs"]
-pub(super) mod architecture_environment;
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
+};
 #[path = "answer_binding.rs"]
 mod answer_binding;
+#[path = "architecture_environment.rs"]
+pub(super) mod architecture_environment;
+#[path = "law_evaluation_environment.rs"]
+mod law_evaluation;
+#[path = "object_reading_environment.rs"]
+mod object_reading_environment;
+#[path = "object_view_family_environment.rs"]
+mod object_view_family;
 pub(in crate::observed) use answer_binding::AnswerBinding;
 #[path = "answer_dependency.rs"]
 mod answer_dependency;
@@ -31,6 +31,12 @@ mod answer_dependency;
 mod answer_projection;
 #[path = "answer_projection_condition.rs"]
 mod answer_projection_condition;
+#[path = "change_affine.rs"]
+pub(super) mod change_affine;
+#[path = "change_evaluation.rs"]
+pub(super) mod change_evaluation;
+#[path = "change_search.rs"]
+pub(super) mod change_search;
 #[path = "completion.rs"]
 pub(super) mod completion;
 #[path = "correspondence_path.rs"]
@@ -39,10 +45,24 @@ mod correspondence_path;
 pub(super) mod dependent_family;
 #[path = "family.rs"]
 pub(super) mod family;
+#[path = "field_change.rs"]
+pub(super) mod field_change;
+#[path = "finite_law_valuations.rs"]
+pub(super) mod finite_law_valuations;
 #[path = "internal_path.rs"]
 mod internal_path;
+#[path = "local_read.rs"]
+pub(super) mod local_read;
 #[path = "map_application.rs"]
 mod map_application;
+#[path = "numeric_guard.rs"]
+mod numeric_guard;
+#[path = "numeric_law_function.rs"]
+pub(super) mod numeric_law_function;
+#[path = "numeric_object_function.rs"]
+pub(super) mod numeric_object_function;
+#[path = "numeric_parameters.rs"]
+pub(super) mod numeric_parameters;
 #[path = "numeric_slots.rs"]
 mod numeric_slots;
 #[path = "owned_binding.rs"]
@@ -59,30 +79,10 @@ mod path_composition;
 mod path_condition;
 #[path = "primitive_valuation.rs"]
 mod primitive_valuation;
-#[path = "change_evaluation.rs"]
-pub(super) mod change_evaluation;
-#[path = "change_search.rs"]
-pub(super) mod change_search;
-#[path = "field_change.rs"]
-pub(super) mod field_change;
-#[path = "change_affine.rs"]
-pub(super) mod change_affine;
 #[path = "quotient_affine.rs"]
 pub(super) mod quotient_affine;
 #[path = "quotient_evaluation.rs"]
 pub(super) mod quotient_evaluation;
-#[path = "local_read.rs"]
-pub(super) mod local_read;
-#[path = "finite_law_valuations.rs"]
-pub(super) mod finite_law_valuations;
-#[path = "numeric_guard.rs"]
-mod numeric_guard;
-#[path = "numeric_law_function.rs"]
-pub(super) mod numeric_law_function;
-#[path = "numeric_object_function.rs"]
-pub(super) mod numeric_object_function;
-#[path = "numeric_parameters.rs"]
-pub(super) mod numeric_parameters;
 #[path = "relation_instances.rs"]
 pub(super) mod relation_instances;
 #[path = "term_comparison_validation.rs"]

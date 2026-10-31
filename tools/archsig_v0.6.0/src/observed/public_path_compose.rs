@@ -7,11 +7,11 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::*,
 };
+use crate::canonical::Json;
 use crate::{
     control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
 };
-use crate::canonical::Json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,

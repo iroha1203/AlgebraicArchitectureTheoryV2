@@ -1,8 +1,4 @@
 //! 完全query patternと元残差から、成分別の有限detectorを生成する。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     numeric,
     object_law_compatibility::LawCompatibilityOutcome,
@@ -17,6 +13,10 @@ use crate::{
     construction::{ConstructionFailure, profiles::CircuitPattern},
     observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {

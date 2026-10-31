@@ -4,8 +4,8 @@ use super::ast::*;
 use super::check::*;
 use super::expr::*;
 use super::model::*;
-use crate::json::InputError;
 use crate::control::{Checkpoint, Control};
+use crate::json::InputError;
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 

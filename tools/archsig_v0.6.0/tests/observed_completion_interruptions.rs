@@ -2,15 +2,10 @@
 mod common;
 
 use archsig::{
-
     canonical::Json,
-
     control::{Checkpoint, Control, Limits, Usage},
-
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-
     result::Signal,
-
 };
 use std::{cell::Cell, rc::Rc};
 

@@ -5,8 +5,8 @@ use super::{
     law_evaluation as frames,
     result::*,
 };
-use crate::control::{Checkpoint, Control};
 use crate::canonical::Json;
+use crate::control::{Checkpoint, Control};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq, Eq)]

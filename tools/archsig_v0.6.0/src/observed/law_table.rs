@@ -7,11 +7,11 @@ use super::{
     polynomial_law_diagram::{Diagram, FamilyPlan, Original},
     result::*,
 };
+use crate::types::Type;
 use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
 };
-use crate::types::Type;
 use std::sync::Arc;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ObjectRow {

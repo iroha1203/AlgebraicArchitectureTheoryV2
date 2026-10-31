@@ -3,7 +3,7 @@ use super::*;
 use num_traits::Zero;
 #[path = "local_integer_transport.rs"]
 mod transport;
-pub(super) use transport::{between, dependencies, Renaming};
+pub(super) use transport::{Renaming, between, dependencies};
 
 pub(super) fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = &local(g, r)?.part().wire else {

@@ -10,11 +10,11 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::*,
 };
+use crate::{construction::ConstructionFailure, issue::Location, law::model::ExpressionKind};
 use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
 };
-use crate::{construction::ConstructionFailure, issue::Location, law::model::ExpressionKind};
 use std::sync::Arc;
 
 fn tick(control: &mut Control) -> Result<(), ValidationFailure> {

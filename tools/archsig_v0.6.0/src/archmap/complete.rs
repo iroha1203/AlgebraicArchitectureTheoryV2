@@ -5,8 +5,8 @@
 //! Law の成立は補完の条件に使わない。
 
 use super::*;
-use crate::json::InputError;
 use crate::control::{Checkpoint, Control};
+use crate::json::InputError;
 
 pub(crate) struct FieldAssignment {
     pub snapshot: String,

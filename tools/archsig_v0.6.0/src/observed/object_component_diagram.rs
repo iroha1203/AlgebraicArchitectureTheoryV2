@@ -9,14 +9,14 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
-use crate::{
     canonical::Json,
     construction::{Configuration, readings::InstanceApplication},
     law::model::Signature,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 

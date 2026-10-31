@@ -2,10 +2,10 @@
 
 use super::schema::{RawSnapshot, as_string};
 use super::*;
+use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
 use crate::law::TermBody;
-use crate::control::{Checkpoint, Control};
 use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Signed};

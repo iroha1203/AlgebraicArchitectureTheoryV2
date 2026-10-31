@@ -5,11 +5,11 @@ use super::{
     prepare_shared_observed,
     result::{Decision, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind},
 };
+use crate::{canonical::Json, definition, result::Signal};
 use crate::{
     control::{Checkpoint, Control, Limits, Usage},
     input::{InputSources, check_inputs},
 };
-use crate::{canonical::Json, definition, result::Signal};
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 
 fn inputs(finite: bool) -> InputSources {

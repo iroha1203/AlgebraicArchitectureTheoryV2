@@ -1,8 +1,4 @@
 //! 元の共有K[X]を保つ有限block積と、base root存在Atom上の方程式座標。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     equation_polynomial::{EquationPolynomial, invalid},
     numeric,
@@ -14,6 +10,10 @@ use super::{
 use crate::{
     archmap::Fact as FactPointer, construction::ConstructionFailure, law::ast::BinOp,
     observed::object_evaluation_table::ObjectEvaluationPosition,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {

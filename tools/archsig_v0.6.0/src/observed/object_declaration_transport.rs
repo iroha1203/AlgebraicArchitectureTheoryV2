@@ -5,16 +5,16 @@ use crate::{
         ast::ExprKind,
         model::{Param, Signature},
     },
-    types::Type,
     observed::environment::numeric_parameters,
+    types::Type,
 };
 use std::collections::BTreeSet;
+#[path = "object_change_transport.rs"]
+mod change;
 #[path = "object_local_field_transport.rs"]
 mod field;
 #[path = "object_local_numeric_transport.rs"]
 mod numeric_read;
-#[path = "object_change_transport.rs"]
-mod change;
 #[path = "object_relation_transport.rs"]
 mod relation;
 struct ParameterMap {

@@ -1,8 +1,4 @@
 //! 元数値等式の差をscalar成分で読み、同じ完全patternの全代入で照合する。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     numeric,
     numeric_transport::NumericTransportValue,
@@ -22,6 +18,10 @@ use crate::{
     },
     observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {

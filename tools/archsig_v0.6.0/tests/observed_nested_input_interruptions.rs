@@ -2,21 +2,13 @@
 mod common;
 
 use archsig::{
-
     canonical::Json,
-
     control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-
     definition::{check_definitions, check_definitions_controlled},
-
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-
     law::{check_law, check_law_controlled},
-
     observed::{PrepareFailure, prepare_observed},
-
     result::Signal,
-
 };
 use std::{cell::Cell, rc::Rc};
 

@@ -2,21 +2,13 @@
 mod common;
 
 use archsig::{
-
     archmap::Slot,
-
     canonical::Json,
-
     control::{Control, Limits, Usage},
-
     definition::check_definitions_controlled,
-
     input::{CheckedInputs, InputSources, InputStatus, check_inputs},
-
     law::{ast::ExprKind, model::Signature},
-
     observed::evaluate_observed_bytes,
-
 };
 use std::collections::{BTreeMap, BTreeSet};
 

@@ -1,8 +1,4 @@
 //! 選択対象の元Law導出から、原始slotを共有する型別K[X]とrequired idealを作る。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     equation_polynomial::{EquationPolynomial, invalid, tick},
     numeric,
@@ -21,6 +17,10 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 #[path = "equation_source_polynomial.rs"]

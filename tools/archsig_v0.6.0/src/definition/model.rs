@@ -1,6 +1,6 @@
 //! 共通原始定義。意味・依存・入力位置を Law の構文木から独立して保持する。
-use crate::json::InputError;
 use crate::control::{Checkpoint, Control};
+use crate::json::InputError;
 use crate::{canonical::Json, issue::Location, types::Type};
 use std::collections::BTreeMap;
 

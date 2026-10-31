@@ -1,8 +1,4 @@
 //! 対象間で対応するLawのrequired status・適用条件・成立を実評価から比較する。
-use crate::{
-    control::{Checkpoint, Control, StopReason},
-    input::CheckedInputs,
-};
 use super::{
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
@@ -25,6 +21,10 @@ use crate::{
         },
     },
     law::{ast::Role, model::ExpressionKind},
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 

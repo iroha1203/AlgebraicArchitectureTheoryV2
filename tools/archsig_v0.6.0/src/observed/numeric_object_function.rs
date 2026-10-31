@@ -1,16 +1,16 @@
 //! 数値Law/viewの元式を同じ対象・引数環境で読み、実引数で再代入する。
 use super::*;
+use crate::observed::{
+    affine,
+    object_evaluate::ObjectDomain,
+    term::affine::{self as terms, Value},
+};
 use crate::{
     construction::{
         ConstructionFailure,
         readings::{InstanceApplication, ObjectReadingInstances},
     },
     observed::object_evaluation_table::ObjectEvaluationPosition,
-};
-use crate::observed::{
-    affine,
-    object_evaluate::ObjectDomain,
-    term::affine::{self as terms, Value},
 };
 use std::sync::Arc;
 

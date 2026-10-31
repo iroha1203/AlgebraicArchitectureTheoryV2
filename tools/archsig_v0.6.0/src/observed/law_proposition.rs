@@ -1,6 +1,6 @@
 //! 検査済み元Law行の実評価から、通常の成立命題と反例を構成する。
-use crate::control::Control;
 use super::{environment::Environment, law_evaluation as frames, result::*};
+use crate::control::Control;
 #[derive(Clone, Debug)]
 pub(super) struct Reading {
     pub origin: NodeRef,

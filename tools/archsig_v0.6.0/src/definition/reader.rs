@@ -1,6 +1,6 @@
 use super::*;
-use crate::json::InputError;
 use crate::control::{Checkpoint, Control};
+use crate::json::InputError;
 use crate::{
     canonical::Json,
     json::{JNode, JValue, pointer_push},

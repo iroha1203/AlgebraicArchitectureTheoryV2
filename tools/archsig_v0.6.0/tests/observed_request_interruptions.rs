@@ -2,29 +2,17 @@
 mod common;
 
 use archsig::{
-
     control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-
     input::{InputSources, check_inputs},
-
     observed::{
-
         PrepareFailure, prepare_observed,
-
         projection::{
-
             ProjectionFailure, ProjectionStep, ProjectionType, resolve_projection_controlled,
-
         },
-
         request::{RequestIssueCode, ResolveFailure},
-
     },
-
     result::Signal,
-
     types::Type,
-
 };
 use std::{cell::Cell, rc::Rc};
 

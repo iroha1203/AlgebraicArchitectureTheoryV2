@@ -499,10 +499,7 @@ fn map_field_empty_domains_and_inconsistent_nonempty_to_empty_keep_input_stages(
     original_missing(&j, "read", "h", "MapFields.Holder.table");
     original_missing(&j, "empty", "h", "MapFields.Holder.empty");
     let failure = check_inputs(fixture::no_images(), &mut quiet()).unwrap_err();
-    assert_eq!(
-        failure.status(),
-        archsig::input::InputStatus::Invalid
-    );
+    assert_eq!(failure.status(), archsig::input::InputStatus::Invalid);
     assert!(
         failure
             .issues()

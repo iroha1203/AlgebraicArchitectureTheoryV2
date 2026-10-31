@@ -10,15 +10,15 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
-use crate::{
     canonical::Json,
     construction::{
         ConstructionFailure,
         profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
     },
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {

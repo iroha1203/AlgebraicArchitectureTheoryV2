@@ -12,10 +12,6 @@ use super::{
     result::*,
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
-    input::InputSources,
-};
-use crate::{
     archmap::Slot,
     issue::Location,
     law::{
@@ -23,6 +19,10 @@ use crate::{
         model::{Declaration, Param, Signature},
     },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::InputSources,
 };
 use std::collections::BTreeMap;
 #[path = "answer_projection_condition_evaluate.rs"]

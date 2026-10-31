@@ -2,9 +2,9 @@
 //! 表の重複・由来の形式を検査する。
 
 use super::*;
+use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
-use crate::control::{Checkpoint, Control};
 use std::collections::HashSet;
 #[path = "delta.rs"]
 mod delta;

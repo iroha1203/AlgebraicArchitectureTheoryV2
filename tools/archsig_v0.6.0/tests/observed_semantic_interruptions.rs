@@ -2,19 +2,12 @@
 mod common;
 
 use archsig::{
-
     archmap::check_archmap_controlled,
-
     control::{CheckFailure, Checkpoint, Control, Limits, Resource, StopReason, Usage},
-
     definition::check_definitions,
-
     issue::Code,
-
     law::{check_law, check_law_controlled},
-
     result::Signal,
-
 };
 use std::{cell::Cell, rc::Rc};
 

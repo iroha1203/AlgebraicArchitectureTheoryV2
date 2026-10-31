@@ -8,15 +8,15 @@ use super::{
     result::{Fact, ObservedEvaluation, Scalar, Scope, ValidationFailure},
 };
 use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
-use crate::{
     construction::{
         ConstructionFailure,
         readings::{ObjectInstance, ObjectReadingInstances},
     },
     law::model::Param,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 

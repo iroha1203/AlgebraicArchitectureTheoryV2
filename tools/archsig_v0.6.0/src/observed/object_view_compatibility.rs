@@ -1,8 +1,4 @@
 //! 同じ完全query pattern上のview読取りを、元評価と全有限代入で照合する。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     data,
     environment::same_scalar_identity,
@@ -24,6 +20,10 @@ use crate::{
         readings::{ObjectReadingInstances, object_reading_instances},
     },
     observed::object_evaluation_table::ObjectEvaluationPosition,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 
@@ -728,12 +728,12 @@ fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::result::Signal;
     use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
         observed::result::Scalar,
     };
-    use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");

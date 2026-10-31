@@ -1,5 +1,4 @@
 //! 現在の検査済み回答から、未観測位置とその他の理由を収集する。
-use crate::control::{Checkpoint, Control, StopReason};
 use super::{
     environment::Environment,
     request::{QuestionKind, Request, Selector},
@@ -8,6 +7,7 @@ use super::{
         ValidationFailure, sort_reasons,
     },
 };
+use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, issue::Location, result::location_wire};
 use std::collections::{BTreeMap, BTreeSet};
 

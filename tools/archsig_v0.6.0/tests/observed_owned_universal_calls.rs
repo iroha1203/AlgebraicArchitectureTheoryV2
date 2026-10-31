@@ -41,11 +41,7 @@ fn run_revision(unknown: bool, revision: &str, asks: &[&str]) -> Json {
     let inputs = fixture::input(unknown, revision);
     run_input(inputs, revision, asks)
 }
-fn run_input(
-    inputs: archsig::input::InputSources,
-    revision: &str,
-    asks: &[&str],
-) -> Json {
+fn run_input(inputs: archsig::input::InputSources, revision: &str, asks: &[&str]) -> Json {
     let checked = archsig::input::check_inputs(
         inputs.clone(),
         &mut Control::new(Limits::default(), |_| Usage::default()),

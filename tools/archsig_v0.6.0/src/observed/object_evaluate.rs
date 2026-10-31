@@ -1,8 +1,4 @@
 //! 対象から生成した参照域を、同じ型付き評価・再検査の環境へ渡す。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{result::*, *};
 use crate::{
     archmap::Fact as FactPointer,
@@ -14,6 +10,10 @@ use crate::{
         },
     },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::{
     collections::{BTreeMap, BTreeSet},

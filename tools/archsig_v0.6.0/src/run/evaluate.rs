@@ -2,6 +2,7 @@
 
 use super::{Io, Outcome, RunArgs, Signals, output, read};
 use crate::canonical::Json;
+use crate::result::{ResultIssue, Signal, Status, exit_code};
 use crate::{
     control::{Control, StopReason},
     input::{InputSources, InputStatus},
@@ -11,7 +12,6 @@ use crate::{
         result::{Decision, ReasonKind},
     },
 };
-use crate::result::{ResultIssue, Signal, Status, exit_code};
 use std::time::Instant;
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {

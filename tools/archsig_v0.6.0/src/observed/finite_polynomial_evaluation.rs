@@ -1,8 +1,4 @@
 //! 共有Fp記号の全代入と、元多項式の生評価・整数値非零指示関数。
-use crate::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
-};
 use super::{
     equation_polynomial::invalid,
     finite, numeric,
@@ -13,6 +9,10 @@ use super::{
     },
 };
 use crate::{construction::ConstructionFailure, types::Type};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::sync::Arc;

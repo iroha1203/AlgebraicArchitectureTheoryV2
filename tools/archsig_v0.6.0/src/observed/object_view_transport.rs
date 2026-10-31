@@ -1,8 +1,4 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
-use crate::{
-    control::{Checkpoint, Control, StopReason},
-    input::CheckedInputs,
-};
 use super::{
     data, finite, numeric,
     object_evaluate::{
@@ -30,6 +26,10 @@ use crate::{
         },
     },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 #[path = "object_view_transport_family.rs"]

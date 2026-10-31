@@ -832,8 +832,7 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
         for revision in ["r1", "r2"] {
             let input = fixture::completion_input(mode, revision);
             let original = input.clone();
-            let checked =
-                archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+            let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
             let r = evaluate_observed_bytes(
                 input,
                 &[

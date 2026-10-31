@@ -1,9 +1,9 @@
 //! 元の解決済み型・Data宣言からの有限全値域。観測例と有限性を混同しない。
-use crate::control::{Checkpoint, Control};
 use super::{
     data,
     result::{Fact, Scalar, Scope, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{law::CheckedLaw, types::Type};
 use num_bigint::BigInt;
 

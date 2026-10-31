@@ -1,6 +1,6 @@
 //! 対象読取り間の参照束縛と、元の型付き評価の照合。
-use crate::control::{Checkpoint, Control};
 use super::object_evaluate::{ObjectEvaluation, ObjectEvaluationOutcome};
+use crate::control::{Checkpoint, Control};
 use crate::{
     archmap::Fact as FactPointer,
     construction::{

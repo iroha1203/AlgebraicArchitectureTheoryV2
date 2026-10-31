@@ -1,9 +1,9 @@
 //! 閉じたTermの検査済みbodyとparameter。表示上の構文比較をLawの等値へ使わない。
-use crate::control::{Checkpoint, Control};
 use super::{
     data, environment, numeric,
     result::{Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     canonical::Json,
     law::{

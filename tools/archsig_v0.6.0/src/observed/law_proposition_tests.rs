@@ -1,9 +1,9 @@
 use super::*;
+use crate::types::Type;
 use crate::{
     control::{Limits, Usage},
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
-use crate::types::Type;
 use std::sync::Arc;
 #[allow(dead_code)]
 mod fixture {

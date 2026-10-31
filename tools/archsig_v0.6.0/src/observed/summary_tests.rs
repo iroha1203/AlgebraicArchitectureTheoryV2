@@ -1,6 +1,6 @@
 use super::*;
-use crate::{control::Control, input::InputSources, observed::evaluate_observed_bytes};
 use crate::types::Type;
+use crate::{control::Control, input::InputSources, observed::evaluate_observed_bytes};
 
 fn evaluated_counter() -> (ObservedEvaluation, NodeRef) {
     let sources = InputSources::from_bytes(

@@ -436,10 +436,7 @@ fn engine_operator_missing_keeps_subject_source_and_differing_completions_undete
     );
 }
 
-fn unchanged(
-    before: &archsig::input::CheckedInputs,
-    after: &archsig::input::CheckedInputs,
-) {
+fn unchanged(before: &archsig::input::CheckedInputs, after: &archsig::input::CheckedInputs) {
     assert_eq!(
         format!("{:?}", before.definitions()),
         format!("{:?}", after.definitions())

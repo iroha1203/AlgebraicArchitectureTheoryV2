@@ -4,9 +4,9 @@
 
 use super::ast::*;
 use super::lexer::{Token, TokenKind};
+use crate::control::{Checkpoint, Control};
 use crate::issue::{Code, Issue};
 use crate::json::InputError;
-use crate::control::{Checkpoint, Control};
 use std::collections::HashMap;
 
 pub use crate::names::RESERVED;

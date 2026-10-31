@@ -4,7 +4,10 @@ use crate::{
     definition::model::PrimitiveSignature,
     observed::{
         change_result,
-        environment::{numeric_parameters, relation_instances::{self, RelationState}},
+        environment::{
+            numeric_parameters,
+            relation_instances::{self, RelationState},
+        },
         path_compose,
         path_value::PathValue,
     },

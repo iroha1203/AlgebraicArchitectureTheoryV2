@@ -2,8 +2,8 @@
 
 use super::{PrepareFailure, PreparedObserved};
 
+pub(crate) use crate::archmap::Fact;
 use crate::control::{Checkpoint, Control, StopReason};
-pub use crate::archmap::Fact;
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
 #[path = "completion_graph.rs"]

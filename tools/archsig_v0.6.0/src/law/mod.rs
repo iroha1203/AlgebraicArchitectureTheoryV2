@@ -11,10 +11,10 @@ pub mod model;
 pub mod parser;
 
 use crate::canonical::{Json, sha256_digest};
+use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::definition::CheckedDefinitions;
 use crate::issue::{Code, Details, Issue, Location};
 use crate::json::InputError;
-use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 use ast::{Expr, ExprId};
 use check::Checker;
