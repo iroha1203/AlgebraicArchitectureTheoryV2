@@ -45,35 +45,6 @@ struct ProcessSignals {
     frozen: Option<Option<Signal>>,
 }
 
-/// 予算に要る時計と peak RSS を読み直す、検査の回数の間隔。
-const USAGE_SAMPLE_INTERVAL: u32 = 256;
-
-/// 時計と peak RSS は検査のたびに読むと計算より重いので、最初の検査と、そのあと
-/// 一定回数ごとに読み直し、その間は前回の値を返す。
-struct UsageSampler<R> {
-    read: R,
-    checks: u32,
-    last: archsig::control::Usage,
-}
-
-impl<R: FnMut() -> archsig::control::Usage> UsageSampler<R> {
-    fn new(read: R) -> Self {
-        Self {
-            read,
-            checks: 0,
-            last: archsig::control::Usage::default(),
-        }
-    }
-
-    fn usage(&mut self) -> archsig::control::Usage {
-        if self.checks % USAGE_SAMPLE_INTERVAL == 0 {
-            self.last = (self.read)();
-        }
-        self.checks = self.checks.wrapping_add(1);
-        self.last
-    }
-}
-
 impl ProcessSignals {
     fn new() -> ProcessSignals {
         use signal_hook::consts::{SIGINT, SIGTERM};
@@ -124,6 +95,7 @@ impl ProcessSignals {
         limits: archsig::control::Limits,
         elapsed: impl FnOnce() -> u128,
         memory: impl FnOnce() -> u128,
+        signal: impl FnOnce() -> Option<Signal>,
     ) -> archsig::control::Usage {
         archsig::control::Usage {
             elapsed_ms: if limits.time_ms.is_some() {
@@ -136,7 +108,7 @@ impl ProcessSignals {
             } else {
                 0
             },
-            signal: None,
+            signal: signal(),
         }
     }
 
@@ -149,17 +121,13 @@ impl ProcessSignals {
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        // signal は検査ごとに確かめる。
-        let mut sampler = UsageSampler::new(move || {
+        Control::new(limits, move |_| {
             Self::usage_for_limits(
                 limits,
                 || started.elapsed().as_millis(),
                 || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
+                || Self::observed_signal(&first, &int, &term),
             )
-        });
-        Control::new(limits, move |_| archsig::control::Usage {
-            signal: Self::observed_signal(&first, &int, &term),
-            ..sampler.usage()
         })
     }
 }
@@ -272,53 +240,67 @@ mod tests {
     use archsig::control::{Checkpoint, StopReason};
 
     #[test]
-    fn resource_probes_follow_requested_limits() {
+    fn resource_probes_follow_requested_limits_and_always_observe_signals() {
         use archsig::control::{Control, Limits, Resource};
         use std::{cell::RefCell, rc::Rc};
         for (time, memory) in [(false, false), (true, false), (false, true), (true, true)] {
-            let limits = Limits {
-                time_ms: time.then_some(5),
-                memory_mib: memory.then_some(7),
-            };
-            let calls = Rc::new(RefCell::new(vec![]));
-            let observed = calls.clone();
-            let mut control = Control::new(limits, move |_| {
-                ProcessSignals::usage_for_limits(
-                    limits,
-                    || {
-                        observed.borrow_mut().push("time");
-                        11
-                    },
-                    || {
-                        observed.borrow_mut().push("memory");
-                        13
-                    },
-                )
-            });
-            let expected = if time {
-                Err(StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 5,
-                    observed: 11,
-                })
-            } else if memory {
-                Err(StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 7,
-                    observed: 13,
-                })
-            } else {
-                Ok(())
-            };
-            assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
-            let mut requested = vec![];
-            if time {
-                requested.push("time");
+            for signal in [None, Some(Signal::Int), Some(Signal::Term)] {
+                let limits = Limits {
+                    time_ms: time.then_some(5),
+                    memory_mib: memory.then_some(7),
+                };
+                let calls = Rc::new(RefCell::new(vec![]));
+                let observed = calls.clone();
+                let mut control = Control::new(limits, move |_| {
+                    ProcessSignals::usage_for_limits(
+                        limits,
+                        || {
+                            observed.borrow_mut().push("time");
+                            11
+                        },
+                        || {
+                            observed.borrow_mut().push("memory");
+                            13
+                        },
+                        || {
+                            observed.borrow_mut().push("signal");
+                            signal
+                        },
+                    )
+                });
+                let expected = if let Some(signal) = signal {
+                    Err(StopReason::Cancelled(signal))
+                } else if time {
+                    Err(StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 5,
+                        observed: 11,
+                    })
+                } else if memory {
+                    Err(StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 7,
+                        observed: 13,
+                    })
+                } else {
+                    Ok(())
+                };
+                assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
+                let mut requested = vec![];
+                if time {
+                    requested.push("time");
+                }
+                if memory {
+                    requested.push("memory");
+                }
+                requested.push("signal");
+                assert_eq!(*calls.borrow(), requested);
+                assert_eq!(control.checkpoint(Checkpoint::FiniteIteration), expected);
+                if expected.is_ok() {
+                    requested.push("signal");
+                }
+                assert_eq!(*calls.borrow(), requested);
             }
-            if memory {
-                requested.push("memory");
-            }
-            assert_eq!(*calls.borrow(), requested);
         }
     }
 
@@ -341,28 +323,9 @@ mod tests {
         false
     }
 
-    #[test]
-    fn usage_sampler_reads_at_the_first_check_and_then_every_interval() {
-        let mut reads = 0;
-        let mut sampler = UsageSampler::new(move || {
-            reads += 1;
-            archsig::control::Usage {
-                elapsed_ms: reads,
-                ..archsig::control::Usage::default()
-            }
-        });
-        assert_eq!(sampler.usage().elapsed_ms, 1);
-        for _ in 1..USAGE_SAMPLE_INTERVAL {
-            assert_eq!(sampler.usage().elapsed_ms, 1);
-        }
-        assert_eq!(sampler.usage().elapsed_ms, 2);
-    }
-
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
         let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
-        // 最初の検査は時計も読む回なので、そのあとの検査で signal を確かめる。
-        assert_eq!(control.checkpoint(Checkpoint::DefinitionSchema), Ok(()));
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
