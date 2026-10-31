@@ -1,5 +1,5 @@
 // 文書から独立した原始入力と、選択根ごとの評価を比べるLaw。
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 pub const EXTRA: &str = r#"
 view smallStates():Bool=forall s:State . s.free+s.held=2;
 view no():Bool=false;

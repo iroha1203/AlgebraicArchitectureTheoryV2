@@ -1,8 +1,8 @@
 //! 型の内部表現と wire 表現(入力仕様 §3、結果仕様 §2)。
 
 use crate::canonical::Json;
+use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
 
 /// Law の型。`Owned` は依存参照 `E[p]` で、宣言 metadata だけで保持する。
 /// 式の型では `erase` で `Ref` へ落とす。
@@ -325,8 +325,8 @@ impl PartialEq for Type {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::issue::Issue;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

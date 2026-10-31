@@ -77,7 +77,7 @@ pub(super) fn intersect(a: &Option<Reading>, b: &Option<Reading>, c: &Control) -
 }
 pub(super) fn find(supports: &[Support], readings: &[Option<Reading>], support: &Support, reading: &Option<Reading>, c: &Control) -> Result<Option<usize>, ValidationFailure> {
     for (i, old) in supports.iter().enumerate() {
-        c.clone().checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
         if old == support && contains(&readings[i],reading,c)? && contains(reading,&readings[i],c)? { return Ok(Some(i)); }
     }
     Ok(None)

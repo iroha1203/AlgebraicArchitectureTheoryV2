@@ -1,4 +1,4 @@
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 
 pub const DATA: &str = r#"
 {"kind":"data","name":"Pair.Token","meaning":"選択値。","constructors":[{"name":"Empty","meaning":"空。","arguments":[]},{"name":"Left","meaning":"左。","arguments":["Bool"]},{"name":"Right","meaning":"右。","arguments":["Bool"]},{"name":"Both","meaning":"順序対。","arguments":["Bool","Bool"]}]},

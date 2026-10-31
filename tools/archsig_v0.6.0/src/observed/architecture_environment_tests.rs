@@ -1,7 +1,7 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
-    *,
+    observed::*,
 };
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
@@ -124,7 +124,7 @@ fn architecture_environment_edges_sources_domains_and_equal_but_foreign_producer
         Err(ValidationFailure::Internal(_))
     ));
     let mut nodes = result.nodes.clone();
-    nodes[eval].support.push(crate::construction::FactPointer {
+    nodes[eval].support.push(crate::archmap::Fact {
         snapshot: "v".into(),
         subject: "B".into(),
         field: None,
@@ -247,8 +247,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
 
 #[test]
 fn architecture_on_resolution_stops_are_latched_before_evaluation() {
-    let inputs =
-        crate::observed::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
+    let inputs = crate::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
     let qs = [
         fixture::MAP,
         "v=evaluate(Reservations.no,on=$m.candidate.source)",

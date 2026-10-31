@@ -3,11 +3,9 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())

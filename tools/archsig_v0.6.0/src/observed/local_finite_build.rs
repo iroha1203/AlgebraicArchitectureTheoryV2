@@ -28,7 +28,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             expressions.push(expression);
         }
         for (name, parameter, values) in &model.universal {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let reference = if let Some(values) = values {
                 let items = values.iter().map(|v| change_result::value(&mut b, v)).collect::<Result<Vec<_>, _>>()?;
                 let reference = domain(&mut b, &parameter.ty.erase(), &items)?;
@@ -45,7 +45,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             }));
         }
         for (name, bindings) in &model.requirements {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let law = &env.inputs.law().declarations[name];
             let Signature::Law {
                 role, body, guard, ..
@@ -143,7 +143,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             if !reasons.is_empty(){return Ok((None,vec![]));}
         } else if locals.is_empty() {
         for read in &model.readings {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let bindings = read
                 .bindings
                 .iter()
@@ -210,7 +210,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             )?;
             let mut image_values = vec![];
             for point in &model.points {
-                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if !image_values.contains(&point[position]) {
                     image_values.push(point[position].clone());
                 }
@@ -227,7 +227,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         } else {
             let mut states = vec![];
             for point in &model.points {
-                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let mut assignments = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
                 assignments.extend(model.slots.iter().cloned().zip(point.iter().cloned()));
                 let mut state = Environment::try_primitive_valuation(env.inputs, &assignments.into_iter().collect::<Vec<_>>(), c)?

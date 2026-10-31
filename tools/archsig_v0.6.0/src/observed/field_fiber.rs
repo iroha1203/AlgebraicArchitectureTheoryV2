@@ -1,9 +1,9 @@
 //! Q/Fp上の正確な行消去。全解・核・像と矛盾行の左零化子を保持する。
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     result::{Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{law::ast::BinOp, types::Type};
 use num_traits::{One, Signed, Zero};
 pub(super) type Matrix = Vec<Vec<Scalar>>;
@@ -206,7 +206,7 @@ pub(super) fn solve(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }

@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Limits, Usage};
+use crate::control::{Limits, Usage};
 #[allow(dead_code)]
 mod fixture {
     include!("../../tests/common/primitive_valuation_data.rs");
@@ -341,7 +341,7 @@ fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate
 #[test]
 fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_family() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};

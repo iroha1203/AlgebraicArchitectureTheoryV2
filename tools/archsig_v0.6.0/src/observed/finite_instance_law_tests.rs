@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::control::{Limits, Usage},
+    control::{Limits, Usage},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -165,8 +165,8 @@ fn foreign_inputs() -> Arc<CheckedInputs> {
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required first(c:Part,r:ForeignRoot,x:Option<ForeignPart[r]>):false;law optional second(c:Part,r:ForeignRoot,x:Option<ForeignPart[r]>):false;}}"
     );
     Arc::new(
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![definitions.into_bytes()],
                 law.into_bytes(),
                 map.into_bytes(),

@@ -3,11 +3,9 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
@@ -398,7 +396,7 @@ fn partial_option_set_calls_preserve_original_inputs_and_current_provenance() {
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let original = input.clone();
-        let before = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());

@@ -556,8 +556,8 @@ fn law_descent(
             ]))
         };
         for instance in &law.instances {
-            c.checkpoint(crate::observed::control::Checkpoint::Quotient)?;
-            c.checkpoint(crate::observed::control::Checkpoint::QuotientGuardedInstance)?;
+            c.checkpoint(crate::control::Checkpoint::Quotient)?;
+            c.checkpoint(crate::control::Checkpoint::QuotientGuardedInstance)?;
             let key = Scalar::Tuple(
                 instance
                     .bindings

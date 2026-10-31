@@ -1,17 +1,19 @@
 //! 検査済み原始値・Operation/Pathの語・全域作用比較を型付きの元Refへ接続する。
 use super::{
+    PreparedObserved, construction_result as native,
     construction_result::{
-        self as native, ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
+        ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
     },
-    control::{Checkpoint, Control, StopReason},
     environment::{AnswerBinding, Environment},
-    input::CheckedInputs,
     projection::ProjectionType,
     request::{QuestionKind, Request, Selector},
     result::*,
-    PreparedObserved,
 };
 use crate::{canonical::Json, issue::Location};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
+};
 #[path = "public_value_compare.rs"]
 pub(super) mod values;
 #[path = "public_relation_sources.rs"]

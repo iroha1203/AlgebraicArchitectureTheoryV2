@@ -1,8 +1,7 @@
 //! 原始三入力からの公開Operation合成。期待値は文書本文から取得しない。
 mod common;
 use archsig::{
-    json::JNode,
-    observed::{control::Control, evaluate_observed_bytes, input::InputSources},
+    control::Control, input::InputSources, json::JNode, observed::evaluate_observed_bytes,
 };
 use common::cli::*;
 use std::path::{Path, PathBuf};

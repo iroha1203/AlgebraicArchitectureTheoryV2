@@ -483,10 +483,10 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
 
 #[test]
 fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc, time::Instant};
     for reused in [false, true] {
@@ -660,7 +660,7 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
 
 #[test]
 fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
-    use archsig::observed::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::control::{Checkpoint, Control, Limits, Usage};
     use archsig::result::Signal;
     use std::{cell::Cell, rc::Rc, time::Instant};
     let dir = inputs("reuse-stop", Some("2"), L);
@@ -805,7 +805,7 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
         &mut NoSignal::default(),
         &args,
         std::time::Instant::now(),
-        &mut archsig::observed::control::Control::unlimited(),
+        &mut archsig::control::Control::unlimited(),
     );
     assert_eq!(outcome.exit_code, 74);
     assert!(!dir.join("out").exists());

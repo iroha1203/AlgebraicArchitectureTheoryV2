@@ -1,5 +1,5 @@
 //! 完成した同じ有限D上の整数値関数。由来の違うDは同じ長さでも混ぜない。
-use super::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use crate::{construction::ConstructionFailure, law::ast::BinOp};
 use num_bigint::BigInt;
 use num_traits::{One, Zero};

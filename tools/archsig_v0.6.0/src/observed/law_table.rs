@@ -1,16 +1,17 @@
 //! 元Lawの共通添字を、全標準対象の実評価・命題列へ接続する。
 use super::{
-    construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-    },
-    control::{Checkpoint, Control},
+    construction_result as native,
+    construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionType as T},
     environment::{Environment, numeric_parameters},
-    input::CheckedInputs,
     law_evaluation as frames,
     polynomial_law_diagram::{Diagram, FamilyPlan, Original},
     result::*,
 };
 use crate::types::Type;
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use std::sync::Arc;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ObjectRow {

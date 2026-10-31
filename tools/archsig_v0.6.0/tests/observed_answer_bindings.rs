@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
@@ -310,7 +308,7 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
         let i = fixture::input(revision);
         let original = i.clone();
         let mut c = Control::new(Limits::default(), |_| Usage::default());
-        let checked = archsig::observed::input::check_inputs(i.clone(), &mut c).unwrap();
+        let checked = archsig::input::check_inputs(i.clone(), &mut c).unwrap();
         let r = evaluate_observed_bytes(i, &asks, &mut c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);

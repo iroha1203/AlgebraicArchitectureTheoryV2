@@ -1,9 +1,9 @@
 //! Fp の法の素数性。Baillie–PSW(強い底2の Miller–Rabin と強い Lucas 検定)で判定する。
 //! 2^64 未満では反例がないことが確かめられている。
 
+use crate::control::{Checkpoint, Control};
 use crate::issue::Issue;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
 use num_bigint::{BigInt, BigUint, Sign};
 use num_integer::Integer;
 use num_traits::{One, Signed, ToPrimitive, Zero};
@@ -266,7 +266,7 @@ mod tests {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

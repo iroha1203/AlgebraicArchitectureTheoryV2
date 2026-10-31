@@ -1,9 +1,11 @@
 use super::*;
 use crate::observed::PrepareFailure;
-use crate::observed::{
-    construction_result::{ConstructionData as D, Witness},
+use crate::{
     control::{Limits, Usage},
-    public_compose::Part,
+    observed::{
+        construction_result::{ConstructionData as D, Witness},
+        public_compose::Part,
+    },
 };
 use std::{cell::Cell, rc::Rc};
 const DEFINITIONS: &[u8] = include_bytes!("../../tests/fixtures/reservations.atoms.json");

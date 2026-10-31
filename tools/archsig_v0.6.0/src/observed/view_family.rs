@@ -1,14 +1,13 @@
 //! 元viewの有限parameter全域・直積・具体rowを同じnative DAGへ保持する。
 use super::{
-    construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness,
-    },
-    control::{Checkpoint, Control},
+    construction_result as native,
+    construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness},
     environment::{Environment, numeric_parameters},
     object_component_diagram::ViewOrigin,
     object_reading_evaluation as reading, object_reading_result as whole,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     canonical::Json,
     issue::Location,

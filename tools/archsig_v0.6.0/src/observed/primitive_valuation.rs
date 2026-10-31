@@ -1,6 +1,6 @@
 //! 元の原始表を保った、内部数学計算の型付き候補代入。
 use super::*;
-use crate::observed::control::CheckFailure;
+use crate::control::CheckFailure;
 
 impl<'a> Environment<'a> {
     /// 全候補の生成器が選んだ値を検査し、独立した式評価環境を作る。

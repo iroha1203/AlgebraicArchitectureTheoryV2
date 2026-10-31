@@ -1,5 +1,5 @@
 // 文書から独立した原始型と観測値。実行時のみ三入力へ包装する。
-use archsig::{definition::check_definitions, observed::input::InputSources};
+use archsig::{definition::check_definitions, input::InputSources};
 pub const FIELDS: &[(&str, &str, &str, &str)] = &[
     ("vunit", r#""Unit""#, "Unit", "[]"),
     ("vflag", r#""Bool""#, "Bool", "false"),

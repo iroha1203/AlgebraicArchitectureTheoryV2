@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -332,11 +331,15 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     let mut p = prepared(false, false, "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;", "root");
     let sources = p.inputs.sources();
     let map = std::str::from_utf8(sources.archmap().bytes()).unwrap();
-    let inputs = crate::observed::input::InputSources::new(
-        sources.definitions().to_vec(), sources.law().clone(),
-        crate::observed::input::InputBytes::new(sources.archmap().id(), map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes()),
+    let inputs = crate::input::InputSources::new(
+        sources.definitions().to_vec(),
+        sources.law().clone(),
+        crate::input::InputBytes::new(
+            sources.archmap().id(),
+            map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes(),
+        ),
     );
-    p.inputs = Arc::new(crate::observed::input::check_inputs(inputs, &mut quiet()).unwrap());
+    p.inputs = Arc::new(crate::input::check_inputs(inputs, &mut quiet()).unwrap());
     p.requests = resolve_native_for_test(p.inputs.law(), p.inputs.archmap(), &["b=build(Selected,on=@v/root)"], &mut quiet()).unwrap();
     let (g, a) = built(&p);
     let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else { panic!("architecture") };
@@ -1376,7 +1379,7 @@ fn infinite_components_are_not_finite_case_samples() {
 
 #[test]
 fn infinite_data_is_not_a_finite_case_sample() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     for payload in [r#""Z""#, r#"["Data","Family.Flag"]"#] {
         let mut p = prepared(
             false,

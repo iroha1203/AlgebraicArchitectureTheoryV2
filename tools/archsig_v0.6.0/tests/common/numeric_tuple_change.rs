@@ -1,5 +1,5 @@
 //! Tuple changeの独立入力と、移送の数学的な期待値。CLI配送処理は持たない。
-use archsig::{canonical::Json, json::JNode, observed::input::InputSources};
+use archsig::{canonical::Json, input::InputSources, json::JNode};
 #[allow(dead_code)]
 #[path = "architecture_environment.rs"]
 mod architecture;

@@ -1,7 +1,5 @@
 //! 完全query patternと元残差から、成分別の有限detectorを生成する。
 use super::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
     numeric,
     object_law_compatibility::LawCompatibilityOutcome,
     object_law_residuals::{
@@ -12,10 +10,13 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{
-        ConstructionFailure, profiles::CircuitPattern, readings::ObjectEvaluationPosition,
-    },
+    construction::{ConstructionFailure, profiles::CircuitPattern},
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {
@@ -393,7 +394,7 @@ mod tests {
         include!("../../tests/common/object_view_compatibility_data.rs");
     }
     fn input() -> Arc<CheckedInputs> {
-        use crate::observed::input::{InputSources, check_inputs};
+        use crate::input::{InputSources, check_inputs};
         let d = crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
             .unwrap();
         let digest = &d.vocabularies["Pattern"].digest;

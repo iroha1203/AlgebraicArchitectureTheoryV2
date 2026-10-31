@@ -5,7 +5,6 @@ mod architecture_result;
 mod call;
 mod circuit_pattern;
 pub(crate) mod construction_result;
-pub mod control;
 mod data;
 mod environment;
 mod equation_family;
@@ -26,21 +25,21 @@ mod law_table;
 mod local_result;
 mod needed;
 mod numeric;
-pub(crate) mod numeric_transport;
+pub mod numeric_transport;
 mod object_component_diagram;
-pub(crate) mod object_evaluate;
-pub(crate) mod object_evaluation_table;
-pub(crate) mod object_law_circuit_transport;
-pub(crate) mod object_law_circuits;
-pub(crate) mod object_law_compatibility;
-pub(crate) mod object_law_residuals;
-pub(crate) mod object_law_transport;
+pub mod object_evaluate;
+pub mod object_evaluation_table;
+pub mod object_law_circuit_transport;
+pub mod object_law_circuits;
+pub mod object_law_compatibility;
+pub mod object_law_residuals;
+pub mod object_law_transport;
 mod object_reading_evaluation;
 mod object_reading_result;
 mod object_transport;
-pub(crate) mod object_view_compatibility;
+pub mod object_view_compatibility;
 pub(crate) mod object_view_family;
-pub(crate) mod object_view_transport;
+pub mod object_view_transport;
 mod observable_layout;
 mod path_compose;
 mod path_value;
@@ -54,19 +53,18 @@ pub mod result;
 mod term;
 mod summary;
 mod value_equality;
-pub(crate) mod value_transport;
+pub mod value_transport;
 mod view_family;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 #[cfg(test)]
 pub(crate) use evaluate::evaluate_observed_with_rejected_answer;
 pub use result::{EvaluationFailure, ObservedEvaluation};
-pub mod input;
 pub mod projection;
 pub mod request;
 
 use crate::canonical::Json;
-use control::Control;
-use input::{CheckedInputs, InputFailure, InputSources, check_inputs};
+use crate::control::Control;
+use crate::input::{CheckedInputs, InputFailure, InputSources, check_inputs};
 use request::{ResolveFailure, ResolvedRequests, resolve_observed_requests_controlled};
 use std::sync::Arc;
 
@@ -192,11 +190,11 @@ pub fn prepare_shared_observed(
     }
 }
 
-pub(crate) mod equation_polynomial;
-pub(crate) mod object_equation_presentation;
+pub mod equation_polynomial;
+pub mod object_equation_presentation;
 
-pub(crate) mod finite_polynomial_evaluation;
-pub(crate) mod object_polynomial_observable;
+pub mod finite_polynomial_evaluation;
+pub mod object_polynomial_observable;
 
 mod view_invariant;
 
@@ -240,9 +238,9 @@ impl DeterminedOwners {
 }
 /// 返す値は観測Atomでも候補による更新でもない。
 pub(crate) fn determined_owners(
-    inputs: &input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     fields: &[result::Fact],
-    control: &mut control::Control,
+    control: &mut crate::control::Control,
 ) -> Result<Option<DeterminedOwners>, crate::construction::ConstructionFailure> {
     use crate::construction::ConstructionFailure;
     use result::{Scalar, ValidationFailure};
@@ -288,7 +286,7 @@ pub(crate) fn determined_owners(
     }
     let mut owners = Vec::new();
     for (field, value) in fields.iter().zip(values) {
-        control.checkpoint(control::Checkpoint::Completion)?;
+        control.checkpoint(crate::control::Checkpoint::Completion)?;
         let Scalar::Subject {
             snapshot, subject, ..
         } = &value

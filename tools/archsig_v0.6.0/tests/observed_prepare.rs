@@ -1,9 +1,10 @@
-use archsig::observed::{
-    PrepareFailure,
+use archsig::{
     control::{Checkpoint, Control, Limits, Usage},
     input::InputSources,
-    prepare_checked_observed, prepare_observed,
-    request::{RequestIssueCode, ResolveFailure},
+    observed::{
+        PrepareFailure, prepare_checked_observed, prepare_observed,
+        request::{RequestIssueCode, ResolveFailure},
+    },
 };
 
 fn inputs() -> InputSources {
@@ -49,7 +50,7 @@ fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
     );
     assert_eq!(prepared.inputs().sources(), &inputs());
     // 検査済み bundle を所有したまま、別の問いを再解決する入口も同じ元入力を使う。
-    let checked = archsig::observed::input::check_inputs(inputs(), &mut control).unwrap();
+    let checked = archsig::input::check_inputs(inputs(), &mut control).unwrap();
     let reused = prepare_checked_observed(checked, &texts, &mut control).unwrap();
     assert_eq!(prepared.requests(), reused.requests());
     assert_eq!(prepared.inputs().inputs(), reused.inputs().inputs());

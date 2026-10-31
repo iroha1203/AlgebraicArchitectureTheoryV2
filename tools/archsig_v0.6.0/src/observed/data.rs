@@ -1,9 +1,9 @@
 //! 検査済み有限Data値の正規constructor・payloadと、静的に解決済みpatternの照合。
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     result::{Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     archmap::Value,
     definition::{Constructor, PrimitiveSignature},

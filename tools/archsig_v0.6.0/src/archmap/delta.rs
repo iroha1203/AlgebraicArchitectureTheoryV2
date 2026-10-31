@@ -316,7 +316,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, Usage};
+    use crate::control::{CheckFailure, Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

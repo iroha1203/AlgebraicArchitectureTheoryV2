@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::control::{Limits, Usage},
+    control::{Limits, Usage},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -598,8 +598,8 @@ fn the_same_name_and_shape_from_a_foreign_reading_are_rejected() {
     let mut law = String::from_utf8(sources.law().bytes().to_vec()).unwrap();
     law.push_str(&format!("reading Other{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required zero(c:Part):c.quantity=0;}}"));
     let i = Arc::new(
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 sources
                     .definitions()
                     .iter()

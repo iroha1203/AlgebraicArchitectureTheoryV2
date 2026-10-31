@@ -5,8 +5,8 @@ mod base {
 }
 use archsig::{
     canonical::Json,
+    input::InputSources,
     json::{JNode, JValue, parse},
-    observed::input::InputSources,
 };
 
 pub const SCRIPT: &str = r#"

@@ -2,11 +2,11 @@ mod recursive_tree_fixture {
     include!("../../tests/common/recursive_tree.rs");
 }
 
-fn recursive_tree_private_inputs() -> super::super::input::InputSources {
+fn recursive_tree_private_inputs() -> crate::input::InputSources {
     let definitions = recursive_tree_fixture::DEFINITIONS.as_bytes();
     let checked = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
     let digest = &checked.vocabularies["Trees"].digest;
-    super::super::input::InputSources::from_bytes(
+    crate::input::InputSources::from_bytes(
         vec![definitions.to_vec()],
         recursive_tree_fixture::law(digest, "view seed():Z=1;law required prior():false;")
             .into_bytes(),
@@ -201,7 +201,7 @@ fn recursive_tree_validation_success_does_not_authorize_later_payload_changes() 
 }
 
 fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Trees.prior)",
@@ -331,7 +331,7 @@ fn recursive_tree_value_walk_and_recheck_stops_freeze_the_shared_control() {
             if count.get() == 9 {
                 usage
             } else {
-                super::super::control::Usage::default()
+                crate::control::Usage::default()
             }
         });
         assert!(
@@ -355,7 +355,7 @@ fn recursive_tree_value_walk_and_recheck_stops_freeze_the_shared_control() {
         if arm.get() {
             usage
         } else {
-            super::super::control::Usage::default()
+            crate::control::Usage::default()
         }
     });
     let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();

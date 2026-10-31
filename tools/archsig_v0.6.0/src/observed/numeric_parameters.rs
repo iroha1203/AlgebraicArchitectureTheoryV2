@@ -223,7 +223,7 @@ pub(in crate::observed) fn point_value(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
 
     #[test]
     fn nested_numeric_point_preserves_shape_and_later_parameter_offsets() {

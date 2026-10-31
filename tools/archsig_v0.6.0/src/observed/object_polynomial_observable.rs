@@ -1,8 +1,6 @@
 //! 元の共有K[X]を保つ有限block積と、base root存在Atom上の方程式座標。
 use super::{
-    control::{Checkpoint, Control},
     equation_polynomial::{EquationPolynomial, invalid},
-    input::CheckedInputs,
     numeric,
     object_equation_presentation::{
         EquationPresentation, EquationPresentationFailure, EquationPresentationStatus as Status,
@@ -10,8 +8,12 @@ use super::{
     },
 };
 use crate::{
-    construction::{ConstructionFailure, FactPointer, readings::ObjectEvaluationPosition},
-    law::ast::BinOp,
+    archmap::Fact as FactPointer, construction::ConstructionFailure, law::ast::BinOp,
+    observed::object_evaluation_table::ObjectEvaluationPosition,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
@@ -453,7 +455,7 @@ pub fn object_polynomial_observable(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
     };

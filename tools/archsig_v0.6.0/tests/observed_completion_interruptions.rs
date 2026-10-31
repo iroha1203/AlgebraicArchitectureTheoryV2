@@ -3,10 +3,8 @@ mod common;
 
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{InputFailure, InputSources, InputStatus, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{InputFailure, InputSources, InputStatus, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

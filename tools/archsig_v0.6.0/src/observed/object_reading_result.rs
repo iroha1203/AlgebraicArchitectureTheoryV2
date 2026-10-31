@@ -1,12 +1,10 @@
 //! 元viewの全体読取りを、同じDAGのOption値・通常Evaluationとして保持する。
 use super::{
-    construction_result::{self as native, ConstructionData as D},
-    control::{Checkpoint, Control},
-    environment::Environment,
-    object_component_diagram::ViewOrigin,
-    object_reading_evaluation as body,
-    result::*,
+    construction_result as native, construction_result::ConstructionData as D,
+    environment::Environment, object_component_diagram::ViewOrigin,
+    object_reading_evaluation as body, result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{construction::readings::InstanceApplication, issue::Location, types::Type};
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;

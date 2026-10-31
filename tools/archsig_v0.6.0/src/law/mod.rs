@@ -11,10 +11,10 @@ pub mod model;
 pub mod parser;
 
 use crate::canonical::{Json, sha256_digest};
+use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::definition::CheckedDefinitions;
 use crate::issue::{Code, Details, Issue, Location};
 use crate::json::InputError;
-use crate::observed::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 use ast::{Expr, ExprId};
 use check::Checker;
@@ -446,7 +446,7 @@ fn check_law_processing<E: InputError>(
 #[cfg(test)]
 mod entry_control_tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

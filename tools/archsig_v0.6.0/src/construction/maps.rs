@@ -7,25 +7,6 @@ mod internal;
 mod operations;
 mod references;
 mod transport;
-pub use crate::observed::numeric_transport::{
-    NumericTransportValue, NumericValueMap, NumericValueTransport,
-    numeric_declaration_value_transport,
-};
-pub use crate::observed::object_law_transport::{
-    FiniteLawFamily, LawApplication, LawBooleanReading, LawConditionFailure,
-    LawParameterComparison, LawTransportOutcome, ObjectLawTransport, ObjectLawTransportFailure,
-    ObjectLawTransportPartial, object_law_transport,
-};
-pub use crate::observed::object_view_transport::{
-    ObjectViewTransport, ObjectViewTransportFailure, ObjectViewTransportPartial,
-    ViewConditionFailure, ViewTransportOutcome, ViewTransportValue, ViewValueEquivalence,
-    PrimitiveValueIdentity, StructuralValueEquivalence, FamilyTypeFailure, FiniteViewTransport,
-    FiniteViewTypeMap, ViewFamilyReturnMap, ViewParameterComparison, object_view_transport,
-};
-pub use crate::observed::value_transport::{
-    DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,
-    FiniteValueConditionFailure, FiniteValueTransport, finite_declaration_value_transport,
-};
 pub(crate) use declarations::moved_type as moved_declaration_type;
 pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
@@ -888,7 +869,7 @@ fn typed_reference_constraints_violation(
                     value: Json::Arr(rows),
                 });
             }
-            use crate::observed::control::CheckFailure;
+            use crate::control::CheckFailure;
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
@@ -1355,7 +1336,7 @@ pub fn correspondence_retained(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     #[test]
     fn reference_projection_checks_map_image_collisions_and_shared_unknown_leaves() {
         let reference = |id: &str| Value::Ref {
@@ -1565,9 +1546,3 @@ mod tests {
         );
     }
 }
-
-pub use crate::observed::object_law_circuit_transport::{
-    LawCircuitTransportFailureCause, LawCircuitTransportOutcome, LawCircuitTransportPoint,
-    LawCircuitTransportRefutation, ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure,
-    object_law_circuit_transport,
-};

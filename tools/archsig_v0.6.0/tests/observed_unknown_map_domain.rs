@@ -1,10 +1,8 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 #[path = "common/unknown_map_domain.rs"]
 #[allow(dead_code)]
@@ -27,7 +25,7 @@ fn node<'a>(j: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let checked = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
     let result = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
     assert_eq!(result.prepared().inputs().sources(), &input);
     assert_eq!(
@@ -303,7 +301,7 @@ fn unknown_owner_map_provenance_pair_preserves_math_and_current_sources() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("varying", revision);
-        let checked = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.call,a=@v/A,h=@v/h)"]);
         domains(&w, &["A", "B"]);

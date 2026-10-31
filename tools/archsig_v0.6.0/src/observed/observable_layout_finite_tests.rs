@@ -1,9 +1,8 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
     input::CheckedInputs,
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -477,7 +476,7 @@ fn finite_plan_column_binding_value_provenance_and_completion_forgery_are_reject
 }
 #[test]
 fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_request_context() {
-    use crate::observed::control::{Resource, StopReason};
+    use crate::control::{Resource, StopReason};
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -575,7 +574,7 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
 
 #[test]
 fn boolean_fields_use_the_finite_indicator_with_original_boolean_operands() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     // The Law is checked only after changing the shared definition and its digest.
     let source = fixture::inputs(false, "");
     let bytes = source.sources();

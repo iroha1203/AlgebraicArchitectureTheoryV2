@@ -1,7 +1,5 @@
 //! 対象間で対応するLawのrequired status・適用条件・成立を実評価から比較する。
 use super::{
-    control::{Checkpoint, Control, StopReason},
-    input::CheckedInputs,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -10,8 +8,9 @@ use super::{
     result::{NodeRef, ObservedEvaluation, Payload, Scalar},
 };
 use crate::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
             ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
@@ -22,6 +21,10 @@ use crate::{
         },
     },
     law::{ast::Role, model::ExpressionKind},
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 
@@ -493,8 +496,11 @@ fn checked_transport(
                 &inputs,
                 [&r.source_readings, &r.target_readings],
                 [
-                    crate::construction::readings::ObjectEvaluationPosition { object, instance },
-                    crate::construction::readings::ObjectEvaluationPosition {
+                    crate::observed::object_evaluation_table::ObjectEvaluationPosition {
+                        object,
+                        instance,
+                    },
+                    crate::observed::object_evaluation_table::ObjectEvaluationPosition {
                         object: to,
                         instance: ti,
                     },
@@ -724,7 +730,7 @@ mod tests {
         construct,
         maps::{correspondence, declaration_correspondence},
     };
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     pub(super) fn example(name: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
         example_with_law(
             name,

@@ -1,9 +1,9 @@
-use super::super::{input::CheckedInputs, law_table};
+use super::super::law_table;
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::input::CheckedInputs;
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -130,7 +130,7 @@ fn polynomial(g: &Graph, r: NodeRef) -> Vec<(crate::canonical::Json, Vec<crate::
 }
 #[test]
 fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let original = fixture::inputs(
         false,
         true,

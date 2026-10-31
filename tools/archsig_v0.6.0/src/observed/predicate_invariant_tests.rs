@@ -1,9 +1,8 @@
 use super::*;
-use crate::observed::input::CheckedInputs;
-use crate::observed::{
-    PreparedObserved,
+use crate::input::CheckedInputs;
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {

@@ -1,15 +1,17 @@
 //! 検査済みPathの同じ全域合成を公開要求と元Refへ接続する。
 use super::{
-    construction_result::{self as native, ConstructionData as D, ConstructionValue, Witness},
-    control::{Checkpoint, Control, StopReason},
+    PreparedObserved, construction_result as native,
+    construction_result::{ConstructionData as D, ConstructionValue, Witness},
     environment::{AnswerBinding, Environment},
-    input::CheckedInputs,
     projection::{ProjectionStep as P, ProjectionType},
     request::{QuestionKind, Request, Selector},
     result::*,
-    PreparedObserved,
 };
 use crate::canonical::Json;
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
+};
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,

@@ -1,13 +1,11 @@
 //! 検査済み三入力から、共通AtomUniverseと対象のConfigurationを生成する。
-pub use crate::observed::result::Fact as FactPointer;
+use crate::archmap::Fact as FactPointer;
 use crate::{
     archmap::{Slot, Subject, Value},
     canonical::Json,
+    control::{Checkpoint, Control, StopReason},
     definition::model::PrimitiveSignature,
-    observed::{
-        control::{Checkpoint, Control, StopReason},
-        input::CheckedInputs,
-    },
+    input::CheckedInputs,
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -694,7 +692,7 @@ fn construct_with_owners(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     fn inputs(missing: bool) -> CheckedInputs {
         let definition = include_bytes!("../tests/fixtures/configuration.atoms.json");
         let definitions =

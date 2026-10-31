@@ -3,14 +3,13 @@
 mod positions;
 use archsig::{
     canonical::{Json, sha256_digest},
+    control::Control,
     definition::check_definitions,
+    input::{CheckedInputs, InputSources, InputStatus},
     json::{JNode, JValue},
     law::{ast::ExprKind, model::Signature},
     observed::{
-        EvaluationFailure, PrepareFailure,
-        control::Control,
-        evaluate_observed, evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, InputStatus},
+        EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes,
         prepare_observed,
     },
     result::{declaration_wire, location_wire, primitive_declarations_wire},

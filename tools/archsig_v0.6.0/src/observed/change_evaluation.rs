@@ -594,7 +594,7 @@ pub(in crate::observed) fn solution_row(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     #[allow(dead_code)]
     mod fixture {
         include!("../../tests/common/primitive_valuation_data.rs");

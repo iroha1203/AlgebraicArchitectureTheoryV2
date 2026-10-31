@@ -1,7 +1,8 @@
 //! 欠測した元fieldのidentityを保つ、Z/Qだけの内部アフィン算術。
 
+use crate::control::{Checkpoint, Control};
+
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     result::{Fact, Scalar, ValidationFailure},
 };
@@ -1327,7 +1328,7 @@ pub(crate) fn with_observer<T>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
 
     fn control() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
@@ -1826,7 +1827,7 @@ mod tests {
 
     #[test]
     fn partial_forall_control_preserves_free_predicate_and_freezes() {
-        use crate::observed::control::{Resource, StopReason};
+        use crate::control::{Resource, StopReason};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
@@ -1919,7 +1920,7 @@ mod tests {
 
     #[test]
     fn universal_control_freezes_at_gcd_and_proof_selection() {
-        use crate::observed::control::{Resource, StopReason};
+        use crate::control::{Resource, StopReason};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 

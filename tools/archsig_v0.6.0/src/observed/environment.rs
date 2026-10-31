@@ -1,9 +1,6 @@
 //! 不変の原始観測表からの参照・slot 読取りと、生成 leaf の元入力照合。
 use super::{
-    control::{Checkpoint, Control, StopReason},
-    data,
-    input::CheckedInputs,
-    numeric, quantifier,
+    data, numeric, quantifier,
     request::{QuestionKind, Request, Selector},
     result::*,
 };
@@ -12,6 +9,10 @@ use crate::{
     issue::Location,
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 #[path = "object_view_family_environment.rs"]
 mod object_view_family;

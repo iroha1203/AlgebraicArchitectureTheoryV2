@@ -1344,12 +1344,10 @@ impl<E: InputError> Checker<'_, E> {
 mod semantic_finish_tests {
     use super::*;
     use crate::{
+        control::{CheckFailure, Checkpoint as StopPoint, Control, Limits, StopReason, Usage},
         definition::CheckedDefinitions,
         issue::{Code, Details, Issue},
         law::parser::Parser,
-        observed::control::{
-            CheckFailure, Checkpoint as StopPoint, Control, Limits, StopReason, Usage,
-        },
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};

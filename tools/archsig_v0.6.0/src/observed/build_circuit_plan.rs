@@ -2,13 +2,13 @@
 use super::{
     build_plan::Plan,
     construction_result::ConstructionData as D,
-    control::{Checkpoint, Control},
     environment::Environment,
     numeric,
     object_equation_presentation::EquationGuard,
     observable_layout::{Reading, Source},
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Case {

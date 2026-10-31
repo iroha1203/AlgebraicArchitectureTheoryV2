@@ -1,9 +1,9 @@
 use super::*;
-use crate::observed::{
+use crate::result::Signal;
+use crate::{
     control::{Limits, Resource, Usage},
     input::{InputSources, check_inputs},
 };
-use crate::result::Signal;
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
 mod arrow_fixture {

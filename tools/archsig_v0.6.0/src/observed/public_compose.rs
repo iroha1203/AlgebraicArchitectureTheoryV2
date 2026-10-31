@@ -1,12 +1,10 @@
 //! 現在入力で検査済みのOperationを合成し、元参照を保ったDAGへ転記する。
 use super::{
-    PreparedObserved,
+    PreparedObserved, construction_result as native,
     construction_result::{
-        self as native, ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
+        ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
     },
-    control::{Checkpoint, Control, StopReason},
     environment::{AnswerBinding, Environment},
-    input::CheckedInputs,
     projection::{OperationProjection, ProjectionStep as P, ProjectionType},
     request::{QuestionKind, Request, Selector},
     result::*,
@@ -14,6 +12,10 @@ use super::{
 use crate::{
     canonical::Json,
     construction::{ConstructionFailure, maps::ConfigurationOperation},
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]

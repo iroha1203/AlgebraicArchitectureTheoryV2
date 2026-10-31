@@ -1,12 +1,11 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};

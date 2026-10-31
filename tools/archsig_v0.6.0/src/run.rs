@@ -11,10 +11,10 @@ pub use output::peak_rss_bytes;
 
 use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
+use crate::control::{CheckFailure, Control, StopReason};
 use crate::definition::check_definitions_controlled;
 use crate::issue::Code;
 use crate::law::check_law_controlled;
-use crate::observed::control::{CheckFailure, Control, StopReason};
 use crate::result::*;
 use output::{finalize, out_ok, usage_without_result};
 use std::path::{Path, PathBuf};
@@ -60,9 +60,9 @@ pub struct RunArgs {
 }
 
 impl RunArgs {
-    pub fn limits(&self) -> crate::observed::control::Limits {
+    pub fn limits(&self) -> crate::control::Limits {
         // 実測値はu128。これを超える正の予算を切り詰めず、到達不能な上限として扱う。
-        crate::observed::control::Limits {
+        crate::control::Limits {
             time_ms: self.time_ms.and_then(Budget::measured_limit),
             memory_mib: self.memory_mib.and_then(Budget::measured_limit),
         }

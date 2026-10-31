@@ -123,7 +123,7 @@ pub(super) fn diagnose(
     };
     let mut matching_values = vec![];
     for value in &selected.matching {
-        c.checkpoint(super::super::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         matching_values.push((value, change_result::value(&mut b, value)?));
     }
     let matching = domain(
@@ -146,7 +146,7 @@ pub(super) fn diagnose(
     let mut fibers = vec![];
     let mut fiber_refs = vec![];
     for (value, r) in matching_values {
-        c.checkpoint(super::super::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let states = selected
             .restriction
             .iter()

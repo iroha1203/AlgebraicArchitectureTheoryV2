@@ -2,15 +2,16 @@ use archsig::{
     canonical::Json,
     construction::{
         ConstructionFailure, construct,
-        readings::{
-            ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
-            ObjectReadingInstances, evaluate_object_instance, object_reading_instances,
-        },
+        readings::{ObjectReadingInstances, object_reading_instances},
     },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
-        control::{Control, Limits, Usage},
         evaluate_observed,
-        input::{CheckedInputs, InputSources, check_inputs},
+        object_evaluate::{
+            ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
+            evaluate_object_instance,
+        },
         prepare_shared_observed,
     },
 };
@@ -431,7 +432,7 @@ fn current_quantities_optional_law_counterexamples_and_external_binding_identity
 
 #[test]
 fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluations() {
-    use archsig::{observed::control::Checkpoint, result::Signal};
+    use archsig::{control::Checkpoint, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = inputs(L, A);
     let p = plan(&i);

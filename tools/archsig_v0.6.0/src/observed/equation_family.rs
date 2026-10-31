@@ -1,15 +1,16 @@
 //! 再検査済みの全Law表と共有表示を、一つのEquationFamilyへ保持する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
     observable_layout::{Layout, Source as CoordinateSource},
     result::*,
 };
 use crate::canonical::Json;
+use crate::control::{Checkpoint, Control};
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;

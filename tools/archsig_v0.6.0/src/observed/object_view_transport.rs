@@ -1,9 +1,6 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
 use super::{
-    control::{Checkpoint, Control, StopReason},
-    data, finite,
-    input::CheckedInputs,
-    numeric,
+    data, finite, numeric,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -11,18 +8,28 @@ use super::{
     result::{Decision, Payload, Scalar, ValidationFailure},
 };
 use crate::{
+    archmap::Fact as FactPointer,
     canonical::Json,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
-            ConfigurationTransportPartial, DeclarationCorrespondence, DeclarationValuePosition,
-            FiniteValueTransport, NumericValueTransport, ObjectIdentity, configuration_transport,
-            finite_declaration_value_transport, numeric_declaration_value_transport,
+            ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
+            configuration_transport,
         },
         readings::{ObjectInstance, ObjectReadingInstances, object_reading_instances},
     },
+    observed::{
+        numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
+        value_transport::{
+            DeclarationValuePosition, FiniteValueTransport, finite_declaration_value_transport,
+        },
+    },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 #[path = "object_view_transport_family.rs"]
@@ -737,7 +744,7 @@ fn checked_view_transport(
                     match compare(a, z, inputs.law(), c).map_err(invalid)? {
                         Comparison::Same => ViewTransportOutcome::Preserved,
                         Comparison::Different(unit) => {
-                            use crate::construction::readings::ObjectEvaluationPosition;
+                            use crate::observed::object_evaluation_table::ObjectEvaluationPosition;
                             r.numeric_counterexample = Some(functions::counterexample(
                                 &inputs,
                                 &r.source_readings,
@@ -950,7 +957,7 @@ mod tests {
         construct,
         maps::{correspondence, declaration_correspondence},
     };
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     fn example() -> (Arc<CheckedInputs>, ObjectViewTransport) {
         example_named("Before.amount")
     }

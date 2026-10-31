@@ -1,12 +1,13 @@
 //! 対象読取り間の参照束縛と、元の型付き評価の照合。
-use super::{
-    control::{Checkpoint, Control},
-    object_evaluate::{ObjectEvaluation, ObjectEvaluationOutcome},
-};
-use crate::construction::{
-    ConstructionFailure, FactPointer,
-    maps::{ConfigurationTransport, DeclarationPair},
-    readings::{ObjectInstance, ObjectReadingInstances},
+use super::object_evaluate::{ObjectEvaluation, ObjectEvaluationOutcome};
+use crate::control::{Checkpoint, Control};
+use crate::{
+    archmap::Fact as FactPointer,
+    construction::{
+        ConstructionFailure,
+        maps::{ConfigurationTransport, DeclarationPair},
+        readings::{ObjectInstance, ObjectReadingInstances},
+    },
 };
 pub(super) struct MappedInstance {
     pub index: Option<usize>,

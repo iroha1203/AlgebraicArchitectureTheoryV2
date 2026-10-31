@@ -371,8 +371,8 @@ mod tests {
             .replace("@PROFILE_DIGEST@", digest);
         let a = include_str!("../../tests/fixtures/configuration-profile.archmap.json")
             .replace("@PROFILE_DIGEST@", digest);
-        let i = crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        let i = crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],
                 l.into_bytes(),
                 a.into_bytes(),

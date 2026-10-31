@@ -7,7 +7,7 @@ use crate::observed::{
 use std::collections::BTreeSet;
 
 fn unsupported(
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     id: usize,
     message: &str,
 ) -> ValidationFailure {
@@ -25,7 +25,7 @@ struct Updates {
 }
 fn updates(
     env: &Environment<'_>,
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declaration: &crate::law::model::Declaration,
     mut id: usize,
     c: &mut Control,
@@ -55,7 +55,7 @@ fn updates(
 }
 fn update_expression(
     b: &mut Builder<'_>,
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     updates: &Updates,
     body: Option<NodeRef>,
     field: &str,
@@ -95,7 +95,7 @@ fn update_expression(
 }
 fn guard_expression(
     b: &mut Builder<'_>,
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     guard: Option<usize>,
     base: usize,
     params: &[Param],
@@ -355,7 +355,7 @@ fn point(
 pub(super) fn retain(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     correspondence: &construction::DeclarationCorrespondence,
     candidate: &construction::DeclarationCandidate,
     dependencies: &[NodeRef],

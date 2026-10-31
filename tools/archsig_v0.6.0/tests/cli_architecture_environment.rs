@@ -531,19 +531,18 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             _ => None,
         };
         let mut control = if mode >= 3 {
-            archsig::observed::control::Control::new(
-                archsig::observed::control::Limits::default(),
-                move |_| archsig::observed::control::Usage {
+            archsig::control::Control::new(archsig::control::Limits::default(), move |_| {
+                archsig::control::Usage {
                     signal: Some(if mode == 3 {
                         archsig::result::Signal::Int
                     } else {
                         archsig::result::Signal::Term
                     }),
-                    ..archsig::observed::control::Usage::default()
-                },
-            )
+                    ..archsig::control::Usage::default()
+                }
+            })
         } else {
-            archsig::observed::control::Control::unlimited()
+            archsig::control::Control::unlimited()
         };
         let outcome = archsig::run::run_requests(
             &mut DeliveryIo { fail: mode == 0 },

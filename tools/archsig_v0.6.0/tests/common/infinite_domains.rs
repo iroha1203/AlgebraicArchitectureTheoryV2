@@ -1,5 +1,5 @@
 use archsig as fixture_archsig;
-use archsig::{definition::check_definitions, observed::input::InputSources};
+use archsig::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod fields {
     use super::fixture_archsig as archsig;

@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -480,7 +478,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_provenance() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Reservations.obFamily,a=$owner.value,p=$child.value)",
@@ -834,8 +832,7 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
         for revision in ["r1", "r2"] {
             let input = fixture::completion_input(mode, revision);
             let original = input.clone();
-            let checked =
-                archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+            let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
             let r = evaluate_observed_bytes(
                 input,
                 &[

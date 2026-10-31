@@ -3,13 +3,15 @@ use super::{
     build_plan::Plan,
     build_result::Builder,
     construction_result::ConstructionType as T,
-    control::{Checkpoint, Control},
     environment::Environment,
-    input::CheckedInputs,
     object_view_transport::{self, ObjectViewTransport, ViewTransportOutcome},
     result::*,
 };
 use crate::{canonical::Json, construction::maps::DeclarationCorrespondence, types::Type};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use std::sync::Arc;
 
 pub(super) struct KernelCacheEntry {

@@ -1,5 +1,5 @@
 use super::*;
-use archsig::observed::{
+use archsig::{
     control::{Control, Limits, Usage},
     input::InputSources,
 };
@@ -180,7 +180,7 @@ fn finite_owner_completions_keep_empty_subject_product_and_guard_meanings() {
 
 #[test]
 fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
-    use archsig::observed::control::Checkpoint;
+    use archsig::control::Checkpoint;
     use std::{cell::Cell, rc::Rc};
     for mode in 0..4 {
         let seen = Rc::new(Cell::new(false));
@@ -335,7 +335,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         source.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let failure = observed::input::check_inputs(invalid, &mut control()).unwrap_err();
+    let failure = archsig::input::check_inputs(invalid, &mut control()).unwrap_err();
     assert!(
         failure.issues().iter().any(|issue| issue
             .canonical()

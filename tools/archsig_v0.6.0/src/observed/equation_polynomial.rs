@@ -1,10 +1,10 @@
 //! 元導出から得た多項式の正確な正規化。原式の評価は既存Evaluatorが担う。
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     numeric_transport::NumericTransportValue,
     result::{Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{construction::ConstructionFailure, law::ast::BinOp, types::Type};
 use std::collections::BTreeMap;
 

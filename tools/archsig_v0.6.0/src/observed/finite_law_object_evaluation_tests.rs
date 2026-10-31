@@ -1,10 +1,8 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::{
-        control::{Limits, Usage},
-        input::{InputSources, check_inputs},
-    },
+    control::{Limits, Usage},
+    input::{InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

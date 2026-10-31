@@ -913,12 +913,8 @@ fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evide
 
 fn reservations_private_stop_usage(
     kind: usize,
-) -> (
-    super::super::control::Limits,
-    super::super::control::Usage,
-    StopReason,
-) {
-    use super::super::control::{Limits, Resource, Usage};
+) -> (crate::control::Limits, crate::control::Usage, StopReason) {
+    use crate::control::{Limits, Resource, Usage};
     match kind {
         0 => (
             Limits::default(),
@@ -962,7 +958,7 @@ fn reservations_private_stop_usage(
 }
 
 fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior(e:Reserve):e.from.free=0; view hole(e:Reserve):Z=e.to.held; view current(e:Reserve):Z=e.to.free;";
     let asks = [
@@ -1157,7 +1153,7 @@ fn reservations_chain_post_validation_cancel_retains_verified_current_value() {
 
 #[test]
 fn reservations_chain_recheck_stop_and_success_memo_remain_session_local() {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let result = reservations_private_example(
         "view current(e:Reserve):Z=e.to.free;",

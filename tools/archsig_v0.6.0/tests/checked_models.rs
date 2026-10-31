@@ -51,7 +51,7 @@ fn checked_archmap_readers_preserve_observations_provenance_and_identity() {
 
 #[test]
 fn from_checked_rejects_valid_law_or_archmap_from_different_input_bytes() {
-    use archsig::observed::{
+    use archsig::{
         control::Control,
         input::{CheckedInputs, InputSources, InputStatus},
     };

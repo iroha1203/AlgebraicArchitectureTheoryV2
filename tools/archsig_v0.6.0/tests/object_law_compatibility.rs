@@ -1,11 +1,9 @@
 use archsig::{
-    construction::readings::{
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
+    observed::object_law_compatibility::{
         LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
         ObjectLawCompatibility, object_law_compatibility,
-    },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
     },
 };
 use std::sync::Arc;
@@ -111,7 +109,7 @@ fn two_refuted_whole_laws_do_not_hide_disagreement_at_each_boolean_argument() {
     let r = run(Arc::clone(&i));
     assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Holds)));
     for e in r.evaluations() {
-        let archsig::construction::readings::ObjectEvaluationOutcome::Evaluated(graph) =
+        let archsig::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(graph) =
             e.evaluation().outcome()
         else {
             panic!("evaluated Law")
@@ -221,7 +219,7 @@ fn empty_parameter_domains_are_known_while_missing_required_values_remain_undete
 
 #[test]
 fn owner_domain_and_conditional_membership_remain_unknown_with_the_original_slots() {
-    use archsig::construction::maps::LawApplication;
+    use archsig::observed::object_law_transport::LawApplication;
     let map=fixture::A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"t\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}");
     let i = inputs(
         "law required belongs(c:Part):true; law optional ownerDomain(a:Root,x:Option<Part[a]>):true;",
@@ -425,7 +423,7 @@ fn ordinary_law_requests_keep_the_original_symbolic_list_domain() {
 
 #[test]
 fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_families() {
-    use archsig::construction::maps::LawApplication;
+    use archsig::observed::object_law_transport::LawApplication;
     for body in [
         "law required outside(a:Root):true;",
         "law optional outside(a:Root,b:Bool):false;",
@@ -503,7 +501,7 @@ fn empty_owner_list_domains_use_the_fixed_owner_and_keep_the_original_false_row(
     let failure = object_law_compatibility(i, "Selected", "v", "other", &mut quiet()).unwrap_err();
     assert!(matches!(
         failure.cause(),
-        archsig::construction::readings::ObjectEvaluationFailure::NotImplemented { .. }
+        archsig::observed::object_evaluate::ObjectEvaluationFailure::NotImplemented { .. }
     ));
     assert!(
         failure

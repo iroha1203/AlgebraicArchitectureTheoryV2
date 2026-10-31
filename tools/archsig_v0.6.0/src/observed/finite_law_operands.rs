@@ -16,13 +16,13 @@ impl Builder<'_> {
             .law()
             .expr_type(expression)
             .ok_or("有限operandの元型がない")?
-            .erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(
+            .erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
                 self.control,
                 Checkpoint::FiniteLawFunction,
             )
             .map_err(|e| match e {
-                super::super::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-                super::super::control::CheckFailure::Input(_) => "有限operandの原始型がない".into(),
+                crate::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
+                crate::control::CheckFailure::Input(_) => "有限operandの原始型がない".into(),
             })
     }
     fn put(&mut self, part: Part) -> Result<NodeRef, ValidationFailure> {

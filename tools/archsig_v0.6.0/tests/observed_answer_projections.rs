@@ -2,10 +2,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
@@ -319,7 +317,7 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
         let input = fixture::input("known", revision);
         let original = input.clone();
         let mut c = quiet();
-        let checked = archsig::observed::input::check_inputs(input.clone(), &mut c).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &mut c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);

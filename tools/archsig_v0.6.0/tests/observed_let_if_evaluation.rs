@@ -1,13 +1,11 @@
 //! AC4のlet/if段階: 三入力byteから値、lexicalな出現、欠測と中断を確認する。
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions,
+    input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,

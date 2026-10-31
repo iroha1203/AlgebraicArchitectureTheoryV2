@@ -4,10 +4,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn field<'a>(json: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = json else {

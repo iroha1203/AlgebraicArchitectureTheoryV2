@@ -1,16 +1,17 @@
 //! 元view instanceの全対象読取りを関数不変量とsignature軸へ接続する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
     object_component_diagram::Diagram as Objects,
     object_reading_evaluation as reading, object_reading_result as whole,
     result::*,
     view_family,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {

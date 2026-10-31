@@ -5,11 +5,8 @@ mod completion_evidence;
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        ObservedEvaluation,
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::{ObservedEvaluation, evaluate_observed_bytes},
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -34,7 +31,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn run(input: archsig::observed::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
+fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed_bytes(input, asks, &mut quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())))
 }
@@ -425,7 +422,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn free_compound_answer_keeps_three_inputs_dag_map_owner_facts_and_current_sources() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Applications.fcMap,x=$v.value)",

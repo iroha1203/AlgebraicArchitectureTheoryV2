@@ -1,12 +1,10 @@
 //! 必須の依存・所属・field・添字探索の終端拒否を、三入力 byte 経路で検査する。
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     definition::check_definitions,
+    input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Details, Issue, Location},
-    observed::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{InputFailure, InputSources, InputStatus, check_inputs},
-    },
     result::{ResultIssue, Signal},
 };
 use std::{cell::Cell, rc::Rc};

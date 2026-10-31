@@ -1,13 +1,9 @@
 //! 必須の構文・参照・schema拒否が確定した直後の予算優先と元診断を検査する。
 use archsig::{
     canonical::Json,
-    observed::{
-        PrepareFailure,
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::{InputSources, InputStatus, check_inputs},
-        prepare_observed,
-        request::ResolveFailure,
-    },
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    input::{InputSources, InputStatus, check_inputs},
+    observed::{PrepareFailure, prepare_observed, request::ResolveFailure},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

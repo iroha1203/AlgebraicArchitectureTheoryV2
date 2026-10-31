@@ -1,9 +1,8 @@
 //! 観測環境のevaluate/checkと、依存理由を読むneeded要求。
 
-use super::{
-    control::{Checkpoint, Control, StopReason},
-    projection::{self, ProjectionPlan, ProjectionStep, ProjectionType},
-};
+use crate::control::{Checkpoint, Control, StopReason};
+
+use super::projection::{self, ProjectionPlan, ProjectionStep, ProjectionType};
 use crate::{
     archmap::{CheckedArchMap, Slot, Subject, Value},
     canonical::Json,
@@ -1962,7 +1961,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod required_predicate_priority_tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

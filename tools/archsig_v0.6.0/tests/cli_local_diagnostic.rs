@@ -349,10 +349,10 @@ fn finite_higher_degree_is_unsupported_and_does_not_stop_independent_answers() {
 }
 #[test]
 fn localize_budget_and_signal_stop_keep_the_prior_architecture() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = input("local-stop", Some(true));
@@ -2975,7 +2975,11 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
 
 #[test]
 fn finite_explicit_read_stop_keeps_the_missing_field_already_observed() {
-    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage}, evaluate::evaluate_observed_bytes, input::InputSources};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
     use std::{cell::Cell, rc::Rc};
     let dir = multiple_read_input("explicit-read-stop", true, None, "t.other");
     let path = dir.join("l.law");
@@ -3278,8 +3282,11 @@ fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_imag
 
 #[test]
 fn integer_local_stop_retains_completed_contexts_without_publishing_a_system() {
-    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},evaluate::evaluate_observed_bytes};
-    use std::{cell::Cell,rc::Rc};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        observed::evaluate::evaluate_observed_bytes,
+    };
+    use std::{cell::Cell, rc::Rc};
     #[path = "common/three_edge.rs"]
     mod triangle;
     let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)"];
@@ -3488,8 +3495,12 @@ fn integer_local_vectors_compare_only_in_the_same_module() {
 
 #[test]
 fn integer_local_empty_cover_degree_iteration_observes_budget() {
-    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},evaluate::evaluate_observed_bytes,input::InputSources};
-    use std::{cell::Cell,rc::Rc};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
+    use std::{cell::Cell, rc::Rc};
     let dir=integer_local_variant("integer-empty-degree-budget",|s|s
         .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","")
         .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;",""),None);

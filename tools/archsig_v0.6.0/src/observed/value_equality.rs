@@ -1,10 +1,10 @@
 //! Lawの数学的等値。元programの同一性検査はvalidation_identityに残す。
 use super::{
-    control::{Checkpoint, Control},
     data, finite,
     result::{Scalar, ValidationFailure},
     term,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{law::CheckedLaw, types::Type};
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.clone().checkpoint(Checkpoint::FiniteIteration)?;

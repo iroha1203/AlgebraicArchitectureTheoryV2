@@ -5,10 +5,8 @@ mod completion_evidence;
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 fn quiet() -> Control {
@@ -415,7 +413,7 @@ fn owned_compound_map_wrappers_keep_all_elements_and_empty_map_boundaries() {
 #[test]
 fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs() {
     let input = fixture::input(false, true, "r1");
-    let checked = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
     let r = evaluate_observed_bytes(
         input,

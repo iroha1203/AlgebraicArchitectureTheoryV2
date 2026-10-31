@@ -2,16 +2,16 @@
 
 use super::{Io, Outcome, RunArgs, Signals, output, read};
 use crate::canonical::Json;
-use crate::observed::{
-    EvaluationFailure, ObservedEvaluation, PrepareFailure,
-    control::{Control, StopReason},
-    evaluate_observed,
-    input::{InputSources, InputStatus},
-    prepare_observed,
-    request::ResolveFailure,
-    result::{Decision, ReasonKind},
-};
 use crate::result::{ResultIssue, Signal, Status, exit_code};
+use crate::{
+    control::{Control, StopReason},
+    input::{InputSources, InputStatus},
+    observed::{
+        EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
+        request::ResolveFailure,
+        result::{Decision, ReasonKind},
+    },
+};
 use std::time::Instant;
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {

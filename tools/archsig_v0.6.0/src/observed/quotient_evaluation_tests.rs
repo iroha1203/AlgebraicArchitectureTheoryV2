@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
     input::check_inputs,
 };
@@ -10,7 +10,7 @@ mod fixture {
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
-fn inputs(extra: &str) -> crate::observed::input::CheckedInputs {
+fn inputs(extra: &str) -> crate::input::CheckedInputs {
     check_inputs(fixture::sources(extra, ""), &mut quiet()).unwrap()
 }
 fn data(name: &str, args: Vec<Scalar>) -> Scalar {
@@ -109,7 +109,7 @@ fn finite_data_values_validate_names_arity_payload_and_family_before_equality() 
 
 #[test]
 fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
-    use crate::observed::control::{Resource, StopReason};
+    use crate::control::{Resource, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = inputs("");

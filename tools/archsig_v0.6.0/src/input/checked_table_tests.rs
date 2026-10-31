@@ -2,19 +2,17 @@
 use archsig::{
     archmap::{CheckedArchMap, check_archmap},
     canonical::{Json, sha256_digest},
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     definition::{CheckedDefinitions, check_definitions},
+    input::{CheckedInputs, InputBytes, InputFailure, InputSources, InputStatus, check_inputs},
     law::{CheckedLaw, check_law},
-    observed::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{CheckedInputs, InputBytes, InputFailure, InputSources, InputStatus, check_inputs},
-    },
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
-const DEFINITIONS: &[u8] = include_bytes!("../../../tests/fixtures/counter.atoms.json");
-const LAW: &[u8] = include_bytes!("../../../tests/fixtures/counter.law");
-const MAP: &[u8] = include_bytes!("../../../tests/fixtures/counter.archmap.json");
+const DEFINITIONS: &[u8] = include_bytes!("../../tests/fixtures/counter.atoms.json");
+const LAW: &[u8] = include_bytes!("../../tests/fixtures/counter.law");
+const MAP: &[u8] = include_bytes!("../../tests/fixtures/counter.archmap.json");
 
 fn sources() -> InputSources {
     let unused = String::from_utf8(DEFINITIONS.to_vec())

@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Control, Limits, Usage};
+use crate::control::{Control, Limits, Usage};
 #[allow(dead_code)]
 mod fixture {
     include!("../../tests/common/primitive_valuation_data.rs");
@@ -241,7 +241,7 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
         use crate as archsig;
         include!("../../tests/common/internal_paths.rs");
     }
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let original = paths::input("normal", "finite-law");
     let law = String::from_utf8(original.law().bytes().to_vec())
         .unwrap()
@@ -401,7 +401,7 @@ fn recheck_rejects_changes_to_the_original_contract_domain_and_rows() {
 #[test]
 fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
@@ -741,7 +741,7 @@ fn closed_term_keeps_its_checked_meaning_across_readings() {
 
 #[test]
 fn definition_term_binding_remains_valid_without_a_law_vocabulary_import() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let donor = fixture::inputs();
     let value = literal_term(&donor, "Selected.complex");
     let i=check_inputs(InputSources::from_bytes(donor.sources().definitions().iter().map(|d|d.bytes().to_vec()).collect(),b"law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Closed{law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;}".to_vec(),donor.sources().archmap().bytes().to_vec()),&mut quiet()).unwrap();
@@ -754,7 +754,7 @@ fn definition_term_binding_remains_valid_without_a_law_vocabulary_import() {
 #[test]
 fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
@@ -845,7 +845,7 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
         use crate as archsig;
         include!("../../tests/common/internal_paths.rs");
     }
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let original = paths::input("normal", "fixed-path");
     let law = String::from_utf8(original.law().bytes().to_vec())
         .unwrap()
@@ -1256,7 +1256,7 @@ fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
 #[test]
 fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
@@ -1682,7 +1682,7 @@ fn component_recheck_rejects_path_type_operands_equality_indicator_and_roster_fo
 #[test]
 fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};

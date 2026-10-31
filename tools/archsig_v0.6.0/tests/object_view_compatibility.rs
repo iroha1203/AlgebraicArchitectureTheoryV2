@@ -1,12 +1,13 @@
 use archsig::{
     canonical::Json,
-    construction::readings::{
-        ObjectEvaluationOutcome, ObjectViewCompatibility, ViewCompatibilityCondition as Failed,
-        ViewCompatibilityOutcome as Outcome, object_view_compatibility,
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
+        object_evaluate::ObjectEvaluationOutcome,
+        object_view_compatibility::{
+            ObjectViewCompatibility, ViewCompatibilityCondition as Failed,
+            ViewCompatibilityOutcome as Outcome, object_view_compatibility,
+        },
     },
 };
 use std::sync::Arc;
@@ -246,7 +247,7 @@ fn conditional_membership_and_known_conflicts_keep_their_separate_evidence() {
 
 #[test]
 fn unsupported_parameter_evaluation_is_preserved_as_an_execution_failure() {
-    use archsig::construction::readings::ObjectEvaluationFailure;
+    use archsig::observed::object_evaluate::ObjectEvaluationFailure;
     let i = inputs("view family(c:Part,n:Z):Z=n+c.quantity;", A);
     let f = object_view_compatibility(i, "Selected", "v", "root", &mut quiet()).unwrap_err();
     assert!(matches!(

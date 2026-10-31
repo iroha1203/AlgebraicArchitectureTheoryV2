@@ -2,13 +2,11 @@
 mod common;
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions_controlled,
+    input::{CheckedInputs, InputSources, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{

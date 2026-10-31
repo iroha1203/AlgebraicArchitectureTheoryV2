@@ -114,7 +114,7 @@ fn known_map_walk_equality_and_recheck_stops_freeze_shared_control() {
                 if count.get() == 5 {
                     usage
                 } else {
-                    super::super::control::Usage::default()
+                    crate::control::Usage::default()
                 }
             });
             let operation = || {
@@ -141,7 +141,7 @@ fn known_map_walk_equality_and_recheck_stops_freeze_shared_control() {
         if arm.get() {
             usage
         } else {
-            super::super::control::Usage::default()
+            crate::control::Usage::default()
         }
     });
     let environment = Environment::new(r.prepared.inputs(), &mut control).unwrap();
@@ -157,7 +157,7 @@ fn known_map_walk_equality_and_recheck_stops_freeze_shared_control() {
     assert_eq!(probes.get(), frozen);
 }
 fn known_map_private_stop(kind: usize, after_answer: bool) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",

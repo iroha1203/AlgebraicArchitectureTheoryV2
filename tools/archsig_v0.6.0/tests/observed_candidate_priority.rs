@@ -1,9 +1,7 @@
 //! 最後の構文候補が確定した不正を、共有予算が入力中断へ変えないことを確認する。
 use archsig::{
-    observed::{
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::{InputSources, InputStatus, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

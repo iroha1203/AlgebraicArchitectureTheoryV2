@@ -1,13 +1,11 @@
 //! AC4数値型段階: Q/Fp/数値Tupleの値・残差・各出現と由来を三入力byteから検査する。
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions,
+    input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,

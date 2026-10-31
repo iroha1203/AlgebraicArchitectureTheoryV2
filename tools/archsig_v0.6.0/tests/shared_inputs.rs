@@ -1,12 +1,11 @@
 use archsig::{
     canonical::Json,
     construction::{construct, readings::object_reading_instances},
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
-        PrepareFailure, PreparedObserved,
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed,
-        input::{CheckedInputs, InputSources, check_inputs},
-        prepare_checked_observed, prepare_observed, prepare_shared_observed,
+        PrepareFailure, PreparedObserved, evaluate_observed, prepare_checked_observed,
+        prepare_observed, prepare_shared_observed,
         request::{RequestIssueCode, ResolveFailure},
         result::ObservedEvaluation,
     },

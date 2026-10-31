@@ -3,10 +3,8 @@ mod common;
 
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::{InputSources, InputStatus, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -125,9 +123,9 @@ fn invalid_after_budget(sources: InputSources, point: Checkpoint, at: usize, res
         control.stop_reason(),
         Some(StopReason::BudgetExhausted {
             resource: if resource == 1 {
-                archsig::observed::control::Resource::TimeMs
+                archsig::control::Resource::TimeMs
             } else {
-                archsig::observed::control::Resource::MemoryMib
+                archsig::control::Resource::MemoryMib
             },
             limit: 1,
             observed: 1,

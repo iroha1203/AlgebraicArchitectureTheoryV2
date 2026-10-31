@@ -2,14 +2,12 @@
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     json::{JNode, JValue},
     law::{ast::ExprKind, model::Signature},
     observed::{
-        ObservedEvaluation,
-        control::{Control, Limits, Usage},
-        evaluate_observed, evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-        prepare_checked_observed,
+        ObservedEvaluation, evaluate_observed, evaluate_observed_bytes, prepare_checked_observed,
     },
 };
 use std::collections::{BTreeMap, BTreeSet};

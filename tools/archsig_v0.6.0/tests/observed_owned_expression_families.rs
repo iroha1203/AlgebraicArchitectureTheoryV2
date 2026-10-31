@@ -4,14 +4,11 @@ mod common;
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
+    control::{Control, Limits, Usage},
     definition::check_definitions_controlled,
+    input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{ExprKind, QuantDomain, QuantSplit},
-    observed::{
-        ObservedEvaluation,
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    observed::{ObservedEvaluation, evaluate_observed_bytes},
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};

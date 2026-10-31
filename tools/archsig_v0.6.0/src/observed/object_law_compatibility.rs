@@ -1,8 +1,6 @@
 //! 同じ完全query pattern上のLaw適用条件と述語を、元評価の全代入で照合する。
 use super::{
-    control::{Checkpoint, Control},
     data,
-    input::CheckedInputs,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -15,10 +13,17 @@ use super::{
     result::{NodeRef, ValidationFailure},
     value_transport::FiniteTransportValue,
 };
-use crate::construction::{
-    ConstructionFailure,
-    profiles::{ConfigurationProfiles, construct_profiles},
-    readings::{ObjectEvaluationPosition, ObjectReadingInstances, object_reading_instances},
+use crate::{
+    construction::{
+        ConstructionFailure,
+        profiles::{ConfigurationProfiles, construct_profiles},
+        readings::{ObjectReadingInstances, object_reading_instances},
+    },
+    observed::object_evaluation_table::ObjectEvaluationPosition,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
@@ -732,12 +737,12 @@ fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::result::Signal;
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
-        result::Scalar,
+        observed::result::Scalar,
     };
-    use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");

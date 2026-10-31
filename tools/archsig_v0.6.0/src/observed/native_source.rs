@@ -1,10 +1,10 @@
 //! native構成の元producerと既出入力を、生成・消費の両経路で検査する。
 use super::{
     call::Context,
-    control::{Checkpoint, Control},
     environment::Environment,
     result::{Graph, NodeRef, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::NativeResultNode)?;

@@ -1,13 +1,12 @@
 //! 元object_readingの閉じたviewを、通常Evaluatorのinstanceへ接続する。
 use super::{
-    construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness,
-    },
-    control::{Checkpoint, Control},
+    construction_result as native,
+    construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness},
     environment::Environment,
     object_component_diagram::ViewOrigin,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     canonical::Json,
     construction::readings::{InstanceApplication, MembershipCondition},

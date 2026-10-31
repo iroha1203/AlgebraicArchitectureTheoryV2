@@ -1,9 +1,9 @@
 //! Pathの共通carrier作用と名前付き語を合成し、最終停止で完成値を保持する。
 use super::{
-    control::{Checkpoint, Control},
     path_value::{PathValue, Step},
     result::{Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ComposedPath {
     pub value: Option<PathValue>,

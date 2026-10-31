@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Limits, Usage};
+use crate::control::{Limits, Usage};
 #[allow(dead_code)]
 mod fixture {
     include!("../../tests/common/primitive_valuation_data.rs");
@@ -503,7 +503,7 @@ fn equation_schema_is_rechecked_even_when_there_are_no_candidate_rows() {
 #[test]
 fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() {
     use crate::{
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};

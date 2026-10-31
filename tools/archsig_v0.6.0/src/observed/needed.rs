@@ -1,6 +1,5 @@
 //! 現在の検査済み回答から、未観測位置とその他の理由を収集する。
 use super::{
-    control::{Checkpoint, Control, StopReason},
     environment::Environment,
     request::{QuestionKind, Request, Selector},
     result::{
@@ -8,6 +7,7 @@ use super::{
         ValidationFailure, sort_reasons,
     },
 };
+use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, issue::Location, result::location_wire};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -332,7 +332,10 @@ pub(super) fn evaluate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{ObservedEvaluation, evaluate_observed_bytes, input::InputSources};
+    use crate::{
+        input::InputSources,
+        observed::{ObservedEvaluation, evaluate_observed_bytes},
+    };
     fn example() -> ObservedEvaluation {
         let map=include_str!("../../tests/fixtures/counter.archmap.json").replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}","");
         evaluate_observed_bytes(

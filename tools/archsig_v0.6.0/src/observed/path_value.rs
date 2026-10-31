@@ -1,10 +1,10 @@
 //! Path の名前付き生成元・共通carrier上の作用と、結果型 T の既出Ref表示。
 //! 表示 node の番号は値の同一性に含めず、値の挿入前に既出の型付き値を照合する。
 use super::{
-    control::{Checkpoint, Control},
     data,
     result::{Node, NodeRef, NodeType, Payload, Scalar, ValidationFailure},
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

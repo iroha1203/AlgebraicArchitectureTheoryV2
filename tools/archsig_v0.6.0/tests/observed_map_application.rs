@@ -3,11 +3,9 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::check_inputs,
-    },
+    control::{Control, Limits, Usage},
+    input::check_inputs,
+    observed::evaluate_observed_bytes,
 };
 use std::collections::BTreeMap;
 fn quiet() -> Control {

@@ -312,7 +312,7 @@ pub(super) fn operand_path(
     }
     let operation = crate::observed::public_compose::op(graph, reference)?;
     let inputs = value(graph, reference)?.witness.inputs();
-    let scalar = |fact: &crate::construction::FactPointer| -> Result<Scalar, ValidationFailure> {
+    let scalar = |fact: &crate::archmap::Fact| -> Result<Scalar, ValidationFailure> {
         let subject = inputs
             .archmap()
             .snapshots
@@ -326,7 +326,7 @@ pub(super) fn operand_path(
             entity: subject.ty.clone(),
         })
     };
-    let fact = |p: &crate::construction::FactPointer| Fact {
+    let fact = |p: &crate::archmap::Fact| Fact {
         snapshot: p.snapshot.clone(),
         subject: p.subject.clone(),
         field: p.field.clone(),

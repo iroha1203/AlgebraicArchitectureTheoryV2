@@ -1,7 +1,5 @@
 //! 実Operationに沿って数値成分の零性と有限detectorの受理を検査する。
 use super::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
     object_law_circuits::{
         LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitsCondition, ObjectLawCircuits,
         ObjectLawCircuitsFailure, object_law_circuits,
@@ -12,10 +10,13 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{
-        ConstructionFailure, maps::DeclarationCorrespondence, readings::ObjectEvaluationPosition,
-    },
+    construction::{ConstructionFailure, maps::DeclarationCorrespondence},
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
@@ -526,7 +527,7 @@ mod tests {
             maps::{correspondence, declaration_correspondence},
             readings::object_reading_instances,
         },
-        observed::input::{InputSources, check_inputs},
+        input::{InputSources, check_inputs},
     };
     fn example() -> (Arc<CheckedInputs>, DeclarationCorrespondence, usize, usize) {
         let left = include_bytes!("../../tests/fixtures/object-law-family.atoms.json");

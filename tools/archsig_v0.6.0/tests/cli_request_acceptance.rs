@@ -4,11 +4,10 @@ mod cli;
 #[path = "common/request_acceptance_data.rs"]
 mod fixture;
 use archsig::{
+    control::{Control, Limits, Usage},
     json::{JNode, JValue, parse},
     observed::{
-        PrepareFailure,
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes, prepare_observed,
+        PrepareFailure, evaluate_observed_bytes, prepare_observed,
         request::{ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure},
     },
 };

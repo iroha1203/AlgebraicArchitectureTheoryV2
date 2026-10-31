@@ -1,11 +1,12 @@
 use archsig::{
-    construction::readings::{
-        EquationGuard as G, EquationPolynomial, EquationPresentation, EquationPresentationFailure,
-        EquationPresentationStatus as S, object_equation_presentation,
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
+        equation_polynomial::EquationPolynomial,
+        object_equation_presentation::{
+            EquationGuard as G, EquationPresentation, EquationPresentationFailure,
+            EquationPresentationStatus as S, object_equation_presentation,
+        },
     },
     types::Type,
 };
@@ -47,7 +48,9 @@ fn terms(p: &EquationPolynomial) -> Vec<(Vec<usize>, String)> {
         .map(|t| (t.variables.clone(), t.coefficient.wire().canonical()))
         .collect()
 }
-fn number(v: &Option<archsig::construction::maps::NumericTransportValue>) -> Option<String> {
+fn number(
+    v: &Option<archsig::observed::numeric_transport::NumericTransportValue>,
+) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
 #[test]
@@ -349,7 +352,7 @@ fn changed_current_input_and_invalid_object_are_rejected() {
 fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_completion() {
     use archsig::{
         construction::ConstructionFailure,
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -641,7 +644,7 @@ fn two_subjects() -> String {
 }
 fn binding(
     r: &EquationPresentation,
-    q: &archsig::construction::readings::EquationOccurrence,
+    q: &archsig::observed::object_equation_presentation::EquationOccurrence,
     name: &str,
 ) -> String {
     r.base().base().readings().instances()[q.position.instance]
@@ -1048,7 +1051,7 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
                 Some(if truth { "\"2\"" } else { "\"0\"" }.into())
             );
             let evaluation = r.base().base().evaluations()[q.position.instance].evaluation();
-            let archsig::construction::readings::ObjectEvaluationOutcome::Evaluated(g) =
+            let archsig::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(g) =
                 evaluation.outcome()
             else {
                 panic!("original evaluation")
@@ -1174,7 +1177,7 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
-    use archsig::observed::control::{Checkpoint, Resource, StopReason};
+    use archsig::control::{Checkpoint, Resource, StopReason};
     let i = inputs_with(
         fixture::D,
         "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",

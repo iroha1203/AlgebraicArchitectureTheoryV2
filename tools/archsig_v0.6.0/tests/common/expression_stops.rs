@@ -1,10 +1,8 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

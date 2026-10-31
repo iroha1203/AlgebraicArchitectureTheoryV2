@@ -5,7 +5,7 @@ mod cli;
 #[allow(dead_code)]
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
-fn input() -> std::sync::Arc<observed::input::CheckedInputs> {
+fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
     let definitions = fixture::D.replace(
         r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,
         r#"{"name":"flag","type":"Bool","meaning":"条件。"}"#,
@@ -17,16 +17,16 @@ fn input() -> std::sync::Arc<observed::input::CheckedInputs> {
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";change choose(c:Part,b:Bool)=c with {{flag=b}};law required valid(c:Part):c.flag;view flag(c:Part):Bool=c.flag;}}"
     );
-    let sources = observed::input::InputSources::from_bytes(
+    let sources = archsig::input::InputSources::from_bytes(
         vec![definitions.into_bytes()],
         law.into_bytes(),
         map.into_bytes(),
     );
     std::sync::Arc::new(
-        observed::input::check_inputs(
+        archsig::input::check_inputs(
             sources,
-            &mut observed::control::Control::new(observed::control::Limits::default(), |_| {
-                observed::control::Usage::default()
+            &mut archsig::control::Control::new(archsig::control::Limits::default(), |_| {
+                archsig::control::Usage::default()
             }),
         )
         .unwrap(),
@@ -398,14 +398,14 @@ fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
         } else {
             map
         };
-        let sources = observed::input::InputSources::from_bytes(
+        let sources = archsig::input::InputSources::from_bytes(
             vec![input.sources().definitions()[0].bytes().to_vec()],
             law.into_bytes(),
             map.into_bytes(),
         );
         let mut control =
-            observed::control::Control::new(observed::control::Limits::default(), |_| {
-                observed::control::Usage::default()
+            archsig::control::Control::new(archsig::control::Limits::default(), |_| {
+                archsig::control::Usage::default()
             });
         let prepared = observed::prepare_observed(
             sources,
@@ -589,7 +589,7 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         "",
     );
     assert_ne!(map, missing);
-    let sources = observed::input::InputSources::from_bytes(
+    let sources = archsig::input::InputSources::from_bytes(
         original
             .sources()
             .definitions()
@@ -599,8 +599,8 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         original.sources().law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let mut control = observed::control::Control::new(observed::control::Limits::default(), |_| {
-        observed::control::Usage::default()
+    let mut control = archsig::control::Control::new(archsig::control::Limits::default(), |_| {
+        archsig::control::Usage::default()
     });
     let prepared = observed::prepare_observed(
         sources,

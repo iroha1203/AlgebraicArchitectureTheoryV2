@@ -1,11 +1,9 @@
 use archsig::{
-    construction::readings::{
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
+    observed::object_law_circuits::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
         ObjectLawCircuitsFailure, object_law_circuits,
-    },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
     },
 };
 use std::sync::Arc;
@@ -214,7 +212,7 @@ fn same_pattern_disagreement_retains_candidates_and_refutation_but_no_codes() {
     );
     assert!(matches!(
         r.base().outcome(),
-        Some(archsig::construction::readings::LawResidualOutcome::Refuted { .. })
+        Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
     ));
 }
 #[test]
@@ -265,7 +263,7 @@ fn no_laws_has_no_circuits_and_is_complete() {
 #[test]
 fn fixed_generation_and_recheck_stops_preserve_prefix_final_completion_and_freeze_probes() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};

@@ -1,17 +1,20 @@
 //! 元の三入力とRequestからArchitectureを組み立て、その由来を再検査する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::{AnswerBinding, Environment},
-    input::CheckedInputs,
     projection::ProjectionStep as P,
     request::{QuestionKind, Request, Selector},
     result::*,
 };
 use crate::{construction::ConstructionFailure, issue::Location, law::model::ExpressionKind};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
+};
 use std::sync::Arc;
 
 fn tick(control: &mut Control) -> Result<(), ValidationFailure> {

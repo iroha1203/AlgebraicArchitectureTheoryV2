@@ -10,7 +10,7 @@ use crate::{
     },
 };
 
-type Inputs = super::super::super::input::CheckedInputs;
+type Inputs = crate::input::CheckedInputs;
 fn pending(
     out: &mut Output,
     request: &Request,

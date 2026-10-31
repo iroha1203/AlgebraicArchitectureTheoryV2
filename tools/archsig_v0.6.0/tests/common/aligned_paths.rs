@@ -1,4 +1,4 @@
-use archsig::{definition::check_definitions, observed::input::InputSources};
+use archsig::{definition::check_definitions, input::InputSources};
 pub const DEFINITIONS: &str = r#"{
   "format": "archsig.atom-definition/1",
   "semantics": "archsig/0.6.0",

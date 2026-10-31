@@ -3,7 +3,7 @@ mod base {
     use super::fixture_archsig as archsig;
     include!("owned_calls.rs");
 }
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 
 pub const SCRIPT: &str = r#"
 view ccAccept(a:System,b:System,x:(State[a],Option<List<State[b]>>),ys:Set<State[a]>,e:Option<Reserve[a]>):Bool=true;

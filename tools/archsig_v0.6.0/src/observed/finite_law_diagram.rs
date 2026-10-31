@@ -1,17 +1,16 @@
 //! 元Architectureの有限Law表示を既存のnative導出DAGへ保持する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::{
         Environment,
         finite_law_valuations::object::instances::realizations::automatic::{
             AutomaticLawValuations, ObservedLawReading, finite_automatic_law_family,
         },
     },
-    input::CheckedInputs,
     result::*,
 };
 use crate::{
@@ -21,6 +20,10 @@ use crate::{
     law::{ast::Role, model::Signature},
     result::location_wire,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 
@@ -519,13 +522,13 @@ fn function(
 }
 fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailure> {
     super::data::input_json(value, c)?
-        .canonical_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+        .canonical_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
             c,
             Checkpoint::FiniteLawFunction,
         )
         .map_err(|e| match e {
-            super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-            super::control::CheckFailure::Input(_) => {
+            crate::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+            crate::control::CheckFailure::Input(_) => {
                 ValidationFailure::Internal("有限Lawのcanonical値が構成できない".into())
             }
         })
@@ -628,13 +631,13 @@ fn original_rows(
             let (_, value) = found.next().ok_or("有限Lawの元parameter束縛がない")?;
             let ty = parameter
                 .ty
-                .erase_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+                .erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
                     c,
                     Checkpoint::FiniteLawFunction,
                 )
                 .map_err(|e| match e {
-                    super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                    super::control::CheckFailure::Input(_) => {
+                    crate::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                    crate::control::CheckFailure::Input(_) => {
                         ValidationFailure::Internal("有限Lawのparameterの原始型がない".into())
                     }
                 })?;
@@ -719,13 +722,13 @@ fn basis(
     for ty in f.types() {
         tick(c)?;
         value_types.push(
-            ty.erase_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+            ty.erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
                 c,
                 Checkpoint::FiniteLawFunction,
             )
             .map_err(|e| match e {
-                super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                super::control::CheckFailure::Input(_) => {
+                crate::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                crate::control::CheckFailure::Input(_) => {
                     ValidationFailure::Internal("有限Lawの原始表示型が解決できない".into())
                 }
             })?,

@@ -2,7 +2,7 @@
 use super::{Node, NodeRef, NodeType};
 use crate::{
     canonical::Json,
-    observed::control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control, StopReason},
 };
 use std::collections::{BTreeMap, BTreeSet};
 

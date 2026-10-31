@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(xs) = j else { panic!("object") };
@@ -375,7 +373,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
             &Json::Bool(true)
         );
         let input = fixture::input(script, "Z", &[], revision);
-        let checked = archsig::observed::input::check_inputs(
+        let checked = archsig::input::check_inputs(
             input,
             &mut Control::new(Limits::default(), |_| Usage::default()),
         )

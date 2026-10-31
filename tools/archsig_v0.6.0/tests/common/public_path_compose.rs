@@ -1,6 +1,6 @@
 // 原始観測fixtureとLawのPath view。期待値は実装から生成しない。
 use archsig as fixture_archsig;
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 mod base {
     use super::fixture_archsig as archsig;
     include!("composed_paths.rs");

@@ -846,7 +846,7 @@ pub(super) fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{
         cell::{Cell, RefCell},

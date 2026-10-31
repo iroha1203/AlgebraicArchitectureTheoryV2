@@ -1,9 +1,7 @@
 //! 同じ完全query pattern上のview読取りを、元評価と全有限代入で照合する。
 use super::{
-    control::{Checkpoint, Control},
     data,
     environment::same_scalar_identity,
-    input::CheckedInputs,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -15,10 +13,17 @@ use super::{
     result::{Scalar, ValidationFailure},
     value_equality,
 };
-use crate::construction::{
-    ConstructionFailure,
-    profiles::{ConfigurationProfiles, construct_profiles},
-    readings::{ObjectEvaluationPosition, ObjectReadingInstances, object_reading_instances},
+use crate::{
+    construction::{
+        ConstructionFailure,
+        profiles::{ConfigurationProfiles, construct_profiles},
+        readings::{ObjectReadingInstances, object_reading_instances},
+    },
+    observed::object_evaluation_table::ObjectEvaluationPosition,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 
@@ -723,12 +728,12 @@ fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::result::Signal;
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
-        result::Scalar,
+        observed::result::Scalar,
     };
-    use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");

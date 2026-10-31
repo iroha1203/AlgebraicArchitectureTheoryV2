@@ -1643,10 +1643,8 @@ fn universal_mixed_verified_current_stop_retains_aggregate_and_unstarted_request
 }
 
 fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str, request: &str) {
-    use super::super::{
-        affine,
-        control::{Limits, Resource, Usage},
-    };
+    use super::super::affine;
+    use crate::control::{Limits, Resource, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let sources = affine_private_fixture(&format!(
@@ -1944,10 +1942,8 @@ fn universal_recheck_stop_mode(
     stop: super::super::affine::TestPoint,
     reuse_checked: bool,
 ) {
-    use super::super::{
-        affine,
-        control::{Limits, Usage},
-    };
+    use super::super::affine;
+    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let result = universal_private_example(body, &[request]);

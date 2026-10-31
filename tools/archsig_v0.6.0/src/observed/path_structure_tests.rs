@@ -1,6 +1,6 @@
 use super::super::super::finite_law_valuations::{FiniteLawState, finite_law_family_valuations};
 use super::*;
-use crate::{canonical::Json, json::parse, observed::input::InputSources};
+use crate::{canonical::Json, input::InputSources, json::parse};
 
 fn quantity_input(mark_type: Json, extra: &str) -> Arc<CheckedInputs> {
     typed_input(mark_type, None, vec![], extra)

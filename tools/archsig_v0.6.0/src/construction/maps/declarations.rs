@@ -390,8 +390,8 @@ mod tests {
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
             .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest);
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
                 law.replace("@LEFT_DIGEST@", ld)
                     .replace("@RIGHT_DIGEST@", rd)

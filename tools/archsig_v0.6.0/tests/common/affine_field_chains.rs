@@ -2,8 +2,8 @@ use archsig as fixture_archsig;
 use archsig::{
     canonical::Json,
     definition::check_definitions,
+    input::InputSources,
     json::{JNode, JValue},
-    observed::input::InputSources,
 };
 #[allow(dead_code)]
 mod paths {

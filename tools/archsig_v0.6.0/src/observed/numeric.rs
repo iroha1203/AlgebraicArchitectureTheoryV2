@@ -1,9 +1,8 @@
 //! 観測値と再検査が共有する正確な数値演算。型間の暗黙変換は行わない。
 
-use super::{
-    control::{Checkpoint, Control},
-    result::{Scalar, ValidationFailure},
-};
+use crate::control::{Checkpoint, Control};
+
+use super::result::{Scalar, ValidationFailure};
 use crate::{
     archmap::Value,
     law::ast::{BinOp, UnOp},

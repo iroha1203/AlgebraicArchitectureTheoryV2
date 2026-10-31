@@ -1,8 +1,6 @@
 //! 宣言の型構造に沿う値移送と、有限域での順逆検査。
 use super::{
-    control::{Checkpoint, Control},
     data, finite,
-    input::CheckedInputs,
     result::{Fact, Scalar, ValidationFailure},
 };
 use crate::{
@@ -12,6 +10,10 @@ use crate::{
         maps::{ConfigurationOperation, DeclarationCorrespondence},
     },
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -741,7 +743,7 @@ pub fn finite_declaration_value_transport(
 mod tests {
     use super::*;
     use crate::construction::maps::{correspondence, declaration_correspondence};
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     const L: &str = include_str!("../../tests/fixtures/finite-value-transport.law");
     const A: &str = include_str!("../../tests/fixtures/reference-type.archmap.json");
     fn inputs(a: &str) -> CheckedInputs {
@@ -769,11 +771,11 @@ mod tests {
                 .all(|constructor| constructor.arguments.is_empty())
         );
         let mut seen = 0;
-        let mut control = Control::new(super::super::control::Limits::default(), move |point| {
+        let mut control = Control::new(crate::control::Limits::default(), move |point| {
             if point == Checkpoint::FiniteValueTransport {
                 seen += 1;
             }
-            super::super::control::Usage {
+            crate::control::Usage {
                 elapsed_ms: 0,
                 memory_mib: 0,
                 signal: (seen == 2).then_some(crate::result::Signal::Term),

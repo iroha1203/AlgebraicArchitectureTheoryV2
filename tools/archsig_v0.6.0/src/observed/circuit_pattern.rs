@@ -1,12 +1,11 @@
 //! 既存の完全query patternを、元標準対象と同じUのnative DAGへ保持する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
-    input::CheckedInputs,
     object_component_diagram::Diagram as Objects,
     result::*,
 };
@@ -16,6 +15,10 @@ use crate::{
         ConstructionFailure,
         profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
     },
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {

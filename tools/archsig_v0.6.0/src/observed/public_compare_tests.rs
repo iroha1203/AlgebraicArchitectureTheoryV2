@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    construction_result::ConstructionData as D,
+use crate::{
     control::{Limits, Usage},
-    public_compare::Part,
+    observed::{construction_result::ConstructionData as D, public_compare::Part},
 };
 use std::{cell::Cell, rc::Rc};
 mod fixture {

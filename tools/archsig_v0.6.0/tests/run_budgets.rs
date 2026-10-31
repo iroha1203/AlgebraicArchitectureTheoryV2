@@ -1,6 +1,6 @@
 //! 公開RunArgsとCLI解析が、同じ検証済み予算をControlへ渡すことを確かめる。
 use archsig::{
-    observed::control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     run::{Budget, CheckArgs, Command, RunArgs, parse_args},
 };
 use std::ffi::OsString;

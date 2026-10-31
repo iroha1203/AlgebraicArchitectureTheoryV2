@@ -1,7 +1,5 @@
 //! native構成の不変な検査結果を、公開DAGの型付きrecordとして保持する。
-use super::control::{Control, StopReason};
 use super::{
-    input::CheckedInputs,
     projection::{MapProjection, ProjectionStep, ProjectionType},
     request::Request,
     result::{
@@ -10,6 +8,8 @@ use super::{
     },
 };
 use crate::construction::{ConstructionFailure, construct, readings::object_reading_instances};
+use crate::control::{Control, StopReason};
+use crate::input::CheckedInputs;
 use crate::{
     canonical::Json,
     construction::{
@@ -1124,7 +1124,7 @@ impl ArchitectureWitness {
                 .filter(|m| !m.is_entity())
                 .map(|m| m.subject()),
         ) {
-            control.checkpoint(super::control::Checkpoint::ObjectInstances)?;
+            control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
             let subject = find_subject(&inputs, fact).map_err(ConstructionFailure::Inconsistent)?;
             if matches!(
                 inputs.definitions().declarations[&subject.ty].signature,
@@ -1143,7 +1143,7 @@ impl ArchitectureWitness {
         support.extend_from_slice(construction.owner_support());
         for snapshot in &inputs.archmap().snapshots {
             for subject in &snapshot.subjects {
-                control.checkpoint(super::control::Checkpoint::ObjectInstances)?;
+                control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
                 let declaration = &inputs.definitions().declarations[&subject.ty];
                 let owner = match &declaration.signature {
                     crate::definition::PrimitiveSignature::Entity {
@@ -1179,7 +1179,7 @@ impl ArchitectureWitness {
         }
         for row in readings.instances() {
             for binding in row.bindings() {
-                control.checkpoint(super::control::Checkpoint::ObjectInstances)?;
+                control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
                 support.push(binding.subject().clone());
                 if matches!(binding.parameter().ty, Type::Owned(..)) {
                     let subject = find_subject(&inputs, binding.subject())

@@ -3,8 +3,8 @@ pub mod model;
 mod primitive;
 mod reader;
 mod validate;
+use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::json::InputError;
-use crate::observed::control::{CheckFailure, Checkpoint, Control};
 use crate::{
     canonical::sha256_digest,
     issue::{Code, Details, Issue, Location},

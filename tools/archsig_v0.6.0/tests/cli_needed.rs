@@ -422,7 +422,7 @@ fn args(dir: &Path) -> archsig::run::RunArgs {
 }
 #[test]
 fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
-    use archsig::observed::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::control::{Checkpoint, Control, Limits, Usage};
     use archsig::result::Signal;
     use std::{cell::Cell, rc::Rc, time::Instant};
     let count = Rc::new(Cell::new(0usize));

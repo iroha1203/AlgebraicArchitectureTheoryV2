@@ -283,9 +283,17 @@ fn value_types(
                 }
             }
             ProjectionType::Law(ty) => {
-                let ty=ty.erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(control,Checkpoint::RequestBinding)
-                    .map_err(|e|match e {super::super::control::CheckFailure::Stopped(s)=>stopped(s),
-                        super::super::control::CheckFailure::Input(_)=>error("","type","cannot resolve primitive type")})?;
+                let ty = ty
+                    .erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
+                        control,
+                        Checkpoint::RequestBinding,
+                    )
+                    .map_err(|e| match e {
+                        crate::control::CheckFailure::Stopped(s) => stopped(s),
+                        crate::control::CheckFailure::Input(_) => {
+                            error("", "type", "cannot resolve primitive type")
+                        }
+                    })?;
                 if super::super::data::primitive_type(&ty, control).map_err(|e| match e {
                     super::super::result::ValidationFailure::Stop(s) => stopped(s),
                     _ => error("", "type", "primitive type definitions do not match"),

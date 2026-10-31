@@ -1,10 +1,8 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
     input::CheckedInputs,
-    law_table, observable_layout,
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, law_table, observable_layout, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -561,7 +559,7 @@ fn four_stops_keep_the_completed_graph_prefix_and_original_request_context() {
 
 #[test]
 fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_slots() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let original = polynomial_fixture::inputs(false, true, "");
     let bytes = original.sources();
     let definition = String::from_utf8(bytes.definitions()[0].bytes().to_vec()).unwrap()

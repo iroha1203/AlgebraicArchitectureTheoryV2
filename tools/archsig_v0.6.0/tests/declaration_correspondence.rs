@@ -6,10 +6,8 @@ use archsig::{
             declaration_correspondence, identity,
         },
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
     types::Type,
 };

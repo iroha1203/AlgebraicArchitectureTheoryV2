@@ -1,13 +1,15 @@
 //! Localizeの全協調中断位置で、確定Contextの値と依存を正常実行と照合する。
 use super::{
     construction_result::ConstructionType,
-    control::{Checkpoint, Control, Limits, Usage},
     evaluate::evaluate_observed,
-    input::{InputSources, check_inputs},
     prepare_shared_observed,
     result::{Decision, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind},
 };
 use crate::{canonical::Json, definition, result::Signal};
+use crate::{
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{InputSources, check_inputs},
+};
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 
 fn inputs(finite: bool) -> InputSources {

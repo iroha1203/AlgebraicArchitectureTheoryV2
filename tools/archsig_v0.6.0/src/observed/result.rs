@@ -1,9 +1,9 @@
 //! 評価内部の型付き DAG。JSON はこの不変データの表示に限定する。
 
-use super::{
-    PrepareFailure, PreparedObserved,
-    control::{Checkpoint, Control, StopReason},
-};
+use super::{PrepareFailure, PreparedObserved};
+
+pub(crate) use crate::archmap::Fact;
+use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
 #[path = "completion_graph.rs"]
@@ -463,29 +463,6 @@ impl PartialEq for Scalar {
     }
 }
 impl Eq for Scalar {}
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-/// 原始観測の位置。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
-pub struct Fact {
-    pub snapshot: String,
-    pub subject: String,
-    pub field: Option<String>,
-    pub atom: Option<String>,
-}
-impl Fact {
-    pub(crate) fn wire(&self) -> Json {
-        let mut f = BTreeMap::from([
-            ("snapshot".into(), Json::str(&self.snapshot)),
-            ("subject".into(), Json::str(&self.subject)),
-        ]);
-        if let Some(s) = &self.field {
-            f.insert("field".into(), Json::str(s));
-        }
-        if let Some(s) = &self.atom {
-            f.insert("atom".into(), Json::str(s));
-        }
-        Json::Obj(f)
-    }
-}
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Scope {
     pub readings: BTreeSet<String>,
@@ -1489,8 +1466,8 @@ impl Node {
                     value,
                     prior,
                     &self.arguments,
-                    &Control::new(super::control::Limits::default(), |_| {
-                        super::control::Usage::default()
+                    &Control::new(crate::control::Limits::default(), |_| {
+                        crate::control::Usage::default()
                     }),
                 )
                 .expect("挿入時に検査した値の既出 Ref 表示"),
@@ -4988,7 +4965,8 @@ mod invariant_tests {
 
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {
-        use super::super::{control::Resource, request::QuestionKind};
+        use super::super::request::QuestionKind;
+        use crate::control::Resource;
         use crate::result::Signal;
         let reason = |kind| Reason {
             kind,

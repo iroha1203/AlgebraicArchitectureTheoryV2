@@ -3,12 +3,10 @@
 mod fixture;
 use archsig::{
     canonical::Json,
+    control::{Control, Limits, Usage},
     definition::check_definitions,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -318,7 +316,7 @@ fn affine_term_provenance_pair_preserves_mathematical_types_values_inputs_and_cu
         "p=check(Terms.universal,s=@v/s)",
     ];
     let src = sources_at("r1");
-    let before = archsig::observed::input::check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
     let a = evaluate_observed_bytes(src, &asks, &mut quiet()).unwrap();
     let b = evaluate_observed_bytes(sources_at("r2"), &asks, &mut quiet()).unwrap();
     let (aw, bw) = (a.wire(), b.wire());
@@ -369,7 +367,7 @@ fn affine_term_provenance_pair_preserves_mathematical_types_values_inputs_and_cu
 #[test]
 fn affine_term_missing_callee_keeps_original_slots_without_a_default_program() {
     let src = sources();
-    let before = archsig::observed::input::check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
     let r = evaluate_observed_bytes(src, &["m=evaluate(Terms.needMissing,s=@v/s)"], &mut quiet())
         .unwrap();
     assert_eq!(r.status(), "partial");

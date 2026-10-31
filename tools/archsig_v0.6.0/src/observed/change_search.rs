@@ -21,9 +21,9 @@ pub(in crate::observed) struct Search {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
-        request::resolve_native_for_test,
+        observed::request::resolve_native_for_test,
     };
     #[allow(dead_code)]
     mod fixture {

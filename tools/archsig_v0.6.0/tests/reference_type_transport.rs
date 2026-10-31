@@ -1,16 +1,15 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             DeclarationCorrespondence, ReferenceConditionFailure as Failure,
             ReferenceTypeTransport, correspondence, declaration_correspondence,
             reference_type_transport,
         },
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

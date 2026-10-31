@@ -1,8 +1,6 @@
 //! 整数行列を左右の可逆な整数基本変形で対角化し、全fiberを得る。
-use super::{
-    control::{Checkpoint, Control},
-    result::ValidationFailure,
-};
+use super::result::ValidationFailure;
+use crate::control::{Checkpoint, Control};
 use num_bigint::BigInt as Z;
 use num_traits::{One, Signed, Zero};
 
@@ -240,8 +238,8 @@ pub(super) fn solve(
 
 #[cfg(test)]
 mod tests {
-    use super::super::control::{Limits, Usage};
     use super::*;
+    use crate::control::{Limits, Usage};
     fn control() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }

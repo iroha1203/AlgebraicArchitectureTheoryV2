@@ -183,8 +183,12 @@ fn quotient_rejects_wrong_domain_missing_bindings_private_fields_and_cycles() {
 
 #[test]
 fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
-    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
-    use std::{cell::Cell,rc::Rc};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
+    use std::{cell::Cell, rc::Rc};
     let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
     for case in 0..7 {
         let mode=case%3;
@@ -590,10 +594,10 @@ fn option_quotient_keeps_none_fibers_typed_laws_and_reuse() {
 
 #[test]
 fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     let views = [
         (
@@ -769,10 +773,10 @@ fn container_quotient_preserves_list_and_set_fibers_and_reuses() {
 
 #[test]
 fn finite_container_quotient_uses_typed_recursive_equality() {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     let separate = vec![
         vec![(false, false)],
@@ -959,10 +963,10 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
 
 #[test]
 fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = law_input(

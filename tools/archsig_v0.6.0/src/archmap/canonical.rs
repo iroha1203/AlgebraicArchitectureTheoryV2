@@ -3,9 +3,9 @@
 use super::{CheckedArchMap, FORMAT, Origin, SEMANTICS, Slot, Snapshot, Source, Subject};
 use crate::{
     canonical::Json,
+    control::{Checkpoint, Control},
     issue::Issue,
     json::InputError,
-    observed::control::{Checkpoint, Control},
 };
 use std::collections::BTreeMap;
 

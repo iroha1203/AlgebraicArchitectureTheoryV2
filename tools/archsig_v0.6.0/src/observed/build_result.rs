@@ -2,14 +2,15 @@
 use super::{
     PreparedObserved, build_circuit_plan, build_compare,
     build_plan::{self, Plan},
+    construction_result as native,
     construction_result::{
-        self as native, ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
+        ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
     request::Request,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 

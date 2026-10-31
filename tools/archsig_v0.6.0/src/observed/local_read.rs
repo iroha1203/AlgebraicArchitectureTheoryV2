@@ -1647,10 +1647,10 @@ fn materialize_instance(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
         input::check_inputs,
-        request::resolve_native_for_test,
+        observed::request::resolve_native_for_test,
     };
     #[allow(dead_code)]
     mod fixture {

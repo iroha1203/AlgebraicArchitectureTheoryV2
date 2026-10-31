@@ -145,7 +145,7 @@ fn position_map(
     }
     let mut result = vec![];
     for x in a {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let Some(y) = rename.fact(x) else {
             return Ok(None);
         };
@@ -247,7 +247,7 @@ fn injection(
     for x in a {
         let mut image = None;
         for y in b {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if same(g.scalar(*x)?, g.scalar(*y)?, c)? {
                 if image.replace(*y).is_some() {
                     return Ok(None);
@@ -271,11 +271,11 @@ fn record_outside(
 ) -> Result<(), ValidationFailure> {
     let mut images = BTreeSet::new();
     for (_, image) in pairs {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         images.insert(image.0);
     }
     for target in targets {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         if !images.contains(&target.0) {
             *count += 1;
             if example.is_none() {
@@ -423,7 +423,7 @@ pub(super) fn between(
             .ok_or("局所Lawの対応がない")?;
         let mut matches = vec![];
         for (j, y) in b.iter().enumerate() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let mut other = array(member(record(g, y.context)?, "carrier")?)?.to_vec();
             other.sort_by_key(Json::canonical);
             let mut yd = dependencies(g, y.context)?;
@@ -507,7 +507,7 @@ pub(super) fn between(
             let Some(z) = mapped(g, &rp, x)? else {
                 return Ok(None);
             };
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if g.scalar(y)? != g.scalar(z)? {
                 return Ok(None);
             }

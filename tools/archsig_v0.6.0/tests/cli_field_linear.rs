@@ -2,7 +2,7 @@
 #[allow(dead_code)]
 #[path = "common/cli.rs"]
 mod cli;
-use archsig::{definition, json::JNode, observed::input::InputSources};
+use archsig::{definition, input::InputSources, json::JNode};
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
     arr(get(j, "nodes"))
@@ -346,10 +346,10 @@ fn rational_guard_and_missing_preserve_original_parameters_and_needed_field() {
 
 #[test]
 fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = input(
@@ -492,7 +492,10 @@ fn missing_sources(body: &str) -> InputSources {
 
 #[test]
 fn rational_missing_conditions_keep_source_binding_and_needed_field() {
-    use archsig::observed::{control::Control, evaluate_observed, prepare_observed};
+    use archsig::{
+        control::Control,
+        observed::{evaluate_observed, prepare_observed},
+    };
     for (guard, body, parameter_count) in MISSING_CONDITIONS {
         let sources = missing_sources(body);
         let law = std::str::from_utf8(sources.law().bytes())
@@ -1074,7 +1077,7 @@ fn rational_conjunction_build_keeps_missing_operands_and_unknown_guards() {
 
 #[test]
 fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
-    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     for (guard, domain) in [
         ("s.x=0 and s.x=1", "$s.domain"),
         ("s.x=0 and s.y=0", "$s.solutions"),
@@ -1106,7 +1109,7 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
 }
 
 fn conditional_internal(body: &str, asks: &[&str]) -> JNode {
-    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     let result = evaluate_observed_bytes(input_sources(body), asks, &mut Control::unlimited());
     let Ok(result) = result else {
         panic!("conditional quotient must complete")
@@ -1292,7 +1295,7 @@ fn quotient_nonempty_guard_on_quotient_coordinate_cli() {
 }
 #[test]
 fn quotient_variable_guard_missing_is_not_empty_and_empty_skips_missing_body() {
-    use archsig::observed::{control::Control, evaluate::evaluate_observed_bytes};
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     for (guard, expected) in [
         ("s.x=0 and s.y=1", "undetermined"),
         ("s.x=0 and s.x=1", "established"),
@@ -1361,11 +1364,11 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
 }
 #[test]
 fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
-    use archsig::observed::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        evaluate::evaluate_observed_bytes,
-    };
     use archsig::result::Signal;
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+        observed::evaluate::evaluate_observed_bytes,
+    };
     use std::{cell::Cell, rc::Rc};
     for (usage, expected) in [
         (
@@ -1511,7 +1514,7 @@ fn rational_unknown_guard_keeps_its_own_source_bindings_and_free_parameter() {
     let evaluated = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,on=@v/s,using=Pair.choose,c=@v/s)"],
-        &mut archsig::observed::control::Control::new(Default::default(), |_| Default::default()),
+        &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
     )
     .unwrap();
     assert_eq!(evaluated.status(), "partial");

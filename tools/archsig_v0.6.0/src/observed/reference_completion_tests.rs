@@ -250,7 +250,7 @@ fn reference_completion_rejects_original_ref_assignment_domain_and_projection_ty
 #[test]
 fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_and_known_slots() {
     use crate::archmap::{FieldAssignment, check_completion_with_values};
-    use crate::observed::control::CheckFailure;
+    use crate::control::CheckFailure;
     let r = example(true);
     let i = r.prepared.inputs();
     let pin = |field: &str, target: &str| FieldAssignment {
@@ -316,7 +316,7 @@ fn reference_completion_member_prefix_rejects_unregistered_and_inconsistent_refe
     }
 }
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::observed::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(fixture::SCRIPT, false, false);
     let asks = [

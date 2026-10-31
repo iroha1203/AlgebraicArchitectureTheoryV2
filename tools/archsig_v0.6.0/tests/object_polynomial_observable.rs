@@ -1,15 +1,14 @@
 use archsig::{
-    construction::{
-        ConstructionFailure,
-        readings::{
-            EquationPresentationStatus as S, ObjectPolynomialObservable as O,
-            PolynomialObservableFailure as F, PolynomialObservableReading as R,
-            PolynomialObservableValue as V, object_polynomial_observable,
-        },
-    },
+    construction::ConstructionFailure,
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
+        object_equation_presentation::EquationPresentationStatus as S,
+        object_polynomial_observable::{
+            ObjectPolynomialObservable as O, PolynomialObservableFailure as F,
+            PolynomialObservableReading as R, PolynomialObservableValue as V,
+            object_polynomial_observable,
+        },
     },
     types::Type,
 };
@@ -515,7 +514,7 @@ fn current_inputs_provenance_and_invalid_object_are_checked_again() {
 #[test]
 fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_probes() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};

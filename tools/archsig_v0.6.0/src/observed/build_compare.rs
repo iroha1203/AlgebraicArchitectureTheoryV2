@@ -1,13 +1,9 @@
 //! 同じ完全patternの読取りを、同じnative DAGの実評価・残差から比較する。
 use super::{
-    build_plan::Plan,
-    construction_result::ConstructionData as D,
-    control::{Checkpoint, Control},
-    environment::Environment,
-    observable_layout::Reading,
-    result::*,
-    value_equality,
+    build_plan::Plan, construction_result::ConstructionData as D, environment::Environment,
+    observable_layout::Reading, result::*, value_equality,
 };
+use crate::control::{Checkpoint, Control};
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())

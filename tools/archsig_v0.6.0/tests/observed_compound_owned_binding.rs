@@ -3,11 +3,9 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -460,7 +458,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_provenance() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Applications.cbEq,a=$a.value,b=$b.value,x=$v.value)",

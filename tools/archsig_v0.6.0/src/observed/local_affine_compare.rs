@@ -354,7 +354,7 @@ pub(super) fn compare(
     }
     let mut components = vec![];
     for i in 0..lm.len() {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let ns = size(g, lm[i])?;
         let nt = size(g, rm[i])?;
         if forward[i].len() != nt || forward[i].iter().any(|r| r.len() != ns) {

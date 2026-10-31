@@ -2,19 +2,19 @@
 use super::{
     PreparedObserved,
     architecture_result::Architecture,
-    build_plan, build_result,
-    build_result::{Builder, Part},
+    build_plan,
+    build_result::{self, Builder, Part},
+    construction_result as native,
     construction_result::{
-        self as native, ConstructionData as D, ConstructionType as T, ConstructionValue,
-        MapWitness, Witness,
+        ConstructionData as D, ConstructionType as T, ConstructionValue, MapWitness, Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
     native_source::Boundary,
     projection::{ProjectionStep, ProjectionType},
     request::Request,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     canonical::Json,
     construction::{ConstructionFailure, maps as construction},

@@ -1,10 +1,8 @@
 use super::*;
 use crate::{
     canonical::Json,
-    observed::{
-        control::{Limits, Resource, Usage},
-        input::check_inputs,
-    },
+    control::{Limits, Resource, Usage},
+    input::check_inputs,
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

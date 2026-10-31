@@ -3,13 +3,10 @@ mod common;
 
 use archsig::{
     canonical::{Json, sha256_digest},
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     definition::{check_definitions, check_definitions_controlled},
-    observed::{
-        PrepareFailure,
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{InputFailure, InputSources, InputStatus, check_inputs},
-        prepare_observed,
-    },
+    input::{InputFailure, InputSources, InputStatus, check_inputs},
+    observed::{PrepareFailure, prepare_observed},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

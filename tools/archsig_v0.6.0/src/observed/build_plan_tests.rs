@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -140,7 +139,7 @@ fn universal_numeric_build_laws_preserve_parameter_functions() {
 }
 
 fn single_part(body: &str) -> PreparedObserved {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let initial = fixture::inputs(false, false, body);
     let sources = initial.sources();
     let map = String::from_utf8(sources.archmap().bytes().to_vec()).unwrap()
@@ -289,7 +288,7 @@ fn native_build_answer_contains_rechecked_algebra_and_component_circuits() {
 
 #[test]
 fn finite_parameter_circuits_keep_every_bound_law_row() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let initial = fixture::inputs(
         false,
         false,

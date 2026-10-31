@@ -673,7 +673,7 @@ pub(super) fn recompute(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
     };

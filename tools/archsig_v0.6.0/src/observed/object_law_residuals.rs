@@ -1,7 +1,5 @@
 //! 元数値等式の差をscalar成分で読み、同じ完全patternの全代入で照合する。
 use super::{
-    control::{Checkpoint, Control},
-    input::CheckedInputs,
     numeric,
     numeric_transport::NumericTransportValue,
     object_evaluate::ObjectEvaluationOutcome,
@@ -13,12 +11,17 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{ConstructionFailure, readings::ObjectEvaluationPosition},
+    construction::ConstructionFailure,
     law::{
         ast::{BinOp, ExprKind},
         model::Signature,
     },
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {
@@ -1120,8 +1123,8 @@ mod tests {
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; law required amount(c:Part,b:Bool):((if (forall a:Root . false) then 2 else 3),c.quantity)=(0,2); }}"
         );
         Arc::new(
-            super::super::input::check_inputs(
-                super::super::input::InputSources::from_bytes(
+            crate::input::check_inputs(
+                crate::input::InputSources::from_bytes(
                     vec![fixture::D.as_bytes().to_vec()],
                     law.into_bytes(),
                     fixture::A.replace("@DIGEST@", digest).into_bytes(),

@@ -1,6 +1,7 @@
 //! 検査済み ArchMap のデータ型。原始値・欠測・参照・由来を保持する。
 
 use super::value::Value;
+use crate::canonical::Json;
 use crate::definition::model::Binding;
 use crate::issue::Issue;
 use crate::types::Type;
@@ -65,6 +66,30 @@ pub struct Field {
     pub name: String,
     pub ty: Type,
     pub slot: Slot,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/// 原始観測の位置。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
+pub struct Fact {
+    pub snapshot: String,
+    pub subject: String,
+    pub field: Option<String>,
+    pub atom: Option<String>,
+}
+impl Fact {
+    pub(crate) fn wire(&self) -> Json {
+        let mut f = BTreeMap::from([
+            ("snapshot".into(), Json::str(&self.snapshot)),
+            ("subject".into(), Json::str(&self.subject)),
+        ]);
+        if let Some(s) = &self.field {
+            f.insert("field".into(), Json::str(s));
+        }
+        if let Some(s) = &self.atom {
+            f.insert("atom".into(), Json::str(s));
+        }
+        Json::Obj(f)
+    }
 }
 
 #[derive(Debug, PartialEq)]
