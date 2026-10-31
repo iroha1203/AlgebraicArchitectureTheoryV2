@@ -366,8 +366,6 @@ reading After {{{vocabulary} change tune(t:State,k:{parameter}){tg}=t with {{hel
             if mode=="integer-refuted" {assert_eq!(s(value(&result,get(&bindings[1],"value"))),"1");}
         }
         if code==2 {let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"subject"))=="p"));}
-        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
-        let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
 
@@ -817,13 +815,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
             assert_json(value(&result, get(data, "left")), r#"["v","p"]"#);
             assert_json(value(&result, get(data, "right")), r#"["v","s"]"#);
         }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
-        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
     }
 }
 

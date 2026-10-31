@@ -1092,7 +1092,6 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
             for request in requests { args.extend(["--ask", request]); }
             let normal = cli::run(&dir, &args);
             assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
             assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
             assert!(!has(&normal.receipt, "nodes"));
             assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);

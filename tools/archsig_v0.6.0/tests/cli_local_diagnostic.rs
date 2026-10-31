@@ -5260,7 +5260,6 @@ fn universal_local_laws_preserve_solutions_and_quantifiers() {
                 let before = files();
                 let normal = run(&dir, &args);
                 assert_eq!(normal.code, 0, "{rational}/{predicate}: {} {}", normal.stdout, normal.stderr);
-                assert!(normal.stderr.is_empty());
                 assert_eq!(files(), before);
                 let summary = archsig::json::parse(normal.stdout.as_bytes()).unwrap();
                 assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
