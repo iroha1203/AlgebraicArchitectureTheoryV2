@@ -109,5 +109,4 @@ fn explicit_deadline_preserves_the_cli_receipt() {
     assert_eq!(explicit.receipt.value, default.receipt.value);
     assert_eq!(explicit.stdout, default.stdout);
     assert_eq!(explicit.stderr, default.stderr);
-    std::fs::remove_dir_all(dir).unwrap();
 }
