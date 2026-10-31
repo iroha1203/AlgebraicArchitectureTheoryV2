@@ -25,6 +25,9 @@ fn inputs(name: &str, count: Option<&str>, law: &str) -> PathBuf {
     dir
 }
 fn requests(dir: &Path, asks: &[&str]) -> Run {
+    requests_with(dir, asks, run)
+}
+fn requests_with(dir: &Path, asks: &[&str], execute: fn(&Path, &[&str]) -> Run) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -39,7 +42,7 @@ fn requests(dir: &Path, asks: &[&str]) -> Run {
     for ask in asks {
         args.extend(["--ask", ask]);
     }
-    run(dir, &args)
+    execute(dir, &args)
 }
 fn answer<'a>(res: &'a JNode, id: &str) -> &'a JNode {
     arr(get(res, "answers"))
@@ -420,14 +423,15 @@ fn run_argument_and_input_failures_never_create_failure_files() {
     }
     let dir = inputs("run-read-error", Some("2"), L);
     std::fs::remove_file(dir.join("l.law")).unwrap();
-    let r = without_file_changes(&dir, || requests(&dir, &ASKS));
+    // 入力の path は呼出し cwd 基準のまま返す。cwd はプロセスの性質なので実バイナリで確かめる。
+    let r = without_file_changes(&dir, || requests_with(&dir, &ASKS, run_binary));
     let receipt = notified(&dir, &r, "error", 74);
     assert_eq!(
         s(get(
             get(&arr(get(&receipt, "issues"))[0], "details"),
             "path"
         )),
-        dir.join("l.law").to_str().unwrap()
+        "l.law"
     );
 }
 

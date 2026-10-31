@@ -41,7 +41,7 @@ fn missing_handle_shapes_suggest_single_quotes_without_changing_the_error() {
         "bad=map(Counter.Unknown,on=.value,reading=CountCheck)",
     ] {
         let r = without_file_changes(&dir, || {
-            run_binary(
+            run(
                 &dir,
                 &[
                     "run",
@@ -104,7 +104,7 @@ fn unrelated_errors_and_declaration_positions_do_not_get_the_shell_hint() {
         "bad=needed",
     ] {
         let r = without_file_changes(&dir, || {
-            run_binary(
+            run(
                 &dir,
                 &[
                     "run",

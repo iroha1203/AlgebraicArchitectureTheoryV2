@@ -36,7 +36,7 @@ fn normative_examples_complete_both_checks() {
         let law_path = fixture(&format!("{stem}.law"));
         let map_path = fixture(&format!("{stem}.archmap.json"));
         // 定義と Law で語彙を得る。ArchMap の欄は inputs に作らない。
-        let r = run(
+        let r = run_binary(
             &dir,
             &[
                 "check",
@@ -60,7 +60,7 @@ fn normative_examples_complete_both_checks() {
         let map_doc = parse(&std::fs::read(&map_path).unwrap()).unwrap();
         let binding = &arr(get(&map_doc, "vocabularies"))[0];
         assert_eq!(s(get(binding, "digest")), digest);
-        let r = run(
+        let r = run_binary(
             &dir,
             &[
                 "check",
@@ -76,10 +76,7 @@ fn normative_examples_complete_both_checks() {
         );
         let res = consistent(&dir, &r, "complete", 0);
         assert_eq!(s(get(&res, "command")), "check");
-        assert_eq!(
-            s(get(&r.receipt, "result")),
-            dir.join("both/result.json").to_str().unwrap()
-        );
+        assert_eq!(s(get(&r.receipt, "result")), "both/result.json");
         for (id, path, source, kind) in [
             (
                 "definition0",

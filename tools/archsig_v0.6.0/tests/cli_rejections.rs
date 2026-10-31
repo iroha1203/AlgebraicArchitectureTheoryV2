@@ -2,7 +2,7 @@
 
 mod common;
 use common::cli::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const DEFINITION: &str = include_str!("fixtures/reservations.atoms.json");
 const LAW: &str = include_str!("fixtures/reservations.law");
@@ -32,7 +32,7 @@ fn only_issue(res: &archsig::json::JNode) -> (String, String, String) {
     (code, input, at)
 }
 
-fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
+fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run, PathBuf) {
     let dir = workdir(name);
     write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
@@ -61,7 +61,7 @@ fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
         },
         r.code,
     );
-    (res, r)
+    (res, r, dir)
 }
 
 #[test]
@@ -120,9 +120,8 @@ fn archmap_rejections_report_locations_without_files() {
         ),
     ];
     for (name, map, code, pointer, exit) in cases {
-        let (res, r) = check_map(name, &map);
+        let (res, r, dir) = check_map(name, &map);
         let status = if exit == 69 { "unsupported" } else { "invalid" };
-        let dir = std::env::temp_dir().join(format!("archsig-cli-{}-{name}", std::process::id()));
         notified(&dir, &r, status, exit);
         let (c, input, at) = only_issue(&res);
         assert_eq!((c.as_str(), input.as_str()), (code, "archmap"), "{name}");
@@ -133,7 +132,7 @@ fn archmap_rejections_report_locations_without_files() {
     }
     // 構文エラーの位置は byte 区間の開始。
     let surrogate = MAP.replacen("二つのシステム", "\\udc00", 1);
-    let (res, _) = check_map("surrogate-at", surrogate.as_bytes());
+    let (res, _, _) = check_map("surrogate-at", surrogate.as_bytes());
     let at = surrogate.find("\\udc00").unwrap().to_string();
     assert_eq!(
         only_issue(&res),
@@ -141,7 +140,7 @@ fn archmap_rejections_report_locations_without_files() {
     );
     let mut bom = vec![0xEF, 0xBB, 0xBF];
     bom.extend_from_slice(MAP.as_bytes());
-    let (res, r) = check_map("bom", &bom);
+    let (res, r, _) = check_map("bom", &bom);
     assert_eq!(r.code, 65);
     assert_eq!(
         only_issue(&res),
@@ -150,7 +149,7 @@ fn archmap_rejections_report_locations_without_files() {
     let mut bad = MAP.as_bytes().to_vec();
     let at = MAP.find("二つ").unwrap();
     bad[at] = 0xFF;
-    let (res, r) = check_map("utf8", &bad);
+    let (res, r, _) = check_map("utf8", &bad);
     assert_eq!(r.code, 65);
     assert_eq!(
         only_issue(&res),
