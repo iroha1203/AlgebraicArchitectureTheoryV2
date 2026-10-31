@@ -117,56 +117,8 @@ fn existing_outputs_are_never_overwritten() {
     std::fs::write(dir.join("l.law"), LAW).unwrap();
     std::fs::create_dir(dir.join("o")).unwrap();
     std::fs::write(dir.join("o/keep.txt"), "keep").unwrap();
-    let r = run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "o",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(r.stderr.is_empty());
-    assert!(!has(&r.receipt, "result"));
-    assert_eq!(
-        std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),
-        "keep"
-    );
-    assert!(!dir.join("o/result.json").exists());
-    let r = run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "missing-parent/o",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(!dir.join("missing-parent").exists());
-    let r = run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(!has(&r.receipt, "result"));
-    for out in ["d2/.", "d3/..", "."] {
-        let r = run_binary(
+    let r = without_file_changes(&dir, || {
+        run_binary(
             &dir,
             &[
                 "check",
@@ -175,9 +127,65 @@ fn existing_outputs_are_never_overwritten() {
                 "--law",
                 "l.law",
                 "--out",
-                out,
+                "o",
             ],
-        );
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(r.stderr.is_empty());
+    assert!(!has(&r.receipt, "result"));
+    assert_eq!(
+        std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),
+        "keep"
+    );
+    assert!(!dir.join("o/result.json").exists());
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "missing-parent/o",
+            ],
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(!dir.join("missing-parent").exists());
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "",
+            ],
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(!has(&r.receipt, "result"));
+    for out in ["d2/.", "d3/..", "."] {
+        let r = without_file_changes(&dir, || {
+            run_binary(
+                &dir,
+                &[
+                    "check",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    out,
+                ],
+            )
+        });
         assert_eq!(r.code, 64, "{out}");
         assert!(!has(&r.receipt, "result"), "{out}");
     }

@@ -349,6 +349,32 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
         let res = result(&dir, &r, "complete", 0);
         assert!(!has(&res, "limits"));
     }
+    // 到達する上限を渡すと、main が実際の計測で止める。
+    let dir = inputs("small-memory-budget", Some("2"), L);
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                ASKS[0],
+                "--out",
+                "out",
+                "--memory-mib",
+                "1",
+            ],
+        )
+    });
+    let receipt = notified(&dir, &r, "interrupted", 75);
+    let issue = &arr(get(&receipt, "issues"))[0];
+    assert_eq!(s(get(issue, "code")), "budget_exhausted");
+    assert_eq!(s(get(get(issue, "details"), "resource")), "memory_mib");
 }
 
 #[test]
