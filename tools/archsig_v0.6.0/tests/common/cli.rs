@@ -108,10 +108,19 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
     }
     let execute = move || {
         let started = std::time::Instant::now();
+        // 製品の main と同じく、時計は区切り256回ごとに読み直す。
         let control = |limits: Limits| {
-            Control::new(limits, move |_| Usage {
-                elapsed_ms: started.elapsed().as_millis(),
-                ..Usage::default()
+            let mut ticks: u32 = 0;
+            let mut elapsed_ms = 0;
+            Control::new(limits, move |_| {
+                if ticks % 256 == 0 {
+                    elapsed_ms = started.elapsed().as_millis();
+                }
+                ticks = ticks.wrapping_add(1);
+                Usage {
+                    elapsed_ms,
+                    ..Usage::default()
+                }
             })
         };
         let (io, signals) = (&mut FileIo, &mut NoSignal);

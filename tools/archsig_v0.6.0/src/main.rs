@@ -45,6 +45,9 @@ struct ProcessSignals {
     frozen: Option<Option<Signal>>,
 }
 
+/// 時計と peak RSS を読み直す区切りの間隔。
+const USAGE_SAMPLE_INTERVAL: u32 = 256;
+
 impl ProcessSignals {
     fn new() -> ProcessSignals {
         use signal_hook::consts::{SIGINT, SIGTERM};
@@ -121,13 +124,24 @@ impl ProcessSignals {
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
+        // 時計と peak RSS は区切りのたびに読むと計算より重いので、一定回数ごとに読み直す。
+        // signal は毎回確かめる。
+        let mut ticks: u32 = 0;
+        let mut sampled = archsig::control::Usage::default();
         Control::new(limits, move |_| {
-            Self::usage_for_limits(
-                limits,
-                || started.elapsed().as_millis(),
-                || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
-                || Self::observed_signal(&first, &int, &term),
-            )
+            if ticks % USAGE_SAMPLE_INTERVAL == 0 {
+                sampled = Self::usage_for_limits(
+                    limits,
+                    || started.elapsed().as_millis(),
+                    || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
+                    || None,
+                );
+            }
+            ticks = ticks.wrapping_add(1);
+            archsig::control::Usage {
+                signal: Self::observed_signal(&first, &int, &term),
+                ..sampled
+            }
         })
     }
 }
