@@ -251,10 +251,8 @@ fn public(sources: InputSources, queries: &[&str]) -> ObservedEvaluation {
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
     result
 }
-#[test]
-fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
-    use crate::observed::public_compare::relations::Data;
-    let queries = [
+fn public_relation_queries() -> [&'static str; 8] {
+    [
         E,
         ALIAS,
         fixture::F,
@@ -263,12 +261,19 @@ fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
         "compared=compare($e.value,to=$alias.value,kind=relation)",
         "backward=compare($alias.value,to=$e.value,kind=relation)",
         "composed=compare($c.operation,to=$other.operation,kind=relation)",
-    ];
-    let without = public(inputs(""), &queries);
+    ]
+}
+#[test]
+fn public_relation_without_its_declaration_refutes_every_comparison() {
+    let without = public(inputs(""), &public_relation_queries());
     for answer in &without.answers[5..] {
         assert_eq!(answer.status, Decision::Refuted, "{}", answer.id);
     }
-    let with = public(inputs(ALIAS_RELATION), &queries);
+}
+#[test]
+fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
+    use crate::observed::public_compare::relations::Data;
+    let with = public(inputs(ALIAS_RELATION), &public_relation_queries());
     for answer in &with.answers[5..] {
         assert_eq!(answer.status, Decision::Established, "{}", answer.id);
     }

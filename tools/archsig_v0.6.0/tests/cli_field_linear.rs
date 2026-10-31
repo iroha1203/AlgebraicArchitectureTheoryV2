@@ -829,30 +829,36 @@ fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
     dir
 }
 #[test]
-fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
-    for gamma in [Some(3),None] {
-        let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
-        let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
-        let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
-        let j=result_json(&dir,&r);
-        for i in [2,3] {
-            let answer=&arr(get(&j,"answers"))[i];
-            assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
-            let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
-            assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
-            assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
-            if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
-            let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
-            if gamma==Some(2){
-                assert_eq!(coordinates[0],vec!["0","1"]);
-                assert!(!has(answer,"counterexamples"));
-            }else{
-                assert_ne!(coordinates[0][0],"0");
-            }
+fn rational_local_triangle_reports_a_gluing_obstruction() {
+    rational_local_triangle_distinguishes_gluing_obstruction_and_missing(0);
+}
+#[test]
+fn rational_local_triangle_keeps_a_missing_value_undetermined() {
+    rational_local_triangle_distinguishes_gluing_obstruction_and_missing(1);
+}
+fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing(row: usize) {
+    let gamma = [Some(3),None][row];
+    let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
+    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    for i in [2,3] {
+        let answer=&arr(get(&j,"answers"))[i];
+        assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
+        let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
+        assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
+        assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
+        if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
+        let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
+        if gamma==Some(2){
+            assert_eq!(coordinates[0],vec!["0","1"]);
+            assert!(!has(answer,"counterexamples"));
+        }else{
+            assert_ne!(coordinates[0][0],"0");
         }
-        if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
-        assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
     }
+    if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
+    assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
 }
 #[test]
 fn rational_local_equations_do_not_expand_the_change_image() {

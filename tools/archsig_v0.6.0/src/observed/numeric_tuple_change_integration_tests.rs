@@ -8,15 +8,33 @@ use archsig::{
     observed::{EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed},
 };
 use std::sync::Arc;
+// 条件ごとに、型と入れ子で結果の終了コードが変わる組だけを残し、4本に分けて並列に回す。
 #[test]
-fn numeric_tuple_change_transport_preserves_each_condition() {
-    // 条件ごとに、型と入れ子で結果の終了コードが変わる組だけを残す。
+fn numeric_tuple_change_transport_preserves_each_condition_0() {
+    check_part(0);
+}
+#[test]
+fn numeric_tuple_change_transport_preserves_each_condition_1() {
+    check_part(1);
+}
+#[test]
+fn numeric_tuple_change_transport_preserves_each_condition_2() {
+    check_part(2);
+}
+#[test]
+fn numeric_tuple_change_transport_preserves_each_condition_3() {
+    check_part(3);
+}
+fn check_part(part: usize) {
     let mut seen = std::collections::BTreeSet::new();
     let cases: Vec<_> = fixture::cases()
         .into_iter()
         .filter(|case| seen.insert((case.name, case.code)))
         .collect();
-    for case in cases {
+    for (index, case) in cases.into_iter().enumerate() {
+        if index % 4 != part {
+            continue;
+        }
         let started = std::time::Instant::now();
         let input = case.input();
         // 元のfresh CLIと同じ120秒の計算予算。fixture構築と表示・assertionは別に測る。

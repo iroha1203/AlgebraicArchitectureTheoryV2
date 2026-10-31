@@ -3301,9 +3301,16 @@ view holdings(s: State): (Z, Z) = (s.free,s.held);
 }
 
 #[test]
-fn numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples() {
+fn numeric_law_zero_fibers_establish_equal_zero_sets() {
+    numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples(0);
+}
+#[test]
+fn numeric_law_zero_fibers_refute_at_an_actual_counterexample() {
+    numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples(1);
+}
+fn numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples(row: usize) {
     // parameterつきLawの移送の代表。零集合が全点で等しければ成立し、違えば実際の点で反証する。
-    for (case, a, z, left, right, expected) in [
+    let (case, a, z, left, right, expected) = [
         ("proportional", "n:Z", "x:Z", "n=1", "2*x=2", "established"),
         (
             "both-universally-false",
@@ -3313,45 +3320,44 @@ fn numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples
             "x=2",
             "refuted",
         ),
-    ] {
-        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-        let law = format!(
-            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    ][row];
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{uses} law required equation(s:State,{a}):{left};}}
 reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
-        );
-        let result=archsig::observed::evaluate_observed_bytes(
-            archsig::input::InputSources::from_bytes(
-                vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
-                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
-            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-            &mut archsig::control::Control::unlimited(),
-        ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
-        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-        let m = answer(&j, "m");
-        assert_eq!(s(get(m, "status")), expected, "{case}");
-        assert!(has(get(m, "outputs"), "operation"), "{case}");
-        assert_eq!(
-            has(get(m, "outputs"), "map"),
-            expected == "established",
-            "{case}"
-        );
-        if expected == "refuted" {
-            let evidence = arr(get(m, "evidence"));
-            assert!(!evidence.is_empty(), "{case}");
-            for example in evidence {
-                let example = value(&j, example);
-                assert_eq!(s(get(example, "kind")), "counterexample");
-                let data = get(example, "data");
-                let left = value(&j, get(data, "left"));
-                let right = value(&j, get(data, "right"));
-                assert_json(left, r#""1""#);
-                assert_json(right, r#""0""#);
-                let bindings = arr(get(data, "bindings"));
-                assert_eq!(bindings.len(), 2, "{case}");
-                let n = bindings.iter().find(|b| s(get(b, "name")) == "n").unwrap();
-                assert_json(value(&j, get(n, "value")), r#""2""#);
-            }
+    );
+    let result=archsig::observed::evaluate_observed_bytes(
+        archsig::input::InputSources::from_bytes(
+            vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
+            include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+        &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+        &mut archsig::control::Control::unlimited(),
+    ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
+    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let m = answer(&j, "m");
+    assert_eq!(s(get(m, "status")), expected, "{case}");
+    assert!(has(get(m, "outputs"), "operation"), "{case}");
+    assert_eq!(
+        has(get(m, "outputs"), "map"),
+        expected == "established",
+        "{case}"
+    );
+    if expected == "refuted" {
+        let evidence = arr(get(m, "evidence"));
+        assert!(!evidence.is_empty(), "{case}");
+        for example in evidence {
+            let example = value(&j, example);
+            assert_eq!(s(get(example, "kind")), "counterexample");
+            let data = get(example, "data");
+            let left = value(&j, get(data, "left"));
+            let right = value(&j, get(data, "right"));
+            assert_json(left, r#""1""#);
+            assert_json(right, r#""0""#);
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2, "{case}");
+            let n = bindings.iter().find(|b| s(get(b, "name")) == "n").unwrap();
+            assert_json(value(&j, get(n, "value")), r#""2""#);
         }
     }
 }

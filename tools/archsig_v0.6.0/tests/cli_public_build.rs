@@ -112,24 +112,30 @@ fn observed_parameter_products_keep_rational_coefficients() {
     }
 }
 #[test]
-fn boolean_cases_keep_numeric_products_and_applicability() {
+fn boolean_parameter_guard_keeps_numeric_products_and_applicability() {
+    boolean_cases_keep_numeric_products_and_applicability(0);
+}
+#[test]
+fn boolean_helper_guard_keeps_numeric_products_and_applicability() {
+    boolean_cases_keep_numeric_products_and_applicability(1);
+}
+fn boolean_cases_keep_numeric_products_and_applicability(row: usize) {
     // 有限parameterの行ごとの適用性。有限型の扱いは型によらず同じ経路なのでBoolの2行で見る。
-    for guard in ["b", "enabled(b)"] {
-        let body = format!("view enabled(x:Bool):Bool=not x;view off():Bool=false;view on():Bool=true;law required zero(c:Part,n:Z,b:Bool) when {guard}:n*c.quantity=0;");
-        let dir = files("boolean-product-reuse", &body, false);
-        let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
-            "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
-            "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)"];
-        let r = asks(&dir, &requests);
-        let j = saved(&dir, &r, "complete", 1);
-        assert_eq!(s(get(answer(&j,"p"),"status")), "established");
-        assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
-        let inactive = if guard == "b" { "off" } else { "on" };
-        let active = if guard == "b" { "on" } else { "off" };
-        assert_eq!(s(get(answer(&j,inactive),"status")), "established");
-        assert_eq!(s(get(answer(&j,inactive),"applicability")), "not_applicable");
-        assert_eq!(s(get(answer(&j,active),"status")), "refuted");
-    }
+    let guard = ["b", "enabled(b)"][row];
+    let body = format!("view enabled(x:Bool):Bool=not x;view off():Bool=false;view on():Bool=true;law required zero(c:Part,n:Z,b:Bool) when {guard}:n*c.quantity=0;");
+    let dir = files("boolean-product-reuse", &body, false);
+    let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
+        "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
+        "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)"];
+    let r = asks(&dir, &requests);
+    let j = saved(&dir, &r, "complete", 1);
+    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
+    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
+    let inactive = if guard == "b" { "off" } else { "on" };
+    let active = if guard == "b" { "on" } else { "off" };
+    assert_eq!(s(get(answer(&j,inactive),"status")), "established");
+    assert_eq!(s(get(answer(&j,inactive),"applicability")), "not_applicable");
+    assert_eq!(s(get(answer(&j,active),"status")), "refuted");
 }
 #[test]
 fn mixed_numeric_binders_build_and_check() {
@@ -307,57 +313,67 @@ fn missing_coefficient_does_not_hide_unsupported_integer_existential() {
     }
 }
 #[test]
-fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
+fn inactive_constant_false_guards_keep_missing_body_outside_applicability() {
+    inactive_parameter_product_keeps_missing_body_outside_applicability(0);
+}
+#[test]
+fn inactive_guard_keeps_the_same_missing_value_undetermined_in_a_view() {
+    inactive_parameter_product_keeps_missing_body_outside_applicability(1);
+}
+#[test]
+fn inactive_guard_reading_a_missing_slot_keeps_the_build_partial() {
+    inactive_parameter_product_keeps_missing_body_outside_applicability(2);
+}
+fn inactive_parameter_product_keeps_missing_body_outside_applicability(row: usize) {
     // 恒偽のguardを並べる。どれか一つでも偽と決まらなければ、適用外が反証か未決へ変わる。
     let chain = "false or inactive(n) or (count(list<Bool>[])>0) or (n<n) or (count(list<Z>[n,n])=1) or (sum(list<Z>[n,-n])!=0) or (some(n+1)=some(n)) or ((n,true)=(n,false)) or (list<Z>[n,n+1]=list<Z>[n+1,n])";
     // (guard, guardが欠測slotを読むか, 同じ欠測値をviewで求めるか)
-    for (guard, guard_reads, read_missing) in [
+    let (guard, guard_reads, read_missing) = [
         (chain, false, false),
         (chain, false, true),
         ("c.quantity+1<=c.quantity", true, false),
-    ] {
-        let view = if read_missing { "view amount(c:Part):Z=c.quantity;" } else { "" };
-        let body = format!(
-            "view inactive(n:Z):Bool=n+1=n;{view}law required zero(c:Part,n:Z) when {guard}:n*c.quantity=0;"
+    ][row];
+    let view = if read_missing { "view amount(c:Part):Z=c.quantity;" } else { "" };
+    let body = format!(
+        "view inactive(n:Z):Bool=n+1=n;{view}law required zero(c:Part,n:Z) when {guard}:n*c.quantity=0;"
+    );
+    let dir = files(&format!("inactive-product-{guard_reads}-{read_missing}"), &body, true);
+    let mut requests = vec![
+        "b=build(R,on=@v/root)",
+        "p=check(R.zero,on=$b.object,c=@v/p)",
+        "q=check(R.zero,on=$b.object,c=@v/q)",
+    ];
+    if read_missing {
+        requests.extend(["v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"]);
+    }
+    // 恒偽でもguard自身の原始読取りはbuildの支持に残る。
+    let build_missing = read_missing || guard_reads;
+    let code = if build_missing { 2 } else { 0 };
+    // 同じ未観測値を実際に求めれば未決。適用外は値の捏造ではない。
+    let r = asks(&dir, &requests);
+    let j = saved(
+        &dir,
+        &r,
+        if build_missing { "partial" } else { "complete" },
+        code,
+    );
+    assert_eq!(
+        has(get(answer(&j, "b"), "outputs"), "algebra"),
+        !build_missing
+    );
+    for id in ["p", "q"] {
+        assert_eq!(s(get(answer(&j, id), "status")), "established");
+        assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
+    }
+    if read_missing {
+        assert_eq!(s(get(answer(&j, "v"), "status")), "undetermined");
+        assert!(!has(get(answer(&j, "v"), "outputs"), "value"));
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        assert!(
+            arr(get(plan, "requirements"))
+                .iter()
+                .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
         );
-        let dir = files(&format!("inactive-product-{guard_reads}-{read_missing}"), &body, true);
-        let mut requests = vec![
-            "b=build(R,on=@v/root)",
-            "p=check(R.zero,on=$b.object,c=@v/p)",
-            "q=check(R.zero,on=$b.object,c=@v/q)",
-        ];
-        if read_missing {
-            requests.extend(["v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"]);
-        }
-        // 恒偽でもguard自身の原始読取りはbuildの支持に残る。
-        let build_missing = read_missing || guard_reads;
-        let code = if build_missing { 2 } else { 0 };
-        // 同じ未観測値を実際に求めれば未決。適用外は値の捏造ではない。
-        let r = asks(&dir, &requests);
-        let j = saved(
-            &dir,
-            &r,
-            if build_missing { "partial" } else { "complete" },
-            code,
-        );
-        assert_eq!(
-            has(get(answer(&j, "b"), "outputs"), "algebra"),
-            !build_missing
-        );
-        for id in ["p", "q"] {
-            assert_eq!(s(get(answer(&j, id), "status")), "established");
-            assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
-        }
-        if read_missing {
-            assert_eq!(s(get(answer(&j, "v"), "status")), "undetermined");
-            assert!(!has(get(answer(&j, "v"), "outputs"), "value"));
-            let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
-            assert!(
-                arr(get(plan, "requirements"))
-                    .iter()
-                    .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
-            );
-        }
     }
 }
 #[test]
