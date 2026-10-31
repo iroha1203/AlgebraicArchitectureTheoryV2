@@ -8,7 +8,21 @@ use archsig::{
     observed::{EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed},
 };
 use std::sync::Arc;
-// 条件ごとに、型と入れ子で結果の終了コードが変わる組だけを残し、6本に分けて並列に回す。
+// 結果の種類(成立・反証・未決・未対応混在)と、欠測・guard・有理数の違いで経路が変わる代表だけを残す。
+// 同じ判断を別の値や入れ子で繰り返す組(simultaneous・target-extra・kernel・guard・inequality・source-fraction)は外す。
+// index % 5 で5本に分けて並列に回す。
+const KEPT: [(&str, &str); 10] = [
+    ("same-fields", "Z"),
+    ("slanted", "Z"),
+    ("fraction", "Q"),
+    ("reverse-guard", "Z"),
+    ("empty", "Z"),
+    ("mixed", "Z"),
+    ("fraction", "Z"),
+    ("missing", "Z"),
+    ("nonlinear", "Z"),
+    ("partial", "Z"),
+];
 #[test]
 fn numeric_tuple_change_transport_preserves_each_condition_0() {
     check_part(0);
@@ -29,20 +43,15 @@ fn numeric_tuple_change_transport_preserves_each_condition_3() {
 fn numeric_tuple_change_transport_preserves_each_condition_4() {
     check_part(4);
 }
-#[test]
-fn numeric_tuple_change_transport_preserves_each_condition_5() {
-    check_part(5);
-}
 fn check_part(part: usize) {
-    let mut seen = std::collections::BTreeSet::new();
-    let cases: Vec<_> = fixture::cases()
-        .into_iter()
-        .filter(|case| seen.insert((case.name, case.code)))
-        .collect();
-    for (index, case) in cases.into_iter().enumerate() {
-        if index % 6 != part {
+    for (index, (name, ty)) in KEPT.iter().enumerate() {
+        if index % 5 != part {
             continue;
         }
+        let case = fixture::cases()
+            .into_iter()
+            .find(|case| !case.nested && case.name == *name && case.ty == *ty)
+            .unwrap();
         let started = std::time::Instant::now();
         let input = case.input();
         // 元のfresh CLIと同じ120秒の計算予算。fixture構築と表示・assertionは別に測る。
@@ -58,10 +67,13 @@ fn check_part(part: usize) {
             },
         );
         let inputs = Arc::new(check_inputs(input, &mut c).unwrap());
+        // needed は欠測の計画を照合する組だけが使う。
         let asks = if case.code == 70 {
             &fixture::REQUESTS[..1]
-        } else {
+        } else if matches!(case.name, "missing" | "partial") {
             &fixture::REQUESTS[..]
+        } else {
+            &fixture::REQUESTS[..2]
         };
         let prepared = prepare_shared_observed(inputs, asks, &mut c).unwrap();
         let setup = started.elapsed();

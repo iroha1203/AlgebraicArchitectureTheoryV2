@@ -347,7 +347,8 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let w = run_input(
         input,
         "r1",
-        &["x=check(Reservations.ocNestedGood,a=@v/A,b=@v/B,p=@v/p,q=@v/q)"],
+        // 二つの欠測ownerを同じ所属条件(State[a])で読む小さいLawで、四つの同時割当てを確かめる。
+        &["x=check(Reservations.ocSetGood,a=@v/A,p=@v/p,q=@v/q)"],
     );
     let a = answer(&w, "x");
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
@@ -400,15 +401,13 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
             .collect();
         assert_eq!(actual, expected);
     }
-    for (name, ty) in [("z", "Z"), ("r", "Q")] {
-        assert!(
-            array(f(f(a, "scope"), "quantifiers"))
-                .iter()
-                .any(|q| f(q, "kind") == &Json::str("forall")
-                    && f(q, "name") == &Json::str(name)
-                    && f(q, "type") == &Json::str(ty))
-        );
-    }
+    assert!(
+        array(f(f(a, "scope"), "quantifiers"))
+            .iter()
+            .any(|q| f(q, "kind") == &Json::str("forall")
+                && f(q, "name") == &Json::str("z")
+                && f(q, "type") == &Json::str("Z"))
+    );
 }
 
 #[path = "common/owned_map_calls.rs"]

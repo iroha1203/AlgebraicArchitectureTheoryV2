@@ -1812,7 +1812,9 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
         (0..rows).map(|i|columns.iter().zip(x).map(|(c,x)|c[i]*x).sum()).collect()
     }
     // 仕様の三辺の例(検証仕様 §3)。γ=3で類は±1、方程式側の解は空、診断は反証。
-    // γ=2の全解と、反証証拠の内部検査は実行時間のため外した。
+    // γ=2の全解と、反証証拠の内部検査は実行時間のため外した。semantic側の三辺は
+    // integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_image、
+    // degree=0の診断は integer_local_empty_cover_has_zero_cohomology が見る。
     for gamma in [3] {
         let input = triangle::input(Some(gamma));
         let dir = workdir(&format!("integer-local-cech-{gamma}"));
@@ -1822,12 +1824,12 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
             std::fs::write(dir.join(name),text).unwrap();
         }
         let asks = ["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)",
-            "d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","z=diagnose($l.system,degree=0)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
+            "d=diagnose($l.system)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
         let r = execute(&dir,"out",&asks);
         assert_eq!(r.code,if gamma==2 {0}else{1},"{} {}",r.stdout,r.stderr);
         let j = result_json(&dir,&r);
         assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established","{:?}",get(&j,"answers"));
-        for i in [2,3] {
+        for i in [2] {
             let answer = &arr(get(&j,"answers"))[i];
             assert_eq!(s(get(answer,"status")),if gamma==2{"established"}else{"refuted"});
             let diagnostic = get(output(&j,i,"diagnostic"),"value");
@@ -1869,9 +1871,8 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
             let space=get(node(&j,get(state,"space")),"value");
             assert!(arr(get(space,"variables")).iter().all(|v|s(get(get(get(v,"position"),"field"),"field"))=="Coordinates.Point.coordinate"));
         }
-        assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
-        assert_eq!(s(get(output(&j,6,"value"),"value")),"1");
-        assert_eq!(s(get(output(&j,7,"value"),"value")),"1");
+        assert_eq!(s(get(output(&j,4,"value"),"value")),"1");
+        assert_eq!(s(get(output(&j,5,"value"),"value")),"1");
         let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
         assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
     }
@@ -1886,14 +1887,14 @@ fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_imag
         let mut text=String::from_utf8(bytes.to_vec()).unwrap();if name=="l.law" {text=text.replace("coordinate=p.coordinate+d","coordinate=p.coordinate+2*d");}
         std::fs::write(dir.join(name),text).unwrap();
     }
-    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($s)"]);
+    // equation側の三辺の類は integer_translation_local_system_generates_cech_group_and_actual_obstruction が見る。
+    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","s=diagnose($l.system,side=semantic)","n=needed($s)"]);
     assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
-    assert!(has(get(&arr(get(&j,"answers"))[2],"outputs"),"class"));
-    let semantic=&arr(get(&j,"answers"))[3];assert_eq!(s(get(semantic,"status")),"undetermined");assert!(!has(get(semantic,"outputs"),"class"));assert!(!has(semantic,"claim"));
-    assert_eq!(s(get(&arr(get(&j,"answers"))[4],"status")),"established");
-    assert!(has(get(&arr(get(&j,"answers"))[4],"outputs"),"plan"));
-    let diagnostic=get(output(&j,3,"diagnostic"),"value");
+    let semantic=&arr(get(&j,"answers"))[2];assert_eq!(s(get(semantic,"status")),"undetermined");assert!(!has(get(semantic,"outputs"),"class"));assert!(!has(semantic,"claim"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[3],"status")),"established");
+    assert!(has(get(&arr(get(&j,"answers"))[3],"outputs"),"plan"));
+    let diagnostic=get(output(&j,2,"diagnostic"),"value");
     assert!(arr(get(diagnostic,"conditions")).iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"));
     let system=get(output(&j,1,"system"),"value");
     let global=&arr(get(system,"semantic_states"))[0];

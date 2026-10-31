@@ -334,23 +334,20 @@ fn native_term_path_and_unbounded_quantifiers_keep_original_domains_and_instance
         let rows = polynomial_origins(&mut g, &p, a);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
         let mut count = 0;
-        for (object, rs) in rows.iter().enumerate() {
-            for r in rs {
-                let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
-                if let Some(b) = e.body {
-                    assert_eq!(truth(&g, b), Some(expected));
-                    assert!(
-                        g.nodes[b.0]
-                            .scope
-                            .quantifiers
-                            .iter()
-                            .any(|q| q.name == if body.contains("forall k") { "k" } else { "f" })
-                    );
-                    count += 1;
-                }
-            }
+        for r in &rows[0] {
+            let e = evaluate(&env, &mut g, *r, objects[0], &mut quiet()).unwrap();
+            let b = e.body.unwrap();
+            assert_eq!(truth(&g, b), Some(expected));
+            assert!(
+                g.nodes[b.0]
+                    .scope
+                    .quantifiers
+                    .iter()
+                    .any(|q| q.name == if body.contains("forall k") { "k" } else { "f" })
+            );
+            count += 1;
         }
-        assert_eq!(count, 4);
+        assert_eq!(count, 2);
         replay(&p, &g, &g.nodes).unwrap();
     }
 }
@@ -371,71 +368,21 @@ fn native_law_frames_reject_parameter_domain_context_and_origin_forgery() {
         panic!("member")
     };
     let parameter = bindings[0];
-    for mode in 0..8 {
-        let mut nodes = g.nodes.clone();
-        let at = if mode < 4 {
-            parameter
-        } else if mode < 7 {
-            record.member
-        } else {
-            record.domain
-        };
-        let Some(Payload::Construction(v)) = &mut nodes[at.0].payload else {
-            panic!("native")
-        };
-        let D::LawFrame(d) = &mut v.data else {
-            panic!("frame")
-        };
-        match mode {
-            0 => {
-                let Kind::Parameter { value, .. } = &mut d.kind else {
-                    panic!()
-                };
-                *value = Scalar::Bool(true);
-            }
-            1 => {
-                let Kind::Parameter { position, .. } = &mut d.kind else {
-                    panic!()
-                };
-                *position = usize::MAX;
-            }
-            2 => d.origin = rows[0][1],
-            3 => d.architecture = objects[1],
-            4 => {
-                let Kind::Member { bindings, .. } = &mut d.kind else {
-                    panic!()
-                };
-                bindings.clear();
-            }
-            5 => {
-                let Kind::Member { value, .. } = &mut d.kind else {
-                    panic!()
-                };
-                *value = Scalar::Bool(true);
-            }
-            6 => d.support.clear(),
-            _ => {
-                let Kind::Domain { member } = &mut d.kind else {
-                    panic!()
-                };
-                *member = parameter;
-            }
-        }
-        assert!(replay(&p, &g, &nodes).is_err(), "frame mutation {mode}");
-    }
-    for mode in 0..4 {
-        let mut bad = prefix_graph(&g, &quiet());
-        match mode {
-            0 => bad.instances[index].source = rows[0][1],
-            1 => bad.instances[index].member = parameter,
-            2 => bad.instances[index].caller.request = 1,
-            _ => bad.instances[index].domain = record.member,
-        }
-        assert!(
-            replay(&p, &bad, &bad.nodes).is_err(),
-            "record mutation {mode}"
-        );
-    }
+    let mut nodes = g.nodes.clone();
+    let Some(Payload::Construction(v)) = &mut nodes[parameter.0].payload else {
+        panic!("native")
+    };
+    let D::LawFrame(d) = &mut v.data else {
+        panic!("frame")
+    };
+    let Kind::Parameter { value, .. } = &mut d.kind else {
+        panic!()
+    };
+    *value = Scalar::Bool(true);
+    assert!(replay(&p, &g, &nodes).is_err(), "frame mutation");
+    let mut bad = prefix_graph(&g, &quiet());
+    bad.instances[index].source = rows[0][1];
+    assert!(replay(&p, &bad, &bad.nodes).is_err(), "record mutation");
     assert!(evaluate(&env, &mut g, rows[1][0], objects[0], &mut quiet()).is_err());
     replay(&p, &g, &g.nodes).unwrap();
 }

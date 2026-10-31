@@ -359,23 +359,23 @@ fn dynamic_producer_projection_failure_survives_composition_and_needed() {
 
 #[test]
 fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
+    // 二つの射影経路を同じ実行に並べる。
+    let dir = inputs("compose-omitted-subject", A);
+    let mut texts = vec![M.to_owned(), N.to_owned(), C.to_owned()];
+    let mut pairs = vec![];
     for (i, path) in ["operation.candidate.subject", "map.candidate.subject"]
         .into_iter()
         .enumerate()
     {
-        let dir = inputs(&format!("compose-omitted-subject-{i}"), A);
-        let read = format!("read=evaluate(Reservations.sourceOf,m=$c.{path})");
-        let mapped =
-            format!("mapped=map(Reservations.Migration,on=$c.{path},reading=Reservations)");
-        let questions = [
-            M,
-            N,
-            C,
-            &read,
-            &mapped,
-            "readPlan=needed($read)",
-            "mapPlan=needed($mapped)",
-        ];
+        texts.push(format!("read{i}=evaluate(Reservations.sourceOf,m=$c.{path})"));
+        texts.push(format!("mapped{i}=map(Reservations.Migration,on=$c.{path},reading=Reservations)"));
+        texts.push(format!("readPlan{i}=needed($read{i})"));
+        texts.push(format!("mapPlan{i}=needed($mapped{i})"));
+        pairs.push((format!("read{i}"), format!("readPlan{i}")));
+        pairs.push((format!("mapped{i}"), format!("mapPlan{i}")));
+    }
+    let questions: Vec<&str> = texts.iter().map(String::as_str).collect();
+    {
         // 内部の条件反証は保存用の値グラフとは独立に検査する。
         let internal = evaluate_observed_bytes(
             InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), A.as_bytes().to_vec()),
@@ -391,7 +391,7 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
             assert_eq!(s(get(a, "status")), "established");
             assert!(has(get(a, "outputs"), "operation"));
         }
-        for (id, plan_id) in [("read", "readPlan"), ("mapped", "mapPlan")] {
+        for (id, plan_id) in &pairs {
             let a = answer(&j, id);
             assert_eq!(s(get(a, "status")), "undetermined");
             let reasons = arr(get(a, "reasons"));
@@ -481,66 +481,49 @@ fn composition_claims_and_failure_reasons_use_the_closed_construction_name() {
 
 #[test]
 fn operation_relation_compares_original_words_and_applies_declared_rewrites() {
-    for declared in [true] {
-        let dir = inputs(&format!("operation-relation-{declared}"), A);
-        let law = if declared {
-            std::str::from_utf8(L).unwrap().replace("view holdings", "relation aliases(m:Migration,n:Migration) when m.from=n.from and m.to=n.to:path(m)=path(n);view holdings")
-        } else {
-            std::str::from_utf8(L).unwrap().to_owned()
-        };
-        std::fs::write(dir.join("l.law"), law).unwrap();
-        let r = asks(
-            &dir,
-            &[
-                M,
-                N,
-                "mm=map(Reservations.Migration,on=@v/mm,reading=Reservations)",
-                C,
-                "alias=compose($mm.operation,then=$n.operation)",
-                "self=compare($m.operation,to=$m.operation,kind=relation)",
-                "same=compare($c.operation,to=$alias.operation,kind=relation)",
-            ],
-        );
-        let j = saved(&dir, &r, "complete", if declared { 0 } else { 1 });
-        assert_eq!(s(get(answer(&j, "self"), "status")), "established");
-        assert_eq!(
-            s(get(answer(&j, "same"), "status")),
-            if declared { "established" } else { "refuted" }
-        );
-        let images = |id| {
-            get(
-                value(
-                    &j,
-                    get(
-                        value(&j, get(get(answer(&j, id), "outputs"), "operation")),
-                        "action",
-                    ),
-                ),
-                "images",
-            )
-        };
-        assert_eq!(images("c"), images("alias"));
-        assert_ne!(
-            get(
-                value(&j, get(get(answer(&j, "c"), "outputs"), "operation")),
-                "word"
-            ),
-            get(
-                value(&j, get(get(answer(&j, "alias"), "outputs"), "operation")),
-                "word"
-            )
-        );
-    }
-    let dir = inputs("operation-relation-endpoints", A);
+    // 宣言relationで書き換えた語の成立と、端点の違うOperationの反証を同じ実行で見る。
+    let dir = inputs("operation-relation-true", A);
+    let law = std::str::from_utf8(L).unwrap().replace("view holdings", "relation aliases(m:Migration,n:Migration) when m.from=n.from and m.to=n.to:path(m)=path(n);view holdings");
+    std::fs::write(dir.join("l.law"), law).unwrap();
     let r = asks(
         &dir,
         &[
             M,
             N,
+            "mm=map(Reservations.Migration,on=@v/mm,reading=Reservations)",
+            C,
+            "alias=compose($mm.operation,then=$n.operation)",
+            "self=compare($m.operation,to=$m.operation,kind=relation)",
+            "same=compare($c.operation,to=$alias.operation,kind=relation)",
             "different=compare($m.operation,to=$n.operation,kind=relation)",
         ],
     );
     let j = saved(&dir, &r, "complete", 1);
+    assert_eq!(s(get(answer(&j, "self"), "status")), "established");
+    assert_eq!(s(get(answer(&j, "same"), "status")), "established");
+    let images = |id| {
+        get(
+            value(
+                &j,
+                get(
+                    value(&j, get(get(answer(&j, id), "outputs"), "operation")),
+                    "action",
+                ),
+            ),
+            "images",
+        )
+    };
+    assert_eq!(images("c"), images("alias"));
+    assert_ne!(
+        get(
+            value(&j, get(get(answer(&j, "c"), "outputs"), "operation")),
+            "word"
+        ),
+        get(
+            value(&j, get(get(answer(&j, "alias"), "outputs"), "operation")),
+            "word"
+        )
+    );
     let a = answer(&j, "different");
     assert_eq!(s(get(a, "status")), "refuted");
     assert!(!has(get(a, "outputs"), "comparison"));

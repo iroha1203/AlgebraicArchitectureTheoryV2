@@ -320,7 +320,7 @@ fn change_transport_preserves_candidate_domains_and_simultaneous_updates() {
         ("integer-refuted", "Z", "", "", "s.free+n", "t.free+2*k", false, 1, "refuted"),
         ("missing", "Z", "", "", "s.free+n", "t.free+k", true, 2, "undetermined"),
     ] {
-        let dir = finite_view_inputs(&format!("change-transport-{mode}"), true);
+        let dir = four_state_inputs(&format!("change-transport-{mode}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} change tune(s:State,n:{parameter}){sg}=s with {{free={left},held=s.free}};}}
@@ -354,7 +354,7 @@ fn local_guard_domains_preserve_source_rows_and_keep_unknown_distinct() {
         ("guard-refuted", "s.free=2", "t.free=1", "reference", "", 1, "refuted"),
         ("source-missing", "s.free=2", "true", "reference", "p", 2, "undetermined"),
     ] {
-        let dir = finite_view_inputs(&format!("local-domain-{mode}"), true);
+        let dir = four_state_inputs(&format!("local-domain-{mode}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         let (sr, tr) = if read == "reference" { ("s", "t") } else { ("s.free", "t.free") };
         std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -393,7 +393,7 @@ reading After {{{vocabulary} local here(t:State) when {target} reads {tr};}}"#))
 
 #[test]
 fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
-    let dir = finite_view_inputs("local-reference-field-preserved", true);
+    let dir = four_state_inputs("local-reference-field-preserved");
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition = old.replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"other","type":["Ref","Reservations.State"],"meaning":"別の参照先。"}, {"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
     let checked =
@@ -410,8 +410,6 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
         ("q", "p"),
         ("r", "r"),
         ("s", "r"),
-        ("u", "u"),
-        ("w", "w"),
     ] {
         facts.push_str(&format!(r#"{{"id":"{subject}-peer","subject":"{subject}","field":"Reservations.State.peer","value":["v","{peer}"],"origin":"model"}},"#));
         let other = match peer {
@@ -469,20 +467,14 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
     assert_reference_pairs(
         &result,
         value(&result, get(clause, "values")),
-        &[
-            ("p", "r"),
-            ("q", "s"),
-            ("r", "r"),
-            ("s", "s"),
-            ("u", "w"),
-            ("w", "w"),
-        ],
+        &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
     );
 }
 
 #[test]
 fn object_map_keeps_all_objects_generators_and_public_source_consumption() {
-    let dir = inputs("public-object-map");
+    // 小さいfixtureの対象はA,p,q(Bはr,s)、生成元は予約操作e(Bはf)。
+    let dir = small_inputs("public-object-map");
     let run = asks(
         &dir,
         &[
@@ -502,7 +494,7 @@ fn object_map_keeps_all_objects_generators_and_public_source_consumption() {
     assert_eq!(s(get(node(&result, reference), "type")), "ObjectAlgebraMap");
     let map = value(&result, reference);
     assert_eq!(arr(get(map, "object_maps")).len(), 3);
-    assert_eq!(arr(get(map, "operation_maps")).len(), 3);
+    assert_eq!(arr(get(map, "operation_maps")).len(), 1);
     let state_pair = arr(get(map, "declarations"))
         .iter()
         .find(|p| s(get(p, "source")) == "Reservations.State")
@@ -544,7 +536,7 @@ fn object_map_keeps_all_objects_generators_and_public_source_consumption() {
     for side in ["source", "target"] {
         let algebra = value(&result, get(map, side));
         assert_eq!(arr(get(algebra, "objects")).len(), 3);
-        assert_eq!(arr(get(get(algebra, "operations"), "generators")).len(), 3);
+        assert_eq!(arr(get(get(algebra, "operations"), "generators")).len(), 1);
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -577,12 +569,12 @@ fn missing_declaration_keeps_the_configuration_operation_after_refutation() {
 
 #[test]
 fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
-    // 小さいfixture(状態6つ)とlocal一つのLawで、保存結果の照合だけを確かめる。
-    let dir = finite_view_inputs("public-object-map-reuse", true);
+    // 小さいfixture(状態4つ)とguardのないlocal一つのLawで、保存結果の照合だけを確かめる。
+    let dir = four_state_inputs("public-object-map-reuse");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} local here(s:State) when s.free=2 reads s.free;}}
-reading After {{{vocabulary} local here(t:State) when t.free>0 reads t.free;}}"#)).unwrap();
+reading Before {{{vocabulary} local here(s:State) reads s.free;}}
+reading After {{{vocabulary} local here(t:State) reads t.free;}}"#)).unwrap();
     let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
     let first = asks(&dir, &[request]);
     assert_eq!(first.code, 0, "{}", first.stdout);
@@ -677,7 +669,7 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
             InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],
                 include_bytes!("fixtures/public-compose.law").to_vec(),
-                include_bytes!("fixtures/configuration-operation.archmap.json").to_vec(),
+                four_state_map(false).into_bytes(),
             ),
             &["m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)"],
             &mut control,
@@ -695,14 +687,34 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
     }
 }
 
-fn finite_view_inputs(name: &str, preserve: bool) -> PathBuf {
-    let dir = inputs(name);
+// 状態4つ(A:p,q、B:r,s)と予約操作1つずつの小さいfixture。preserveはfreeの値をmで保つ。
+fn four_state_map(preserve: bool) -> String {
     let mut a = include_str!("fixtures/object-configuration-map.archmap.json").to_string();
     if preserve {
         a = a.replace(r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"4""#, r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"2""#)
             .replace(r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#, r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#);
     }
-    std::fs::write(dir.join("a.json"), a).unwrap();
+    a.lines()
+        .filter(|line| {
+            !line.contains(r#""id":"u","type":"#)
+                && !line.contains(r#""id":"w","type":"#)
+                && !line.contains(r#""subject":"u""#)
+                && !line.contains(r#""subject":"w""#)
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(r#",[["v","u"],["v","w"]]"#, "")
+        .replace(",\n]", "\n]")
+}
+// 公開composeのLawと小さいfixture(値はmで保たない)。
+fn small_inputs(name: &str) -> PathBuf {
+    let dir = inputs(name);
+    std::fs::write(dir.join("a.json"), four_state_map(false)).unwrap();
+    dir
+}
+fn four_state_inputs(name: &str) -> PathBuf {
+    let dir = inputs(name);
+    std::fs::write(dir.join("a.json"), four_state_map(true)).unwrap();
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{
@@ -755,7 +767,7 @@ reading After {{{vocabulary} local here(n:Z,r:Q) reads n;}}"#
 
 #[test]
 fn reference_containers_do_not_use_same_nominal_type_identity() {
-    let dir = finite_view_inputs("reference-container-view", true);
+    let dir = four_state_inputs("reference-container-view");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(
         dir.join("l.law"),
@@ -772,7 +784,7 @@ reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"
 #[test]
 fn relation_transport_keeps_named_words_empty_words_and_parameter_positions() {
     for case in ["unit", "alias"] {
-        let dir = finite_view_inputs(&format!("relation-transport-{case}"), true);
+        let dir = four_state_inputs(&format!("relation-transport-{case}"));
         if case == "alias" {
             let path = dir.join("a.json");
             let data=std::fs::read_to_string(&path).unwrap()
@@ -847,8 +859,6 @@ reading After {{ {vocabulary} {target} }}"#
                         ("q", "s"),
                         ("r", "r"),
                         ("s", "s"),
-                        ("u", "w"),
-                        ("w", "w"),
                     ],
                 );
             }
@@ -878,7 +888,7 @@ fn relation_transport_reports_infinite_parameter_cases_as_pending() {
             "relation paths(t:Reserve,k:Z) when k>0:path(t)=path(t);",
         ),
     ] {
-        let dir = finite_view_inputs(&format!("relation-unsupported-{name}"), true);
+        let dir = four_state_inputs(&format!("relation-unsupported-{name}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         std::fs::write(
             dir.join("l.law"),
@@ -1183,7 +1193,7 @@ reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path
 #[test]
 fn relation_transport_restricts_integer_families_to_exact_guard_domains() {
     // source guardの整数fiber上で、target guardが外れる点を実際の反例として返す。
-    let dir = finite_view_inputs("relation-integer-domain-guard_refuted", true);
+    let dir = four_state_inputs("relation-integer-domain-guard_refuted");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{ {vocabulary} relation paths(n:Z,e:Reserve,m:Z,take:Bool,extra:Z) when n+m=3:(path(e))=path(e); }}
@@ -1220,25 +1230,6 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,j:Z,keep:Bool,last:Z)
         assert_eq!(n + m, 3);
         assert_ne!(n, 0);
     }
-}
-
-fn four_state_inputs(name: &str) -> PathBuf {
-    let dir = finite_view_inputs(name, true);
-    let map = std::fs::read_to_string(dir.join("a.json"))
-        .unwrap()
-        .lines()
-        .filter(|line| {
-            !line.contains(r#""id":"u","type":"#)
-                && !line.contains(r#""id":"w","type":"#)
-                && !line.contains(r#""subject":"u""#)
-                && !line.contains(r#""subject":"w""#)
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-        .replace(r#",[["v","u"],["v","w"]]"#, "")
-        .replace(",\n]", "\n]");
-    std::fs::write(dir.join("a.json"), map).unwrap();
-    dir
 }
 
 #[test]
@@ -2796,7 +2787,7 @@ reading Before {{{vocabulary} {source}}} reading After {{{vocabulary} {target}}}
 #[test]
 fn change_transport_compares_different_fieldsets_on_all_finite_arguments() {
     // 更新fieldの集合が違うchangeも、有限引数の全組で比較する。後ろの組(k,l)=(true,true)だけが違う。
-    let dir = finite_view_inputs("change-fieldsets-later-tuple", true);
+    let dir = four_state_inputs("change-fieldsets-later-tuple");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} change tune(s:State,n:Bool,m:Bool)=s with {{free=s.free}};}}
@@ -2821,7 +2812,7 @@ reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool)=t with {{held=if
 
 #[test]
 fn integer_change_keeps_earlier_missing_reads_when_a_later_update_is_unsupported() {
-    let dir=finite_view_inputs("integer-change-earlier-missing",true);
+    let dir=four_state_inputs("integer-change-earlier-missing");
     let text=std::fs::read_to_string(dir.join("a.json")).unwrap();
     std::fs::write(dir.join("a.json"),text.lines().filter(|line|!line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
     std::fs::write(dir.join("l.law"),r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -2839,7 +2830,7 @@ change tune(s:State,n:Z)=s with {free=s.free,held=n*n};law required zero(s:State
 #[test]
 fn relation_transport_restricts_rational_families_to_exact_guard_domains() {
     // Qのguard fiber(2n=1)は整数点を持たない。反例は分数 n=1/2 で、語の違い(空語と生成元1つ)を返す。
-    let dir = finite_view_inputs("relation-rational-domain-word_refuted", true);
+    let dir = four_state_inputs("relation-rational-domain-word_refuted");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{ {vocabulary} relation paths(n:Q,e:Reserve,m:Q,take:Bool,extra:Q) when 2*n=1:(identity(source(path(e))))=path(e); }}
@@ -2941,7 +2932,7 @@ reading After {{{uses} view affine(s:State,x:Z,y:Z):(Z,Z)=(x+3*y,0);}}"#
     let result=archsig::observed::evaluate_observed_bytes(
         archsig::input::InputSources::from_bytes(
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
-            include_bytes!("fixtures/object-configuration-map.archmap.json").to_vec()),
+            four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
         &mut archsig::control::Control::unlimited(),
     ).unwrap();
@@ -2977,7 +2968,7 @@ reading After {{{uses} view affine(s:State,x:Z,y:Z):(Z,Z)=(x+3*y,0);}}"#
 fn numeric_guarded_zero_map_preserves_application_functions_and_following_operation() {
     // guardの違いで零集合の適用域が変わると、n=1 を反例として反証する。
     for (case, target, status, exit) in [("different", "true", "refuted", 1)] {
-        let dir = inputs(&format!("numeric-guarded-zero-{case}"));
+        let dir = small_inputs(&format!("numeric-guarded-zero-{case}"));
         let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         std::fs::write(
             dir.join("l.law"),
@@ -3091,7 +3082,7 @@ reading After {{{uses} view flag(d:Right.Child,renamed:Option<Right.Child>):Bool
 
 #[test]
 fn conditional_affine_missing_guard_retains_object_and_needed_for_following_check() {
-    let dir = inputs("conditional-affine-missing-guard");
+    let dir = small_inputs("conditional-affine-missing-guard");
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .lines()
@@ -3147,7 +3138,7 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n=s.free:n=1;}}"
 
 #[test]
 fn nonlinear_numeric_guard_keeps_partial_build_and_original_needed_blocker() {
-    let dir = inputs("nonlinear-numeric-guard-partial-build");
+    let dir = small_inputs("nonlinear-numeric-guard-partial-build");
     let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(
         dir.join("l.law"),
@@ -3187,7 +3178,7 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n*n=0:1=0;}}"#
 
 #[test]
 fn numeric_guard_algorithm_boundary_keeps_concrete_checks_and_needed() {
-    let dir = inputs("numeric-guard-algorithm-boundary");
+    let dir = small_inputs("numeric-guard-algorithm-boundary");
     let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(
         dir.join("l.law"),
@@ -3243,12 +3234,7 @@ reading Before {{{uses} view plus_one():Z=1; view minus_one():Z=-1; law required
 #[test]
 fn equal_law_truth_does_not_hide_a_changed_zero_component() {
     // 閉じたLawの移送の代表。真偽が等しくても成分の零性が変われば反証する。
-    let dir = inputs("public-law-map-component-refuted");
-    std::fs::write(
-        dir.join("a.json"),
-        include_bytes!("fixtures/object-configuration-map.archmap.json"),
-    )
-    .unwrap();
+    let dir = small_inputs("public-law-map-component-refuted");
     let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(
         dir.join("l.law"),
@@ -3279,8 +3265,7 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
 #[test]
 fn closed_view_map_refutes_changed_values_and_keeps_configuration_operation() {
     // 閉じたviewの移送の代表。viewの値が変わると反証し、configurationのoperationは残す。
-    let dir = inputs("public-closed-view-changes");
-    std::fs::write(dir.join("a.json"), include_bytes!("fixtures/object-configuration-map.archmap.json")).unwrap();
+    let dir = small_inputs("public-closed-view-changes");
     std::fs::write(dir.join("l.law"), r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Alternative {
 use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
@@ -3330,7 +3315,7 @@ reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
     let result=archsig::observed::evaluate_observed_bytes(
         archsig::input::InputSources::from_bytes(
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
-            include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
+            four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
         &mut archsig::control::Control::unlimited(),
     ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
@@ -3365,7 +3350,7 @@ reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
 #[test]
 fn a_changed_finite_parameter_row_refutes_the_whole_map() {
     // 有限parameterのview族の代表。keep=false の行だけが違っても、族全体を反証する。
-    let dir = finite_view_inputs("finite-parameter-changed-row", true);
+    let dir = four_state_inputs("finite-parameter-changed-row");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";

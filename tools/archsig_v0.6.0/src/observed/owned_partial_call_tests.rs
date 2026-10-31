@@ -174,9 +174,7 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
         &[
             "seed=evaluate(Reservations.seed)",
             "first=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
-            "second=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
             "whole=check(Reservations.pcPendingAffine,a=@v/B,e=@v/e)",
-            "universal=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/p)",
             "implication=check(Reservations.pcSkipImpliesLaw,a=@v/B,e=@v/e)",
         ],
         &mut named_call_quiet(),
@@ -192,7 +190,7 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
             Some(Payload::Expression {
                 location: Location::Law { span },
                 ..
-            }) if matches!(r.contexts[i].request, 1 | 2)
+            }) if r.contexts[i].request == 1
                 && &law[span.0..span.1] == b"pcIgnoreNumeric(read(a,e.to))" =>
             {
                 Some(NodeRef(i))
@@ -225,11 +223,10 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
             );
         }
     }
-    assert_eq!(r.answers[3].status, Decision::Undetermined);
-    assert_eq!(r.answers[4].status, Decision::Undetermined);
+    assert_eq!(r.answers[2].status, Decision::Undetermined);
     // short-circuit の含意は Missing を含んでも真で確定する。
-    assert_eq!(r.answers[5].status, Decision::Established);
-    let whole = r.answers[5].outputs["evaluation"];
+    assert_eq!(r.answers[3].status, Decision::Established);
+    let whole = r.answers[3].outputs["evaluation"];
     let Some(Payload::Evaluation {
         value: Some(value), ..
     }) = &r.nodes[whole.0].payload

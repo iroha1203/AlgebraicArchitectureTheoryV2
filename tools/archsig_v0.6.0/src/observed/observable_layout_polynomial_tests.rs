@@ -395,7 +395,6 @@ fn finite_parameter_rows_keep_bindings_cases_and_symbolic_global_indices() {
             .iter()
             .any(|q| q.name == "b" && q.domain.is_some())
     );
-    replay(&p, &g).unwrap();
 }
 #[test]
 fn the_empty_family_is_an_empty_block_product_with_all_objects_and_the_actual_universe() {

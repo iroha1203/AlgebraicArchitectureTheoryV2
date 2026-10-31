@@ -839,10 +839,11 @@ fn rational_local_triangle_keeps_a_missing_value_undetermined() {
 fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing(row: usize) {
     let gamma = [Some(3),None][row];
     let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
-    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
+    // semantic側の有理診断は rational_local_system_keeps_exact_equation_and_semantic_fibers が見る。
+    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","n=needed($d)"];
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
-    for i in [2,3] {
+    for i in [2] {
         let answer=&arr(get(&j,"answers"))[i];
         assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
         let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
@@ -857,7 +858,7 @@ fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing(row: usi
             assert_ne!(coordinates[0][0],"0");
         }
     }
-    if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
+    if gamma.is_none(){let plan=get(output(&j,3,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
     assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
 }
 #[test]

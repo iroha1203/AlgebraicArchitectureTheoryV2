@@ -114,61 +114,58 @@ fn two_boolean_parameters_keep_all_four_rows_and_actual_option_values() {
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    for object in 0..2 {
-        let expression = selected(&g, &o, object, ".adjusted");
-        let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
-            panic!()
-        };
-        assert_eq!(f.domains.len(), 2);
-        assert_eq!(f.expressions.len(), 4);
-        for r in &f.expressions {
-            let n = g.get(*r).unwrap();
-            assert!(n.arguments.contains(&f.product));
-            assert!(f.domains.iter().all(|d| n.arguments.contains(d)));
-        }
-        assert_eq!(f.evaluations.len(), 4);
-        let mut values = vec![];
-        for e in &f.evaluations {
-            let Some(Payload::Evaluation { value: Some(v), .. }) = &g.get(*e).unwrap().payload
-            else {
-                panic!()
-            };
-            values.push(g.scalar(*v).unwrap().clone());
-        }
-        assert_eq!(
-            values,
-            [2, 3, 3, 4]
-                .into_iter()
-                .map(|v| Scalar::Option {
-                    element: Type::Z,
-                    value: Some(Box::new(Scalar::Z(v.into())))
-                })
-                .collect::<Vec<_>>()
-        );
-        let Some(Payload::Evaluation {
-            expression: r,
-            value,
-            parts,
-            ..
-        }) = &g.get(f.evaluation).unwrap().payload
-        else {
-            panic!()
-        };
-        assert_eq!(*r, expression);
-        assert!(value.is_none());
-        assert_eq!(parts[0].children, f.evaluations);
-        assert_eq!(
-            g.get(f.evaluation)
-                .unwrap()
-                .scope
-                .quantifiers
-                .iter()
-                .map(|q| q.name.as_str())
-                .collect::<Vec<_>>(),
-            vec!["a", "b"]
-        );
+    // 対象ごとの族は同じ経路を通るので、最初の対象を代表にする。
+    let expression = selected(&g, &o, 0, ".adjusted");
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+        panic!()
+    };
+    assert_eq!(f.domains.len(), 2);
+    assert_eq!(f.expressions.len(), 4);
+    for r in &f.expressions {
+        let n = g.get(*r).unwrap();
+        assert!(n.arguments.contains(&f.product));
+        assert!(f.domains.iter().all(|d| n.arguments.contains(d)));
     }
-    replay(&p, &g);
+    assert_eq!(f.evaluations.len(), 4);
+    let mut values = vec![];
+    for e in &f.evaluations {
+        let Some(Payload::Evaluation { value: Some(v), .. }) = &g.get(*e).unwrap().payload else {
+            panic!()
+        };
+        values.push(g.scalar(*v).unwrap().clone());
+    }
+    assert_eq!(
+        values,
+        [2, 3, 3, 4]
+            .into_iter()
+            .map(|v| Scalar::Option {
+                element: Type::Z,
+                value: Some(Box::new(Scalar::Z(v.into())))
+            })
+            .collect::<Vec<_>>()
+    );
+    let Some(Payload::Evaluation {
+        expression: r,
+        value,
+        parts,
+        ..
+    }) = &g.get(f.evaluation).unwrap().payload
+    else {
+        panic!()
+    };
+    assert_eq!(*r, expression);
+    assert!(value.is_none());
+    assert_eq!(parts[0].children, f.evaluations);
+    assert_eq!(
+        g.get(f.evaluation)
+            .unwrap()
+            .scope
+            .quantifiers
+            .iter()
+            .map(|q| q.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["a", "b"]
+    );
 }
 #[test]
 fn composite_option_bool_and_set_bool_use_complete_domains() {

@@ -1147,53 +1147,60 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
     mod triangle;
     let gamma = [Some(2),Some(3)][row];
     let input = triangle::input(gamma);
+    let asks=["a=build(Coordinates,on=@triangle/root)","r=repair(Coordinates.aligned,on=$a.object,using=Coordinates.move)","n=needed($r)"];
+    if gamma==Some(3) {
+        // 反証の証拠(Smith変換)は内部graphにだけあるので、同じ三入力を一度だけ内部で評価する。
+        // 公開結果がSmith証書を持たないことは cli_summary の empty_integer_solutions_are_saved_without_smith_certificates が見る。
+        let result=archsig::observed::evaluate_observed_bytes(input,&asks,&mut archsig::control::Control::unlimited()).unwrap();
+        assert_eq!(result.status(),"complete");
+        let j=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answer = &arr(get(&j,"answers"))[1];
+        assert!(!has(get(answer,"outputs"),"object"));
+        let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
+        assert_eq!(s(get(representation,"kind")),"empty");
+        assert_eq!(s(get(get(output(&j,1,"existence"),"judgment"),"status")),"refuted");
+        let proof=get(get(node(&j,get(representation,"certificate")),"value"),"data");
+        let columns=integer_columns(&j,get(proof,"map"));
+        assert_eq!(columns,vec![vec![-1,0,-1],vec![1,-1,0],vec![0,1,1]]);
+        let left=integer_columns(&j,get(proof,"left"));
+        let transformed=coordinates(&j,get(proof,"transformed_rhs"));
+        let mut found=false;
+        for i in 0..3 {
+            let lambda=(0..3).map(|k|left[k][i]).collect::<Vec<_>>();
+            if columns.iter().all(|column|column.iter().zip(&lambda).map(|(a,b)|a*b).sum::<i64>()==0) {
+                assert!(lambda==vec![1,1,-1] || lambda==vec![-1,-1,1]);
+                let value=lambda[0]+lambda[1]+3*lambda[2];
+                assert_ne!(value,0);
+                assert_eq!(transformed[i],value);
+                found=true;
+            }
+        }
+        assert!(found,"published Smith transform must exhibit the integer obstruction");
+        return;
+    }
     let dir = workdir("integer-three-edge");
     for (name, bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
         std::fs::write(dir.join(name),bytes).unwrap();
     }
-    let asks=["a=build(Coordinates,on=@triangle/root)","r=repair(Coordinates.aligned,on=$a.object,using=Coordinates.move)","n=needed($r)"];
     let r = execute(&dir,"out", &asks);
     assert_eq!(r.code,if gamma.is_some() {1} else {2},"gamma {gamma:?}: {} {}",r.stdout,r.stderr);
     let j = result_json(&dir,&r);
     let answer = &arr(get(&j,"answers"))[1];
     assert!(!has(get(answer,"outputs"),"object"));
-    if let Some(gamma)=gamma {
+    if gamma.is_some() {
         let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
-        assert_eq!(s(get(representation,"kind")),if gamma==2 {"affine"} else {"empty"});
-        assert_eq!(s(get(get(output(&j,1,"existence"),"judgment"),"status")),if gamma==2 {"established"} else {"refuted"});
-        if gamma==2 {
-            let directions = get(node(&j,get(representation,"directions")),"value");
-            assert_eq!(num(get(directions,"free_rank")),1);
-            let point=coordinates(&j,get(representation,"particular"));
-            assert_eq!(point.len(),3);
-            assert_eq!((point[1]-point[0],point[2]-point[0]),(1,2));
-            let kernel=integer_columns(&j,get(representation,"embedding"));
-            assert_eq!(kernel.len(),1);
-            assert_eq!(kernel[0].len(),3);
-            assert_eq!(kernel[0][0].abs(),1);
-            assert!(kernel[0].iter().all(|v|*v==kernel[0][0]));
-        } else {
-            assert!(!has(representation,"certificate"));
-            let j = internal_graph(&dir, &j);
-            let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
-            let proof=get(get(node(&j,get(representation,"certificate")),"value"),"data");
-            let columns=integer_columns(&j,get(proof,"map"));
-            assert_eq!(columns,vec![vec![-1,0,-1],vec![1,-1,0],vec![0,1,1]]);
-            let left=integer_columns(&j,get(proof,"left"));
-            let transformed=coordinates(&j,get(proof,"transformed_rhs"));
-            let mut found=false;
-            for i in 0..3 {
-                let lambda=(0..3).map(|k|left[k][i]).collect::<Vec<_>>();
-                if columns.iter().all(|column|column.iter().zip(&lambda).map(|(a,b)|a*b).sum::<i64>()==0) {
-                    assert!(lambda==vec![1,1,-1] || lambda==vec![-1,-1,1]);
-                    let value=lambda[0]+lambda[1]+3*lambda[2];
-                    assert_ne!(value,0);
-                    assert_eq!(transformed[i],value);
-                    found=true;
-                }
-            }
-            assert!(found,"published Smith transform must exhibit the integer obstruction");
-        }
+        assert_eq!(s(get(representation,"kind")),"affine");
+        assert_eq!(s(get(get(output(&j,1,"existence"),"judgment"),"status")),"established");
+        let directions = get(node(&j,get(representation,"directions")),"value");
+        assert_eq!(num(get(directions,"free_rank")),1);
+        let point=coordinates(&j,get(representation,"particular"));
+        assert_eq!(point.len(),3);
+        assert_eq!((point[1]-point[0],point[2]-point[0]),(1,2));
+        let kernel=integer_columns(&j,get(representation,"embedding"));
+        assert_eq!(kernel.len(),1);
+        assert_eq!(kernel[0].len(),3);
+        assert_eq!(kernel[0][0].abs(),1);
+        assert!(kernel[0].iter().all(|v|*v==kernel[0][0]));
     } else {
         assert_eq!(s(get(answer,"status")),"undetermined");
         assert!(!has(answer,"claim"));

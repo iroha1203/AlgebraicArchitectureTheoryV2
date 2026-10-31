@@ -12,6 +12,13 @@ mod relation_fixture {
 }
 // relationの族は Hop の組で展開されるので、試験が使わない Hop(self・different)を外して族を小さくする。
 fn without_unused_hops(sources: InputSources) -> InputSources {
+    without_hops(sources, &["self", "different"])
+}
+// e と alias だけを比べる試験は next も外す。
+fn only_e_and_alias(sources: InputSources) -> InputSources {
+    without_hops(sources, &["self", "different", "next"])
+}
+fn without_hops(sources: InputSources, removed: &[&str]) -> InputSources {
     use crate::canonical::Json;
     use crate::json::{JNode, JValue};
     fn convert(node: &JNode) -> Json {
@@ -29,10 +36,10 @@ fn without_unused_hops(sources: InputSources) -> InputSources {
             JValue::Null => panic!("この原始fixtureにnullはない"),
         }
     }
-    fn unused(json: &Json, key: &str) -> bool {
+    let unused = |json: &Json, key: &str| {
         let Json::Obj(fields) = json else { panic!() };
-        fields[key] == Json::str("self") || fields[key] == Json::str("different")
-    }
+        removed.iter().any(|id| fields[key] == Json::str(*id))
+    };
     let mut map = convert(&crate::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Obj(root) = &mut map else { panic!() };
     let Json::Arr(snapshots) = root.get_mut("snapshots").unwrap() else {
@@ -271,28 +278,29 @@ fn public_relation_without_its_declaration_refutes_every_comparison() {
     }
 }
 #[test]
-fn public_relation_holds_backward_and_through_composed_paths() {
-    let queries = public_relation_queries();
-    let asked = [&queries[..5], &queries[6..]].concat();
-    let with = public(inputs(ALIAS_RELATION), &asked);
-    for answer in &with.answers[5..] {
-        assert_eq!(answer.status, Decision::Established, "{}", answer.id);
-    }
-}
-#[test]
 fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
     use crate::observed::public_compare::relations::Data;
-    let with = public(inputs(ALIAS_RELATION), &public_relation_queries()[..6]);
-    assert_eq!(with.answers[5].status, Decision::Established);
-    assert!(with.answers[5].outputs.contains_key("comparison"));
+    // 合成した Path の成立は CLI の a_composed_path_uses_the_original_relation_inside_its_query_context が見る。
+    let with = public(
+        only_e_and_alias(relation_fixture::input(ALIAS_RELATION, false)),
+        &[
+            E,
+            ALIAS,
+            "compared=compare($e.value,to=$alias.value,kind=relation)",
+            "backward=compare($alias.value,to=$e.value,kind=relation)",
+        ],
+    );
+    assert_eq!(with.answers[3].status, Decision::Established);
+    assert_eq!(with.answers[2].status, Decision::Established);
+    assert!(with.answers[2].outputs.contains_key("comparison"));
     assert!(
-        with.answers[5]
+        with.answers[2]
             .scope
             .quantifiers
             .iter()
             .any(|q| q.name == "relation_word" && q.domain.is_some())
     );
-    let claim = with.answers[5].claim.unwrap();
+    let claim = with.answers[2].claim.unwrap();
     let Payload::Construction(value) = with.nodes[claim.0].payload.as_ref().unwrap() else {
         panic!()
     };
@@ -303,7 +311,7 @@ fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
         panic!()
     };
     assert!(part.wire(w).canonical().contains("relation_equal"));
-    let proof = with.answers[5].evidence[1];
+    let proof = with.answers[2].evidence[1];
     let Payload::Construction(proof) = with.nodes[proof.0].payload.as_ref().unwrap() else {
         panic!()
     };
@@ -803,7 +811,7 @@ fn a_relation_with_matching_endpoints_still_checks_every_actual_action_image() {
 fn the_missing_guard_can_change_the_actual_relation_decision_in_both_completions() {
     for (value, expected) in [(false, Decision::Refuted), (true, Decision::Established)] {
         let result = evaluate_observed_bytes(
-            without_unused_hops(relation_fixture::known_guard(value)),
+            only_e_and_alias(relation_fixture::known_guard(value)),
             &[
                 E,
                 ALIAS,

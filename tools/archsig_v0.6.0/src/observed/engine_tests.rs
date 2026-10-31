@@ -34,23 +34,21 @@ fn engine_rechecks_all_z_coefficients_counterexample_assignment_and_original_sid
     });
 }
 
-fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after_answer: bool) {
+// 停止の代表: 反例を確定した回答の直後に取消され、確定済みの反例と前の回答を残す。
+// 反例の再検査は上のテストが代表するので、停止後の全体の再検査は重ねない。
+#[test]
+fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer() {
     use std::{cell::Cell, rc::Rc};
-    let current = if missing {
-        "current=check(Engine.preserves,c=@engine/add)"
-    } else {
-        "current=check(Engine.preserves,c=@engine/subtract)"
-    };
     let asks = [
         "seed=evaluate(Engine.seed)",
         "prior=check(Engine.prior)",
-        current,
+        "current=check(Engine.preserves,c=@engine/subtract)",
         "later=evaluate(Engine.seed)",
     ];
-    let normal = engine_private_result(&asks, missing);
+    let normal = engine_private_result(&asks, false);
     assert_eq!(normal.answers[0].status, Decision::Established);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let (limits, usage, expected) = reservations_private_stop_usage(0);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -65,27 +63,17 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
             Default::default()
         }
     });
-    let prepared = prepare_observed(engine_private_inputs(missing), &asks, &mut c).unwrap();
+    let prepared = prepare_observed(engine_private_inputs(false), &asks, &mut c).unwrap();
     let stopped =
         evaluate_observed_with_validator(prepared, &mut c, |environment, g, request, answer| {
             environment.validate_answer(g, request, answer)?;
-            if request.id == "prior" && !after_answer {
-                let (arm, saw) = (armed.clone(), seen.clone());
-                data::observe_iterations(move |_, ctx, op, i| {
-                    if ctx.request == 2 && ctx.case.is_none() && op == phase && i == at {
-                        assert!(!saw.replace(true));
-                        arm.set(true);
-                    }
-                });
-            }
-            if request.id == "current" && after_answer {
+            if request.id == "current" {
                 assert!(!seen.replace(true));
                 armed.set(true);
             }
             Ok(())
-        });
-    data::clear_iteration_observer();
-    let stopped = stopped.unwrap();
+        })
+        .unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
@@ -93,14 +81,12 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
     );
-    if after_answer {
-        assert_eq!(stopped.answers[2].status, Decision::Refuted);
-        assert_eq!(
-            format!("{:?}", stopped.answers[2]),
-            format!("{:?}", normal.answers[2])
-        );
-    }
-    for a in &stopped.answers[if after_answer { 3 } else { 2 }..] {
+    assert_eq!(stopped.answers[2].status, Decision::Refuted);
+    assert_eq!(
+        format!("{:?}", stopped.answers[2]),
+        format!("{:?}", normal.answers[2])
+    );
+    for a in &stopped.answers[3..] {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty() && a.claim.is_none() && a.evidence.is_empty());
         let reason = a
@@ -116,9 +102,4 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
         };
         assert_eq!(actual["details"], wanted["details"]);
     }
-    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer() {
-    engine_stop(0, false, "", 0, true)
 }

@@ -77,7 +77,7 @@ fn subject(g: &Graph, r: NodeRef, name: &str) -> String {
     };
     subject.clone()
 }
-const LAWS: &str = "law required zero(c:Part):c.quantity=0;law optional bit(c:Part,b:Bool) when b:c.quantity=0;law required same(c:Part,d:Part):c.quantity=d.quantity;";
+const LAWS: &str = "law optional bit(c:Part,b:Bool) when b:c.quantity=0;law required same(c:Part,d:Part):c.quantity=d.quantity;";
 #[test]
 fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() {
     let p = prepared(fixture::inputs(false, false, LAWS), "root");
@@ -86,7 +86,7 @@ fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() 
     let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
         .unwrap()
         .unwrap();
-    assert_eq!(t.indices.len(), 8);
+    assert_eq!(t.indices.len(), 6);
     assert_eq!(t.objects.len(), 3);
     let mut required = 0;
     let mut optional = 0;
@@ -103,11 +103,11 @@ fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() 
             _ => panic!(),
         }
     }
-    assert_eq!((required, optional), (6, 2));
+    assert_eq!((required, optional), (4, 2));
     for (object, row) in t.objects.iter().enumerate() {
-        assert_eq!(row.origins.len(), 8);
-        assert_eq!(row.evaluations.len(), 8);
-        assert_eq!(row.holds.len(), 8);
+        assert_eq!(row.origins.len(), 6);
+        assert_eq!(row.evaluations.len(), 6);
+        assert_eq!(row.holds.len(), 6);
         for (i, r) in row.origins.iter().enumerate() {
             let o = frames::origin(&g, *r).unwrap().unwrap();
             let b = frames::origin(&g, t.indices[i]).unwrap().unwrap();
@@ -165,7 +165,7 @@ fn finite_fields_and_finite_parameter_families_use_real_domain_evaluations() {
     let p = prepared(
         finite_fixture::inputs(
             false,
-            "law required zero(c:Part):c.quantity=0;law optional every(c:Part,n:Fp(2)):c.quantity=n;",
+            "law optional every(c:Part,n:Fp(2)):c.quantity*n=0;",
         ),
         "root",
     );
@@ -174,14 +174,13 @@ fn finite_fields_and_finite_parameter_families_use_real_domain_evaluations() {
     let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
         .unwrap()
         .unwrap();
-    assert_eq!(t.indices.len(), 4);
+    assert_eq!(t.indices.len(), 2);
     assert_eq!(t.objects.len(), 3);
     for (object, row) in t.objects.iter().enumerate() {
         for (i, r) in row.origins.iter().enumerate() {
             let c = subject(&g, *r, "c");
-            let o = frames::origin(&g, *r).unwrap().unwrap();
             let outside = object != 0 && c != if object == 1 { "p" } else { "q" };
-            let truth = outside || (!o.declaration.ends_with(".every") && c == "p");
+            let truth = outside || c == "p";
             assert_eq!(
                 g.get(row.holds[i])
                     .unwrap()

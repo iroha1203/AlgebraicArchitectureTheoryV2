@@ -399,65 +399,60 @@ fn map_field_unknown_owner_keeps_conditional_key_sets_and_known_map_constraints(
 }
 #[test]
 fn map_field_finite_containers_keep_each_shared_owner_and_typed_whole_value() {
+    // ownerが欠測のとき、ownerごとの補完(Aなら二つのMap、Bなら空Map)が各容器の中で混ざらないことを確かめる。
     let maps = [fixture::table("v", "k", "x"), fixture::table("v", "k", "y")];
-    for unknown in [false, true] {
-        let j = run(
-            fixture::input(false, false, unknown, false),
-            &[
-                "maybe_value=evaluate(Inspect.maybe_value,h=@v/h)",
-                "mixed=evaluate(Inspect.mixed,h=@v/h)",
-                "bag=evaluate(Inspect.bag,h=@v/h)",
-                "choice=evaluate(Inspect.choice,h=@v/h)",
-            ],
-        );
-        let mut map_values = maps.to_vec();
-        if unknown {
-            map_values.push(Json::Arr(vec![]));
-        }
-        let option_values = std::iter::once(Json::obj([("none", Json::Bool(true))]))
-            .chain(map_values.iter().cloned().map(|v| Json::obj([("some", v)])))
-            .map(|v| v.canonical())
-            .collect();
-        assert_eq!(assignments(&j, "maybe_value"), option_values);
-        let tuple_values = map_values
-            .iter()
-            .flat_map(|m| {
-                [false, true].map(|b| Json::Arr(vec![Json::Bool(b), m.clone()]).canonical())
-            })
-            .collect();
-        assert_eq!(assignments(&j, "mixed"), tuple_values);
-        let mut sets: BTreeSet<_> = [
-            Json::Arr(vec![]),
-            Json::Arr(vec![maps[0].clone()]),
-            Json::Arr(vec![maps[1].clone()]),
-            Json::Arr(maps.to_vec()),
-        ]
-        .iter()
-        .map(Json::canonical)
-        .collect();
-        if unknown {
-            sets.insert(Json::Arr(vec![Json::Arr(vec![])]).canonical());
-        }
-        assert_eq!(
-            assignments(&j, "bag"),
-            sets,
-            "same holder owner applies to every Map in a Set"
-        );
-        let choices = std::iter::once(Json::obj([
-            ("tag", Json::str("blank")),
-            ("args", Json::Arr(vec![])),
-        ]))
-        .chain(
-            maps.iter()
-                .cloned()
-                .map(|m| Json::obj([("tag", Json::str("wrap")), ("args", Json::Arr(vec![m]))])),
-        )
+    let j = run(
+        fixture::input(false, false, true, false),
+        &[
+            "maybe_value=evaluate(Inspect.maybe_value,h=@v/h)",
+            "mixed=evaluate(Inspect.mixed,h=@v/h)",
+            "bag=evaluate(Inspect.bag,h=@v/h)",
+            "choice=evaluate(Inspect.choice,h=@v/h)",
+        ],
+    );
+    let mut map_values = maps.to_vec();
+    map_values.push(Json::Arr(vec![]));
+    let option_values = std::iter::once(Json::obj([("none", Json::Bool(true))]))
+        .chain(map_values.iter().cloned().map(|v| Json::obj([("some", v)])))
         .map(|v| v.canonical())
         .collect();
-        assert_eq!(assignments(&j, "choice"), choices);
-        for id in ["maybe_value", "mixed", "bag", "choice"] {
-            original_missing(&j, id, "h", &format!("MapFields.Holder.{id}"));
-        }
+    assert_eq!(assignments(&j, "maybe_value"), option_values);
+    let tuple_values = map_values
+        .iter()
+        .flat_map(|m| {
+            [false, true].map(|b| Json::Arr(vec![Json::Bool(b), m.clone()]).canonical())
+        })
+        .collect();
+    assert_eq!(assignments(&j, "mixed"), tuple_values);
+    let sets: BTreeSet<_> = [
+        Json::Arr(vec![]),
+        Json::Arr(vec![maps[0].clone()]),
+        Json::Arr(vec![maps[1].clone()]),
+        Json::Arr(maps.to_vec()),
+        Json::Arr(vec![Json::Arr(vec![])]),
+    ]
+    .iter()
+    .map(Json::canonical)
+    .collect();
+    assert_eq!(
+        assignments(&j, "bag"),
+        sets,
+        "same holder owner applies to every Map in a Set"
+    );
+    let choices = std::iter::once(Json::obj([
+        ("tag", Json::str("blank")),
+        ("args", Json::Arr(vec![])),
+    ]))
+    .chain(
+        maps.iter()
+            .cloned()
+            .map(|m| Json::obj([("tag", Json::str("wrap")), ("args", Json::Arr(vec![m]))])),
+    )
+    .map(|v| v.canonical())
+    .collect();
+    assert_eq!(assignments(&j, "choice"), choices);
+    for id in ["maybe_value", "mixed", "bag", "choice"] {
+        original_missing(&j, id, "h", &format!("MapFields.Holder.{id}"));
     }
 }
 #[test]
@@ -515,58 +510,58 @@ fn map_field_empty_domains_and_inconsistent_nonempty_to_empty_keep_input_stages(
 }
 #[test]
 fn map_field_cross_snapshot_keys_and_current_provenance_keep_every_full_table() {
-    let mut statuses = vec![];
-    for moved in [false, true] {
-        let j = run(
-            fixture::input(true, moved, false, false),
-            &[
-                "plain=evaluate(Inspect.plain,h=@v/h)",
-                "same=evaluate(Inspect.same,h=@v/h)",
-            ],
-        );
-        let images = [
-            fixture::reference("v", "x"),
-            fixture::reference("v", "y"),
-            fixture::reference("w", "x"),
-        ];
-        let tables = images
-            .iter()
-            .flat_map(|a| {
-                images.iter().map(move |b| {
-                    Json::Arr(vec![
-                        Json::Arr(vec![fixture::reference("v", "k"), a.clone()]),
-                        Json::Arr(vec![fixture::reference("w", "k"), b.clone()]),
-                    ])
-                    .canonical()
-                })
+    // 出典を移した入力(r2)でも、全表の値と出典の追跡が現在の出典になることを確かめる。
+    let j = run(
+        fixture::input(true, true, false, false),
+        &[
+            "plain=evaluate(Inspect.plain,h=@v/h)",
+            "same=evaluate(Inspect.same,h=@v/h)",
+        ],
+    );
+    let images = [
+        fixture::reference("v", "x"),
+        fixture::reference("v", "y"),
+        fixture::reference("w", "x"),
+    ];
+    let tables = images
+        .iter()
+        .flat_map(|a| {
+            images.iter().map(move |b| {
+                Json::Arr(vec![
+                    Json::Arr(vec![fixture::reference("v", "k"), a.clone()]),
+                    Json::Arr(vec![fixture::reference("w", "k"), b.clone()]),
+                ])
+                .canonical()
             })
-            .collect();
-        assert_eq!(assignments(&j, "plain"), tables);
-        assert_eq!(
-            assignments(&j, "same"),
-            [fixture::table("v", "k", "x"), fixture::table("v", "k", "y")]
-                .iter()
-                .map(Json::canonical)
-                .collect()
-        );
-        assert_eq!(value(&j, "same"), &Json::Bool(true));
-        original_missing(&j, "plain", "h", "MapFields.Holder.plain");
-        original_missing(&j, "same", "h", "MapFields.Holder.table");
-        statuses.push(["plain", "same"].map(|id| f(answer(&j, id), "status").canonical()));
-    }
-    assert_eq!(statuses[0], statuses[1]);
+        })
+        .collect();
+    assert_eq!(assignments(&j, "plain"), tables);
+    assert_eq!(
+        assignments(&j, "same"),
+        [fixture::table("v", "k", "x"), fixture::table("v", "k", "y")]
+            .iter()
+            .map(Json::canonical)
+            .collect()
+    );
+    assert_eq!(value(&j, "same"), &Json::Bool(true));
+    original_missing(&j, "plain", "h", "MapFields.Holder.plain");
+    original_missing(&j, "same", "h", "MapFields.Holder.table");
 }
 #[test]
 fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples_in_both_orders() {
+    // 反例fixtureはh.flagだけを欠き、MapFields.Holder.tableは全Holderで欠く。numericはflagを読まないので、
+    // 同じ入力で数値軸つきLaw全体の成立と既知反例による反証を一度に確かめる。
     let j = run(
-        fixture::input(false, false, false, false),
-        &["all=check(Inspect.each)", "numeric=check(Inspect.numeric)"],
+        fixture::counterexample(false),
+        &[
+            "numeric=check(Inspect.numeric)",
+            "flags=check(Inspect.flags)",
+            "later=evaluate(Inspect.seed)",
+        ],
     );
-    for id in ["all", "numeric"] {
-        assert_eq!(f(answer(&j, id), "status"), &Json::str("established"));
-        for s in ["h", "j"] {
-            original_missing(&j, id, s, "MapFields.Holder.table");
-        }
+    assert_eq!(f(answer(&j, "numeric"), "status"), &Json::str("established"));
+    for s in ["h", "j"] {
+        original_missing(&j, "numeric", s, "MapFields.Holder.table");
     }
     for (name, ty) in [("z", "Z"), ("q", "Q")] {
         assert!(
@@ -577,42 +572,36 @@ fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples_in_both_order
                     && f(v, "kind") == &Json::str("forall"))
         );
     }
-    for reverse in [false] {
-        let j = run(
-            fixture::counterexample(reverse),
-            &["flags=check(Inspect.flags)", "later=evaluate(Inspect.seed)"],
+    assert_eq!(f(answer(&j, "flags"), "status"), &Json::str("refuted"));
+    assert_eq!(value(&j, "later"), &Json::str("1"));
+    original_missing(&j, "flags", "h", "MapFields.Holder.table");
+    original_missing(&j, "flags", "h", "MapFields.Holder.flag");
+    let ns = nodes(&j);
+    let fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("j")),
+        ("field", Json::str("MapFields.Holder.flag")),
+        ("atom", Json::str("j-flag")),
+    ]);
+    let actual:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("counterexample")))).filter(|n|arr(f(f(f(n,"value"),"data"),"facts")).contains(&fact)).collect();
+    assert!(!actual.is_empty());
+    for n in actual {
+        let d = f(f(n, "value"), "data");
+        assert_eq!(
+            f(ns[text(f(f(d, "left"), "node"))], "value"),
+            &Json::Bool(false)
         );
-        assert_eq!(f(answer(&j, "flags"), "status"), &Json::str("refuted"));
-        assert_eq!(value(&j, "later"), &Json::str("1"));
-        original_missing(&j, "flags", "h", "MapFields.Holder.table");
-        original_missing(&j, "flags", "h", "MapFields.Holder.flag");
-        let ns = nodes(&j);
-        let fact = Json::obj([
-            ("snapshot", Json::str("v")),
-            ("subject", Json::str("j")),
-            ("field", Json::str("MapFields.Holder.flag")),
-            ("atom", Json::str("j-flag")),
-        ]);
-        let actual:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("counterexample")))).filter(|n|arr(f(f(f(n,"value"),"data"),"facts")).contains(&fact)).collect();
-        assert!(!actual.is_empty());
-        for n in actual {
-            let d = f(f(n, "value"), "data");
-            assert_eq!(
-                f(ns[text(f(f(d, "left"), "node"))], "value"),
-                &Json::Bool(false)
-            );
-            assert_eq!(
-                f(ns[text(f(f(d, "right"), "node"))], "value"),
-                &Json::Bool(true)
-            );
-            assert!(
-                arr(f(d, "bindings"))
-                    .iter()
-                    .any(|b| f(b, "name") == &Json::str("h")
-                        && f(ns[text(f(f(b, "value"), "node"))], "value")
-                            == &fixture::reference("v", "j"))
-            );
-        }
+        assert_eq!(
+            f(ns[text(f(f(d, "right"), "node"))], "value"),
+            &Json::Bool(true)
+        );
+        assert!(
+            arr(f(d, "bindings"))
+                .iter()
+                .any(|b| f(b, "name") == &Json::str("h")
+                    && f(ns[text(f(f(b, "value"), "node"))], "value")
+                        == &fixture::reference("v", "j"))
+        );
     }
 }
 #[test]

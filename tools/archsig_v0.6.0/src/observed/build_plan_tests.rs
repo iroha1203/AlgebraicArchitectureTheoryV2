@@ -38,103 +38,106 @@ fn graph(p: &PreparedObserved) -> Graph {
 #[test]
 fn universal_numeric_build_laws_preserve_parameter_functions() {
     use crate::{canonical::Json, types::Type};
-    for (ty, tuple) in [("Q", false), ("Z", true)] {
+    for (ty, tuple, body, truth) in [
+        ("Q", false, "n=n", true),
+        ("Q", false, "n=0", false),
+        ("Z", true, "n=n+1", false),
+        ("Z", true, "n=0", false),
+    ] {
         let parameter_type = if tuple {
             format!("({ty},{ty})")
         } else {
             ty.to_owned()
         };
-        for (body, truth) in [("n=n", true), ("n=n+1", false), ("n=0", false)] {
-            let expression = if tuple {
-                body.replace("n", "(n.0+n.1)")
-            } else {
-                body.to_owned()
-            };
-            let p = single_part(&format!(
-                "law required reflexive(c:Part,n:{parameter_type}):{expression};"
-            ));
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            let mut g = graph(&p);
-            let plan = prepare(
-                &env,
-                &mut g,
-                p.shared_inputs(),
-                &p.requests().requests()[0],
-                &mut quiet(),
-            )
-            .unwrap();
-            let table = plan.laws.as_ref().unwrap();
-            let circuits =
-                crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
-                    .unwrap()
-                    .unwrap();
-            assert_eq!(circuits.len(), 1);
+        let expression = if tuple {
+            body.replace("n", "(n.0+n.1)")
+        } else {
+            body.to_owned()
+        };
+        let p = single_part(&format!(
+            "law required reflexive(c:Part,n:{parameter_type}):{expression};"
+        ));
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = graph(&p);
+        let plan = prepare(
+            &env,
+            &mut g,
+            p.shared_inputs(),
+            &p.requests().requests()[0],
+            &mut quiet(),
+        )
+        .unwrap();
+        let table = plan.laws.as_ref().unwrap();
+        let circuits =
+            crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+                .unwrap()
+                .unwrap();
+        assert_eq!(circuits.len(), 1);
+        assert_eq!(
+            circuits[0].parameters.len(),
+            if body == "n=0" { 1 } else { 0 }
+        );
+        assert!(!circuits[0].cases.is_empty());
+        for case in &circuits[0].cases {
+            assert_eq!(case.when, if body == "n=0" { None } else { Some(!truth) });
+        }
+        assert!(!table.objects.is_empty());
+        for row in &table.objects {
             assert_eq!(
-                circuits[0].parameters.len(),
-                if body == "n=0" { 1 } else { 0 }
+                g.get(row.holds[0])
+                    .unwrap()
+                    .judgment
+                    .as_ref()
+                    .unwrap()
+                    .status,
+                if truth {
+                    Decision::Established
+                } else {
+                    Decision::Refuted
+                }
             );
-            assert!(!circuits[0].cases.is_empty());
-            for case in &circuits[0].cases {
-                assert_eq!(case.when, if body == "n=0" { None } else { Some(!truth) });
-            }
-            assert!(!table.objects.is_empty());
-            for row in &table.objects {
-                assert_eq!(
-                    g.get(row.holds[0])
-                        .unwrap()
-                        .judgment
-                        .as_ref()
-                        .unwrap()
-                        .status,
-                    if truth {
-                        Decision::Established
-                    } else {
-                        Decision::Refuted
-                    }
-                );
-            }
-            assert_eq!(plan.predicates.len(), 1);
-            let predicate = &plan.predicates[0];
-            for reference in &predicate.evaluations {
-                let node = g.get(*reference).unwrap();
-                env.recheck_node(&g, node, reference.0).unwrap();
-                let Some(Payload::Construction(value)) = &node.payload else {
-                    panic!()
-                };
-                let Json::Obj(ref wire) = value.wire() else {
-                    panic!()
-                };
-                // The function n=0 is not the constant false function, although its
-                // universal closure is false. Retain the expression, not that Bool.
-                assert!(!wire.contains_key("value"));
-                assert!(wire.contains_key("expression"));
-            }
-            let node = g.get(predicate.invariant).unwrap();
-            env.recheck_node(&g, node, predicate.invariant.0).unwrap();
+        }
+        assert_eq!(plan.predicates.len(), 1);
+        let predicate = &plan.predicates[0];
+        for reference in &predicate.evaluations {
+            let node = g.get(*reference).unwrap();
+            env.recheck_node(&g, node, reference.0).unwrap();
             let Some(Payload::Construction(value)) = &node.payload else {
                 panic!()
             };
             let Json::Obj(ref wire) = value.wire() else {
                 panic!()
             };
-            assert_eq!(
-                wire["parameters"],
-                Json::Arr(vec![Json::obj([
-                    ("name", Json::str("n")),
-                    (
-                        "type",
-                        if tuple {
-                            Type::Tuple(vec![if ty == "Z" { Type::Z } else { Type::Q }; 2])
-                        } else if ty == "Z" {
-                            Type::Z
-                        } else {
-                            Type::Q
-                        }
-                        .wire()
-                    ),
-                ])])
-            );
+            // The function n=0 is not the constant false function, although its
+            // universal closure is false. Retain the expression, not that Bool.
+            assert!(!wire.contains_key("value"));
+            assert!(wire.contains_key("expression"));
         }
+        let node = g.get(predicate.invariant).unwrap();
+        env.recheck_node(&g, node, predicate.invariant.0).unwrap();
+        let Some(Payload::Construction(value)) = &node.payload else {
+            panic!()
+        };
+        let Json::Obj(ref wire) = value.wire() else {
+            panic!()
+        };
+        assert_eq!(
+            wire["parameters"],
+            Json::Arr(vec![Json::obj([
+                ("name", Json::str("n")),
+                (
+                    "type",
+                    if tuple {
+                        Type::Tuple(vec![if ty == "Z" { Type::Z } else { Type::Q }; 2])
+                    } else if ty == "Z" {
+                        Type::Z
+                    } else {
+                        Type::Q
+                    }
+                    .wire()
+                ),
+            ])])
+        );
     }
 }
 

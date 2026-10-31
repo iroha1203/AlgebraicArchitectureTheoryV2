@@ -17,6 +17,36 @@ fn inputs(name: &str, extra: &str, map: Option<&str>) -> PathBuf {
     }
     dir
 }
+// 移行mと状態p,q,r,s・予約操作e,fだけを残した観測。値は元のfixtureと同じ。
+fn small_map() -> String {
+    use archsig::canonical::Json;
+    fixture::changed_map(|j| {
+        let unused = |value: Option<&Json>| {
+            matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
+        };
+        {
+            let Json::Arr(snapshots) = fixture::field(j, "snapshots") else {
+                panic!("snapshots")
+            };
+            let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+                panic!("subjects")
+            };
+            subjects.retain(|subject| !matches!(subject, Json::Obj(o) if unused(o.get("id"))));
+        }
+        let atoms = fixture::atoms(j);
+        atoms.retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
+        for atom in atoms {
+            let Json::Obj(atom) = atom else { panic!("atom") };
+            if atom.get("id") == Some(&Json::str("m-reserves")) {
+                let reference = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
+                atom.insert(
+                    "value".into(),
+                    Json::Arr(vec![Json::Arr(vec![reference("e"), reference("f")])]),
+                );
+            }
+        }
+    })
+}
 fn asks(dir: &Path, qs: &[&str]) -> Run {
     asks_at(dir, qs, "out", None)
 }
@@ -127,7 +157,7 @@ law required product(a:System,s:State):a=a and s.free+s.held=2;
 law optional guarded(s:State) when false:false;
 law required dependent(a:System,s:State[a]):s.free+s.held=2;
 "#,
-        None,
+        Some(&small_map()),
     );
     let r = asks(
         &dir,
@@ -733,10 +763,16 @@ law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;
 law required partiallyBound(x:System,b:Bool):forall s:State[x] . (s.free+s.held=2 and b);
 law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : true;
 "#,
-        None,
+        Some(&small_map()),
     );
-    let r = asks(
-        &dir,
+    // 量化の行は内部graphにだけあるので、同じ三入力を一度だけ内部で評価する。
+    let sources = archsig::input::InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let result = archsig::observed::evaluate_observed_bytes(
+        sources,
         &[
             fixture::MAP,
             "source=check(Reservations.nestedOwner,on=$m.candidate.source)",
@@ -749,11 +785,11 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
             "guard=check(Reservations.guardedOwner,on=$m.candidate.source)",
             "external=check(Reservations.nestedOwner,x=@v/B,on=$m.candidate.source)",
         ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_eq!(s(get(&r.receipt, "status")), "complete");
-    let internal = internal_graph(&dir, &j);
+        &mut archsig::control::Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete");
+    let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
     for (id, status, rows) in [
         ("source", "established", 1),
         ("target", "refuted", 1),
@@ -762,16 +798,16 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
         ("bad", "refuted", 1),
         ("guard", "established", 1),
     ] {
-        let a = answer(&j, id);
+        let a = answer(&internal, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
-        let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
+        let evaluation = value(&internal, get(get(a, "outputs"), "evaluation"));
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
             rows,
             "{id}"
         );
     }
-    assert_eq!(s(get(answer(&j, "external"), "status")), "refuted");
+    assert_eq!(s(get(answer(&internal, "external"), "status")), "refuted");
     std::fs::remove_dir_all(dir).unwrap();
 }
 

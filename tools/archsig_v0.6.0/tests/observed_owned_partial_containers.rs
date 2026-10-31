@@ -114,11 +114,10 @@ fn assert_completion_domain(w: &Json, id: &str, kind: &str, entity: &str, expect
 }
 #[test]
 fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
+    // Option引数はnested(Option<List<Set<..>>>)が含み、返り値の境界はreturnsetが確かめる。
     let r = run(&[
-        "optionCase=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)",
         "collectionCase=check(Reservations.ocSetGood,a=@v/A,p=@v/p,q=@v/q)",
         "nested=check(Reservations.ocNestedGood,a=@v/A,b=@v/B,p=@v/p,q=@v/r)",
-        "returned=check(Reservations.ocReturned,a=@v/A,p=@v/p)",
         "returnset=check(Reservations.ocReturnedSet,a=@v/A,p=@v/p)",
     ]);
     assert_eq!(r.status(), "complete");
@@ -157,7 +156,7 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
             seen.insert(get(n, "id").canonical());
         }
     }
-    assert!(seen.len() >= 5);
+    assert!(seen.len() >= 3);
     let law = r.prepared().inputs().law();
     let declared_parameters: std::collections::BTreeSet<_> = law.infos().iter()
         .flat_map(|info| &info.parameters)
@@ -182,13 +181,7 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
         std::collections::BTreeSet::from([Json::str("Z").canonical(), Json::str("Q").canonical()])
     );
 
-    for id in [
-        "optionCase",
-        "collectionCase",
-        "nested",
-        "returned",
-        "returnset",
-    ] {
+    for id in ["collectionCase", "nested", "returnset"] {
         let claim = node(&w, get(answer(&w, id), "claim"));
         assert!(
             arr(get(claim, "support"))
@@ -231,8 +224,10 @@ fn partial_option_set_known_owner_and_snapshot_failures_keep_typed_conditions() 
 }
 #[test]
 fn partial_option_set_numeric_missing_keeps_known_members_without_fake_set_cardinality() {
+    // Tuple内の数値欠測は
+    // observed_owned_partial_calls::partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members
+    // が確かめるので、ここではSetの要素と件数で確かめる。
     let r = run(&[
-        "optionCase=evaluate(Reservations.ocMissing,a=@v/A,p=@v/p,q=@v/q)",
         "collectionCase=evaluate(Reservations.ocMissingSet,a=@v/A,p=@v/p,q=@v/q)",
         "bad=evaluate(Reservations.ocMissingSet,a=@v/B,p=@v/p,q=@v/q)",
         "counted=evaluate(Reservations.ocCount,a=@v/A,p=@v/p,q=@v/q)",
@@ -242,7 +237,7 @@ fn partial_option_set_numeric_missing_keeps_known_members_without_fake_set_cardi
     ]);
     let w = r.wire();
     assert_eq!(r.status(), "partial");
-    for id in ["optionCase", "collectionCase", "empty", "extensional"] {
+    for id in ["collectionCase", "empty", "extensional"] {
         let a = answer(&w, id);
         assert_eq!(get(a, "status"), &Json::str("established"));
         assert_eq!(
@@ -250,7 +245,7 @@ fn partial_option_set_numeric_missing_keeps_known_members_without_fake_set_cardi
             &Json::Bool(true)
         );
     }
-    for id in ["optionCase", "collectionCase", "counted"] {
+    for id in ["collectionCase", "counted"] {
         assert!(codes(answer(&w, id)).contains(&&Json::str("missing_observation")));
     }
     assert_failed(&w, "bad");
@@ -275,43 +270,27 @@ fn partial_option_set_numeric_missing_keeps_known_members_without_fake_set_cardi
 }
 #[test]
 fn partial_option_set_pending_and_missing_members_keep_independent_known_mismatch() {
-    let mut asks = Vec::new();
-    for (id, v) in [("first", "ocMixed")] {
-        for (s, p) in [("good", "r"), ("bad", "p")] {
-            asks.push(format!(
-                "{id}{s}=evaluate(Reservations.{v},a=@v/B,e=@v/e,p=@v/{p}{} )",
-                if v.starts_with("ocMixed") {
-                    ",q=@v/q"
-                } else {
-                    ""
-                }
-            ));
-        }
-    }
-    let refs = asks.iter().map(String::as_str).collect::<Vec<_>>();
-    let r = run_input(fixture::missing_reference_input(), &refs);
+    let r = run_input(
+        fixture::missing_reference_input(),
+        &["bad=evaluate(Reservations.ocMixed,a=@v/B,e=@v/e,p=@v/p,q=@v/q)"],
+    );
     assert_eq!(r.status(), "partial");
     assert_original_arrow_owner(&r);
     let w = r.wire();
-    for id in ["first"] {
-        for s in ["good", "bad"] {
-            let name = format!("{id}{s}");
-            let a = answer(&w, &name);
-            assert_eq!(get(a, "status"), &Json::str("undetermined"));
-            let cs = codes(a);
-            assert!(cs.contains(&&Json::str("missing_observation")));
-            // e.owner=A と to:State[owner] により、欠測toの全補完はp/q。
-            // a=Bへのreadは両caseで失敗する。good/badは外側のpの所属だけを区別する。
-            assert_completion_domain(&w, &name, "Ref", "Reservations.State", &["p", "q"]);
-            assert_eq!(
-                cs.iter()
-                    .filter(|c| ***c == Json::str("condition_failed"))
-                    .count(),
-                if s == "bad" { 3 } else { 2 }
-            );
-            assert_failed(&w, &name);
-        }
-    }
+    let a = answer(&w, "bad");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let cs = codes(a);
+    assert!(cs.contains(&&Json::str("missing_observation")));
+    // e.owner=A と to:State[owner] により、欠測toの全補完はp/q。
+    // a=Bへのreadは両caseで失敗する(二つ)。三つ目は既知p.owner=Aの独立な失敗で、補完と混ざらずに残る。
+    assert_completion_domain(&w, "bad", "Ref", "Reservations.State", &["p", "q"]);
+    assert_eq!(
+        cs.iter()
+            .filter(|c| ***c == Json::str("condition_failed"))
+            .count(),
+        3
+    );
+    assert_failed(&w, "bad");
 }
 #[test]
 fn partial_option_missing_reference_resolves_known_owner_and_quantified_unknown_owner() {
@@ -331,30 +310,6 @@ fn partial_option_missing_reference_resolves_known_owner_and_quantified_unknown_
     assert!(codes(a).contains(&&Json::str("missing_observation")));
     assert!(!codes(a).contains(&&Json::str("condition_failed")));
     assert_completion_domain(&w, "x", "Ref", "Reservations.State", &["p", "q"]);
-    let unknown = evaluate_observed_bytes(
-        fixture::input(true, "r1"),
-        &["x=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)"],
-        &mut Control::new(Limits::default(), |_| Usage::default()),
-    )
-    .unwrap();
-    let uw = unknown.wire();
-    let a = answer(&uw, "x");
-    assert_eq!(unknown.status(), "partial");
-    assert_eq!(get(a, "status"), &Json::str("undetermined"));
-    let Json::Obj(outputs) = get(a, "outputs") else {
-        panic!("outputs")
-    };
-    assert!(!outputs.contains_key("value"));
-    assert!(arr(get(a, "reasons")).iter().any(|r| {
-        get(r, "code") == &Json::str("missing_observation")
-            && arr(get(r, "missing")).iter().any(|f| {
-                get(f, "subject") == &Json::str("p")
-                    && get(f, "field") == &Json::str("Reservations.State.owner")
-            })
-    }));
-    assert!(
-        arr(get(a, "reasons"))
-            .iter()
-            .any(|r| get(r, "code") == &Json::str("condition_failed"))
-    );
+    // ownerが欠測の同じ要求(ocSomeGood,a=A,p=p)は
+    // observed_owned_universal_calls::unknown_owner_and_free_z_keep_membership_and_missing が確かめる。
 }

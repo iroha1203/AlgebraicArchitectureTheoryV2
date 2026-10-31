@@ -357,6 +357,32 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
         .replace("\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"4\"", "\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"2\"")
         .replace("\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"3\"", "\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"1\"");
     let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    // 診断の比較に使うのは移行mと状態p,q,r,sだけなので、他の移行と予約操作を外す。
+    let unused = |value: Option<&Json>| {
+        matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
+    };
+    {
+        let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
+            panic!("snapshots")
+        };
+        let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+            panic!("subjects")
+        };
+        subjects.retain(|subject| !matches!(subject, Json::Obj(o) if unused(o.get("id"))));
+    }
+    fixture::atoms(&mut map).retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
+    for atom in fixture::atoms(&mut map) {
+        let Json::Obj(atom) = atom else {
+            panic!("atom")
+        };
+        if atom.get("id") == Some(&Json::str("m-reserves")) {
+            let reference = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
+            atom.insert(
+                "value".into(),
+                Json::Arr(vec![Json::Arr(vec![reference("e"), reference("f")])]),
+            );
+        }
+    }
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(atom) = atom else {
             panic!("atom")

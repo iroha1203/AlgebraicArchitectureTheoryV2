@@ -313,32 +313,8 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
             .iter()
             .any(|r| get(r, "code") == &Json::str("condition_failed"))
     );
-    let u = evaluate_observed_bytes(
-        fixture::input(true, "r1"),
-        &["unknown=check(Reservations.pcGood,a=@v/A,p=@v/p)"],
-        &mut quiet(),
-    )
-    .unwrap();
-    let uw = u.wire();
-    let a = answer(&uw, "unknown");
-    assert_eq!(u.status(), "partial");
-    assert_eq!(get(a, "status"), &Json::str("undetermined"));
-    let Json::Obj(outputs) = get(a, "outputs") else {
-        panic!("outputs")
-    };
-    assert!(!outputs.contains_key("value"));
-    assert!(arr(get(a, "reasons")).iter().any(|r| {
-        get(r, "code") == &Json::str("missing_observation")
-            && arr(get(r, "missing")).iter().any(|f| {
-                get(f, "subject") == &Json::str("p")
-                    && get(f, "field") == &Json::str("Reservations.State.owner")
-            })
-    }));
-    assert!(
-        arr(get(a, "reasons"))
-            .iter()
-            .any(|r| get(r, "code") == &Json::str("condition_failed"))
-    );
+    // ownerが欠測のときの所属条件は
+    // observed_owned_universal_calls::unknown_owner_and_free_z_keep_membership_and_missing が確かめる。
 }
 
 #[test]
@@ -471,7 +447,6 @@ fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quanti
         &[
             "plain=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
             "quantified=evaluate(Reservations.pcPendingQuant,a=@v/B,e=@v/e)",
-            "universal=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/r)",
             "later=evaluate(Reservations.seed)",
         ],
         &mut quiet(),
@@ -479,7 +454,9 @@ fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quanti
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
     assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
-    for id in ["plain", "quantified", "universal"] {
+    // 全称Lawを通る未決は
+    // partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_universal_calls が確かめる。
+    for id in ["plain", "quantified"] {
         let a = answer(&w, id);
         assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
         let Json::Obj(o) = get(a, "outputs") else {
@@ -651,98 +628,65 @@ fn partial_owned_false_implies_pending_right_keeps_true_value_and_missing() {
 
 #[test]
 fn partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_universal_calls() {
-    let mut asks = Vec::new();
-    for (id, view) in [
-        ("universal", "pcPendingUniversal"),
-    ] {
-        for (suffix, p) in [("good", "r"), ("bad", "p")] {
-            asks.push(format!(
-                "{id}{suffix}={}(Reservations.{view},a=@v/B,e=@v/e,p=@v/{p})",
-                if id == "universal" {
-                    "check"
-                } else {
-                    "evaluate"
-                }
-            ));
-        }
-    }
+    // 外側の所属が合う側(p=@v/r)は、全称Lawを通さない
+    // partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quantification が確かめる。
+    // ここでは全称Lawを通しても、既知p.owner=Aの独立な失敗が元の外側callに残る側を見る。
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
-        &asks.iter().map(String::as_str).collect::<Vec<_>>(),
+        &["universalbad=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/p)"],
         &mut quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
     assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
-    for a in arr(get(&w, "answers")) {
-        let Json::Str(id) = get(a, "id") else {
-            panic!("id")
-        };
-        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
-        let Json::Obj(o) = get(a, "outputs") else {
-            panic!("outputs")
-        };
-        assert!(!o.contains_key("value"), "{id}");
-        let reasons = arr(get(a, "reasons"));
-        assert_missing_reference_completions_failed(&w, a);
-        // bad側では欠測e.toに由来する内側のread/narrowではなく、
-        // 元の外側callに既知p.owner=Aの失敗が残ることをsourceまで区別する。
-        let target = match id.trim_end_matches("good").trim_end_matches("bad") {
-            "reverse" => "pcAcceptReverse(",
-            "list" => "pcList(",
-            "returned" => "pcPendingReturn(",
-            "returnlist" => "pcPendingReturnList(",
-            "separate" => "pcTwo(",
-            "universal" => "pcAccept(",
-            _ => panic!("request"),
-        };
-        let law = std::str::from_utf8(r.prepared().inputs().sources().law().bytes()).unwrap();
-        let independent = reasons
-            .iter()
-            .filter(|r| get(r, "code") == &Json::str("condition_failed"))
-            .find(|r| {
-                let condition = node(&w, get(get(r, "details"), "condition"));
-                let source = node(&w, &arr(get(condition, "arguments"))[0]);
-                let location = get(get(source, "value"), "location");
-                assert_eq!(get(location, "input"), &Json::str("law"));
-                let [Json::Nat(start), Json::Nat(end)] = arr(get(location, "span")) else {
-                    panic!("span")
-                };
-                law[*start as usize..*end as usize].starts_with(target)
-                    && arr(get(condition, "support")).iter().any(
-                        |f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))),
-                    )
-            });
-        assert_eq!(independent.is_some(), id.ends_with("bad"), "{id}");
-        if let Some(failed) = independent {
-            let c = node(&w, get(get(failed, "details"), "condition"));
-            assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
-            let operands = arr(get(get(c, "value"), "operands"));
-            assert_eq!(operands.len(), 2);
-            for (operand, owner) in operands.iter().zip(["A", "B"]) {
-                let n = node(&w, operand);
-                assert_eq!(
-                    get(n, "type"),
-                    &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")])
-                );
-                assert_eq!(
-                    get(n, "value"),
-                    &Json::Arr(vec![Json::str("v"), Json::str(owner)])
-                );
-            }
-            assert!(
-                arr(get(c, "support"))
-                    .iter()
-                    .any(|f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))))
-            );
-        }
-        assert!(
-            reasons
-                .iter()
-                .filter(|r| get(r, "code") == &Json::str("missing_observation"))
-                .flat_map(|r| arr(get(r, "missing")))
-                .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to")),
-            "{id}"
+    let a = answer(&w, "universalbad");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let Json::Obj(o) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!o.contains_key("value"));
+    let reasons = arr(get(a, "reasons"));
+    assert_missing_reference_completions_failed(&w, a);
+    // 欠測e.toに由来する内側のread/narrowではなく、
+    // 元の外側callに既知p.owner=Aの失敗が残ることをsourceまで区別する。
+    let law = std::str::from_utf8(r.prepared().inputs().sources().law().bytes()).unwrap();
+    let failed = reasons
+        .iter()
+        .filter(|r| get(r, "code") == &Json::str("condition_failed"))
+        .find(|r| {
+            let condition = node(&w, get(get(r, "details"), "condition"));
+            let source = node(&w, &arr(get(condition, "arguments"))[0]);
+            let location = get(get(source, "value"), "location");
+            assert_eq!(get(location, "input"), &Json::str("law"));
+            let [Json::Nat(start), Json::Nat(end)] = arr(get(location, "span")) else {
+                panic!("span")
+            };
+            law[*start as usize..*end as usize].starts_with("pcAccept(")
+                && arr(get(condition, "support")).iter().any(
+                    |f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))),
+                )
+        })
+        .expect("独立な既知owner不等を保持する");
+    let c = node(&w, get(get(failed, "details"), "condition"));
+    assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
+    let operands = arr(get(get(c, "value"), "operands"));
+    assert_eq!(operands.len(), 2);
+    for (operand, owner) in operands.iter().zip(["A", "B"]) {
+        let n = node(&w, operand);
+        assert_eq!(
+            get(n, "type"),
+            &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")])
+        );
+        assert_eq!(
+            get(n, "value"),
+            &Json::Arr(vec![Json::str("v"), Json::str(owner)])
         );
     }
+    assert!(
+        reasons
+            .iter()
+            .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| arr(get(r, "missing")))
+            .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to"))
+    );
 }

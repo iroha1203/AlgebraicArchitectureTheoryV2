@@ -395,7 +395,6 @@ fn affine_tuple_actuals_preserve_let_view_arithmetic_projection_and_universal_co
             "p=evaluate(Terms.viaTupleProjection,s=@v/s)",
             "u=check(Terms.viaUniversalTuple,s=@v/s)",
             "c=evaluate(Terms.viaTupleChoice,s=@v/s)",
-            "k=evaluate(Terms.tupleCache,s=@v/s)",
             "d=evaluate(Terms.tupleDifference,s=@v/s)",
         ],
         &mut quiet(),
@@ -410,10 +409,10 @@ fn affine_tuple_actuals_preserve_let_view_arithmetic_projection_and_universal_co
     for id in ["v", "p"] {
         assert_eq!(value(&w, id), &q);
     }
+    // 成分の再解析(tupleCache)は src/observed/affine_term_tests.rs の単体テストが確かめる。
     assert_eq!(value(&w, "a"), &Json::Arr(vec![Json::str("0"), q.clone()]));
     assert_eq!(value(&w, "d"), &Json::Arr(vec![Json::str("0"), q]));
     assert_eq!(get(answer(&w, "u"), "status"), &Json::str("established"));
-    assert_eq!(value(&w, "k"), &Json::Bool(true));
     for id in ["l", "v", "o", "a", "p", "c"] {
         let a = answer(&w, id);
         assert!(

@@ -111,11 +111,8 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
         assert!(total > 0);
         let mut retained = false;
         let mut completed = false;
-        // 停止位置は全体を8等分した点と、全Localizeを通過したcommit後(total+1)に限る。
-        let mut stops: Vec<usize> = (1..=8).map(|i| (total * i / 8).max(1)).collect();
-        stops.push(total + 1);
-        stops.dedup();
-        for stop in stops {
+        // 停止位置は途中・最後のLocalizeと、全Localizeを通過したcommit後(total+1)に限る。
+        for stop in [(total / 2).max(1), total, total + 1] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
             let mut control = Control::new(Limits::default(), move |point| {

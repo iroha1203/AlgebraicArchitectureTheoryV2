@@ -42,22 +42,31 @@ fn mixed_owner_answer_fibers_recheck_original_fixed_ref_owner_domains_rows_suppo
     rejects_named_prefix(&r, &prefix);
 }
 
-fn stop(mode: usize) {
+// 停止の代表: 固定ownerの写像域の候補列挙で予算が尽きる。同じ問いの重複は外す。
+const STOP_ASK: &[&str] = &[
+    "seed=evaluate(Applications.seed)",
+    "prior=check(Applications.prior)",
+    "missing=evaluate(Applications.cbMissing,p=@v/p)",
+    "a=evaluate(Applications.cbUniversalOwner,a=@v/A)",
+    "v=evaluate(Applications.fcMapAll,m=@v/m)",
+    "take=check(Applications.fcMap,a=$a.value,x=$v.value)",
+    "later=evaluate(Applications.seed)",
+];
+#[test]
+fn mixed_owner_answer_map_domain_budget_keeps_values_refutation_missing_and_prefix() {
     use std::{cell::Cell, rc::Rc};
-    let asks = ASK;
     let input = fixture::input("stop", "r1");
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations["Applications.fcMap"];
-    assert!(normal.answers[7].claim.is_some());
-    assert!(!normal.answers[7].evidence.is_empty());
+    assert!(normal.answers[5].claim.is_some());
+    assert!(!normal.answers[5].evidence.is_empty());
     let span = match &declaration.signature {
         Signature::Law { params, .. } => params[2].span,
         _ => panic!(),
     };
-    let (limits, usage, expected) = reservations_private_stop_usage(mode);
+    let (limits, usage, expected) = reservations_private_stop_usage(1);
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -71,34 +80,21 @@ fn stop(mode: usize) {
             Default::default()
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let mut cc = c.clone();
+    let prepared = prepare_observed(input, STOP_ASK, &mut c).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
-        if request.id == "other" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+        if request.id == "v" {
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, index| {
-                let target = match mode {
-                    0 => operation == "owned_binding_checked" && index == 0,
-                    1 => operation == "owned_call_map_domain_roster" && index == 3,
-                    _ => operation == "owned_call_map_domain" && index == 0,
-                };
-                if at == span && ctx.request == 7 && target && (mode != 2 || ph.get()) {
+                if at == span
+                    && ctx.request == 5
+                    && operation == "owned_call_map_domain_roster"
+                    && index == 3
+                {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
-        }
-        if request.id == "take" && mode == 2 {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     })
@@ -107,7 +103,7 @@ fn stop(mode: usize) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(&stopped.answers[..7], &normal.answers[..7]);
+    assert_eq!(&stopped.answers[..5], &normal.answers[..5]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     assert!(
@@ -116,23 +112,9 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    for (index, a) in stopped.answers.iter().enumerate().skip(7) {
-        if mode == 2 && index == 7 {
-            let original = &normal.answers[7];
-            assert!(a.claim.is_some());
-            assert!(!a.evidence.is_empty());
-            assert_eq!(a.status, original.status);
-            assert_eq!(a.outputs, original.outputs);
-            assert_eq!(a.claim, original.claim);
-            assert_eq!(a.evidence, original.evidence);
-            assert_eq!(a.scope, original.scope);
-            for reason in &original.reasons {
-                assert!(a.reasons.contains(reason));
-            }
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in &stopped.answers[5..] {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -145,12 +127,6 @@ fn stop(mode: usize) {
         };
         assert_eq!(actual["details"], wanted["details"]);
     }
-    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-
-#[test]
-fn mixed_owner_answer_map_domain_budget_keeps_values_refutation_missing_and_prefix() {
-    stop(1)
 }
 
 #[test]
@@ -199,7 +175,6 @@ const COMPLETION_ASKS: &[&str] = &[
     "seed=evaluate(Applications.seed)",
     "prior=check(Applications.prior)",
     "v=evaluate(Applications.mxAll,p=@v/p,q=@v/r)",
-    "other=evaluate(Applications.mxAll,p=@v/p,q=@v/r)",
     "take=check(Applications.mxTuple,a=@v/A,x=$v.value)",
     "later=evaluate(Applications.seed)",
 ];
@@ -240,11 +215,11 @@ fn completion_stop(phase: &'static str, index: usize, mode: usize) {
     .unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
-        if q.id == "other" {
+        if q.id == "v" {
             let (arm, hit) = (armed.clone(), seen.clone());
             data::observe_iterations(move |span, context, operation, at| {
                 if span == target
-                    && context.request == 4
+                    && context.request == 3
                     && context.case.is_none()
                     && operation == phase
                     && at == index
@@ -261,10 +236,10 @@ fn completion_stop(phase: &'static str, index: usize, mode: usize) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(&stopped.answers[..4], &normal.answers[..4]);
+    assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for a in &stopped.answers[4..] {
+    for a in &stopped.answers[3..] {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty() && a.claim.is_none() && a.evidence.is_empty());
         assert!(
@@ -274,12 +249,11 @@ fn completion_stop(phase: &'static str, index: usize, mode: usize) {
         );
     }
     assert!(
-        stopped.answers[4]
+        stopped.answers[3]
             .reasons
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
 fn mixed_completion_coverage_memory_stop_preserves_cases_without_whole_claim() {

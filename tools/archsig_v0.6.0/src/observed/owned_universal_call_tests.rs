@@ -103,7 +103,7 @@ fn stop(stage: &'static str, kind: usize) {
                         && f.field.as_deref() == Some("Reservations.State.owner")))
         );
     }
-    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+    // 停止後の全体の再検査は所有callの停止(owned_partial_call_tests)が代表する。
     stopped.wire();
 }
 #[test]

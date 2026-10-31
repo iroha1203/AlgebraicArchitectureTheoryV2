@@ -422,15 +422,25 @@ fn invalid_map_selectors_and_private_projections_fail_as_concrete_usage_errors()
 }
 #[test]
 fn object_algebra_kind_refutes_failed_preservation_without_an_internal_error() {
+    // 反証したObjectAlgebra mapのmapへの公開射影は、型どおりの依存の阻止として残る。
     let dir = inputs("map-object-algebra-kind", A);
-    let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"]);
-    let result = saved(&dir, &run, "complete", 1);
+    let run = asks(&dir, &[
+        "copy=map(Reservations.Migration,on=$m.map.configuration_map.candidate.subject,reading=Reservations)",
+        "m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)",
+    ]);
+    let result = saved(&dir, &run, "partial", 2);
     let a = answer(&result, "m");
     assert_eq!(s(get(a, "status")), "refuted");
     assert!(!has(get(a, "outputs"), "map"));
+    assert!(has(get(a, "outputs"), "operation"));
     assert!(!arr(get(a, "counterexamples")).is_empty());
     assert!(arr(get(a, "reasons")).iter().all(|reason| s(get(reason, "code")) == "condition_failed"));
-    assert!(arr(get(&result, "issues")).iter().all(|issue| s(get(issue, "code")) == "condition_failed"));
+    let copy = answer(&result, "copy");
+    assert_eq!(s(get(copy, "status")), "undetermined");
+    assert!(!has(get(copy, "outputs"), "map"));
+    let codes: Vec<_> = arr(get(copy, "reasons")).iter().map(|reason| s(get(reason, "code"))).collect();
+    assert_eq!(codes, vec!["condition_failed", "dependency_blocked"]);
+    assert!(arr(get(&result, "issues")).iter().all(|issue| matches!(s(get(issue, "code")), "condition_failed" | "dependency_blocked")));
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -910,26 +920,19 @@ fn object_algebra_selection_checks_common_inputs_before_reporting_unimplemented(
 }
 #[test]
 fn object_algebra_dependencies_keep_their_declared_public_projection_types() {
-    for (i, requests) in [
-        vec!["copy=map(Reservations.Migration,on=$v.value.some,reading=Reservations,kind=object_algebra)","v=evaluate(Reservations.present,m=@v/m)"],
-        vec!["copy=map(Reservations.Migration,on=$m.map.configuration_map.candidate.subject,reading=Reservations)","m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
-    ].iter().enumerate() {
-        let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
-        std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
-        let run=asks(&dir,requests);
-        let result=saved(&dir,&run,if i==0 {"complete"} else {"partial"},if i==0 {1} else {2});
-        let copy=answer(&result,"copy");
-        assert_eq!(s(get(copy,"status")),if i==0 {"refuted"} else {"undetermined"});
-        assert!(!has(get(copy,"outputs"),"map"));
-        assert!(arr(get(&result,"issues")).iter().all(|issue| s(get(issue,"code"))!="internal"));
-        assert!(!arr(get(copy,"reasons")).is_empty());
-        let codes: Vec<_> = arr(get(copy,"reasons")).iter().map(|reason| s(get(reason,"code"))).collect();
-        assert_eq!(codes, if i==0 {vec!["condition_failed"]} else {vec!["condition_failed","dependency_blocked"]});
-        let upstream = answer(&result,if i==0 {"v"} else {"m"});
-        assert_eq!(s(get(upstream,"status")),if i==0 {"established"} else {"refuted"});
-        if i==1 { assert!(has(get(upstream,"outputs"),"operation")); }
-        std::fs::remove_dir_all(dir).unwrap();
-    }
+    // viewの値の射影を根にしたObjectAlgebra map。mapの射影は object_algebra_kind_refutes_failed_preservation_without_an_internal_error が見る。
+    let dir=inputs("map-object-algebra-typed",A);
+    std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
+    let run=asks(&dir,&["copy=map(Reservations.Migration,on=$v.value.some,reading=Reservations,kind=object_algebra)","v=evaluate(Reservations.present,m=@v/m)"]);
+    let result=saved(&dir,&run,"complete",1);
+    let copy=answer(&result,"copy");
+    assert_eq!(s(get(copy,"status")),"refuted");
+    assert!(!has(get(copy,"outputs"),"map"));
+    assert!(arr(get(&result,"issues")).iter().all(|issue| s(get(issue,"code"))!="internal"));
+    let codes: Vec<_> = arr(get(copy,"reasons")).iter().map(|reason| s(get(reason,"code"))).collect();
+    assert_eq!(codes, vec!["condition_failed"]);
+    assert_eq!(s(get(answer(&result,"v"),"status")),"established");
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

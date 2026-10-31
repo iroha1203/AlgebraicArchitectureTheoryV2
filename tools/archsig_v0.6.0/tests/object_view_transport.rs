@@ -1165,11 +1165,11 @@ fn finite_view_family_keeps_all_data_option_set_and_boolean_product_values() {
             .collect::<Vec<_>>(),
         expected
     );
+    // 族の再検査は数値の積の族のテストが代表する。
     for row in f.rows() {
         assert_eq!(row.source().unwrap().wire(), row.target().unwrap().wire());
         assert_eq!(row.outcome(), &Outcome::Preserved);
     }
-    r.recheck(i, &mut quiet()).unwrap();
 }
 
 #[test]

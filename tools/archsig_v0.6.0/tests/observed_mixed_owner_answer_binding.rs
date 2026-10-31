@@ -227,12 +227,7 @@ fn mixed_empty_values_map_total_domain_no_admissible_fiber_and_counterexample_ar
             "v=evaluate(Applications.mxEmpty)",
             4,
         ),
-        (
-            "empty",
-            "take=check(Applications.fcMap,a=@v/Z,x=$v.value)",
-            "v=evaluate(Applications.cbMap,m=@v/m)",
-            12,
-        ),
+        // Map の全域は b を固定した4行の場合で代表する。
         (
             "empty",
             "take=check(Applications.fcMap,b=@v/B,x=$v.value)",

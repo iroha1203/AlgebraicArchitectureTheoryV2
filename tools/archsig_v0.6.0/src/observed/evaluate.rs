@@ -10578,12 +10578,8 @@ reading Calc {{
             rc::Rc,
         };
         let phases = if plain {
-            vec![
-                ("ref_roster", "full", 0),
-                ("type_enum", "construct", 1),
-                ("quant_domain", "full", 2),
-                ("ref_recheck", "full", 0),
-            ]
+            // 停止位置の代表: 候補列挙の途中と、再検査の途中。
+            vec![("ref_roster", "full", 0), ("ref_recheck", "full", 0)]
         } else {
             vec![
                 (if typed { "type_enum" } else { "quant_domain" }, "full", 0),
@@ -10591,6 +10587,7 @@ reading Calc {{
                 ("quant_exhaustion", "full", 2),
             ]
         };
+        let phases_first = phases[0].0;
         for (operation, view, stop) in phases {
             let sources = if plain {
                 plain_ref_fixture(false)
@@ -10812,7 +10809,9 @@ reading Calc {{
                             && matches!(&node.payload, Some(Payload::Counterexample { .. })))
                 );
             }
-            rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+            if operation == phases_first {
+                rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+            }
             let before = probes.get();
             assert_eq!(probes.get(), before);
         }
