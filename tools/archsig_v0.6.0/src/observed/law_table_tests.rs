@@ -411,7 +411,7 @@ fn table_recheck_rejects_coverage_order_wrong_sources_metadata_and_future_refs()
     t.recheck(&env, &g, &mut quiet()).unwrap();
 }
 #[test]
-fn four_stops_leave_exact_completed_dag_prefix_and_no_completed_table() {
+fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(
         fixture::inputs(false, false, "law required truth(c:Part):true;"),
@@ -436,53 +436,40 @@ fn four_stops_leave_exact_completed_dag_prefix_and_no_completed_table() {
     let points = [total / 2, total];
     let mut partial = false;
     let mut complete = false;
-    for mode in [2] {
-        for &at in &points {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::ObjectEvaluation {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(matches!(
-                retain(&env, &mut g, p.shared_inputs(), a, &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            // 別実行の内部SourceはArc identityが異なる。公開DAGと各由来の再検査を照合する。
-            assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
-            assert!(g.nodes.len() <= full.nodes.len());
-            for (i, node) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    node.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
+    for &at in &points {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObjectEvaluation {
+                count.set(count.get() + 1)
             }
-            assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
-            partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
-            complete |= g.nodes.len() == full.nodes.len();
-            replay(&p, &g).unwrap();
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy_graph(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            retain(&env, &mut g, p.shared_inputs(), a, &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        // 別実行の内部SourceはArc identityが異なる。公開DAGと各由来の再検査を照合する。
+        assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
+        assert!(g.nodes.len() <= full.nodes.len());
+        for (i, node) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                node.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
+            );
         }
+        assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
+        partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
+        complete |= g.nodes.len() == full.nodes.len();
+        replay(&p, &g).unwrap();
     }
     assert!(partial);
     assert!(complete);

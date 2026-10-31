@@ -654,7 +654,7 @@ fn saved_family_domains_rows_and_evaluations_survive_a_later_request() {
     }
 }
 #[test]
-fn four_stops_preserve_exact_completed_domain_row_and_evaluation_prefix() {
+fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
     use std::{
         cell::{Cell, RefCell},
         rc::Rc,
@@ -686,55 +686,40 @@ fn four_stops_preserve_exact_completed_domain_row_and_evaluation_prefix() {
     let early = native_points.borrow()[1];
     let mut domain_prefix = false;
     let mut row_prefix = false;
-    for mode in [2] {
-        for at in [early, total / 2, total] {
-            let count = Rc::new(Cell::new(0));
-            let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    let hit = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if mode == 0 && hit { 1 } else { 0 },
-                        memory_mib: if mode == 1 && hit { 1 } else { 0 },
-                        signal: if hit && mode == 2 {
-                            Some(crate::result::Signal::Int)
-                        } else if hit && mode == 3 {
-                            Some(crate::result::Signal::Term)
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut g = copy(&initial, &control);
-            let result = evaluate(&env, &mut g, expression, &mut control);
-            assert!(
-                matches!(result, Err(ValidationFailure::Stop(_))),
-                "mode{mode}/at{at}: {result:?}"
-            );
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert!(g.nodes.len() <= full.nodes.len());
-            for (i, n) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    n.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
+    for at in [early, total / 2, total] {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |_| {
+            seen.set(seen.get() + 1);
+            let hit = seen.get() >= at;
+            Usage {
+                signal: hit.then_some(crate::result::Signal::Int),
+                ..Usage::default()
             }
-            assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
-            assert_eq!(g.instances, &full.instances[..g.instances.len()]);
-            assert_eq!(g.frames, &full.frames[..g.frames.len()]);
-            assert_eq!(g.iterations, &full.iterations[..g.iterations.len()]);
-            assert_eq!(g.cases, &full.cases[..g.cases.len()]);
-            domain_prefix |= g.nodes.len() > initial.nodes.len() && g.instances.is_empty();
-            row_prefix |= !g.instances.is_empty();
-            replay(&p, &g);
+        });
+        let mut g = copy(&initial, &control);
+        let result = evaluate(&env, &mut g, expression, &mut control);
+        assert!(
+            matches!(result, Err(ValidationFailure::Stop(_))),
+            "at{at}: {result:?}"
+        );
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert!(g.nodes.len() <= full.nodes.len());
+        for (i, n) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                n.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
+            );
         }
+        assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
+        assert_eq!(g.instances, &full.instances[..g.instances.len()]);
+        assert_eq!(g.frames, &full.frames[..g.frames.len()]);
+        assert_eq!(g.iterations, &full.iterations[..g.iterations.len()]);
+        assert_eq!(g.cases, &full.cases[..g.cases.len()]);
+        domain_prefix |= g.nodes.len() > initial.nodes.len() && g.instances.is_empty();
+        row_prefix |= !g.instances.is_empty();
+        replay(&p, &g);
     }
     assert!(domain_prefix && row_prefix);
 }

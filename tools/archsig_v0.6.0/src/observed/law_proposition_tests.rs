@@ -590,7 +590,7 @@ fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples(
 }
 
 #[test]
-fn native_law_proposition_four_stops_keep_completed_evidence_and_exact_prefix() {
+fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() {
     use crate::control::Checkpoint;
     use std::{cell::Cell, rc::Rc};
     let p = prepared("law required zero(c:Part):c.quantity=0;");
@@ -613,56 +613,39 @@ fn native_law_proposition_four_stops_keep_completed_evidence_and_exact_prefix() 
     assert!(total > 50);
     let mut retained_evidence = false;
     let mut retained_complete = false;
-    for mode in [2] {
-        for at in [2 * total / 3, total - 5, total] {
-            let seen = Rc::new(Cell::new(0));
-            let counter = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::FiniteIteration {
-                        counter.set(counter.get() + 1)
-                    }
-                    let stop = counter.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop && mode >= 2 {
-                            Some(if mode == 2 {
-                                crate::result::Signal::Int
-                            } else {
-                                crate::result::Signal::Term
-                            })
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(
-                matches!(
-                    check(&env, &mut g, root, objects[0], &mut c),
-                    Err(ValidationFailure::Stop(_))
-                ),
-                "mode {mode}, point {at}"
-            );
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert!(g.nodes.len() <= complete.nodes.len());
-            assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
-            assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
-            retained_evidence |= g.nodes.len() < complete.nodes.len()
-                && g.nodes[initial.nodes.len()..]
-                    .iter()
-                    .any(|n| n.ty == NodeType::Evidence);
-            retained_complete |= g.nodes.len() == complete.nodes.len();
-            replay(&p, &g).unwrap();
-        }
+    for at in [2 * total / 3, total - 5, total] {
+        let seen = Rc::new(Cell::new(0));
+        let counter = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::FiniteIteration {
+                counter.set(counter.get() + 1)
+            }
+            let stop = counter.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy_graph(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(
+            matches!(
+                check(&env, &mut g, root, objects[0], &mut c),
+                Err(ValidationFailure::Stop(_))
+            ),
+            "point {at}"
+        );
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert!(g.nodes.len() <= complete.nodes.len());
+        assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
+        assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
+        retained_evidence |= g.nodes.len() < complete.nodes.len()
+            && g.nodes[initial.nodes.len()..]
+                .iter()
+                .any(|n| n.ty == NodeType::Evidence);
+        retained_complete |= g.nodes.len() == complete.nodes.len();
+        replay(&p, &g).unwrap();
     }
     assert!(retained_evidence);
     assert!(retained_complete);

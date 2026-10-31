@@ -261,9 +261,9 @@ fn no_laws_has_no_circuits_and_is_complete() {
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
-fn fixed_generation_and_recheck_stops_preserve_prefix_final_completion_and_freeze_probes() {
+fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
     use archsig::{
-        control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -272,107 +272,61 @@ fn fixed_generation_and_recheck_stops_preserve_prefix_final_completion_and_freez
         fixture::A,
     );
     let baseline = run(i.clone());
-    for recheck in [false] {
-        let history = Rc::new(RefCell::new(Vec::new()));
-        let h = history.clone();
-        let mut traced = Control::new(Limits::default(), move |p| {
-            h.borrow_mut().push(p);
-            Usage::default()
-        });
-        if recheck {
-            baseline.recheck(i.clone(), &mut traced).unwrap();
-        } else {
-            object_law_circuits(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
-        }
-        for point in [C::ObjectLawCircuit] {
-            let count = history.borrow().iter().filter(|p| **p == point).count();
-            assert!(count > 0);
-            for nth in [1, count] {
-                for mode in [2] {
-                    let hits = Rc::new(RefCell::new(0));
-                    let h = hits.clone();
-                    let probes = Rc::new(RefCell::new(0));
-                    let p = probes.clone();
-                    let expected = match mode {
-                        0 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        2 => StopReason::Cancelled(Signal::Int),
-                        _ => StopReason::Cancelled(Signal::Term),
-                    };
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: (mode == 0).then_some(1),
-                            memory_mib: (mode == 1).then_some(1),
-                        },
-                        move |at| {
-                            *p.borrow_mut() += 1;
-                            if at == point {
-                                *h.borrow_mut() += 1;
-                            }
-                            if at == point && *h.borrow() == nth {
-                                Usage {
-                                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                    memory_mib: if mode == 1 { 1 } else { 0 },
-                                    signal: match mode {
-                                        2 => Some(Signal::Int),
-                                        3 => Some(Signal::Term),
-                                        _ => None,
-                                    },
-                                }
-                            } else {
-                                Usage::default()
-                            }
-                        },
-                    );
-                    let f = if recheck {
-                        baseline.recheck(i.clone(), &mut c).unwrap_err()
-                    } else {
-                        object_law_circuits(i.clone(), "Selected", "v", "root", &mut c).unwrap_err()
-                    };
-                    let ObjectLawCircuitsFailure::Reading { cause, partial } = f else {
-                        panic!("circuit stop")
-                    };
-                    assert_eq!(
-                        cause,
-                        archsig::construction::ConstructionFailure::Stopped(expected.clone())
-                    );
-                    assert_eq!(c.stop_reason(), Some(expected));
-                    assert_eq!(*hits.borrow(), nth);
-                    assert!(partial.base().is_complete());
-                    if point == C::ObjectLawCircuit {
-                        assert!(
-                            partial
-                                .circuits()
-                                .iter()
-                                .all(|c| c.complete && c.detector.is_some())
-                        );
-                        if nth == count {
-                            assert!(partial.is_complete());
-                            assert_eq!(partial.circuits(), baseline.circuits());
-                        }
-                    }
-                    if point == C::ObjectLawCircuitPoint {
-                        assert!(partial.circuits().iter().any(|c| !c.points.is_empty()));
-                    }
-                    if point == C::ObjectLawCircuits && nth == count {
-                        assert!(partial.is_complete());
-                        assert_eq!(partial.circuits(), baseline.circuits());
-                    }
-                    let before = *probes.borrow();
-                    assert!(c.checkpoint(C::Expression).is_err());
-                    assert!(c.checkpoint(C::ObjectLawCircuits).is_err());
-                    assert_eq!(*probes.borrow(), before);
-                }
+    let history = Rc::new(RefCell::new(Vec::new()));
+    let h = history.clone();
+    let mut traced = Control::new(Limits::default(), move |p| {
+        h.borrow_mut().push(p);
+        Usage::default()
+    });
+    object_law_circuits(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
+    let point = C::ObjectLawCircuit;
+    let count = history.borrow().iter().filter(|p| **p == point).count();
+    assert!(count > 0);
+    for nth in [1, count] {
+        let hits = Rc::new(RefCell::new(0));
+        let h = hits.clone();
+        let probes = Rc::new(RefCell::new(0));
+        let p = probes.clone();
+        let expected = StopReason::Cancelled(Signal::Int);
+        let mut c = Control::new(Limits::default(), move |at| {
+            *p.borrow_mut() += 1;
+            if at == point {
+                *h.borrow_mut() += 1;
             }
+            if at == point && *h.borrow() == nth {
+                Usage {
+                    signal: Some(Signal::Int),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let f = object_law_circuits(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
+        let ObjectLawCircuitsFailure::Reading { cause, partial } = f else {
+            panic!("circuit stop")
+        };
+        assert_eq!(
+            cause,
+            archsig::construction::ConstructionFailure::Stopped(expected.clone())
+        );
+        assert_eq!(c.stop_reason(), Some(expected));
+        assert_eq!(*hits.borrow(), nth);
+        assert!(partial.base().is_complete());
+        assert!(
+            partial
+                .circuits()
+                .iter()
+                .all(|c| c.complete && c.detector.is_some())
+        );
+        if nth == count {
+            assert!(partial.is_complete());
+            assert_eq!(partial.circuits(), baseline.circuits());
         }
+        let before = *probes.borrow();
+        assert!(c.checkpoint(C::Expression).is_err());
+        assert!(c.checkpoint(C::ObjectLawCircuits).is_err());
+        assert_eq!(*probes.borrow(), before);
     }
 }
 #[test]

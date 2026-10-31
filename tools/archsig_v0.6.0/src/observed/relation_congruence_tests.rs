@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     canonical::Json,
-    control::{Limits, Resource, Usage},
+    control::{Limits, Usage},
     input::check_inputs,
     result::Signal,
 };
@@ -398,7 +398,7 @@ fn inactive_relations_do_not_contribute_seeds_or_edges() {
     assert_eq!(r.relations.as_ref().unwrap().instances.len(), 25);
 }
 #[test]
-fn twelve_fixed_stops_keep_only_unfinished_components_and_freeze_the_probe() {
+fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     let i = family();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
@@ -423,69 +423,45 @@ fn twelve_fixed_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     let middle = phase.get() + (total - phase.get()) / 2;
     assert!(middle > phase.get());
     for at in [middle, total] {
-        for mode in [2] {
-            let count = Rc::new(Cell::new(0));
-            let samples = Rc::new(Cell::new(0));
-            let seen = count.clone();
-            let calls = samples.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |cp| {
-                    calls.set(calls.get() + 1);
-                    if cp == Checkpoint::FiniteIteration {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let failure = match congruence(&i, "Walk", &mut c) {
-                Err(failure) => failure,
-                Ok(_) => panic!("停止しなかった"),
-            };
-            assert!(!failure.partial.complete());
-            if at == middle {
-                assert!(!failure.partial.words.is_empty());
-            }
-            assert_eq!(
-                failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
-                None
-            );
-            let expected = match mode {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
-            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
-            let frozen = samples.get();
-            assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
-            assert_eq!(samples.get(), frozen);
-            completed.recheck(&i, &mut quiet()).unwrap();
+        let count = Rc::new(Cell::new(0));
+        let samples = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let calls = samples.clone();
+        let mut c = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: Some(1),
+            },
+            move |cp| {
+                calls.set(calls.get() + 1);
+                if cp == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                let stop = seen.get() >= at;
+                Usage {
+                    signal: stop.then_some(Signal::Int),
+                    ..Usage::default()
+                }
+            },
+        );
+        let failure = match congruence(&i, "Walk", &mut c) {
+            Err(failure) => failure,
+            Ok(_) => panic!("停止しなかった"),
+        };
+        assert!(!failure.partial.complete());
+        if at == middle {
+            assert!(!failure.partial.words.is_empty());
         }
+        assert_eq!(
+            failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
+            None
+        );
+        let expected = StopReason::Cancelled(Signal::Int);
+        assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+        let frozen = samples.get();
+        assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
+        assert_eq!(samples.get(), frozen);
+        completed.recheck(&i, &mut quiet()).unwrap();
     }
 }
 

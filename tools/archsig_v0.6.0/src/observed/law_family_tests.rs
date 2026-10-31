@@ -533,7 +533,7 @@ fn unbounded_parameter_is_retained_without_a_finite_family_claim() {
     replay(&p, &g).unwrap();
 }
 #[test]
-fn whole_family_four_stops_keep_completed_prefix_and_restore_request_context() {
+fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -558,45 +558,32 @@ fn whole_family_four_stops_keep_completed_prefix_and_restore_request_context() {
     let total = seen.get();
     assert!(total > 5);
     let mut final_retained = false;
-    for mode in [2] {
-        for at in [total / 2, total] {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::ObjectEvaluation {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(matches!(
-                check(&env, &mut g, template, objects[1], &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert_eq!(g.nodes, &full.nodes[..g.nodes.len()]);
-            assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
-            final_retained |= g.nodes.len() == full.nodes.len();
-            if at < total {
-                replay(&p, &g).unwrap();
+    for at in [total / 2, total] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObjectEvaluation {
+                count.set(count.get() + 1)
             }
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy_graph(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            check(&env, &mut g, template, objects[1], &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert_eq!(g.nodes, &full.nodes[..g.nodes.len()]);
+        assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
+        final_retained |= g.nodes.len() == full.nodes.len();
+        if at < total {
+            replay(&p, &g).unwrap();
         }
     }
     assert!(final_retained);

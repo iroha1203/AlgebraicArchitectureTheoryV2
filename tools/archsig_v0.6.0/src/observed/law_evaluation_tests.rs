@@ -541,7 +541,7 @@ fn native_numeric_law_frames_evaluate_the_requested_guard_and_body() {
 }
 
 #[test]
-fn native_law_expression_four_stops_keep_exact_completed_dag_prefix_and_restore_context() {
+fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_context() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared("law required zero(c:Part):c.quantity=0;");
     let (mut initial, a, objects) = initial(&p);
@@ -562,79 +562,62 @@ fn native_law_expression_four_stops_keep_exact_completed_dag_prefix_and_restore_
     assert!(total >= 3);
     let mut retained_evaluation = false;
     let mut retained_complete_post_stop = false;
-    for mode in [2] {
-        for at in 1..=total {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::Expression {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop && mode >= 2 {
-                            Some(if mode == 2 {
-                                crate::result::Signal::Int
-                            } else {
-                                crate::result::Signal::Term
-                            })
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut g = prefix_graph(&initial, &c);
-            assert!(matches!(
-                evaluate(&env, &mut g, root, objects[0], &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert!(g.nodes.len() >= initial.nodes.len() && g.nodes.len() <= complete.nodes.len());
-            assert_eq!(g.nodes.len(), g.contexts.len());
-            retained_complete_post_stop |= g.nodes.len() == complete.nodes.len();
-            retained_evaluation |= g.nodes.len() < complete.nodes.len()
-                && g.nodes[initial.nodes.len()..]
-                    .iter()
-                    .any(|n| matches!(n.payload, Some(Payload::Evaluation { .. })));
-            for (index, node) in g.nodes.iter().enumerate() {
-                let other = &complete.nodes[index];
-                assert_eq!(
-                    (
-                        &node.ty,
-                        &node.rule,
-                        &node.arguments,
-                        &node.support,
-                        &node.scope,
-                        &node.reasons
-                    ),
-                    (
-                        &other.ty,
-                        &other.rule,
-                        &other.arguments,
-                        &other.support,
-                        &other.scope,
-                        &other.reasons
-                    )
-                );
-                match (&node.payload, &other.payload) {
-                    (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
-                        assert_eq!(a.wire(), b.wire())
-                    }
-                    _ => assert_eq!(node, other),
-                }
-                assert_eq!(g.contexts[index], complete.contexts[index]);
+    for at in 1..=total {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::Expression {
+                count.set(count.get() + 1)
             }
-            replay(&p, &g, &g.nodes).unwrap();
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = prefix_graph(&initial, &c);
+        assert!(matches!(
+            evaluate(&env, &mut g, root, objects[0], &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert!(g.nodes.len() >= initial.nodes.len() && g.nodes.len() <= complete.nodes.len());
+        assert_eq!(g.nodes.len(), g.contexts.len());
+        retained_complete_post_stop |= g.nodes.len() == complete.nodes.len();
+        retained_evaluation |= g.nodes.len() < complete.nodes.len()
+            && g.nodes[initial.nodes.len()..]
+                .iter()
+                .any(|n| matches!(n.payload, Some(Payload::Evaluation { .. })));
+        for (index, node) in g.nodes.iter().enumerate() {
+            let other = &complete.nodes[index];
+            assert_eq!(
+                (
+                    &node.ty,
+                    &node.rule,
+                    &node.arguments,
+                    &node.support,
+                    &node.scope,
+                    &node.reasons
+                ),
+                (
+                    &other.ty,
+                    &other.rule,
+                    &other.arguments,
+                    &other.support,
+                    &other.scope,
+                    &other.reasons
+                )
+            );
+            match (&node.payload, &other.payload) {
+                (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
+                    assert_eq!(a.wire(), b.wire())
+                }
+                _ => assert_eq!(node, other),
+            }
+            assert_eq!(g.contexts[index], complete.contexts[index]);
         }
+        replay(&p, &g, &g.nodes).unwrap();
     }
     assert!(retained_evaluation);
     assert!(retained_complete_post_stop);

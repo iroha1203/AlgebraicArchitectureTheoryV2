@@ -445,57 +445,55 @@ fn boolean_law_forms_localize_with_their_actual_truth_and_missing_reads() {
         (1, "not s.flag", Some(false)),
         (2, "s.flag and true", Some(false)),
     ] {
-        {
-            let dir = input(&format!("local-bool-{index}-{value:?}"), value);
-            let path = dir.join("l.law");
-            let law = std::fs::read_to_string(&path)
-                .unwrap()
-                .replace("s.flag=true", body);
-            std::fs::write(path, law).unwrap();
-            let mut asks = vec![
-                "a=build(Fixed,on=@fixed/s)",
-                "l=localize($a.object)",
-                "e=diagnose($l.system,side=equation)",
-                "s=diagnose($l.system,side=semantic)",
-            ];
-            asks.push("n=needed($l)");
-            let r = execute(&dir, "out", &asks);
-            let truth = value.map(|v| if index == 1 { !v } else { v });
-            assert_eq!(
-                r.code,
-                match truth {
-                    None => 2,
-                    Some(false) => 1,
-                    Some(true) => 0,
-                },
-                "{} {}",
-                r.stdout,
-                r.stderr
-            );
-            let result = result_json(&dir, &r);
-            let answers = arr(get(&result, "answers"));
-            assert_eq!(s(get(&answers[4], "status")), "established");
-            if let Some(truth) = truth {
-                assert_eq!(s(get(&answers[1], "status")), "established");
-                for answer in &answers[2..4] {
-                    assert_eq!(
-                        s(get(answer, "status")),
-                        if truth { "established" } else { "refuted" }
-                    );
-                }
-                let system = get(output(&result, 1, "system"), "value");
-                let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
-                assert!(!arr(get(context, "readings")).is_empty());
-            } else {
-                assert!(!has(get(&answers[1], "outputs"), "system"));
-                assert_eq!(s(get(&answers[4], "status")), "established");
-                let plan = get(output(&result, 4, "plan"), "value");
-                assert!(
-                    arr(get(plan, "requirements"))
-                        .iter()
-                        .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.flag")
+        let dir = input(&format!("local-bool-{index}-{value:?}"), value);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path)
+            .unwrap()
+            .replace("s.flag=true", body);
+        std::fs::write(path, law).unwrap();
+        let mut asks = vec![
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "e=diagnose($l.system,side=equation)",
+            "s=diagnose($l.system,side=semantic)",
+        ];
+        asks.push("n=needed($l)");
+        let r = execute(&dir, "out", &asks);
+        let truth = value.map(|v| if index == 1 { !v } else { v });
+        assert_eq!(
+            r.code,
+            match truth {
+                None => 2,
+                Some(false) => 1,
+                Some(true) => 0,
+            },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        assert_eq!(s(get(&answers[4], "status")), "established");
+        if let Some(truth) = truth {
+            assert_eq!(s(get(&answers[1], "status")), "established");
+            for answer in &answers[2..4] {
+                assert_eq!(
+                    s(get(answer, "status")),
+                    if truth { "established" } else { "refuted" }
                 );
             }
+            let system = get(output(&result, 1, "system"), "value");
+            let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+            assert!(!arr(get(context, "readings")).is_empty());
+        } else {
+            assert!(!has(get(&answers[1], "outputs"), "system"));
+            assert_eq!(s(get(&answers[4], "status")), "established");
+            let plan = get(output(&result, 4, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.flag")
+            );
         }
     }
 }
@@ -504,49 +502,44 @@ fn boolean_law_forms_localize_with_their_actual_truth_and_missing_reads() {
 fn fixed_integer_comparison_is_a_finite_local_condition() {
     #[path = "common/architecture_environment.rs"]
     mod fixture;
-    for (index, condition, expected) in [(1, "s.free>3", false)] {
-        let input = fixture::input(
-            &format!("law optional localCompare(s:State):{condition};"),
-            None,
-        );
-        let dir = workdir(&format!("local-inequality-{index}"));
-        for (name, bytes) in [
-            ("d.json", input.definitions()[0].bytes()),
-            ("l.law", input.law().bytes()),
-            ("a.json", input.archmap().bytes()),
-        ] {
-            std::fs::write(dir.join(name), bytes).unwrap();
-        }
-        let r = execute(
-            &dir,
-            "out",
-            &[
-                fixture::MAP,
-                "l=localize($m.candidate.source,law=Reservations.localCompare,s=@v/p)",
-                "d=diagnose($l.system)",
-            ],
-        );
-        let result = result_json(&dir, &r);
-        let answers = arr(get(&result, "answers"));
-        assert_eq!(
-            s(get(&answers[1], "status")),
-            "established",
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
-        assert_eq!(
-            s(get(&answers[2], "status")),
-            if expected { "established" } else { "refuted" },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
-        assert_eq!(r.code, if expected { 0 } else { 1 });
-        let system = get(output(&result, 1, "system"), "value");
-        let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
-        assert!(!arr(get(context, "readings")).is_empty());
+    let input = fixture::input("law optional localCompare(s:State):s.free>3;", None);
+    let dir = workdir("local-inequality");
+    for (name, bytes) in [
+        ("d.json", input.definitions()[0].bytes()),
+        ("l.law", input.law().bytes()),
+        ("a.json", input.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
     }
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            fixture::MAP,
+            "l=localize($m.candidate.source,law=Reservations.localCompare,s=@v/p)",
+            "d=diagnose($l.system)",
+        ],
+    );
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(
+        s(get(&answers[1], "status")),
+        "established",
+        "{} {}",
+        r.stdout,
+        r.stderr
+    );
+    assert_eq!(
+        s(get(&answers[2], "status")),
+        "refuted",
+        "{} {}",
+        r.stdout,
+        r.stderr
+    );
+    assert_eq!(r.code, 1);
+    let system = get(output(&result, 1, "system"), "value");
+    let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+    assert!(!arr(get(context, "readings")).is_empty());
 }
 
 #[test]
@@ -1048,52 +1041,50 @@ fn product_reads_preserve_the_typed_coordinate_and_each_component() {
         ("(t.flag,t.other)", true, false),
         ("((t.flag,unit),(t,t.other))", false, true),
     ] {
-        {
-            let dir = multiple_read_input("local-product", left, Some(right), reads);
-            let r = execute(
-                &dir,
-                "out",
-                &[
-                    "a=build(Fixed,on=@fixed/s)",
-                    "l=localize($a.object)",
-                    "e=diagnose($l.system)",
-                    "s=diagnose($l.system,side=semantic)",
-                ],
-            );
+        let dir = multiple_read_input("local-product", left, Some(right), reads);
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            if left && right { 0 } else { 1 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        for i in [2, 3] {
             assert_eq!(
-                r.code,
-                if left && right { 0 } else { 1 },
-                "{} {}",
-                r.stdout,
-                r.stderr
+                s(get(&arr(get(&j, "answers"))[i], "status")),
+                if left && right {
+                    "established"
+                } else {
+                    "refuted"
+                }
             );
-            let j = result_json(&dir, &r);
-            for i in [2, 3] {
-                assert_eq!(
-                    s(get(&arr(get(&j, "answers"))[i], "status")),
-                    if left && right {
-                        "established"
-                    } else {
-                        "refuted"
-                    }
-                );
-            }
-            let system = get(output(&j, 1, "system"), "value");
-            let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
-            let readings = arr(get(context, "readings"));
-            assert_eq!(readings.len(), 1);
-            assert_eq!(s(&arr(get(&readings[0], "type"))[0]), "Tuple");
-            let image = get(node(&j, get(&readings[0], "domain")), "value");
-            assert_eq!(arr(get(image, "elements")).len(), 1);
-            let value = get(node(&j, &arr(get(image, "elements"))[0]), "value");
-            let tuple = arr(value);
-            if reads == "(t.flag,t.other)" {
-                assert_eq!(tuple[0].value, archsig::json::JValue::Bool(left));
-                assert_eq!(tuple[1].value, archsig::json::JValue::Bool(right));
-            } else {
-                assert_eq!(arr(&tuple[0])[0].value, archsig::json::JValue::Bool(left));
-                assert_eq!(arr(&tuple[1])[1].value, archsig::json::JValue::Bool(right));
-            }
+        }
+        let system = get(output(&j, 1, "system"), "value");
+        let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
+        let readings = arr(get(context, "readings"));
+        assert_eq!(readings.len(), 1);
+        assert_eq!(s(&arr(get(&readings[0], "type"))[0]), "Tuple");
+        let image = get(node(&j, get(&readings[0], "domain")), "value");
+        assert_eq!(arr(get(image, "elements")).len(), 1);
+        let value = get(node(&j, &arr(get(image, "elements"))[0]), "value");
+        let tuple = arr(value);
+        if reads == "(t.flag,t.other)" {
+            assert_eq!(tuple[0].value, archsig::json::JValue::Bool(left));
+            assert_eq!(tuple[1].value, archsig::json::JValue::Bool(right));
+        } else {
+            assert_eq!(arr(&tuple[0])[0].value, archsig::json::JValue::Bool(left));
+            assert_eq!(arr(&tuple[1])[1].value, archsig::json::JValue::Bool(right));
         }
     }
 }
@@ -1171,56 +1162,52 @@ fn diagnostic_compare_input(name: &str, identity: bool, valid: bool) -> std::pat
 fn finite_diagnostics_compare_actual_identity_maps_on_both_sides() {
     // 成立の行と反証の行を一つずつ。sideとdegreeは比較の論理を分けない。
     for (valid, side, degree) in [(true, "semantic", 0), (false, "equation", 1)] {
-        {
-            {
-                let dir = diagnostic_compare_input(
-                    &format!("diagnostic-compare-{valid}-{side}-{degree}"),
-                    true,
-                    valid,
-                );
-                let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
-                let d2 = format!("d2=diagnose($l.system,side={side},degree={degree})");
-                let asks = [
-                    "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                    "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
-                    &d1,
-                    &d2,
-                    "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
-                ];
-                let r = execute(&dir, "out", &asks);
-                assert_eq!(
-                    r.code,
-                    if !valid && degree == 1 { 1 } else { 0 },
-                    "{} {}",
-                    r.stdout,
-                    r.stderr
-                );
-                let result = result_json(&dir, &r);
-                let answers = arr(get(&result, "answers"));
-                assert_eq!(s(get(&answers[4], "status")), "established");
-                let comparison = get(output(&result, 4, "comparison"), "value");
-                assert_eq!(s(get(comparison, "kind")), "diagnostics");
-                assert_eq!(
-                    get(comparison, "along").value,
-                    get(get(&answers[0], "outputs"), "operation").value
-                );
-                let finite = get(node(&result, get(comparison, "finite_map")), "value");
-                assert_eq!(arr(get(finite, "pairs")).len(), usize::from(valid));
-                assert_eq!(get(finite, "source").value, get(finite, "target").value);
-                let conditions = arr(get(comparison, "conditions"));
-                for condition in conditions {
-                    assert_eq!(
-                        s(get(get(node(&result, condition), "judgment"), "status")),
-                        "established"
-                    );
-                }
-                let inverse = get(node(&result, &conditions[1]), "value");
-                let operands = arr(get(inverse, "operands"));
-                for reference in operands {
-                    let map = get(node(&result, reference), "value");
-                    assert_eq!(arr(get(map, "pairs")).len(), usize::from(valid));
-                }
-            }
+        let dir = diagnostic_compare_input(
+            &format!("diagnostic-compare-{valid}-{side}-{degree}"),
+            true,
+            valid,
+        );
+        let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
+        let d2 = format!("d2=diagnose($l.system,side={side},degree={degree})");
+        let asks = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p)",
+            &d1,
+            &d2,
+            "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
+        ];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(
+            r.code,
+            if !valid && degree == 1 { 1 } else { 0 },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        assert_eq!(s(get(&answers[4], "status")), "established");
+        let comparison = get(output(&result, 4, "comparison"), "value");
+        assert_eq!(s(get(comparison, "kind")), "diagnostics");
+        assert_eq!(
+            get(comparison, "along").value,
+            get(get(&answers[0], "outputs"), "operation").value
+        );
+        let finite = get(node(&result, get(comparison, "finite_map")), "value");
+        assert_eq!(arr(get(finite, "pairs")).len(), usize::from(valid));
+        assert_eq!(get(finite, "source").value, get(finite, "target").value);
+        let conditions = arr(get(comparison, "conditions"));
+        for condition in conditions {
+            assert_eq!(
+                s(get(get(node(&result, condition), "judgment"), "status")),
+                "established"
+            );
+        }
+        let inverse = get(node(&result, &conditions[1]), "value");
+        let operands = arr(get(inverse, "operands"));
+        for reference in operands {
+            let map = get(node(&result, reference), "value");
+            assert_eq!(arr(get(map, "pairs")).len(), usize::from(valid));
         }
     }
 }
@@ -1405,49 +1392,34 @@ fn implicit_support_cover_has_actual_intersections_and_matching_families() {
 
 #[test]
 fn explicit_distinct_local_declarations_form_the_selected_cover() {
-    for (left, right) in [(true, false)] {
-        let dir = implicit_multiple_input("explicit-distinct-cover", left, Some(right));
-        explicit_local(
-            &dir,
-            "local left(t:State) reads t.flag; local right(t:State) reads t.other; local skipped(t:State) when false reads t;",
-        );
-        let r = execute(
-            &dir,
-            "out",
-            &[
-                "a=build(Fixed,on=@fixed/s)",
-                "l=localize($a.object)",
-                "e=diagnose($l.system)",
-                "s=diagnose($l.system,side=semantic)",
-            ],
-        );
-        assert_eq!(
-            r.code,
-            if left && right { 0 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
-        let j = result_json(&dir, &r);
-        let system = get(output(&j, 1, "system"), "value");
-        assert_eq!(arr(get(system, "contexts")).len(), 4);
-        let cover = get(node(&j, get(system, "cover")), "value");
-        assert_eq!(arr(get(cover, "patches")).len(), 2);
-        for patch in arr(get(cover, "patches")) {
-            assert_ne!(patch.value, get(cover, "base").value);
-            let context = get(node(&j, patch), "value");
-            assert_eq!(arr(get(context, "locals")).len(), 1);
-        }
-        for i in [2, 3] {
-            assert_eq!(
-                s(get(&arr(get(&j, "answers"))[i], "status")),
-                if left && right {
-                    "established"
-                } else {
-                    "refuted"
-                }
-            );
-        }
+    let dir = implicit_multiple_input("explicit-distinct-cover", true, Some(false));
+    explicit_local(
+        &dir,
+        "local left(t:State) reads t.flag; local right(t:State) reads t.other; local skipped(t:State) when false reads t;",
+    );
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "e=diagnose($l.system)",
+            "s=diagnose($l.system,side=semantic)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let system = get(output(&j, 1, "system"), "value");
+    assert_eq!(arr(get(system, "contexts")).len(), 4);
+    let cover = get(node(&j, get(system, "cover")), "value");
+    assert_eq!(arr(get(cover, "patches")).len(), 2);
+    for patch in arr(get(cover, "patches")) {
+        assert_ne!(patch.value, get(cover, "base").value);
+        let context = get(node(&j, patch), "value");
+        assert_eq!(arr(get(context, "locals")).len(), 1);
+    }
+    for i in [2, 3] {
+        assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "refuted");
     }
 }
 
@@ -1494,86 +1466,68 @@ fn explicit_cover_does_not_turn_union_dependencies_into_a_visible_law() {
 
 #[test]
 fn tuple_intersections_retain_typed_component_projections() {
-    for (nested, flag) in [(true, false)] {
-        {
-            let dir = implicit_multiple_input("tuple-intersection", flag, Some(true));
-            let original = std::fs::read_to_string(dir.join("d.json")).unwrap();
-            let definition = original.replace(
-                r#""meaning":"別の観測値。"}"#,
-                r#""meaning":"別の観測値。"},{"name":"third","type":"Bool","meaning":"第三の観測値。"}"#,
-            );
-            let old = definition::check_definitions(&[("d", original.as_bytes())]).unwrap();
-            let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-            std::fs::write(dir.join("d.json"), &definition).unwrap();
-            for file in ["a.json", "l.law"] {
-                let text = std::fs::read_to_string(dir.join(file)).unwrap()
-                    .replace(&old.vocabularies()["Fixed"].digest, &new.vocabularies()["Fixed"].digest)
-                    .replace("law required second(s:State):s.other=true;", "")
-                    .replace(r#""atoms":["#, r#""atoms":[{"id":"third","subject":"s","field":"Fixed.State.third","value":true,"origin":"model"},"#);
-                std::fs::write(dir.join(file), text).unwrap();
-            }
-            explicit_local(
-                &dir,
-                if nested {
-                    "local left(t:State) reads ((t.flag,t.other),unit); local right(t:State) reads ((t.flag,t.third),unit);"
-                } else {
-                    "local left(t:State) reads (t.flag,t.other); local right(t:State) reads (t.flag,t.third);"
-                },
-            );
-            let asks = [
-                "a=build(Fixed,on=@fixed/s)",
-                "l=localize($a.object)",
-                "e=diagnose($l.system)",
-                "s=diagnose($l.system,side=semantic)",
-            ];
-            let r = execute(&dir, "out", &asks);
-            assert_eq!(
-                r.code,
-                if flag { 0 } else { 1 },
-                "{} {}",
-                r.stdout,
-                r.stderr
-            );
-            let j = result_json(&dir, &r);
-            let system = get(output(&j, 1, "system"), "value");
-            assert_eq!(arr(get(system, "contexts")).len(), 4);
-            let intersection = arr(get(system, "contexts"))
-                .iter()
-                .map(|r| get(node(&j, r), "value"))
-                .find(|v| arr(get(v, "dependencies")).len() == 1)
-                .unwrap();
-            assert_eq!(
-                s(get(&arr(get(intersection, "dependencies"))[0], "field")),
-                "Fixed.State.flag"
-            );
-            assert_eq!(arr(get(intersection, "law_coordinates")).len(), 1);
-            let readings = arr(get(intersection, "readings"));
-            assert_eq!(readings.len(), if nested { 2 } else { 1 });
-            let reading = readings
-                .iter()
-                .find(
-                    |v| matches!(&get(v,"type").value, archsig::json::JValue::Str(t) if t=="Bool"),
-                )
-                .unwrap();
-            let image = get(node(&j, get(reading, "domain")), "value");
-            assert_eq!(arr(get(image, "elements")).len(), 1);
-            assert_eq!(
-                get(node(&j, &arr(get(image, "elements"))[0]), "value").value,
-                archsig::json::JValue::Bool(flag)
-            );
-            for i in [2, 3] {
-                assert_eq!(
-                    s(get(&arr(get(&j, "answers"))[i], "status")),
-                    if flag { "established" } else { "refuted" }
-                );
-            }
-        }
+    let dir = implicit_multiple_input("tuple-intersection", false, Some(true));
+    let original = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let definition = original.replace(
+        r#""meaning":"別の観測値。"}"#,
+        r#""meaning":"別の観測値。"},{"name":"third","type":"Bool","meaning":"第三の観測値。"}"#,
+    );
+    let old = definition::check_definitions(&[("d", original.as_bytes())]).unwrap();
+    let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    std::fs::write(dir.join("d.json"), &definition).unwrap();
+    for file in ["a.json", "l.law"] {
+        let text = std::fs::read_to_string(dir.join(file)).unwrap()
+            .replace(&old.vocabularies()["Fixed"].digest, &new.vocabularies()["Fixed"].digest)
+            .replace("law required second(s:State):s.other=true;", "")
+            .replace(r#""atoms":["#, r#""atoms":[{"id":"third","subject":"s","field":"Fixed.State.third","value":true,"origin":"model"},"#);
+        std::fs::write(dir.join(file), text).unwrap();
+    }
+    explicit_local(
+        &dir,
+        "local left(t:State) reads ((t.flag,t.other),unit); local right(t:State) reads ((t.flag,t.third),unit);",
+    );
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "l=localize($a.object)",
+        "e=diagnose($l.system)",
+        "s=diagnose($l.system,side=semantic)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let system = get(output(&j, 1, "system"), "value");
+    assert_eq!(arr(get(system, "contexts")).len(), 4);
+    let intersection = arr(get(system, "contexts"))
+        .iter()
+        .map(|r| get(node(&j, r), "value"))
+        .find(|v| arr(get(v, "dependencies")).len() == 1)
+        .unwrap();
+    assert_eq!(
+        s(get(&arr(get(intersection, "dependencies"))[0], "field")),
+        "Fixed.State.flag"
+    );
+    assert_eq!(arr(get(intersection, "law_coordinates")).len(), 1);
+    let readings = arr(get(intersection, "readings"));
+    assert_eq!(readings.len(), 2);
+    let reading = readings
+        .iter()
+        .find(
+            |v| matches!(&get(v,"type").value, archsig::json::JValue::Str(t) if t=="Bool"),
+        )
+        .unwrap();
+    let image = get(node(&j, get(reading, "domain")), "value");
+    assert_eq!(arr(get(image, "elements")).len(), 1);
+    assert_eq!(
+        get(node(&j, &arr(get(image, "elements"))[0]), "value").value,
+        archsig::json::JValue::Bool(false)
+    );
+    for i in [2, 3] {
+        assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "refuted");
     }
 }
 
 #[test]
 fn finite_change_local_states_distinguish_the_action_image_from_free_equations() {
-    {
     for correlated in [false, true] {
         let dir = implicit_multiple_input("finite-change-local", false, Some(false));
         explicit_local(
@@ -1653,7 +1607,6 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
             if correlated { "refuted" } else { "established" }
         );
     }
-}
 }
 
 #[test]
@@ -1815,67 +1768,56 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
     // γ=2の全解と、反証証拠の内部検査は実行時間のため外した。semantic側の三辺は
     // integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_image、
     // degree=0の診断は integer_local_empty_cover_has_zero_cohomology が見る。
-    for gamma in [3] {
-        let input = triangle::input(Some(gamma));
-        let dir = workdir(&format!("integer-local-cech-{gamma}"));
-        for (name,bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
-            let mut text=String::from_utf8(bytes.to_vec()).unwrap();
-            if name=="l.law" {text=text.replace("change move(","view rank(n:Z):Z=n; change move(");}
-            std::fs::write(dir.join(name),text).unwrap();
-        }
-        let asks = ["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)",
-            "d=diagnose($l.system)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
-        let r = execute(&dir,"out",&asks);
-        assert_eq!(r.code,if gamma==2 {0}else{1},"{} {}",r.stdout,r.stderr);
-        let j = result_json(&dir,&r);
-        assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established","{:?}",get(&j,"answers"));
-        for i in [2] {
-            let answer = &arr(get(&j,"answers"))[i];
-            assert_eq!(s(get(answer,"status")),if gamma==2{"established"}else{"refuted"});
-            let diagnostic = get(output(&j,i,"diagnostic"),"value");
-            assert_eq!(s(get(diagnostic,"kind")),"affine_cech");
-            let space = get(output(&j,i,"space"),"value");
-            let group = get(node(&j,get(space,"module")),"value");
-            assert_eq!(num(get(group,"free_rank")),1);
-            assert!(arr(get(group,"torsion")).is_empty());
-            let class = get(output(&j,i,"class"),"value");
-            let coordinate_vector = get(node(&j,get(class,"coordinates")),"value");
-            let values = arr(get(coordinate_vector,"coordinates")).iter().map(|r|s(get(node(&j,r),"value")).parse::<i64>().unwrap()).collect::<Vec<_>>();
-            assert_eq!(values.len(),1);
-            assert_eq!(values[0].abs(),if gamma==2{0}else{1});
-            let complex=get(node(&j,get(diagnostic,"complex")),"value");
-            assert_eq!(s(get(complex,"convention")),"ordered");
-            let maps=arr(get(complex,"differentials"));
-            let d0=columns(&j,&maps[0]); let d1=columns(&j,&maps[1]);
-            let modules=arr(get(complex,"modules"));
-            let last_rank=num(get(get(node(&j,&modules[2]),"value"),"free_rank")) as usize;
-            for column in &d0 { assert!(apply(&d1,column,last_rank).iter().all(|x|*x==0)); }
-            let representative=vector(&j,get(class,"representative"));
-            assert!(apply(&d1,&representative,last_rank).iter().all(|x|*x==0));
-            if gamma==2 { assert!(!has(answer,"counterexamples")); }
-        }
-        let system=get(output(&j,1,"system"),"value");
-        let global=&arr(get(system,"equation_states"))[0];
-        let space=get(node(&j,get(global,"space")),"value");
-        assert_eq!(arr(get(space,"variables")).len(),3);
-        let solution=get(node(&j,get(global,"solutions")),"value");
-        let rep=get(solution,"representation");
-        if gamma==2 {
-            assert_eq!(s(get(rep,"kind")),"affine");
-            let p=vector(&j,get(rep,"particular"));
-            assert_eq!(p.len(),3); assert_eq!(p[1]-p[0],1); assert_eq!(p[2]-p[1],1);
-            let kernel=columns(&j,get(rep,"embedding")); assert_eq!(kernel.len(),1);
-            assert_eq!(kernel[0][0].abs(),1); assert!(kernel[0].iter().all(|x|*x==kernel[0][0]));
-        } else { assert_eq!(s(get(rep,"kind")),"empty"); }
-        for state in arr(get(system,"equation_states")) {
-            let space=get(node(&j,get(state,"space")),"value");
-            assert!(arr(get(space,"variables")).iter().all(|v|s(get(get(get(v,"position"),"field"),"field"))=="Coordinates.Point.coordinate"));
-        }
-        assert_eq!(s(get(output(&j,4,"value"),"value")),"1");
-        assert_eq!(s(get(output(&j,5,"value"),"value")),"1");
-        let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
-        assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
+    let input = triangle::input(Some(3));
+    let dir = workdir("integer-local-cech");
+    for (name,bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
+        let mut text=String::from_utf8(bytes.to_vec()).unwrap();
+        if name=="l.law" {text=text.replace("change move(","view rank(n:Z):Z=n; change move(");}
+        std::fs::write(dir.join(name),text).unwrap();
     }
+    let asks = ["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)",
+        "d=diagnose($l.system)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
+    let r = execute(&dir,"out",&asks);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let j = result_json(&dir,&r);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established","{:?}",get(&j,"answers"));
+    let answer = &arr(get(&j,"answers"))[2];
+    assert_eq!(s(get(answer,"status")),"refuted");
+    let diagnostic = get(output(&j,2,"diagnostic"),"value");
+    assert_eq!(s(get(diagnostic,"kind")),"affine_cech");
+    let space = get(output(&j,2,"space"),"value");
+    let group = get(node(&j,get(space,"module")),"value");
+    assert_eq!(num(get(group,"free_rank")),1);
+    assert!(arr(get(group,"torsion")).is_empty());
+    let class = get(output(&j,2,"class"),"value");
+    let coordinate_vector = get(node(&j,get(class,"coordinates")),"value");
+    let values = arr(get(coordinate_vector,"coordinates")).iter().map(|r|s(get(node(&j,r),"value")).parse::<i64>().unwrap()).collect::<Vec<_>>();
+    assert_eq!(values.len(),1);
+    assert_eq!(values[0].abs(),1);
+    let complex=get(node(&j,get(diagnostic,"complex")),"value");
+    assert_eq!(s(get(complex,"convention")),"ordered");
+    let maps=arr(get(complex,"differentials"));
+    let d0=columns(&j,&maps[0]); let d1=columns(&j,&maps[1]);
+    let modules=arr(get(complex,"modules"));
+    let last_rank=num(get(get(node(&j,&modules[2]),"value"),"free_rank")) as usize;
+    for column in &d0 { assert!(apply(&d1,column,last_rank).iter().all(|x|*x==0)); }
+    let representative=vector(&j,get(class,"representative"));
+    assert!(apply(&d1,&representative,last_rank).iter().all(|x|*x==0));
+    let system=get(output(&j,1,"system"),"value");
+    let global=&arr(get(system,"equation_states"))[0];
+    let space=get(node(&j,get(global,"space")),"value");
+    assert_eq!(arr(get(space,"variables")).len(),3);
+    let solution=get(node(&j,get(global,"solutions")),"value");
+    let rep=get(solution,"representation");
+    assert_eq!(s(get(rep,"kind")),"empty");
+    for state in arr(get(system,"equation_states")) {
+        let space=get(node(&j,get(state,"space")),"value");
+        assert!(arr(get(space,"variables")).iter().all(|v|s(get(get(get(v,"position"),"field"),"field"))=="Coordinates.Point.coordinate"));
+    }
+    assert_eq!(s(get(output(&j,4,"value"),"value")),"1");
+    assert_eq!(s(get(output(&j,5,"value"),"value")),"1");
+    let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
+    assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
 }
 
 #[test]
@@ -1915,16 +1857,14 @@ fn integer_local_variant(name:&str, edit:impl FnOnce(String)->String, remove:Opt
 }
 
 #[test]
-fn integer_local_owner_missing_reaches_needed_for_change_and_law_domains() {
+fn integer_local_owner_missing_reaches_needed_for_the_change_domain() {
     // change域を決めるPoint.ownerの欠測。Law域の欠測はmissing_parameter_owner_domainが確かめる。
-    for (subject,field) in [("p","Point.owner")] {
-        let dir=integer_local_variant(&format!("integer-owner-{subject}"),|s|s,Some((subject,field)));
-        let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","n=needed($l)"]);
-        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
-        assert!(arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
-        let plan=get(output(&j,2,"plan"),"value");
-        assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"subject"))==subject&&s(get(f,"field"))==format!("Coordinates.{field}")}));
-    }
+    let dir=integer_local_variant("integer-owner-p",|s|s,Some(("p","Point.owner")));
+    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","n=needed($l)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert!(arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+    let plan=get(output(&j,2,"plan"),"value");
+    assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"subject"))=="p"&&s(get(f,"field"))=="Coordinates.Point.owner"}));
 }
 
 #[test]
@@ -2161,63 +2101,56 @@ fn integer_diagnostic_transport_moves_nonzero_classes_with_its_actual_matrix() {
 #[test]
 fn integer_diagnostic_transport_does_not_use_equal_ranks_as_a_state_map() {
     // 像の作用が違う(move対even)と、rankが同じでも状態の対応がない。
-    {
-        let dir=integer_transport_input("integer-transport-mismatch",false);
-        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-        std::fs::write(&path,law.replace("law optional localValid", "change even(s:State,d:Z)=s with{free=s.free+2*d}; law optional localValid")).unwrap();
-        let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.move)",
-            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/r,using=Reservations.even)",
-            "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
-        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
-        for i in [3,4] {let space=get(output(&j,i,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),1);}
-        let answer=&arr(get(&j,"answers"))[5];assert_eq!(s(get(answer,"status")),"undetermined");
-        assert!(!has(get(answer,"outputs"),"comparison"));
-        assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
-        assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
-    }
+    let dir=integer_transport_input("integer-transport-mismatch",false);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid", "change even(s:State,d:Z)=s with{free=s.free+2*d}; law optional localValid")).unwrap();
+    let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.move)",
+        "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/r,using=Reservations.even)",
+        "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    for i in [3,4] {let space=get(output(&j,i,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),1);}
+    let answer=&arr(get(&j,"answers"))[5];assert_eq!(s(get(answer,"status")),"undetermined");
+    assert!(!has(get(answer,"outputs"),"comparison"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
 }
 
 #[test]
 fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
     // 包含のcokernelがZ/2のtorsionになる行。degree 1の類の移送はnonzero_classesが確かめる。
-    for step in [2] { for degree in [0] {
-        let dir=integer_transport_input(&format!("integer-inclusion-{step}-{degree}"),true);
-        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-        std::fs::write(&path,law.replace("law optional localValid",&format!("change stride(s:State,d:Z)=s with{{free=s.free+{step}*d}}; law optional localValid"))).unwrap();
-        let ld=format!("d=diagnose($l.system,side=semantic,degree={degree})");
-        let rd=format!("e=diagnose($r.system,side=semantic,degree={degree})");
-        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
-            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",&ld,&rd,
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
-            "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
-        let r=execute(&dir,"out",&asks);assert_eq!(r.code,if degree==0{1}else{0},"{step}/{degree}: {} {}",r.stdout,r.stderr);
-        let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
-        assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),if degree==0{"refuted"}else{"established"});
-        let group=arr(get(cmp,"conditions")).iter().map(|r|node(&j,r)).find(|n| {
-            let v=get(n,"value");
-            s(get(v,"predicate"))=="equal" && matches!(&get(node(&j,&arr(get(v,"operands"))[0]),"value").value,archsig::json::JValue::Str(_))
-        }).expect("整数値の等値として群の零条件を保持する");
-        let operands=arr(get(get(group,"value"),"operands"));assert_eq!(operands.len(),2);
-        assert_eq!(s(get(node(&j,&operands[0]),"value")),if degree==0{"1"}else{"0"});
-        assert_eq!(s(get(node(&j,&operands[1]),"value")),"0");
-        assert_eq!(s(get(get(group,"judgment"),"status")),if degree==0{"refuted"}else{"established"});
-        let kernel=get(node(&j,get(cmp,"kernel")),"value");let cokernel=get(node(&j,get(cmp,"cokernel")),"value");
-        assert_eq!(num(get(kernel,"free_rank")),0);assert!(arr(get(kernel,"torsion")).is_empty());
-        assert_eq!(num(get(cokernel,"free_rank")),if step==0 && degree==0 {1}else{0});
-        let torsion=arr(get(cokernel,"torsion")).iter().map(s).collect::<Vec<_>>();
-        assert_eq!(torsion,if degree==0 && step!=0 {vec![step.to_string()]}else{vec![]});
-        let hm=get(node(&j,get(cmp,"cohomology_map")),"value");
-        if degree==0 && step!=0 { let columns=arr(get(hm,"columns"));assert_eq!(columns.len(),1);
-            let coefficient=s(get(node(&j,&arr(&columns[0])[0]),"value")).parse::<i64>().unwrap();assert_eq!(coefficient.abs(),step);
-            let relations=arr(get(cokernel,"relations"));assert_eq!(relations.len(),1);
-            assert_eq!(s(get(node(&j,&arr(&relations[0])[0]),"value")),step.to_string());
-        } else {assert!(arr(get(hm,"columns")).is_empty());
-            if degree==1 {assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established");}}
-        assert_eq!(s(get(output(&j,6,"value"),"value")),if step==0 && degree==0 {"1"}else{"0"});
-    }}
+    let dir=integer_transport_input("integer-inclusion",true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid","change stride(s:State,d:Z)=s with{free=s.free+2*d}; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
+        "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",
+        "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+        "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
+    assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"refuted");
+    let group=arr(get(cmp,"conditions")).iter().map(|r|node(&j,r)).find(|n| {
+        let v=get(n,"value");
+        s(get(v,"predicate"))=="equal" && matches!(&get(node(&j,&arr(get(v,"operands"))[0]),"value").value,archsig::json::JValue::Str(_))
+    }).expect("整数値の等値として群の零条件を保持する");
+    let operands=arr(get(get(group,"value"),"operands"));assert_eq!(operands.len(),2);
+    assert_eq!(s(get(node(&j,&operands[0]),"value")),"1");
+    assert_eq!(s(get(node(&j,&operands[1]),"value")),"0");
+    assert_eq!(s(get(get(group,"judgment"),"status")),"refuted");
+    let kernel=get(node(&j,get(cmp,"kernel")),"value");let cokernel=get(node(&j,get(cmp,"cokernel")),"value");
+    assert_eq!(num(get(kernel,"free_rank")),0);assert!(arr(get(kernel,"torsion")).is_empty());
+    assert_eq!(num(get(cokernel,"free_rank")),0);
+    let torsion=arr(get(cokernel,"torsion")).iter().map(s).collect::<Vec<_>>();
+    assert_eq!(torsion,["2"]);
+    let hm=get(node(&j,get(cmp,"cohomology_map")),"value");
+    let columns=arr(get(hm,"columns"));assert_eq!(columns.len(),1);
+    let coefficient=s(get(node(&j,&arr(&columns[0])[0]),"value")).parse::<i64>().unwrap();assert_eq!(coefficient.abs(),2);
+    let relations=arr(get(cokernel,"relations"));assert_eq!(relations.len(),1);
+    assert_eq!(s(get(node(&j,&arr(&relations[0])[0]),"value")),"2");
+    assert_eq!(s(get(output(&j,6,"value"),"value")),"0");
 }
 
 
@@ -2300,68 +2233,56 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
 }
 
 #[test]
-fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
+fn empty_local_law_family_keeps_change_body_missing_for_needed() {
     #[path = "common/architecture_environment.rs"] mod fixture;
     use archsig::canonical::Json;
     // change本体が欠測値を読む行。guardが読む場合も同じ欠測の経路を通る。
-    for guard in [false] {
-        let dir = finite_diagnostic_input(&format!("empty-local-laws-missing-{guard}"), false);
-        let path = dir.join("l.law");
-        let law = std::fs::read_to_string(&path).unwrap();
-        let change = if guard {
-            "change observed(s:State,b:Bool) when s.held=1=s with{free=b};"
-        } else { "change observed(s:State,b:Bool)=s with{free=s.held=0};" };
-        std::fs::write(&path, law.replace("law optional localValid", &format!("{change} law optional localValid"))).unwrap();
-        let path = dir.join("a.json");
-        let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
-        let atoms = fixture::atoms(&mut map);
-        let before = atoms.len();
-        atoms.retain(|atom| !matches!(atom, Json::Obj(fields) if fields.get("id") == Some(&Json::str("p-held"))));
-        assert_eq!(before - atoms.len(), 1);
-        std::fs::write(&path, map.canonical()).unwrap();
-        let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "l=localize($m.candidate.source,using=Reservations.observed)",
-            "d=diagnose($l.system)", "n=needed($l)", "k=needed($d)"];
-        let result = execute(&dir, "out", &asks);
-        assert_eq!(result.code, 2, "{guard}: {} {}", result.stdout, result.stderr);
-        let j = result_json(&dir, &result);
-        let local = &arr(get(&j, "answers"))[1];
-        assert_eq!(s(get(local, "status")), "undetermined");
-        assert!(!has(get(local, "outputs"), "system"));
-        assert!(arr(get(local, "reasons")).iter().any(|r| s(get(r, "code")) == "missing_observation"));
-        for i in [3,4] {
-            let plan = get(output(&j, i, "plan"), "value");
-            assert!(arr(get(plan, "requirements")).iter().any(|r| {
-                let field = get(r, "field");
-                s(get(field, "field")) == "Reservations.State.held" && s(get(field, "subject")) == "p"
-            }));
-        }
+    let dir = finite_diagnostic_input("empty-local-laws-missing", false);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path, law.replace("law optional localValid", "change observed(s:State,b:Bool)=s with{free=s.held=0}; law optional localValid")).unwrap();
+    let path = dir.join("a.json");
+    let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+    let atoms = fixture::atoms(&mut map);
+    let before = atoms.len();
+    atoms.retain(|atom| !matches!(atom, Json::Obj(fields) if fields.get("id") == Some(&Json::str("p-held"))));
+    assert_eq!(before - atoms.len(), 1);
+    std::fs::write(&path, map.canonical()).unwrap();
+    let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,using=Reservations.observed)",
+        "d=diagnose($l.system)", "n=needed($l)", "k=needed($d)"];
+    let result = execute(&dir, "out", &asks);
+    assert_eq!(result.code, 2, "{} {}", result.stdout, result.stderr);
+    let j = result_json(&dir, &result);
+    let local = &arr(get(&j, "answers"))[1];
+    assert_eq!(s(get(local, "status")), "undetermined");
+    assert!(!has(get(local, "outputs"), "system"));
+    assert!(arr(get(local, "reasons")).iter().any(|r| s(get(r, "code")) == "missing_observation"));
+    for i in [3,4] {
+        let plan = get(output(&j, i, "plan"), "value");
+        assert!(arr(get(plan, "requirements")).iter().any(|r| {
+            let field = get(r, "field");
+            s(get(field, "field")) == "Reservations.State.held" && s(get(field, "subject")) == "p"
+        }));
     }
 }
 
 #[test]
 fn fixed_localization_without_laws_keeps_one_state_and_compares() {
-    for explicit in [false] { for side in ["equation"] { for degree in [0] {
-        let dir = finite_diagnostic_input(&format!("empty-fixed-{explicit}-{side}-{degree}"), false);
-        if explicit {
-            let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-            std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.free; law optional localValid")).unwrap();
-        }
-        let d=format!("d=diagnose($l.system,side={side},degree={degree})");
-        let e=format!("e=diagnose($r.system,side={side},degree={degree})");
-        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "l=localize($m.candidate.source)","r=localize($m.candidate.source)",&d,&e,
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
-        let result=execute(&dir,"out",&asks);assert_eq!(result.code,0,"{explicit}/{side}/{degree}: {} {}",result.stdout,result.stderr);
-        let j=result_json(&dir,&result);
-        for answer in arr(get(&j,"answers")) {assert_eq!(s(get(answer,"status")),"established");}
-        let diagnostic=get(output(&j,3,"diagnostic"),"value");
-        let matching=get(node(&j,get(diagnostic,"matching")),"value");assert_eq!(arr(get(matching,"elements")).len(),1);
-        let restriction=get(node(&j,get(diagnostic,"restriction")),"value");assert_eq!(arr(get(restriction,"pairs")).len(),1);
-        let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
-        assert_eq!(arr(get(map,"pairs")).len(),1);
-        for condition in arr(get(cmp,"conditions")) {assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
-    }}}
+    let dir = finite_diagnostic_input("empty-fixed", false);
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source)","r=localize($m.candidate.source)",
+        "d=diagnose($l.system,side=equation,degree=0)","e=diagnose($r.system,side=equation,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+    let result=execute(&dir,"out",&asks);assert_eq!(result.code,0,"{} {}",result.stdout,result.stderr);
+    let j=result_json(&dir,&result);
+    for answer in arr(get(&j,"answers")) {assert_eq!(s(get(answer,"status")),"established");}
+    let diagnostic=get(output(&j,3,"diagnostic"),"value");
+    let matching=get(node(&j,get(diagnostic,"matching")),"value");assert_eq!(arr(get(matching,"elements")).len(),1);
+    let restriction=get(node(&j,get(diagnostic,"restriction")),"value");assert_eq!(arr(get(restriction,"pairs")).len(),1);
+    let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
+    assert_eq!(arr(get(map,"pairs")).len(),1);
+    for condition in arr(get(cmp,"conditions")) {assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
 }
 
 #[test]
@@ -2383,78 +2304,67 @@ fn fixed_empty_law_diagnostics_keep_unsupported_dependencies_without_inventing_a
 #[test]
 fn integer_diagnostic_transport_rejects_a_different_compound_binding() {
     // 複合束縛値(State入りtuple)の値が対応しなければ、比較は写像を発明せずunsupported。
-    for wrong_value in [true] {
-        let dir=integer_transport_input(&format!("integer-compound-mismatch-{wrong_value}"),true);
-        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-        std::fs::write(&path,law.replace("law optional localValid",
-            "view packed(s:State):(State,Z)=(s,2); view other(s:State):(State,Z)=(s,3); law optional packedLaw(s:State,b:(State,Z)):s.free=b.1; law optional localValid")).unwrap();
-        let target=if wrong_value {"y=evaluate(Reservations.other,on=$m.candidate.target,s=@v/transport_z)"} else {"y=evaluate(Reservations.packed,on=$m.candidate.target,s=@v/transport_a)"};
-        let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "x=evaluate(Reservations.packed,on=$m.candidate.source,s=@v/p)",target,
-            "l=localize($m.candidate.source,law=Reservations.packedLaw,s=@v/p,b=$x.value,using=Reservations.move)",
-            "r=localize($m.candidate.target,law=Reservations.packedLaw,s=@v/transport_z,b=$y.value,using=Reservations.move)",
-            "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)",
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
-        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
-        let answer=&arr(get(&j,"answers"))[7];assert_eq!(s(get(answer,"status")),"undetermined");
-        assert!(!has(get(answer,"outputs"),"comparison"));
-        assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
-        assert_eq!(s(get(&arr(get(&j,"answers"))[8],"status")),"established");
-    }
+    let dir=integer_transport_input("integer-compound-mismatch",true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "view packed(s:State):(State,Z)=(s,2); view other(s:State):(State,Z)=(s,3); law optional packedLaw(s:State,b:(State,Z)):s.free=b.1; law optional localValid")).unwrap();
+    let r=execute(&dir,"out",&["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "x=evaluate(Reservations.packed,on=$m.candidate.source,s=@v/p)",
+        "y=evaluate(Reservations.other,on=$m.candidate.target,s=@v/transport_z)",
+        "l=localize($m.candidate.source,law=Reservations.packedLaw,s=@v/p,b=$x.value,using=Reservations.move)",
+        "r=localize($m.candidate.target,law=Reservations.packedLaw,s=@v/transport_z,b=$y.value,using=Reservations.move)",
+        "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let answer=&arr(get(&j,"answers"))[7];assert_eq!(s(get(answer,"status")),"undetermined");
+    assert!(!has(get(answer,"outputs"),"comparison"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[8],"status")),"established");
 }
 
 #[test]
 fn finite_diagnostics_transport_actual_states_between_architectures() {
-    for change in [true] {for side in ["semantic"] {for degree in [1] {
-        let dir=finite_diagnostic_input_at(integer_transport_input(&format!("finite-transport-{change}-{side}-{degree}"),true),true);
-        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-        std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.free; law optional localValid")).unwrap();
-        let using=if change{",using=Reservations.choose"}else{""};
-        let left=format!("l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p{using})");
-        let right=format!("r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z{using})");
-        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
-        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",&left,&right,&ld,&rd,
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
-        let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{change}/{side}/{degree}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
-        let cmp=get(output(&j,5,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
-        let map=get(node(&j,get(cmp,"finite_map")),"value");node(&j,get(map,"source"));node(&j,get(map,"target"));
-        let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),if change{2}else{1});
-        for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");
-            if change{let x=arr(x);let y=arr(y);assert_eq!(x.len(),2);assert_eq!(y.len(),2);assert_eq!(x[0].value,y[1].value);assert_eq!(x[1].value,y[0].value);} }
-        for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
-    }}}
+    let dir=finite_diagnostic_input_at(integer_transport_input("finite-transport",true),true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(path,law.replace("law optional localValid","local each(s:State) reads s.free; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+        "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.choose)",
+        "d=diagnose($l.system,side=semantic,degree=1)","e=diagnose($r.system,side=semantic,degree=1)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let cmp=get(output(&j,5,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
+    let map=get(node(&j,get(cmp,"finite_map")),"value");node(&j,get(map,"source"));node(&j,get(map,"target"));
+    let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),2);
+    for pair in pairs {let pair=arr(pair);let x=arr(get(node(&j,&pair[0]),"value"));let y=arr(get(node(&j,&pair[1]),"value"));
+        assert_eq!(x.len(),2);assert_eq!(y.len(),2);assert_eq!(x[0].value,y[1].value);assert_eq!(x[1].value,y[0].value);}
+    for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
 }
 
 #[test]
 fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
     // 真の包含(意味側)で保存条件を反証する行。
-    for mode in [0] {for side in ["semantic"] {for degree in [0] {
-        let dir=finite_diagnostic_input(&format!("finite-diagnostic-inclusion-{mode}-{side}-{degree}"),mode!=1);
-        let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
-        let extra=if mode==2 {"local each(s:State) reads s.free; local together(s:State,t:State) reads s.free,t.free; law optional joint(s:State,t:State):s.free=true and t.free=true; "}else{""};
-        std::fs::write(path,law.replace("law optional localValid",&format!("change constant(s:State,b:Bool)=s with{{free=true}}; {extra}law optional localValid"))).unwrap();
-        let selection=if mode==2 {"law=Reservations.joint,s=@v/p,t=@v/q"}else{"law=Reservations.localValid,s=@v/p"};
-        let left=format!("l=localize($m.candidate.source,{selection},using=Reservations.constant)");
-        let right=format!("r=localize($m.candidate.source,{selection},using=Reservations.choose)");
-        let ld=format!("d=diagnose($l.system,side={side},degree={degree})");let rd=format!("e=diagnose($r.system,side={side},degree={degree})");
-        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            &left,&right,
-            &ld,&rd,"c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
-        let proper=mode==0&&side=="semantic";let r=execute(&dir,"out",&asks);
-        assert_eq!(r.code,if proper||(mode==1&&degree==1){1}else{0},"{mode}/{side}/{degree}: {} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
-        assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),if proper{"refuted"}else{"established"});
-        let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
-        let target_size=match mode {1=>0,2=>1,_=>2};let source_size=if proper{1}else{target_size};
-        assert_eq!(arr(get(get(node(&j,get(map,"source")),"value"),"elements")).len(),source_size);
-        assert_eq!(arr(get(get(node(&j,get(map,"target")),"value"),"elements")).len(),target_size);
-        let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),source_size);
-        for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");assert_eq!(x.value,y.value);
-            if proper||mode==2 {assert!(arr(x).iter().all(|v|matches!(v.value,archsig::json::JValue::Bool(true))));}}
-        let conditions=arr(get(cmp,"conditions"));
-        assert_eq!(conditions.iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"),proper);
-        if proper {assert!(conditions.iter().all(|r|s(get(get(node(&j,r),"value"),"predicate"))!="inverse_maps"));}
-        assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
-    }}}
+    let dir=finite_diagnostic_input("finite-diagnostic-inclusion",true);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(path,law.replace("law optional localValid","change constant(s:State,b:Bool)=s with{free=true}; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.constant)",
+        "r=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+        "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"refuted");
+    let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
+    assert_eq!(arr(get(get(node(&j,get(map,"source")),"value"),"elements")).len(),1);
+    assert_eq!(arr(get(get(node(&j,get(map,"target")),"value"),"elements")).len(),2);
+    let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),1);
+    for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");assert_eq!(x.value,y.value);
+        assert!(arr(x).iter().all(|v|matches!(v.value,archsig::json::JValue::Bool(true))));}
+    let conditions=arr(get(cmp,"conditions"));
+    assert!(conditions.iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"));
+    assert!(conditions.iter().all(|r|s(get(get(node(&j,r),"value"),"predicate"))!="inverse_maps"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
 }
 
 #[test]
@@ -2463,293 +2373,235 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
     mod fixture;
     use archsig::canonical::Json;
     for linked in [true, false] {
-        for side in ["semantic"] {
-            for degree in [0] {
-                let dir = finite_diagnostic_input_at(
-                    diagnostic_compare_input(
-                        &format!("finite-identify-{linked}-{side}-{degree}"),
-                        false,
-                        true,
-                    ),
-                    true,
-                );
-                let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
-                let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
-                    .unwrap()
-                    .vocabularies()["Reservations"]
-                    .digest
-                    .clone();
-                let mut definitions =
-                    fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
-                let Json::Arr(vocabs) = fixture::field(&mut definitions, "vocabularies") else {
-                    panic!("vocabularies")
-                };
-                let Json::Arr(declarations) = fixture::field(&mut vocabs[0], "declarations") else {
-                    panic!("declarations")
-                };
-                for declaration in declarations {
-                    if fixture::field(declaration, "name") == &Json::str("Reservations.System") {
-                        let Json::Arr(fields) = fixture::field(declaration, "fields") else {
-                            panic!("fields")
-                        };
-                        for name in ["left", "right"] {
-                            fields.push(Json::obj([
-                                ("name", Json::str(name)),
-                                (
-                                    "type",
-                                    Json::Arr(vec![
-                                        Json::str("Ref"),
-                                        Json::str("Reservations.State"),
-                                    ]),
-                                ),
-                                ("meaning", Json::str("比較する状態。")),
-                            ]));
-                        }
-                    }
-                }
-                let definitions = definitions.canonical();
-                let digest = definition::check_definitions(&[("d", definitions.as_bytes())])
-                    .unwrap()
-                    .vocabularies()["Reservations"]
-                    .digest
-                    .clone();
-                let raw = std::fs::read_to_string(dir.join("a.json"))
-                    .unwrap()
-                    .replace(&old_digest, &digest);
-                let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
-                let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
-                    panic!("snapshots")
-                };
-                let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
-                    panic!("subjects")
-                };
-                let removed = ["s", "n", "mm", "z"].map(Json::str);
-                subjects.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["id"])));
-                let atoms = fixture::atoms(&mut map);
-                atoms.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["subject"])));
-                for atom in atoms.iter_mut() {
-                    let Json::Obj(fields) = atom else {
-                        panic!("atom")
-                    };
-                    if fields["field"] == Json::str("Reservations.State.held") {
-                        fields.insert("value".into(), Json::str("0"));
-                    }
-                    if ["f-to", "l-from", "t-to"]
-                        .map(Json::str)
-                        .contains(&fields["id"])
-                    {
-                        fields.insert(
-                            "value".into(),
-                            Json::Arr(vec![Json::str("v"), Json::str("r")]),
-                        );
-                    }
-                    if fields["id"] == Json::str("m-states") {
-                        let Json::Arr(pairs) = fields.get_mut("value").unwrap() else {
-                            panic!("pairs")
-                        };
-                        let Json::Arr(pair) = &mut pairs[1] else {
-                            panic!("pair")
-                        };
-                        pair[1] = Json::Arr(vec![Json::str("v"), Json::str("r")]);
-                    }
-                }
-                for (owner, left, right) in [("A", "p", "q"), ("B", "r", "r")] {
-                    for (field, target) in [("left", left), ("right", right)] {
-                        atoms.push(Json::obj([
-                            ("id", Json::str(format!("{owner}-{field}"))),
-                            ("subject", Json::str(owner)),
-                            ("field", Json::str(format!("Reservations.System.{field}"))),
-                            ("value", Json::Arr(vec![Json::str("v"), Json::str(target)])),
-                            ("origin", Json::str("model")),
-                        ]));
-                    }
-                }
-                let predicate = if linked {
-                    "x.left.free=x.right.free"
-                } else {
-                    "x.left.free=x.left.free and x.right.free=x.right.free"
-                };
-                let law = format!(
-                    "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=b}}; law optional linked(x:System):{predicate}; }}"
-                );
-                std::fs::write(dir.join("d.json"), definitions).unwrap();
-                std::fs::write(dir.join("a.json"), map.canonical()).unwrap();
-                std::fs::write(dir.join("l.law"), law).unwrap();
-                let ld = format!("d=diagnose($l.system,side={side},degree={degree})");
-                let rd = format!("e=diagnose($r.system,side={side},degree={degree})");
-                let asks = [
-                    "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                    "l=localize($m.candidate.source,law=Reservations.linked,x=@v/A,using=Reservations.choose)",
-                    "r=localize($m.candidate.target,law=Reservations.linked,x=@v/B,using=Reservations.choose)",
-                    &ld,
-                    &rd,
-                    "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
-                    "n=needed($c)",
-                ];
-                let r = execute(&dir, "out", &asks);
-                assert_eq!(
-                    r.code,
-                    if linked { 0 } else { 2 },
-                    "{linked}/{side}/{degree}: {} {}",
-                    r.stdout,
-                    r.stderr
-                );
-                let j = result_json(&dir, &r);
-                let answer = &arr(get(&j, "answers"))[5];
-                assert!(has(
-                    get(&arr(get(&j, "answers"))[0], "outputs"),
-                    "operation"
-                ));
-                if linked {
-                    assert_eq!(s(get(answer, "status")), "established");
-                    let cmp = get(output(&j, 5, "comparison"), "value");
-                    let map = get(node(&j, get(cmp, "finite_map")), "value");
-                    let pairs = arr(get(map, "pairs"));
-                    assert_eq!(pairs.len(), 2);
-                    let mut observed = vec![];
-                    for pair in pairs {
-                        let pair = arr(pair);
-                        let x = arr(get(node(&j, &pair[0]), "value"));
-                        let y = arr(get(node(&j, &pair[1]), "value"));
-                        assert_eq!(x.len(), 2);
-                        assert_eq!(y.len(), 1);
-                        assert_eq!(x[0].value, y[0].value);
-                        assert_eq!(x[1].value, y[0].value);
-                        observed.push(match y[0].value {
-                            archsig::json::JValue::Bool(v) => v,
-                            _ => panic!("Bool"),
-                        });
-                    }
-                    observed.sort();
-                    assert_eq!(observed, vec![false, true]);
-                    for condition in arr(get(cmp, "conditions")) {
-                        assert_eq!(
-                            s(get(get(node(&j, condition), "judgment"), "status")),
-                            "established"
-                        );
-                    }
-                } else {
-                    assert_eq!(s(get(answer, "status")), "undetermined");
-                    assert!(!has(get(answer, "outputs"), "comparison"));
-                    assert!(
-                        arr(get(answer, "reasons"))
-                            .iter()
-                            .any(|r| s(get(r, "code")) == "unsupported_algorithm")
-                    );
-                }
-                assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
-            }
-        }
-    }
-}
-
-fn finite_integer_local_system_cases(reads: Option<&str>) {
-    let explicit = reads.is_some();
-    // 方程式側は整数加群、意味側は有限状態の代表行。
-    for mode in [0] {
-        for degree in [0] {
-            let dir = diagnostic_compare_input(
-                &format!("finite-change-integer-fields-{explicit}-{mode}-{degree}"),
-                true,
-                true,
-            );
-            let path = dir.join("l.law");
-            let digest = definition::check_definitions(&[(
-                "d",
-                &std::fs::read(dir.join("d.json")).unwrap(),
-            )])
+        let dir = finite_diagnostic_input_at(
+            diagnostic_compare_input(&format!("finite-identify-{linked}"), false, true),
+            true,
+        );
+        let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+        let old_digest = definition::check_definitions(&[("d", old.as_bytes())])
             .unwrap()
             .vocabularies()["Reservations"]
-                .digest
-                .clone();
-            let law = format!(
-                "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional localValid(s:State):s.free={}; }}",
-                if mode == 1 { 4 } else { 2 }
-            );
-            let law = if let Some(reads) = reads { law.replace("change choose", &format!("local here(s:State) reads {reads}; change choose")) } else {law};
-            std::fs::write(path, law).unwrap();
-            let local = if mode == 2 {
-                "l=localize($m.candidate.source,using=Reservations.choose)"
-            } else {
-                "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)"
-            };
-            let eq = format!("d=diagnose($l.system,side=equation,degree={degree})");
-            let sem = format!("e=diagnose($l.system,side=semantic,degree={degree})");
-            let asks = [
-                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                local,
-                &eq,
-                &sem,
-                "c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
-                "f=compare($e.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
-                "n=needed($l)",
-            ];
-            let r = execute(&dir, "out", &asks);
-            assert_eq!(
-                r.code,
-                if mode == 1 && degree == 1 { 1 } else { 0 },
-                "{mode}/{degree}: {} {}",
-                r.stdout,
-                r.stderr
-            );
-            let j = result_json(&dir, &r);
-            assert!(has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
-            let space = get(output(&j, 2, "space"), "value");
-            let group = get(node(&j, get(space, "module")), "value");
-            assert_eq!(
-                num(get(group, "free_rank")),
-                if degree == 1 {
-                    0
-                } else if mode == 2 {
-                    2
-                } else {
-                    1
+            .digest
+            .clone();
+        let mut definitions =
+            fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
+        let Json::Arr(vocabs) = fixture::field(&mut definitions, "vocabularies") else {
+            panic!("vocabularies")
+        };
+        let Json::Arr(declarations) = fixture::field(&mut vocabs[0], "declarations") else {
+            panic!("declarations")
+        };
+        for declaration in declarations {
+            if fixture::field(declaration, "name") == &Json::str("Reservations.System") {
+                let Json::Arr(fields) = fixture::field(declaration, "fields") else {
+                    panic!("fields")
+                };
+                for name in ["left", "right"] {
+                    fields.push(Json::obj([
+                        ("name", Json::str(name)),
+                        (
+                            "type",
+                            Json::Arr(vec![
+                                Json::str("Ref"),
+                                Json::str("Reservations.State"),
+                            ]),
+                        ),
+                        ("meaning", Json::str("比較する状態。")),
+                    ]));
                 }
-            );
-            assert!(arr(get(group, "torsion")).is_empty());
-            let diagnostic = get(output(&j, 3, "diagnostic"), "value");
-            let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
-            let domain = get(node(&j, get(restriction, "source")), "value");
-            let values = arr(get(domain, "elements"));
-            assert_eq!(
-                values.len(),
-                if mode == 1 {
-                    0
-                } else if mode == 2 {
-                    4
-                } else {
-                    2
-                }
-            );
-            let mut states = vec![];
-            for v in values {
-                states.push(
-                    arr(get(node(&j, v), "value"))
-                        .iter()
-                        .map(|x| s(x).to_owned())
-                        .collect::<Vec<_>>(),
-                );
-            }
-            states.sort();
-            if mode == 0 {
-                assert_eq!(
-                    states,
-                    vec![
-                        vec!["2".to_string(), "2".to_string()],
-                        vec!["2".to_string(), "3".to_string()]
-                    ]
-                );
-            }
-            for i in [4, 5, 6] {
-                assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "established");
             }
         }
+        let definitions = definitions.canonical();
+        let digest = definition::check_definitions(&[("d", definitions.as_bytes())])
+            .unwrap()
+            .vocabularies()["Reservations"]
+            .digest
+            .clone();
+        let raw = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(&old_digest, &digest);
+        let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
+        let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
+            panic!("snapshots")
+        };
+        let Json::Arr(subjects) = fixture::field(&mut snapshots[0], "subjects") else {
+            panic!("subjects")
+        };
+        let removed = ["s", "n", "mm", "z"].map(Json::str);
+        subjects.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["id"])));
+        let atoms = fixture::atoms(&mut map);
+        atoms.retain(|v| !matches!(v,Json::Obj(f) if removed.contains(&f["subject"])));
+        for atom in atoms.iter_mut() {
+            let Json::Obj(fields) = atom else {
+                panic!("atom")
+            };
+            if fields["field"] == Json::str("Reservations.State.held") {
+                fields.insert("value".into(), Json::str("0"));
+            }
+            if ["f-to", "l-from", "t-to"]
+                .map(Json::str)
+                .contains(&fields["id"])
+            {
+                fields.insert(
+                    "value".into(),
+                    Json::Arr(vec![Json::str("v"), Json::str("r")]),
+                );
+            }
+            if fields["id"] == Json::str("m-states") {
+                let Json::Arr(pairs) = fields.get_mut("value").unwrap() else {
+                    panic!("pairs")
+                };
+                let Json::Arr(pair) = &mut pairs[1] else {
+                    panic!("pair")
+                };
+                pair[1] = Json::Arr(vec![Json::str("v"), Json::str("r")]);
+            }
+        }
+        for (owner, left, right) in [("A", "p", "q"), ("B", "r", "r")] {
+            for (field, target) in [("left", left), ("right", right)] {
+                atoms.push(Json::obj([
+                    ("id", Json::str(format!("{owner}-{field}"))),
+                    ("subject", Json::str(owner)),
+                    ("field", Json::str(format!("Reservations.System.{field}"))),
+                    ("value", Json::Arr(vec![Json::str("v"), Json::str(target)])),
+                    ("origin", Json::str("model")),
+                ]));
+            }
+        }
+        let predicate = if linked {
+            "x.left.free=x.right.free"
+        } else {
+            "x.left.free=x.left.free and x.right.free=x.right.free"
+        };
+        let law = format!(
+            "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=b}}; law optional linked(x:System):{predicate}; }}"
+        );
+        std::fs::write(dir.join("d.json"), definitions).unwrap();
+        std::fs::write(dir.join("a.json"), map.canonical()).unwrap();
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let asks = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.linked,x=@v/A,using=Reservations.choose)",
+            "r=localize($m.candidate.target,law=Reservations.linked,x=@v/B,using=Reservations.choose)",
+            "d=diagnose($l.system,side=semantic,degree=0)",
+            "e=diagnose($r.system,side=semantic,degree=0)",
+            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+            "n=needed($c)",
+        ];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(
+            r.code,
+            if linked { 0 } else { 2 },
+            "{linked}: {} {}",
+            r.stdout,
+            r.stderr
+        );
+        let j = result_json(&dir, &r);
+        let answer = &arr(get(&j, "answers"))[5];
+        assert!(has(
+            get(&arr(get(&j, "answers"))[0], "outputs"),
+            "operation"
+        ));
+        if linked {
+            assert_eq!(s(get(answer, "status")), "established");
+            let cmp = get(output(&j, 5, "comparison"), "value");
+            let map = get(node(&j, get(cmp, "finite_map")), "value");
+            let pairs = arr(get(map, "pairs"));
+            assert_eq!(pairs.len(), 2);
+            let mut observed = vec![];
+            for pair in pairs {
+                let pair = arr(pair);
+                let x = arr(get(node(&j, &pair[0]), "value"));
+                let y = arr(get(node(&j, &pair[1]), "value"));
+                assert_eq!(x.len(), 2);
+                assert_eq!(y.len(), 1);
+                assert_eq!(x[0].value, y[0].value);
+                assert_eq!(x[1].value, y[0].value);
+                observed.push(match y[0].value {
+                    archsig::json::JValue::Bool(v) => v,
+                    _ => panic!("Bool"),
+                });
+            }
+            observed.sort();
+            assert_eq!(observed, vec![false, true]);
+            for condition in arr(get(cmp, "conditions")) {
+                assert_eq!(
+                    s(get(get(node(&j, condition), "judgment"), "status")),
+                    "established"
+                );
+            }
+        } else {
+            assert_eq!(s(get(answer, "status")), "undetermined");
+            assert!(!has(get(answer, "outputs"), "comparison"));
+            assert!(
+                arr(get(answer, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+            );
+        }
+        assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
     }
 }
 
 #[test]
 fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
-    finite_integer_local_system_cases(None);
+    // 方程式側は整数加群、意味側は有限状態の代表行。
+    let dir = diagnostic_compare_input("finite-change-integer-fields", true, true);
+    let path = dir.join("l.law");
+    let digest = definition::check_definitions(&[(
+        "d",
+        &std::fs::read(dir.join("d.json")).unwrap(),
+    )])
+    .unwrap()
+    .vocabularies()["Reservations"]
+        .digest
+        .clone();
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional localValid(s:State):s.free=2; }}"
+    );
+    std::fs::write(path, law).unwrap();
+    let asks = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+        "d=diagnose($l.system,side=equation,degree=0)",
+        "e=diagnose($l.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
+        "f=compare($e.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+        "n=needed($l)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    assert!(has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
+    let space = get(output(&j, 2, "space"), "value");
+    let group = get(node(&j, get(space, "module")), "value");
+    assert_eq!(num(get(group, "free_rank")), 1);
+    assert!(arr(get(group, "torsion")).is_empty());
+    let diagnostic = get(output(&j, 3, "diagnostic"), "value");
+    let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
+    let domain = get(node(&j, get(restriction, "source")), "value");
+    let values = arr(get(domain, "elements"));
+    assert_eq!(values.len(), 2);
+    let mut states = vec![];
+    for v in values {
+        states.push(
+            arr(get(node(&j, v), "value"))
+                .iter()
+                .map(|x| s(x).to_owned())
+                .collect::<Vec<_>>(),
+        );
+    }
+    states.sort();
+    assert_eq!(
+        states,
+        vec![
+            vec!["2".to_string(), "2".to_string()],
+            vec!["2".to_string(), "3".to_string()]
+        ]
+    );
+    for i in [4, 5, 6] {
+        assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "established");
+    }
 }
 #[test]
 fn finite_integer_localization_keeps_missing_fixed_fields() {
@@ -2884,15 +2736,11 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
         s(get(field,"snapshot"))=="v" && s(get(field,"subject"))=="s" && s(get(field,"field"))=="Pair.State.z"
     }));
 }
-fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
+fn rational_compare_input(name: &str) -> std::path::PathBuf {
     #[path = "common/architecture_environment.rs"]
     mod fixture;
     use archsig::canonical::Json;
-    let dir = if identity {
-        diagnostic_compare_input(name, true, true)
-    } else {
-        integer_transport_input(name, true)
-    };
+    let dir = integer_transport_input(name, true);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let d = old.replace("\"type\": \"Z\"", "\"type\": \"Q\"");
     let before = definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
@@ -2904,14 +2752,6 @@ fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
         .replace(digest, updated)
         .replace("(Z, Z)", "(Q, Q)")
         .replace("d:Z", "d:Q");
-    let law = if identity {
-        law.replace(
-            "law optional localValid",
-            "change move(s:State,d:Q)=s with{free=s.free+d}; law optional localValid",
-        )
-    } else {
-        law
-    };
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(digest, updated);
@@ -2933,48 +2773,31 @@ fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
 #[test]
 fn rational_diagnostic_inclusion_has_field_cokernel() {
     // Zならtorsionになるstepでも、Q係数のcokernelはtorsionを持たない。
-    for step in [2] {
-        let dir = rational_compare_input(&format!("rational-inclusion-{step}"), false);
-        let path = dir.join("l.law");
-        let law = std::fs::read_to_string(&path).unwrap();
-        std::fs::write(&path,law.replace("law optional localValid",&format!("change stride(s:State,d:Q)=s with{{free=s.free+{step}*d}}; law optional localValid"))).unwrap();
-        let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
-            "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",
-            "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
-            "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
-            "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
-        let r = execute(&dir, "out", &asks);
+    let dir = rational_compare_input("rational-inclusion");
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid","change stride(s:State,d:Q)=s with{free=s.free+2*d}; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.stride)",
+        "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.move)",
+        "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+        "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    let j = result_json(&dir, &r);
+    let cmp = get(output(&j, 5, "comparison"), "value");
+    assert_eq!(s(get(&arr(get(&j, "answers"))[5], "status")), "established");
+    for field in ["kernel", "cokernel"] {
+        let module = get(node(&j, get(cmp, field)), "value");
+        assert_eq!(num(get(module, "free_rank")), 0);
+        assert!(arr(get(module, "torsion")).is_empty());
         assert_eq!(
-            r.code,
-            i32::from(step == 0),
-            "{step}: {} {}",
-            r.stdout,
-            r.stderr
-        );
-        let j = result_json(&dir, &r);
-        let cmp = get(output(&j, 5, "comparison"), "value");
-        assert_eq!(
-            s(get(&arr(get(&j, "answers"))[5], "status")),
-            if step == 0 { "refuted" } else { "established" }
-        );
-        for field in ["kernel", "cokernel"] {
-            let module = get(node(&j, get(cmp, field)), "value");
-            assert_eq!(
-                num(get(module, "free_rank")),
-                u64::from(step == 0 && field == "cokernel")
-            );
-            assert!(arr(get(module, "torsion")).is_empty());
-            assert_eq!(
-                s(get(get(node(&j, get(module, "ring")), "value"), "scalar")),
-                "Q"
-            );
-        }
-        assert_eq!(
-            s(get(output(&j, 6, "value"), "value")),
-            if step == 0 { "1" } else { "0" }
+            s(get(get(node(&j, get(module, "ring")), "value"), "scalar")),
+            "Q"
         );
     }
+    assert_eq!(s(get(output(&j, 6, "value"), "value")), "0");
 }
 
 #[test]
@@ -3027,77 +2850,44 @@ fn diagnostic_comparison_rejects_different_coefficient_rings() {
     ] {
         std::fs::write(dir.join(name), text).unwrap();
     }
-    for side in ["equation"] {
-        for reverse in [false] {
-            let d = format!("d=diagnose($l.system,side={side},degree=0)");
-            let e = format!("e=diagnose($r.system,side={side},degree=0)");
-            let mut asks = vec![
-                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                "l=localize($m.candidate.source,law=Reservations.zi,s=@v/p,using=Reservations.zm)",
-                "r=localize($m.candidate.source,law=Reservations.qi,s=@v/p,using=Reservations.qm)",
-                &d,
-                &e,
-            ];
-            asks.push(if reverse {
-                "c=compare($e.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)"
-            } else {
-                "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"
-            });
-            let r = execute(&dir, &format!("out-{side}-{reverse}"), &asks);
-            assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
-        }
-    }
+    let asks = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.zi,s=@v/p,using=Reservations.zm)",
+        "r=localize($m.candidate.source,law=Reservations.qi,s=@v/p,using=Reservations.qm)",
+        "d=diagnose($l.system,side=equation,degree=0)",
+        "e=diagnose($r.system,side=equation,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
 }
 
 #[test]
 fn diagnostic_transport_compares_term_bindings_by_their_values() {
     // Term束縛値はアフィン正規形の値で比較する(x+xと2*yは同じ)。
-    for mode in ["integer"] {
-        for wrong in [false] {
-            let dir = integer_transport_input(&format!("diagnostic-term-{mode}-{wrong}"), true);
-            let (ty, left, right) = match mode {
-                "finite" => ("Term<(Bool)->Z>", "fn(b:Bool)=>if b then 2 else 3", if wrong {"fn(c:Bool)=>if c then 2 else 4"} else {"fn(c:Bool)=>if not c then 3 else 1+1"}),
-                "rational" => ("Term<(Q)->Q>", "fn(x:Q)=>x+rat(1,2)", if wrong {"fn(y:Q)=>y+rat(1,3)"} else {"fn(y:Q)=>rat(2,4)+y"}),
-                "nested" => ("(Term<(Z)->Z>,Z)", "(fn(x:Z)=>x+x,2)", if wrong {"(fn(y:Z)=>2*y+1,2)"} else {"(fn(y:Z)=>2*y,2)"}),
-                _ => ("Term<(Z)->Z>", "fn(x:Z)=>x+x", if wrong {"fn(y:Z)=>2*y+1"} else {"fn(y:Z)=>2*y"}),
-            };
-            let path = dir.join("l.law");
-            let law = std::fs::read_to_string(&path).unwrap();
-            let added = format!("view termLeft():{ty} = {left}; view termRight():{ty} = {right}; law optional termLaw(s:State,p:{ty}):s.free=2; law optional localValid");
-            std::fs::write(&path,law.replace("law optional localValid",&added)).unwrap();
-            let mut asks = vec![
-                "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                "x=evaluate(Reservations.termLeft,on=$m.candidate.source)",
-                "y=evaluate(Reservations.termRight,on=$m.candidate.target)",
-            ];
-            asks.extend(if mode=="fixed" { [
-                "l=localize($m.candidate.source,law=Reservations.termLaw,s=@v/p,p=$x.value)",
-                "r=localize($m.candidate.target,law=Reservations.termLaw,s=@v/transport_z,p=$y.value)",
-            ] } else { [
-                "l=localize($m.candidate.source,law=Reservations.termLaw,s=@v/p,p=$x.value,using=Reservations.move)",
-                "r=localize($m.candidate.target,law=Reservations.termLaw,s=@v/transport_z,p=$y.value,using=Reservations.move)",
-            ] });
-            asks.extend([
-                "d=diagnose($l.system,degree=0)",
-                "e=diagnose($r.system,degree=0)",
-                "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
-            ]);
-            let r=execute(&dir,"out",&asks);
-            assert_eq!(r.code,if wrong {2} else {0},"{mode}/{wrong}: {} {}",r.stdout,r.stderr);
-            let j=result_json(&dir,&r);
-            if wrong {
-                let answer=arr(get(&j,"answers")).last().unwrap();
-                assert!(!has(get(answer,"outputs"),"comparison"));
-                assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
-            } else {
-                let cmp=get(output(&j,7,"comparison"),"value");
-                if mode!="fixed" {for field in ["kernel","cokernel"] {
-                    let group=get(node(&j,get(cmp,field)),"value");
-                    assert_eq!(num(get(group,"free_rank")),0);
-                    assert!(arr(get(group,"torsion")).is_empty());
-                }}
-            }
-        }
+    let dir = integer_transport_input("diagnostic-term", true);
+    let path = dir.join("l.law");
+    let law = std::fs::read_to_string(&path).unwrap();
+    let added = "view termLeft():Term<(Z)->Z> = fn(x:Z)=>x+x; view termRight():Term<(Z)->Z> = fn(y:Z)=>2*y; law optional termLaw(s:State,p:Term<(Z)->Z>):s.free=2; law optional localValid";
+    std::fs::write(&path,law.replace("law optional localValid",added)).unwrap();
+    let asks = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "x=evaluate(Reservations.termLeft,on=$m.candidate.source)",
+        "y=evaluate(Reservations.termRight,on=$m.candidate.target)",
+        "l=localize($m.candidate.source,law=Reservations.termLaw,s=@v/p,p=$x.value,using=Reservations.move)",
+        "r=localize($m.candidate.target,law=Reservations.termLaw,s=@v/transport_z,p=$y.value,using=Reservations.move)",
+        "d=diagnose($l.system,degree=0)",
+        "e=diagnose($r.system,degree=0)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
+    ];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let cmp=get(output(&j,7,"comparison"),"value");
+    for field in ["kernel","cokernel"] {
+        let group=get(node(&j,get(cmp,field)),"value");
+        assert_eq!(num(get(group,"free_rank")),0);
+        assert!(arr(get(group,"torsion")).is_empty());
     }
 }
 
@@ -3150,38 +2940,34 @@ fn finite_integer_noninjective_reads_use_their_images_and_joint_cover() {
 }
 
 #[test]
-fn universal_laws_localize_integer_and_rational_affine_changes() {
-    for rational in [false] {
-        for (predicate, rank, empty) in [("s.free+z=z+2",0,false),("z=s.free",2,true)] {
-            let dir = if rational { rational_compare_input("universal-affine-local-q",true) }
-                else { diagnostic_compare_input("universal-affine-local-z",true,true) };
-            let digest = definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())])
-                .unwrap().vocabularies()["Reservations"].digest.clone();
-            let ty = if rational {"Q"} else {"Z"};
-            let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,n:{ty})=s with{{free=n}}; law required symbolic(z:{ty},s:State,w:{ty}):{predicate}; }}");
-            std::fs::write(dir.join("l.law"),law).unwrap();
-            let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
-                "l=localize($m.candidate.source,using=Reservations.choose)",
-                "d=diagnose($l.system,side=equation,degree=0)",
-                "e=diagnose($l.system,side=semantic,degree=0)"];
-            let r = execute(&dir,"out",&asks);
-            assert_eq!(r.code,0,"{rational}/{predicate}: {} {}",r.stdout,r.stderr);
-            let j = result_json(&dir,&r);
-            for i in [2,3] {
-                let space = get(output(&j,i,"space"),"value");
-                assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
-            }
-            let system = get(output(&j,1,"system"),"value");
-            for (side,key) in [("equation_states","solutions"),("semantic_states","parameters")] {
-                let states = arr(get(system,side));
-                assert!(!states.is_empty());
-                assert_eq!(states.iter().any(|state| {
-                    let value = get(node(&j,get(state,key)),"value");
-                    s(get(get(value,"representation"),"kind")) == "empty"
-                }),empty);
-            }
-            let qs = arr(get(get(&arr(get(&j,"answers"))[1],"scope"),"quantifiers"));
-            for name in ["z","w"] { assert!(qs.iter().any(|q|s(get(q,"name"))==name && s(get(q,"kind"))=="forall" && !has(q,"domain"))); }
+fn universal_laws_localize_integer_affine_changes() {
+    for (predicate, rank, empty) in [("s.free+z=z+2",0,false),("z=s.free",2,true)] {
+        let dir = diagnostic_compare_input("universal-affine-local-z",true,true);
+        let digest = definition::check_definitions(&[("d",&std::fs::read(dir.join("d.json")).unwrap())])
+            .unwrap().vocabularies()["Reservations"].digest.clone();
+        let law = format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,n:Z)=s with{{free=n}}; law required symbolic(z:Z,s:State,w:Z):{predicate}; }}");
+        std::fs::write(dir.join("l.law"),law).unwrap();
+        let asks = ["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,using=Reservations.choose)",
+            "d=diagnose($l.system,side=equation,degree=0)",
+            "e=diagnose($l.system,side=semantic,degree=0)"];
+        let r = execute(&dir,"out",&asks);
+        assert_eq!(r.code,0,"{predicate}: {} {}",r.stdout,r.stderr);
+        let j = result_json(&dir,&r);
+        for i in [2,3] {
+            let space = get(output(&j,i,"space"),"value");
+            assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
         }
+        let system = get(output(&j,1,"system"),"value");
+        for (side,key) in [("equation_states","solutions"),("semantic_states","parameters")] {
+            let states = arr(get(system,side));
+            assert!(!states.is_empty());
+            assert_eq!(states.iter().any(|state| {
+                let value = get(node(&j,get(state,key)),"value");
+                s(get(get(value,"representation"),"kind")) == "empty"
+            }),empty);
+        }
+        let qs = arr(get(get(&arr(get(&j,"answers"))[1],"scope"),"quantifiers"));
+        for name in ["z","w"] { assert!(qs.iter().any(|q|s(get(q,"name"))==name && s(get(q,"kind"))=="forall" && !has(q,"domain"))); }
     }
 }

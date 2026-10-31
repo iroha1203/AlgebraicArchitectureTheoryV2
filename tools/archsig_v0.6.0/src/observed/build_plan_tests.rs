@@ -387,53 +387,40 @@ fn refuted_extension_keeps_the_object_and_names_the_actual_condition() {
 }
 
 #[test]
-fn four_stops_keep_a_completed_object_without_publishing_unfinished_algebra() {
-    for mode in [2] {
-        for at in [1, 6] {
-            let mut armed = false;
-            let mut seen = 0;
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    armed |= point == Checkpoint::ObjectLawCircuits;
-                    if armed && point == Checkpoint::NativeResultNode {
-                        seen += 1;
-                    }
-                    let stop = seen >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let p = prepared(false);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            let mut g = Graph::new(&control);
-            g.requests = p.requests().requests().to_vec();
-            let answer = crate::observed::build_result::evaluate(
-                &p,
-                &env,
-                &mut g,
-                &p.requests().requests()[0],
-                &mut control,
-            )
-            .unwrap();
-            assert!(control.stop_reason().is_some());
-            assert_eq!(answer.status, Decision::Undetermined);
-            assert!(answer.outputs.contains_key("object"));
-            assert!(!answer.outputs.contains_key("algebra"));
-            assert!(answer.claim.is_none());
-            assert!(matches!(answer.reasons[0].kind, ReasonKind::Stop(_)));
-            assert_eq!(g.nodes.len(), g.contexts.len());
-        }
+fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
+    for at in [1, 6] {
+        let mut armed = false;
+        let mut seen = 0;
+        let mut control = Control::new(Limits::default(), move |point| {
+            armed |= point == Checkpoint::ObjectLawCircuits;
+            if armed && point == Checkpoint::NativeResultNode {
+                seen += 1;
+            }
+            let stop = seen >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let p = prepared(false);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = Graph::new(&control);
+        g.requests = p.requests().requests().to_vec();
+        let answer = crate::observed::build_result::evaluate(
+            &p,
+            &env,
+            &mut g,
+            &p.requests().requests()[0],
+            &mut control,
+        )
+        .unwrap();
+        assert!(control.stop_reason().is_some());
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.contains_key("object"));
+        assert!(!answer.outputs.contains_key("algebra"));
+        assert!(answer.claim.is_none());
+        assert!(matches!(answer.reasons[0].kind, ReasonKind::Stop(_)));
+        assert_eq!(g.nodes.len(), g.contexts.len());
     }
 }
 

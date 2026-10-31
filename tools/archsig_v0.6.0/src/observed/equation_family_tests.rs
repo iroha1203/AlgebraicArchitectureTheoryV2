@@ -368,7 +368,7 @@ fn missing_and_unfinished_presentations_do_not_publish_a_completed_family() {
     }
 }
 #[test]
-fn four_stops_keep_the_completed_graph_prefix_and_original_request_context() {
+fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(
         fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
@@ -393,54 +393,41 @@ fn four_stops_keep_the_completed_graph_prefix_and_original_request_context() {
     let total = count.get();
     assert!(total > 4);
     let mut finished = false;
-    for mode in [2] {
-        for at in [total / 2, total] {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if matches!(
-                        point,
-                        Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
-                    ) {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
+    for at in [total / 2, total] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if matches!(
+                point,
+                Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
+            ) {
+                count.set(count.get() + 1)
+            }
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            retain(&env, &mut g, l.clone(), &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert!(g.nodes.len() <= full.nodes.len());
+        for (i, n) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                n.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
             );
-            let mut g = copy(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(matches!(
-                retain(&env, &mut g, l.clone(), &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert!(g.nodes.len() <= full.nodes.len());
-            for (i, n) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    n.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
-            }
-            assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
-            finished |= g.nodes.len() == full.nodes.len();
-            if at < total {
-                replay(&p, &g);
-            }
+        }
+        assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
+        finished |= g.nodes.len() == full.nodes.len();
+        if at < total {
+            replay(&p, &g);
         }
     }
     assert!(finished);

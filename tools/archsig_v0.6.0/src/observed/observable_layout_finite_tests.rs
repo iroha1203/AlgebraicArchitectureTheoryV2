@@ -394,8 +394,8 @@ fn an_empty_law_family_keeps_the_empty_block_product_and_all_objects_without_a_f
     replay(&p, &g);
 }
 #[test]
-fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_request_context() {
-    use crate::control::{Resource, StopReason};
+fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_request_context() {
+    use crate::control::StopReason;
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -418,77 +418,52 @@ fn finite_construction_four_stops_keep_the_exact_finished_node_prefix_and_reques
     let total = seen.get();
     assert!(total > 4);
     // 計画用checkpointでなく、実nodeの転記直前・直後で止める。
-    for mode in [2] {
-        let mut partial = false;
-        let mut end = false;
-        for at in [total / 2, total] {
-            let seen = Rc::new(Cell::new(0));
-            let count = seen.clone();
-            let probes = Rc::new(Cell::new(0));
-            let samples = probes.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    samples.set(samples.get() + 1);
-                    if point == Checkpoint::NativeResultNode {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            let mut g = copy(&initial, &c);
-            let expected = match mode {
-                0 | 1 => StopReason::BudgetExhausted {
-                    resource: if mode == 0 {
-                        Resource::TimeMs
-                    } else {
-                        Resource::MemoryMib
-                    },
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(crate::result::Signal::Int),
-                _ => StopReason::Cancelled(crate::result::Signal::Term),
-            };
-            assert!(matches!(
-                retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &mut c),
-                Err(ValidationFailure::Stop(reason)) if reason == expected
-            ));
-            assert_eq!(seen.get(), at);
-            let frozen = probes.get();
-            assert_eq!(c.checkpoint(Checkpoint::NativeResultNode), Err(expected));
-            assert_eq!(probes.get(), frozen);
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
-            assert!(g.nodes.len() <= full.nodes.len());
-            for (i, n) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    n.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
+    let mut partial = false;
+    let mut end = false;
+    for at in [total / 2, total] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let probes = Rc::new(Cell::new(0));
+        let samples = probes.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            samples.set(samples.get() + 1);
+            if point == Checkpoint::NativeResultNode {
+                count.set(count.get() + 1)
             }
-            assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
-            partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
-            end |= g.nodes.len() == full.nodes.len();
-            replay(&p, &g);
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let mut g = copy(&initial, &c);
+        let expected = StopReason::Cancelled(crate::result::Signal::Int);
+        assert!(matches!(
+            retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &mut c),
+            Err(ValidationFailure::Stop(reason)) if reason == expected
+        ));
+        assert_eq!(seen.get(), at);
+        let frozen = probes.get();
+        assert_eq!(c.checkpoint(Checkpoint::NativeResultNode), Err(expected));
+        assert_eq!(probes.get(), frozen);
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
+        assert!(g.nodes.len() <= full.nodes.len());
+        for (i, n) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                n.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
+            );
         }
-        assert!(partial, "mode {mode}");
-        assert!(end, "mode {mode}");
+        assert_eq!(g.contexts, &full.contexts[..g.nodes.len()]);
+        partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
+        end |= g.nodes.len() == full.nodes.len();
+        replay(&p, &g);
     }
+    assert!(partial);
+    assert!(end);
 }
 
 #[test]

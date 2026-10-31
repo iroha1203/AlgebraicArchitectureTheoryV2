@@ -841,24 +841,20 @@ fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing(row: usi
     let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
     // semantic側の有理診断は rational_local_system_keeps_exact_equation_and_semantic_fibers が見る。
     let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","n=needed($d)"];
-    let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
-    for i in [2] {
-        let answer=&arr(get(&j,"answers"))[i];
-        assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
-        let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
-        assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
-        assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
-        if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
-        let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
-        if gamma==Some(2){
-            assert_eq!(coordinates[0],vec!["0","1"]);
-            assert!(!has(answer,"counterexamples"));
-        }else{
-            assert_ne!(coordinates[0][0],"0");
-        }
+    let answer=&arr(get(&j,"answers"))[2];
+    assert_eq!(s(get(answer,"status")),match gamma{Some(3)=>"refuted",_=>"undetermined"});
+    let space=get(output(&j,2,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
+    assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
+    assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
+    if gamma.is_none(){
+        assert!(!has(get(answer,"outputs"),"class"));
+        let plan=get(output(&j,3,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));
+    }else{
+        let class=get(output(&j,2,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
+        assert_ne!(coordinates[0][0],"0");
     }
-    if gamma.is_none(){let plan=get(output(&j,3,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
     assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
 }
 #[test]
@@ -869,29 +865,23 @@ fn rational_local_equations_do_not_expand_the_change_image() {
     for (i,rank) in [(2,1),(3,0)]{let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),rank);}
 }
 #[test]
-fn rational_local_affine_reads_keep_fractional_images_and_joint_information() {
-    for (name,reads) in [
-        ("scaled","e.shift,rat(1,2)*e.from.coordinate+rat(1,3),e.to.coordinate"),
-    ] {
-        let dir=rational_triangle(&format!("rational-affine-read-{name}"),Some(2));
-        let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("e.shift,e.from.coordinate,e.to.coordinate",reads);
-        std::fs::write(dir.join("l.law"),law).unwrap();
-        let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)"]);
-        let j=result_json(&dir,&r);assert_eq!(r.code,0,"{name}: {} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
-        let space=get(output(&j,2,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),1);
-        let class=get(output(&j,2,"class"),"value");assert_eq!(qcoordinates(&j,get(class,"coordinates")),vec![vec!["0","1"]]);
-        if name=="scaled" {
-            let system=get(output(&j,1,"system"),"value");let mut saw_fraction=false;
-            for context in arr(get(system,"contexts")) {for read in arr(get(get(node(&j,context),"value"),"readings")) {
-                let domain=get(node(&j,get(read,"domain")),"value");if s(get(domain,"kind"))!="image"{continue;}
-                let map=get(node(&j,get(domain,"map")),"value");
-                if qcoordinates(&j,get(map,"offset"))==vec![vec!["1","3"]] {
-                    let linear=get(node(&j,get(map,"linear")),"value");let columns=arr(get(linear,"columns"));
-                    saw_fraction=columns.iter().any(|col|arr(col).iter().any(|v|{let v=arr(get(node(&j,v),"value"));s(&v[0])=="1"&&s(&v[1])=="2"}));
-                }
-            }}assert!(saw_fraction);
+fn rational_local_affine_read_keeps_fractional_images() {
+    let dir=rational_triangle("rational-affine-read-scaled",Some(2));
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("e.shift,e.from.coordinate,e.to.coordinate","e.shift,rat(1,2)*e.from.coordinate+rat(1,3),e.to.coordinate");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)"]);
+    let j=result_json(&dir,&r);assert_eq!(r.code,0,"{} {} {:?}",r.stdout,r.stderr,get(&j,"answers"));
+    let space=get(output(&j,2,"space"),"value");let module=get(node(&j,get(space,"module")),"value");assert_eq!(num(get(module,"free_rank")),1);
+    let class=get(output(&j,2,"class"),"value");assert_eq!(qcoordinates(&j,get(class,"coordinates")),vec![vec!["0","1"]]);
+    let system=get(output(&j,1,"system"),"value");let mut saw_fraction=false;
+    for context in arr(get(system,"contexts")) {for read in arr(get(get(node(&j,context),"value"),"readings")) {
+        let domain=get(node(&j,get(read,"domain")),"value");if s(get(domain,"kind"))!="image"{continue;}
+        let map=get(node(&j,get(domain,"map")),"value");
+        if qcoordinates(&j,get(map,"offset"))==vec![vec!["1","3"]] {
+            let linear=get(node(&j,get(map,"linear")),"value");let columns=arr(get(linear,"columns"));
+            saw_fraction=columns.iter().any(|col|arr(col).iter().any(|v|{let v=arr(get(node(&j,v),"value"));s(&v[0])=="1"&&s(&v[1])=="2"}));
         }
-    }
+    }}assert!(saw_fraction);
 }
 #[test]
 fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
@@ -912,34 +902,32 @@ fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
 
 #[test]
 fn rational_conjunction_build_connects_repair_and_preserves_observations() {
-    for role in ["required"] {
-        for held in [false, true] {
-            let dir = input(&format!("conjunction-{role}-{held}"), &format!(
-                "change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law {role} pinned(s:State):(s.x+s.y=1) and (s.x-s.y=0);"
-            ));
-            if held {
-                let path = dir.join("a.json");
-                let original = std::fs::read_to_string(&path).unwrap();
-                std::fs::write(path, original.replace("[\"0\",\"1\"]", "[\"1\",\"2\"]")).unwrap();
-            }
-            let asks = ["b=build(Pair,on=@v/s)", "c=check(Pair.pinned,s=@v/s)",
-                "r=repair(Pair.pinned,on=$b.object,using=Pair.choose)",
-                "x=evaluate(Pair.x,on=$r.object,s=@v/s)", "after=check(Pair.pinned,on=$r.object)",
-                "old=evaluate(Pair.x,s=@v/s)"];
-            let r = execute(&dir, "out", &asks);
-            assert_eq!(r.code, if held { 0 } else { 1 }, "{} {}", r.stdout, r.stderr);
-            let j = result_json(&dir, &r);
-            let answers = arr(get(&j, "answers"));
-            assert_eq!(s(get(&answers[0], "status")), "established");
-            let algebra = get(output(&j, 0, "algebra"), "value");
-            assert_eq!(arr(get(algebra, "circuits")).len(), 2);
-            assert_eq!(s(get(&answers[1], "status")), if held { "established" } else { "refuted" });
-            assert_eq!(s(get(&answers[2], "status")), "established");
-            assert_eq!(arr(get(output(&j, 3, "value"), "value")).iter().map(s).collect::<Vec<_>>(), ["1", "2"]);
-            assert_eq!(s(get(&answers[4], "status")), "established");
-            assert_eq!(arr(get(output(&j, 5, "value"), "value")).iter().map(s).collect::<Vec<_>>(),
-                if held { ["1", "2"] } else { ["0", "1"] });
+    for held in [false, true] {
+        let dir = input(&format!("conjunction-required-{held}"), &format!(
+            "change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law required pinned(s:State):(s.x+s.y=1) and (s.x-s.y=0);"
+        ));
+        if held {
+            let path = dir.join("a.json");
+            let original = std::fs::read_to_string(&path).unwrap();
+            std::fs::write(path, original.replace("[\"0\",\"1\"]", "[\"1\",\"2\"]")).unwrap();
         }
+        let asks = ["b=build(Pair,on=@v/s)", "c=check(Pair.pinned,s=@v/s)",
+            "r=repair(Pair.pinned,on=$b.object,using=Pair.choose)",
+            "x=evaluate(Pair.x,on=$r.object,s=@v/s)", "after=check(Pair.pinned,on=$r.object)",
+            "old=evaluate(Pair.x,s=@v/s)"];
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(r.code, if held { 0 } else { 1 }, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let answers = arr(get(&j, "answers"));
+        assert_eq!(s(get(&answers[0], "status")), "established");
+        let algebra = get(output(&j, 0, "algebra"), "value");
+        assert_eq!(arr(get(algebra, "circuits")).len(), 2);
+        assert_eq!(s(get(&answers[1], "status")), if held { "established" } else { "refuted" });
+        assert_eq!(s(get(&answers[2], "status")), "established");
+        assert_eq!(arr(get(output(&j, 3, "value"), "value")).iter().map(s).collect::<Vec<_>>(), ["1", "2"]);
+        assert_eq!(s(get(&answers[4], "status")), "established");
+        assert_eq!(arr(get(output(&j, 5, "value"), "value")).iter().map(s).collect::<Vec<_>>(),
+            if held { ["1", "2"] } else { ["0", "1"] });
     }
 }
 

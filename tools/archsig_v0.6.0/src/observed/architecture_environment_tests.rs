@@ -44,81 +44,68 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
         "bad=check(Reservations.small,on=$m.candidate.target)",
         "todo=evaluate(Reservations.smallStates,on=$m.candidate.source)",
     ];
-    for phase in [Checkpoint::Expression] {
+    let phase = Checkpoint::Expression;
+    let armed = Rc::new(Cell::new(false));
+    let seen = armed.clone();
+    crate::observed::data::observe_iterations(move |_, context, operation, _| {
+        if operation == "architecture_environment" && context.request == 3 {
+            seen.set(true)
+        }
+    });
+    let count = Rc::new(Cell::new(0));
+    let observed = count.clone();
+    let a = armed.clone();
+    let mut normal = Control::new(Limits::default(), move |p| {
+        if a.get() && p == phase {
+            observed.set(observed.get() + 1)
+        }
+        Usage::default()
+    });
+    let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut normal).unwrap();
+    crate::observed::data::clear_iteration_observer();
+    assert_eq!(result.status(), "complete");
+    let total = count.get();
+    assert!(total > 1);
+    for at in [total / 2, total] {
         let armed = Rc::new(Cell::new(false));
-        let seen = armed.clone();
+        let a = armed.clone();
         crate::observed::data::observe_iterations(move |_, context, operation, _| {
             if operation == "architecture_environment" && context.request == 3 {
-                seen.set(true)
+                a.set(true)
             }
         });
         let count = Rc::new(Cell::new(0));
         let observed = count.clone();
         let a = armed.clone();
-        let mut normal = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(Limits::default(), move |p| {
             if a.get() && p == phase {
-                observed.set(observed.get() + 1)
+                observed.set(observed.get() + 1);
             }
-            Usage::default()
+            if observed.get() < at {
+                return Usage::default();
+            }
+            Usage {
+                signal: Some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
         });
-        let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut normal).unwrap();
+        let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut c).unwrap();
         crate::observed::data::clear_iteration_observer();
-        assert_eq!(result.status(), "complete");
-        let total = count.get();
-        assert!(total > 1);
-        for at in [total / 2, total] {
-            for mode in [2] {
-                let armed = Rc::new(Cell::new(false));
-                let a = armed.clone();
-                crate::observed::data::observe_iterations(move |_, context, operation, _| {
-                    if operation == "architecture_environment" && context.request == 3 {
-                        a.set(true)
-                    }
-                });
-                let count = Rc::new(Cell::new(0));
-                let observed = count.clone();
-                let a = armed.clone();
-                let limits = Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                };
-                let mut c = Control::new(limits, move |p| {
-                    if a.get() && p == phase {
-                        observed.set(observed.get() + 1);
-                    }
-                    if observed.get() < at {
-                        return Usage::default();
-                    }
-                    Usage {
-                        elapsed_ms: if mode == 0 { 1 } else { 0 },
-                        memory_mib: if mode == 1 { 1 } else { 0 },
-                        signal: match mode {
-                            2 => Some(crate::result::Signal::Int),
-                            3 => Some(crate::result::Signal::Term),
-                            _ => None,
-                        },
-                    }
-                });
-                let result =
-                    evaluate_observed_bytes(fixture::input("", None), &qs, &mut c).unwrap();
-                crate::observed::data::clear_iteration_observer();
-                assert!(c.stop_reason().is_some(), "{phase:?} {at} {mode}");
-                assert_eq!(result.answers[1].status, Decision::Established);
-                assert_eq!(result.answers[2].status, Decision::Refuted);
-                assert!(!result.answers[2].evidence.is_empty());
-                assert!(
-                    !result
-                        .issues
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::Internal(_))),
-                    "{:?}",
-                    result.issues
-                );
-                let stopped = count.get();
-                assert!(c.checkpoint(phase).is_err());
-                assert_eq!(count.get(), stopped);
-            }
-        }
+        assert!(c.stop_reason().is_some(), "{phase:?} {at}");
+        assert_eq!(result.answers[1].status, Decision::Established);
+        assert_eq!(result.answers[2].status, Decision::Refuted);
+        assert!(!result.answers[2].evidence.is_empty());
+        assert!(
+            !result
+                .issues
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Internal(_))),
+            "{:?}",
+            result.issues
+        );
+        let stopped = count.get();
+        assert!(c.checkpoint(phase).is_err());
+        assert_eq!(count.get(), stopped);
     }
 }
 

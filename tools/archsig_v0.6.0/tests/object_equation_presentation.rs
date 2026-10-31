@@ -352,7 +352,7 @@ fn changed_current_input_and_invalid_object_are_rejected() {
 fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_completion() {
     use archsig::{
         construction::ConstructionFailure,
-        control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -360,104 +360,67 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
         "law required first(c:Part) when true or c.quantity>0:(match c { d=>d.quantity; })=0;law required second(c:Part) when c.quantity-c.quantity=0:(match c.quantity { x=>x*x; })=1;",
     );
     let baseline = run(i.clone());
-    for recheck in [false] {
-        let history = Rc::new(RefCell::new(Vec::new()));
-        let h = history.clone();
-        let mut traced = Control::new(Limits::default(), move |p| {
-            h.borrow_mut().push(p);
-            Usage::default()
-        });
-        if recheck {
-            baseline.recheck(i.clone(), &mut traced).unwrap();
-        } else {
-            object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut traced)
-                .unwrap();
-        }
-        for at in [C::EquationPresentation, C::EquationPresentationRow] {
-            let count = history.borrow().iter().filter(|p| **p == at).count();
-            assert!(count > 0);
-            for nth in [1, count] {
-                for mode in [2] {
-                    let hits = Rc::new(RefCell::new(0));
-                    let h = hits.clone();
-                    let probes = Rc::new(RefCell::new(0));
-                    let p = probes.clone();
-                    let expected = match mode {
-                        0 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        2 => StopReason::Cancelled(Signal::Int),
-                        _ => StopReason::Cancelled(Signal::Term),
-                    };
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: (mode == 0).then_some(1),
-                            memory_mib: (mode == 1).then_some(1),
-                        },
-                        move |point| {
-                            *p.borrow_mut() += 1;
-                            if point == at {
-                                *h.borrow_mut() += 1;
-                            }
-                            if point == at && *h.borrow() == nth {
-                                Usage {
-                                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                    memory_mib: if mode == 1 { 1 } else { 0 },
-                                    signal: match mode {
-                                        2 => Some(Signal::Int),
-                                        3 => Some(Signal::Term),
-                                        _ => None,
-                                    },
-                                }
-                            } else {
-                                Usage::default()
-                            }
-                        },
-                    );
-                    let f = if recheck {
-                        baseline.recheck(i.clone(), &mut c).unwrap_err()
-                    } else {
-                        object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut c)
-                            .unwrap_err()
-                    };
-                    let EquationPresentationFailure::Reading {
-                        cause: ConstructionFailure::Stopped(reason),
-                        partial,
-                    } = f
-                    else {
-                        panic!("new presentation stage")
-                    };
-                    assert_eq!(reason, expected);
-                    for (n, q) in partial.occurrences().iter().enumerate() {
-                        assert_eq!(q, &baseline.occurrences()[n]);
-                        assert_eq!(q.component_holds, Some(false));
-                        assert!(q.epsilon.is_some());
-                        assert!(q.nu.is_some());
-                    }
-                    if at == C::EquationPresentationRow && nth == 1 {
-                        assert_eq!(partial.occurrences().len(), 1);
-                        assert!(!partial.is_complete());
-                    }
-                    if at == C::EquationPresentationRow && nth == count {
-                        assert_eq!(partial.occurrences(), baseline.occurrences());
-                        assert_eq!(partial.rings(), baseline.rings());
-                        assert!(partial.is_complete());
-                    }
-                    if at == C::EquationPresentation && nth == count {
-                        assert!(partial.is_complete());
-                    }
-                    let before = *probes.borrow();
-                    assert_eq!(c.checkpoint(C::EquationPresentation), Err(expected));
-                    assert_eq!(*probes.borrow(), before);
+    let history = Rc::new(RefCell::new(Vec::new()));
+    let h = history.clone();
+    let mut traced = Control::new(Limits::default(), move |p| {
+        h.borrow_mut().push(p);
+        Usage::default()
+    });
+    object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut traced).unwrap();
+    for at in [C::EquationPresentation, C::EquationPresentationRow] {
+        let count = history.borrow().iter().filter(|p| **p == at).count();
+        assert!(count > 0);
+        for nth in [1, count] {
+            let hits = Rc::new(RefCell::new(0));
+            let h = hits.clone();
+            let probes = Rc::new(RefCell::new(0));
+            let p = probes.clone();
+            let expected = StopReason::Cancelled(Signal::Int);
+            let mut c = Control::new(Limits::default(), move |point| {
+                *p.borrow_mut() += 1;
+                if point == at {
+                    *h.borrow_mut() += 1;
                 }
+                if point == at && *h.borrow() == nth {
+                    Usage {
+                        signal: Some(Signal::Int),
+                        ..Usage::default()
+                    }
+                } else {
+                    Usage::default()
+                }
+            });
+            let f = object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut c)
+                .unwrap_err();
+            let EquationPresentationFailure::Reading {
+                cause: ConstructionFailure::Stopped(reason),
+                partial,
+            } = f
+            else {
+                panic!("new presentation stage")
+            };
+            assert_eq!(reason, expected);
+            for (n, q) in partial.occurrences().iter().enumerate() {
+                assert_eq!(q, &baseline.occurrences()[n]);
+                assert_eq!(q.component_holds, Some(false));
+                assert!(q.epsilon.is_some());
+                assert!(q.nu.is_some());
             }
+            if at == C::EquationPresentationRow && nth == 1 {
+                assert_eq!(partial.occurrences().len(), 1);
+                assert!(!partial.is_complete());
+            }
+            if at == C::EquationPresentationRow && nth == count {
+                assert_eq!(partial.occurrences(), baseline.occurrences());
+                assert_eq!(partial.rings(), baseline.rings());
+                assert!(partial.is_complete());
+            }
+            if at == C::EquationPresentation && nth == count {
+                assert!(partial.is_complete());
+            }
+            let before = *probes.borrow();
+            assert_eq!(c.checkpoint(C::EquationPresentation), Err(expected));
+            assert_eq!(*probes.borrow(), before);
         }
     }
 }

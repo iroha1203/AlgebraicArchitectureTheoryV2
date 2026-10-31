@@ -343,7 +343,7 @@ enum Stop {
     Int,
     Term,
 }
-fn stopped(point: Checkpoint, at: usize, kind: Stop) -> (Control, Rc<Cell<usize>>) {
+fn stopped(at: usize, kind: Stop) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let found = count.clone();
     let limits = Limits {
@@ -359,7 +359,7 @@ fn stopped(point: Checkpoint, at: usize, kind: Stop) -> (Control, Rc<Cell<usize>
         },
     };
     let c = Control::new(limits, move |p| {
-        if p == point {
+        if p == Checkpoint::FinitePolynomialTable {
             found.set(found.get() + 1);
         }
         let stop = found.get() >= at;
@@ -388,79 +388,48 @@ fn stopped(point: Checkpoint, at: usize, kind: Stop) -> (Control, Rc<Cell<usize>
     (c, count)
 }
 #[test]
-fn fixed_stops_keep_complete_domain_or_function_prefix_and_freeze_probes() {
+fn table_stops_keep_complete_domain_and_function_prefix_and_freeze_probes() {
     let i = fixture::inputs(fixture::BODY);
-    let full = run(i.clone());
-    for (point, last) in [(Checkpoint::FinitePolynomialTable, 4)] {
-        for at in [1, last] {
-            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
-                for recheck in [false] {
-                    if point == Checkpoint::FinitePolynomialRecheck && !recheck {
-                        continue;
-                    }
-                    let (mut c, count) = stopped(point, at, kind);
-                    let error = if recheck {
-                        full.recheck(i.clone(), &mut c).unwrap_err()
-                    } else {
-                        finite_polynomial_evaluation(i.clone(), "Selected", "v", "root", 0, &mut c)
-                            .unwrap_err()
-                    };
-                    let F::Reading { partial, cause } = error else {
-                        panic!("{error:?}")
-                    };
-                    let expected = match kind {
-                        Stop::Time => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        Stop::Memory => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        Stop::Int => StopReason::Cancelled(Signal::Int),
-                        Stop::Term => StopReason::Cancelled(Signal::Term),
-                    };
-                    assert_eq!(cause, ConstructionFailure::Stopped(expected));
-                    assert!(partial.base().occurrences().iter().any(|q| {
-                        q.epsilon
-                            .as_ref()
-                            .is_some_and(|v| v.wire().canonical() == "\"1\"")
-                    }));
-                    if point == Checkpoint::FinitePolynomialPoint {
-                        assert_eq!(partial.domain().len(), at);
-                        assert_eq!(partial.domain_is_complete(), at == 4);
-                        assert!(partial.tables().is_empty());
-                        if at < 4 {
-                            assert!(partial.zero(&mut quiet()).is_err());
-                        }
-                    } else {
-                        assert!(partial.domain_is_complete());
-                        assert_eq!(
-                            partial.tables().len(),
-                            if point == Checkpoint::FinitePolynomialTable {
-                                at
-                            } else {
-                                4
-                            }
-                        );
-                        assert_eq!(
-                            partial.is_complete(),
-                            point == Checkpoint::FinitePolynomialRecheck || at == 4
-                        );
-                        for t in partial.tables() {
-                            assert_eq!(t.values().unwrap().len(), 4);
-                            assert_eq!(t.nonzero().unwrap().values().len(), 4);
-                        }
-                    }
-                    let frozen = count.get();
-                    assert!(partial.zero(&mut c).is_err());
-                    assert_eq!(count.get(), frozen);
-                    assert!(c.checkpoint(point).is_err());
-                    assert_eq!(count.get(), frozen);
-                }
+    for at in [1, 4] {
+        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            let (mut c, count) = stopped(at, kind);
+            let error = finite_polynomial_evaluation(i.clone(), "Selected", "v", "root", 0, &mut c)
+                .unwrap_err();
+            let F::Reading { partial, cause } = error else {
+                panic!("{error:?}")
+            };
+            let expected = match kind {
+                Stop::Time => StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Memory => StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Int => StopReason::Cancelled(Signal::Int),
+                Stop::Term => StopReason::Cancelled(Signal::Term),
+            };
+            assert_eq!(cause, ConstructionFailure::Stopped(expected));
+            assert!(partial.base().occurrences().iter().any(|q| {
+                q.epsilon
+                    .as_ref()
+                    .is_some_and(|v| v.wire().canonical() == "\"1\"")
+            }));
+            assert!(partial.domain_is_complete());
+            assert_eq!(partial.tables().len(), at);
+            assert_eq!(partial.is_complete(), at == 4);
+            for t in partial.tables() {
+                assert_eq!(t.values().unwrap().len(), 4);
+                assert_eq!(t.nonzero().unwrap().values().len(), 4);
             }
+            let frozen = count.get();
+            assert!(partial.zero(&mut c).is_err());
+            assert_eq!(count.get(), frozen);
+            assert!(c.checkpoint(Checkpoint::FinitePolynomialTable).is_err());
+            assert_eq!(count.get(), frozen);
         }
     }
 }

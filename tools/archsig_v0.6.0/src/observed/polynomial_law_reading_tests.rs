@@ -297,84 +297,65 @@ fn prefix(original: &Graph, c: &Control) -> Graph {
     g
 }
 #[test]
-fn polynomial_reading_four_stops_keep_exact_completed_boolean_prefixes() {
+fn polynomial_reading_interrupt_keeps_exact_completed_boolean_prefixes() {
     use std::{cell::Cell, rc::Rc};
-    for body in [BODY] {
-        let p = prepared(false, false, body, "root");
-        let (initial, a) = built(&p);
-        let before = initial.nodes.len();
-        let mut complete = prefix(&initial, &quiet());
-        let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
-        for mode in [2] {
-            for at in [
-                2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
-                2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
-            ] {
-                let seen = Rc::new(Cell::new(0));
-                let count = seen.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |point| {
-                        if point == Checkpoint::NativeResultNode {
-                            count.set(count.get() + 1);
-                        }
-                        let stop = count.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stop && mode == 0),
-                            memory_mib: u128::from(stop && mode == 1),
-                            signal: if stop && mode >= 2 {
-                                Some(if mode == 2 {
-                                    crate::result::Signal::Int
-                                } else {
-                                    crate::result::Signal::Term
-                                })
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
-                let mut g = prefix(&initial, &c);
-                assert!(matches!(
-                    retain_family(&mut g, p.shared_inputs(), a, &mut c),
-                    Err(ValidationFailure::Stop(_))
-                ));
-                assert_eq!(g.nodes.len(), before + at.div_ceil(2));
-                assert_eq!(g.nodes.len(), g.contexts.len());
-                for (left, right) in g.nodes.iter().zip(&complete.nodes) {
-                    assert_eq!(
-                        (
-                            &left.ty,
-                            &left.rule,
-                            &left.arguments,
-                            &left.support,
-                            &left.scope,
-                            &left.reasons,
-                            &left.judgment
-                        ),
-                        (
-                            &right.ty,
-                            &right.rule,
-                            &right.arguments,
-                            &right.support,
-                            &right.scope,
-                            &right.reasons,
-                            &right.judgment
-                        )
-                    );
-                    match (&left.payload, &right.payload) {
-                        (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
-                            assert_eq!(a.wire(), b.wire())
-                        }
-                        _ => assert_eq!(left, right),
-                    }
+    let p = prepared(false, false, BODY, "root");
+    let (initial, a) = built(&p);
+    let before = initial.nodes.len();
+    let mut complete = prefix(&initial, &quiet());
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
+    for at in [
+        2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
+        2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
+    ] {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::NativeResultNode {
+                count.set(count.get() + 1);
+            }
+            let stop = count.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = prefix(&initial, &c);
+        assert!(matches!(
+            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.nodes.len(), before + at.div_ceil(2));
+        assert_eq!(g.nodes.len(), g.contexts.len());
+        for (left, right) in g.nodes.iter().zip(&complete.nodes) {
+            assert_eq!(
+                (
+                    &left.ty,
+                    &left.rule,
+                    &left.arguments,
+                    &left.support,
+                    &left.scope,
+                    &left.reasons,
+                    &left.judgment
+                ),
+                (
+                    &right.ty,
+                    &right.rule,
+                    &right.arguments,
+                    &right.support,
+                    &right.scope,
+                    &right.reasons,
+                    &right.judgment
+                )
+            );
+            match (&left.payload, &right.payload) {
+                (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
+                    assert_eq!(a.wire(), b.wire())
                 }
-                replay(&p, &g, &g.nodes).unwrap();
+                _ => assert_eq!(left, right),
             }
         }
+        replay(&p, &g, &g.nodes).unwrap();
     }
 }
 

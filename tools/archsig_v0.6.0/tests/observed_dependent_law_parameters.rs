@@ -1554,110 +1554,96 @@ fn dependent_numeric_empty_fixed_and_compound_answer_fibers_keep_original_bindin
 }
 
 #[test]
-fn dependent_numeric_known_counterexample_survives_missing_other_row_in_both_orders() {
+fn dependent_numeric_known_counterexample_survives_a_missing_earlier_row() {
     // 行の順序による違いは dependent_missing_body_row_{before,after}_known_counterexample が確かめる。
     // ここでは欠測行が既知反例より前にある側で、数値軸つきの反例が残ることだけを見る。
-    for ty in ["Q"] {
-        let flags = [None, Some(false)];
-        let script = format!(
-            "law required chain(a:Root,z:{ty},b:Child[a],c:Leaf[a]):if c.ok then z+1=z+1 else z+1=z+2;"
-        );
-        let result = numeric_batch(
-            fixture(&script, flags, false, false, false),
-            &["all=check(Inspect.chain)"],
-        );
-        let wire = result.wire();
-        let ns = index(&wire);
-        let answer = &arr(f(&wire, "answers"))[0];
-        assert_eq!(f(answer, "status"), &Json::str("refuted"));
-        let row_type = Type::Tuple(vec![
-            Type::Ref("Dep.Root".into()),
-            Type::Ref("Dep.Child".into()),
-            Type::Ref("Dep.Leaf".into()),
-        ])
-        .wire();
-        let actual_domains: Vec<_> = arr(f(&wire, "nodes"))
+    let script =
+        "law required chain(a:Root,z:Q,b:Child[a],c:Leaf[a]):if c.ok then z+1=z+1 else z+1=z+2;";
+    let result = numeric_batch(
+        fixture(script, [None, Some(false)], false, false, false),
+        &["all=check(Inspect.chain)"],
+    );
+    let wire = result.wire();
+    let ns = index(&wire);
+    let answer = &arr(f(&wire, "answers"))[0];
+    assert_eq!(f(answer, "status"), &Json::str("refuted"));
+    let row_type = Type::Tuple(vec![
+        Type::Ref("Dep.Root".into()),
+        Type::Ref("Dep.Child".into()),
+        Type::Ref("Dep.Leaf".into()),
+    ])
+    .wire();
+    let actual_domains: Vec<_> = arr(f(&wire, "nodes"))
+        .iter()
+        .filter(|n| {
+            f(n, "type") == &Json::str("Domain") && obj(val(n)).get("type") == Some(&row_type)
+        })
+        .collect();
+    assert!(!actual_domains.is_empty());
+    for d in actual_domains {
+        assert_eq!(arr(f(val(d), "elements")).len(), 2);
+    }
+    assert!(
+        arr(f(&wire, "nodes"))
             .iter()
-            .filter(|n| {
-                f(n, "type") == &Json::str("Domain")
-                    && obj(val(n)).get("type") == Some(&row_type)
-            })
-            .collect();
-        assert!(!actual_domains.is_empty());
-        for d in actual_domains {
-            assert_eq!(arr(f(val(d), "elements")).len(), 2);
-        }
-        assert!(
-            arr(f(&wire, "nodes"))
+            .any(|n| f(n, "type") == &Json::str("Domain")
+                && obj(val(n)).get("kind") == Some(&Json::str("type"))
+                && f(val(n), "type") == &Json::str("Q"))
+    );
+    assert!(!arr(f(answer, "reasons")).is_empty());
+    let kept = reachable(&ns, answer);
+    let examples: Vec<_> = kept
+        .iter()
+        .map(|id| ns[id.as_str()])
+        .filter(|n| {
+            f(n, "type") == &Json::str("Evidence")
+                && f(val(n), "kind") == &Json::str("counterexample")
+        })
+        .collect();
+    assert!(!examples.is_empty());
+    let number = |n: &str| Json::Arr(vec![Json::str(n), Json::str("1")]);
+    let numeric_examples: Vec<_> = examples
+        .iter()
+        .filter(|n| {
+            arr(f(f(val(n), "data"), "bindings"))
                 .iter()
-                .any(|n| f(n, "type") == &Json::str("Domain")
-                    && obj(val(n)).get("kind") == Some(&Json::str("type"))
-                    && f(val(n), "type") == &Json::str(ty))
-        );
-        assert!(!arr(f(answer, "reasons")).is_empty());
-        let kept = reachable(&ns, answer);
-        let examples: Vec<_> = kept
+                .any(|b| f(b, "name") == &Json::str("z"))
+        })
+        .collect();
+    assert!(!numeric_examples.is_empty());
+    for example in numeric_examples {
+        let data = f(val(example), "data");
+        let binding = arr(f(data, "bindings"))
             .iter()
-            .map(|id| ns[id.as_str()])
-            .filter(|n| {
-                f(n, "type") == &Json::str("Evidence")
-                    && f(val(n), "kind") == &Json::str("counterexample")
-            })
-            .collect();
-        assert!(!examples.is_empty());
-        let number = |n: &str| {
-            if ty == "Z" {
-                Json::str(n)
-            } else {
-                Json::Arr(vec![Json::str(n), Json::str("1")])
-            }
-        };
-        let numeric_examples: Vec<_> = examples
-            .iter()
-            .filter(|n| {
-                arr(f(f(val(n), "data"), "bindings"))
-                    .iter()
-                    .any(|b| f(b, "name") == &Json::str("z"))
-            })
-            .collect();
-        assert!(!numeric_examples.is_empty());
-        for example in numeric_examples {
-            let data = f(val(example), "data");
-            let binding = arr(f(data, "bindings"))
-                .iter()
-                .find(|b| f(b, "name") == &Json::str("z"))
-                .unwrap();
-            assert_eq!(
-                val(target(&ns, f(binding, "value"), &Json::str(ty))),
-                &number("0")
-            );
-            let left = target(&ns, f(data, "left"), &Json::str("Evaluation"));
-            let right = target(&ns, f(data, "right"), &Json::str("Evaluation"));
-            assert_eq!(
-                val(target(&ns, f(val(left), "value"), &Json::str(ty))),
-                &number("1")
-            );
-            assert_eq!(
-                val(target(&ns, f(val(right), "value"), &Json::str(ty))),
-                &number("2")
-            );
-        }
-        let reason = arr(f(answer, "reasons"))
-            .iter()
-            .find(|r| f(r, "code") == &Json::str("missing_observation"))
+            .find(|b| f(b, "name") == &Json::str("z"))
             .unwrap();
         assert_eq!(
-            f(reason, "missing"),
-            &Json::Arr(vec![Json::obj([
-                ("snapshot", Json::str("v")),
-                (
-                    "subject",
-                    Json::str(if flags[0].is_none() { "l" } else { "m" })
-                ),
-                ("field", Json::str("Dep.Leaf.ok"))
-            ])])
+            val(target(&ns, f(binding, "value"), &Json::str("Q"))),
+            &number("0")
+        );
+        let left = target(&ns, f(data, "left"), &Json::str("Evaluation"));
+        let right = target(&ns, f(data, "right"), &Json::str("Evaluation"));
+        assert_eq!(
+            val(target(&ns, f(val(left), "value"), &Json::str("Q"))),
+            &number("1")
+        );
+        assert_eq!(
+            val(target(&ns, f(val(right), "value"), &Json::str("Q"))),
+            &number("2")
         );
     }
+    let reason = arr(f(answer, "reasons"))
+        .iter()
+        .find(|r| f(r, "code") == &Json::str("missing_observation"))
+        .unwrap();
+    assert_eq!(
+        f(reason, "missing"),
+        &Json::Arr(vec![Json::obj([
+            ("snapshot", Json::str("v")),
+            ("subject", Json::str("l")),
+            ("field", Json::str("Dep.Leaf.ok"))
+        ])])
+    );
 }
 
 #[test]

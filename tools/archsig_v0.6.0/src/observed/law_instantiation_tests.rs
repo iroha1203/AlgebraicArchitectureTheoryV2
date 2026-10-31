@@ -400,47 +400,34 @@ fn unbound_integer_specialization_preserves_the_original_symbolic_family() {
     replay(&p, &g).unwrap();
 }
 #[test]
-fn four_stops_retain_only_the_completed_specialization_prefix() {
+fn interrupt_retains_only_the_completed_specialization_prefix() {
     use std::{cell::Cell, rc::Rc};
     let (p, initial, objects, base, target) = first();
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let mut complete = copy_graph(&initial, &quiet());
     instantiate(&env, &mut complete, base, target, objects[1], &mut quiet()).unwrap();
-    for mode in [2] {
-        for at in [2, 3] {
-            let seen = Rc::new(Cell::new(0));
-            let counter = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::ObjectEvaluation {
-                        counter.set(counter.get() + 1)
-                    }
-                    let stop = counter.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            assert!(matches!(
-                instantiate(&env, &mut g, base, target, objects[1], &mut c),
-                Err(ValidationFailure::Stop(_))
-            ));
-            assert_eq!(g.active, initial.active);
-            assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
-            assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
-            assert_eq!(g.nodes.len(), initial.nodes.len() + usize::from(at == 3));
-            replay(&p, &g).unwrap();
-        }
+    for at in [2, 3] {
+        let seen = Rc::new(Cell::new(0));
+        let counter = seen.clone();
+        let mut c = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ObjectEvaluation {
+                counter.set(counter.get() + 1)
+            }
+            let stop = counter.get() >= at;
+            Usage {
+                signal: stop.then_some(crate::result::Signal::Int),
+                ..Usage::default()
+            }
+        });
+        let mut g = copy_graph(&initial, &c);
+        assert!(matches!(
+            instantiate(&env, &mut g, base, target, objects[1], &mut c),
+            Err(ValidationFailure::Stop(_))
+        ));
+        assert_eq!(g.active, initial.active);
+        assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
+        assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
+        assert_eq!(g.nodes.len(), initial.nodes.len() + usize::from(at == 3));
+        replay(&p, &g).unwrap();
     }
 }
