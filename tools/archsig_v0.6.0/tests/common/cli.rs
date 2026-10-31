@@ -16,7 +16,20 @@ pub fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_archsig"))
 }
 
-/// 呼出しごとの空の作業 directory。同じ名前で並行に呼ばれても共有しない。
+/// テストのスレッドが作った作業 directory。スレッドの終わりにまとめて消す。
+struct Workdirs(std::cell::RefCell<Vec<PathBuf>>);
+impl Drop for Workdirs {
+    fn drop(&mut self) {
+        for dir in self.0.get_mut().drain(..) {
+            let _ = std::fs::remove_dir_all(dir);
+        }
+    }
+}
+thread_local! {
+    static WORKDIRS: Workdirs = const { Workdirs(std::cell::RefCell::new(Vec::new())) };
+}
+
+/// 呼出しごとの空の作業 directory。同じ名前で並行に呼ばれても共有せず、テストが終わると消える。
 pub fn workdir(name: &str) -> PathBuf {
     static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let serial = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -26,6 +39,7 @@ pub fn workdir(name: &str) -> PathBuf {
     ));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
+    WORKDIRS.with(|dirs| dirs.0.borrow_mut().push(dir.clone()));
     dir
 }
 
