@@ -278,9 +278,23 @@ fn public_relation_without_its_declaration_refutes_every_comparison() {
     }
 }
 #[test]
+fn public_relation_holds_through_composed_paths() {
+    let with = public(
+        inputs(ALIAS_RELATION),
+        &[
+            E,
+            ALIAS,
+            fixture::F,
+            fixture::C,
+            "other=compose($alias.value,then=$f.value)",
+            "composed=compare($c.operation,to=$other.operation,kind=relation)",
+        ],
+    );
+    assert_eq!(with.answers[5].status, Decision::Established);
+}
+#[test]
 fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
     use crate::observed::public_compare::relations::Data;
-    // 合成した Path の成立は CLI の a_composed_path_uses_the_original_relation_inside_its_query_context が見る。
     let with = public(
         only_e_and_alias(relation_fixture::input(ALIAS_RELATION, false)),
         &[
@@ -396,7 +410,6 @@ fn an_unknown_guard_stays_undetermined_and_needed_keeps_its_original_slot() {
             ("field", crate::canonical::Json::str("Paths.Guard.flag"))
         ])
     );
-
 }
 
 #[test]

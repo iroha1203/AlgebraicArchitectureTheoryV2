@@ -1,4 +1,3 @@
-use crate::common;
 #[path = "common/dependent_owner_completions.rs"]
 mod fixture;
 use archsig::{

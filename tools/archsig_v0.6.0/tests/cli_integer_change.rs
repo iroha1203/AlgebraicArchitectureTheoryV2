@@ -1142,10 +1142,14 @@ fn three_edge_integer_repair_keeps_translation_freedom() {
 fn three_edge_integer_repair_keeps_the_obstruction() {
     three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift(1);
 }
+#[test]
+fn three_edge_integer_repair_keeps_the_missing_shift() {
+    three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift(2);
+}
 fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift(row: usize) {
     #[path = "common/three_edge.rs"]
     mod triangle;
-    let gamma = [Some(2),Some(3)][row];
+    let gamma = [Some(2),Some(3),None][row];
     let input = triangle::input(gamma);
     let asks=["a=build(Coordinates,on=@triangle/root)","r=repair(Coordinates.aligned,on=$a.object,using=Coordinates.move)","n=needed($r)"];
     if gamma==Some(3) {

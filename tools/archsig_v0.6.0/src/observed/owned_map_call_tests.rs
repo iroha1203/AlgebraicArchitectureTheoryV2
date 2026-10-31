@@ -29,7 +29,9 @@ fn owned_map_actual_keys_images_types_and_return_body_are_rechecked() {
     let map = r
         .nodes
         .iter()
-        .position(|n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Map{pairs,..}))if pairs.len()==2))
+        .position(
+            |n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Map{pairs,..}))if pairs.len()==2),
+        )
         .unwrap();
     rejects_mutated_prefix(&r, map, |ns| {
         let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut ns[map].payload else {

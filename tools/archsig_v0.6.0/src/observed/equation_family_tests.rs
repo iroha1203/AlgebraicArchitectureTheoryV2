@@ -92,10 +92,7 @@ fn field<'a>(j: &'a Json, name: &str) -> &'a Json {
 #[test]
 fn finite_family_keeps_all_original_rows_presentations_and_refuted_laws() {
     let p = prepared(
-        fixture::inputs(
-            false,
-            "law required zero(c:Part):c.quantity=0;",
-        ),
+        fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
         "root",
     );
     let (mut g, l) = start(&p, true);

@@ -519,7 +519,6 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         let env = Environment::with_prepared(&p, &mut control).unwrap();
         armed.set(true);
         let result = env.recheck_node(&bad, &bad.nodes[e.0], e.0);
-        eprintln!("mode {mode}: checkpoints={} result={result:?}", seen.get());
         results.push(result);
     }
     for (mode, result) in results.iter().enumerate() {

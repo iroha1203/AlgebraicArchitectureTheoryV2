@@ -52,9 +52,8 @@ fn check_part(part: usize) {
             .into_iter()
             .find(|case| !case.nested && case.name == *name && case.ty == *ty)
             .unwrap();
-        let started = std::time::Instant::now();
         let input = case.input();
-        // 元のfresh CLIと同じ120秒の計算予算。fixture構築と表示・assertionは別に測る。
+        // 元のfresh CLIと同じ120秒の計算予算。
         let budget_started = std::time::Instant::now();
         let mut c = Control::new(
             Limits {
@@ -76,9 +75,7 @@ fn check_part(part: usize) {
             &fixture::REQUESTS[..2]
         };
         let prepared = prepare_shared_observed(inputs, asks, &mut c).unwrap();
-        let setup = started.elapsed();
         let evaluated = evaluate_observed(prepared, &mut c);
-        let evaluation = started.elapsed() - setup;
         assert!(
             c.stop_reason().is_none(),
             "{}: calculation budget exhausted",
@@ -123,10 +120,5 @@ fn check_part(part: usize) {
             let result = archsig::json::parse(result.canonical().as_bytes()).unwrap();
             case.assert_result(&result);
         }
-        eprintln!(
-            "{} setup={setup:?} evaluation={evaluation:?} wire/assert={:?}",
-            case.label(),
-            started.elapsed() - setup - evaluation
-        );
     }
 }

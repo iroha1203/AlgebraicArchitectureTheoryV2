@@ -255,7 +255,12 @@ view label(): Text = "日本🦀"; local here(t:State) reads t;
     // 位置の確認には状態の数は要らないので、対応 u→w を外した状態4つの観測を使う。
     let map = include_str!("fixtures/object-configuration-map.archmap.json")
         .lines()
-        .filter(|line| !line.contains(r#""id":"u","type":"#) && !line.contains(r#""id":"w","type":"#) && !line.contains(r#""subject":"u""#) && !line.contains(r#""subject":"w""#))
+        .filter(|line| {
+            !line.contains(r#""id":"u","type":"#)
+                && !line.contains(r#""id":"w","type":"#)
+                && !line.contains(r#""subject":"u""#)
+                && !line.contains(r#""subject":"w""#)
+        })
         .collect::<Vec<_>>()
         .join("\n")
         .replace(r#",[["v","u"],["v","w"]]"#, "")

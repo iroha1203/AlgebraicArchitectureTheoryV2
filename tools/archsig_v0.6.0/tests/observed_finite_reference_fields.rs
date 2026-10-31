@@ -1,4 +1,3 @@
-use crate::common;
 #[path = "common/finite_reference_fields.rs"]
 mod fixture;
 use archsig::{
@@ -525,7 +524,10 @@ fn finite_reference_field_law_families_keep_full_numeric_axes_and_known_countere
             "later=evaluate(Inspect.seed)",
         ],
     );
-    assert_eq!(f(answer(&j, "numeric"), "status"), &Json::str("established"));
+    assert_eq!(
+        f(answer(&j, "numeric"), "status"),
+        &Json::str("established")
+    );
     for s in ["h", "k"] {
         original_missing(&j, "numeric", s, "Fields.Holder.chosen");
     }

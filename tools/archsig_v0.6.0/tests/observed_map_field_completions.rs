@@ -1,4 +1,3 @@
-use crate::common;
 #[path = "common/map_field_completions.rs"]
 mod fixture;
 use archsig::{
@@ -419,9 +418,7 @@ fn map_field_finite_containers_keep_each_shared_owner_and_typed_whole_value() {
     assert_eq!(assignments(&j, "maybe_value"), option_values);
     let tuple_values = map_values
         .iter()
-        .flat_map(|m| {
-            [false, true].map(|b| Json::Arr(vec![Json::Bool(b), m.clone()]).canonical())
-        })
+        .flat_map(|m| [false, true].map(|b| Json::Arr(vec![Json::Bool(b), m.clone()]).canonical()))
         .collect();
     assert_eq!(assignments(&j, "mixed"), tuple_values);
     let sets: BTreeSet<_> = [
@@ -559,7 +556,10 @@ fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples_in_both_order
             "later=evaluate(Inspect.seed)",
         ],
     );
-    assert_eq!(f(answer(&j, "numeric"), "status"), &Json::str("established"));
+    assert_eq!(
+        f(answer(&j, "numeric"), "status"),
+        &Json::str("established")
+    );
     for s in ["h", "j"] {
         original_missing(&j, "numeric", s, "MapFields.Holder.table");
     }

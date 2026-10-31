@@ -36,7 +36,11 @@ fn compound_calls_recheck_nested_return_members_types_order_support_and_scope() 
     });
     // 所有者の合わないmemberを渡した呼出しは、owner条件の失敗を理由に残す。
     owned_condition(&r, 1);
-    assert!(!r.nodes[r.answers[1].outputs["evaluation"].0].reasons.is_empty());
+    assert!(
+        !r.nodes[r.answers[1].outputs["evaluation"].0]
+            .reasons
+            .is_empty()
+    );
 }
 
 fn compound_call_member_stop(recheck: bool) {

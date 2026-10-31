@@ -9224,6 +9224,10 @@ reading Calc {{
     fn finite_completion_coverage_stop_keeps_all_cases_without_unfinished_proof() {
         finite_completion_phase_stop("completion_coverage", 0, 2, None);
     }
+    #[test]
+    fn finite_completion_enumeration_stop_keeps_verified_law_counterexample() {
+        finite_completion_phase_stop("completion_enum", 1, 2, Some(true));
+    }
     fn finite_completion_phase_stop(
         phase: &'static str,
         at: usize,

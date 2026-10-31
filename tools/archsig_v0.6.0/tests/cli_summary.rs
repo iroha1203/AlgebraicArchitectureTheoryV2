@@ -61,7 +61,6 @@ fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
     ];
     let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
     let brief = execute(&dir, &asks, &[]);
-    eprintln!("confirmed answers: {} stdout bytes", brief.stdout.len());
     assert_eq!(brief.code, 2);
     assert!(brief.stderr.is_empty());
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
