@@ -1701,15 +1701,12 @@ mod tests {
         }
     }
     #[test]
-    #[ignore = "#6068: 製品の変更後に期待値と実装のどちらが正しいか未判定"]
     fn numeric_family_uniformity_is_not_inferred_from_false_or_observed_values() {
         for body in [
             "law required varying(c:Part,n:Z):n=0;",
             "law required varying(c:Part,n:Z):n+c.quantity=0;",
             "law required varying(c:Part,n:Z) when false:n=n;",
-            "law required varying(c:Part,n:Z) when n=0:n=n;",
             "law required varying(c:Part,n:Z) when c.quantity=0:n=n;",
-            "view active(x:Z):Bool=x=0;law required varying(c:Part,n:Z) when active(n):n=n;",
             "view plus(c:Part,x:Z):Z=c.quantity+x;law required varying(c:Part,n:Z):plus(c,n)=0;",
             "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required varying(c:Part,n:Z):twice(n)=0;",
         ] {
@@ -1720,6 +1717,23 @@ mod tests {
             let instance = readings.instances().iter().position(|instance| instance.declaration().kind == "law").unwrap();
             let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, instance, &mut c).unwrap();
             assert!(super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap().is_none(), "{body}");
+        }
+    }
+    #[test]
+    fn guarded_zero_numeric_families_keep_a_constant_zero_residual() {
+        // 本体の残差が全引数で0なら、引数に依存するguardを消さずに一定の族として扱う。
+        for body in [
+            "law required varying(c:Part,n:Z) when n=0:n=n;",
+            "view active(x:Z):Bool=x=0;law required varying(c:Part,n:Z) when active(n):n=n;",
+        ] {
+            let inputs = inputs_with(body);
+            let mut c = Control::unlimited();
+            let profiles = crate::construction::profiles::construct_profiles(&inputs, "Selected", "v", "root", &mut c).unwrap();
+            let readings = crate::construction::readings::object_reading_instances(&inputs, profiles.construction(), &mut c).unwrap();
+            let instance = readings.instances().iter().position(|instance| instance.declaration().kind == "law").unwrap();
+            let evaluation = super::super::object_evaluate::evaluate_object_instance(inputs.clone(), &readings, 0, instance, &mut c).unwrap();
+            let family = super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c).unwrap();
+            assert_eq!(family.map(|(_, _, residual)| residual), Some(Scalar::Z(0.into())), "{body}");
         }
     }
     #[test]

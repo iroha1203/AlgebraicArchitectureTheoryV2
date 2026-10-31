@@ -1153,8 +1153,8 @@ fn finite_aggregates_keep_typed_cases_and_numeric_axes() {
 }
 
 #[test]
-#[ignore = "#6068: 製品の変更後に期待値と実装のどちらが正しいか未判定"]
-fn finite_aggregate_comparisons_do_not_replace_free_numeric_values() {
+fn finite_aggregate_guards_keep_the_free_numeric_parameter() {
+    // 有限集合の集約を比べるguardでも、数値parameterは記号のまま、各有限値の式に残す。
     for rhs in ["n", "c.quantity"] {
         let p = prepared(
             false,
@@ -1171,10 +1171,19 @@ fn finite_aggregate_comparisons_do_not_replace_free_numeric_values() {
         let Witness::Architecture(a) = &value.witness else {
             panic!("architecture witness")
         };
+        let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet())
+            .unwrap()
+            .unwrap_or_else(|| panic!("{rhs}"));
+        assert!(!equations.is_empty(), "{rhs}");
+        assert!(equations.iter().all(|(_, source)| !source.finite.is_empty()), "{rhs}");
+        if rhs == "n" {
+            // n と比べる guard は n に依存したまま残り、定数の真偽に決まらない。
+            assert!(equations.iter().all(|(_, source)| source.guard.dynamic()));
+        }
         assert!(
-            parameters::sources(&p.shared_inputs(), a, &mut quiet())
-                .unwrap()
-                .is_none(),
+            equations
+                .iter()
+                .any(|(_, source)| source.difference.parameters.iter().any(|(p, _)| p.name == "n")),
             "{rhs}"
         );
     }
