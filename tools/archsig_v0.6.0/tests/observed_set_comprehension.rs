@@ -1,5 +1,5 @@
 //! 既知List/Set上の内包を独立三入力から評価し、元式・依存・支持・停止prefixを確認する。
-mod common;
+use crate::common;
 #[path = "common/expression_stops.rs"]
 mod expression_stops;
 use archsig::{

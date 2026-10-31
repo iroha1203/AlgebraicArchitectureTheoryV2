@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 #[path = "common/finite_reference_fields.rs"]
 mod fixture;
 use archsig::{

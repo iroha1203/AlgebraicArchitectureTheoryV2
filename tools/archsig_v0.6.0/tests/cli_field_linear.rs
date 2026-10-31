@@ -1,7 +1,5 @@
 //! 有理線形系から元Assignmentと修復後の値を計算する公開経路。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::{definition, input::InputSources, json::JNode};
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {

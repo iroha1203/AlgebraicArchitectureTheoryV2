@@ -1,6 +1,4 @@
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 #[allow(dead_code)]
 #[path = "common/public_relation.rs"]
 mod fixture;

@@ -1,6 +1,6 @@
 //! AC1・AC5・AC6・AC7: 独立定義を使う check と version。
 
-mod common;
+use crate::common;
 use archsig::json::{JNode, parse};
 use common::cli::*;
 use std::path::{Path, PathBuf};

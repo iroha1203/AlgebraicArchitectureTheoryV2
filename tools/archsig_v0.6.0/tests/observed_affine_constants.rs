@@ -1,5 +1,5 @@
 //! 欠測 Z/Q の共有アフィン算術を三入力 byte から検査する。
-mod common;
+use crate::common;
 
 use archsig::{
     archmap::Slot,

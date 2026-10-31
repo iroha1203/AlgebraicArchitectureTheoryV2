@@ -1,5 +1,5 @@
 //! 有限な未束縛Law parameterの実直積と適用族を独立三入力から検査する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

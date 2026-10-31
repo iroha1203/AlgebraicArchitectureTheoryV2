@@ -1,5 +1,5 @@
 //! 明示In量化を独立三入力から評価し、有限域・原出現・欠測・証拠と停止prefixを確認する。
-mod common;
+use crate::common;
 #[path = "common/expression_stops.rs"]
 mod expression_stops;
 use archsig::{

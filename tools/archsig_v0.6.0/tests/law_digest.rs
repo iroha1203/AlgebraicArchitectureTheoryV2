@@ -1,6 +1,6 @@
 //! AC5(Law 側): bytes_digest・model_digest・語彙 digest の区別と、文字列を正規化しない canonical bytes。
 
-mod common;
+use crate::common;
 use archsig::canonical::sha256_digest;
 use archsig::law::{lexer, model_canonical};
 use common::*;

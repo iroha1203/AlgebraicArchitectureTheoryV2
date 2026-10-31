@@ -1,5 +1,5 @@
 //! 既知 owner と二段以上の束縛 prefix に従う有限 Law parameter 族を元三入力 byte から検査する。
-mod common;
+use crate::common;
 
 use archsig::{
     archmap::{Mode, Slot},

@@ -2,9 +2,7 @@
 #[path = "common/watchdog.rs"]
 mod watchdog;
 
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 
 use std::io::Write;
 use std::process::Command;
@@ -13,7 +11,12 @@ use std::time::{Duration, Instant};
 fn child(mode: &str) -> Command {
     let mut command = Command::new(std::env::current_exe().unwrap());
     command
-        .args(["--ignored", "--exact", "watchdog_child", "--nocapture"])
+        .args([
+            "--ignored",
+            "--exact",
+            "cli_watchdog::watchdog_child",
+            "--nocapture",
+        ])
         .env("ARCHSIG_WATCHDOG_TEST_CHILD", mode);
     command
 }

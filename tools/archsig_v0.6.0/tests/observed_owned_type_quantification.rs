@@ -1,5 +1,5 @@
 //! 元Owned TypeAstと実ownerを保つ有限型量化の三入力byte API検査。
-mod common;
+use crate::common;
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},

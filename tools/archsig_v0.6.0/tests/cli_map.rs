@@ -1,5 +1,5 @@
 //! 原始候補・総作用・部分結果を実バイナリから検査する独立fixture。
-mod common;
+use crate::common;
 use archsig::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};

@@ -1,5 +1,5 @@
 //! 公開Path合成を独立の原始fixtureと明示期待値で検査する。
-mod common;
+use crate::common;
 #[path = "common/public_path_compose.rs"]
 mod fixture;
 use archsig::json::JNode;

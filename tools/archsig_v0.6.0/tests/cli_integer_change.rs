@@ -1,7 +1,5 @@
 //! 整数全解、元Assignmentの非一意・一意、修復後の通常評価。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 #[allow(dead_code)]
 #[path = "common/object_view_compatibility_data.rs"]
 mod local_fixture;

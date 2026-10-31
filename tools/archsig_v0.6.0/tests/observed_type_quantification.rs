@@ -1,5 +1,5 @@
 //! 有限値型の全域量化を独立三入力から評価し、元型・全coverage・支持と停止prefixを確認する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

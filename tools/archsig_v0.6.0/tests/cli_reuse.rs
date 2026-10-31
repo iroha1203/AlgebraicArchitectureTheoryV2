@@ -1,5 +1,5 @@
 //! 再利用候補を採用しない全再計算と、現在入力への帰属。
-mod common;
+use crate::common;
 use archsig::canonical::Json;
 use archsig::json::{JNode, JValue};
 use common::cli::*;

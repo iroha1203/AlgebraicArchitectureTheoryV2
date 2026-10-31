@@ -1,5 +1,5 @@
 //! ArchMap の検査中正規化・namespace/field/constructor 走査への共有制御。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::Json,

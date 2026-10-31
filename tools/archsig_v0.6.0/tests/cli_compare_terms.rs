@@ -1,5 +1,5 @@
 //! 閉じたTermの公開等値を独立三入力から確認する。
-mod common;
+use crate::common;
 #[path = "common/public_term_compare.rs"]
 mod fixture;
 use common::cli::*;

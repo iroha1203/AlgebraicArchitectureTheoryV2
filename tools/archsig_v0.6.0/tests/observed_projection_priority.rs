@@ -1,5 +1,5 @@
 //! 射影不正の確定後の予算、取消、動的候補の局所棄却を区別する。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::Json,

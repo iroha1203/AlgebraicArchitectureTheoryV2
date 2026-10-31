@@ -1,7 +1,5 @@
 //! 有限な欠測値の全補完と、具体的な状態値の確定を区別する。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::json::JNode;
 use cli::*;
 fn setup(body: &str) -> std::path::PathBuf {

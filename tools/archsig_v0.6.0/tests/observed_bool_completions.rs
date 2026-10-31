@@ -1,5 +1,5 @@
 //! Bool欠測の共有補完を独立三入力から検査し、case whole・型・元slotと支持を照合する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

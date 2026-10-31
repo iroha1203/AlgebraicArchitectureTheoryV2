@@ -1,5 +1,5 @@
 //! 原始定義の所属・対応・型適格性の小さい回帰確認。
-mod common;
+use crate::common;
 use archsig::issue::Code;
 use common::law_definitions::*;
 use common::*;

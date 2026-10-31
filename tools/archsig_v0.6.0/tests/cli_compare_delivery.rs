@@ -1,5 +1,5 @@
 //! 比較の取消・資源停止と配送失敗時の既存データ保護。
-mod common;
+use crate::common;
 #[path = "common/public_path_compose.rs"]
 mod fixture;
 #[path = "common/compare_values.rs"]

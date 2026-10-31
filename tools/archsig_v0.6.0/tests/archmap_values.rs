@@ -1,6 +1,6 @@
 //! AC4: 原始値と整合性。欠測と既知値の区別、各型の encoding、参照、由来、補完の存在。
 
-mod common;
+use crate::common;
 use archsig::archmap::{Slot, Value};
 use archsig::issue::Code;
 use common::*;

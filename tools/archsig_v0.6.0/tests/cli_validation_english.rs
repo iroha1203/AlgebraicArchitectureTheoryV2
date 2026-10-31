@@ -1,5 +1,5 @@
 //! 公開される検査診断の固定文言と入力文字列を区別する。
-mod common;
+use crate::common;
 use archsig::json::JValue;
 use common::cli::*;
 

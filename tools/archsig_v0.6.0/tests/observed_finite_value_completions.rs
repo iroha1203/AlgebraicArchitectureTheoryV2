@@ -1,5 +1,5 @@
 //! 参照なし有限構造値の共有補完を三入力から検査し、単一slot・構造・wholeと証拠を照合する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

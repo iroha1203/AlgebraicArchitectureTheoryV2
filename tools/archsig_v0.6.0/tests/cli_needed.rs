@@ -1,5 +1,5 @@
 //! 観測計画の独立したslot・依存・理由の期待値。
-mod common;
+use crate::common;
 use archsig::json::{JNode, JValue};
 use common::cli::*;
 use std::path::{Path, PathBuf};

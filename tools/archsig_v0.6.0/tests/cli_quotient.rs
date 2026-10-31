@@ -1,7 +1,5 @@
 //! 公開候補域と解集合を混同しない有限view商。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::{definition, json::{JNode, JValue}};
 use cli::*;
 fn input(name: &str) -> std::path::PathBuf {

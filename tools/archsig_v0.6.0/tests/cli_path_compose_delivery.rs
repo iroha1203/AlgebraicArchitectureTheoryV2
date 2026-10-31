@@ -1,5 +1,5 @@
 //! Path composeの取消・資源停止と、同じ配送経路の既存データ保護。
-mod common;
+use crate::common;
 #[path = "common/public_path_compose.rs"]
 mod fixture;
 use archsig::{

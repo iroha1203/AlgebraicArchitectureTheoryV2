@@ -1,11 +1,8 @@
 //! 固定対象の局所化と有限診断。Law成立と貼り合わせを区別する実CLI試験。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::{definition, json::JNode};
 use cli::*;
-#[path = "common/mod.rs"]
-mod common;
+use crate::common;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
     let definitions = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();

@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 #[path = "common/owner_completions.rs"]
 mod fixture;
 use archsig::{

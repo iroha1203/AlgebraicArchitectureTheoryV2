@@ -1,7 +1,5 @@
 //! 対象族の保存を公開mapと、その後の利用まで検査する。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};

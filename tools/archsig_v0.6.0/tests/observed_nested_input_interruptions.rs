@@ -1,5 +1,5 @@
 //! 深部schema/QNameの停止が、元byte列からの入力検査と要求準備へ届く。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::Json,

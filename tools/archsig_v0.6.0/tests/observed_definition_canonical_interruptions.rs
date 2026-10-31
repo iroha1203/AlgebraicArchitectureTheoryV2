@@ -1,5 +1,5 @@
 //! 定義manifestとmodel identityの正規化も、入力検査の同じ中断制御に従う。
-mod common;
+use crate::common;
 
 use archsig::{
     canonical::{Json, sha256_digest},

@@ -1,7 +1,5 @@
 //! 公開buildから後続の実評価までを、独立した三入力で検査する。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};

@@ -1,5 +1,5 @@
 //! 公開Architectureの根を選び、同じ共有評価器で値とLawを読む。
-mod common;
+use crate::common;
 #[path = "common/architecture_environment.rs"]
 mod fixture;
 use archsig::json::JNode;

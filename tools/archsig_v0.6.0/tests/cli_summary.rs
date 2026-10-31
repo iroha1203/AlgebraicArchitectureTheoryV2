@@ -1,7 +1,5 @@
 //! 日常の短い回答と、明示保存・後続計算・再利用の同値性。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use cli::*;
 use std::path::{Path, PathBuf};
 fn counter(name: &str, count: Option<&str>) -> PathBuf {

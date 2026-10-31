@@ -1,7 +1,5 @@
 //! 元changeのparameter全域を公開solveで解く。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 #[allow(dead_code)]
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;

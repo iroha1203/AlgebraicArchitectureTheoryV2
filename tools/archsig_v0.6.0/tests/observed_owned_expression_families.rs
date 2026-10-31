@@ -1,5 +1,5 @@
 //! 元Family式のowner・有限Set・In域・支持を三入力byte APIから確かめる。
-mod common;
+use crate::common;
 
 use archsig::{
     archmap::{Mode, Slot},

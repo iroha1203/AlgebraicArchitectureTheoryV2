@@ -1,7 +1,5 @@
 //! 反証の日常表示は実値だけを上限付きで返す。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};

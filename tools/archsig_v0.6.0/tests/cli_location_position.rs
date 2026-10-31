@@ -1,5 +1,5 @@
 //! 元 byte span と、人が読む1始まりの Unicode scalar 位置。
-mod common;
+use crate::common;
 use archsig::json::{JNode, JValue};
 use common::cli::*;
 
