@@ -599,6 +599,7 @@ mod tests {
                         .to_string_lossy()
                         .contains(".archsig-")
                 }));
+                std::fs::remove_dir_all(&dir).unwrap();
             }
         }
     }
