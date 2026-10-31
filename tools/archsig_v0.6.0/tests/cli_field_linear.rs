@@ -1364,11 +1364,11 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
 }
 #[test]
 fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
+    use archsig::result::Signal;
     use archsig::{
         control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
         observed::evaluate::evaluate_observed_bytes,
     };
-    use archsig::result::Signal;
     use std::{cell::Cell, rc::Rc};
     for (usage, expected) in [
         (

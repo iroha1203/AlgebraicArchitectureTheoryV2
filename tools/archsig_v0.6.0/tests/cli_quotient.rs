@@ -191,7 +191,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
-    use std::{cell::Cell,rc::Rc};
+    use std::{cell::Cell, rc::Rc};
     let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
     for case in 0..7 {
         let mode=case%3;

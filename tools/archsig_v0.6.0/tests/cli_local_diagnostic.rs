@@ -3286,7 +3286,7 @@ fn integer_local_stop_retains_completed_contexts_without_publishing_a_system() {
         control::{Checkpoint, Control, Limits, Usage},
         observed::evaluate::evaluate_observed_bytes,
     };
-    use std::{cell::Cell,rc::Rc};
+    use std::{cell::Cell, rc::Rc};
     #[path = "common/three_edge.rs"]
     mod triangle;
     let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)"];
@@ -3500,7 +3500,7 @@ fn integer_local_empty_cover_degree_iteration_observes_budget() {
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
-    use std::{cell::Cell,rc::Rc};
+    use std::{cell::Cell, rc::Rc};
     let dir=integer_local_variant("integer-empty-degree-budget",|s|s
         .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","")
         .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;",""),None);

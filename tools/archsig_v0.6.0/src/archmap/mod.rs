@@ -32,10 +32,10 @@ pub(crate) use schema::nat_value;
 pub mod value;
 
 use crate::canonical::{Json, sha256_digest};
+use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::definition::model::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Details, Issue, Location};
 use crate::json::InputError;
-use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 pub use canonical::model_json;
 pub use model::{

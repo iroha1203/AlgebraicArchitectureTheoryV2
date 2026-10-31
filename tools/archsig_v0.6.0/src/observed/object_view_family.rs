@@ -467,16 +467,16 @@ pub(super) fn evaluate_finite_view(
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        control::{Limits, Usage},
-        input::{InputSources, check_inputs},
-    };
     use super::super::{
         object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
         result::Payload,
     };
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    use crate::{
+        control::{Limits, Usage},
+        input::{InputSources, check_inputs},
+    };
     pub(super) fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }
@@ -710,10 +710,10 @@ mod missing_tests {
 
 #[cfg(test)]
 mod stop_tests {
-    use crate::control::{Limits, Usage};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
     #[test]
     fn fixed_family_and_expression_stops_retain_completed_rows_and_latch_the_probe() {
@@ -925,10 +925,10 @@ mod owner_tests {
 
 #[cfg(test)]
 mod owner_missing_tests {
-    use crate::input::{InputSources, check_inputs};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    use crate::input::{InputSources, check_inputs};
     fn changed(i: &CheckedInputs, map: String) -> Arc<CheckedInputs> {
         Arc::new(
             check_inputs(
@@ -1064,7 +1064,6 @@ mod owner_missing_tests {
 
 #[cfg(test)]
 mod recheck_regression_tests {
-    use crate::control::{Limits, Usage};
     use super::super::{
         object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
         result::Payload,
@@ -1072,6 +1071,7 @@ mod recheck_regression_tests {
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
 
     #[test]
@@ -1294,10 +1294,10 @@ mod empty_list_tests {
 
 #[cfg(test)]
 mod empty_list_composite_tests {
-    use crate::input::{InputSources, check_inputs};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    use crate::input::{InputSources, check_inputs};
     pub(super) fn altered(
         i: &CheckedInputs,
         definitions: Vec<u8>,

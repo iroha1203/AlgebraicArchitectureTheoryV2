@@ -1169,7 +1169,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
-    use std::{cell::Cell,rc::Rc};
+    use std::{cell::Cell, rc::Rc};
     let dir=input("integer-quotient-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
     for mode in 0..3 {
         let seen=Rc::new(Cell::new(0));let count=seen.clone();
@@ -1261,7 +1261,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
-    use std::{cell::Cell,rc::Rc};
+    use std::{cell::Cell, rc::Rc};
     let dir=input("integer-law-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};view combined(s:State):Z=s.x+s.y;law optional same(s:State):s.x=s.x;");
     for mode in 0..3 {
         let armed=Rc::new(Cell::new(false));let seen=Rc::new(Cell::new(false));let active=armed.clone();let stopped=seen.clone();

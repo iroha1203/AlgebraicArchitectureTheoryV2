@@ -23,22 +23,22 @@ use crate::{
     types::Type,
 };
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "local_integer.rs"]
+mod integer;
+#[path = "local_rational.rs"]
+mod rational;
 #[path = "local_compare.rs"]
 mod comparison;
+#[path = "local_rational_finite.rs"]
+mod rational_finite;
+#[path = "local_rational_geometry.rs"]
+mod rational_geometry;
 #[path = "local_finite.rs"]
 mod finite;
 #[path = "local_finite_model.rs"]
 mod finite_model;
 #[path = "local_geometry.rs"]
 pub(super) mod geometry;
-#[path = "local_integer.rs"]
-mod integer;
-#[path = "local_rational.rs"]
-mod rational;
-#[path = "local_rational_finite.rs"]
-mod rational_finite;
-#[path = "local_rational_geometry.rs"]
-mod rational_geometry;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,

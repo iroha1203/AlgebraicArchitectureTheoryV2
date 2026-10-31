@@ -1399,12 +1399,12 @@ fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
 
 #[test]
 fn interruption_during_additional_transport_keeps_the_checked_operation() {
+    use archsig::result::Signal;
     use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
         input::InputSources,
         observed::evaluate_observed_bytes,
     };
-    use archsig::result::Signal;
     for mode in 0..4 {
         let mut control = Control::new(
             Limits {

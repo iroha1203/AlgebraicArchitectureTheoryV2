@@ -4965,8 +4965,8 @@ mod invariant_tests {
 
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {
-        use crate::control::Resource;
         use super::super::request::QuestionKind;
+        use crate::control::Resource;
         use crate::result::Signal;
         let reason = |kind| Reason {
             kind,
