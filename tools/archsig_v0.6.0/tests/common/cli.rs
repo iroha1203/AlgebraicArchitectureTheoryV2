@@ -44,7 +44,8 @@ impl archsig::run::Io for FileIo {
         std::fs::create_dir(path)
     }
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-        std::fs::write(path, bytes)
+        use std::io::Write;
+        std::fs::File::create_new(path)?.write_all(bytes)
     }
     fn flush(&mut self, path: &Path) -> std::io::Result<()> {
         std::fs::File::open(path)?.sync_all()

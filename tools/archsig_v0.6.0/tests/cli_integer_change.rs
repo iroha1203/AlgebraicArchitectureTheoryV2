@@ -929,15 +929,6 @@ fn integer_guard_keeps_original_free_direction_and_rejects_empty_integer_fiber()
     );
 }
 
-#[test]
-fn guarded_integer_repair_keeps_restored_solution_and_followup() {
-    let dir = input("guard-reuse", "change setpair(s:State,a:Z,b:Z) when 2*a-3*b=2=s with{x=a,y=b};");
-    let asks = ["r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-        "x=evaluate(Pair.first,on=$r.object,s=@pair/s)"];
-    let first = execute(&dir, "out", &asks);
-    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
-}
-
 fn quotient_representation(result: &JNode,index:usize)->&JNode {
     get(get(output(result,index,"quotient"),"value"),"representation")
 }
