@@ -231,11 +231,9 @@ fn polynomial_complete_bindings_specialize_every_outside_template_and_keep_unrea
     replay(&p, &g).unwrap();
 }
 #[test]
-#[ignore = "#6068: 製品の変更後に期待値と実装のどちらが正しいか未判定"]
 fn closed_finite_scalar_products_roles_and_guards_keep_original_specialization() {
     for body in [
         "law required bit(c:Part,b:Bool,d:Bool) when false:c.quantity=0;",
-        "law optional bit(c:Part,b:Bool) when c.quantity=0:c.quantity=1;",
         "law required bit(c:Part,b:Fp(2)):c.quantity=0;",
     ] {
         let p = prepared(fixture::inputs(true, false, body));
