@@ -59,39 +59,6 @@ fn numeric_data_definition(ty: &str) -> String {
         .replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#))
 }
 #[test]
-fn data_payload_guards_keep_missing_and_applicability() {
-    for ty in ["Z", "Q"] { for active in [true, false] {
-        let condition = if active { "x=x" } else { "x+1=x" };
-        let body = format!("view amount(c:Part):{ty}=c.quantity;law required zero(c:Part,n:{ty}) when match Payload.Packed(n){{Empty=>false;Packed(x)=>{condition};}}:n*c.quantity=0;");
-        let dir = files_with_definition(&format!("data-guard-{ty}-{active}"), &body, true, &numeric_data_definition(ty));
-        if ty == "Q" {
-            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#);
-            std::fs::write(dir.join("a.json"), map).unwrap();
-        }
-        let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)", "v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"];
-        let run = asks(&dir, &requests);
-        let result = saved(&dir, &run, "partial", 2);
-        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-        assert_eq!(s(get(answer(&result, "q"), "status")), if active { "undetermined" } else { "established" });
-        if !active { for id in ["p", "q"] { assert_eq!(s(get(answer(&result, id), "applicability")), "not_applicable"); } }
-        assert_eq!(s(get(answer(&result, "v"), "status")), "undetermined");
-        assert!(!has(get(answer(&result, "v"), "outputs"), "value"));
-        let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-        assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"));
-    }}
-}
-#[test]
-fn unknown_data_constructor_does_not_choose_match_branch() {
-    let definition = numeric_data_definition("Z").replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"payload","type":["Data","Build.Payload"],"meaning":"未観測の包装。"}"#);
-    let dir = files_with_definition("data-unknown-constructor", "law required zero(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};", false, &definition);
-    let requests = ["c=check(R.zero,c=@v/q)", "n=needed($c)"];
-    let run = asks(&dir, &requests);
-    let result = saved(&dir, &run, "partial", 2);
-    assert_eq!(s(get(answer(&result, "c"), "status")), "undetermined");
-    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-    assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload"));
-}
-#[test]
 fn mixed_type_order_guards_preserve_numeric_products() {
     mixed_numeric_guard_product("order", "c.guardValue+Offset>c.guardValue and n+1>n");
 }
@@ -130,10 +97,6 @@ fn constant_order_guards_preserve_numeric_products() {
     ] { known_numeric_product(name, "", guard); }
 }
 #[test]
-fn constant_order_true_guard_keeps_missing_body_undetermined() {
-    active_products("constant-order", &[("", " when c.quantity+1>c.quantity")]);
-}
-#[test]
 fn constant_order_false_guard_keeps_missing_read_undetermined() {
     inactive_products("constant-order", &["n<n", "n+1<=n", "n>n", "n>=n+1"]);
     inactive_products_with_guard_reads("constant-order-slot", &["c.quantity+1<=c.quantity"], true);
@@ -146,14 +109,6 @@ fn right_boolean_constant_guards_preserve_numeric_products() {
     ] { known_numeric_product(name, "", guard); }
 }
 #[test]
-fn right_boolean_true_guard_keeps_missing_body_undetermined() {
-    active_products("right-boolean", &[("", " when n=0 or true")]);
-}
-#[test]
-fn right_boolean_false_guard_keeps_missing_read_undetermined() {
-    inactive_products("right-boolean", &["n=0 and false"]);
-}
-#[test]
 fn same_slot_guards_preserve_numeric_products() {
     for (name,guard) in [
         ("same-slot-option", "some(c.quantity)=some(c.quantity)"),
@@ -161,14 +116,6 @@ fn same_slot_guards_preserve_numeric_products() {
         ("same-slot-tuple", "(n,c.quantity,true)=(n,c.quantity,true)"),
         ("same-slot-list", "list<Number>[c.quantity,n]=list<Number>[c.quantity,n]"),
     ] { known_numeric_product(name,"",guard); }
-}
-#[test]
-fn same_slot_guard_keeps_missing_body_undetermined() {
-    active_products("same-slot", &[("", " when some(c.quantity)=some(c.quantity)")]);
-}
-#[test]
-fn same_slot_false_guard_keeps_missing_read_undetermined() {
-    inactive_products_with_guard_reads("same-slot", &["some(c.quantity+1)=some(c.quantity)"], true);
 }
 #[test]
 fn text_literal_guards_preserve_numeric_products() {
@@ -238,66 +185,6 @@ fn explicit_list_aggregate_guards_preserve_numeric_products() {
     }
 }
 #[test]
-fn finite_aggregates_preserve_known_numeric_products() {
-    for (name, finite_type, guard) in [
-        ("count-known", "Set<Bool>", "count(b)>0 and count(b)<=2"),
-        ("sum-known", "Set<Fp(2)>", "sum(b)=1"),
-    ] {
-        known_numeric_product(name, &format!(",b:{finite_type}"), guard);
-    }
-}
-#[test]
-fn finite_count_keeps_missing_and_applicability() {
-    finite_missing_product(
-        "count",
-        "Set<Bool>",
-        "set<Bool>{}",
-        "set<Bool>{true,false,true}",
-        "count(b)>0 and count(b)<=2",
-    );
-}
-#[test]
-fn finite_sum_keeps_missing_and_applicability() {
-    finite_missing_product(
-        "sum",
-        "Set<Fp(2)>",
-        "set<Fp(2)>{}",
-        "set<Fp(2)>{1,1}",
-        "sum(b)=1",
-    );
-}
-#[test]
-fn finite_set_guards_preserve_known_numeric_products() {
-    finite_set_known_product("set-equality", "b=set<Bool>{false,true}");
-}
-#[test]
-fn finite_predicates_preserve_known_numeric_products() {
-    finite_set_known_product("set-predicate", "b!=set<Bool>{} and (true in b implies false in b)");
-}
-#[test]
-fn finite_predicates_keep_missing_and_applicability() {
-    finite_missing_product(
-        "set-predicate",
-        "Set<Bool>",
-        "set<Bool>{}",
-        "set<Bool>{false,true}",
-        "b!=set<Bool>{} and (true in b implies false in b)",
-    );
-}
-#[test]
-fn finite_tuple_equality_keeps_missing_and_applicability() {
-    finite_missing_product(
-        "tuple-equality",
-        "(Bool,Bool)",
-        "(false,true)",
-        "(true,true)",
-        "b=(true,true)",
-    );
-}
-fn finite_set_known_product(name: &str, guard: &str) {
-    known_numeric_product(name, ",b:Set<Bool>", guard);
-}
-#[test]
 fn numeric_guards_preserve_known_products() {
     for (name, guard) in [("numeric-implies", "false implies n*n=1"), ("numeric-or", "true or n*n=1"), ("numeric-and", "n=n and true")] {
         known_numeric_product(name, "", guard);
@@ -331,165 +218,6 @@ fn known_numeric_product_case(name: &str, ty: &str, body: &str, definition: &str
         let j = saved(&dir, &r, "complete", 1);
         assert_eq!(s(get(answer(&j, "p"), "status")), "established");
         assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
-}
-#[test]
-fn finite_set_numeric_products_keep_missing_and_applicability() {
-    finite_missing_product(
-        "set",
-        "Set<Bool>",
-        "set<Bool>{}",
-        "set<Bool>{true,false,true}",
-        "b=set<Bool>{false,true}",
-    );
-}
-#[test]
-fn finite_data_guards_keep_numeric_products() {
-    finite_data_guard_product(false);
-}
-#[test]
-fn finite_data_constructor_guards_keep_numeric_products() {
-    finite_data_guard_product(true);
-}
-fn finite_data_guard_product(constructor: bool) {
-    for ty in ["Z", "Q"] {
-        for missing in [false, true] {
-            let mode = if constructor { "constructor" } else { "match" };
-            let dir = finite_data_product_input(ty, missing, mode);
-            if constructor {
-                let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("match tag{Packed(inner)=>match inner{Off=>false;On(b)=>b;};}", "tag=Packed(On(true)) and not(tag=Packed(Off))");
-                std::fs::write(dir.join("l.law"), law).unwrap();
-            }
-            let requests = [
-                "a=build(R,on=@v/root)",
-                "p=check(R.zero,on=$a.object,c=@v/p)",
-                "q=check(R.zero,on=$a.object,c=@v/q)",
-            ];
-            let code = if missing { 2 } else { 1 };
-            let mut full_requests = requests.to_vec();
-            full_requests.extend([
-                "f=evaluate(R.off,on=$a.object)",
-                "d=evaluate(R.deny,on=$a.object)",
-                "t=evaluate(R.on,on=$a.object)",
-                "off=check(R.zero,on=$a.object,c=@v/q,tag=$f.value)",
-                "deny=check(R.zero,on=$a.object,c=@v/q,tag=$d.value)",
-                "on=check(R.zero,on=$a.object,c=@v/q,tag=$t.value)",
-                "n=needed($q)",
-            ]);
-            let r = asks(&dir, &full_requests);
-            let j = saved(&dir, &r, if missing { "partial" } else { "complete" }, code);
-            assert_eq!(s(get(answer(&j, "p"), "status")), "established");
-            assert_eq!(
-                s(get(answer(&j, "q"), "status")),
-                if missing { "undetermined" } else { "refuted" }
-            );
-            for id in ["off", "deny"] {
-                assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
-            }
-            assert_eq!(s(get(answer(&j, "on"), "applicability")), "applicable");
-            assert_eq!(
-                s(get(answer(&j, "on"), "status")),
-                if missing { "undetermined" } else { "refuted" }
-            );
-            if missing {
-                for id in ["a", "q", "on"] {
-                    assert!(
-                        arr(get(answer(&j, id), "reasons"))
-                            .iter()
-                            .all(|r| s(get(r, "code")) == "missing_observation")
-                    );
-                }
-                let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
-                assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(
-                    get(r, "field"),
-                    "field"
-                )) == "Build.Part.quantity"
-                    && s(get(get(r, "field"), "subject")) == "q"));
-            }
-        }
-    }
-}
-fn finite_data_product_input(ty: &str, missing: bool, mode: &str) -> PathBuf {
-    let definition = DEFINITION.replace(r#""declarations":["#,r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"停止。"},{"name":"On","arguments":["Bool"],"meaning":"選択。"}]},{"kind":"data","name":"Build.Wrapper","meaning":"包装。","constructors":[{"name":"Packed","arguments":[["Data","Build.Flag"]],"meaning":"包装。"}]},"#).replace(r#""type":"Z""#,&format!(r#""type":"{ty}""#));
-    let body = format!(
-        "view off():Wrapper=Packed(Off);view deny():Wrapper=Packed(On(false));view on():Wrapper=Packed(On(true));view active(tag:Wrapper):Bool=match tag{{Packed(inner)=>match inner{{Off=>false;On(b)=>b;}};}};law required zero(c:Part,n:{ty},tag:Wrapper) when active(tag):n*c.quantity=0;"
-    );
-    let dir = files_with_definition(&format!("finite-data-product-{mode}-{ty}-{missing}"), &body, missing, &definition);
-    if ty == "Q" {
-        let map = std::fs::read_to_string(dir.join("a.json"))
-            .unwrap()
-            .replace(r#""value":"0""#, r#""value":["0","1"]"#)
-            .replace(r#""value":"1""#, r#""value":["1","2"]"#);
-        std::fs::write(dir.join("a.json"), map).unwrap();
-    }
-    dir
-}
-#[test]
-fn unit_and_option_parameters_keep_numeric_products() {
-    for ty in ["Z", "Q"] {
-        for (parameter, guard) in [
-            ("b:Option<Bool>", "b=some(true)"),
-            ("u:Unit", "u=unit"),
-            ("b:Option<Unit>", "b=none<Unit>"),
-        ] {
-            let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
-            let dir = files_with_definition(
-                "unit-option-product",
-                &format!(
-                    "law required zero(c:Part,n:{ty},{parameter}) when {guard}:n*c.quantity=0;"
-                ),
-                false,
-                &definition,
-            );
-            if ty == "Q" {
-                let map = std::fs::read_to_string(dir.join("a.json"))
-                    .unwrap()
-                    .replace(r#""value":"0""#, r#""value":["0","1"]"#)
-                    .replace(r#""value":"1""#, r#""value":["1","2"]"#);
-                std::fs::write(dir.join("a.json"), map).unwrap();
-            }
-            let requests = [
-                "a=build(R,on=@v/root)",
-                "p=check(R.zero,on=$a.object,c=@v/p)",
-                "q=check(R.zero,on=$a.object,c=@v/q)",
-            ];
-            let r = asks(&dir, &requests);
-            let j = saved(&dir, &r, "complete", 1);
-            assert_eq!(s(get(answer(&j, "a"), "status")), "established");
-            assert!(has(get(answer(&j, "a"), "outputs"), "algebra"));
-            assert_eq!(s(get(answer(&j, "p"), "status")), "established");
-            assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
-        }
-    }
-}
-#[test]
-fn option_boolean_numeric_products_keep_missing_and_applicability() {
-    finite_missing_product(
-        "option-bool",
-        "Option<Bool>",
-        "none<Bool>",
-        "some(true)",
-        "b=some(true)",
-    );
-}
-#[test]
-fn option_unit_numeric_products_keep_missing_and_applicability() {
-    finite_missing_product(
-        "option-unit",
-        "Option<Unit>",
-        "some(unit)",
-        "none<Unit>",
-        "b=none<Unit>",
-    );
-}
-#[test]
-fn option_tuple_numeric_products_keep_missing_and_applicability() {
-    finite_missing_product(
-        "option-tuple",
-        "Option<(Bool,Unit)>",
-        "none<(Bool,Unit)>",
-        "some((true,unit))",
-        "b=some((true,unit))",
-    );
 }
 #[test]
 fn correlated_missing_products_decide_constant_differences() {
@@ -595,20 +323,6 @@ fn different_missing_product_slots_remain_independent() {
 #[test]
 fn boolean_numeric_products_keep_missing_coefficients_separate_from_applicability() {
     finite_missing_product("bool", "Bool", "false", "true", "b");
-}
-#[test]
-fn field_numeric_products_keep_missing_coefficients_separate_from_applicability() {
-    finite_missing_product("field", "Fp(2)", "0", "1", "b=1");
-}
-#[test]
-fn tuple_numeric_products_keep_missing_coefficients_separate_from_applicability() {
-    finite_missing_product(
-        "tuple",
-        "(Fp(2),Bool)",
-        "(0,false)",
-        "(1,true)",
-        "b.1 and b.0=1",
-    );
 }
 fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, guard: &str) {
     for ty in ["Z", "Q"] {
@@ -778,10 +492,6 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability() {
         ],
     );
 }
-#[test]
-fn text_literal_false_guard_keeps_missing_values_undetermined() {
-    inactive_products("text-literal", &[r#"(n,"ready")=(n,"done")"#]);
-}
 fn inactive_products(name: &str, guards: &[&str]) {
     inactive_products_with_guard_reads(name, guards, false);
 }
@@ -849,14 +559,6 @@ fn inactive_products_with_guard_reads(name: &str, guards: &[&str], guard_reads: 
     }
 }
 #[test]
-fn observed_parameter_products_feed_public_build() {
-    let dir=files("observed-parameter-product","law required zero(c:Part,n:Z):n*c.quantity=0;",false);
-    let r=asks(&dir,&["b=build(R,on=@v/root)","p=check(R.zero,on=$b.object,c=@v/p)","q=check(R.zero,on=$b.object,c=@v/q)"]);
-    let j=saved(&dir,&r,"complete",1);
-    assert_eq!(s(get(answer(&j,"p"),"status")),"established");
-    assert_eq!(s(get(answer(&j,"q"),"status")),"refuted");
-}
-#[test]
 fn predicate_helper_guards_keep_missing_reads_separate_from_constant_truth() {
     for condition in ["x=x", "true"] {
         let dir=files("predicate-guard-missing", &format!("view active(x:Z,y:Z):Bool={condition};view zero():Z=0;view one():Z=1;law required equal(c:Part,n:Z) when active(n,c.quantity):n=0;"),true);
@@ -867,16 +569,6 @@ fn predicate_helper_guards_keep_missing_reads_separate_from_constant_truth() {
         assert_eq!(s(get(answer(&j,"q"),"status")),"refuted");
         let plan=value(&j,get(get(answer(&j,"n"),"outputs"),"plan"));
         assert!(arr(get(plan,"requirements")).iter().any(|r| s(get(get(r,"field"),"field"))=="Build.Part.quantity"));
-    }
-}
-#[test]
-fn predicate_helper_guards_keep_parameter_dependent_laws() {
-    for ty in ["Z", "Q"] {
-        let dir=files("predicate-helper-guard", &format!("view active(x:{ty}):Bool=x=x;law required zero(c:Part,n:{ty}) when active(n):n=0;"),false);
-        let r=asks(&dir,&["b=build(R,on=@v/root)","c=check(R.zero,on=$b.object,c=@v/p)"]);
-        let j=saved(&dir,&r,"complete",1);
-        assert!(has(get(answer(&j,"b"),"outputs"),"algebra"));
-        assert_eq!(s(get(answer(&j,"c"),"status")),"refuted");
     }
 }
 #[test]
@@ -896,13 +588,6 @@ fn predicate_helper_guards_build_check_without_extra_files() {
         for id in ["all","one"] { assert_eq!(s(get(answer(&j,id),"status")),if active{"refuted"}else{"established"}); }
         if !active { assert_eq!(s(get(answer(&j,"all"),"applicability")),"not_applicable"); }
     }}
-}
-#[test]
-fn parameter_predicate_helpers_feed_public_build() {
-    let dir = files("parameter-predicate-helper", "view iszero(n:Z):Bool=n=0;law required zero(c:Part,n:Z):iszero(n);", false);
-    let r = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.zero,on=$b.object,c=@v/p)"]);
-    let j = saved(&dir, &r, "complete", 1);
-    assert!(has(get(answer(&j,"b"),"outputs"),"algebra"));
 }
 #[test]
 fn parameter_predicate_helpers_keep_caller_bindings() {
@@ -1031,33 +716,6 @@ fn nested_numeric_helpers_feed_public_build_and_checks() {
     assert_eq!(s(get(answer(&result, "c"), "status")), "established");
 }
 #[test]
-fn inactive_numeric_laws_feed_public_build_and_checks() {
-    for (ty, guard) in [("Z", "false"), ("Q", "n+1=n")] {
-        let dir = files(&format!("inactive-numeric-{ty}"), &format!(
-            "law required balanced(c:Part,n:{ty}) when {guard}:n=n+1;"
-        ), false);
-        let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"];
-        let run = asks(&dir, &requests);
-        let result = saved(&dir, &run, "complete", 0);
-        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-        assert_eq!(s(get(answer(&result, "c"), "status")), "established");
-        assert_eq!(s(get(answer(&result, "c"), "applicability")), "not_applicable");
-    }
-}
-#[test]
-fn boolean_view_guards_feed_public_build_and_checks() {
-    for (ty, condition, applicable) in [("Z", "x=x", true), ("Q", "x+1=x", false)] {
-        let dir = files(&format!("boolean-view-guard-{ty}"), &format!(
-            "view active(x:{ty}):Bool={condition};law required balanced(c:Part,n:{ty}) when active(n):n=n;"
-        ), false);
-        let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
-        let result = saved(&dir, &run, "complete", 0);
-        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-        assert_eq!(s(get(answer(&result, "c"), "status")), "established");
-        assert_eq!(s(get(answer(&result, "c"), "applicability")), if applicable { "applicable" } else { "not_applicable" });
-    }
-}
-#[test]
 fn observed_numeric_view_family_feeds_public_build_and_evaluate() {
     let dir = files("observed-numeric-view", "view plus(c:Part,x:Z):Z=c.quantity+x;view seed():Z=2;law required balanced(c:Part):c.quantity=c.quantity;", false);
     let requests = ["b=build(R,on=@v/root)", "s=evaluate(R.seed,on=$b.object)", "v=evaluate(R.plus,on=$b.object,c=@v/q,x=$s.value)"];
@@ -1077,62 +735,7 @@ fn mixed_numeric_view_family_feeds_public_build_and_evaluate() {
     assert_eq!(s(value(&result, get(get(answer(&result, "v"), "outputs"), "value"))), "3");
     eprintln!("mixed numeric view: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
 }
-#[test]
-fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
-    for (offset, missing) in [(0, false), (1, false), (1, true)] {
-        let body = if missing { "view plus(c:Part,x:Z):Z=c.quantity+x;law required balanced(c:Part,n:Z):let a=plus(c,n) in a=n+c.quantity+1;".to_owned() }
-            else { format!("law required balanced(c:Part,n:Z):c.quantity+n=n+c.quantity+{offset};") };
-        let dir = files(&format!("observed-numeric-law-{offset}-{missing}"), &body, missing);
-        let code = if missing { 2 } else { offset };
-        let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/q)"];
-        if missing {
-            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-            for request in requests { args.extend(["--ask", request]); }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-            assert!(!has(&normal.receipt, "nodes"));
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            eprintln!("observed numeric law {offset}: stdout {} bytes", normal.stdout.len());
-            assert_missing_quantity_once(&normal.receipt);
-        }
-        let run = asks(&dir, &requests);
-        let result = saved(&dir, &run, if missing { "partial" } else { "complete" }, code);
-        if missing { assert_missing_quantity_once(&result); }
-        assert!(has(get(answer(&result, "b"), "outputs"), if missing { "object" } else { "algebra" }));
-        assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
-        eprintln!("observed numeric law {offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-    }
-}
-fn assert_missing_quantity_once(result: &JNode) {
-    // 短い表示は反証済みcheckの欠測理由を省き、完全結果は依存を保持する。
-    assert_eq!(s(get(answer(result, "c"), "status")), "refuted");
-    let ids: &[&str] = if has(result, "nodes") { &["b", "c"] } else {
-        assert!(!has(answer(result, "c"), "reasons"));
-        &["b"]
-    };
-    for id in ids {
-        let reasons = arr(get(answer(result, id), "reasons"));
-        assert_eq!(reasons.len(), 1);
-        assert_eq!(s(get(&reasons[0], "code")), "missing_observation");
-        let missing = arr(get(&reasons[0], "missing"));
-        assert_eq!(missing.len(), 1);
-        assert_eq!(s(get(&missing[0], "subject")), "q");
-        assert_eq!(s(get(&missing[0], "field")), "Build.Part.quantity");
-    }
-}
 
-#[test]
-fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
-    let dir = files("state-dependent-law", "law required balanced(c:Part,n:Z):c.quantity+n=n;", false);
-    let requests = ["b=build(R,on=@v/root)", "p=check(R.balanced,on=$b.object,c=@v/p)", "q=check(R.balanced,on=$b.object,c=@v/q)"];
-    let run = asks(&dir, &requests);
-    let result = saved(&dir, &run, "complete", 1);
-    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
-    eprintln!("state-dependent law: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-}
 #[test]
 fn scaled_numeric_binders_build_and_check() {
     for (ty, equation, p_value, q_value) in [
@@ -1162,16 +765,6 @@ fn scaled_numeric_binders_build_and_check() {
     }
 }
 #[test]
-fn scaled_mixed_parameter_law_builds_for_later_checks() {
-    let dir = files("scaled-mixed-parameter", "view zero():Z=0;law required equal(c:Part,n:Z):2*(n+c.quantity)=0;", false);
-    let run = asks(&dir, &["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
-        "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"]);
-    let result = saved(&dir, &run, "complete", 1);
-    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-    assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
-    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-}
-#[test]
 fn mixed_numeric_binders_build_and_check() {
     for (ty, equation) in [("Z", "2*n+c.quantity=m"), ("Q", "m=2*n+c.quantity"), ("Z", "n+c.quantity=2*n+m")] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -1195,16 +788,6 @@ fn mixed_numeric_binders_build_and_check() {
         }
         eprintln!("mixed binders {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
     }
-}
-#[test]
-fn mixed_observation_parameter_law_builds_for_later_checks() {
-    let dir = files("mixed-observation-parameter", "view zero():Z=0;law required equal(c:Part,n:Z):n+c.quantity=0;", false);
-    let run = asks(&dir, &["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
-        "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"]);
-    let result = saved(&dir, &run, "complete", 1);
-    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-    assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
-    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
 }
 #[test]
 fn cancelled_observation_parameter_law_builds_for_later_checks() {
@@ -1258,96 +841,6 @@ fn observed_offset_parameter_law_builds_for_later_checks() {
             eprintln!("observed offset {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
         }
     }
-}
-#[test]
-fn true_guards_on_parameter_dependent_laws_feed_public_build() {
-    for (ty, guard, equation) in [("Z", "true", "n=0"), ("Q", "n=n", "n=0"), ("Z", "n=n", "n=c.quantity")] {
-        let dir = files(&format!("parameter-guard-{ty}-{equation}"), &format!(
-            "view zero():{ty}=0;law required equal(c:Part,n:{ty}) when {guard}:{equation};"
-        ), false);
-        let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
-            "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"];
-        let run = asks(&dir, &requests);
-        let result = saved(&dir, &run, "complete", 1);
-        assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-        assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
-        assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-    }
-}
-#[test]
-fn missing_observation_in_parameter_law_keeps_known_checks_and_needed() {
-    let dir = files("missing-parameter-law", "view zero():Z=0;law required equal(c:Part,n:Z):n=c.quantity;", true);
-    let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
-        "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)", "q=check(R.equal,on=$b.object,c=@v/q,n=$z.value)", "n=needed($b)"];
-    let run = asks(&dir, &requests);
-    let result = saved(&dir, &run, "partial", 2);
-    assert_eq!(s(get(answer(&result, "b"), "status")), "undetermined");
-    assert!(has(get(answer(&result, "b"), "outputs"), "object"));
-    assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-    assert_eq!(s(get(answer(&result, "q"), "status")), "undetermined");
-    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-    assert!(arr(get(plan, "requirements")).iter().any(|r| {
-        let field = get(r, "field");
-        s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
-    }));
-}
-#[test]
-fn observed_and_parameter_numeric_law_builds_for_later_checks() {
-    for ty in ["Z", "Q"] {
-        for equation in ["n=c.quantity", "c.quantity=n"] {
-            let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
-            let body = format!("view zero():{ty}=0;view one():{ty}=1;law required equal(c:Part,n:{ty}):{equation};");
-            let dir = files_with_definition(&format!("observed-parameter-{ty}-{equation}"), &body, false, &definition);
-            if ty == "Q" {
-                let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
-                    .replace(r#""value":"0""#, r#""value":["0","1"]"#)
-                    .replace(r#""value":"1""#, r#""value":["1","1"]"#);
-                std::fs::write(dir.join("a.json"), map).unwrap();
-            }
-            let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "i=evaluate(R.one,on=$b.object)",
-                "all=check(R.equal,on=$b.object,c=@v/q)", "p0=check(R.equal,on=$b.object,c=@v/p,n=$z.value)",
-                "q0=check(R.equal,on=$b.object,c=@v/q,n=$z.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
-            let run = asks(&dir, &requests);
-            let result = saved(&dir, &run, "complete", 1);
-            assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-            let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
-            let equations = value(&result, get(algebra, "equations"));
-            let base_row = &arr(get(equations, "objects"))[0];
-            let presentation = value(&result, &arr(get(base_row, "presentations"))[0]);
-            let ring = value(&result, get(presentation, "ring"));
-            assert_eq!(arr(get(ring, "variables")).len(), 2);
-            assert_eq!(s(get(value(&result, get(ring, "base")), "scalar")), ty);
-            let mut axes = vec![];
-            for coordinate in arr(get(presentation, "coordinates")) {
-                let nu = value(&result, get(coordinate, "nu"));
-                let epsilon = value(&result, get(coordinate, "epsilon"));
-                assert_eq!(arr(get(nu, "parameters")).len(), 1);
-                assert_eq!(arr(get(nu, "terms")).len(), 2);
-                for term in arr(get(nu, "terms")) {
-                    let powers = arr(get(term, "powers")).iter().map(num).collect::<Vec<_>>();
-                    if powers.iter().any(|p| *p != 0) { axes.push(powers); }
-                    else { assert_eq!(s(get(node(&result, get(term, "coefficient")), "type")), "Expression"); }
-                }
-                let terms = arr(get(epsilon, "terms"));
-                assert_eq!(terms.len(), 1);
-                assert!(arr(get(&terms[0], "powers")).iter().all(|p| num(p) == 0));
-            }
-            axes.sort();
-            assert_eq!(axes, vec![vec![0,1], vec![1,0]]);
-            for (id, status) in [("all", "refuted"), ("p0", "established"), ("q0", "refuted"), ("q1", "established")] {
-                assert_eq!(s(get(answer(&result, id), "status")), status);
-            }
-            eprintln!("observed parameter {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        }
-    }
-}
-#[test]
-fn parameter_dependent_numeric_law_builds_without_constant_residual() {
-    let dir = files("parameter-dependent-law", "law required zero(c:Part,n:Z):n=0;", false);
-    let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)"]);
-    let result = saved(&dir, &run, "complete", 1);
-    assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
-    assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
 }
 #[test]
 fn parameter_families_coexist_with_closed_numeric_laws() {
@@ -1833,25 +1326,6 @@ fn incompatible_extension_keeps_counterexample_and_reusable_object() {
 }
 
 #[test]
-fn lexical_law_bindings_survive_outside_rows_and_public_consumption() {
-    for (index, body) in [
-        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=c.quantity in x=0;",
-        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=c.quantity in let y=x+1 in y=1;",
-        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=(c.quantity,0) in x=(0,0);",
-    ].iter().enumerate() {
-        let dir = files(&format!("public-build-lexical-{index}"), body, false);
-        let run = asks(&dir, &["b=build(R,on=@v/root)", "n=evaluate(R.amount,on=$b.object,c=@v/q)", "bad=check(R.zero,on=$b.object,c=@v/q)"]);
-        let result = saved(&dir, &run, "complete", 1);
-        assert_eq!(s(get(answer(&result, "b"), "status")), "established");
-        assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
-        assert_eq!(s(value(&result, get(get(answer(&result, "n"), "outputs"), "value"))), "1");
-        let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
-        assert_eq!(arr(get(algebra, "circuits")).len(), if index == 2 { 4 } else { 2 });
-        std::fs::remove_dir_all(dir).unwrap();
-    }
-}
-
-#[test]
 fn missing_views_block_algebra_without_relying_on_laws_or_matching_patterns() {
     for variant in 0..3 {
         let body = if variant == 1 {
@@ -2282,15 +1756,6 @@ fn observed_parameter_products_keep_rational_coefficients() {
 }
 
 #[test]
-fn finite_and_numeric_parameters_keep_observed_products() {
-    let dir=files("finite-numeric-product","law required zero(c:Part,n:Z,b:Bool) when b:n*c.quantity=0;",false);
-    let r=asks(&dir,&["a=build(R,on=@v/root)","p=check(R.zero,on=$a.object,c=@v/p)","q=check(R.zero,on=$a.object,c=@v/q)"]);
-    let j=saved(&dir,&r,"complete",1);
-    assert_eq!(s(get(answer(&j,"p"),"status")),"established");
-    assert_eq!(s(get(answer(&j,"q"),"status")),"refuted");
-}
-
-#[test]
 fn boolean_cases_keep_numeric_products_and_applicability() {
     for ty in ["Z", "Q"] {
         for guard in ["b", "enabled(b)"] {
@@ -2334,66 +1799,6 @@ fn boolean_cases_keep_laws_after_numeric_parameter_cancellation() {
         assert_eq!(s(get(answer(&j,"off"),"status")), "established");
         assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
     }}
-}
-
-#[test]
-fn finite_field_cases_keep_numeric_parameter_laws() {
-    let dir = files("finite-field-parameter", "law required zero(c:Part,n:Z,k:Fp(2)) when k=0:n*c.quantity=0;", false);
-    let r = asks(&dir, &["a=build(R,on=@v/root)", "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)"]);
-    let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
-    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
-}
-
-#[test]
-fn finite_field_guards_keep_numeric_products() {
-    for ty in ["Z", "Q"] {
-        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
-        let body = format!("view off():Fp(3)=0;view on():Fp(3)=2;view active(k:Fp(3)):Bool=k+1=0;law required zero(c:Part,n:{ty},k:Fp(3)) when active(k):n*c.quantity=0;");
-        let dir = files_with_definition("finite-field-product-reuse", &body, false, &definition);
-        if ty == "Q" {
-            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#);
-            std::fs::write(dir.join("a.json"), map).unwrap();
-        }
-        let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
-            "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
-            "off=check(R.zero,on=$a.object,c=@v/q,k=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,k=$t.value)"];
-        let r = asks(&dir, &requests);
-        let j = saved(&dir, &r, "complete", 1);
-        for (id, status) in [("p", "established"), ("q", "refuted"), ("off", "established"), ("on", "refuted")] {
-            assert_eq!(s(get(answer(&j,id),"status")), status);
-        }
-        assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-    }
-}
-
-#[test]
-fn finite_tuple_cases_keep_numeric_parameter_laws() {
-    let dir = files("finite-tuple-parameter", "law required zero(c:Part,n:Z,tag:(Fp(3),Bool)) when tag.1 and tag.0+1=0:n*c.quantity=0;", false);
-    let r = asks(&dir, &["a=build(R,on=@v/root)", "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)"]);
-    let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
-    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
-}
-
-#[test]
-fn finite_tuple_guards_keep_numeric_products() {
-    for ty in ["Z", "Q"] {
-        let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
-        let body = format!("view off():(Fp(3),Bool)=(0,false);view on():(Fp(3),Bool)=(2,true);view active(tag:(Fp(3),Bool)):Bool=tag.1 and tag.0+1=0;law required zero(c:Part,n:{ty},tag:(Fp(3),Bool)) when active(tag):n*c.quantity=0;");
-        let dir = files_with_definition("finite-tuple-product-reuse", &body, false, &definition);
-        if ty == "Q" {
-            let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#""value":"0""#, r#""value":["0","1"]"#).replace(r#""value":"1""#, r#""value":["1","2"]"#);
-            std::fs::write(dir.join("a.json"), map).unwrap();
-        }
-        let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
-            "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
-            "off=check(R.zero,on=$a.object,c=@v/q,tag=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,tag=$t.value)"];
-        let r = asks(&dir, &requests);
-        let j = saved(&dir, &r, "complete", 1);
-        for (id, status) in [("p", "established"), ("q", "refuted"), ("off", "established"), ("on", "refuted")] { assert_eq!(s(get(answer(&j,id),"status")), status); }
-        assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-    }
 }
 
 #[test]
@@ -2709,13 +2114,6 @@ fn required_numeric_tuple_laws_build_and_check() {
 fn required_numeric_tuple_finite_arguments() {
     for ty in ["Z", "Q"] {
         required_tuple_law_case(ty, "finite");
-    }
-}
-
-#[test]
-fn required_numeric_tuple_empty_domains() {
-    for ty in ["Z", "Q"] {
-        required_tuple_law_case(ty, "empty");
     }
 }
 

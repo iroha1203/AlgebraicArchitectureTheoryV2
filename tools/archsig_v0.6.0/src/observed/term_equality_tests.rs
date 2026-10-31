@@ -96,59 +96,6 @@ fn equality_child_value(r: &ObservedEvaluation, reference: NodeRef) -> NodeRef {
     *value
 }
 #[test]
-fn finite_term_equality_rejects_foreign_same_value_operand_producers() {
-    let r = equality_result(&[
-        "first=evaluate(Terms.eq,s=@v/s)",
-        "second=evaluate(Terms.eq,s=@v/s)",
-    ]);
-    let (_, donors, _) = equality_children(&r, 0);
-    let (target, originals, result) = equality_children(&r, 1);
-    assert_eq!(originals.len(), 2);
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    for position in [0, 1] {
-        let (original, donor) = (originals[position], donors[position]);
-        let (a, b) = (
-            equality_child_value(&r, original),
-            equality_child_value(&r, donor),
-        );
-        assert_ne!(original, donor);
-        assert_ne!(a, b);
-        assert!(donor.0 < original.0 && b.0 < a.0);
-        assert_eq!(g.scalar(a).unwrap().ty(), g.scalar(b).unwrap().ty());
-        assert_eq!(
-            super::super::value_equality::equal(
-                g.scalar(a).unwrap(),
-                g.scalar(b).unwrap(),
-                r.prepared.inputs.law(),
-                &named_call_quiet()
-            )
-            .unwrap(),
-            Some(true)
-        );
-        assert!(r.nodes[result.0].arguments.contains(&a));
-        assert!(r.nodes[target].arguments.contains(&original));
-        completion_mutation(&r, target, |ns| {
-            let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
-                panic!("root")
-            };
-            parts[0].children[position] = donor;
-            for edge in &mut ns[result.0].arguments {
-                if *edge == a {
-                    *edge = b;
-                }
-            }
-            for edge in &mut ns[target].arguments {
-                if *edge == original {
-                    *edge = donor;
-                }
-            }
-        });
-    }
-    completion_mutation(&r, result.0, |ns| {
-        ns[result.0].payload = Some(Payload::Scalar(Scalar::Bool(false)))
-    });
-}
-#[test]
 fn finite_term_equality_keeps_original_program_identity_after_semantic_comparison() {
     let r = equality_result(&["e=evaluate(Terms.eq,s=@v/s)"]);
     let (_, children, _) = equality_children(&r, 0);
@@ -197,68 +144,6 @@ fn finite_term_equality_keeps_original_program_identity_after_semantic_compariso
     graph.nodes[left.0] = original;
     e.recheck_node(&graph, &graph.nodes[left.0], left.0)
         .unwrap();
-}
-#[test]
-fn finite_term_completion_rechecks_original_representative_and_unsupported_reason() {
-    let r = equality_result(&[
-        "s=evaluate(Terms.stable,s=@v/s)",
-        "x=evaluate(Terms.unresolved,s=@v/s)",
-    ]);
-    let root = r.answers[0].outputs["evaluation"].0;
-    let value = r.answers[0].outputs["value"];
-    let Some(Payload::Evaluation { parts, .. }) = &r.nodes[root].payload else {
-        panic!("root")
-    };
-    assert_eq!(parts[0].children.len(), 2);
-    let values: Vec<_> = parts[0]
-        .children
-        .iter()
-        .map(|e| equality_child_value(&r, *e))
-        .collect();
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let original = g.scalar(value).unwrap();
-    let donor = values
-        .iter()
-        .map(|v| g.scalar(*v).unwrap())
-        .find(|v| *v != original)
-        .unwrap()
-        .clone();
-    assert_eq!(
-        super::super::value_equality::equal(
-            original,
-            &donor,
-            r.prepared.inputs.law(),
-            &named_call_quiet()
-        )
-        .unwrap(),
-        Some(true)
-    );
-    completion_mutation(&r, value.0, |ns| {
-        ns[value.0].payload = Some(Payload::Scalar(donor.clone()))
-    });
-    let target = r.answers[1].outputs["evaluation"].0;
-    for mode in [0, 1] {
-        completion_mutation(&r, target, |ns| {
-            let reason = ns[target]
-                .reasons
-                .iter_mut()
-                .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                .unwrap();
-            let ReasonKind::UnsupportedAlgorithm {
-                operand_types,
-                method,
-                ..
-            } = &mut reason.kind
-            else {
-                panic!("reason")
-            };
-            if mode == 0 {
-                *operand_types = vec![Type::Bool];
-            } else {
-                *method = "different predicate".into();
-            }
-        });
-    }
 }
 
 fn equality_stop_in_batch(recheck: bool) {

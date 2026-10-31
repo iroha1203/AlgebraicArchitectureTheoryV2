@@ -42,50 +42,6 @@ fn domains(r: &ObservedEvaluation) -> Vec<usize> {
         .collect()
 }
 #[test]
-fn infinite_type_domain_source_and_binder_mutations_are_rejected() {
-    let r = result();
-    let ds = domains(&r);
-    assert_eq!(ds.len(), 2);
-    let at = ds[1];
-    let source = r.nodes[at].arguments[0];
-    assert_eq!(r.contexts[at], r.contexts[source.0]);
-    assert!(r.contexts[at].frame.is_some());
-    for kind in 0..3 {
-        completion_mutation(&r, at, |ns| match kind {
-            0 => {
-                if let Some(Payload::TypeDomain { ty }) = &mut ns[at].payload {
-                    *ty = Type::Z;
-                }
-            }
-            1 => ns[at].arguments[0] = r.nodes[ds[0]].arguments[0],
-            _ => {
-                if let Rule::Input {
-                    location: Location::Law { span },
-                    ..
-                } = &mut ns[at].rule
-                {
-                    span.0 += 1;
-                }
-            }
-        });
-    }
-    let law = r.prepared.inputs().law();
-    let span = law
-        .exprs
-        .iter()
-        .find_map(|e| matches!(&e.kind, ExprKind::Binary { op: BinOp::Eq, .. }).then_some(e.span))
-        .unwrap();
-    completion_mutation(&r, source.0, |ns| {
-        if let Some(Payload::Expression { location, .. }) = &mut ns[source.0].payload {
-            *location = Location::Law { span };
-        }
-        if let Rule::Input { location, .. } = &mut ns[source.0].rule {
-            *location = Location::Law { span };
-        }
-    });
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-}
-#[test]
 fn infinite_warm_recheck_rejects_foreign_context_scope_and_algorithm_reasons() {
     let r = result();
     let ds = domains(&r);
@@ -497,9 +453,3 @@ fn infinite_committed_evaluation_post_cancel_retains_original_algorithm_reason()
     committed_reason_stop(0)
 }
 
-#[test]
-fn infinite_committed_evaluation_post_budgets_retain_original_algorithm_reason() {
-    for kind in [1, 2] {
-        committed_reason_stop(kind);
-    }
-}

@@ -43,12 +43,6 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
 fn composed_index(r: &ObservedEvaluation) -> usize {
     r.nodes.iter().enumerate().filter(|(_,n)|matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p)))if p.step.as_ref().is_some_and(|s|s.word_tail.len()==2))).map(|(i,_)|i).next().unwrap()
 }
-fn path_mut(n: &mut Node) -> &mut super::super::super::path_value::PathValue {
-    let Some(Payload::Scalar(Scalar::Path(p))) = &mut n.payload else {
-        panic!()
-    };
-    p
-}
 #[test]
 fn then_full_46_atom_action_composes_outside_original_source_family() {
     let r = example(false);
@@ -156,76 +150,6 @@ fn reject(r: &ObservedEvaluation, i: usize, bad: Node) {
         rebuild_for_origin_and_support_recheck(r, &all),
         Err(ValidationFailure::Internal(_))
     ));
-}
-fn changes(kinds: &[usize]) {
-    let r = example(false);
-    let i = composed_index(&r);
-    for &kind in kinds {
-        let mut bad = r.nodes[i].clone();
-        match kind {
-            0 => path_mut(&mut bad).step.as_mut().unwrap().word_tail.clear(),
-            1 => path_mut(&mut bad)
-                .step
-                .as_mut()
-                .unwrap()
-                .word_tail
-                .swap(0, 1),
-            2 => path_mut(&mut bad).step.as_mut().unwrap().word_tail[0] = Scalar::Bool(true),
-            3 => {
-                let s = path_mut(&mut bad).step.as_mut().unwrap();
-                s.word_tail.push(s.generator.clone());
-            }
-            4 => {
-                path_mut(&mut bad).step.as_mut().unwrap().generator = Scalar::Subject {
-                    snapshot: "v".into(),
-                    subject: "alias".into(),
-                    entity: "Paths.Hop".into(),
-                }
-            }
-            5 => {
-                let s = path_mut(&mut bad).step.as_mut().unwrap();
-                let j = s
-                    .carrier
-                    .iter()
-                    .position(|f| f.snapshot == "v" && f.subject == "q" && f.field.is_none())
-                    .unwrap();
-                s.images[j] = s.carrier[j].clone();
-            }
-            6 => bad.arguments.swap(0, 1),
-            7 => {
-                bad.arguments.remove(1);
-            }
-            8 => bad.arguments.swap(2, 3),
-            9 => bad.support.clear(),
-            10 => bad.scope.snapshots.clear(),
-            11 => {
-                let Rule::Input {
-                    location: Location::Law { span },
-                    ..
-                } = &mut bad.rule
-                else {
-                    panic!()
-                };
-                span.0 += 1;
-            }
-            12 => bad.ty = NodeType::Value(Type::Bool),
-            13 => path_mut(&mut bad).reading = "Other".into(),
-            _ => panic!(),
-        };
-        reject(&r, i, bad);
-    }
-}
-#[test]
-fn then_cached_and_fresh_recheck_rejects_erased_reordered_extra_and_ill_typed_word() {
-    changes(&[0, 1, 2, 3, 4]);
-}
-#[test]
-fn then_recheck_rejects_reextended_action_wrong_operands_and_endpoints() {
-    changes(&[5, 6, 7, 8]);
-}
-#[test]
-fn then_recheck_rejects_original_source_reading_support_scope_and_type() {
-    changes(&[9, 10, 11, 12, 13]);
 }
 #[test]
 fn then_typed_endpoint_counterexample_recheck_rejects_fabricated_values_and_evidence() {

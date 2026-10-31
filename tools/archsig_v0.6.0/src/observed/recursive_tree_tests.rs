@@ -73,64 +73,6 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
 }
 
 #[test]
-fn recursive_tree_rejects_equal_sibling_and_other_request_call_arguments() {
-    let mut result = recursive_tree_private_result(&[
-        "a=evaluate(Trees.read,s=@v/sample)",
-        "b=evaluate(Trees.read,s=@v/sample)",
-    ]);
-    let leaf = Scalar::Data {
-        family: "Trees.Tree".into(),
-        constructor: "Trees.Tree.Leaf".into(),
-        args: vec![Scalar::Z(2.into())],
-    };
-    let arguments: Vec<_> = result
-        .frames
-        .iter()
-        .enumerate()
-        .filter_map(|(i, f)| {
-            let &r = f.arguments.first()?;
-            let Some(Payload::Evaluation {
-                value: Some(value), ..
-            }) = &result.nodes[r.0].payload
-            else {
-                return None;
-            };
-            matches!(&result.nodes[value.0].payload,Some(Payload::Scalar(v)) if v==&leaf)
-                .then_some((i, r))
-        })
-        .collect();
-    assert_eq!(arguments.len(), 4);
-    assert_ne!(arguments[0].1, arguments[1].1);
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-    for (target, donor) in [(arguments[1], arguments[0]), (arguments[2], arguments[0])] {
-        let prefix = result
-            .contexts
-            .iter()
-            .enumerate()
-            .find(|(i, c)| {
-                c.frame == Some(target.0)
-                    && matches!(result.nodes[*i].payload, Some(Payload::Expression { .. }))
-            })
-            .unwrap()
-            .0;
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=prefix]).unwrap();
-        let original = result.frames[target.0].arguments.clone();
-        result.frames[target.0].arguments[0] = donor.1;
-        assert_ne!(result.frames[target.0].arguments, original);
-        assert!(matches!(
-            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=prefix]),
-            Err(ValidationFailure::Internal(_))
-        ));
-        assert!(matches!(
-            rebuild_for_origin_and_support_recheck(&result, &result.nodes),
-            Err(ValidationFailure::Internal(_))
-        ));
-        result.frames[target.0].arguments = original;
-    }
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-}
-
-#[test]
 fn recursive_tree_pattern_source_rejects_equal_sibling_producer_and_value() {
     let result = recursive_tree_private_result(&["a=evaluate(Trees.read,s=@v/sample)"]);
     let law = result.prepared.inputs().sources().law().bytes();

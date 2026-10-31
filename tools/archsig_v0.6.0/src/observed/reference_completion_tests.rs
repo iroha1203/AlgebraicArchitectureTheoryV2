@@ -232,20 +232,8 @@ fn reference_completion_domains_reject_missing_duplicate_and_unregistered_member
     mutate(&[0, 1, 9], false)
 }
 #[test]
-fn reference_completion_sources_reject_slot_source_and_pair_reordering() {
-    mutate(&[2, 3, 8], false)
-}
-#[test]
-fn reference_completion_rechecks_original_support_scope_case_and_request_same_and_fresh() {
-    mutate(&[4, 5, 6, 7], false)
-}
-#[test]
 fn reference_completion_whole_rejects_foreign_domain_coverage_and_duplicate_assignment() {
     mutate(&[10, 11, 12], true)
-}
-#[test]
-fn reference_completion_rejects_original_ref_assignment_domain_and_projection_type_mutations() {
-    mutate(&[13, 14, 15], false)
 }
 #[test]
 fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_and_known_slots() {

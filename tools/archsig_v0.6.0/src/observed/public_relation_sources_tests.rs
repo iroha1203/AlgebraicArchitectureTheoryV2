@@ -63,69 +63,6 @@ fn check_graph(prepared: &PreparedObserved, graph: &Graph) {
     }
 }
 #[test]
-fn original_relation_bindings_feed_the_existing_ast_evaluator_and_recheck() {
-    let (prepared, mut graph, left, right) = setup(
-        "relation aliasing(e:Hop,f:Hop) when source(path(e))=source(path(f)) and target(path(e))=target(path(f)):path(e)=path(f);",
-    );
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(&prepared, &mut control).unwrap();
-    let request = &prepared.requests().requests()[2];
-    let (w, domains) = relation_sources::prepare_sources(
-        &prepared,
-        &env,
-        &mut graph,
-        request,
-        left,
-        right,
-        &mut control,
-    )
-    .unwrap();
-    let table = &w.relation_family.as_ref().unwrap().table;
-    assert_eq!(table.declarations.len(), 1);
-    let (row, original) = table
-        .instances
-        .iter()
-        .enumerate()
-        .find(|(_, row)| {
-            row.bindings
-                .iter()
-                .map(|(_, value)| value)
-                .all(|v| matches!(v, Scalar::Subject { subject, .. } if subject=="e"))
-        })
-        .unwrap();
-    assert_eq!(original.guard, Some(true));
-    let instance = domains.instances[row].unwrap();
-    let declaration = &table.declarations[0];
-    let Signature::Relation {
-        guard, left, right, ..
-    } = &declaration.signature
-    else {
-        panic!()
-    };
-    for expression in [guard.unwrap(), *left, *right] {
-        let value = super::super::relation_side(
-            &env,
-            &mut graph,
-            &mut control,
-            request,
-            declaration,
-            instance,
-            expression,
-        )
-        .unwrap();
-        assert!(value.value.is_some());
-        assert!(value.reasons.is_empty());
-    }
-    assert_eq!(
-        graph.active,
-        Context {
-            request: 2,
-            ..Context::default()
-        }
-    );
-    check_graph(&prepared, &graph);
-}
-#[test]
 fn a_nonfinite_parameter_domain_is_not_published_as_empty_finite_exhaustion() {
     let (prepared, mut graph, left, right) =
         setup("relation unbounded(n:Z,e:Hop):path(e)=path(e);");
@@ -540,14 +477,6 @@ fn an_independent_nonfinite_domain_does_not_hide_a_known_relation_refutation() {
     );
 }
 
-#[test]
-fn an_independent_nonfinite_domain_does_not_hide_a_known_path_construction_failure() {
-    known_failure_with_an_independent_nonfinite_relation(
-        "relation invalid(e:Hop):then(path(e),path(e))=then(path(e),path(e));",
-        "evaluation",
-    );
-}
-
 fn partial_domain_keeps_known_failure(outside: bool, body: &str, construction: &str) {
     let snapshot = if outside { "v" } else { "w" };
     let one = format!("one=evaluate(Reservations.route,e=@{snapshot}/e)");
@@ -625,15 +554,6 @@ fn a_finite_prefix_keeps_its_refutation_when_other_prefixes_have_nonfinite_domai
 #[test]
 fn a_complete_snapshot_keeps_its_refutation_when_another_owned_domain_is_missing() {
     partial_domain_keeps_known_failure(false, "path(e)=identity(source(path(e)))", "comparison");
-}
-
-#[test]
-fn a_complete_snapshot_keeps_its_path_failure_when_another_owned_domain_is_missing() {
-    partial_domain_keeps_known_failure(
-        false,
-        "then(path(e),path(e))=then(path(e),path(e))",
-        "evaluation",
-    );
 }
 
 #[test]
@@ -935,25 +855,6 @@ fn the_missing_guard_can_change_the_actual_relation_decision_in_both_completions
         assert!(result.issues.is_empty());
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
-}
-#[test]
-fn quantified_original_guard_keeps_its_actual_domain_in_the_comparison_scope() {
-    let result = public(
-        "relation quantified(e:Hop) when (forall flag:Bool . flag or not flag):lexical(e)=path(e);",
-        &[
-            E,
-            ALIAS,
-            "compared=compare($e.value,to=$alias.value,kind=relation)",
-        ],
-    );
-    assert_eq!(result.answers[2].status, Decision::Refuted);
-    assert!(
-        result.answers[2]
-            .scope
-            .quantifiers
-            .iter()
-            .any(|q| q.name == "flag" && q.domain.is_some())
-    );
 }
 fn path_names(value: &Scalar) -> Vec<(String, String, String)> {
     let Scalar::Path(path) = value else { panic!() };

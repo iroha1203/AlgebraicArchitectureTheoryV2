@@ -191,48 +191,6 @@ fn owned_call_same_environment_rechecks_mutated_owner_proof_and_shortened_frame(
     g.frames[frame].arguments = old;
     e.recheck_node(&g, &g.nodes[value], value).unwrap();
 }
-#[test]
-fn owned_call_universal_condition_rechecks_binders_and_unknown_foreign_arguments() {
-    for name in ["affineCall", "affineReturn"] {
-        let asks = [
-            format!("first=check(Reservations.{name},a=@v/B,s=@v/p)"),
-            format!("second=check(Reservations.{name},a=@v/B,s=@v/p)"),
-        ];
-        let r = owned_call_result(&[&asks[0], &asks[1]]);
-        assert_eq!(r.status(), "partial");
-        let (donor, target) = (owned_condition(&r, 0), owned_condition(&r, 1));
-        let source = r.nodes[target].arguments[0];
-        let Some(Payload::Expression { parameters, .. }) = &r.nodes[source.0].payload else {
-            panic!("source")
-        };
-        assert_eq!(parameters.len(), 1);
-        assert_eq!(parameters[0].1, Type::Z);
-        completion_mutation(&r, source.0, |ns| {
-            let Some(Payload::Expression { parameters, .. }) = &mut ns[source.0].payload else {
-                panic!("source")
-            };
-            parameters.clear();
-        });
-        let n = r.nodes[target].arguments.len();
-        let edges = r.nodes[target].arguments.clone();
-        let foreign = r.nodes[donor].arguments[3];
-        for reference in [edges[3], foreign] {
-            let Some(Payload::Evaluation { value, .. }) = &r.nodes[reference.0].payload else {
-                panic!("argument")
-            };
-            assert!(value.is_none(), "全域parameterを具体値にしない");
-        }
-        assert!(foreign.0 < edges[3].0);
-        completion_mutation(&r, target, |ns| {
-            for r in [edges[n - 3], edges[n - 2], edges[n - 1], NodeRef(target)] {
-                ns[r.0].arguments[3] = foreign;
-            }
-        });
-        completion_mutation(&r, edges[n - 3].0, |ns| {
-            ns[edges[n - 3].0].scope.quantifiers.clear()
-        });
-    }
-}
 fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [

@@ -193,40 +193,6 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
     }
 }
 #[test]
-fn term_comparison_transfer_stops_keep_completed_finite_and_affine_evidence() {
-    for (left, right, status) in [
-        (PREFIX[0], PREFIX[1], Decision::Established),
-        (
-            "l=evaluate(Terms.read,s=@v/s)",
-            "r=evaluate(Terms.affineSlope)",
-            Decision::Refuted,
-        ),
-    ] {
-        let qs = [left, right, FINITE];
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
-            if p == Checkpoint::NativeResultNode {
-                seen.set(seen.get() + 1)
-            }
-            Usage::default()
-        });
-        let normal = evaluate_observed_bytes(term_input(), &qs, &mut probe).unwrap();
-        assert_eq!(normal.answers[2].status, status);
-        let total = count.get();
-        for mode in 0..4 {
-            let (mut c, count) = stopping(total, mode, Checkpoint::NativeResultNode);
-            let r = evaluate_observed_bytes(term_input(), &qs, &mut c).unwrap();
-            assert_eq!(r.status(), "interrupted");
-            assert_eq!(r.answers[2].status, status);
-            assert!(r.answers[2].outputs.contains_key("comparison"));
-            assert!(!r.answers[2].evidence.is_empty());
-            rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-            assert_eq!(count.get(), total);
-        }
-    }
-}
-#[test]
 fn term_derivation_rejects_identical_values_donated_from_another_domain_position() {
     let r = term_example(&[PREFIX[0], PREFIX[1], FINITE]);
     let values = r

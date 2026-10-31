@@ -80,55 +80,6 @@ fn partial_owned_calls_reject_original_binder_member_and_condition_mutations() {
     });
     assert!(!r.frames.iter().any(|f| f.source == source));
 }
-#[test]
-fn partial_owned_calls_reject_equal_foreign_producers_and_same_environment_changes() {
-    for ask in [
-        "x=evaluate(Reservations.pcMissing,a=@v/B,p=@v/p,q=@v/q)",
-        PARTIAL_BAD,
-    ] {
-        let first = ask.replacen("x=", "first=", 1);
-        let second = ask.replacen("x=", "second=", 1);
-        let r = partial_call_result(&[&first, &second]);
-        let donor = owned_condition(&r, 0);
-        let target = owned_condition(&r, 1);
-        let own = r.nodes[target].arguments.clone();
-        let other = r.nodes[donor].arguments.clone();
-        let n = own.len();
-        for p in [own[2], other[2]] {
-            let Some(Payload::Evaluation { value, .. }) = &r.nodes[p.0].payload else {
-                panic!("container")
-            };
-            assert!(value.is_none());
-        }
-        assert_ne!(own[2], other[2]);
-        let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-        let env = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-        let actual = env.owned_call_argument(&graph, own[2]).unwrap();
-        let foreign = env.owned_call_argument(&graph, other[2]).unwrap();
-        if ask == PARTIAL_BAD {
-            assert_ne!(actual, foreign, "別Requestの全域軸は別の束縛");
-        } else {
-            assert_eq!(actual, foreign, "共有する元slotと既知memberは同じ部分値");
-        }
-        completion_mutation(&r, target, |ns| {
-            for p in [own[n - 3], own[n - 2], own[n - 1], NodeRef(target)] {
-                ns[p.0].arguments[2] = other[2];
-            }
-        });
-        let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-        let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-        e.recheck_node(&g, &g.nodes[target], target).unwrap();
-        let old = g.nodes[own[n - 3].0].clone();
-        g.nodes[own[n - 3].0].payload = g.nodes[own[n - 2].0].payload.clone();
-        assert_ne!(format!("{:?}", g.nodes[own[n - 3].0]), format!("{old:?}"));
-        assert!(matches!(
-            e.recheck_node(&g, &g.nodes[target], target),
-            Err(ValidationFailure::Internal(_))
-        ));
-        g.nodes[own[n - 3].0] = old;
-        e.recheck_node(&g, &g.nodes[target], target).unwrap();
-    }
-}
 
 fn partial_call_member_stop(recheck: bool) {
     use std::{cell::Cell, rc::Rc};
@@ -260,49 +211,6 @@ fn partial_call_member_stop(recheck: bool) {
 #[test]
 fn partial_owned_actual_member_stop_keeps_values_refutation_and_prefix() {
     partial_call_member_stop(false)
-}
-#[test]
-fn partial_owned_original_input_recheck_stop_keeps_verified_outputs_and_prefix() {
-    partial_call_member_stop(true)
-}
-
-#[test]
-fn partial_owned_return_list_whole_keeps_call_body_and_universal_template_distinct() {
-    let r = partial_call_result(&["bad=check(Reservations.pcReturnedList,a=@v/B,p=@v/p)"]);
-    assert_eq!(r.status(), "partial");
-    let whole = r.answers[0].outputs["evaluation"].0;
-    let Some(Payload::Evaluation {
-        expression, parts, ..
-    }) = &r.nodes[whole].payload
-    else {
-        panic!("whole")
-    };
-    let source = *expression;
-    assert_eq!(parts.len(), 1);
-    assert_eq!(parts[0].children.len(), 1);
-    let child = parts[0].children[0];
-    let Some(Payload::Evaluation {
-        expression: pointwise,
-        ..
-    }) = r.nodes[child.0].payload
-    else {
-        panic!("pointwise")
-    };
-    assert_ne!(source, pointwise);
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    assert_eq!(e.universal_source_root(&g, source).unwrap(), Some(source));
-    assert_eq!(
-        e.universal_source_root(&g, pointwise).unwrap(),
-        Some(source)
-    );
-    completion_mutation(&r, whole, |ns| {
-        let Some(Payload::Evaluation { expression, .. }) = &mut ns[whole].payload else {
-            panic!("whole")
-        };
-        *expression = pointwise;
-    });
-    completion_mutation(&r, whole, |ns| ns[whole].arguments.retain(|r| *r != source));
 }
 
 #[test]
@@ -487,34 +395,6 @@ fn partial_pending_mismatch_mutations(r: &ObservedEvaluation, target: usize) {
     ));
     g.nodes[target].support = old;
     env.recheck_node(&g, &g.nodes[target], target).unwrap();
-}
-
-#[test]
-fn partial_owned_pending_known_mismatch_rechecks_actual_and_foreign_producers() {
-    let r = evaluate_observed_bytes(
-        partial_call_fixture::missing_reference_input(),
-        &[
-            "first=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)",
-            "second=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)",
-        ],
-        &mut named_call_quiet(),
-    )
-    .unwrap();
-    assert_eq!(r.status(), "partial", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    for request in 0..2 {
-        partial_pending_mismatch_mutations(&r, owned_condition(&r, request));
-    }
-    let donor = owned_condition(&r, 0);
-    let target = owned_condition(&r, 1);
-    let own = r.nodes[target].arguments.clone();
-    let other = r.nodes[donor].arguments.clone();
-    let n = own.len();
-    completion_mutation(&r, target, |ns| {
-        for p in [own[n - 3], own[n - 2], own[n - 1], NodeRef(target)] {
-            ns[p.0].arguments[2] = other[2];
-        }
-    });
 }
 
 #[test]

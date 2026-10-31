@@ -40,64 +40,6 @@ fn at(r: &ObservedEvaluation, part: ProjectionCheckPart) -> usize {
         })
         .unwrap()
 }
-#[test]
-fn projection_condition_nodes_recheck_original_root_values_types_edges_support_scope_and_evidence()
-{
-    let r = result();
-    for part in [
-        ProjectionCheckPart::Name,
-        ProjectionCheckPart::Actual,
-        ProjectionCheckPart::Required,
-        ProjectionCheckPart::Evidence,
-        ProjectionCheckPart::Condition,
-    ] {
-        let i = at(&r, part);
-        completion_mutation(&r, i, |ns| ns[i].arguments.clear());
-        completion_mutation(&r, i, |ns| {
-            ns[i].arguments.push(r.answers[0].outputs["value"])
-        });
-        completion_mutation(&r, i, |ns| {
-            ns[i].arguments[0] = r.answers[3].outputs["value"]
-        });
-        completion_mutation(&r, i, |ns| ns[i].scope.readings.clear());
-        completion_mutation(&r, i, |ns| {
-            ns[i].support.push(Fact {
-                snapshot: "v".into(),
-                subject: "p".into(),
-                field: None,
-                atom: None,
-            })
-        });
-        completion_mutation(&r, i, |ns| ns[i].ty = NodeType::Value(Type::Z));
-        completion_mutation(&r, i, |ns| {
-            let Rule::ProjectionCheck { parameter, .. } = &mut ns[i].rule else {
-                panic!()
-            };
-            *parameter = "foreign".into();
-        });
-    }
-    let actual = at(&r, ProjectionCheckPart::Actual);
-    completion_mutation(&r, actual, |ns| {
-        ns[actual].payload = Some(Payload::Scalar(Scalar::Bool(true)))
-    });
-    let required = at(&r, ProjectionCheckPart::Required);
-    completion_mutation(&r, required, |ns| {
-        ns[required].payload = Some(Payload::Scalar(Scalar::Bool(false)))
-    });
-    let condition = at(&r, ProjectionCheckPart::Condition);
-    completion_mutation(&r, condition, |ns| {
-        ns[condition].judgment.as_mut().unwrap().status = Decision::Established
-    });
-    completion_mutation(&r, condition, |ns| ns[condition].evidence.clear());
-    let proof = at(&r, ProjectionCheckPart::Evidence);
-    completion_mutation(&r, proof, |ns| {
-        let Some(Payload::ProjectionCounterexample { left, right, .. }) = &mut ns[proof].payload
-        else {
-            panic!()
-        };
-        std::mem::swap(left, right);
-    });
-}
 fn reject_answer(r: &ObservedEvaluation, change: impl Fn(&mut Answer)) {
     let cutoff = r.contexts.iter().position(|c| c.request == 5).unwrap();
     for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {

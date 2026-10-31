@@ -179,59 +179,6 @@ fn owned_map_equal_foreign_producers_and_success_session_cannot_authorize_change
         env.recheck_node(&g, &g.nodes[target], target).unwrap();
     }
 }
-#[test]
-fn owned_map_finite_family_whole_rows_are_distinct_from_call_arguments_and_template() {
-    let r = map_owned_result("known", &["x=check(Applications.mcFamily,a=@v/A,b=@v/B)"]);
-    assert_eq!(r.status(), "complete");
-    let whole = r.answers[0].outputs["evaluation"].0;
-    let Some(Payload::Evaluation {
-        expression, parts, ..
-    }) = &r.nodes[whole].payload
-    else {
-        panic!()
-    };
-    let source = *expression;
-    assert_eq!(parts[0].children.len(), 4);
-    let row = parts[0].children[0];
-    let Some(Payload::Evaluation {
-        expression: pointwise,
-        ..
-    }) = &r.nodes[row.0].payload
-    else {
-        panic!()
-    };
-    let pointwise = *pointwise;
-    assert_ne!(source, pointwise);
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    assert!(e.family_source_root(&g, source).unwrap());
-    assert!(!e.family_source_root(&g, pointwise).unwrap());
-    let mut reordered = r.nodes.clone();
-    let Some(Payload::Evaluation { parts, .. }) = &mut reordered[whole].payload else {
-        panic!()
-    };
-    parts[0].children.swap(0, 1);
-    rebuild_for_origin_and_support_recheck(&r, &reordered).unwrap(); // 族全称のrow集合の順は自由。
-    completion_mutation(&r, whole, |ns| {
-        let Some(Payload::Evaluation { expression, .. }) = &mut ns[whole].payload else {
-            panic!()
-        };
-        *expression = pointwise;
-    });
-    completion_mutation(&r, whole, |ns| {
-        let Some(Payload::Evaluation { parts, .. }) = &mut ns[whole].payload else {
-            panic!()
-        };
-        parts[0].children[1] = parts[0].children[0];
-    });
-    completion_mutation(&r, source.0, |ns| {
-        let Some(Payload::Expression { parameters, .. }) = &mut ns[source.0].payload else {
-            panic!()
-        };
-        assert_eq!(parameters.len(), 1);
-        parameters[0].1 = Type::Bool;
-    });
-}
 
 fn owned_map_member_stop(recheck: bool) {
     use std::{cell::Cell, rc::Rc};

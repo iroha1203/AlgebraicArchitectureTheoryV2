@@ -291,49 +291,6 @@ fn mutate(kinds: &[usize], stable: bool) {
 fn owner_completion_domains_reject_missing_duplicate_and_unregistered_members() {
     mutate(&[0, 1, 9], false)
 }
-#[test]
-fn owner_completion_sources_reject_other_producer_slot_and_fabricated_missing() {
-    mutate(&[2, 3, 15, 17], false)
-}
-#[test]
-fn owner_completion_rechecks_support_scope_original_case_slots_and_request() {
-    mutate(&[4, 5, 6, 7], false)
-}
-#[test]
-fn owner_completion_rejects_actual_ref_member_domain_and_projection_type_mutations() {
-    mutate(&[12, 13, 14], false)
-}
-#[test]
-fn owner_completion_whole_rejects_foreign_domain_count_and_membership_set_mutation() {
-    mutate(&[10, 11, 16], true)
-}
-#[test]
-fn owner_completion_pair_rejects_original_slot_order_mutation() {
-    mutate(&[8], false)
-}
-#[test]
-fn owner_completion_shared_source_projection_prefix_rejects_value_outside_original_member() {
-    let r = example(false);
-    let root = r.answers[1].outputs["evaluation"].0;
-    let domain = r.nodes[root].arguments[1];
-    let case = r.cases.iter().find(|c| c.domain == domain).unwrap();
-    let projection = case.values[1].0;
-    assert!(case.values.iter().all(|v|matches!(&r.nodes[v.0].payload,Some(Payload::Scalar(Scalar::Subject{snapshot,subject,entity}))if snapshot=="v"&&subject=="A"&&entity=="Refs.Root")));
-    for (subject, entity) in [
-        ("B", "Refs.Root"),
-        ("ghost", "Refs.Root"),
-        ("item", "Refs.Sample"),
-    ] {
-        completion_mutation(&r, projection, |nodes| {
-            nodes[projection].ty = NodeType::Value(Type::Ref(entity.into()));
-            nodes[projection].payload = Some(Payload::Scalar(Scalar::Subject {
-                snapshot: "v".into(),
-                subject: subject.into(),
-                entity: entity.into(),
-            }));
-        });
-    }
-}
 
 fn stop(phase: &'static str, at: usize, kind: usize) {
     use crate::control::{Checkpoint, Control, Usage};

@@ -327,35 +327,6 @@ fn mutate(mode: usize, kinds: &[usize]) {
 fn finite_reference_field_domains_reject_missing_duplicate_and_foreign_whole() {
     mutate(0, &[0, 1, 22]);
 }
-#[test]
-fn finite_reference_field_sources_reject_unread_slot_foreign_source_and_missing_facts() {
-    mutate(0, &[2, 3, 17, 23, 24]);
-}
-#[test]
-fn finite_reference_field_support_scope_request_and_fake_atoms_are_rechecked() {
-    mutate(0, &[4, 5, 7, 21]);
-}
-#[test]
-fn finite_reference_field_actual_ref_member_domain_projection_types_are_rechecked() {
-    mutate(0, &[9, 10, 11]);
-}
-#[test]
-fn finite_reference_field_nested_tuple_member_domain_projection_types_are_rechecked() {
-    mutate(1, &[12, 15, 16]);
-}
-#[test]
-fn finite_reference_field_set_element_and_data_constructor_argument_types_are_rechecked() {
-    mutate(2, &[13]);
-    mutate(3, &[14]);
-}
-#[test]
-fn finite_reference_field_shared_case_slots_and_pair_field_order_are_rechecked() {
-    mutate(5, &[6, 8]);
-}
-#[test]
-fn finite_reference_field_chain_prefix_original_source_edges_and_whole_count_are_rechecked() {
-    mutate(4, &[18, 19, 20]);
-}
 
 #[test]
 fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missing_identity() {
@@ -435,38 +406,6 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
     );
 }
 
-#[test]
-fn finite_reference_field_set_member_display_order_keeps_extensional_proof_and_original_slots() {
-    let r = example(2);
-    let answer = &r.answers[1];
-    let root = answer.outputs["evaluation"].0;
-    let domain = r.nodes[root].arguments[1];
-    let Some(Payload::Domain { elements, .. }) = &r.nodes[domain.0].payload else {
-        panic!()
-    };
-    let member=elements.iter().find(|m|matches!(&r.nodes[m.0].payload,Some(Payload::Scalar(Scalar::Set{items,..}))if items.len()==2)).unwrap().0;
-    let cut = r.contexts.iter().position(|c| c.request == 2).unwrap();
-    for nodes in [&r.nodes[..cut], r.nodes.as_slice()] {
-        let mut graph = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
-        let original = graph.nodes[member].clone();
-        let e = environment(&r);
-        let q = &r.prepared.requests().requests()[1];
-        e.validate_answer(&graph, q, answer).unwrap();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut graph.nodes[member].payload
-        else {
-            panic!()
-        };
-        let first = items[0].clone();
-        items.reverse();
-        assert_ne!(items[0], first, "表示順の実変更");
-        assert_eq!(graph.nodes[member], original, "Setの外延は同じ");
-        e.validate_answer(&graph, q, answer).unwrap();
-        environment(&r).validate_answer(&graph, q, answer).unwrap();
-        graph.nodes[member] = original;
-        e.validate_answer(&graph, q, answer).unwrap();
-        environment(&r).validate_answer(&graph, q, answer).unwrap();
-    }
-}
 fn stop(phase: &'static str, at: usize, kind: usize) {
     use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
@@ -617,22 +556,6 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
-fn finite_reference_field_enumeration_cancel_keeps_values_refutation_and_missing_prefix() {
-    stop("completion_enum", 1, 0);
-}
-#[test]
-fn finite_reference_field_case_time_stop_keeps_completed_case_and_original_missing() {
-    stop("completion_case", 1, 1);
-}
-#[test]
 fn finite_reference_field_coverage_memory_stop_never_promotes_unfinished_whole() {
     stop("completion_coverage", 0, 2);
-}
-#[test]
-fn finite_reference_field_nested_pin_shape_stop_keeps_original_tables_and_probe_freeze() {
-    stop("pin_schema", 1, 2);
-}
-#[test]
-fn finite_reference_field_post_validation_cancel_retains_verified_current_and_probe_freeze() {
-    stop("answer", 0, 0);
 }

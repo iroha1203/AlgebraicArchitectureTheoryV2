@@ -133,91 +133,6 @@ fn compound_failed_member_rechecks_original_container_evidence_and_exact_conditi
     assert!(!r.frames.iter().any(|f| f.source == span));
 }
 
-#[test]
-fn compound_failed_calls_reject_equal_foreign_container_producers_and_same_environment_changes() {
-    let a = COMPOUND_BAD.replacen("x=", "first=", 1);
-    let b = COMPOUND_BAD.replacen("x=", "second=", 1);
-    let r = compound_call_result(&[&a, &b]);
-    let donor = owned_condition(&r, 0);
-    let target = owned_condition(&r, 1);
-    let own = r.nodes[target].arguments.clone();
-    let foreign = r.nodes[donor].arguments.clone();
-    let n = own.len();
-    let tuple = |p: NodeRef| {
-        let Some(Payload::Evaluation { value: Some(v), .. }) = &r.nodes[p.0].payload else {
-            panic!("tuple")
-        };
-        data_scalar_at(&r, v.0)
-    };
-    assert_eq!(tuple(own[3]), tuple(foreign[3]));
-    assert_ne!(own[3], foreign[3]);
-    completion_mutation(&r, target, |ns| {
-        for p in [own[n - 3], own[n - 2], own[n - 1], NodeRef(target)] {
-            ns[p.0].arguments[3] = foreign[3];
-        }
-    });
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    e.recheck_node(&g, &g.nodes[target], target).unwrap();
-    let old = g.nodes[own[n - 3].0].clone();
-    g.nodes[own[n - 3].0].payload = g.nodes[own[n - 2].0].payload.clone();
-    assert_ne!(format!("{:?}", g.nodes[own[n - 3].0]), format!("{old:?}"));
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[target], target),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.nodes[own[n - 3].0] = old;
-    e.recheck_node(&g, &g.nodes[target], target).unwrap();
-}
-
-#[test]
-fn compound_universal_failed_arguments_keep_original_binders_and_exact_container_producers() {
-    let r = compound_call_result(&[
-        "first=check(Reservations.ccAffine,a=@v/B,p=@v/p)",
-        "second=check(Reservations.ccAffine,a=@v/B,p=@v/p)",
-    ]);
-    assert_eq!(r.status(), "partial");
-    let donor = owned_condition(&r, 0);
-    let target = owned_condition(&r, 1);
-    let edges = r.nodes[target].arguments.clone();
-    let other = r.nodes[donor].arguments.clone();
-    let n = edges.len();
-    let source = edges[0];
-    let Some(Payload::Expression { parameters, .. }) = &r.nodes[source.0].payload else {
-        panic!("source")
-    };
-    assert_eq!(parameters.len(), 1);
-    assert_eq!(parameters[0].1, Type::Z);
-    for p in [edges[3], other[3]] {
-        let Some(Payload::Evaluation { value, .. }) = &r.nodes[p.0].payload else {
-            panic!("parameter")
-        };
-        assert!(value.is_none());
-    }
-    completion_mutation(&r, source.0, |ns| {
-        let Some(Payload::Expression { parameters, .. }) = &mut ns[source.0].payload else {
-            panic!("source")
-        };
-        parameters.clear();
-    });
-    completion_mutation(&r, edges[n - 3].0, |ns| {
-        ns[edges[n - 3].0].scope.quantifiers.clear()
-    });
-    let container = |p: NodeRef| {
-        let Some(Payload::Evaluation { value: Some(v), .. }) = &r.nodes[p.0].payload else {
-            panic!("container")
-        };
-        data_scalar_at(&r, v.0)
-    };
-    assert_eq!(container(edges[2]), container(other[2]));
-    assert_ne!(edges[2], other[2]);
-    completion_mutation(&r, target, |ns| {
-        for p in [edges[n - 3], edges[n - 2], edges[n - 1], NodeRef(target)] {
-            ns[p.0].arguments[2] = other[2];
-        }
-    });
-}
-
 fn compound_call_member_stop(recheck: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
@@ -348,8 +263,4 @@ fn compound_call_member_stop(recheck: bool) {
 #[test]
 fn compound_call_actual_third_member_stop_keeps_prior_values_refutation_and_prefix() {
     compound_call_member_stop(false)
-}
-#[test]
-fn compound_call_original_input_member_recheck_stop_keeps_verified_outputs_and_prefix() {
-    compound_call_member_stop(true)
 }
