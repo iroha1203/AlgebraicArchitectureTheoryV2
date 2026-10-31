@@ -70,6 +70,9 @@ impl archsig::run::Signals for NoSignal {
     }
 }
 
+/// 実バイナリの主スレッドと同じ大きさのスタック。計算は main と同じ深さの再帰を使う。
+const MAIN_THREAD_STACK: usize = 8 * 1024 * 1024;
+
 /// 同じ引数を、プロセスを起動せずに run 層へ渡す。path の引数は `dir` から読む。
 pub fn run(dir: &Path, args: &[&str]) -> Run {
     use archsig::control::{Control, Limits, Usage};
@@ -87,35 +90,44 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
             "--atom-definition" | "--law" | "--archmap" | "--out" | "--reuse"
         );
     }
-    let started = std::time::Instant::now();
-    let control = |limits: Limits| {
-        Control::new(limits, move |_| Usage {
-            elapsed_ms: started.elapsed().as_millis(),
-            ..Usage::default()
-        })
+    let execute = move || {
+        let started = std::time::Instant::now();
+        let control = |limits: Limits| {
+            Control::new(limits, move |_| Usage {
+                elapsed_ms: started.elapsed().as_millis(),
+                ..Usage::default()
+            })
+        };
+        let (io, signals) = (&mut FileIo, &mut NoSignal);
+        let outcome = match parse_args(&words) {
+            Ok(Command::Check(check)) => run_check(
+                io,
+                signals,
+                &check,
+                started,
+                &mut control(Limits::default()),
+            ),
+            Ok(Command::Run(request)) => run_requests(
+                io,
+                signals,
+                &request,
+                started,
+                &mut control(request.limits()),
+            ),
+            Ok(Command::Version) => panic!("version は run_binary で確かめる"),
+            Err(error) => usage_outcome(io, signals, error, started),
+        };
+        (outcome.exit_code, outcome.receipt())
     };
-    let (io, signals) = (&mut FileIo, &mut NoSignal);
-    let outcome = match parse_args(&words) {
-        Ok(Command::Check(check)) => run_check(
-            io,
-            signals,
-            &check,
-            started,
-            &mut control(Limits::default()),
-        ),
-        Ok(Command::Run(request)) => run_requests(
-            io,
-            signals,
-            &request,
-            started,
-            &mut control(request.limits()),
-        ),
-        Ok(Command::Version) => panic!("version は run_binary で確かめる"),
-        Err(error) => usage_outcome(io, signals, error, started),
-    };
-    let stdout = format!("{}\n", outcome.receipt());
+    let (code, receipt) = std::thread::Builder::new()
+        .stack_size(MAIN_THREAD_STACK)
+        .spawn(execute)
+        .unwrap()
+        .join()
+        .unwrap_or_else(|panic| std::panic::resume_unwind(panic));
+    let stdout = format!("{receipt}\n");
     Run {
-        code: i32::from(outcome.exit_code),
+        code: i32::from(code),
         receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
         stdout,
         stderr: String::new(),
