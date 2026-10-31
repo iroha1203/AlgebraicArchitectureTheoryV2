@@ -1176,6 +1176,10 @@ fn finite_aggregate_guards_keep_the_free_numeric_parameter() {
             .unwrap_or_else(|| panic!("{rhs}"));
         assert!(!equations.is_empty(), "{rhs}");
         assert!(equations.iter().all(|(_, source)| !source.finite.is_empty()), "{rhs}");
+        if rhs == "n" {
+            // n と比べる guard は n に依存したまま残り、定数の真偽に決まらない。
+            assert!(equations.iter().all(|(_, source)| source.guard.dynamic()));
+        }
         assert!(
             equations
                 .iter()
