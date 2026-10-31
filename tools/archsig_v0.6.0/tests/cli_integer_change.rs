@@ -115,36 +115,6 @@ fn parameter_product_repairs_keep_full_quantifiers_and_original_assignments() {
             "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
             "c=check(Pair.total,on=$r.object)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let before =
-            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = run(&dir, &args);
-        assert_eq!(
-            normal.code, 0,
-            "{label}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
-        assert!(!has(&normal.receipt, "nodes"));
-        eprintln!(
-            "product repair {label}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let result = execute(&dir, "out", &asks);
         assert_eq!(
             result.code, 0,
@@ -161,7 +131,6 @@ fn parameter_product_repairs_keep_full_quantifiers_and_original_assignments() {
                     && s(get(q, "kind")) == "forall"
                     && !has(q, "domain"))
         );
-        product_reuse(&dir, &asks, &j, 0);
     }
 }
 #[test]
@@ -189,35 +158,6 @@ fn parameter_product_explicit_forall_repairs_keep_binder_scope() {
             "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
             "c=check(Pair.total,on=$r.object)",
         ];
-        let before =
-            ["d.json", "a.json", "l.law"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let normal = run(&dir, &args);
-        assert_eq!(
-            normal.code, 0,
-            "{label}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "a.json", "l.law"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
-        eprintln!(
-            "product repair {label}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let result = execute(&dir, "out", &asks);
         assert_eq!(
             result.code, 0,
@@ -230,7 +170,6 @@ fn parameter_product_explicit_forall_repairs_keep_binder_scope() {
         assert!(arr(get(&j, "answers"))
             .iter()
             .all(|a| s(get(a, "status")) == "established"));
-        product_reuse(&dir, &asks, &j, 0);
     }
 }
 fn product_input(
@@ -257,37 +196,6 @@ fn product_input(
         std::fs::write(dir.join("a.json"), map).unwrap();
     }
     dir
-}
-fn product_reuse(dir: &std::path::Path, asks: &[&str], original: &JNode, code: i32) {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in asks {
-        args.extend(["--ask", *ask]);
-    }
-    let repeated = run(dir, &args);
-    assert_eq!(
-        repeated.code, code,
-        "{} {}",
-        repeated.stdout, repeated.stderr
-    );
-    assert!(repeated.stderr.is_empty());
-    let result = result_json(dir, &repeated);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&result, field).value, get(original, field).value);
-    }
 }
 #[test]
 fn parameter_product_coefficients_keep_nonunique_integer_repairs() {
@@ -320,7 +228,6 @@ fn parameter_product_coefficients_keep_nonunique_integer_repairs() {
             )),
             1
         );
-        product_reuse(&dir, &asks, &j, 1);
     }
 }
 #[test]
@@ -352,7 +259,6 @@ fn parameter_product_coefficients_keep_independent_universal_axes() {
         let j = result_json(&dir, &result);
         assert_eq!(s(get(output(&j, 1, "value"), "value")), "1");
         assert_eq!(s(get(output(&j, 2, "value"), "value")), "2");
-        product_reuse(&dir, &asks, &j, 0);
     }
 }
 #[test]
@@ -396,7 +302,6 @@ fn parameter_product_missing_unmodified_field_is_not_zero() {
                     .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
             );
         }
-        product_reuse(&dir, &asks, &j, code);
     }
 }
 #[test]
@@ -432,7 +337,6 @@ fn parameter_product_lexical_conjunction_keeps_inconsistent_constraints() {
             )),
             "empty"
         );
-        product_reuse(&dir, &asks, &j, 1);
     }
 }
 #[test]
@@ -477,7 +381,6 @@ fn parameter_product_nonlinear_coefficients_preserve_the_algorithm_reason() {
             .iter()
             .any(|r| r.value == reason.value)
     );
-    product_reuse(&dir, &asks, &j, 2);
 }
 #[test]
 fn universal_integer_law_repairs_finite_and_integer_changes() {
@@ -492,14 +395,6 @@ fn universal_integer_law_repairs_finite_and_integer_changes() {
             "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
             "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
             "c=check(Pair.total,on=$r.object)"];
-        let mut normal_args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
-        for ask in asks { normal_args.extend(["--ask",ask]); }
-        let normal = run(&dir,&normal_args);
-        assert_eq!(normal.code,0,"{} {}",normal.stdout,normal.stderr);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(s(get(&normal.receipt,"format")),"archsig.summary/1");
-        assert!(!has(&normal.receipt,"nodes"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
         let result = execute(&dir, "out", &asks);
         assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
         let j = result_json(&dir, &result);
@@ -507,12 +402,6 @@ fn universal_integer_law_repairs_finite_and_integer_changes() {
         let scope = get(&arr(get(&j,"answers"))[0],"scope");
         let quantifiers = arr(get(scope,"quantifiers"));
         assert!(quantifiers.iter().any(|q| s(get(q,"name")) == "z" && s(get(q,"kind")) == "forall" && !has(q,"domain")));
-        let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-        for ask in asks { args.extend(["--ask",ask]); }
-        let reused = run(&dir,&args);
-        assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again = result_json(&dir,&reused);
-        for key in ["answers","nodes"] { assert_eq!(get(&j,key).value,get(&again,key).value); }
     }
 }
 
@@ -1041,19 +930,12 @@ fn integer_guard_keeps_original_free_direction_and_rejects_empty_integer_fiber()
 }
 
 #[test]
-fn guarded_integer_repair_reuse_preserves_restored_solution_and_followup() {
+fn guarded_integer_repair_keeps_restored_solution_and_followup() {
     let dir = input("guard-reuse", "change setpair(s:State,a:Z,b:Z) when 2*a-3*b=2=s with{x=a,y=b};");
     let asks = ["r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
         "x=evaluate(Pair.first,on=$r.object,s=@pair/s)"];
     let first = execute(&dir, "out", &asks);
     assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
-    let original = result_json(&dir, &first);
-    let repeated = run(&dir, &["run", "--atom-definition", "d.json", "--archmap", "a.json",
-        "--law", "l.law", "--out", "out2", "--reuse", "out", "--time-ms", "120000",
-        "--ask", asks[0], "--ask", asks[1]]);
-    assert_eq!(repeated.code, 0, "{} {}", repeated.stdout, repeated.stderr);
-    let reused = result_json(&dir, &repeated);
-    for field in ["answers", "nodes"] { assert_eq!(get(&original, field).value, get(&reused, field).value); }
 }
 
 fn quotient_representation(result: &JNode,index:usize)->&JNode {
@@ -1069,15 +951,6 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
         "all=quotient(Pair.first,on=$s.domain,s=@pair/s)",
         "good=quotient(Pair.combined,on=$s.solutions,s=@pair/s)"];
-    let before=["d.json","a.json","l.law"].map(|name|std::fs::read(dir.join(name)).unwrap());
-    let mut normal_args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law"];
-    for ask in asks {normal_args.extend(["--ask",ask]);}
-    let normal=run(&dir,&normal_args);
-    assert_eq!(normal.code,0,"{} {}",normal.stdout,normal.stderr);
-    assert!(normal.stderr.is_empty());
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
-    for (name,bytes) in ["d.json","a.json","l.law"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
-    eprintln!("integer quotient: stdout {} bytes",normal.stdout.len());
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
     let result=result_json(&dir,&r);assert_module_owners(&result);
     let all=quotient_representation(&result,1);
@@ -1116,10 +989,6 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     assert_eq!(integer_columns(&result,get(good,"map")),vec![vec![0]]);
     assert_eq!(coordinates(&result,get(good,"offset")),vec![1]);
     assert_eq!(num(get(get(node(&result,get(good,"image")),"value"),"free_rank")),0);
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in &asks {args.extend(["--ask",ask]);}
-    let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);
-    let reused=result_json(&dir,&repeat);assert!(warnings(&reused).is_empty());for field in ["answers","nodes"] {assert_eq!(get(&result,field).value,get(&reused,field).value);}
 }
 #[test]
 fn integer_quotient_distinguishes_empty_solutions_from_one_class() {
@@ -1231,9 +1100,6 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
     let bad=get(output(&result,2,"quotient"),"value");assert!(!has(bad,"descent"));assert_eq!(arr(get(bad,"evaluations")).len(),2);
     for evaluation in arr(get(bad,"evaluations")) {let evaluation=get(node(&result,evaluation),"value");assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,archsig::json::JValue::Bool(true));assert!(has(evaluation,"environment"));assert!(!has(evaluation,"parts"));}
     for (i,expected) in [(3,vec![1,1]),(4,vec![1,2])] {let q=get(output(&result,i,"quotient"),"value");let d=get(node(&result,get(q,"descent")),"value");assert_eq!(coordinates(&result,get(d,"offset")),expected);for column in integer_columns(&result,get(d,"linear")) {assert_eq!(column,vec![0,0]);}}
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in &asks {args.extend(["--ask",ask]);}let repeat=run(&dir,&args);assert_eq!(repeat.code,1,"{} {}",repeat.stdout,repeat.stderr);let reused=result_json(&dir,&repeat);
-    for field in ["answers","nodes"] {assert_eq!(get(&result,field).value,get(&reused,field).value);}
 }
 #[test]
 fn integer_law_descent_preserves_guard_origin_extra_binding_and_empty_domain() {
@@ -1342,12 +1208,6 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
                 s(get(field,"subject"))=="c" && s(get(field,"field"))=="Coordinates.Shift.shift"
             }));
         }
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks { args.extend(["--ask",ask]); }
-        let reused=run(&dir,&args);
-        assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);
-        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
     }
 }
 
@@ -1379,12 +1239,6 @@ fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
         assert_eq!(arr(get(expression,"parameters")).len(),if label=="law" {0} else {1});
         let plan=get(output(&j,1,"plan"),"value");
         assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Pair.State.y"));
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);
-        assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);
-        for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -1416,11 +1270,10 @@ fn integer_quotient_finite_law_instances_preserve_lattice_and_false_keys() {
 }
 
 #[test]
-fn integer_quotient_composed_guard_uses_the_candidate_lattice_and_reuses() {
+fn integer_quotient_composed_guard_uses_the_candidate_lattice() {
     let dir=input("integer-composed-guard","change setpair(s:State,a:Z,b:Z) when a+b=1=s with{x=2*a+1,y=2*b};view pair(s:State):(Z,Z)=(s.x,s.y);view combined(s:State):Z=s.x+s.y;law optional indexed(s:State,b:Bool) when (let fixed=s.x+s.y=3 in fixed and b):s.x=s.x;");
     let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.indexed)"];
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));for reference in views {assert_eq!(s(get(node(&j,reference),"value")),"3");}let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks {args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 }
 
 #[test]

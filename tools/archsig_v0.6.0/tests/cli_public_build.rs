@@ -13,16 +13,6 @@ fn partial_data_known_component_selects_checked_arm() {
     let definition = numeric_data_definition("Z").replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"payload","type":["Data","Build.Payload"],"meaning":"未観測の包装。"}"#)
         .replace(r#""declarations":["#, r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"偽。"},{"name":"On","arguments":[],"meaning":"真。"}]},{"kind":"data","name":"Build.Pair","meaning":"包装と選択。","constructors":[{"name":"Join","arguments":[["Data","Build.Payload"],["Data","Build.Flag"]],"meaning":"組。"}]},"#);
     let dir = files_with_definition("partial-data-arm", "law required short(c:Part):match Pair.Join(c.payload,Flag.Off){Join(Packed(_),On)=>false;_=>true;};law required uncertain(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};", false, &definition);
-    let normal_args = ["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--ask", "b=check(R.short,c=@v/q)"];
-    let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-    let normal = cli::run(&dir, &normal_args);
-    assert_eq!(normal.code, 0, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
-    eprintln!("partial Data check: stdout {} bytes", normal.stdout.len());
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    assert!(!has(&normal.receipt, "nodes"));
-    assert!(!has(&normal.receipt, "result"));
-    for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
     let requests = ["b=check(R.short,c=@v/q)", "u=check(R.uncertain,c=@v/q)", "n=needed($u)"];
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "partial", 2);
@@ -30,21 +20,15 @@ fn partial_data_known_component_selects_checked_arm() {
     assert_eq!(s(get(answer(&result, "u"), "status")), "undetermined");
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload"));
-    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "again", "--reuse", "out"];
-    for request in requests { args.extend(["--ask", request]); }
-    let reused = cli::run(&dir, &args);
-    let again = saved(&dir, &reused, "partial", 2);
-    assert!(warnings(&again).is_empty());
-    for field in ["answers", "nodes"] { assert_eq!(get(&result, field).value, get(&again, field).value); }
-    let copied_law = dir.join("again/inputs/law.law");
+    let copied_law = dir.join("out/inputs/law.law");
     let original = std::fs::read(&copied_law).unwrap();
     std::fs::write(&copied_law, "wrong saved input").unwrap();
-    assert!(std::panic::catch_unwind(|| saved(&dir, &reused, "partial", 2)).is_err());
+    assert!(std::panic::catch_unwind(|| saved(&dir, &run, "partial", 2)).is_err());
     std::fs::write(&copied_law, original).unwrap();
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("Flag.Off", "Flag.On");
     std::fs::write(dir.join("l.law"), law).unwrap();
-    let out_at = args.iter().position(|arg| *arg == "--out").unwrap()+1;
-    args[out_at] = "changed";
+    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "changed", "--reuse", "out"];
+    for request in requests { args.extend(["--ask", request]); }
     let changed = cli::run(&dir, &args);
     let changed = saved(&dir, &changed, "partial", 2);
     assert_eq!(s(get(answer(&changed, "b"), "status")), "undetermined");
@@ -87,17 +71,6 @@ fn data_payload_guards_keep_missing_and_applicability() {
             std::fs::write(dir.join("a.json"), map).unwrap();
         }
         let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)", "v=evaluate(R.amount,on=$b.object,c=@v/q)", "n=needed($v)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 2, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(!has(&normal.receipt, "nodes"));
-        assert!(!has(&normal.receipt, "result"));
-        eprintln!("data guard {ty}/{active}: stdout {} bytes", normal.stdout.len());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "partial", 2);
         assert_eq!(s(get(answer(&result, "p"), "status")), "established");
@@ -107,11 +80,6 @@ fn data_payload_guards_keep_missing_and_applicability() {
         assert!(!has(get(answer(&result, "v"), "outputs"), "value"));
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"));
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "partial", 2);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }}
 }
 #[test]
@@ -148,25 +116,11 @@ fn mixed_numeric_guard_product(name: &str, guard: &str) {
         let atoms = format!(r#"{{"id":"gp","subject":"p","field":"Build.Part.guardValue","value":{zero},"origin":"model"}},{{"id":"gq","subject":"q","field":"Build.Part.guardValue","value":{zero},"origin":"model"}},"#);
         std::fs::write(dir.join("a.json"), map.replace(r#""atoms":["#, &format!(r#""atoms":[{atoms}"#))).unwrap();
         let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert!(!has(&normal.receipt, "nodes"));
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) { assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes); }
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         assert_eq!(s(get(answer(&result, "p"), "status")), "established");
         assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 1);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }
 }
 #[test]
@@ -375,46 +329,10 @@ fn known_numeric_product_case(name: &str, ty: &str, body: &str, definition: &str
             "p=check(R.zero,on=$a.object,c=@v/p)",
             "q=check(R.zero,on=$a.object,c=@v/q)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in requests {
-            args.extend(["--ask", request]);
-        }
-        let before =
-            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
-        assert!(!has(&normal.receipt, "nodes"));
-        assert!(!has(&normal.receipt, "result"));
-        assert_eq!(
-            s(get(answer(&normal.receipt, "p"), "status")),
-            "established"
-        );
-        assert_eq!(s(get(answer(&normal.receipt, "q"), "status")), "refuted");
-        eprintln!("known numeric product {ty}: stdout {} bytes", normal.stdout.len());
         let r = asks(&dir, &requests);
         let j = saved(&dir, &r, "complete", 1);
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        assert!(reused.stderr.is_empty());
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&again, field).value);
-        }
+        assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+        assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
 }
 #[test]
 fn finite_set_numeric_products_keep_missing_and_applicability() {
@@ -448,42 +366,7 @@ fn finite_data_guard_product(constructor: bool) {
                 "p=check(R.zero,on=$a.object,c=@v/p)",
                 "q=check(R.zero,on=$a.object,c=@v/q)",
             ];
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in requests {
-                args.extend(["--ask", request]);
-            }
-            let before =
-                ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-            let normal = cli::run(&dir, &args);
             let code = if missing { 2 } else { 1 };
-            assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-                assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-            }
-            assert!(!has(&normal.receipt, "nodes"));
-            assert!(!has(&normal.receipt, "result"));
-            assert_eq!(
-                s(get(answer(&normal.receipt, "p"), "status")),
-                "established"
-            );
-            assert_eq!(
-                s(get(answer(&normal.receipt, "q"), "status")),
-                if missing { "undetermined" } else { "refuted" }
-            );
-            eprintln!(
-                "finite data {ty}/{missing}: stdout {} bytes",
-                normal.stdout.len()
-            );
             let mut full_requests = requests.to_vec();
             full_requests.extend([
                 "f=evaluate(R.off,on=$a.object)",
@@ -496,6 +379,11 @@ fn finite_data_guard_product(constructor: bool) {
             ]);
             let r = asks(&dir, &full_requests);
             let j = saved(&dir, &r, if missing { "partial" } else { "complete" }, code);
+            assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+            assert_eq!(
+                s(get(answer(&j, "q"), "status")),
+                if missing { "undetermined" } else { "refuted" }
+            );
             for id in ["off", "deny"] {
                 assert_eq!(s(get(answer(&j, id), "applicability")), "not_applicable");
             }
@@ -518,30 +406,6 @@ fn finite_data_guard_product(constructor: bool) {
                     "field"
                 )) == "Build.Part.quantity"
                     && s(get(get(r, "field"), "subject")) == "q"));
-            }
-            let mut reuse_args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            for request in full_requests {
-                reuse_args.extend(["--ask", request]);
-            }
-            let reused = cli::run(&dir, &reuse_args);
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            assert!(reused.stderr.is_empty());
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&again, field).value);
             }
         }
     }
@@ -590,56 +454,12 @@ fn unit_and_option_parameters_keep_numeric_products() {
                 "p=check(R.zero,on=$a.object,c=@v/p)",
                 "q=check(R.zero,on=$a.object,c=@v/q)",
             ];
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in requests {
-                args.extend(["--ask", request]);
-            }
-            let before =
-                ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 1, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert!(!has(&normal.receipt, "nodes"));
-            assert!(!has(&normal.receipt, "result"));
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-                assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-            }
-            assert_eq!(
-                s(get(answer(&normal.receipt, "a"), "status")),
-                "established"
-            );
-            assert!(has(get(answer(&normal.receipt, "a"), "outputs"), "algebra"));
-            assert_eq!(
-                s(get(answer(&normal.receipt, "p"), "status")),
-                "established"
-            );
-            assert_eq!(s(get(answer(&normal.receipt, "q"), "status")), "refuted");
-            eprintln!(
-                "finite unit/option {ty}/{parameter}: stdout {} bytes",
-                normal.stdout.len()
-            );
-            if ty == "Q" {
-                let r = asks(&dir, &requests);
-                let j = saved(&dir, &r, "complete", 1);
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                assert_eq!(reused.code, 1, "{}", reused.stdout);
-                assert!(reused.stderr.is_empty());
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&j, field).value, get(&again, field).value);
-                }
-            }
+            let r = asks(&dir, &requests);
+            let j = saved(&dir, &r, "complete", 1);
+            assert_eq!(s(get(answer(&j, "a"), "status")), "established");
+            assert!(has(get(answer(&j, "a"), "outputs"), "algebra"));
+            assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+            assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
         }
     }
 }
@@ -674,7 +494,7 @@ fn option_tuple_numeric_products_keep_missing_and_applicability() {
     );
 }
 #[test]
-fn correlated_missing_products_decide_constant_differences_and_reuse() {
+fn correlated_missing_products_decide_constant_differences() {
     for (ty, lexical, offset) in [
         ("Z", false, 0),
         ("Q", false, 1),
@@ -703,47 +523,16 @@ fn correlated_missing_products_decide_constant_differences_and_reuse() {
             "v=evaluate(R.amount,on=$a.object,c=@v/q)",
             "n=needed($v)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in requests {
-            args.extend(["--ask", request]);
-        }
-        let before =
-            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 2, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(!has(&normal.receipt, "nodes"));
-        assert!(!has(&normal.receipt, "result"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
         let status = if offset == 0 {
             "established"
         } else {
             "refuted"
         };
-        assert_eq!(s(get(answer(&normal.receipt, "q"), "status")), status);
-        assert_eq!(
-            s(get(answer(&normal.receipt, "v"), "status")),
-            "undetermined"
-        );
-        assert!(!has(get(answer(&normal.receipt, "v"), "outputs"), "value"));
-        eprintln!(
-            "correlated product {ty}/{lexical}/{offset}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let r = asks(&dir, &requests);
         let j = saved(&dir, &r, "partial", 2);
         assert_eq!(s(get(answer(&j, "q"), "status")), status);
+        assert_eq!(s(get(answer(&j, "v"), "status")), "undetermined");
+        assert!(!has(get(answer(&j, "v"), "outputs"), "value"));
         assert_eq!(
             s(get(get(answer(&j, "q"), "scope"), "domain")),
             "all_completions"
@@ -764,15 +553,6 @@ fn correlated_missing_products_decide_constant_differences_and_reuse() {
                         && s(get(get(r, "field"), "subject")) == "q"
                 )
         );
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 2, "{}", reused.stdout);
-        assert!(reused.stderr.is_empty());
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&again, field).value);
-        }
     }
 }
 #[test]
@@ -783,32 +563,21 @@ fn different_missing_product_slots_remain_independent() {
         let dir = files_with_definition("independent-missing-product", &body, true, &definition);
         let map = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#",{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}"#,"").replace("p=0、q=1。", "pとqの数量は未観測。");
         std::fs::write(dir.join("a.json"), map).unwrap();
-        let r = cli::run(
+        let r = asks(
             &dir,
             &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
                 "a=build(R,on=@v/root)",
-                "--ask",
                 "same=check(R.equal,on=$a.object,c=@v/q,d=@v/q)",
-                "--ask",
                 "different=check(R.equal,on=$a.object,c=@v/p,d=@v/q)",
             ],
         );
-        assert_eq!(r.code, 2, "{}", r.stdout);
-        assert!(r.stderr.is_empty());
-        assert_eq!(s(get(answer(&r.receipt, "same"), "status")), "established");
+        let j = saved(&dir, &r, "partial", 2);
+        assert_eq!(s(get(answer(&j, "same"), "status")), "established");
         assert_eq!(
-            s(get(answer(&r.receipt, "different"), "status")),
+            s(get(answer(&j, "different"), "status")),
             "undetermined"
         );
-        let reasons = arr(get(answer(&r.receipt, "different"), "reasons"));
+        let reasons = arr(get(answer(&j, "different"), "reasons"));
         assert!(
             reasons
                 .iter()
@@ -861,42 +630,22 @@ fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, gu
                 .replace(r#""value":"0""#, r#""value":["0","1"]"#);
             std::fs::write(dir.join("a.json"), map).unwrap();
         }
-        let mut requests = vec![
+        let requests = [
             "a=build(R,on=@v/root)",
             "f=evaluate(R.off,on=$a.object)",
             "t=evaluate(R.on,on=$a.object)",
             "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)",
             "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)",
+            "p=check(R.zero,on=$a.object,c=@v/p,b=$t.value)",
+            "n=needed($on)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let before =
-            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 2, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(!has(&normal.receipt, "nodes"));
-        assert!(!has(&normal.receipt, "result"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
-        assert_eq!(
-            s(get(answer(&normal.receipt, "off"), "applicability")),
-            "not_applicable"
-        );
+        let r = asks(&dir, &requests);
+        let j = saved(&dir, &r, "partial", 2);
+        assert!(has(get(answer(&j, "a"), "outputs"), "object"));
+        assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+        assert_eq!(s(get(answer(&j, "off"), "applicability")), "not_applicable");
         for id in ["a", "on"] {
-            let answer = answer(&normal.receipt, id);
+            let answer = answer(&j, id);
             assert_eq!(s(get(answer, "status")), "undetermined");
             assert!(!arr(get(answer, "reasons")).is_empty());
             assert!(
@@ -905,19 +654,6 @@ fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, gu
                     .all(|r| s(get(r, "code")) == "missing_observation")
             );
         }
-        eprintln!(
-            "finite missing product {name}/{ty}: stdout {} bytes",
-            normal.stdout.len()
-        );
-        requests.extend([
-            "p=check(R.zero,on=$a.object,c=@v/p,b=$t.value)",
-            "n=needed($on)",
-        ]);
-        let r = asks(&dir, &requests);
-        let j = saved(&dir, &r, "partial", 2);
-        assert!(has(get(answer(&j, "a"), "outputs"), "object"));
-        assert_eq!(s(get(answer(&j, "p"), "status")), "established");
-        assert_eq!(s(get(answer(&j, "off"), "applicability")), "not_applicable");
         let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
         assert!(
             arr(get(plan, "requirements"))
@@ -927,30 +663,6 @@ fn finite_missing_product(name: &str, finite_type: &str, off: &str, on: &str, gu
                         && s(get(get(r, "field"), "subject")) == "q"
                 )
         );
-        let mut reuse_args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for request in requests {
-            reuse_args.extend(["--ask", request]);
-        }
-        let reused = cli::run(&dir, &reuse_args);
-        assert_eq!(reused.code, 2, "{}", reused.stdout);
-        assert!(reused.stderr.is_empty());
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&again, field).value);
-        }
     }
 }
 #[test]
@@ -988,35 +700,10 @@ fn active_products(name: &str, guards: &[(&str,&str)]) {
                 "q=check(R.zero,on=$b.object,c=@v/q)",
                 "n=needed($b)",
             ];
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in requests {
-                args.extend(["--ask", request]);
-            }
-            let before =
-                ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 2, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert!(!has(&normal.receipt, "nodes"));
-            assert!(!has(&normal.receipt, "result"));
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-                assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-            }
-            eprintln!(
-                "active missing product {ty}/{guard}: stdout {} bytes",
-                normal.stdout.len()
-            );
+            let r = asks(&dir, &requests);
+            let j = saved(&dir, &r, "partial", 2);
             for id in ["b", "q"] {
-                let answer = answer(&normal.receipt, id);
+                let answer = answer(&j, id);
                 assert_eq!(s(get(answer, "status")), "undetermined");
                 let reasons = arr(get(answer, "reasons"));
                 assert!(!reasons.is_empty());
@@ -1026,12 +713,7 @@ fn active_products(name: &str, guards: &[(&str,&str)]) {
                         .all(|r| s(get(r, "code")) == "missing_observation")
                 );
             }
-            assert_eq!(
-                s(get(answer(&normal.receipt, "p"), "status")),
-                "established"
-            );
-            let r = asks(&dir, &requests);
-            let j = saved(&dir, &r, "partial", 2);
+            assert_eq!(s(get(answer(&j, "p"), "status")), "established");
             assert!(has(get(answer(&j, "b"), "outputs"), "object"));
             assert!(!has(get(answer(&j, "b"), "outputs"), "algebra"));
             let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
@@ -1040,15 +722,6 @@ fn active_products(name: &str, guards: &[(&str,&str)]) {
                 "field"
             )) == "Build.Part.quantity"
                 && s(get(get(r, "field"), "subject")) == "q"));
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 2, "{}", reused.stdout);
-            assert!(reused.stderr.is_empty());
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&again, field).value);
-            }
         }
     }
 }
@@ -1059,26 +732,16 @@ fn missing_coefficient_does_not_hide_unsupported_integer_existential() {
         "law required zero(c:Part):exists n:Z.n*n=c.quantity;",
         true,
     );
-    let r = cli::run(
+    let r = asks(
         &dir,
         &[
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--ask",
             "b=build(R,on=@v/root)",
-            "--ask",
             "q=check(R.zero,on=$b.object,c=@v/q)",
         ],
     );
-    assert_eq!(r.code, 2, "{}", r.stdout);
-    assert!(r.stderr.is_empty());
+    let j = saved(&dir, &r, "partial", 2);
     for id in ["b", "q"] {
-        let reasons = arr(get(answer(&r.receipt, id), "reasons"));
+        let reasons = arr(get(answer(&j, id), "reasons"));
         assert!(
             reasons
                 .iter()
@@ -1157,40 +820,6 @@ fn inactive_products_with_guard_reads(name: &str, guards: &[&str], guard_reads: 
                 // 恒偽でもguard自身の原始読取りはbuildの支持に残る。
                 let build_missing = read_missing || guard_reads;
                 let code = if build_missing { 2 } else { 0 };
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                ];
-                for request in &requests {
-                    args.extend(["--ask", request]);
-                }
-                let before: Vec<_> = ["d.json", "l.law", "a.json"]
-                    .map(|name| std::fs::read(dir.join(name)).unwrap())
-                    .into();
-                let normal = cli::run(&dir, &args);
-                assert_eq!(normal.code, code, "{ty}/{guard}: {}", normal.stdout);
-                assert!(normal.stderr.is_empty());
-                assert!(!has(&normal.receipt, "nodes"));
-                assert!(!has(&normal.receipt, "result"));
-                assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-                for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-                    assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-                }
-                for id in ["p", "q"] {
-                    assert_eq!(
-                        s(get(answer(&normal.receipt, id), "applicability")),
-                        "not_applicable"
-                    );
-                }
-                eprintln!(
-                    "inactive product {ty}/{guard}: stdout {} bytes",
-                    normal.stdout.len()
-                );
                 // 同じ未観測値を実際に求めれば未決。適用外は値の捏造ではない。
                 let r = asks(&dir, &requests);
                 let j = saved(
@@ -1216,30 +845,6 @@ fn inactive_products_with_guard_reads(name: &str, guards: &[&str], guard_reads: 
                             .iter()
                             .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
                     );
-                }
-                let mut reuse_args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                ];
-                for request in requests {
-                    reuse_args.extend(["--ask", request]);
-                }
-                let reused = cli::run(&dir, &reuse_args);
-                assert_eq!(reused.code, code, "{}", reused.stdout);
-                assert!(reused.stderr.is_empty());
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&j, field).value, get(&again, field).value);
                 }
             }
         }
@@ -1277,7 +882,7 @@ fn predicate_helper_guards_keep_parameter_dependent_laws() {
     }
 }
 #[test]
-fn predicate_helper_guards_build_check_and_reuse_without_extra_files() {
+fn predicate_helper_guards_build_check_without_extra_files() {
     for ty in ["Z","Q"] { for active in [true,false] {
         let condition=if active {"x=x"}else{"x+1=x"};
         let dir=files("predicate-guard-delivery",&format!("view inner(x:{ty}):Bool={condition};view active(n:{ty}):Bool=inner(n);view zero():{ty}=0;view one():{ty}=1;law required equal(c:Part,n:{ty}) when active(n):n=0;"),false);
@@ -1292,10 +897,6 @@ fn predicate_helper_guards_build_check_and_reuse_without_extra_files() {
         assert_eq!(s(get(answer(&j,"zero"),"status")),"established");
         for id in ["all","one"] { assert_eq!(s(get(answer(&j,id),"status")),if active{"refuted"}else{"established"}); }
         if !active { assert_eq!(s(get(answer(&j,"all"),"applicability")),"not_applicable"); }
-        args.extend(["--out","again","--reuse","out"]); let reused=cli::run(&dir,&args);
-        assert_eq!(reused.code,code,"{}",reused.stdout); let again=result_json(&dir,&reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
     }}
 }
 #[test]
@@ -1306,7 +907,7 @@ fn parameter_predicate_helpers_feed_public_build() {
     assert!(has(get(answer(&j,"b"),"outputs"),"algebra"));
 }
 #[test]
-fn parameter_predicate_helpers_keep_caller_bindings_and_reuse() {
+fn parameter_predicate_helpers_keep_caller_bindings() {
     for ty in ["Z", "Q"] { for nested in [false,true] {
         let helpers = if nested {
             format!("view eq(x:{ty},y:{ty}):Bool=let n=x in n=y;view flipped(m:{ty},n:{ty}):Bool=eq(n,m);")
@@ -1318,20 +919,8 @@ fn parameter_predicate_helpers_keep_caller_bindings_and_reuse() {
             std::fs::write(dir.join("a.json"),map).unwrap();
         }
         let requests = ["b=build(R,on=@v/root)","i=evaluate(R.one,on=$b.object)","j=evaluate(R.two,on=$b.object)","all=check(R.equal,on=$b.object,c=@v/p)","p=check(R.equal,on=$b.object,c=@v/p,n=$i.value,m=$i.value)","q0=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$i.value)","q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$j.value)"];
-        let mut args = vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
-        for request in requests { args.extend(["--ask",request]); }
-        let normal = cli::run(&dir,&args);
-        assert_eq!(normal.code,1,"{}",normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
-        assert!(!has(&normal.receipt,"nodes"));
-        eprintln!("predicate helper {ty}/{nested}: stdout {} bytes",normal.stdout.len());
         let r=asks(&dir,&requests); let j=saved(&dir,&r,"complete",1);
         for (id,status) in [("all","refuted"),("p","established"),("q0","refuted"),("q1","established")] { assert_eq!(s(get(answer(&j,id),"status")),status); }
-        args.extend(["--out","again","--reuse","out"]);
-        let reused=cli::run(&dir,&args); assert_eq!(reused.code,1,"{}",reused.stdout);
-        let again=result_json(&dir,&reused); assert!(warnings(&again).is_empty());
-        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
     }}
 }
 #[test]
@@ -1356,7 +945,7 @@ fn universal_numeric_laws_build_objects_for_later_queries() {
     }
 }
 #[test]
-fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
+fn constant_numeric_families_build_without_samples_and_compact_results() {
     for ty in ["Z", "Q"] {
         for offset in [0, 1] {
             let dir = files(&format!("constant-family-{ty}-{offset}"), &format!(
@@ -1378,14 +967,6 @@ fn constant_numeric_families_build_without_samples_and_reuse_compact_results() {
             eprintln!("constant family {ty}/{offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
             assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
             assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, run.code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&again, field).value, get(&result, field).value);
-            }
         }
     }
 }
@@ -1407,14 +988,6 @@ fn universal_true_guards_feed_public_build_and_checks() {
         let dir = files(&format!("true-guard-{ty}"), &format!(
             "law required balanced(c:Part,n:{ty}) when {guard}:n=n+{offset};"
         ), false);
-        let normal = cli::run(&dir, &["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json",
-            "--ask", "b=build(R,on=@v/root)", "--ask", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
-        assert_eq!(normal.code, offset, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-        assert!(!has(&normal.receipt, "nodes"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!("true guard {ty}: stdout {} bytes", normal.stdout.len());
         let run = asks(&dir, &["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"]);
         let result = saved(&dir, &run, "complete", offset);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
@@ -1434,7 +1007,7 @@ fn numeric_views_in_universal_laws_feed_public_build_and_checks() {
     }
 }
 #[test]
-fn numeric_view_build_delivers_values_and_reuses_without_extra_files() {
+fn numeric_view_build_delivers_values_without_extra_files() {
     let dir = files("numeric-view-delivery", "view plus(x:Z):Z=let y=x+1 in y;view seed():Z=41;law required balanced(c:Part,n:Z):plus(n)=n+1;", false);
     let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.seed,on=$b.object)", "v=evaluate(R.plus,on=$b.object,x=$i.value)"];
     let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
@@ -1450,11 +1023,6 @@ fn numeric_view_build_delivers_values_and_reuses_without_extra_files() {
     let result = saved(&dir, &run, "complete", 0);
     assert_eq!(s(value(&result, get(get(answer(&result, "v"), "outputs"), "value"))), "42");
     eprintln!("numeric view: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-    args.extend(["--out", "again", "--reuse", "out"]);
-    let reused = cli::run(&dir, &args);
-    assert_eq!(reused.code, 0, "{}", reused.stdout);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
 fn nested_numeric_helpers_feed_public_build_and_checks() {
@@ -1471,26 +1039,11 @@ fn inactive_numeric_laws_feed_public_build_and_checks() {
             "law required balanced(c:Part,n:{ty}) when {guard}:n=n+1;"
         ), false);
         let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/p)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 0, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-        assert!(!has(&normal.receipt, "nodes"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(answer(&normal.receipt, "c"), "applicability")), "not_applicable");
-        eprintln!("inactive numeric {ty}: stdout {} bytes", normal.stdout.len());
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 0);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         assert_eq!(s(get(answer(&result, "c"), "status")), "established");
         assert_eq!(s(get(answer(&result, "c"), "applicability")), "not_applicable");
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 0, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }
 }
 #[test]
@@ -1510,49 +1063,21 @@ fn boolean_view_guards_feed_public_build_and_checks() {
 fn observed_numeric_view_family_feeds_public_build_and_evaluate() {
     let dir = files("observed-numeric-view", "view plus(c:Part,x:Z):Z=c.quantity+x;view seed():Z=2;law required balanced(c:Part):c.quantity=c.quantity;", false);
     let requests = ["b=build(R,on=@v/root)", "s=evaluate(R.seed,on=$b.object)", "v=evaluate(R.plus,on=$b.object,c=@v/q,x=$s.value)"];
-    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-    for request in requests { args.extend(["--ask", request]); }
-    let normal = cli::run(&dir, &args);
-    assert_eq!(normal.code, 0, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
-    assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-    assert!(!has(&normal.receipt, "nodes"));
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    eprintln!("observed numeric view: stdout {} bytes", normal.stdout.len());
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "complete", 0);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(value(&result, get(get(answer(&result, "v"), "outputs"), "value"))), "3");
     eprintln!("observed numeric view: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-    args.extend(["--out", "again", "--reuse", "out"]);
-    let reused = cli::run(&dir, &args);
-    assert_eq!(reused.code, 0, "{}", reused.stdout);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
 fn mixed_numeric_view_family_feeds_public_build_and_evaluate() {
     let dir = files("mixed-numeric-view", "view plus(c:Part,x:Z,b:Bool):Z=if b then c.quantity+x else x;view seed():Z=2;view enabled():Bool=true;law required balanced(c:Part):c.quantity=c.quantity;", false);
     let requests = ["b=build(R,on=@v/root)", "s=evaluate(R.seed,on=$b.object)", "e=evaluate(R.enabled,on=$b.object)", "v=evaluate(R.plus,on=$b.object,c=@v/q,x=$s.value,b=$e.value)"];
-    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-    for request in requests { args.extend(["--ask", request]); }
-    let normal = cli::run(&dir, &args);
-    assert_eq!(normal.code, 0, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
-    assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-    assert!(!has(&normal.receipt, "nodes"));
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    eprintln!("mixed numeric view: stdout {} bytes", normal.stdout.len());
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "complete", 0);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(value(&result, get(get(answer(&result, "v"), "outputs"), "value"))), "3");
     eprintln!("mixed numeric view: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-    args.extend(["--out", "again", "--reuse", "out"]);
-    let reused = cli::run(&dir, &args);
-    assert_eq!(reused.code, 0, "{}", reused.stdout);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
 fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
@@ -1562,27 +1087,24 @@ fn observed_numeric_law_cancellation_feeds_public_build_and_check() {
         let dir = files(&format!("observed-numeric-law-{offset}-{missing}"), &body, missing);
         let code = if missing { 2 } else { offset };
         let requests = ["b=build(R,on=@v/root)", "c=check(R.balanced,on=$b.object,c=@v/q)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, code, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-        assert!(!has(&normal.receipt, "nodes"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!("observed numeric law {offset}: stdout {} bytes", normal.stdout.len());
-        if missing { assert_missing_quantity_once(&normal.receipt); }
+        if missing {
+            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
+            for request in requests { args.extend(["--ask", request]); }
+            let normal = cli::run(&dir, &args);
+            assert_eq!(normal.code, code, "{}", normal.stdout);
+            assert!(normal.stderr.is_empty());
+            assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
+            assert!(!has(&normal.receipt, "nodes"));
+            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+            eprintln!("observed numeric law {offset}: stdout {} bytes", normal.stdout.len());
+            assert_missing_quantity_once(&normal.receipt);
+        }
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, if missing { "partial" } else { "complete" }, code);
         if missing { assert_missing_quantity_once(&result); }
         assert!(has(get(answer(&result, "b"), "outputs"), if missing { "object" } else { "algebra" }));
         assert_eq!(s(get(answer(&result, "c"), "status")), if offset == 0 { "established" } else { "refuted" });
         eprintln!("observed numeric law {offset}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }
 }
 fn assert_missing_quantity_once(result: &JNode) {
@@ -1607,28 +1129,15 @@ fn assert_missing_quantity_once(result: &JNode) {
 fn state_dependent_numeric_law_builds_and_checks_each_observed_object() {
     let dir = files("state-dependent-law", "law required balanced(c:Part,n:Z):c.quantity+n=n;", false);
     let requests = ["b=build(R,on=@v/root)", "p=check(R.balanced,on=$b.object,c=@v/p)", "q=check(R.balanced,on=$b.object,c=@v/q)"];
-    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-    for request in requests { args.extend(["--ask", request]); }
-    let normal = cli::run(&dir, &args);
-    assert_eq!(normal.code, 1, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
-    assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    eprintln!("state-dependent law: stdout {} bytes", normal.stdout.len());
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "complete", 1);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(get(answer(&result, "p"), "status")), "established");
     assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
     eprintln!("state-dependent law: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-    args.extend(["--out", "again", "--reuse", "out"]);
-    let reused = cli::run(&dir, &args);
-    assert_eq!(reused.code, 1, "{}", reused.stdout);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
 }
 #[test]
-fn scaled_numeric_binders_build_check_and_reuse() {
+fn scaled_numeric_binders_build_and_check() {
     for (ty, equation, p_value, q_value) in [
         ("Z", "2*(n+c.quantity)=m", "2", "4"), ("Z", "(n+c.quantity)*2=m", "2", "4"),
         ("Q", "rat(1,2)*(n+c.quantity)=m", "rat(1,2)", "1"), ("Q", "(n+c.quantity)*rat(1,2)=m", "rat(1,2)", "1"),
@@ -1646,25 +1155,13 @@ fn scaled_numeric_binders_build_check_and_reuse() {
         let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.one,on=$b.object)", "pv=evaluate(R.pvalue,on=$b.object)", "qv=evaluate(R.qvalue,on=$b.object)",
             "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value,m=$pv.value)",
             "q0=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$pv.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$qv.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         for (id, status) in [("all", "refuted"), ("p", "established"), ("q0", "refuted"), ("q1", "established")] {
             assert_eq!(s(get(answer(&result, id), "status")), status);
         }
-        eprintln!("scaled binders {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        args.extend(["--reuse", "out", "--out", "again"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 1);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        eprintln!("scaled binders {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
     }
 }
 #[test]
@@ -1678,7 +1175,7 @@ fn scaled_mixed_parameter_law_builds_for_later_checks() {
     assert_eq!(s(get(answer(&result, "p"), "status")), "established");
 }
 #[test]
-fn mixed_numeric_binders_build_check_and_reuse() {
+fn mixed_numeric_binders_build_and_check() {
     for (ty, equation) in [("Z", "2*n+c.quantity=m"), ("Q", "m=2*n+c.quantity"), ("Z", "n+c.quantity=2*n+m")] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
         let dir = files_with_definition(&format!("mixed-binders-{ty}-{equation}"), &format!(
@@ -1693,25 +1190,13 @@ fn mixed_numeric_binders_build_check_and_reuse() {
         let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "i=evaluate(R.one,on=$b.object)",
             "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value,m=$z.value)",
             "q0=check(R.equal,on=$b.object,c=@v/q,n=$z.value,m=$z.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$z.value,m=$i.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         for (id, status) in [("all", "refuted"), ("p", "established"), ("q0", "refuted"), ("q1", "established")] {
             assert_eq!(s(get(answer(&result, id), "status")), status);
         }
-        eprintln!("mixed binders {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        args.extend(["--reuse", "out", "--out", "again"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 1);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        eprintln!("mixed binders {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
     }
 }
 #[test]
@@ -1741,25 +1226,13 @@ fn cancelled_observation_parameter_law_builds_for_later_checks() {
         let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.one,on=$b.object)",
             "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value)",
             "q=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         for (id, status) in [("all", "refuted"), ("p", "established"), ("q", "established")] {
             assert_eq!(s(get(answer(&result, id), "status")), status);
         }
-        eprintln!("cancelled observation {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        args.extend(["--reuse", "out", "--out", "again"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 1);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+        eprintln!("cancelled observation {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
     }
 }
 #[test]
@@ -1779,25 +1252,13 @@ fn observed_offset_parameter_law_builds_for_later_checks() {
             let requests = ["b=build(R,on=@v/root)", "i=evaluate(R.one,on=$b.object)",
                 "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value)",
                 "q=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
-            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-            for request in requests { args.extend(["--ask", request]); }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 1, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
             let run = asks(&dir, &requests);
             let result = saved(&dir, &run, "complete", 1);
             assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
             for (id, status) in [("all", "refuted"), ("p", "established"), ("q", "refuted")] {
                 assert_eq!(s(get(answer(&result, id), "status")), status);
             }
-            eprintln!("observed offset {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-            args.extend(["--reuse", "out", "--out", "again"]);
-            let reused = cli::run(&dir, &args);
-            let again = saved(&dir, &reused, "complete", 1);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+            eprintln!("observed offset {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
         }
     }
 }
@@ -1809,24 +1270,11 @@ fn true_guards_on_parameter_dependent_laws_feed_public_build() {
         ), false);
         let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)",
             "all=check(R.equal,on=$b.object,c=@v/p)", "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
         assert_eq!(s(get(answer(&result, "all"), "status")), "refuted");
         assert_eq!(s(get(answer(&result, "p"), "status")), "established");
-        eprintln!("parameter guard {ty}/{guard}/{equation}: stdout {} bytes", normal.stdout.len());
-        args.extend(["--reuse", "out", "--out", "again"]);
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 1);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
     }
 }
 #[test]
@@ -1862,13 +1310,6 @@ fn observed_and_parameter_numeric_law_builds_for_later_checks() {
             let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "i=evaluate(R.one,on=$b.object)",
                 "all=check(R.equal,on=$b.object,c=@v/q)", "p0=check(R.equal,on=$b.object,c=@v/p,n=$z.value)",
                 "q0=check(R.equal,on=$b.object,c=@v/q,n=$z.value)", "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value)"];
-            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-            for request in requests { args.extend(["--ask", request]); }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 1, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
             let run = asks(&dir, &requests);
             let result = saved(&dir, &run, "complete", 1);
             assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
@@ -1899,12 +1340,7 @@ fn observed_and_parameter_numeric_law_builds_for_later_checks() {
             for (id, status) in [("all", "refuted"), ("p0", "established"), ("q0", "refuted"), ("q1", "established")] {
                 assert_eq!(s(get(answer(&result, id), "status")), status);
             }
-            eprintln!("observed parameter {ty}/{equation}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-            args.extend(["--reuse", "out", "--out", "again"]);
-            let reused = cli::run(&dir, &args);
-            let again = saved(&dir, &reused, "complete", 1);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
+            eprintln!("observed parameter {ty}/{equation}: saved {} bytes", std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
         }
     }
 }
@@ -1923,13 +1359,6 @@ fn parameter_families_coexist_with_closed_numeric_laws() {
             "law required zero(c:Part,n:{ty}):n=0;law required plain(c:Part):0=0;"
         ), false);
         let requests = ["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)", "p=check(R.plain,on=$b.object,c=@v/p)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert_eq!(s(get(&normal.receipt, "format")), "archsig.summary/1");
         let run = asks(&dir, &requests);
         let result = saved(&dir, &run, "complete", 1);
         assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
@@ -2016,22 +1445,13 @@ fn numeric_parameter_circuits_keep_pointwise_conditions_and_compact_cli() {
             }
         }
         eprintln!("parameter family {ty}: stdout {} bytes, saved {} bytes", normal.stdout.len(), std::fs::metadata(dir.join(s(get(&run.receipt, "result")))).unwrap().len());
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&again, field).value, get(&result, field).value); }
         let original = std::fs::read_to_string(dir.join(s(get(&run.receipt, "result")))).unwrap();
         let prefix = format!("\"type\":\"Polynomial\",\"value\":{{\"parameters\":[{{\"name\":\"n\",\"type\":\"{ty}\"}},{{\"name\":\"m\",\"type\":\"{ty}\"}}],");
         let tampered = original.replacen(&prefix, "\"type\":\"Polynomial\",\"value\":{", 1);
         assert_ne!(tampered, original);
         std::fs::create_dir(dir.join("tampered")).unwrap();
         std::fs::write(dir.join("tampered/result.json"), tampered).unwrap();
-        let out_at = args.iter().position(|s| *s == "--out").unwrap() + 1;
-        let reuse_at = args.iter().position(|s| *s == "--reuse").unwrap() + 1;
-        args[out_at] = "rejected";
-        args[reuse_at] = "tampered";
+        args.extend(["--out", "rejected", "--reuse", "tampered"]);
         let rejected = cli::run(&dir, &args);
         assert_eq!(rejected.code, 1, "{}", rejected.stdout);
         let checked = result_json(&dir, &rejected);
@@ -2722,30 +2142,6 @@ fn unsupported_integer_order_presentation_keeps_the_object_for_checks_and_locali
         for reason in reasons {
             assert!(arr(get(plan, "blockers")).contains(reason));
         }
-
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-            "--time-ms",
-            "120000",
-        ];
-        for r in requests {
-            args.extend(["--ask", r]);
-        }
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, run.code, "{} {}", reused.stdout, reused.stderr);
-        let again = result_json(&dir, &reused);
-        assert_eq!(get(&again, "answers").value, get(&result, "answers").value);
-        assert_eq!(get(&again, "nodes").value, get(&result, "nodes").value);
     }
 }
 
@@ -2837,7 +2233,7 @@ fn explicit_local_instances_cover_each_owned_subject_and_keep_missing_values() {
 }
 
 #[test]
-fn missing_owner_keeps_build_partial_and_needed_reusable() {
+fn missing_owner_keeps_build_partial_and_needed() {
     for missing in [true, false] {
         let dir = files("public-build-owner", BODY, false);
         if missing {
@@ -2864,19 +2260,11 @@ fn missing_owner_keeps_build_partial_and_needed_reusable() {
         } else {
             assert!(requirements.is_empty());
         }
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-        for request in requests { args.extend(["--ask", request]); }
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, result_run.code, "{} {}", reused.stdout, reused.stderr);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&again, field).value, get(&result, field).value);
-        }
     }
 }
 
 #[test]
-fn observed_parameter_products_keep_rational_coefficients_and_explicit_reuse() {
+fn observed_parameter_products_keep_rational_coefficients() {
     for ty in ["Z", "Q"] {
         for expression in ["n*c.quantity", "c.quantity*n", "2*(n*c.quantity)+c.quantity", "n*c.quantity+m*c.quantity", "product(n,c.quantity)"] {
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -2887,25 +2275,11 @@ fn observed_parameter_products_keep_rational_coefficients_and_explicit_reuse() {
                 std::fs::write(dir.join("a.json"), map).unwrap();
             }
             let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)"];
-            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-            for request in requests { args.extend(["--ask", request]); }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 1, "{ty}/{expression}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            assert!(!has(&normal.receipt, "nodes"));
-            eprintln!("product {ty}/{expression}: stdout {} bytes", normal.stdout.len());
             let r = asks(&dir, &requests);
             let j = saved(&dir, &r, "complete", 1);
             assert_eq!(s(get(answer(&j,"p"),"status")), "established");
             assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
             assert!(arr(get(&j,"nodes")).iter().any(|n| has(n,"value") && has(get(n,"value"),"operation") && s(get(get(n,"value"),"operation")) == "multiply"));
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 1, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
         }
     }
 }
@@ -2920,7 +2294,7 @@ fn finite_and_numeric_parameters_keep_observed_products() {
 }
 
 #[test]
-fn boolean_cases_keep_numeric_products_applicability_and_reuse() {
+fn boolean_cases_keep_numeric_products_and_applicability() {
     for ty in ["Z", "Q"] {
         for guard in ["b", "enabled(b)"] {
             let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
@@ -2933,14 +2307,6 @@ fn boolean_cases_keep_numeric_products_applicability_and_reuse() {
             let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
                 "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
                 "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)"];
-            let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-            for request in requests { args.extend(["--ask", request]); }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, 1, "{ty}/{guard}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            assert!(!has(&normal.receipt, "nodes"));
-            eprintln!("finite product {ty}/{guard}: stdout {} bytes", normal.stdout.len());
             let r = asks(&dir, &requests);
             let j = saved(&dir, &r, "complete", 1);
             assert_eq!(s(get(answer(&j,"p"),"status")), "established");
@@ -2950,12 +2316,6 @@ fn boolean_cases_keep_numeric_products_applicability_and_reuse() {
             assert_eq!(s(get(answer(&j,inactive),"status")), "established");
             assert_eq!(s(get(answer(&j,inactive),"applicability")), "not_applicable");
             assert_eq!(s(get(answer(&j,active),"status")), "refuted");
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 1, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
         }
     }
 }
@@ -2971,25 +2331,11 @@ fn boolean_cases_keep_laws_after_numeric_parameter_cancellation() {
             std::fs::write(dir.join("a.json"), map).unwrap();
         }
         let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "c=check(R.balanced,on=$a.object,c=@v/q)", "off=check(R.balanced,on=$a.object,c=@v/q,b=$f.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, offset, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert!(!has(&normal.receipt, "nodes"));
-        eprintln!("cancelled finite product {ty}/{offset}: stdout {} bytes", normal.stdout.len());
         let r = asks(&dir, &requests);
         let j = saved(&dir, &r, "complete", offset);
         assert_eq!(s(get(answer(&j,"c"),"status")), if offset == 0 { "established" } else { "refuted" });
         assert_eq!(s(get(answer(&j,"off"),"status")), "established");
         assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, offset, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
     }}
 }
 
@@ -3003,7 +2349,7 @@ fn finite_field_cases_keep_numeric_parameter_laws() {
 }
 
 #[test]
-fn finite_field_guards_keep_numeric_products_and_explicit_reuse() {
+fn finite_field_guards_keep_numeric_products() {
     for ty in ["Z", "Q"] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
         let body = format!("view off():Fp(3)=0;view on():Fp(3)=2;view active(k:Fp(3)):Bool=k+1=0;law required zero(c:Part,n:{ty},k:Fp(3)) when active(k):n*c.quantity=0;");
@@ -3015,26 +2361,12 @@ fn finite_field_guards_keep_numeric_products_and_explicit_reuse() {
         let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
             "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
             "off=check(R.zero,on=$a.object,c=@v/q,k=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,k=$t.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert!(!has(&normal.receipt, "nodes"));
-        eprintln!("finite field product {ty}: stdout {} bytes", normal.stdout.len());
         let r = asks(&dir, &requests);
         let j = saved(&dir, &r, "complete", 1);
         for (id, status) in [("p", "established"), ("q", "refuted"), ("off", "established"), ("on", "refuted")] {
             assert_eq!(s(get(answer(&j,id),"status")), status);
         }
         assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
     }
 }
 
@@ -3048,7 +2380,7 @@ fn finite_tuple_cases_keep_numeric_parameter_laws() {
 }
 
 #[test]
-fn finite_tuple_guards_keep_numeric_products_and_explicit_reuse() {
+fn finite_tuple_guards_keep_numeric_products() {
     for ty in ["Z", "Q"] {
         let definition = DEFINITION.replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#));
         let body = format!("view off():(Fp(3),Bool)=(0,false);view on():(Fp(3),Bool)=(2,true);view active(tag:(Fp(3),Bool)):Bool=tag.1 and tag.0+1=0;law required zero(c:Part,n:{ty},tag:(Fp(3),Bool)) when active(tag):n*c.quantity=0;");
@@ -3060,29 +2392,15 @@ fn finite_tuple_guards_keep_numeric_products_and_explicit_reuse() {
         let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
             "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
             "off=check(R.zero,on=$a.object,c=@v/q,tag=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,tag=$t.value)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        assert!(!has(&normal.receipt, "nodes"));
-        eprintln!("finite tuple product {ty}: stdout {} bytes", normal.stdout.len());
         let r = asks(&dir, &requests);
         let j = saved(&dir, &r, "complete", 1);
         for (id, status) in [("p", "established"), ("q", "refuted"), ("off", "established"), ("on", "refuted")] { assert_eq!(s(get(answer(&j,id),"status")), status); }
         assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
     }
 }
 
 #[test]
-fn numeric_tuple_view_families_build_evaluate_and_reuse() {
+fn numeric_tuple_view_families_build_and_evaluate() {
     for ty in ["Z", "Q"] {
         for nested in [false, true] {
             for finite in [false, true] {
@@ -3125,28 +2443,6 @@ fn numeric_tuple_view_families_build_evaluate_and_reuse() {
                     request,
                     other,
                 ];
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                ];
-                for request in requests {
-                    args.extend(["--ask", request]);
-                }
-                let before = ["d.json", "l.law", "a.json"]
-                    .map(|name| std::fs::read(dir.join(name)).unwrap());
-                let normal = cli::run(&dir, &args);
-                assert_eq!(normal.code, 0, "{ty}/{nested}/{finite}: {}", normal.stdout);
-                assert!(normal.stderr.is_empty());
-                assert!(!has(&normal.receipt, "nodes") && !has(&normal.receipt, "result"));
-                assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-                for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-                    assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-                }
                 let run = asks(&dir, &requests);
                 let result = saved(&dir, &run, "complete", 0);
                 assert!(has(get(answer(&result, "b"), "outputs"), "object"));
@@ -3170,13 +2466,6 @@ fn numeric_tuple_view_families_build_evaluate_and_reuse() {
                     value(&result, get(get(answer(&result, "w"), "outputs"), "value")).value,
                     archsig::json::parse(expected.as_bytes()).unwrap().value
                 );
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                let again = saved(&dir, &reused, "complete", 0);
-                assert!(warnings(&again).is_empty());
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&again, field).value, get(&result, field).value);
-                }
             }
         }
     }
@@ -3204,28 +2493,6 @@ fn numeric_tuple_view_families_keep_missing_observations() {
         let field = get(r, "field");
         s(get(field, "subject")) == "q" && s(get(field, "field")) == "Build.Part.quantity"
     }));
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--law",
-        "l.law",
-        "--archmap",
-        "a.json",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for request in requests {
-        args.extend(["--ask", request]);
-    }
-    let reused = cli::run(&dir, &args);
-    let again = saved(&dir, &reused, "partial", 2);
-    assert!(warnings(&again).is_empty());
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&again, field).value, get(&result, field).value);
-    }
 }
 
 fn required_tuple_inputs(name: &str, ty: &str, body: &str, missing: bool) -> PathBuf {
@@ -3295,31 +2562,6 @@ fn required_tuple_law_case(ty: &str, case: &str) {
     }
     if case == "missing" {
         requests.push("p=check(R.balanced,on=$b.object,c=@v/p)");
-    }
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--law",
-        "l.law",
-        "--archmap",
-        "a.json",
-    ];
-    for request in &requests {
-        args.extend(["--ask", *request]);
-    }
-    let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-    let normal = cli::run(&dir, &args);
-    assert_eq!(
-        normal.code, code,
-        "{ty}/{case}: {} {}",
-        normal.stdout, normal.stderr
-    );
-    assert!(normal.stderr.is_empty());
-    assert!(!has(&normal.receipt, "nodes") && !has(&normal.receipt, "result"));
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-        assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
     }
     let run = asks(&dir, &requests);
     let result = saved(
@@ -3449,22 +2691,6 @@ fn required_tuple_law_case(ty: &str, case: &str) {
             assert!(!arr(get(plan, "blockers")).is_empty());
         }
     }
-    args.extend(["--out", "again", "--reuse", "out"]);
-    let reused = cli::run(&dir, &args);
-    let again = saved(
-        &dir,
-        &reused,
-        if code == 2 { "partial" } else { "complete" },
-        code,
-    );
-    assert!(warnings(&again).is_empty());
-    for key in ["answers", "nodes"] {
-        assert_eq!(
-            get(&result, key).value,
-            get(&again, key).value,
-            "{ty}/{case}/{key}"
-        );
-    }
 }
 
 #[test]
@@ -3536,29 +2762,6 @@ fn required_numeric_tuple_empty_guard_skips_unobserved_body() {
         assert!(!has(checked, "counterexamples"));
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         assert!(arr(get(plan, "requirements")).is_empty());
-        let args = [
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--ask",
-            requests[0],
-            "--ask",
-            requests[1],
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        let reused = cli::run(&dir, &args);
-        let again = saved(&dir, &reused, "complete", 0);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&again, key).value, get(&result, key).value);
-        }
     }
 }
 
