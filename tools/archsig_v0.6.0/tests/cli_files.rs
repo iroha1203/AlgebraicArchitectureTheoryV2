@@ -24,7 +24,7 @@ fn symlinked_inputs_are_resolved_and_copied() {
     std::fs::write(dir.join("real.law"), LAW).unwrap();
     std::os::unix::fs::symlink("d.json", dir.join("definition-link.json")).unwrap();
     std::os::unix::fs::symlink("real.law", dir.join("link.law")).unwrap();
-    let r = run_binary(
+    let r = run(
         &dir,
         &[
             "check",

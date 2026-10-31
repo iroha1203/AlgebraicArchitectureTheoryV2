@@ -202,6 +202,28 @@ fn empty_integer_solutions_are_saved_without_smith_certificates() {
     let reused = execute(&dir, &asks, &["--reuse", "saved"]);
     assert_eq!(brief.receipt.value, reused.receipt.value);
 }
+/// 要約も stdout の一行だけに出し、stderr へ書かない。stdout と stderr はプロセスの性質なので実バイナリで確かめる。
+#[test]
+fn summary_is_a_single_stdout_line_without_stderr() {
+    let dir = counter("summary-binary", Some("12"));
+    let r = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "c=check(CountAudit.bounded,s=@v/s)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    assert!(r.stderr.is_empty());
+    assert_eq!(s(get(&r.receipt, "format")), "archsig.summary/1");
+}
 #[test]
 fn daily_answers_return_values_refutations_and_missing_without_files() {
     for (label, count, code) in [
