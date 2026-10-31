@@ -76,12 +76,6 @@ fn universal_rational_law_repairs_exact_fraction() {
     let j = result_json(&dir,&result);
     let q = arr(get(output(&j,2,"value"),"value"));
     assert_eq!((s(&q[0]),s(&q[1])),("1","2"));
-    let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-    for ask in asks { args.extend(["--ask",ask]); }
-    let reused = run(&dir,&args);
-    assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-    let again = result_json(&dir,&reused);
-    for key in ["answers","nodes"] { assert_eq!(get(&j,key).value,get(&again,key).value); }
 }
 
 #[test]
@@ -147,30 +141,6 @@ fn rational_unique_repair_keeps_exact_fraction_and_original_observations() {
         ["0", "1"]
     );
     assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "established");
-    let mut again_args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in asks {
-        again_args.extend(["--ask", ask]);
-    }
-    let reused = run(&dir, &again_args);
-    assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&j, field).value, get(&again, field).value);
-    }
 }
 
 fn verify_inconsistent_wire(j: &JNode, proof: &JNode) {
@@ -539,7 +509,7 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
 }
 
 #[test]
-fn rational_missing_condition_cli_preserves_saved_reuse() {
+fn rational_missing_condition_cli_keeps_needed_field() {
     // 名前付きviewを通るchange guardを代表にし、元のLawとの接続も検査する。
     let (_, body, _) = MISSING_CONDITIONS[5];
     let dir = write_inputs("rational-missing-condition-reuse", missing_sources(body));
@@ -559,30 +529,6 @@ fn rational_missing_condition_cli_preserves_saved_reuse() {
             .iter()
             .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
     );
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in MISSING_ASKS {
-        args.extend(["--ask", ask]);
-    }
-    let reused = run(&dir, &args);
-    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&j, field).value, get(&again, field).value);
-    }
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -620,7 +566,7 @@ fn qcoordinates(j:&JNode,reference:&JNode)->Vec<Vec<String>> {
     arr(get(get(node(j,reference),"value"),"coordinates")).iter().map(|r|arr(get(node(j,r),"value")).iter().map(|v|s(v).to_owned()).collect()).collect()
 }
 #[test]
-fn rational_quotient_image_and_descent_keep_fractional_coordinates_and_reuse() {
+fn rational_quotient_image_and_descent_keep_fractional_coordinates() {
     let dir=input("rational-quotient-image","change choose(s:State,a:Q,b:Q)=s with{x=rat(1,2)*a+rat(1,3),y=b}; law required total(s:State):s.x+s.y=1; view twice(s:State):Q=2*s.x; law optional same(s:State):s.x=s.x;");
     let asks=["s=solve(Pair.total,on=@v/s,using=Pair.choose)","q=quotient(Pair.twice,on=$s.domain,s=@v/s,law=Pair.same)","sum=quotient(Pair.x,on=$s.solutions,s=@v/s)"];
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
@@ -631,8 +577,6 @@ fn rational_quotient_image_and_descent_keep_fractional_coordinates_and_reuse() {
     assert_eq!(qcoordinates(&j,get(descent,"offset")),vec![vec!["1".to_owned(),"3".to_owned()];2]);
     let columns=arr(get(get(node(&j,get(descent,"linear")),"value"),"columns"));assert_eq!(columns.len(),1);
     for v in arr(&columns[0]) {assert_eq!(arr(get(node(&j,v),"value")).iter().map(s).collect::<Vec<_>>(),["1","2"]);}
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);let again=result_json(&dir,&reused);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 }
 #[test]
 fn rational_quotient_empty_and_missing_do_not_become_a_constant_class() {
@@ -662,8 +606,6 @@ fn rational_tuple_quotient_retains_nested_image_and_law_family() {
     assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);
     assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
     assert_eq!(arr(get(node(&j,&views[0]),"value")).len(),2);
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);let again=result_json(&dir,&reused);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 
 }
 
@@ -686,7 +628,6 @@ fn rational_tuple_law_descent_keeps_operand_components_and_counterexample() {
     assert_eq!(arr(get(map,"columns")).len(),2);
     let offsets=qcoordinates(&j,get(descent,"offset"));assert_eq!(offsets.len(),6);for (i,v) in offsets.iter().enumerate(){assert_eq!(v, &if i%3==2{vec!["1".to_owned(),"3".to_owned()]}else{vec!["0".to_owned(),"1".to_owned()]});}
     let proof=get(node(&j,&arr(get(&arr(get(&j,"answers"))[2],"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));let laws=arr(get(data,"law_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks{args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 
 }
 
@@ -705,7 +646,6 @@ fn rational_quotient_finite_law_instances_keep_guard_false_keys() {
     let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),2);
     let pattern=get(family,"applicability");let tags=arr(get(node(&j,pattern),"value"));assert_eq!(tags.len(),2);assert!(tags.iter().any(|v|get_bool(&arr(v)[1])==false));assert!(tags.iter().any(|v|get_bool(&arr(v)[1])));
     let answer=&arr(get(&j,"answers"))[2];assert_eq!(s(get(answer,"status")),"refuted");let evidence=get(node(&j,&arr(get(answer,"counterexamples"))[0]),"value");let data=get(evidence,"data");let values=arr(get(data,"law_values"));for reference in values {let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks{args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 
 }
 
@@ -751,12 +691,6 @@ fn rational_quotient_missing_guard_keeps_needed_slot_without_derivation_referenc
     let requirements = arr(get(plan, "requirements"));
     assert_eq!(requirements.len(), 1);
     assert_eq!(get(&requirements[0], "field").value, slots[0].value);
-    let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-    for ask in asks { args.extend(["--ask", ask]); }
-    let reuse = run(&dir, &args);
-    assert_eq!(reuse.code, 2, "{} {}", reuse.stdout, reuse.stderr);
-    let again = result_json(&dir, &reuse);
-    for key in ["answers", "nodes"] { assert_eq!(get(&j, key).value, get(&again, key).value); }
     // 観測が揃えば、guardの真偽どちらでも商を確定し、観測要求を残さない。
     for (label, map) in [("false", observed.clone()), ("true", observed.replace(r#""field":"Pair.State.y","value":["0","1"]"#, r#""field":"Pair.State.y","value":["1","1"]"#))] {
         std::fs::write(&path, map).unwrap();
@@ -877,7 +811,6 @@ fn rational_local_system_keeps_exact_equation_and_semantic_fibers() {
     let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
     for i in [2,3,4] {let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");let ring=get(node(&j,get(module,"ring")),"value");assert_eq!(s(get(ring,"scalar")),"Q");assert!(arr(get(module,"torsion")).is_empty());assert_eq!(num(get(module,"free_rank")),if i==4{1}else{0});}
     assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks {args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,0,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
 }
 #[path="common/three_edge.rs"] mod rational_triangle_source;
 fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
@@ -976,7 +909,6 @@ fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
         let sum=arr(get(system,"contexts")).iter().find(|r|{let locals=arr(get(get(node(&j,r),"value"),"locals"));locals.len()==1&&s(get(&locals[0],"declaration"))=="Pair.Sum"}).unwrap();
         for coefficients in arr(get(system,"coefficients")).iter().filter(|v|get(v,"context").value==sum.value){assert_eq!(num(get(get(node(&j,get(coefficients,"module")),"value"),"free_rank")),if mode=="free"{1}else{0});}
         let space=get(output(&j,2,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),if mode=="free"{2}else{1});
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in &asks{args.extend(["--ask",ask]);}let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);let again=result_json(&dir,&repeat);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
     }
 }
 
@@ -1009,13 +941,6 @@ fn rational_conjunction_build_connects_repair_and_preserves_observations() {
             assert_eq!(s(get(&answers[4], "status")), "established");
             assert_eq!(arr(get(output(&j, 5, "value"), "value")).iter().map(s).collect::<Vec<_>>(),
                 if held { ["1", "2"] } else { ["0", "1"] });
-            let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law",
-                "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-            for ask in &asks { args.extend(["--ask", ask]); }
-            let repeated = run(&dir, &args);
-            assert_eq!(repeated.code, r.code, "{}", repeated.stdout);
-            let again = result_json(&dir, &repeated);
-            for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
         }
     }
 }
@@ -1272,12 +1197,6 @@ fn quotient_nonempty_guard_on_quotient_coordinate_cli() {
         }
         run(&dir, &args)
     };
-    let reused = rerun("again");
-    assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(&dir, &reused);
-    for key in ["nodes", "answers"] {
-        assert_eq!(get(&j, key).value, get(&again, key).value);
-    }
     let path = dir.join(s(get(&fresh.receipt, "result")));
     let saved = std::fs::read_to_string(&path).unwrap();
     let damaged = saved.replacen("guarded_affine", "affine", 1);

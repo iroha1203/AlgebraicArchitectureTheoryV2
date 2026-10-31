@@ -73,7 +73,7 @@ fn source_uris_and_law_references_are_not_read() {
         ),
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -94,7 +94,7 @@ fn source_uris_and_law_references_are_not_read() {
         .replace("\"locations\": [],", "\"locations\": [{\"source\": \"src\", \"path\": \"src/missing.rs\"}],");
     std::fs::write(dir.join("l2.law"), LAW).unwrap();
     std::fs::write(dir.join("a.json"), observed).unwrap();
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -117,55 +117,8 @@ fn existing_outputs_are_never_overwritten() {
     std::fs::write(dir.join("l.law"), LAW).unwrap();
     std::fs::create_dir(dir.join("o")).unwrap();
     std::fs::write(dir.join("o/keep.txt"), "keep").unwrap();
-    let r = run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "o",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(!has(&r.receipt, "result"));
-    assert_eq!(
-        std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),
-        "keep"
-    );
-    assert!(!dir.join("o/result.json").exists());
-    let r = run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "missing-parent/o",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(!dir.join("missing-parent").exists());
-    let r = run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "",
-        ],
-    );
-    assert_eq!(r.code, 64);
-    assert!(!has(&r.receipt, "result"));
-    for out in ["d2/.", "d3/..", "."] {
-        let r = run(
+    let r = without_file_changes(&dir, || {
+        run_binary(
             &dir,
             &[
                 "check",
@@ -174,9 +127,65 @@ fn existing_outputs_are_never_overwritten() {
                 "--law",
                 "l.law",
                 "--out",
-                out,
+                "o",
             ],
-        );
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(r.stderr.is_empty());
+    assert!(!has(&r.receipt, "result"));
+    assert_eq!(
+        std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),
+        "keep"
+    );
+    assert!(!dir.join("o/result.json").exists());
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "missing-parent/o",
+            ],
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(!dir.join("missing-parent").exists());
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "",
+            ],
+        )
+    });
+    assert_eq!(r.code, 64);
+    assert!(!has(&r.receipt, "result"));
+    for out in ["d2/.", "d3/..", "."] {
+        let r = without_file_changes(&dir, || {
+            run_binary(
+                &dir,
+                &[
+                    "check",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    out,
+                ],
+            )
+        });
         assert_eq!(r.code, 64, "{out}");
         assert!(!has(&r.receipt, "result"), "{out}");
     }
@@ -188,7 +197,7 @@ fn unreadable_inputs_are_io_errors() {
     let dir = input_dir("unreadable");
     std::fs::create_dir(dir.join("adir")).unwrap();
     std::fs::write(dir.join("a.json"), MAP).unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -208,7 +217,7 @@ fn unreadable_inputs_are_io_errors() {
     assert_eq!(s(get(get(issue, "details"), "operation")), "read");
     assert_eq!(s(get(get(issue, "details"), "path")), "adir");
     assert!(!dir.join("o").exists());
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -223,7 +232,7 @@ fn unreadable_inputs_are_io_errors() {
     notified(&dir, &r, "error", 74);
     // ArchMap だけが読めなくても、検査を始めない。
     std::fs::write(dir.join("l.law"), LAW).unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -535,7 +544,7 @@ fn unread_second_definition_reports_io_without_files() {
     let dir = input_dir("unread-second-definition");
     std::fs::write(dir.join("l.law"), b"invalid law").unwrap();
     std::fs::write(dir.join("a.json"), b"invalid JSON").unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -577,7 +586,7 @@ fn definition_dependencies_are_not_loaded_from_neighbor_files() {
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Empty {}\n",
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",

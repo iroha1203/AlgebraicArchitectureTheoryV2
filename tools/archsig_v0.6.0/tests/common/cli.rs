@@ -16,9 +16,14 @@ pub fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_archsig"))
 }
 
-/// テストごとの空の作業 directory。
+/// 呼出しごとの空の作業 directory。同じ名前で並行に呼ばれても共有しない。
 pub fn workdir(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("archsig-cli-{}-{name}", std::process::id()));
+    static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let serial = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let dir = std::env::temp_dir().join(format!(
+        "archsig-cli-{}-{serial}-{name}",
+        std::process::id()
+    ));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     dir
@@ -32,12 +37,113 @@ pub struct Run {
     files_unchanged: bool,
 }
 
+/// 実ファイルの操作。製品の `FileIo` と同じく、既存の path を置き換えずに rename する。
+struct FileIo;
+impl archsig::run::Io for FileIo {
+    fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::create_dir(path)
+    }
+    fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+        use std::io::Write;
+        std::fs::File::create_new(path)?.write_all(bytes)
+    }
+    fn flush(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::File::open(path)?.sync_all()
+    }
+    fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()> {
+        rustix::fs::renameat_with(
+            rustix::fs::CWD,
+            from,
+            rustix::fs::CWD,
+            to,
+            rustix::fs::RenameFlags::NOREPLACE,
+        )
+        .map_err(std::io::Error::from)
+    }
+    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::remove_dir_all(path)
+    }
+}
+struct NoSignal;
+impl archsig::run::Signals for NoSignal {
+    fn freeze(&mut self) -> Option<archsig::result::Signal> {
+        None
+    }
+}
+
+/// 実バイナリの主スレッドと同じ大きさのスタック。計算は main と同じ深さの再帰を使う。
+const MAIN_THREAD_STACK: usize = 8 * 1024 * 1024;
+
+/// 同じ引数を、プロセスを起動せずに run 層へ渡す。path の引数は `dir` から読む。
 pub fn run(dir: &Path, args: &[&str]) -> Run {
-    run_with_deadline(dir, args, CHILD_DEADLINE)
+    use archsig::control::{Control, Limits, Usage};
+    use archsig::run::{Command, parse_args, run_check, run_requests, usage_outcome};
+    let mut words: Vec<std::ffi::OsString> = Vec::new();
+    let mut path_value = false;
+    for arg in args {
+        // 空の path はそのまま渡す。join すると作業 directory を指してしまう。
+        words.push(if path_value && !arg.is_empty() {
+            dir.join(arg).into_os_string()
+        } else {
+            arg.into()
+        });
+        path_value = matches!(
+            *arg,
+            "--atom-definition" | "--law" | "--archmap" | "--out" | "--reuse"
+        );
+    }
+    let execute = move || {
+        let started = std::time::Instant::now();
+        let control = |limits: Limits| {
+            Control::new(limits, move |_| Usage {
+                elapsed_ms: started.elapsed().as_millis(),
+                ..Usage::default()
+            })
+        };
+        let (io, signals) = (&mut FileIo, &mut NoSignal);
+        let outcome = match parse_args(&words) {
+            Ok(Command::Check(check)) => run_check(
+                io,
+                signals,
+                &check,
+                started,
+                &mut control(Limits::default()),
+            ),
+            Ok(Command::Run(request)) => run_requests(
+                io,
+                signals,
+                &request,
+                started,
+                &mut control(request.limits()),
+            ),
+            Ok(Command::Version) => panic!("version は run_binary で確かめる"),
+            Err(error) => usage_outcome(io, signals, error, started),
+        };
+        (outcome.exit_code, outcome.receipt())
+    };
+    let (code, receipt) = std::thread::Builder::new()
+        .stack_size(MAIN_THREAD_STACK)
+        .spawn(execute)
+        .unwrap()
+        .join()
+        .unwrap_or_else(|panic| std::panic::resume_unwind(panic));
+    let stdout = format!("{receipt}\n");
+    Run {
+        code: i32::from(code),
+        receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
+        stdout,
+        stderr: String::new(),
+        files_unchanged: false,
+    }
+}
+
+/// 実バイナリを起動する。main の責務(receipt の書出し・終了コード・signal・実ファイル)の確認に限る。
+pub fn run_binary(dir: &Path, args: &[&str]) -> Run {
+    run_binary_with_deadline(dir, args, CHILD_DEADLINE)
 }
 
 /// 長時間テストは製品予算と独立した監視時間を呼出箇所で明示する。
-pub fn run_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> Run {
+pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> Run {
     let captured = watchdog::output(bin().current_dir(dir).args(args), deadline)
         .expect("CLIテストの子プロセスを実行");
     assert!(!captured.timed_out, "CLIテストの子プロセスが独立監視時間{deadline:?}を超過");

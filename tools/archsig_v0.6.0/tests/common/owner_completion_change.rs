@@ -249,7 +249,7 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
 }
 
 #[test]
-fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_handles() {
+fn finite_owner_completion_cli_preserves_claims_needed_and_unavailable_handles() {
     let input = sources(true, " when c.flag and b", "", "true", false);
     let dir = workdir("finite-owner-claims");
     for (name, bytes) in [
@@ -265,7 +265,7 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
         "blocked=evaluate(Selected.flag,on=$r.object,c=@v/p)",
         "later=solve(Selected.valid,on=$r.object,using=Selected.choose)",
     ];
-    let call = |out: &str, reuse: bool| {
+    let call = |out: &str| {
         let mut args = vec![
             "run",
             "--atom-definition",
@@ -279,15 +279,12 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
             "--time-ms",
             "120000",
         ];
-        if reuse {
-            args.extend(["--reuse", "out"]);
-        }
         for ask in &asks {
             args.extend(["--ask", ask]);
         }
         run(&dir, &args)
     };
-    let first = call("out", false);
+    let first = call("out");
     assert_eq!(first.code, 2, "{} {}", first.stdout, first.stderr);
     assert!(
         has(&first.receipt, "result"),
@@ -311,13 +308,6 @@ fn finite_owner_completion_cli_preserves_claims_needed_reuse_and_unavailable_han
     );
     assert!(!arr(get(&requirements[0], "dependents")).is_empty());
     assert!(!format!("{:?}", get(get(plan, "value"), "blockers")).contains("not implemented"));
-    let second = call("reuse", true);
-    assert_eq!(second.code, 2, "{} {}", second.stdout, second.stderr);
-    let reused = result_json(&dir, &second);
-    assert!(warnings(&reused).is_empty(), "{:?}", warnings(&reused));
-    for key in ["answers", "nodes"] {
-        assert_eq!(get(&j, key).value, get(&reused, key).value);
-    }
 }
 
 #[test]

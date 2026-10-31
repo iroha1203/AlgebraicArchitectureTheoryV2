@@ -76,7 +76,6 @@ fn normative_examples_complete_both_checks() {
         );
         let res = consistent(&dir, &r, "complete", 0);
         assert_eq!(s(get(&res, "command")), "check");
-        assert_eq!(s(get(&r.receipt, "result")), "both/result.json");
         for (id, path, source, kind) in [
             (
                 "definition0",
@@ -169,6 +168,32 @@ fn normative_examples_complete_both_checks() {
             }
         }
     }
+}
+
+/// receipt の result は呼出し cwd 基準の path。cwd はプロセスの性質なので実バイナリで確かめる。
+#[test]
+fn receipt_result_is_relative_to_the_calling_directory() {
+    let dir = workdir("relative-result");
+    let definition = fixture("counter.atoms.json");
+    let law = fixture("counter.law");
+    let map = fixture("counter.archmap.json");
+    let r = run_binary(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            definition.to_str().unwrap(),
+            "--law",
+            law.to_str().unwrap(),
+            "--archmap",
+            map.to_str().unwrap(),
+            "--out",
+            "both",
+        ],
+    );
+    consistent(&dir, &r, "complete", 0);
+    assert!(r.stderr.is_empty());
+    assert_eq!(s(get(&r.receipt, "result")), "both/result.json");
 }
 
 #[test]

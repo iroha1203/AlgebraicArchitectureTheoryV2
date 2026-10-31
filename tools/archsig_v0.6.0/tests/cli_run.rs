@@ -25,6 +25,9 @@ fn inputs(name: &str, count: Option<&str>, law: &str) -> PathBuf {
     dir
 }
 fn requests(dir: &Path, asks: &[&str]) -> Run {
+    requests_with(dir, asks, run)
+}
+fn requests_with(dir: &Path, asks: &[&str], execute: fn(&Path, &[&str]) -> Run) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -39,7 +42,7 @@ fn requests(dir: &Path, asks: &[&str]) -> Run {
     for ask in asks {
         args.extend(["--ask", ask]);
     }
-    run(dir, &args)
+    execute(dir, &args)
 }
 fn answer<'a>(res: &'a JNode, id: &str) -> &'a JNode {
     arr(get(res, "answers"))
@@ -321,8 +324,9 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
     .into_iter()
     .enumerate()
     {
+        // 予算を実際の計測につなぐのは main なので、実バイナリで確かめる。
         let dir = inputs(&format!("large-budget-{index}"), Some("2"), L);
-        let r = run(
+        let r = run_binary(
             &dir,
             &[
                 "run",
@@ -345,6 +349,32 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
         let res = result(&dir, &r, "complete", 0);
         assert!(!has(&res, "limits"));
     }
+    // 到達する上限を渡すと、main が実際の計測で止める。
+    let dir = inputs("small-memory-budget", Some("2"), L);
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                ASKS[0],
+                "--out",
+                "out",
+                "--memory-mib",
+                "1",
+            ],
+        )
+    });
+    let receipt = notified(&dir, &r, "interrupted", 75);
+    let issue = &arr(get(&receipt, "issues"))[0];
+    assert_eq!(s(get(issue, "code")), "budget_exhausted");
+    assert_eq!(s(get(get(issue, "details"), "resource")), "memory_mib");
 }
 
 #[test]
@@ -420,7 +450,8 @@ fn run_argument_and_input_failures_never_create_failure_files() {
     }
     let dir = inputs("run-read-error", Some("2"), L);
     std::fs::remove_file(dir.join("l.law")).unwrap();
-    let r = without_file_changes(&dir, || requests(&dir, &ASKS));
+    // 入力の path は呼出し cwd 基準のまま返す。cwd はプロセスの性質なので実バイナリで確かめる。
+    let r = without_file_changes(&dir, || requests_with(&dir, &ASKS, run_binary));
     let receipt = notified(&dir, &r, "error", 74);
     assert_eq!(
         s(get(
@@ -870,4 +901,31 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
         .unwrap();
     assert_eq!(s(get(origin, "mode")), "specification");
     assert!(arr(get(origin, "locations")).is_empty());
+}
+
+/// --reuse の path も呼出し cwd 基準で読む。cwd はプロセスの性質なので実バイナリで確かめる。
+#[test]
+fn reuse_path_is_relative_to_the_calling_directory() {
+    let dir = inputs("reuse-relative", Some("2"), L);
+    let first = requests_with(&dir, &ASKS, run_binary);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for ask in ASKS {
+        args.extend(["--ask", ask]);
+    }
+    let reused = run_binary(&dir, &args);
+    assert_eq!(reused.code, first.code, "{}", reused.stdout);
+    assert!(reused.stderr.is_empty());
+    assert!(warnings(&result_json(&dir, &reused)).is_empty());
 }

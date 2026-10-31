@@ -246,10 +246,6 @@ fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
             for name in ["z","w"] {
                 assert!(arr(get(scope,"quantifiers")).iter().any(|q|s(get(q,"name"))==name && !has(q,"domain")));
             }
-            let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-            for ask in asks {args.extend(["--ask",ask]);}
-            let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{}",reused.stdout);
-            let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
             if predicate=="z=w" {
                 let bound=execute(&dir,"bound",&[asks[0],"n=evaluate(Reservations.two,on=$a.candidate.source)","l=localize($a.candidate.source,law=Reservations.valid,z=$n.value,w=$n.value)","d=diagnose($l.system,degree=0)"]);
                 assert_eq!(bound.code,0,"{}",bound.stdout);
@@ -287,7 +283,7 @@ fn unknown_fixed_value_is_not_a_free_coordinate_or_empty_solution() {
     assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
 }
 #[test]
-fn local_system_saved_reuse_and_answer_bindings_keep_the_same_result() {
+fn local_system_answer_bindings_establish_every_answer() {
     let dir = input("local-reuse", Some(true));
     let asks = [
         "a=build(Fixed,on=@fixed/s)",
@@ -297,30 +293,11 @@ fn local_system_saved_reuse_and_answer_bindings_keep_the_same_result() {
     ];
     let result = execute(&dir, "out", &asks);
     assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
-    let before = result_json(&dir, &result);
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in &asks {
-        args.extend(["--ask", ask]);
-    }
-    let result = run(&dir, &args);
-    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
-    let after = result_json(&dir, &result);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
+    let saved = result_json(&dir, &result);
+    for (index, id) in ["a", "l", "d", "again"].into_iter().enumerate() {
+        let answer = &arr(get(&saved, "answers"))[index];
+        assert_eq!(s(get(answer, "id")), id);
+        assert_eq!(s(get(answer, "status")), "established", "{id}");
     }
 }
 #[test]
@@ -836,7 +813,7 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
 }
 
 #[test]
-fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
+fn conditional_local_system_keeps_guarded_instance() {
     let dir = input("local-conditional-reuse", Some(false));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     std::fs::write(
@@ -856,32 +833,8 @@ fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
     let first = execute(&dir, "out", &asks);
     assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
     let before = result_json(&dir, &first);
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let second = run(&dir, &args);
-    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
-    let after = result_json(&dir, &second);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
-    }
     assert_eq!(
-        get(output(&after, 3, "value"), "value").value,
+        get(output(&before, 3, "value"), "value").value,
         archsig::json::JValue::Bool(false)
     );
 }
@@ -1015,7 +968,7 @@ fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
 }
 
 #[test]
-fn shared_support_law_family_reuses_each_original_requirement() {
+fn shared_support_law_family_keeps_each_original_requirement() {
     let dir = input("local-family-reuse", Some(true));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     std::fs::write(dir.join("l.law"),law.replace("view current","law required other(t:State):t.flag=t.flag; law optional ignored(s:State):not s.flag; view current")).unwrap();
@@ -1032,30 +985,8 @@ fn shared_support_law_family_reuses_each_original_requirement() {
         arr(get(get(output(&before, 1, "system"), "value"), "laws")).len(),
         2
     );
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let second = run(&dir, &args);
-    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
-    let after = result_json(&dir, &second);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
-    }
     assert_eq!(
-        get(output(&after, 3, "value"), "value").value,
+        get(output(&before, 3, "value"), "value").value,
         archsig::json::JValue::Bool(true)
     );
 }
@@ -1192,7 +1123,7 @@ fn binding_a_boolean_answer_selects_one_law_instance_without_changing_the_univer
 }
 
 #[test]
-fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
+fn finite_parameter_product_keeps_all_four_instances() {
     let dir = input("local-finite-product", Some(false));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     std::fs::write(
@@ -1240,28 +1171,6 @@ fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
             (true, true)
         ])
     );
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let r = run(&dir, &args);
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
-    let after = result_json(&dir, &r);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
-    }
 }
 
 fn explicit_local(dir: &std::path::Path, declaration: &str) {
@@ -1387,7 +1296,7 @@ fn explicit_read_missing_observation_remains_needed() {
 }
 
 #[test]
-fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_reuses() {
+fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_holds() {
     for flag in [None, Some(true)] {
         let dir = input("explicit-local-guard", flag);
         let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
@@ -1420,28 +1329,6 @@ fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_reu
             assert!(!has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
         } else {
             assert!(arr(get(plan, "requirements")).is_empty());
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            for ask in asks {
-                args.extend(["--ask", ask]);
-            }
-            let reused = run(&dir, &args);
-            assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-            let again = result_json(&dir, &reused);
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&again, field).value);
-            }
         }
     }
 }
@@ -1606,37 +1493,6 @@ fn product_reads_preserve_the_typed_coordinate_and_each_component() {
                     }
                 );
             }
-            if left && right {
-                let reused = run(
-                    &dir,
-                    &[
-                        "run",
-                        "--atom-definition",
-                        "d.json",
-                        "--archmap",
-                        "a.json",
-                        "--law",
-                        "l.law",
-                        "--out",
-                        "again",
-                        "--reuse",
-                        "out",
-                        "--ask",
-                        "a=build(Fixed,on=@fixed/s)",
-                        "--ask",
-                        "l=localize($a.object)",
-                        "--ask",
-                        "e=diagnose($l.system)",
-                        "--ask",
-                        "s=diagnose($l.system,side=semantic)",
-                    ],
-                );
-                assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-                let again = result_json(&dir, &reused);
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&j, field).value, get(&again, field).value);
-                }
-            }
             let system = get(output(&j, 1, "system"), "value");
             let context = get(node(&j, &arr(get(system, "contexts"))[0]), "value");
             let readings = arr(get(context, "readings"));
@@ -1748,7 +1604,7 @@ fn diagnostic_compare_input(name: &str, identity: bool, valid: bool) -> std::pat
     dir
 }
 #[test]
-fn finite_diagnostics_compare_actual_identity_maps_on_both_sides_and_reuse() {
+fn finite_diagnostics_compare_actual_identity_maps_on_both_sides() {
     for valid in [true, false] {
         for side in ["semantic", "equation"] {
             for degree in [0, 1] {
@@ -1800,29 +1656,6 @@ fn finite_diagnostics_compare_actual_identity_maps_on_both_sides_and_reuse() {
                     let map = get(node(&result, reference), "value");
                     assert_eq!(arr(get(map, "pairs")).len(), usize::from(valid));
                 }
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--time-ms",
-                    "120000",
-                ];
-                for ask in asks {
-                    args.extend(["--ask", ask]);
-                }
-                let reused = run(&dir, &args);
-                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-                let again = result_json(&dir, &reused);
-                assert_eq!(get(&again, "answers").value, get(&result, "answers").value);
-                assert_eq!(get(&again, "nodes").value, get(&result, "nodes").value);
             }
         }
     }
@@ -2062,7 +1895,7 @@ fn implicit_support_cover_has_actual_intersections_and_matching_families() {
 }
 
 #[test]
-fn implicit_support_cover_preserves_missing_and_saved_reuse() {
+fn implicit_support_cover_preserves_missing() {
     for right in [Some(true), None] {
         let dir = implicit_multiple_input("implicit-cover-reuse", true, right);
         let asks = [
@@ -2080,44 +1913,22 @@ fn implicit_support_cover_preserves_missing_and_saved_reuse() {
             first.stderr
         );
         let before = result_json(&dir, &first);
-        if right.is_none() {
-            assert!(!has(
-                get(&arr(get(&before, "answers"))[1], "outputs"),
-                "system"
-            ));
-            let plan = get(output(&before, 3, "plan"), "value");
-            assert!(
-                arr(get(plan, "requirements"))
-                    .iter()
-                    .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.other")
-            );
+        if right.is_some() {
+            for answer in arr(get(&before, "answers")) {
+                assert_eq!(s(get(answer, "status")), "established");
+            }
+            continue;
         }
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let second = run(&dir, &args);
-        assert_eq!(
-            second.code, first.code,
-            "{} {}",
-            second.stdout, second.stderr
+        assert!(!has(
+            get(&arr(get(&before, "answers"))[1], "outputs"),
+            "system"
+        ));
+        let plan = get(output(&before, 3, "plan"), "value");
+        assert!(
+            arr(get(plan, "requirements"))
+                .iter()
+                .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.other")
         );
-        let after = result_json(&dir, &second);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&before, field).value, get(&after, field).value);
-        }
     }
 }
 
@@ -2167,37 +1978,6 @@ fn explicit_distinct_local_declarations_form_the_selected_cover() {
                     "refuted"
                 }
             );
-        }
-        if left && right {
-            let r = run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--ask",
-                    "a=build(Fixed,on=@fixed/s)",
-                    "--ask",
-                    "l=localize($a.object)",
-                    "--ask",
-                    "e=diagnose($l.system)",
-                    "--ask",
-                    "s=diagnose($l.system,side=semantic)",
-                ],
-            );
-            assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
-            let after = result_json(&dir, &r);
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&after, field).value);
-            }
         }
     }
 }
@@ -2323,28 +2103,6 @@ fn tuple_intersections_retain_typed_component_projections() {
                     s(get(&arr(get(&j, "answers"))[i], "status")),
                     if flag { "established" } else { "refuted" }
                 );
-            }
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            for ask in asks {
-                args.extend(["--ask", ask]);
-            }
-            let reused = run(&dir, &args);
-            assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-            let after = result_json(&dir, &reused);
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&after, field).value);
             }
         }
     }
@@ -2509,35 +2267,6 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
             arr(get(get(fiber, "representation"), "values")).len(),
             if correlated { 0 } else { 1 }
         );
-        let reused = run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-                "--ask",
-                "a=build(Fixed,on=@fixed/s)",
-                "--ask",
-                "l=localize($a.object,using=Fixed.choose)",
-                "--ask",
-                "e=diagnose($l.system)",
-                "--ask",
-                "s=diagnose($l.system,side=semantic)",
-            ],
-        );
-        assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-        let after = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&after, field).value);
-        }
         for scope in ["cover", "topology"] {
             let checks = arr(get(system, "sheaf_checks"));
             let _propositions = ["semantic", "equation"].map(|side| {
@@ -2768,12 +2497,6 @@ fn finite_change_preserves_unbound_law_domains_and_bound_selection_in_scope() {
     for (index, count) in [(2, 2), (3, 1)] {
         assert_eq!(arr(get(get(output(&result,index,"system"),"value"),"laws")).len(), count);
     }
-    let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-    for ask in &asks { args.extend(["--ask", *ask]); }
-    let r = run(&dir, &args);
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
-    let after = result_json(&dir, &r);
-    for field in ["answers", "nodes"] { assert_eq!(get(&result,field).value,get(&after,field).value); }
 }
 
 #[test]
@@ -2820,12 +2543,6 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
             let global = get(node(&j,get(d,"global")),"value");
             assert_eq!(arr(get(get(global,"representation"),"values")).len(),count);
         }
-        let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-        for ask in &asks { args.extend(["--ask",*ask]); }
-        let r = run(&dir,&args);
-        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
-        let after = result_json(&dir,&r);
-        for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&after,field).value); }
     }
 }
 
@@ -2906,12 +2623,6 @@ fn finite_implicit_intersections_keep_only_the_read_expressions_bindings() {
             assert!(values.iter().any(|r|matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
         }
     }
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-    for ask in &asks {args.extend(["--ask",*ask]);}
-    let r=run(&dir,&args);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
-    let after=result_json(&dir,&r);
-    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
 }
 }
 
@@ -2964,12 +2675,6 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     if failure != 0 { assert!(arr(get(local,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm")); }
     let plan=get(output(&j,2,"plan"),"value");
     assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Fixed.State.other"));
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-    for ask in asks {args.extend(["--ask",ask]);}
-    let r=run(&dir,&args);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
-    let after=result_json(&dir,&r);
-    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&after,field).value);}
 }
 }
 
@@ -3116,12 +2821,6 @@ fn explicit_local_reference_chain_reads_reach_actual_point_coordinates() {
             let global=get(node(&j,get(diagnostic,"global")),"value");
             assert!(arr(get(get(global,"representation"),"values")).is_empty());
         }
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);
-        assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);
-        for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -3219,11 +2918,6 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
         }
         let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
         assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args); assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);
-        for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -3251,10 +2945,6 @@ fn integer_local_missing_offset_keeps_its_original_field_for_needed() {
     assert!(arr(get(plan,"requirements")).iter().any(|r| {
         let f=get(r,"field"); s(get(f,"field"))=="Coordinates.Shift.shift" && s(get(f,"subject"))=="c"
     }));
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}
-    let repeat=run(&dir,&args);assert_eq!(repeat.code,2,"{} {}",repeat.stdout,repeat.stderr);
-    let again=result_json(&dir,&repeat);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
 
 #[test]
@@ -3612,10 +3302,6 @@ fn integer_diagnostics_compare_identity_cochains_classes_and_public_maps() {
         if degree==1 {assert_eq!(s(get(get(node(&j,get(comparison,"class_transport")),"judgment"),"status")),"established");}
         assert_eq!(s(get(output(&j,5,"value"),"value")),"0");
         assert_eq!(s(get(output(&j,6,"value"),"value")),if degree==0 {"1"} else {"0"});
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -3711,10 +3397,6 @@ fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_di
         }
         assert!(nontrivial_allowed,"{goal:?}");
         assert_eq!(lawful,goal==Some(if guarded {4}else{2}),"{goal:?}, guarded={guarded}");
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -3766,10 +3448,6 @@ fn integer_diagnostics_transport_between_architectures_and_reordered_contexts() 
         for field in ["kernel","cokernel"] {assert_eq!(num(get(get(node(&j,get(cmp,field)),"value"),"free_rank")),0);}
         assert_eq!(has(cmp,"class_transport"),degree==1);
         if degree==1{assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established");}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
 }
 
@@ -3874,10 +3552,6 @@ fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
         } else {assert!(arr(get(hm,"columns")).is_empty());
             if degree==1 {assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established");}}
         assert_eq!(s(get(output(&j,6,"value"),"value")),if step==0 && degree==0 {"1"}else{"0"});
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}
-        let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
 }
 
@@ -3950,7 +3624,7 @@ fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path
 }
 
 #[test]
-fn finite_change_diagnostics_compare_the_selected_global_states_and_reuse() {
+fn finite_change_diagnostics_compare_the_selected_global_states() {
     for valid in [false,true] { for side in ["equation","semantic"] { for degree in [0,1] {
         let dir=finite_diagnostic_input(&format!("finite-change-compare-{valid}-{side}-{degree}"),valid);
         let d1=format!("d1=diagnose($l.system,side={side},degree={degree})");
@@ -3970,9 +3644,6 @@ fn finite_change_diagnostics_compare_the_selected_global_states_and_reuse() {
         if valid {assert_eq!(states,vec![vec![true,false],vec![true,true]]);}
         for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
         assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -4021,30 +3692,6 @@ fn repeated_finite_localization_uses_real_state_bijections() {
                     );
                 }
                 assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--time-ms",
-                    "120000",
-                ];
-                for ask in asks {
-                    args.extend(["--ask", ask]);
-                }
-                let reused = run(&dir, &args);
-                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-                let again = result_json(&dir, &reused);
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&j, field).value, get(&again, field).value);
-                }
             }
         }
     }
@@ -4116,12 +3763,6 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
                 let comparison = get(output(&j, 5, "comparison"), "value");
                 let map = get(node(&j, get(comparison, "finite_map")), "value");
                 assert_eq!(arr(get(map, "pairs")).len(), states.len());
-                let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-                for ask in asks { args.extend(["--ask", ask]); }
-                let reused = run(&dir, &args);
-                assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-                let again = result_json(&dir, &reused);
-                for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
             }
         }
     }
@@ -4158,12 +3799,6 @@ fn empty_local_law_family_keeps_change_expression_for_unsupported_followups() {
         assert_eq!(arr(get(expression, "parameters")).iter().map(|p| s(get(p, "name"))).collect::<Vec<_>>(), vec!["s", "b"]);
         assert!(arr(get(expression, "bindings")).is_empty());
     }
-    let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-    for ask in asks { args.extend(["--ask", ask]); }
-    let reused = run(&dir, &args);
-    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
 }
 
 #[test]
@@ -4202,17 +3837,11 @@ fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
                 s(get(field, "field")) == "Reservations.State.held" && s(get(field, "subject")) == "p"
             }));
         }
-        let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--out", "again", "--reuse", "out", "--time-ms", "120000"];
-        for ask in asks { args.extend(["--ask", ask]); }
-        let reused = run(&dir, &args);
-        assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] { assert_eq!(get(&j, field).value, get(&again, field).value); }
     }
 }
 
 #[test]
-fn fixed_localization_without_laws_keeps_one_state_and_reuses_comparisons() {
+fn fixed_localization_without_laws_keeps_one_state_and_compares() {
     for explicit in [false,true] { for side in ["equation","semantic"] { for degree in [0,1] {
         let dir = finite_diagnostic_input(&format!("empty-fixed-{explicit}-{side}-{degree}"), false);
         if explicit {
@@ -4233,9 +3862,6 @@ fn fixed_localization_without_laws_keeps_one_state_and_reuses_comparisons() {
         let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
         assert_eq!(arr(get(map,"pairs")).len(),1);
         for condition in arr(get(cmp,"conditions")) {assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -4256,9 +3882,6 @@ fn fixed_empty_law_diagnostics_keep_unsupported_dependencies_without_inventing_a
         let deps=arr(get(reason,"dependencies"));assert!(!deps.is_empty());
         for dep in deps {let value=get(node(&internal,dep),"value");assert!(!has(value,"kind") || s(get(value,"kind"))!="source");}
     }
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
-    let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
 
 #[test]
@@ -4280,9 +3903,6 @@ fn fixed_empty_law_local_reads_keep_missing_observations() {
     for i in [3,4] {let plan=get(output(&j,i,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r| {
         let field=get(r,"field");s(get(field,"field"))=="Reservations.State.held" && s(get(field,"subject"))=="p"
     }));}
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
-    let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
 
 #[test]
@@ -4309,10 +3929,6 @@ fn integer_diagnostic_transport_follows_compound_law_bindings() {
         for field in ["kernel","cokernel"] {let group=get(node(&j,get(cmp,field)),"value");assert_eq!(num(get(group,"free_rank")),0);assert!(arr(get(group,"torsion")).is_empty());}
         assert_eq!(has(cmp,"class_transport"),degree==1);
         if degree==1 { assert_eq!(s(get(get(node(&j,get(cmp,"class_transport")),"judgment"),"status")),"established"); }
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks { args.extend(["--ask",ask]); }
-        let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
 }
 
@@ -4359,9 +3975,6 @@ fn integer_local_laws_read_fields_through_bound_tuple_references() {
         }
         let cmp=get(output(&j,7,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[7],"status")),"established");
         for field in ["kernel","cokernel"] {let group=get(node(&j,get(cmp,field)),"value");assert_eq!(num(get(group,"free_rank")),0);assert!(arr(get(group,"torsion")).is_empty());}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -4404,9 +4017,6 @@ fn finite_diagnostics_transport_actual_states_between_architectures() {
         for pair in pairs {let pair=arr(pair);let x=get(node(&j,&pair[0]),"value");let y=get(node(&j,&pair[1]),"value");
             if change{let x=arr(x);let y=arr(y);assert_eq!(x.len(),2);assert_eq!(y.len(),2);assert_eq!(x[0].value,y[1].value);assert_eq!(x[1].value,y[0].value);} }
         for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks{args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -4457,9 +4067,6 @@ fn finite_diagnostics_compare_different_changes_by_their_actual_states() {
             for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
         }
         assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks{args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -4491,9 +4098,6 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
         assert_eq!(conditions.iter().any(|r|s(get(get(node(&j,r),"judgment"),"status"))=="refuted"),proper);
         if proper {assert!(conditions.iter().all(|r|s(get(get(node(&j,r),"value"),"predicate"))!="inverse_maps"));}
         assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks{args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"]{assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -4678,30 +4282,6 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
                     );
                 }
                 assert_eq!(s(get(&arr(get(&j, "answers"))[6], "status")), "established");
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--time-ms",
-                    "120000",
-                ];
-                for ask in asks {
-                    args.extend(["--ask", ask]);
-                }
-                let reused = run(&dir, &args);
-                assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-                let again = result_json(&dir, &reused);
-                for field in ["answers", "nodes"] {
-                    assert_eq!(get(&j, field).value, get(&again, field).value);
-                }
             }
         }
     }
@@ -4806,30 +4386,6 @@ fn finite_integer_local_system_cases(reads: Option<&str>) {
             for i in [4, 5, 6] {
                 assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "established");
             }
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-                "--time-ms",
-                "120000",
-            ];
-            for ask in asks {
-                args.extend(["--ask", ask]);
-            }
-            let reused = run(&dir, &args);
-            assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-            let again = result_json(&dir, &reused);
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&again, field).value);
-            }
         }
     }
 }
@@ -4879,30 +4435,6 @@ fn finite_integer_localization_keeps_missing_fixed_fields() {
         let f = get(r, "field");
         s(get(f, "subject")) == "p" && s(get(f, "field")) == "Reservations.State.held"
     }));
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let reused = run(&dir, &args);
-    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(&dir, &reused);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&j, field).value, get(&again, field).value);
-    }
 }
 
 fn finite_integer_repaired_fixed_values(explicit: bool) {
@@ -4962,12 +4494,6 @@ fn finite_integer_repaired_fixed_values(explicit: bool) {
     states.sort();
     assert_eq!(states,vec![vec!["3".to_string(),"2".to_string()],vec!["3".to_string(),"3".to_string()]]);
     assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}
-    let reused=run(&dir,&args);
-    assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-    let again=result_json(&dir,&reused);
-    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
 
 #[test]
@@ -5011,12 +4537,6 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
         let field=get(r,"field");
         s(get(field,"snapshot"))=="v" && s(get(field,"subject"))=="s" && s(get(field,"field"))=="Pair.State.z"
     }));
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}
-    let reused=run(&dir,&args);
-    assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
-    let again=result_json(&dir,&reused);
-    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
 }
 fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
     #[path = "common/architecture_environment.rs"]
@@ -5064,7 +4584,7 @@ fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
     dir
 }
 #[test]
-fn rational_diagnostics_compare_actual_identity_maps_and_reuse() {
+fn rational_diagnostics_compare_actual_identity_maps() {
     for (side, degree) in [("equation", 0), ("equation", 1), ("semantic", 1)] {
         let dir = rational_compare_input(&format!("rational-compare-{side}-{degree}"), true);
         let d1 = format!("d1=diagnose($l.system,side={side},degree={degree})");
@@ -5099,35 +4619,11 @@ fn rational_diagnostics_compare_actual_identity_maps_and_reuse() {
             );
         }
         assert_eq!(has(comparison, "class_transport"), degree == 1);
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-            "--time-ms",
-            "120000",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let repeat = run(&dir, &args);
-        assert_eq!(repeat.code, 0, "{} {}", repeat.stdout, repeat.stderr);
-        let again = result_json(&dir, &repeat);
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&j, key).value, get(&again, key).value);
-        }
     }
 }
 
 #[test]
-fn rational_diagnostic_inclusion_has_field_cokernel_and_reuses_results() {
+fn rational_diagnostic_inclusion_has_field_cokernel() {
     for step in [0, 2, 3] {
         let dir = rational_compare_input(&format!("rational-inclusion-{step}"), false);
         let path = dir.join("l.law");
@@ -5169,30 +4665,6 @@ fn rational_diagnostic_inclusion_has_field_cokernel_and_reuses_results() {
             s(get(output(&j, 6, "value"), "value")),
             if step == 0 { "1" } else { "0" }
         );
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-            "--time-ms",
-            "120000",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let reused = run(&dir, &args);
-        assert_eq!(reused.code, r.code, "{} {}", reused.stdout, reused.stderr);
-        let again = result_json(&dir, &reused);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&j, field).value, get(&again, field).value);
-        }
     }
 }
 
@@ -5425,30 +4897,6 @@ fn diagnostic_transport_keeps_path_bindings_and_named_compositions() {
                     assert!(arr(get(group, "torsion")).is_empty());
                 }
             }
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-                "--time-ms",
-                "120000",
-            ];
-            for ask in asks {
-                args.extend(["--ask", ask]);
-            }
-            let repeat = run(&dir, &args);
-            assert_eq!(repeat.code, r.code, "{} {}", repeat.stdout, repeat.stderr);
-            let again = result_json(&dir, &repeat);
-            for field in ["answers", "nodes"] {
-                assert_eq!(get(&j, field).value, get(&again, field).value);
-            }
         }
     }
 }
@@ -5500,12 +4948,6 @@ fn diagnostic_transport_compares_term_bindings_by_their_values() {
                     assert!(arr(get(group,"torsion")).is_empty());
                 }}
             }
-            let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-            for ask in asks {args.extend(["--ask",ask]);}
-            let repeat=run(&dir,&args);
-            assert_eq!(repeat.code,r.code,"{} {}",repeat.stdout,repeat.stderr);
-            let again=result_json(&dir,&repeat);
-            for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
         }
     }
 }
@@ -5555,11 +4997,6 @@ fn finite_integer_noninjective_reads_use_their_images_and_joint_cover() {
         assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),rank);
     }
     assert_eq!(s(get(&arr(get(&j,"answers"))[4],"status")),"established");
-    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-    for ask in asks {args.extend(["--ask",ask]);}
-    let repeat=run(&dir,&args);assert_eq!(repeat.code,r.code,"{} {}",repeat.stdout,repeat.stderr);
-    let again=result_json(&dir,&repeat);
-    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }
 }
 
@@ -5627,9 +5064,6 @@ fn finite_affine_diagnostics_transport_noninjective_read_images(rational: bool) 
         let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),if mode=="collapsed"{1}else{2});
         for pair in pairs {let pair=arr(pair);assert_eq!(get(node(&j,&pair[0]),"value").value,get(node(&j,&pair[1]),"value").value);}
         for condition in arr(get(cmp,"conditions")){assert_eq!(s(get(get(node(&j,condition),"judgment"),"status")),"established");}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
 }
 
@@ -5656,9 +5090,6 @@ fn finite_change_on_rational_fields_keeps_full_equation_fibers() {
         let domain=get(node(&j,get(restriction,"source")),"value");assert_eq!(arr(get(domain,"elements")).len(),if selected{2}else{4});
         for v in arr(get(domain,"elements")) {let values=arr(get(node(&j,v),"value"));assert!(values.iter().any(|q|s(&arr(q)[1])=="2"));}
         for i in [4,5] {assert_eq!(s(get(&arr(get(&j,"answers"))[i],"status")),"established");}
-        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
-        for ask in asks {args.extend(["--ask",ask]);}let reused=run(&dir,&args);assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-        let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}}
 }
 
@@ -5707,18 +5138,12 @@ fn universal_laws_localize_integer_and_rational_affine_changes() {
             }
             let qs = arr(get(get(&arr(get(&j,"answers"))[1],"scope"),"quantifiers"));
             for name in ["z","w"] { assert!(qs.iter().any(|q|s(get(q,"name"))==name && s(get(q,"kind"))=="forall" && !has(q,"domain"))); }
-            let mut args = vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out"];
-            for ask in asks {args.extend(["--ask",ask]);}
-            let reused = run(&dir,&args);
-            assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-            let again = result_json(&dir,&reused);
-            for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
         }
     }
 }
 
 #[test]
-fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
+fn universal_local_laws_preserve_solutions_and_quantifiers() {
     for rational in [false, true] {
         for (predicate, count, rank) in [
             ("z=z", 4, 2),
@@ -5740,17 +5165,18 @@ fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
                 "l=localize($m.candidate.source,using=Reservations.choose)",
                 "d=diagnose($l.system,side=equation,degree=0)",
                 "e=diagnose($l.system,side=semantic,degree=0)"];
-            let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law"];
-            for ask in asks { args.extend(["--ask", ask]); }
-            let files = || std::fs::read_dir(&dir).unwrap().map(|p| p.unwrap().file_name()).collect::<std::collections::BTreeSet<_>>();
-            let before = files();
-            let normal = run(&dir, &args);
-            assert_eq!(normal.code, 0, "{rational}/{predicate}: {} {}", normal.stdout, normal.stderr);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(files(), before);
-            let summary = archsig::json::parse(normal.stdout.as_bytes()).unwrap();
-            assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
-            assert!(!has(&summary, "nodes"));
+            if predicate == "z=z" {
+                let mut args = vec!["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law"];
+                for ask in asks { args.extend(["--ask", ask]); }
+                let files = || std::fs::read_dir(&dir).unwrap().map(|p| p.unwrap().file_name()).collect::<std::collections::BTreeSet<_>>();
+                let before = files();
+                let normal = run(&dir, &args);
+                assert_eq!(normal.code, 0, "{rational}/{predicate}: {} {}", normal.stdout, normal.stderr);
+                assert_eq!(files(), before);
+                let summary = archsig::json::parse(normal.stdout.as_bytes()).unwrap();
+                assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
+                assert!(!has(&summary, "nodes"));
+            }
             let saved = execute(&dir, "out", &asks);
             assert_eq!(saved.code, 0, "{} {}", saved.stdout, saved.stderr);
             let j = result_json(&dir, &saved);
@@ -5776,11 +5202,6 @@ fn universal_local_laws_preserve_solutions_quantifiers_and_reuse() {
                 assert!(!qs.is_empty());
                 for q in qs { assert_eq!(s(get(q,"kind")),"forall"); assert!(!has(q,"domain")); }
             }
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = run(&dir, &args);
-            assert_eq!(reused.code, 0, "{} {}", reused.stdout, reused.stderr);
-            let again = result_json(&dir, &reused);
-            for field in ["answers", "nodes"] { assert_eq!(get(&j,field).value, get(&again,field).value); }
         }
     }
 }

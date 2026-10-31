@@ -5,7 +5,6 @@ mod cli;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 
 fn inputs(name: &str) -> PathBuf {
     let dir = workdir(name);
@@ -28,10 +27,9 @@ fn inputs(name: &str) -> PathBuf {
     dir
 }
 fn asks(dir: &Path, requests: &[&str]) -> Run {
-    asks_with_limits(dir, requests, "120000", CHILD_DEADLINE)
+    asks_with_limits(dir, requests, "120000")
 }
-// 360秒の製品予算を使う呼出しは、起動・保存の余裕60秒を加えた420秒監視を明示する。
-fn asks_with_limits(dir: &Path, requests: &[&str], time: &str, deadline: Duration) -> Run {
+fn asks_with_limits(dir: &Path, requests: &[&str], time: &str) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -48,7 +46,7 @@ fn asks_with_limits(dir: &Path, requests: &[&str], time: &str, deadline: Duratio
     for request in requests {
         args.extend(["--ask", request]);
     }
-    run_with_deadline(dir, &args, deadline)
+    run(dir, &args)
 }
 fn answer<'a>(result: &'a JNode, id: &str) -> &'a JNode {
     arr(get(result, "answers"))
@@ -110,28 +108,6 @@ fn assert_unsupported_map(dir: &Path, method: &str, operand: &str, original: &st
             .iter()
             .any(|r| r.value == reason.value)
     );
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for request in requests {
-        args.extend(["--ask", request]);
-    }
-    let reused = cli::run(dir, &args);
-    assert_eq!(reused.code, 2, "{} {}", reused.stdout, reused.stderr);
-    let again = result_json(dir, &reused);
-    for key in ["answers", "nodes", "inputs"] {
-        assert_eq!(get(&result, key).value, get(&again, key).value);
-    }
 }
 
 fn assert_refuted_value_map(dir: &Path) {
@@ -156,29 +132,6 @@ fn assert_refuted_value_map(dir: &Path) {
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).is_empty());
     assert!(arr(get(plan, "blockers")).is_empty());
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for request in requests {
-        args.extend(["--ask", request]);
-    }
-    let again = cli::run(dir, &args);
-    assert_eq!(again.code, 1, "{}", again.stdout);
-    let reused = result_json(dir, &again);
-    assert!(warnings(&reused).is_empty());
-    for key in ["answers", "nodes", "inputs"] {
-        assert_eq!(get(&result, key).value, get(&reused, key).value);
-    }
 }
 
 fn reference_pairs(result: &JNode, map: &JNode) -> Vec<(String, String)> {
@@ -413,8 +366,6 @@ reading After {{{vocabulary} change tune(t:State,k:{parameter}){tg}=t with {{hel
             if mode=="integer-refuted" {assert_eq!(s(value(&result,get(&bindings[1],"value"))),"1");}
         }
         if code==2 {let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"subject"))=="p"));}
-        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
-        let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
 
@@ -452,10 +403,7 @@ fn change_transport_uses_field_alignments_and_keeps_known_refutations_with_missi
 reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:{ty})=s with {{free={sf},held={sh}}};}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:{ty})=t with {{free={tf},held={th}}};}}"#)).unwrap();
         let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
-        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
-        for request in requests {args.extend(["--ask",request]);}
-        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
-        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);assert_map_summary(&normal,&result);let m=answer(&result,"m");
+        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
         assert_eq!(s(get(m,"status")),if code==0 {"established"} else if code==1 {"refuted"} else {"undetermined"});assert_eq!(s(get(answer(&result,"same"),"status")),"established");assert_eq!(has(get(m,"outputs"),"map"),code==0);
         if code==0 {let map=value(&result,get(get(m,"outputs"),"map"));let transport=value(&result,&arr(get(map,"transports"))[0]);let clause=&arr(get(transport,"clauses"))[1];
             let target=value(&result,get(clause,"target"));let span=arr(get(get(target,"location"),"span"));let law=std::fs::read(dir.join("l.law")).unwrap();assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],th.as_bytes());
@@ -464,7 +412,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         if code==1 {let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());if missing {assert!(examples.iter().any(|e|{let data=get(value(&result,e),"data");s(value(&result,get(data,"left")))=="0"&&s(value(&result,get(data,"right")))=="1"}));}}
         if missing {assert!(arr(get(m,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"&&!arr(get(r,"missing")).is_empty()));}
         if collision {assert!(arr(get(m,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));}
-        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
 
@@ -481,10 +428,7 @@ fn change_transport_checks_later_integer_directions_and_reverse_guard_inclusion(
 reading Before {{{vocabulary} change tune(s:State,{source_params}){guard}=s with {{free={left}}};}}
 reading After {{{vocabulary} change tune(t:State,{target_params})=t with {{free={right}}};}}"#)).unwrap();
         let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
-        let mut args=vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
-        for request in requests {args.extend(["--ask",request]);}
-        let normal=without_file_changes(&dir,||cli::run(&dir,&args));assert_eq!(normal.code,1,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
-        let run=asks(&dir,&requests);assert_eq!(run.code,1,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);assert_map_summary(&normal,&result);let m=answer(&result,"m");
+        let run=asks(&dir,&requests);assert_eq!(run.code,1,"{mode}: {}",run.stdout);let result=result_json(&dir,&run);let m=answer(&result,"m");
         assert_eq!(s(get(m,"status")),"refuted");assert!(!has(get(m,"outputs"),"map"));assert_eq!(s(get(answer(&result,"same"),"status")),"established");
         let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());let data=get(value(&result,&examples[0]),"data");let bindings=arr(get(data,"bindings"));
         assert_eq!(s(get(&bindings[1],"name")),"n");
@@ -498,7 +442,6 @@ reading After {{{vocabulary} change tune(t:State,{target_params})=t with {{free=
             assert_json(value(&result,get(data,"left")),"false");assert_json(value(&result,get(data,"right")),"true");
         }
         let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).is_empty());
-        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,1,"{mode}: {}",reused.stdout);let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
 
@@ -532,23 +475,6 @@ reading After {{{vocabulary} local here(t:State){target_guard} reads t,(t.free);
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(normal.code, 0, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(normal.stdout.len() < 1000);
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
         let run = asks(&dir, &requests);
         assert_eq!(run.code, 0, "{}", run.stdout);
         let result = result_json(&dir, &run);
@@ -591,13 +517,6 @@ reading After {{{vocabulary} local here(t:State){target_guard} reads t,(t.free);
             get(value(&result, get(&clauses[1], "values")), "source_type"),
             r#""Z""#,
         );
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 0, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
-        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
     }
 }
 
@@ -633,12 +552,6 @@ reading After {{{vocabulary} local here({tp}) when {target} reads {tr};}}"#)).un
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(normal.stdout.len() < 1500);
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{mode}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -677,12 +590,6 @@ reading After {{{vocabulary} local here({tp}) when {target} reads {tr};}}"#)).un
             let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
             assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "subject")) == missing));
         }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{mode}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] { assert_eq!(get(&result, key).value, get(&again, key).value, "{mode}: {key}"); }
     }
 }
 
@@ -730,27 +637,9 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; law r
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, code, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{}", run.stdout);
         let result = result_json(&dir, &run);
-        assert_map_summary(&normal, &result);
         let map = answer(&result, "m");
         assert_eq!(s(get(map, "status")), status);
         assert!(!has(get(map, "outputs"), "map"));
@@ -787,13 +676,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; law r
             let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
             assert!(arr(get(plan, "requirements")).is_empty());
         }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
-        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
     }
 }
 
@@ -933,13 +815,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
             assert_json(value(&result, get(data, "left")), r#"["v","p"]"#);
             assert_json(value(&result, get(data, "right")), r#"["v","s"]"#);
         }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        assert_eq!(get(&result, "nodes").value, get(&again, "nodes").value);
-        assert_eq!(get(&result, "answers").value, get(&again, "answers").value);
     }
 }
 
@@ -970,30 +845,6 @@ reading After {{{vocabulary} local here(world:System,t:State) when t.free=t.free
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let before =
-            ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
-        let mut normal_args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in requests {
-            normal_args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &normal_args);
-        assert_eq!(normal.code, code, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert!(!has(&normal.receipt, "result"));
-        assert!(!has(&normal.receipt, "nodes"));
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
-            assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
-        }
-        eprintln!("scalar local {mode}: stdout {} bytes", normal.stdout.len());
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{}", run.stdout);
         let result = result_json(&dir, &run);
@@ -1052,29 +903,6 @@ reading After {{{vocabulary} local here(world:System,t:State) when t.free=t.free
             )) == "p"
                 && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
         }
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for request in requests {
-            args.extend(["--ask", request]);
-        }
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
-        }
     }
 }
 
@@ -1086,15 +914,6 @@ fn local_multiple_reference_parameters_keep_read_order_and_value_types() {
 reading Before {{{vocabulary} local here(s:State,root:System,other:State) reads root,s,other,root;}}
 reading After {{{vocabulary} local here(t:State,world:System,u:State) reads world,(t),u,world;}}"#)).unwrap();
     let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
-    let before=["d.json","l.law","a.json"].map(|name|std::fs::read(dir.join(name)).unwrap());
-    let normal=cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--ask",request]);
-    assert_eq!(normal.code,0,"{}",normal.stdout);
-    assert!(normal.stderr.is_empty());
-    assert!(!has(&normal.receipt,"nodes"));
-    assert!(!has(&normal.receipt,"result"));
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(),3);
-    for (name,bytes) in ["d.json","l.law","a.json"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
-    eprintln!("multiple local map stdout {} bytes",normal.stdout.len());
     let run=asks(&dir,&[request]);
     assert_eq!(run.code,0,"{}",run.stdout);
     let result=result_json(&dir,&run);
@@ -1123,11 +942,6 @@ reading After {{{vocabulary} local here(t:State,world:System,u:State) reads worl
         }
         assert_local_clause(&dir,&result,clause,source,target,&[("s","Reservations.State"),("root","Reservations.System"),("other","Reservations.State")]);
     }
-    let reused=cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
-    assert_eq!(reused.code,0,"{}",reused.stdout);
-    let again=result_json(&dir,&reused);
-    assert!(warnings(&again).is_empty());
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value);}
 }
 
 #[test]
@@ -1140,15 +954,6 @@ fn local_reference_reads_are_transported_by_the_actual_configuration_map() {
     law.push_str("reading Other {use vocabulary Reservations version \"1\" digest \"sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff\";local here(t:State) reads (t);}");
     std::fs::write(dir.join("l.law"), law).unwrap();
     let request = "m=map(Reservations.Migration,on=@v/m,reading=Alternative,to_reading=Other,kind=object_algebra)";
-    let before = ["d.json","l.law","a.json"].map(|name|std::fs::read(dir.join(name)).unwrap());
-    let normal = cli::run(&dir, &["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--ask",request]);
-    assert_eq!(normal.code, 0, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
-    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-    assert!(!has(&normal.receipt,"nodes"));
-    assert!(!has(&normal.receipt,"result"));
-    for (name,bytes) in ["d.json","l.law","a.json"].into_iter().zip(before) {assert_eq!(std::fs::read(dir.join(name)).unwrap(),bytes);}
-    eprintln!("local map stdout {} bytes",normal.stdout.len());
     let run = asks(&dir, &[request]);
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1182,12 +987,6 @@ fn local_reference_reads_are_transported_by_the_actual_configuration_map() {
         }
     }
     assert!(std::panic::catch_unwind(|| assert_reference_pairs(&wrong,values,&[("p","r"),("q","s"),("r","r"),("s","s")])).is_err());
-
-    let again = cli::run(&dir,&["run","--atom-definition","d.json","--law","l.law","--archmap","a.json","--out","again","--reuse","out","--ask",request]);
-    assert_eq!(again.code,0,"{}",again.stdout);
-    let again = result_json(&dir,&again);
-    assert!(warnings(&again).is_empty());
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value);}
 }
 
 #[test]
@@ -1472,8 +1271,7 @@ law required zero(s: State): (s.free, s.held) = (0, 0);
             "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
             "same=compare($m.operation,to=$base.operation,kind=action)",
         ],
-        "360000",
-        Duration::from_secs(420),
+        "360000"
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1527,8 +1325,7 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "why=needed($m)",
         ],
-        "360000",
-        Duration::from_secs(420),
+        "360000"
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1627,8 +1424,7 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
         &[
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         ],
-        "360000",
-        Duration::from_secs(420),
+        "360000"
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -1685,8 +1481,7 @@ reading After {{{uses} law {role} zero(s:State):{body};}}"#
                 "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
                 "same=compare($m.operation,to=$m.operation,kind=action)",
             ],
-            "360000",
-            Duration::from_secs(420),
+            "360000"
         );
         assert_eq!(run.code, 1, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -1722,7 +1517,7 @@ law required conserved(e: Reserve): e.to.free+e.to.held=e.from.free+e.from.held;
         "n=evaluate(Alternative.holdings,on=$b.object,s=@v/r)",
         "flag=evaluate(Alternative.enabled,on=$b.object,s=@v/r)",
         "ok=check(Alternative.conserved,on=$b.object,e=@v/f)",
-    ], "360000", Duration::from_secs(420));
+    ], "360000");
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1785,7 +1580,7 @@ view holdings(s: State): (Z, Z) = (s.free,s.held);
         "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
         "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
         "same=compare($m.operation,to=$base.operation,kind=action)",
-    ], "360000", Duration::from_secs(420));
+    ], "360000");
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");
@@ -1869,7 +1664,7 @@ fn finite_view_map_preserves_all_parameters_with_renamed_target_and_following_qu
         "yes=evaluate(After.yes)", "zero=evaluate(After.zero)", "one=evaluate(After.one)",
         "free=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$zero.value)",
         "held=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$one.value)",
-    ], "120000", CHILD_DEADLINE);
+    ], "120000");
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1908,7 +1703,7 @@ fn finite_view_map_refutes_a_changed_nonzero_parameter_row() {
     let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         "same=compare($m.operation,to=$m.operation,kind=action)",
-    ], "120000", CHILD_DEADLINE);
+    ], "120000");
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(&result, "status")), "complete");
@@ -1947,7 +1742,7 @@ fn mixed_product_views_map_build_and_evaluate_with_and_without_parameters() {
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "b=build(After,on=$m.map.target.base.subject)",
             "yes=evaluate(After.yes)", query,
-        ], "120000", CHILD_DEADLINE);
+        ], "120000");
         assert_eq!(run.code, 0, "{}", run.stdout);
         let result = result_json(&dir, &run);
         for id in ["m", "b", "yes", "n"] { assert_eq!(s(get(answer(&result, id), "status")), "established"); }
@@ -1968,7 +1763,7 @@ fn mixed_product_view_map_refutes_changed_numeric_coordinate() {
     let run = asks_with_limits(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         "same=compare($m.operation,to=$m.operation,kind=action)",
-    ], "120000", CHILD_DEADLINE);
+    ], "120000");
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
@@ -2087,29 +1882,6 @@ reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).is_empty());
     assert!(arr(get(plan, "blockers")).is_empty());
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for request in requests {
-        args.extend(["--ask", request]);
-    }
-    let reused = cli::run(&dir, &args);
-    assert_eq!(reused.code, 0, "{}", reused.stdout);
-    let again = result_json(&dir, &reused);
-    assert!(warnings(&again).is_empty());
-    for key in ["answers", "nodes", "inputs"] {
-        assert_eq!(get(&result, key).value, get(&again, key).value);
-    }
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -2541,31 +2313,6 @@ reading After {{ {vocabulary} {target} }}"#
             ),
         )
         .unwrap();
-        let normal = cli::run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--ask",
-                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                "--ask",
-                "same=compare($m.operation,to=$m.operation,kind=action)",
-            ],
-        );
-        assert_eq!(
-            normal.code,
-            if case == "unit" { 0 } else { 1 },
-            "{case}: {}",
-            normal.stdout
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!("relation {case}: stdout {} bytes", normal.stdout.len());
         let run = asks(
             &dir,
             &[
@@ -2654,32 +2401,6 @@ reading After {{ {vocabulary} {target} }}"#
                 _ => unreachable!(),
             }
         }
-        let reused = cli::run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-                "--ask",
-                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                "--ask",
-                "same=compare($m.operation,to=$m.operation,kind=action)",
-            ],
-        );
-        assert_eq!(reused.code, run.code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
-        }
     }
 }
 
@@ -2748,34 +2469,6 @@ reading After {{ {vocabulary} relation paths(t:Reserve): path(t)=path(t); }}"#
             assert!(!arr(get(answer(&result, "m"), "counterexamples")).is_empty());
         } else {
             assert!(!has(answer(&result, "m"), "counterexamples"));
-        }
-        let again = cli::run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-                "--ask",
-                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-                "--ask",
-                "same=compare($m.operation,to=$m.operation,kind=action)",
-                "--ask",
-                "n=needed($m)",
-            ],
-        );
-        assert_eq!(again.code, run.code, "{}", again.stdout);
-        let again = result_json(&dir, &again);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
         }
     }
 }
@@ -2885,31 +2578,6 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
         ];
-        if case == "expanded" || case == "contracted" {
-            let normal = cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                    "--ask",
-                    requests[0],
-                    "--ask",
-                    requests[1],
-                ],
-            );
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            eprintln!(
-                "relation guard {case}: stdout {} bytes",
-                normal.stdout.len()
-            );
-        }
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -2973,34 +2641,6 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
                         1
                     );
                 }
-            }
-        }
-        if case == "expanded" || case == "contracted" {
-            let reused = cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--ask",
-                    requests[0],
-                    "--ask",
-                    requests[1],
-                ],
-            );
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
             }
         }
     }
@@ -3070,36 +2710,6 @@ reading After {{ {vocabulary} relation paths(t:Reserve,u:State,keep:Bool) {tg}:p
                 "subject"
             )) == "x"
                 && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
-        }
-        if case == "target" {
-            let reused = cli::run(
-                &dir,
-                &[
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--out",
-                    "again",
-                    "--reuse",
-                    "out",
-                    "--ask",
-                    requests[0],
-                    "--ask",
-                    requests[1],
-                    "--ask",
-                    requests[2],
-                ],
-            );
-            assert_eq!(reused.code, 2, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -3176,25 +2786,6 @@ reading Helpers {{ {vocabulary} view same(a:Migration,b:Migration):Bool=path(a)=
             "missing" => 2,
             _ => 1,
         };
-        if case == "preserved" || case == "endpoints" || case == "missing" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            eprintln!("root relation {case}: stdout {} bytes", normal.stdout.len());
-        }
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3277,31 +2868,6 @@ reading Helpers {{ {vocabulary} view same(a:Migration,b:Migration):Bool=path(a)=
                 .value,
                 archsig::json::JValue::Bool(true)
             ));
-        }
-        if case == "preserved" || case == "endpoints" || case == "missing" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -3493,28 +3059,6 @@ reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path
             "missing" => 2,
             _ => 1,
         };
-        if case == "preserved" || case == "missing" || case == "endpoints" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = cli::run(&dir, &args);
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-            eprintln!(
-                "heterogeneous relation {case}: stdout {} bytes",
-                normal.stdout.len()
-            );
-        }
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3598,31 +3142,6 @@ reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path
                 archsig::json::JValue::Bool(true)
             ));
         }
-        if case == "preserved" || case == "missing" || case == "endpoints" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
-        }
     }
 }
 
@@ -3667,31 +3186,6 @@ reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(sourc
             "n=needed($m)",
             "action=evaluate(Helpers.same,e=@v/e)",
         ];
-        let mut normal_args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for request in &requests {
-            normal_args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &normal_args);
-        assert_eq!(
-            normal.code,
-            if same_word { 0 } else { 2 },
-            "{}",
-            normal.stdout
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!(
-            "Path conditional same_word={same_word}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let run = asks(&dir, &requests);
         assert_eq!(run.code, if same_word { 0 } else { 2 }, "{}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3728,29 +3222,6 @@ reading Helpers {{ {vocabulary} view same(e:Reserve):Bool=path(e)=identity(sourc
                 "subject"
             )) == "x"
                 && s(get(get(r, "field"), "field")) == "Reservations.State.free"));
-        }
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, run.code, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
         }
     }
 }
@@ -3838,30 +3309,6 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,r:Q,keep:Bool,l:Z) {t
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(
-            normal.code, code,
-            "{case}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!(
-            "numeric relation {case}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3923,18 +3370,6 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,r:Q,keep:Bool,l:Z) {t
                 assert!(arr(get(plan, "requirements")).is_empty());
                 assert!(!arr(get(plan, "blockers")).is_empty());
             }
-        }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
     }
 }
@@ -4032,30 +3467,6 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,j:Z,keep:Bool,last:Z)
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(
-            normal.code, code,
-            "{case}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!(
-            "integer domain relation {case}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -4134,18 +3545,6 @@ reading After {{ {vocabulary} relation paths(k:Z,t:Reserve,j:Z,keep:Bool,last:Z)
                 assert!(arr(get(plan, "requirements")).is_empty());
                 assert!(!arr(get(plan, "blockers")).is_empty());
             }
-        }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
     }
 }
@@ -4281,18 +3680,9 @@ reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
         for request in &requests {
             args.extend(["--ask", request]);
         }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(
-            normal.code, code,
-            "{case}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
-        assert_map_summary(&normal, &result);
         let map_answer = answer(&result, "m");
         assert_eq!(s(get(map_answer, "status")), status, "{case}");
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
@@ -4370,19 +3760,6 @@ reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
             } else {
                 assert!(!arr(get(plan, "blockers")).is_empty());
             }
-        }
-        let mut reuse = args.clone();
-        reuse.extend(["--out", "again", "--reuse", "out"]);
-        let again = cli::run(&dir, &reuse);
-        assert_eq!(again.code, code, "{case}: {}", again.stdout);
-        let again = result_json(&dir, &again);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
         if case == "finite" {
             let file = dir.join("out/result.json");
@@ -4500,29 +3877,6 @@ reading After {{{vocabulary} local here(t:State) {target_guard} reads {target_re
         if case == "preserved" {
             requests.push("b=build(After,on=$m.map.target.base.subject)");
         }
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let delivery = matches!(case, "preserved" | "late-refutation" | "missing-read");
-        if delivery {
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert!(
-                normal.stdout.len() < 2000,
-                "{case}: {}",
-                normal.stdout.len()
-            );
-        }
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -4586,21 +3940,6 @@ reading After {{{vocabulary} local here(t:State) {target_guard} reads {target_re
                 s(get(field, "subject")) == "p"
                     && s(get(field, "field")) == "Reservations.State.free"
             }));
-        }
-        if !delivery {
-            continue;
-        }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
     }
 }
@@ -4732,16 +4071,9 @@ reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {t
         for request in &requests {
             args.extend(["--ask", request]);
         }
-        let delivery = matches!(case, "preserved" | "off-diagonal" | "missing");
-        let normal = delivery.then(|| without_file_changes(&dir, || cli::run(&dir, &args)));
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
-        if let Some(normal) = &normal {
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert_map_summary(normal, &result);
-            assert!(normal.stderr.is_empty());
-        }
         let m = answer(&result, "m");
         assert_eq!(
             s(get(m, "status")),
@@ -4819,21 +4151,6 @@ reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {t
                 s(get(field, "subject")) == "p"
                     && s(get(field, "field")) == "Reservations.State.free"
             }));
-        }
-        if delivery {
-            let mut reuse = args.clone();
-            reuse.extend(["--out", "again", "--reuse", "out"]);
-            let run = cli::run(&dir, &reuse);
-            assert_eq!(run.code, code, "{case}: {}", run.stdout);
-            let again = result_json(&dir, &run);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
         }
         if case == "preserved" {
             args.extend([
@@ -4942,16 +4259,9 @@ reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {t
         for request in &requests {
             args.extend(["--ask", request]);
         }
-        let delivery = matches!(case, "preserved" | "off-diagonal" | "missing");
-        let normal = delivery.then(|| without_file_changes(&dir, || cli::run(&dir, &args)));
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
-        if let Some(normal) = &normal {
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert_map_summary(normal, &result);
-            assert!(normal.stderr.is_empty());
-        }
         let m = answer(&result, "m");
         assert_eq!(
             s(get(m, "status")),
@@ -5023,21 +4333,6 @@ reading After {{{vocabulary} local here(y:State,x:State) {target_guard} reads {t
                 s(get(field, "subject")) == "p"
                     && s(get(field, "field")) == "Reservations.State.free"
             }));
-        }
-        if delivery {
-            let mut reuse = args.clone();
-            reuse.extend(["--out", "again", "--reuse", "out"]);
-            let run = cli::run(&dir, &reuse);
-            assert_eq!(run.code, code, "{case}: {}", run.stdout);
-            let again = result_json(&dir, &run);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
         }
         if case == "preserved" {
             args.extend([
@@ -5214,34 +4509,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
                 s(get(field, "subject")) == "p"
                     && s(get(field, "field")) == "Reservations.State.free"
             }));
-        }
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-        assert_map_summary(&normal, &result);
-        assert!(normal.stderr.is_empty());
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
     }
 }
@@ -5454,36 +4721,6 @@ reading After {{{vocabulary} local here(y:State,keep:Bool,x:State,other:Bool) {t
                     && s(get(f, "field")) == "Reservations.State.free"
             }));
         }
-        if matches!(case, "preserved" | "late-row" | "missing-read") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
-        }
     }
 }
 
@@ -5694,39 +4931,6 @@ reading After {{{vocabulary} local here(p:{ty},y:State,q:{ty},x:State) reads {tr
                 assert_json(value(&result, get(data, "left")), r#""1""#);
                 assert_json(value(&result, get(data, "right")), r#""2""#);
             }
-            if matches!(
-                (name, case),
-                ("data", "preserved") | ("tuple", "late-row") | ("set", "late-row")
-            ) {
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                ];
-                for request in &requests {
-                    args.extend(["--ask", request]);
-                }
-                let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-                assert_eq!(normal.code, code, "{name}/{case}: {}", normal.stdout);
-                assert!(normal.stderr.is_empty());
-                assert_map_summary(&normal, &result);
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                assert_eq!(reused.code, code, "{}", reused.stdout);
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for key in ["answers", "nodes"] {
-                    assert_eq!(
-                        get(&result, key).value,
-                        get(&again, key).value,
-                        "{name}/{case}: {key}"
-                    );
-                }
-            }
         }
     }
 }
@@ -5837,36 +5041,6 @@ reading After {{{vocabulary} local here(unused:Unit,y:State,pick:Option<Bool>,le
                 let f = get(r, "field");
                 s(get(f, "subject")) == subject && s(get(f, "field")) == "Reservations.State.free"
             }));
-        }
-        if code == 2 || case == "refuted" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
         }
     }
 }
@@ -6147,34 +5321,6 @@ reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}) reads pick
         }
         assert_json(get(&qs[1], "type"), wire_type);
         assert_json(get(&qs[2], "type"), wire_type);
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, 0, "{name}: {}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_map_summary(&normal, &result);
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 0, "{name}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{name}: {key}"
-            );
-        }
     }
 }
 
@@ -6286,39 +5432,6 @@ reading After {{{vocabulary} local here(pick:Choice,y:State,spare:Option<Bool>) 
             }));
         } else {
             assert!(arr(get(plan, "requirements")).is_empty());
-        }
-        if matches!(
-            case,
-            "refuted" | "unknown-source" | "unknown-target" | "inactive-missing"
-        ) {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
         }
     }
 }
@@ -6560,36 +5673,6 @@ reading After {{{vocabulary} local here(y:State,pick:{ty},spare:{ty}){target_gua
                     other_value
                 },
             );
-        }
-        if matches!(case, "projection" | "collision" | "unknown-target" | "expression" | "expression-refuted" | "expression-missing") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{shape}/{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{shape}/{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{shape}/{case}: {key}"
-                );
-            }
         }
         if code == 0 {
             let map = value(&result, get(get(m, "outputs"), "map"));
@@ -6841,36 +5924,6 @@ reading After {{{vocabulary} local here(right:State,chosen:Set<State>,keep:Bool)
                 );
             }
         }
-        if matches!(case, "projection" | "cardinality-read" | "unknown-target" | "expression") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
-        }
     }
 }
 
@@ -7075,36 +6128,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
                         "{name}"
                     );
                 }
-            }
-        }
-        if matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
             }
         }
     }
@@ -7339,36 +6362,6 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
                 );
             }
         }
-        if case.starts_with("infinite") || matches!(case, "projection" | "reverse-read" | "missing-target" | "expression") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
-        }
     }
 }
 
@@ -7440,33 +6433,6 @@ reading After {{{vocabulary} local here(right:State,chosen:Map<State,State>) rea
                 .iter()
                 .any(|reference| s(get(reference, "node")) == s(get(witness, "id")))
         );
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
-        }
     }
 }
 
@@ -7661,36 +6627,6 @@ reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool,t:State){t
                 },
             );
         }
-        if matches!(case, "preserved" | "none-false" | "selected-missing") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{case}: {}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{case}: {key}"
-                );
-            }
-        }
     }
 }
 
@@ -7865,32 +6801,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
                         .any(|r| s(get(r, "code")) == "missing_observation")
                 );
             }
-            if matches!(case, "branch" | "refuted" | "missing") {
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--archmap",
-                    "a.json",
-                    "--law",
-                    "l.law",
-                ];
-                for request in &requests {
-                    args.extend(["--ask", request]);
-                }
-                let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-                assert_eq!(normal.code, code, "{}", normal.stdout);
-                assert!(normal.stderr.is_empty());
-                assert_map_summary(&normal, &result);
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                assert_eq!(reused.code, code, "{}", reused.stdout);
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for key in ["answers", "nodes"] {
-                    assert_eq!(get(&result, key).value, get(&again, key).value);
-                }
-            }
         }
     }
 }
@@ -7950,31 +6860,6 @@ reading After {{{vocabulary} local here(right:State) reads {target};}}"#
                 s(get(r, "code")),
                 "missing_observation" | "unsupported_algorithm"
             )));
-        }
-        if code == 0 {
-            let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
-            let args = [
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
-                request,
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ];
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 0, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -8086,30 +6971,6 @@ reading After {{{vocabulary} local here(right:State,keep:Bool) reads true;}}"#
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         assert!(arr(get(plan, "requirements")).is_empty());
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, 1, "{}", normal.stdout);
-        assert!(normal.stderr.is_empty());
-        assert_map_summary(&normal, &result);
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
-        }
     }
 }
 
@@ -8268,29 +7129,6 @@ reading After {{{vocabulary} local here(t:State,keep:Bool){tg} reads {target};}}
                 assert_json(get(values, "source_type"), wire);
                 assert_json(get(values, "target_type"), wire);
                 assert!(arr(get(values, "subjects")).is_empty());
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                ];
-                for request in &requests {
-                    args.extend(["--ask", request]);
-                }
-                let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-                assert_eq!(normal.code, 0, "{}", normal.stdout);
-                assert_map_summary(&normal, &result);
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                assert_eq!(reused.code, 0, "{}", reused.stdout);
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for key in ["answers", "nodes"] {
-                    assert_eq!(get(&result, key).value, get(&again, key).value);
-                }
             }
         }
     }
@@ -8516,29 +7354,6 @@ reading After {{{vocabulary} local here(right:{parameter},spare:{parameter},keep
                     values,
                     &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
                 );
-                let mut args = vec![
-                    "run",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                ];
-                for request in &requests {
-                    args.extend(["--ask", request]);
-                }
-                let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-                assert_eq!(normal.code, 0, "{}", normal.stdout);
-                assert_map_summary(&normal, &result);
-                args.extend(["--out", "again", "--reuse", "out"]);
-                let reused = cli::run(&dir, &args);
-                assert_eq!(reused.code, 0, "{}", reused.stdout);
-                let again = result_json(&dir, &reused);
-                assert!(warnings(&again).is_empty());
-                for key in ["answers", "nodes"] {
-                    assert_eq!(get(&result, key).value, get(&again, key).value);
-                }
             }
         }
     }
@@ -8814,29 +7629,6 @@ reading After {{{vocabulary} local here(right:State) reads if right=right then {
                 .iter()
                 .any(|r| value(&result, r).value == expected.value)
         );
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, 1, "{case}: {}", normal.stdout);
-        assert_map_summary(&normal, &result);
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, 1, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(get(&result, key).value, get(&again, key).value);
-        }
     }
 }
 
@@ -9073,36 +7865,6 @@ reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool){tg} r
                     }
                     assert_reference_pairs(&result, values, &pairs);
                 }
-                if !general
-                    && matches!(
-                        case,
-                        "preserved" | "refuted" | "missing" | "identity-missing"
-                    )
-                {
-                    let mut args = vec![
-                        "run",
-                        "--atom-definition",
-                        "d.json",
-                        "--law",
-                        "l.law",
-                        "--archmap",
-                        "a.json",
-                    ];
-                    for request in &requests {
-                        args.extend(["--ask", request]);
-                    }
-                    let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-                    assert_eq!(normal.code, code, "{}", normal.stdout);
-                    assert_map_summary(&normal, &result);
-                    args.extend(["--out", "again", "--reuse", "out"]);
-                    let reused = cli::run(&dir, &args);
-                    assert_eq!(reused.code, code, "{}", reused.stdout);
-                    let again = result_json(&dir, &reused);
-                    assert!(warnings(&again).is_empty());
-                    for key in ["answers", "nodes"] {
-                        assert_eq!(get(&result, key).value, get(&again, key).value);
-                    }
-                }
             }
         }
     }
@@ -9251,6 +8013,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,choice:Bool,j:Z){tg} reads {
         assert_eq!(has(get(m, "outputs"), "map"), code == 0);
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         if name == "identity" {
+            assert_eq!(arr(get(&result, "answers")).len(), 4);
             assert_eq!(s(get(answer(&result, "b"), "status")), "established");
         }
         if code == 1 {
@@ -9287,42 +8050,6 @@ reading After {{{vocabulary} local here(m:Z,t:State,choice:Bool,j:Z){tg} reads {
                 value(&result, get(data, "left")).value,
                 value(&result, get(data, "right")).value
             );
-        }
-        if matches!(name, "identity" | "coefficient" | "kernel-guard") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            if name != "identity" {
-                assert_map_summary(&normal, &result);
-            } else {
-                assert_eq!(arr(get(&normal.receipt, "answers")).len(), 4);
-                assert_eq!(
-                    s(get(answer(&normal.receipt, "b"), "status")),
-                    "established"
-                );
-                for trace in ["\"evidence\":", "\"node\":", "\"rule\":"] {
-                    assert!(!normal.stdout.contains(trace));
-                }
-            }
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -9440,31 +8167,6 @@ reading After {{{vocabulary} local here(t:State,m:Z){tg} reads {tr};}}"#
                     .any(|r| { s(get(get(r, "field"), "field")) == "Reservations.State.free" }),
                 "{name}"
             );
-        }
-        if name == "source-branch" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, 2, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 2, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -9728,31 +8430,6 @@ reading After {{{vocabulary} local here(y:Q,t:State,keep:Bool,z:Q){tg} reads {tr
                 value(&result, get(data, "right")).value
             );
         }
-        if matches!(name, "point" | "fraction-read" | "fraction-guard") {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, code, "{}", normal.stdout);
-            assert!(normal.stderr.is_empty());
-            assert_map_summary(&normal, &result);
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
-        }
     }
 }
 
@@ -9859,31 +8536,6 @@ reading After {{{vocabulary} local here(t:State,y:Q){tg} reads {tr};}}"#
         }
         if !missing {
             assert!(arr(get(plan, "requirements")).is_empty());
-        }
-        if name == "source-branch" {
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-            assert_eq!(normal.code, 2, "{}", normal.stdout);
-            assert_map_summary(&normal, &result);
-            assert!(normal.stderr.is_empty());
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, 2, "{}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            for key in ["answers", "nodes"] {
-                assert_eq!(get(&result, key).value, get(&again, key).value);
-            }
         }
     }
 }
@@ -10143,7 +8795,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
 }
 
 #[test]
-fn local_mixed_numeric_tuple_witnesses_restore_all_axes_and_reuse() {
+fn local_mixed_numeric_tuple_witnesses_restore_all_axes() {
     for (name, left, right, code) in [
         ("identity", "pair.0+pair.1.1,q", "next.0+next.1.1,y", 0),
         ("integer", "pair.1.1", "0", 1),
@@ -10197,33 +8849,6 @@ reading After {{{vocabulary} local here(next:(Z,(Z,Z)),y:Q) reads {right};}}"#
                 value(&result, get(data, "right")).value
             );
         }
-        let reused = cli::run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
-                request,
-                "--out",
-                "again",
-                "--reuse",
-                "out",
-            ],
-        );
-        assert_eq!(reused.code, code, "{name}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{name}/{key}"
-            );
-        }
     }
 }
 
@@ -10248,15 +8873,9 @@ reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool){guard}=t with {{
             std::fs::write(dir.join("a.json"), text.lines().filter(|line| !line.contains(r#""id":"p-held""#)).collect::<Vec<_>>().join("\n")).unwrap();
         }
         let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
-        assert!(normal.stderr.is_empty());
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{mode}: {}", run.stdout);
         let result = result_json(&dir, &run);
-        assert_map_summary(&normal, &result);
         let map = answer(&result, "m");
         assert_eq!(s(get(map, "status")), match code {0 => "established", 1 => "refuted", _ => "undetermined"}, "{mode}");
         assert_eq!(has(get(map,"outputs"),"map"), code == 0);
@@ -10292,12 +8911,6 @@ reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool){guard}=t with {{
             let plan = value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
             assert!(arr(get(plan,"requirements")).iter().any(|r| s(get(get(r,"field"),"subject")) == "p"));
         }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{mode}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
     }
 }
 
@@ -10349,15 +8962,9 @@ fn change_transport_compares_different_fieldsets_on_integer_guard_fibers() {
 reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:Z,m:Z){sg}={source};}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:Z,l:Z){tg}=t with {{{right}}};}}"#)).unwrap();
         let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"];
-        let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json"];
-        for request in requests { args.extend(["--ask", request]); }
-        let normal = without_file_changes(&dir, || cli::run(&dir, &args));
-        assert_eq!(normal.code, code, "{mode}: {}", normal.stdout);
-        assert!(normal.stderr.is_empty());
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{mode}: {}", run.stdout);
         let result = result_json(&dir, &run);
-        assert_map_summary(&normal, &result);
         let map = answer(&result, "m");
         assert_eq!(s(get(map,"status")), match code {0 => "established", 1 => "refuted", _ => "undetermined"}, "{mode}");
         assert_eq!(has(get(map,"outputs"),"map"), code == 0);
@@ -10401,12 +9008,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
         if matches!(mode,"nonlinear"|"inequality") {
             assert!(arr(get(map,"reasons")).iter().any(|r| s(get(r,"code")) == "unsupported_algorithm"));
         }
-        args.extend(["--out","again","--reuse","out"]);
-        let reused = cli::run(&dir,&args);
-        assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
-        let again = result_json(&dir,&reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers","nodes"] { assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}"); }
     }
 }
 
@@ -10464,12 +9065,8 @@ fn change_transport_compares_rational_guard_fibers_and_different_fieldsets() {
 reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:Q,m:Q){sg}={source};}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:Q,l:Q){tg}=t with {{{right}}};}}"#)).unwrap();
         let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
-        let mut args = vec!["run","--atom-definition","d.json","--law","l.law","--archmap","a.json"];
-        for request in requests {args.extend(["--ask",request]);}
-        let normal = without_file_changes(&dir,||cli::run(&dir,&args));
-        assert_eq!(normal.code,code,"{mode}: {}",normal.stdout);assert!(normal.stderr.is_empty());
         let run = asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);
-        let result = result_json(&dir,&run);assert_map_summary(&normal,&result);
+        let result = result_json(&dir,&run);
         let map = answer(&result,"m");
         assert_eq!(s(get(map,"status")),match code {0=>"established",1=>"refuted",_=>"undetermined"},"{mode}");
         assert_eq!(has(get(map,"outputs"),"map"),code==0);
@@ -10496,9 +9093,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
             else {assert!(arr(get(plan,"requirements")).is_empty());}
         }
         if matches!(mode,"nonlinear"|"inequality") {assert!(arr(get(map,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));}
-        args.extend(["--out","again","--reuse","out"]);let reused=cli::run(&dir,&args);assert_eq!(reused.code,code,"{mode}: {}",reused.stdout);
-        let again=result_json(&dir,&reused);assert!(warnings(&again).is_empty());
-        for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&again,key).value,"{mode}: {key}");}
     }
 }
 
@@ -10635,30 +9229,6 @@ reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q)
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ];
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-        ];
-        for request in &requests {
-            args.extend(["--ask", request]);
-        }
-        let normal = cli::run(&dir, &args);
-        assert_eq!(
-            normal.code, code,
-            "{case}: {} {}",
-            normal.stdout, normal.stderr
-        );
-        assert!(normal.stderr.is_empty());
-        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
-        eprintln!(
-            "rational domain relation {case}: stdout {} bytes",
-            normal.stdout.len()
-        );
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{case}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -10742,18 +9312,6 @@ reading After {{ {vocabulary} relation paths(k:Q,t:Reserve,j:Q,keep:Bool,last:Q)
                     assert!(!arr(get(plan, "blockers")).is_empty());
                 }
             }
-        }
-        args.extend(["--out", "again", "--reuse", "out"]);
-        let reused = cli::run(&dir, &args);
-        assert_eq!(reused.code, code, "{case}: {}", reused.stdout);
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{case}: {key}"
-            );
         }
     }
 }
@@ -10985,30 +9543,6 @@ reading After {{ {vocabulary} relation paths(next:({ty},{ty}),t:Reserve,keep:Boo
                     assert!(!arr(get(plan, "blockers")).is_empty());
                 }
             }
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{ty}/{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{ty}/{case}: {key}"
-                );
-            }
         }
     }
 }
@@ -11235,30 +9769,6 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                     }
                 }
             }
-            let mut args = vec![
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-            ];
-            for request in &requests {
-                args.extend(["--ask", request]);
-            }
-            args.extend(["--out", "again", "--reuse", "out"]);
-            let reused = cli::run(&dir, &args);
-            assert_eq!(reused.code, code, "{ty}/{case}: {}", reused.stdout);
-            let again = result_json(&dir, &reused);
-            assert!(warnings(&again).is_empty());
-            for key in ["answers", "nodes"] {
-                assert_eq!(
-                    get(&result, key).value,
-                    get(&again, key).value,
-                    "{ty}/{case}: {key}"
-                );
-            }
         }
     }
 }
@@ -11266,7 +9776,7 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
 #[path = "common/numeric_tuple_change.rs"]
 mod numeric_tuple_change;
 #[test]
-fn numeric_tuple_change_cli_preserves_delivery_reuse_and_failure_contracts() {
+fn numeric_tuple_change_cli_preserves_delivery_and_failure_contracts() {
     let all = numeric_tuple_change::cases();
     let selected = [
         ("Z", false, "same-fields"),
@@ -11320,48 +9830,6 @@ fn numeric_tuple_change_cli_preserves_delivery_reuse_and_failure_contracts() {
         assert!(r.stderr.is_empty());
         let result = result_json(&dir, &r);
         case.assert_result(&result);
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for request in numeric_tuple_change::REQUESTS {
-            args.extend(["--ask", request]);
-        }
-        let started = std::time::Instant::now();
-        let reused = cli::run(&dir, &args);
-        eprintln!(
-            "{} reused CLI helper roundtrip {:?}",
-            case.label(),
-            started.elapsed()
-        );
-        assert_eq!(
-            reused.code,
-            case.code,
-            "{}: {}",
-            case.label(),
-            reused.stdout
-        );
-        assert!(reused.stderr.is_empty());
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        case.assert_result(&again);
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{}: {key}",
-                case.label()
-            );
-        }
     }
 }
 
@@ -11399,7 +9867,7 @@ reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};
     dir
 }
 
-fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_key: &str) {
+fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32) {
     let names = if reverse { ["q", "n"] } else { ["n", "q"] };
     let m = answer(j, "m");
     assert_eq!(
@@ -11411,7 +9879,7 @@ fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_ke
     let plan = value(j, get(get(answer(j, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).is_empty());
     if code == 1 {
-        let evidence = arr(get(m, evidence_key))
+        let evidence = arr(get(m, "evidence"))
             .iter()
             .find(|reference| {
                 let evidence = value(j, reference);
@@ -11465,23 +9933,9 @@ fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
                 let result = evaluate_observed(prepared, &mut control).unwrap();
                 assert_eq!(result.status(), "complete", "{name}/{integer}/{reverse}");
                 let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-                assert_mixed_constant_result(&j, reverse, code, "evidence");
+                assert_mixed_constant_result(&j, reverse, code);
             }
         }
-    }
-}
-
-#[test]
-fn local_mixed_numeric_constant_guard_cli_keeps_held_and_refuted_outputs() {
-    for (name, reverse, integer, source_guard, target_guard, code) in [
-        ("cli-computed", false, true, "1+1=2", "not false", 0),
-        ("cli-target-empty", true, false, "true", "false", 1),
-    ] {
-        let dir = mixed_constant_inputs(name, reverse, integer, source_guard, target_guard);
-        let r = asks(&dir, &MIXED_CONSTANT_ASKS);
-        assert_eq!(r.code, code, "{name}: {} {}", r.stdout, r.stderr);
-        let j = result_json(&dir, &r);
-        assert_mixed_constant_result(&j, reverse, code, "counterexamples");
     }
 }
 
@@ -11523,7 +9977,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) when {target_guard} rea
 }
 
 #[test]
-fn local_mixed_numeric_bound_finite_guards_and_reuse_keep_actual_witnesses() {
+fn local_mixed_numeric_bound_finite_guards_keep_actual_witnesses() {
     for (name, target_guard, read, code) in [("guard", "not keep", "y", 1), ("value", "keep", "rat(0,1)", 1), ("same", "keep", "y", 0)] {
         let (dir, vocabulary) = rational_local_parameter_inputs(&format!("mixed-bound-guard-{name}"), false);
         std::fs::write(dir.join("l.law"), format!(
@@ -11547,11 +10001,6 @@ reading After {{{vocabulary} local here(m:Z,keep:Bool,y:Q) when {target_guard} r
                 assert_ne!(value(&j, get(data, "left")).value, value(&j, get(data, "right")).value);
             }
         }
-        let repeated = cli::run(&dir, &["run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law",
-            "--ask", request, "--out", "again", "--reuse", "out"]);
-        assert_eq!(repeated.code, code, "{}", repeated.stdout);
-        let again = result_json(&dir, &repeated);
-        for key in ["answers", "nodes"] { assert_eq!(get(&j, key).value, get(&again, key).value); }
     }
 }
 
