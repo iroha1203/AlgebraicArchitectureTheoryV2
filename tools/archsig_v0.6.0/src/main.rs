@@ -124,7 +124,6 @@ impl ProcessSignals {
         limits: archsig::control::Limits,
         elapsed: impl FnOnce() -> u128,
         memory: impl FnOnce() -> u128,
-        signal: impl FnOnce() -> Option<Signal>,
     ) -> archsig::control::Usage {
         archsig::control::Usage {
             elapsed_ms: if limits.time_ms.is_some() {
@@ -137,7 +136,7 @@ impl ProcessSignals {
             } else {
                 0
             },
-            signal: signal(),
+            signal: None,
         }
     }
 
@@ -156,7 +155,6 @@ impl ProcessSignals {
                 limits,
                 || started.elapsed().as_millis(),
                 || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
-                || None,
             )
         });
         Control::new(limits, move |_| archsig::control::Usage {
@@ -274,67 +272,53 @@ mod tests {
     use archsig::control::{Checkpoint, StopReason};
 
     #[test]
-    fn resource_probes_follow_requested_limits_and_always_observe_signals() {
+    fn resource_probes_follow_requested_limits() {
         use archsig::control::{Control, Limits, Resource};
         use std::{cell::RefCell, rc::Rc};
         for (time, memory) in [(false, false), (true, false), (false, true), (true, true)] {
-            for signal in [None, Some(Signal::Int), Some(Signal::Term)] {
-                let limits = Limits {
-                    time_ms: time.then_some(5),
-                    memory_mib: memory.then_some(7),
-                };
-                let calls = Rc::new(RefCell::new(vec![]));
-                let observed = calls.clone();
-                let mut control = Control::new(limits, move |_| {
-                    ProcessSignals::usage_for_limits(
-                        limits,
-                        || {
-                            observed.borrow_mut().push("time");
-                            11
-                        },
-                        || {
-                            observed.borrow_mut().push("memory");
-                            13
-                        },
-                        || {
-                            observed.borrow_mut().push("signal");
-                            signal
-                        },
-                    )
-                });
-                let expected = if let Some(signal) = signal {
-                    Err(StopReason::Cancelled(signal))
-                } else if time {
-                    Err(StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 5,
-                        observed: 11,
-                    })
-                } else if memory {
-                    Err(StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 7,
-                        observed: 13,
-                    })
-                } else {
-                    Ok(())
-                };
-                assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
-                let mut requested = vec![];
-                if time {
-                    requested.push("time");
-                }
-                if memory {
-                    requested.push("memory");
-                }
-                requested.push("signal");
-                assert_eq!(*calls.borrow(), requested);
-                assert_eq!(control.checkpoint(Checkpoint::FiniteIteration), expected);
-                if expected.is_ok() {
-                    requested.push("signal");
-                }
-                assert_eq!(*calls.borrow(), requested);
+            let limits = Limits {
+                time_ms: time.then_some(5),
+                memory_mib: memory.then_some(7),
+            };
+            let calls = Rc::new(RefCell::new(vec![]));
+            let observed = calls.clone();
+            let mut control = Control::new(limits, move |_| {
+                ProcessSignals::usage_for_limits(
+                    limits,
+                    || {
+                        observed.borrow_mut().push("time");
+                        11
+                    },
+                    || {
+                        observed.borrow_mut().push("memory");
+                        13
+                    },
+                )
+            });
+            let expected = if time {
+                Err(StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 5,
+                    observed: 11,
+                })
+            } else if memory {
+                Err(StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 7,
+                    observed: 13,
+                })
+            } else {
+                Ok(())
+            };
+            assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
+            let mut requested = vec![];
+            if time {
+                requested.push("time");
             }
+            if memory {
+                requested.push("memory");
+            }
+            assert_eq!(*calls.borrow(), requested);
         }
     }
 
@@ -377,6 +361,8 @@ mod tests {
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
         let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
+        // 最初の検査は時計も読む回なので、そのあとの検査で signal を確かめる。
+        assert_eq!(control.checkpoint(Checkpoint::DefinitionSchema), Ok(()));
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),

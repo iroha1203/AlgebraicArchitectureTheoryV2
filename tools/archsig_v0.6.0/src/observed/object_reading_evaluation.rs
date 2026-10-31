@@ -107,7 +107,7 @@ fn metadata_matches(
         }
         merged.merge(&n.scope);
     }
-    Ok(matches && seen.into_iter().all(|s| s) && &merged == scope)
+    Ok(matches && seen.into_iter().all(|s| s) && merged == *scope)
 }
 impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
