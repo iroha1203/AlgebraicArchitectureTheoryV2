@@ -614,7 +614,8 @@ fn unsupported_infinite_parameter_retains_the_original_failure_and_valid_operati
     let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut quiet()).unwrap_err();
     let ObjectLawCircuitTransportFailure::Original(
         archsig::observed::object_law_transport::ObjectLawTransportFailure::NotImplemented {
-            operation, ..
+            operation,
+            ..
         },
     ) = f
     else {
