@@ -55,7 +55,11 @@ pub(super) fn compare(
                 kind: if result.missing.is_empty() {
                     ReasonKind::UnsupportedAlgorithm {
                         question: request.kind,
-                        operand_types: vec![ty.clone()],
+                        operand_types: params[0]
+                            .iter()
+                            .map(|p| p.ty.clone())
+                            .chain(std::iter::once(ty.clone()))
+                            .collect(),
                         method: if *ty == Type::Z {
                             "local_integer_guard_fiber"
                         } else {

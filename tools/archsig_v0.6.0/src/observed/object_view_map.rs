@@ -257,7 +257,7 @@ fn finite_action(
     b: &mut Builder<'_>,
     inputs: &CheckedInputs,
     declarations: &DeclarationCorrespondence,
-    values: &super::value_transport::FiniteValueTransport,
+    ty: &Type,
     dependencies: &[NodeRef],
     c: &mut Control,
 ) -> Result<Option<ValueAction>, ValidationFailure> {
@@ -265,31 +265,22 @@ fn finite_action(
         subjects: vec![],
         declarations: vec![],
     };
-    let mut references = std::collections::BTreeSet::new();
-    let mut families = std::collections::BTreeSet::new();
-    let mut pending = vec![values.source_type()];
-    while let Some(ty) = pending.pop() {
-        tick(c)?;
-        match ty {
-            Type::Ref(entity) => {
-                references.insert(entity.clone());
-            }
-            Type::Tuple(items) => pending.extend(items),
-            Type::Option(item) | Type::List(item) | Type::Set(item) => pending.push(item),
-            Type::Map(a, z) => pending.extend([a.as_ref(), z.as_ref()]),
-            Type::Data(family) if families.insert(family.clone()) => {
-                action.declarations.push((family.clone(), family.clone()));
-                for constructor in super::data::constructors(inputs.law(), family)? {
-                    tick(c)?;
-                    let name = format!("{family}.{}", constructor.name);
-                    action.declarations.push((name.clone(), name));
-                    pending.extend(&constructor.arguments);
-                }
-            }
-            _ => {}
+    let components = super::value_transport::structural_components(ty, inputs.law(), c)
+        .map_err(|e| {
+            c.stop_reason()
+                .map(ValidationFailure::Stop)
+                .unwrap_or_else(|| format!("view値型の構造検査: {e:?}").into())
+        })?
+        .ok_or("view値型の構造写像がない")?;
+    for family in components.families {
+        action.declarations.push((family.clone(), family.clone()));
+        for constructor in super::data::constructors(inputs.law(), &family)? {
+            tick(c)?;
+            let name = format!("{family}.{}", constructor.name);
+            action.declarations.push((name.clone(), name));
         }
     }
-    for entity in references {
+    for entity in components.references {
         tick(c)?;
         let transport =
             crate::construction::maps::reference_type_transport(inputs, declarations, &entity, c)
@@ -560,12 +551,30 @@ pub(super) fn retain(
             .ok_or("元viewの返り型がない")?;
         let value_declarations =
             super::value_transport::identity_declarations(returns, inputs.law(), c)?;
-        let finite_values = if value_declarations.is_none() {
-            if !super::finite::supported(returns, inputs.law(), c)? {
+        let structural_values = if value_declarations.is_none()
+            && !super::finite::supported(returns, inputs.law(), c)?
+        {
+            let map = object_view_transport::StructuralValueEquivalence::checked(
+                inputs,
+                declarations,
+                &instance.declaration().name,
+                c,
+            )
+            .map_err(|e| {
+                c.stop_reason()
+                    .map(ValidationFailure::Stop)
+                    .unwrap_or_else(|| format!("view値の構造写像検査: {e:?}").into())
+            })?;
+            let Some(map) = map else {
                 out.pending
                     .push(pending("view_value_domain_transport", vec![]));
                 continue;
-            }
+            };
+            Some(map)
+        } else {
+            None
+        };
+        let finite_values = if value_declarations.is_none() && structural_values.is_none() {
             Some(
                 super::value_transport::finite_declaration_value_transport(
                     inputs,
@@ -584,14 +593,18 @@ pub(super) fn retain(
             None
         };
         let ty = Type::Option(Box::new(returns.clone()));
-        let target_returns = finite_values
+        let target_returns = structural_values
             .as_ref()
             .map(|v| v.target_type())
+            .or_else(|| finite_values.as_ref().map(|v| v.target_type()))
             .unwrap_or(returns);
         let target_ty = Type::Option(Box::new(target_returns.clone()));
         if finite_values
             .as_ref()
             .is_some_and(|v| v.bijection().is_none())
+            || structural_values
+                .as_ref()
+                .is_some_and(|v| !v.is_bijection())
         {
             reject_equivalence(b, &mut out, [&ty, &target_ty], axis.invariant)?;
             return Ok(out);
@@ -692,7 +705,7 @@ pub(super) fn retain(
                 b,
                 inputs,
                 declarations,
-                finite_values.as_ref().ok_or("有限view値写像がない")?,
+                returns,
                 &[axis.invariant, target_invariant],
                 c,
             )?

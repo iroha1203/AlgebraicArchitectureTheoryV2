@@ -143,11 +143,119 @@ impl PrimitiveValueIdentity {
         Ok(value.clone())
     }
 }
+
+/// 有限参照域の両逆写像を、値の型構造へ延長する。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StructuralValueEquivalence {
+    source: Type,
+    target: Type,
+    declarations: DeclarationCorrespondence,
+    declaration: String,
+    complete: bool,
+}
+impl StructuralValueEquivalence {
+    pub fn source_type(&self) -> &Type {
+        &self.source
+    }
+    pub fn target_type(&self) -> &Type {
+        &self.target
+    }
+    pub fn is_bijection(&self) -> bool {
+        self.complete
+    }
+
+    pub(super) fn checked(
+        inputs: &CheckedInputs,
+        declarations: &DeclarationCorrespondence,
+        declaration: &str,
+        c: &mut Control,
+    ) -> Result<Option<Self>, ConstructionFailure> {
+        let (source, target) = super::value_transport::selected_types(
+            inputs,
+            declarations,
+            declaration,
+            DeclarationValuePosition::Return,
+            c,
+        )?;
+        let Some(components) =
+            super::value_transport::structural_components(&source, inputs.law(), c)?
+        else {
+            return Ok(None);
+        };
+        let pair = declarations
+            .candidates()
+            .iter()
+            .find(|candidate| candidate.source().name == declaration)
+            .and_then(|candidate| candidate.pair())
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent("構造値写像の宣言対応がない".into())
+            })?;
+        let mu = declarations.types().iter().cloned().collect();
+        let alpha = pair.parameters().iter().cloned().collect();
+        let mut complete =
+            crate::construction::maps::moved_declaration_type(&source, &mu, &alpha, c)? == target;
+        // Dataのfamily/constructorは固定し、未評価のpayload型も保存する。
+        for family in components.families {
+            for constructor in data::constructors(inputs.law(), &family).map_err(invalid)? {
+                tick(c)?;
+                for ty in &constructor.arguments {
+                    complete &=
+                        crate::construction::maps::moved_declaration_type(ty, &mu, &alpha, c)?
+                            == *ty;
+                }
+            }
+        }
+        for entity in components.references {
+            let map = crate::construction::maps::reference_type_transport(
+                inputs,
+                declarations,
+                &entity,
+                c,
+            )?;
+            complete &= map.bijection().is_some();
+        }
+        Ok(Some(Self {
+            source,
+            target,
+            declarations: declarations.clone(),
+            declaration: declaration.into(),
+            complete,
+        }))
+    }
+
+    fn image(
+        &self,
+        inputs: &CheckedInputs,
+        value: &Scalar,
+        c: &mut Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        if !self.complete || value.ty() != self.source.erase() {
+            return Err(ConstructionFailure::Inconsistent(
+                "構造値の順逆写像と元値が一致しない".into(),
+            ));
+        }
+        let image = super::value_transport::candidate_image(
+            inputs,
+            &self.declarations,
+            &self.declaration,
+            value,
+            c,
+        )?;
+        if image.ty() != self.target.erase() {
+            return Err(ConstructionFailure::Inconsistent(
+                "構造値の像が終域型と一致しない".into(),
+            ));
+        }
+        data::check(&image, inputs.law(), c).map_err(invalid)?;
+        Ok(image)
+    }
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ViewValueEquivalence {
     Finite(Box<FiniteValueTransport>),
     Numeric(Box<NumericValueTransport>),
     PrimitiveIdentity(PrimitiveValueIdentity),
+    Structural(Box<StructuralValueEquivalence>),
 }
 impl ViewValueEquivalence {
     fn complete(&self) -> bool {
@@ -155,13 +263,20 @@ impl ViewValueEquivalence {
             Self::Finite(r) => r.bijection().is_some(),
             Self::Numeric(_) => true,
             Self::PrimitiveIdentity(_) => true,
+            Self::Structural(r) => r.is_bijection(),
         }
     }
-    fn image(&self, v: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+    fn image(
+        &self,
+        v: &Scalar,
+        inputs: &CheckedInputs,
+        c: &mut Control,
+    ) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(r) => r.transport_scalar(v, c),
             Self::Numeric(r) => Ok(r.forward().apply_scalar(v, c)?.scalar().clone()),
             Self::PrimitiveIdentity(r) => r.image(v, c),
+            Self::Structural(r) => r.image(inputs, v, c),
         }
     }
 }
@@ -690,6 +805,13 @@ fn checked_view_transport(
             c,
         )? {
             ViewValueEquivalence::PrimitiveIdentity(identity)
+        } else if let Some(map) = StructuralValueEquivalence::checked(
+            &inputs,
+            declarations,
+            &r.instance().declaration().name,
+            c,
+        )? {
+            ViewValueEquivalence::Structural(Box::new(map))
         } else {
             return Err(not_implemented(&r)?);
         });
@@ -716,13 +838,13 @@ fn checked_view_transport(
         }
         tick(c)?;
         r.target = Some(
-            evaluate_object_instance(inputs, &r.target_readings, to, ti, c).map_err(|failure| {
-                ObjectViewTransportFailure::Evaluation {
+            evaluate_object_instance(Arc::clone(&inputs), &r.target_readings, to, ti, c).map_err(
+                |failure| ObjectViewTransportFailure::Evaluation {
                     operation: Box::new(r.operation().clone()),
                     partial: None,
                     failure: Box::new(failure),
-                }
-            })?,
+                },
+            )?,
         );
         if let Some(target) = &r.target {
             r.target_value = scalar(target)?.map(|value| ViewTransportValue { value });
@@ -753,7 +875,7 @@ fn checked_view_transport(
         if let (Some(source), Some(target), Some(equivalence)) =
             (&r.source_value, &r.target_value, &r.equivalence)
         {
-            let image = equivalence.image(&source.value, c)?;
+            let image = equivalence.image(&source.value, &inputs, c)?;
             r.image = Some(ViewTransportValue {
                 value: image.clone(),
             });
@@ -833,6 +955,12 @@ mod tests {
         example_named("Before.amount")
     }
     pub(super) fn example_named(name: &str) -> (Arc<CheckedInputs>, ObjectViewTransport) {
+        example_named_with_law(
+            name,
+            include_str!("../../tests/fixtures/object-view-transport.law"),
+        )
+    }
+    fn example_named_with_law(name: &str, law: &str) -> (Arc<CheckedInputs>, ObjectViewTransport) {
         let left = include_bytes!("../../tests/fixtures/object-view-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -857,9 +985,7 @@ mod tests {
             check_inputs(
                 InputSources::from_bytes(
                     vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
-                    expand(include_str!(
-                        "../../tests/fixtures/object-view-transport.law"
-                    )),
+                    expand(law),
                     expand(include_str!(
                         "../../tests/fixtures/object-view-transport.archmap.json"
                     )),
@@ -897,6 +1023,83 @@ mod tests {
             .unwrap();
         let r = object_view_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
         (i, r)
+    }
+    #[test]
+    fn structural_value_maps_follow_nominal_reference_images_and_recheck() {
+        for parameter in [false, true] {
+            let (sp, tp, sv, tv) = if parameter {
+                (
+                    ", b: Bool",
+                    ", q: Bool",
+                    "if b then list<Left.Child>[c,c] else list<Left.Child>[c]",
+                    "if q then list<Right.Child>[d,d] else list<Right.Child>[d]",
+                )
+            } else {
+                ("", "", "list<Left.Child>[c,c]", "list<Right.Child>[d,d]")
+            };
+            let law = include_str!("../../tests/fixtures/object-view-transport.law")
+                .replace(
+                    "view sequence(c: Left.Child): List<Z> = list<Z>[c.count];",
+                    &format!("view sequence(c: Left.Child{sp}): List<Left.Child> = {sv};"),
+                )
+                .replace(
+                    "view sequence(d: Right.Child): List<Z> = list<Z>[2];",
+                    &format!("view sequence(d: Right.Child{tp}): List<Right.Child> = {tv};"),
+                );
+            let (inputs, mut result) = example_named_with_law("Before.sequence", &law);
+            assert_eq!(result.outcome(), &ViewTransportOutcome::Preserved);
+            let mut images = vec![];
+            if let Some(family) = result.family() {
+                for row in family.rows() {
+                    images.push(row.image().unwrap());
+                }
+            } else {
+                images.push(result.image().unwrap());
+            }
+            assert_eq!(images.len(), if parameter { 2 } else { 1 });
+            let mut lengths = vec![];
+            for image in images {
+                let Scalar::List { element, items } = &image.value else {
+                    panic!("List image");
+                };
+                assert_eq!(element, &Type::Ref("Right.Child".into()));
+                lengths.push(items.len());
+                for item in items {
+                    assert_eq!(
+                        item,
+                        &Scalar::Subject {
+                            snapshot: "v".into(),
+                            subject: "q".into(),
+                            entity: "Right.Child".into()
+                        }
+                    );
+                }
+            }
+            lengths.sort();
+            assert_eq!(lengths, if parameter { vec![1, 2] } else { vec![2] });
+            result
+                .recheck(Arc::clone(&inputs), &mut Control::unlimited())
+                .unwrap();
+            if !parameter {
+                let Some(ViewValueEquivalence::Structural(map)) = &mut result.equivalence else {
+                    panic!("structural map");
+                };
+                assert_eq!(
+                    map.source_type(),
+                    &Type::List(Box::new(Type::Ref("Left.Child".into())))
+                );
+                assert_eq!(
+                    map.target_type(),
+                    &Type::List(Box::new(Type::Ref("Right.Child".into())))
+                );
+                map.complete = false;
+                assert!(
+                    result
+                        .recheck(Arc::clone(&inputs), &mut Control::unlimited())
+                        .is_err()
+                );
+            }
+        }
     }
     #[test]
     fn recheck_rejects_modified_values_status_targets_and_original_evaluation_dag() {

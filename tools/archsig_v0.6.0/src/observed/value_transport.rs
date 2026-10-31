@@ -753,6 +753,41 @@ mod tests {
     fn with_left(left: &[u8], a: &str) -> CheckedInputs {
         with_left_and_law(left, a, L)
     }
+    #[test]
+    fn structural_type_scan_stops_between_nullary_constructors() {
+        let original = include_str!("../../tests/fixtures/finite-value-left.atoms.json");
+        let left = original.replace(
+            "\"arguments\": [\n                \"Bool\"\n              ]",
+            "\"arguments\": []",
+        );
+        assert_ne!(left, original);
+        let inputs = with_left(left.as_bytes(), A);
+        assert!(
+            data::constructors(inputs.law(), "Left.Choice")
+                .unwrap()
+                .iter()
+                .all(|constructor| constructor.arguments.is_empty())
+        );
+        let mut seen = 0;
+        let mut control = Control::new(super::super::control::Limits::default(), move |point| {
+            if point == Checkpoint::FiniteValueTransport {
+                seen += 1;
+            }
+            super::super::control::Usage {
+                elapsed_ms: 0,
+                memory_mib: 0,
+                signal: (seen == 2).then_some(crate::result::Signal::Term),
+            }
+        });
+        assert!(matches!(
+            structural_components(
+                &Type::Data("Left.Choice".into()),
+                inputs.law(),
+                &mut control
+            ),
+            Err(ConstructionFailure::Stopped(_))
+        ));
+    }
     fn with_left_and_law(left: &[u8], a: &str, law: &str) -> CheckedInputs {
         let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
         let defs =
@@ -1257,4 +1292,44 @@ pub(super) fn identity_declarations(
     Ok(Some(
         names.into_iter().map(|name| (name.clone(), name)).collect(),
     ))
+}
+
+pub(super) struct StructuralComponents {
+    pub references: BTreeSet<String>,
+    pub families: BTreeSet<String>,
+}
+
+// 値の全列挙ではなく、有限な型宣言を一度ずつ読み取る。
+pub(super) fn structural_components(
+    ty: &Type,
+    law: &crate::law::CheckedLaw,
+    control: &mut Control,
+) -> Result<Option<StructuralComponents>, ConstructionFailure> {
+    let mut out = StructuralComponents {
+        references: BTreeSet::new(),
+        families: BTreeSet::new(),
+    };
+    let mut pending = vec![ty];
+    while let Some(ty) = pending.pop() {
+        tick(control)?;
+        match ty {
+            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
+            Type::Ref(entity) => {
+                out.references.insert(entity.clone());
+            }
+            Type::Tuple(items) => pending.extend(items),
+            Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+            Type::Map(a, z) => pending.extend([a.as_ref(), z.as_ref()]),
+            Type::Data(family) => {
+                if out.families.insert(family.clone()) {
+                    for constructor in data::constructors(law, family).map_err(failure)? {
+                        tick(control)?;
+                        pending.extend(&constructor.arguments);
+                    }
+                }
+            }
+            _ => return Ok(None),
+        }
+    }
+    Ok(Some(out))
 }
