@@ -1851,7 +1851,8 @@ pub(in crate::observed) fn affine_transport(
                     out.status = Decision::Undetermined;
                     return Ok(());
                 }
-                return Err("mixed numeric local guards are not implemented".into());
+                out.status = Decision::Undetermined;
+                return Ok(());
             }
         }
         let domain = change_affine::numeric_guard_domain(

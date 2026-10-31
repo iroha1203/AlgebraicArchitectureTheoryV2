@@ -19,10 +19,8 @@ pub use crate::observed::object_law_transport::{
 pub use crate::observed::object_view_transport::{
     ObjectViewTransport, ObjectViewTransportFailure, ObjectViewTransportPartial,
     ViewConditionFailure, ViewTransportOutcome, ViewTransportValue, ViewValueEquivalence,
-    PrimitiveValueIdentity,
-    FamilyTypeFailure, FiniteViewTransport, FiniteViewTypeMap, ViewFamilyReturnMap,
-    ViewParameterComparison,
-    object_view_transport,
+    PrimitiveValueIdentity, StructuralValueEquivalence, FamilyTypeFailure, FiniteViewTransport,
+    FiniteViewTypeMap, ViewFamilyReturnMap, ViewParameterComparison, object_view_transport,
 };
 pub use crate::observed::value_transport::{
     DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,

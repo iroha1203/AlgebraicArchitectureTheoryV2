@@ -110,13 +110,20 @@ pub enum ViewFamilyReturnMap {
     Finite(Box<FiniteViewTypeMap>),
     Numeric(Box<NumericValueTransport>),
     PrimitiveIdentity(PrimitiveValueIdentity),
+    Structural(Box<StructuralValueEquivalence>),
 }
 impl ViewFamilyReturnMap {
-    fn image(&self, value: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+    fn image(
+        &self,
+        value: &Scalar,
+        inputs: &CheckedInputs,
+        c: &mut Control,
+    ) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(map) => map.image(value, c),
             Self::Numeric(map) => Ok(map.forward().apply_scalar(value, c)?.scalar().clone()),
             Self::PrimitiveIdentity(map) => map.image(value, c),
+            Self::Structural(map) => map.image(inputs, value, c),
         }
     }
 }
@@ -453,6 +460,20 @@ pub(super) fn evaluate(
         )?
     {
         f.returns = Some(ViewFamilyReturnMap::PrimitiveIdentity(identity));
+    } else if !finite::supported(&source_type, inputs.law(), c).map_err(invalid)?
+        && let Some(map) = StructuralValueEquivalence::checked(
+            &inputs,
+            &r.declarations,
+            &source_instance.declaration().name,
+            c,
+        )?
+    {
+        let complete = map.is_bijection();
+        f.returns = Some(ViewFamilyReturnMap::Structural(Box::new(map)));
+        if !complete {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::ValueType);
+            return Ok(());
+        }
     } else {
         let a = Param {
             name: "return".into(),
@@ -545,7 +566,7 @@ pub(super) fn evaluate(
                 f.returns
                     .as_ref()
                     .ok_or_else(|| bad("view戻り値写像がない"))?
-                    .image(&s.value, c)
+                    .image(&s.value, &inputs, c)
                     .map(|value| ViewTransportValue { value })
             })
             .transpose()?;
@@ -792,6 +813,11 @@ pub(super) fn same(
             }
         }
         (Some(ViewFamilyReturnMap::PrimitiveIdentity(a)), Some(ViewFamilyReturnMap::PrimitiveIdentity(b))) => {
+            if a != b {
+                return Ok(false);
+            }
+        }
+        (Some(ViewFamilyReturnMap::Structural(a)), Some(ViewFamilyReturnMap::Structural(b))) => {
             if a != b {
                 return Ok(false);
             }

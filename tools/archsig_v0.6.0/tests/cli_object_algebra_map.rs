@@ -134,6 +134,53 @@ fn assert_unsupported_map(dir: &Path, method: &str, operand: &str, original: &st
     }
 }
 
+fn assert_refuted_value_map(dir: &Path) {
+    let requests = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+        "n=needed($m)",
+    ];
+    let run = asks(dir, &requests);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(dir, &run);
+    let map = answer(&result, "m");
+    assert_eq!(s(get(map, "status")), "refuted");
+    assert!(has(get(map, "outputs"), "operation"));
+    assert!(!has(get(map, "outputs"), "map"));
+    assert!(
+        arr(get(map, "reasons"))
+            .iter()
+            .all(|r| s(get(r, "code")) != "unsupported_algorithm")
+    );
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    assert!(arr(get(plan, "blockers")).is_empty());
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
+    let again = cli::run(dir, &args);
+    assert_eq!(again.code, 1, "{}", again.stdout);
+    let reused = result_json(dir, &again);
+    assert!(warnings(&reused).is_empty());
+    for key in ["answers", "nodes", "inputs"] {
+        assert_eq!(get(&result, key).value, get(&reused, key).value);
+    }
+}
+
 fn reference_pairs(result: &JNode, map: &JNode) -> Vec<(String, String)> {
     let subject = |reference: &JNode| {
         let scalar = value(result, reference);
@@ -2008,6 +2055,94 @@ fn container_view_map_refutes_changed_list_entries_and_keeps_the_operation() {
 }
 
 #[test]
+fn structural_reference_list_view_has_a_checked_identity_map() {
+    let dir = inputs("structural-reference-list-identity");
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
+reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#
+        ),
+    )
+    .unwrap();
+    let requests = [
+        "m=map(Reservations.Migration,on=@v/z,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+        "n=needed($m)",
+    ];
+    let run = asks(&dir, &requests);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = answer(&result, "m");
+    assert_eq!(s(get(map, "status")), "established");
+    assert!(has(get(map, "outputs"), "map"));
+    assert!(arr(get(map, "reasons")).is_empty());
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).is_empty());
+    assert!(arr(get(plan, "blockers")).is_empty());
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
+    let reused = cli::run(&dir, &args);
+    assert_eq!(reused.code, 0, "{}", reused.stdout);
+    let again = result_json(&dir, &reused);
+    assert!(warnings(&again).is_empty());
+    for key in ["answers", "nodes", "inputs"] {
+        assert_eq!(get(&result, key).value, get(&again, key).value);
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn mixed_numeric_guard_keeps_its_reason_and_checked_operation() {
+    let (dir, vocabulary) = finite_local_parameter_inputs("mixed-numeric-guard-partial");
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} local here(z:Z,q:Q) when z=1 reads z;}}
+reading After {{{vocabulary} local here(n:Z,r:Q) reads n;}}"#
+        ),
+    )
+    .unwrap();
+    assert_unsupported_map(
+        &dir,
+        "local_integer_guard_fiber",
+        r#""Z""#,
+        "when z=1 reads z",
+    );
+    let bytes = std::fs::read(dir.join("out/result.json")).unwrap();
+    let result = archsig::json::parse(&bytes).unwrap();
+    let reason = arr(get(answer(&result, "m"), "reasons"))
+        .iter()
+        .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+        .unwrap();
+    let rational = archsig::json::parse(br#""Q""#).unwrap();
+    assert!(
+        arr(get(get(reason, "details"), "operand_types"))
+            .iter()
+            .any(|t| t.value == rational.value)
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn reference_containers_do_not_use_same_nominal_type_identity() {
     let dir = finite_view_inputs("reference-container-view", true);
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -2020,12 +2155,7 @@ reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"
         ),
     )
     .unwrap();
-    assert_unsupported_map(
-        &dir,
-        "view_value_domain_transport",
-        r#"["List",["Ref","Reservations.State"]]"#,
-        "list<State>[s]",
-    );
+    assert_refuted_value_map(&dir);
 }
 
 fn finite_container_parameter_inputs(name: &str, preserve: bool, kind: &str) -> PathBuf {
@@ -2273,12 +2403,7 @@ fn changed_data_payload_refutes_map_and_preserves_configuration_operation() {
 #[test]
 fn an_unused_reference_constructor_does_not_become_an_identity_value_map() {
     let dir = data_view_inputs("data-hidden-reference", true, false, true);
-    assert_unsupported_map(
-        &dir,
-        "view_value_domain_transport",
-        r#"["Tuple",["Data","Reservations.Packet"],["List",["Data","Reservations.Packet"]],["Option",["Data","Reservations.Packet"]],"Z"]"#,
-        "Full(s.free)",
-    );
+    assert_refuted_value_map(&dir);
 }
 
 fn finite_data_view_inputs(name: &str) -> PathBuf {
@@ -5798,8 +5923,11 @@ fn multiple_unsupported_views_keep_each_original_reason() {
     let dir = finite_view_inputs("multiple-unsupported-views", true);
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];view refs2(s:State):List<State> = list<State>[s,s];}}
-reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];view refs2(s:State):List<State> = list<State>[s,s];}}"#)).unwrap();
+reading Before {{{vocabulary} view first(s:State,z:Z):Z=z*z;view second(s:State,z:Z):Z=z*z+1;}}
+reading After {{{vocabulary} view first(s:State,z:Z):Z=z*z;view second(s:State,z:Z):Z=z*z+1;}}"#
+        ),
+    )
+    .unwrap();
     let run = asks(
         &dir,
         &[
@@ -5813,11 +5941,13 @@ reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];vie
     let reasons = arr(get(map, "reasons"));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-    for expected in ["list<State>[s]", "list<State>[s,s]"] {
+    for expected in ["z*z", "z*z+1"] {
         let matching: Vec<_> = reasons
             .iter()
             .filter(|r| {
-                if s(get(r, "code")) != "unsupported_algorithm" {
+                if s(get(r, "code")) != "unsupported_algorithm"
+                    || s(get(get(r, "details"), "method")) != "affine_numeric_view_transport"
+                {
                     return false;
                 }
                 let span = arr(get(get(r, "location"), "span"));
@@ -10941,7 +11071,7 @@ fn local_numeric_tuple_arguments_share_axes_and_restore_original_witnesses() {
                 "next.0",
                 2,
             ),
-            ("mixed", " when pair.0=1", "", "pair.0", "next.0", 70),
+            ("mixed", " when pair.0=1", "", "pair.0", "next.0", 2),
             ("nonlinear", "", "", "pair.0*pair.1", "next.0*next.1", 2),
         ] {
             let dir = finite_view_inputs(&format!("local-tuple-{ty}-{case}"), true);
@@ -10977,15 +11107,6 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                 "same=compare($m.operation,to=$m.operation,kind=action)",
                 "n=needed($m)",
             ];
-            if code == 70 {
-                let run = without_file_changes(&dir, || cli::run(&dir, &[
-                    "run", "--atom-definition", "d.json", "--archmap", "a.json", "--law", "l.law", "--ask", requests[0],
-                ]));
-                assert_eq!(run.code, 70, "{ty}/{case}: {}", run.stdout);
-                assert!(has(&run.receipt, "issues"));
-                assert!(run.stderr.is_empty());
-                continue;
-            }
             let run = asks(&dir, &requests);
             assert_eq!(run.code, code, "{ty}/{case}: {}", run.stdout);
             let result = result_json(&dir, &run);
@@ -11083,6 +11204,31 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
                 } else {
                     assert!(arr(get(plan, "requirements")).is_empty());
                     assert!(!arr(get(plan, "blockers")).is_empty());
+                    if case == "mixed" {
+                        let reason = arr(get(m, "reasons"))
+                            .iter()
+                            .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+                            .unwrap();
+                        let types = arr(get(get(reason, "details"), "operand_types"));
+                        let tuple =
+                            archsig::json::parse(numeric_tuple_test_type(ty, nested).as_bytes())
+                                .unwrap();
+                        let other =
+                            archsig::json::parse(format!("\"{last_ty}\"").as_bytes()).unwrap();
+                        assert!(types.iter().any(|t| t.value == tuple.value));
+                        assert!(types.iter().any(|t| t.value == other.value));
+                        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+                        let span = arr(get(get(reason, "location"), "span"));
+                        let original = &law[num(&span[0]) as usize..num(&span[1]) as usize];
+                        assert!(
+                            original.contains("when pair.") && original.contains(" reads pair.")
+                        );
+                        assert!(
+                            arr(get(plan, "blockers"))
+                                .iter()
+                                .any(|b| b.value == reason.value)
+                        );
+                    }
                 }
             }
             let mut args = vec![
