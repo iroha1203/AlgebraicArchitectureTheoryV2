@@ -3362,92 +3362,16 @@ reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
     }
 }
 
-fn data_view_inputs(
-    name: &str,
-    preserve: bool,
-    parameter: bool,
-    reference_payload: bool,
-) -> PathBuf {
-    let dir = finite_view_inputs(name, preserve);
-    let old = include_str!("fixtures/reservations.atoms.json");
-    let extra = if reference_payload {
-        r#",{"name":"Held","arguments":[["Ref","Reservations.System"]],"meaning":"参照を含む値"}"#
-    } else {
-        ""
-    };
-    let declaration = format!(
-        r#""declarations": [{{"kind":"data","name":"Reservations.Packet","meaning":"値を区別するconstructor","constructors":[{{"name":"Empty","arguments":[],"meaning":"空"}},{{"name":"Full","arguments":["Z"],"meaning":"整数"}},{{"name":"Flag","arguments":["Bool"],"meaning":"真偽"}}{extra}]}},"#
-    );
-    let definition = old.replacen("\"declarations\": [", &declaration, 1);
-    let old_checked =
-        archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
-    let checked =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies()["Reservations"].digest;
-    let map = std::fs::read_to_string(dir.join("a.json"))
-        .unwrap()
-        .replace(&old_checked.vocabularies()["Reservations"].digest, digest);
-    std::fs::write(dir.join("d.json"), definition).unwrap();
-    std::fs::write(dir.join("a.json"), map).unwrap();
-    let (sp, tp, sc, tc) = if parameter {
-        (",take:Bool", ",keep:Bool", "take", "keep")
-    } else {
-        ("", "", "s.free>1", "s.free>1")
-    };
-    let body = |condition| {
-        format!(
-            "(if {condition} then Full(s.free) else Empty,list<Packet>[Full(s.free),Flag(false)],if {condition} then some(Full(s.held)) else none<Packet>,s.free)"
-        )
-    };
+#[test]
+fn a_changed_finite_parameter_row_refutes_the_whole_map() {
+    // 有限parameterのview族の代表。keep=false の行だけが違っても、族全体を反証する。
+    let dir = finite_view_inputs("finite-parameter-changed-row", true);
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
-reading Before {{use vocabulary Reservations version "1" digest "{digest}";
-view packets(s:State{sp}):(Packet,List<Packet>,Option<Packet>,Z)={};}}
-reading After {{use vocabulary Reservations version "1" digest "{digest}";
-view packets(s:State{tp}):(Packet,List<Packet>,Option<Packet>,Z)={};
-view yes():Bool=true;view no():Bool=false;}}"#,
-        body(sc),
-        body(tc)
+reading Before {{{vocabulary} view choice(s: State, take: Bool): Z = if take then s.free else 0;}}
+reading After {{{vocabulary} view choice(s: State, keep: Bool): Z = if keep then s.free else 1;}}"#
     );
-    std::fs::write(dir.join("l.law"), law).unwrap();
-    dir
-}
-
-fn finite_data_view_inputs(name: &str) -> PathBuf {
-    let dir = data_view_inputs(name, true, true, false);
-    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
-    let definition = old.replacen("\"declarations\": [", r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"選択値","constructors":[{"name":"On","arguments":[],"meaning":"選択"},{"name":"Off","arguments":[],"meaning":"非選択"},{"name":"Other","arguments":[],"meaning":"別の非選択"}]},"#, 1);
-    let old_checked =
-        archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
-    let checked =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old_digest = &old_checked.vocabularies()["Reservations"].digest;
-    let digest = &checked.vocabularies()["Reservations"].digest;
-    let map = std::fs::read_to_string(dir.join("a.json"))
-        .unwrap()
-        .replace(old_digest, digest);
-    let law = std::fs::read_to_string(dir.join("l.law"))
-        .unwrap()
-        .replace(old_digest, digest)
-        .replace("take:Bool", "take:Choice")
-        .replace("keep:Bool", "keep:Choice")
-        .replace("if take then", "if take=On then")
-        .replace("if keep then", "if keep=On then")
-        .replace("yes():Bool=true", "yes():Choice=On")
-        .replace("no():Bool=false", "no():Choice=Other");
-    std::fs::write(dir.join("d.json"), definition).unwrap();
-    std::fs::write(dir.join("a.json"), map).unwrap();
-    std::fs::write(dir.join("l.law"), law).unwrap();
-    dir
-}
-
-#[test]
-fn a_changed_third_data_parameter_row_refutes_the_whole_map() {
-    // 有限parameterのview族の代表。3番目のconstructorの行だけが違っても、族全体を反証する。
-    let dir = finite_data_view_inputs("data-parameter-third-row");
-    let law = std::fs::read_to_string(dir.join("l.law"))
-        .unwrap()
-        .replace("if keep=On then", "if keep!=Off then");
     std::fs::write(dir.join("l.law"), law).unwrap();
     let r = asks(
         &dir,
