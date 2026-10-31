@@ -82,6 +82,34 @@ fn metadata(g: &Graph, o: &ViewOrigin) -> Result<(Vec<Fact>, Scope), ValidationF
     support.dedup();
     Ok((support, scope))
 }
+/// `metadata` と同じ支持と Scope になるかを、支持を複製・整列せずに確かめる。
+fn metadata_matches(
+    g: &Graph,
+    o: &ViewOrigin,
+    support: &[Fact],
+    scope: &Scope,
+) -> Result<bool, ValidationFailure> {
+    if !support.windows(2).all(|w| w[0] < w[1]) {
+        return Ok(false);
+    }
+    let mut seen = vec![false; support.len()];
+    let mut merged = Scope::default();
+    for r in [o.expression, o.architecture, o.component]
+        .into_iter()
+        .chain(o.bindings.iter().map(|b| b.value))
+    {
+        g.tick()?;
+        let n = g.get(r)?;
+        for fact in &n.support {
+            let Ok(i) = support.binary_search(fact) else {
+                return Ok(false);
+            };
+            seen[i] = true;
+        }
+        merged.merge(&n.scope);
+    }
+    Ok(seen.into_iter().all(|s| s) && &merged == scope)
+}
 impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match &self.kind {
@@ -155,8 +183,7 @@ impl Data {
         {
             return Err("view frameの元対象/式/閉じた適用が違う".into());
         }
-        let (support, scope) = metadata(g, &o)?;
-        if support != self.source.support || scope != self.source.scope {
+        if !metadata_matches(g, &o, &self.source.support, &self.source.scope)? {
             return Err("view frameの支持/Scopeが違う".into());
         }
         match &self.kind {
