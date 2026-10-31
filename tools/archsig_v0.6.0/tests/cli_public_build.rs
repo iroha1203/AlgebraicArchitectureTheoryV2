@@ -53,6 +53,11 @@ fn list_sum_guard_preserves_numeric_products() {
     known_numeric_product("symbolic-list-sum", DEFINITION, "", "sum(list<Z>[n,-n])=0 and sum(list<Q>[rat(1,2),rat(1,2)])=1", "n*c.quantity");
 }
 #[test]
+fn explicit_list_count_uses_shape_with_numeric_parameters() {
+    // 要素に数値parameterを含む明示listのcountは、値でなく形(要素数)で決まる。
+    known_numeric_product("symbolic-list-count", DEFINITION, "", "count(list<Z>[n,n])=2", "n*c.quantity");
+}
+#[test]
 fn known_data_payload_match_preserves_numeric_products() {
     // data構成子をhelperのmatchで取り出した係数。
     let definition = numeric_data_definition("Z");
