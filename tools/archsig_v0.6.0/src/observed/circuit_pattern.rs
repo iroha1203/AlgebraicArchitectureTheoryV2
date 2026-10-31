@@ -518,5 +518,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "circuit_pattern_tests.rs"]
 mod tests;

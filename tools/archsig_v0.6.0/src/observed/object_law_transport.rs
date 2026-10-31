@@ -28,7 +28,6 @@ use crate::{
 };
 use std::sync::Arc;
 
-#[path = "object_law_family.rs"]
 mod family;
 pub use family::{
     FiniteLawFamily, LawParameterComparison, LawReadingDomain, LawReadingFamily, LawReadingRow,

@@ -796,5 +796,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "internal_arrow_diagram_tests.rs"]
 mod tests;

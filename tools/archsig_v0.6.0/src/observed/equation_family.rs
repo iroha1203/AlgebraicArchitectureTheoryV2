@@ -299,5 +299,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "equation_family_tests.rs"]
 mod tests;

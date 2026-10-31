@@ -842,5 +842,4 @@ pub(super) fn check(
     }))
 }
 #[cfg(test)]
-#[path = "law_family_tests.rs"]
 mod tests;

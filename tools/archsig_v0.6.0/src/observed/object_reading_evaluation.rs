@@ -417,5 +417,4 @@ pub(super) fn evaluate(
     })
 }
 #[cfg(test)]
-#[path = "object_reading_evaluation_tests.rs"]
 mod tests;

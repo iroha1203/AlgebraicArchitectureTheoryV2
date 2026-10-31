@@ -14,11 +14,8 @@ use crate::{
     control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
 };
-#[path = "public_value_compare.rs"]
 pub(super) mod values;
-#[path = "public_relation_sources.rs"]
 pub(in crate::observed) mod relation_sources;
-#[path = "public_relation_compare.rs"]
 pub(in crate::observed) mod relations;
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]

@@ -480,5 +480,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "view_invariant_tests.rs"]
 mod tests;

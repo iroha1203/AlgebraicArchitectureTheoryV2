@@ -192,5 +192,4 @@ pub(super) fn prepare_architecture(
 }
 
 #[cfg(test)]
-#[path = "build_plan_tests.rs"]
 mod tests;

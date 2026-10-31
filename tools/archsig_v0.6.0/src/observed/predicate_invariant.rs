@@ -567,5 +567,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "predicate_invariant_tests.rs"]
 mod tests;

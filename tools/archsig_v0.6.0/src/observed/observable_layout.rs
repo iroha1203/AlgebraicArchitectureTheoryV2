@@ -351,7 +351,6 @@ fn compute(
         Plan::Finite(plan) => finite::compute(env, g, table, plan, c),
     }
 }
-#[path = "observable_layout_finite.rs"]
 mod finite;
 impl Layout {
     pub(super) fn law_table(&self) -> &Table {
@@ -444,7 +443,6 @@ pub(super) fn retain(
     })
 }
 #[cfg(test)]
-#[path = "observable_layout_polynomial_tests.rs"]
 mod polynomial_tests;
 
 pub(super) fn retain_finite(
@@ -473,5 +471,4 @@ pub(super) fn retain_finite(
     }))
 }
 #[cfg(test)]
-#[path = "observable_layout_finite_tests.rs"]
 mod finite_tests;

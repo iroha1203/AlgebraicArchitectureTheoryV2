@@ -26,13 +26,9 @@ use crate::{
 };
 use std::sync::Arc;
 
-#[path = "polynomial_law_family.rs"]
 mod family;
-#[path = "polynomial_law_reading.rs"]
 mod reading;
-#[path = "polynomial_law_sources.rs"]
 mod sources;
-#[path = "polynomial_law_parameters.rs"]
 mod parameters;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
@@ -1943,13 +1939,10 @@ impl Environment<'_> {
 }
 
 #[cfg(test)]
-#[path = "polynomial_law_diagram_tests.rs"]
 mod tests;
 
 #[cfg(test)]
-#[path = "polynomial_law_family_tests.rs"]
 mod family_tests;
 
 #[cfg(test)]
-#[path = "polynomial_law_reading_tests.rs"]
 mod reading_tests;

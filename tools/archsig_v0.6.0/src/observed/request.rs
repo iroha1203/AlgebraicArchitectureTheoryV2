@@ -13,15 +13,10 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
-#[path = "request_compare.rs"]
 pub(super) mod comparison;
-#[path = "request_compose.rs"]
 pub(super) mod composition;
-#[path = "request_map.rs"]
 mod configuration_map;
-#[path = "request_build.rs"]
 mod build;
-#[path = "request_local.rs"]
 mod local;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

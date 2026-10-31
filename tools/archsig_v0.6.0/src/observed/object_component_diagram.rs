@@ -956,5 +956,4 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "object_component_diagram_tests.rs"]
 mod tests;

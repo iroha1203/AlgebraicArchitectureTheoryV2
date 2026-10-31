@@ -14,82 +14,44 @@ use crate::{
     control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
 };
-#[path = "object_view_family_environment.rs"]
 mod object_view_family;
-#[path = "object_reading_environment.rs"]
 mod object_reading_environment;
-#[path = "law_evaluation_environment.rs"]
 mod law_evaluation;
-#[path = "architecture_environment.rs"]
 pub(super) mod architecture_environment;
-#[path = "answer_binding.rs"]
 mod answer_binding;
 pub(in crate::observed) use answer_binding::AnswerBinding;
-#[path = "answer_dependency.rs"]
 mod answer_dependency;
-#[path = "answer_projection.rs"]
 mod answer_projection;
-#[path = "answer_projection_condition.rs"]
 mod answer_projection_condition;
-#[path = "completion.rs"]
 pub(super) mod completion;
-#[path = "correspondence_path.rs"]
 mod correspondence_path;
-#[path = "dependent_family.rs"]
 pub(super) mod dependent_family;
-#[path = "family.rs"]
 pub(super) mod family;
-#[path = "internal_path.rs"]
 mod internal_path;
-#[path = "map_application.rs"]
 mod map_application;
-#[path = "numeric_slots.rs"]
 mod numeric_slots;
-#[path = "owned_binding.rs"]
 pub(super) mod owned_binding;
-#[path = "owned_call.rs"]
 pub(super) mod owned_call;
-#[path = "owned_family.rs"]
 pub(super) mod owned_family;
-#[path = "owned_type.rs"]
 pub(super) mod owned_type;
-#[path = "path_composition.rs"]
 mod path_composition;
-#[path = "path_condition.rs"]
 mod path_condition;
-#[path = "primitive_valuation.rs"]
 mod primitive_valuation;
-#[path = "change_evaluation.rs"]
 pub(super) mod change_evaluation;
-#[path = "change_search.rs"]
 pub(super) mod change_search;
-#[path = "field_change.rs"]
 pub(super) mod field_change;
-#[path = "change_affine.rs"]
 pub(super) mod change_affine;
-#[path = "quotient_affine.rs"]
 pub(super) mod quotient_affine;
-#[path = "quotient_evaluation.rs"]
 pub(super) mod quotient_evaluation;
-#[path = "local_read.rs"]
 pub(super) mod local_read;
-#[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
-#[path = "numeric_guard.rs"]
 mod numeric_guard;
-#[path = "numeric_law_function.rs"]
 pub(super) mod numeric_law_function;
-#[path = "numeric_object_function.rs"]
 pub(super) mod numeric_object_function;
-#[path = "numeric_parameters.rs"]
 pub(super) mod numeric_parameters;
-#[path = "relation_instances.rs"]
 pub(super) mod relation_instances;
-#[path = "term_comparison_validation.rs"]
 mod term_comparison_validation;
-#[path = "universal.rs"]
 pub(super) mod universal;
-#[path = "validation_identity.rs"]
 mod validation_identity;
 
 use std::{
@@ -10681,5 +10643,4 @@ pub(super) fn same_scalar_identity(
 }
 
 #[cfg(test)]
-#[path = "validation_snapshot_tests.rs"]
 mod validation_snapshot_tests;

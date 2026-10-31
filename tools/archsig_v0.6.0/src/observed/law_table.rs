@@ -389,5 +389,4 @@ pub(super) fn retain(
     Ok(Some(table))
 }
 #[cfg(test)]
-#[path = "law_table_tests.rs"]
 mod tests;

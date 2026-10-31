@@ -27,7 +27,6 @@ use crate::{
 };
 use std::sync::Arc;
 
-#[path = "finite_law_operands.rs"]
 mod operands;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
@@ -1485,17 +1484,13 @@ impl Environment<'_> {
     }
 }
 #[cfg(test)]
-#[path = "finite_law_diagram_tests.rs"]
 mod tests;
 
 #[cfg(test)]
-#[path = "finite_law_owned_tests.rs"]
 mod owned_tests;
 
 #[cfg(test)]
-#[path = "finite_law_family_tests.rs"]
 mod family_tests;
 
 #[cfg(test)]
-#[path = "finite_law_reading_tests.rs"]
 mod reading_tests;

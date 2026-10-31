@@ -32,7 +32,6 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-#[path = "object_view_transport_family.rs"]
 mod family;
 pub use family::{
     FamilyTypeFailure, FiniteViewTransport, FiniteViewTypeMap, ViewFamilyReturnMap,

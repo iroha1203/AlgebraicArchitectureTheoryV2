@@ -16,12 +16,9 @@ use super::{
 use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
-#[path = "change_linear_result.rs"]
 pub(super) mod linear_result;
-#[path = "field_linear_result.rs"]
 pub(super) mod field_linear_result;
 
-#[path = "change_owner_completion.rs"]
 mod owner_completion;
 
 #[derive(Debug)]
