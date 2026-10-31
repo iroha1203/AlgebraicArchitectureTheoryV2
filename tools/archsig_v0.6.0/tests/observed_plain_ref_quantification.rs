@@ -1,5 +1,5 @@
 //! 全snapshotのplain参照族を独立三入力から評価し、型・支持・由来・有限域と停止prefixを確認する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

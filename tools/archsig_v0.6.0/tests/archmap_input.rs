@@ -1,6 +1,6 @@
 //! ArchMap の JSON と版(入力仕様 §1)、AC5 の ArchMap 側(集合表の順、List の順と重複)。
 
-mod common;
+use crate::common;
 use archsig::archmap::check_archmap;
 use archsig::canonical::sha256_digest;
 use archsig::issue::{Code, Details, Location};

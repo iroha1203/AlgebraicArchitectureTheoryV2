@@ -1,5 +1,5 @@
 //! 小さい byte 入力から要求解決まで、構文・束縛・依存・射影の途中停止を検査する。
-mod common;
+use crate::common;
 
 use archsig::{
     control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},

@@ -1,5 +1,5 @@
 //! Z/Q 全域parameterと欠測Factの補完を区別し、元式への導出を三入力から検査する。
-mod common;
+use crate::common;
 use archsig::{
     archmap::Slot,
     canonical::Json,

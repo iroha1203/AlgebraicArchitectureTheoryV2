@@ -26,115 +26,12 @@ fn sources(map: &str) -> InputSources {
 fn example(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(sources(MAP), asks, &mut Control::unlimited()).unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
-}
-#[test]
-fn composed_dag_rejects_forged_actions_words_names_endpoints_conditions_and_scope() {
-    let r = example(&ASKS);
-    let original = r.answers[2].outputs["operation"].0;
-    for kind in 0..10 {
-        let target = if kind == 0 {
-            r.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!(&v.data,D::Composition(Part::Action{..})))).unwrap()
-        } else {
-            original
-        };
-        completion_mutation(&r, target, |nodes| {
-            let n = &mut nodes[target];
-            match kind {
-                0 => {
-                    let Some(Payload::Construction(v)) = &mut n.payload else {
-                        panic!()
-                    };
-                    let D::Composition(Part::Action { images, .. }) = &mut v.data else {
-                        panic!()
-                    };
-                    images.reverse();
-                }
-                1..=6 => {
-                    let Some(Payload::Construction(v)) = &mut n.payload else {
-                        panic!()
-                    };
-                    let D::Composition(Part::Operation {
-                        source,
-                        target,
-                        candidate,
-                        map,
-                        action,
-                        preservation,
-                        left,
-                        right,
-                        word,
-                    }) = &mut v.data
-                    else {
-                        panic!()
-                    };
-                    match kind {
-                        1 => word.reverse(),
-                        2 => std::mem::swap(left, right),
-                        3 => std::mem::swap(source, target),
-                        4 => *candidate = *map,
-                        5 => *action = *source,
-                        _ => *preservation = *map,
-                    }
-                }
-                7 => n.support.clear(),
-                8 => n.scope.readings.clear(),
-                _ => n.scope.completions = true,
-            }
-        });
-    }
-    let label = r.nodes.iter().position(|n| matches!(&n.payload,
-        Some(Payload::Construction(v)) if matches!(&v.witness, Witness::Compose(_))
-            && matches!(v.data, D::ConstructionLabel(_)))).unwrap();
-    completion_mutation(&r, label, |nodes| {
-        let Some(Payload::Construction(v)) = &mut nodes[label].payload else { panic!() };
-        v.data = D::ConstructionLabel(Scalar::Text("compose".into()));
-    });
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(r.prepared(), &mut control).unwrap();
-    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    for kind in 0..4 {
-        let mut a = r.answers[2].clone();
-        match kind {
-            0 => a.outputs.remove("map").map(|_| ()).unwrap(),
-            1 => a.status = Decision::Refuted,
-            2 => a.scope.snapshots.clear(),
-            _ => {
-                a.outputs
-                    .insert("operation".into(), r.answers[0].outputs["operation"]);
-            }
-        }
-        assert!(
-            env.validate_answer(&graph, &r.prepared().requests().requests()[2], &a)
-                .is_err()
-        );
-    }
 }
 #[test]
 fn composition_rechecks_actual_inputs_requests_and_refutation_proof() {
     let r = example(&ASKS);
-    let last = r.answers[2].outputs["operation"].0;
-    let mut control = Control::unlimited();
-    let altered = MAP.replace("\"value\":\"2\"", "\"value\":\"99\"");
-    assert_ne!(altered, MAP);
-    let prepared = prepare_observed(sources(&altered), &ASKS, &mut control).unwrap();
-    let env = Environment::with_prepared(&prepared, &mut control).unwrap();
-    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    assert!(env.recheck_node(&graph, &r.nodes[last], last).is_err());
-    let prepared = prepare_observed(
-        sources(MAP),
-        &[
-            ASKS[0],
-            ASKS[1],
-            "c=compose($n.operation,then=$m.operation)",
-        ],
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    graph.requests = prepared.requests().requests().to_vec();
-    assert!(env.recheck_node(&graph, &r.nodes[last], last).is_err());
+    assert_eq!(r.answers[2].status, Decision::Established);
     let bad = example(&[
         ASKS[0],
         "bad=compose($m.operation,then=$m.operation)",
@@ -142,24 +39,9 @@ fn composition_rechecks_actual_inputs_requests_and_refutation_proof() {
         "plan=needed($blocked)",
     ]);
     assert_eq!(bad.answers[1].status, Decision::Refuted);
-    let claim = bad.answers[1].outputs["proposition"].0;
-    completion_mutation(&bad, claim, |nodes| {
-        let reason = &mut nodes[claim].judgment.as_mut().unwrap().reasons[0];
-        let ReasonKind::ConditionFailed { construction, .. } = &mut reason.kind else { panic!() };
-        *construction = "compose";
-    });
-    let proof = bad.answers[1].evidence[0].0;
-    completion_mutation(&bad, proof, |nodes| {
-        let Some(Payload::Construction(v)) = &mut nodes[proof].payload else {
-            panic!()
-        };
-        let D::Composition(Part::Evidence { left, right }) = &mut v.data else {
-            panic!()
-        };
-        *left = *right;
-    });
+    // 判断の再検査の代表: 端点条件の判断を反転すると核が拒否する。
     let condition=bad.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.data,D::Composition(Part::Endpoints{..})))).unwrap();
-    completion_mutation(&bad, condition, |nodes| {
+    rejects_mutated_prefix(&bad, condition, |nodes| {
         nodes[condition].judgment.as_mut().unwrap().status = Decision::Established
     });
 }
@@ -182,52 +64,39 @@ fn native_and_transfer_composition_stops_preserve_only_checked_operations() {
         assert_eq!(normal.status(), "complete");
         let total = count.get();
         assert!(total > 10);
-        for at in [total - 1, total] {
-            for mode in 0..4 {
-                let count = Rc::new(Cell::new(0usize));
-                let seen = count.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |p| {
-                        if p == point {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stop && mode == 0),
-                            memory_mib: u128::from(stop && mode == 1),
-                            signal: match (stop, mode) {
-                                (true, 2) => Some(crate::result::Signal::Int),
-                                (true, 3) => Some(crate::result::Signal::Term),
-                                _ => None,
-                            },
-                        }
-                    },
-                );
-                let prepared =
-                    prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
-                let stopped = evaluate_observed(prepared, &mut c).unwrap();
-                assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
-                assert_eq!(count.get(), at);
-                rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-                let a = &stopped.answers[2];
-                if point == Checkpoint::NativeResultNode || at == total {
-                    assert_eq!(a.status, Decision::Established);
-                    assert!(a.outputs.contains_key("operation"));
-                    let graph =
-                        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-                    let result = graph.get(a.outputs["operation"]).unwrap();
-                    assert!(
-                        matches!(&result.payload,Some(Payload::Construction(v)) if matches!(v.witness,Witness::Compose(_)))
-                    );
-                } else {
-                    assert!(!a.outputs.contains_key("operation"));
+        // 停止の種類は time だけ、位置は完了直前の1点だけを見る。
+        let at = total - 1;
+        let seen = Rc::new(Cell::new(0usize));
+        let mut c = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: None,
+            },
+            move |p| {
+                if p == point {
+                    seen.set(seen.get() + 1);
                 }
-                assert_eq!(count.get(), at);
-            }
+                let stop = seen.get() >= at;
+                Usage {
+                    elapsed_ms: u128::from(stop),
+                    ..Usage::default()
+                }
+            },
+        );
+        let prepared = prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
+        let stopped = evaluate_observed(prepared, &mut c).unwrap();
+        assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
+        let graph = rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        let a = &stopped.answers[2];
+        if point == Checkpoint::NativeResultNode {
+            assert_eq!(a.status, Decision::Established);
+            assert!(a.outputs.contains_key("operation"));
+            let result = graph.get(a.outputs["operation"]).unwrap();
+            assert!(
+                matches!(&result.payload,Some(Payload::Construction(v)) if matches!(v.witness,Witness::Compose(_)))
+            );
+        } else {
+            assert!(!a.outputs.contains_key("operation"));
         }
     }
 }

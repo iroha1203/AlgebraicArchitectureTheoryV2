@@ -1,5 +1,5 @@
 //! 引数fixtureの明示期待値で、実CLIのusage通知と既存データ保護を検査する。
-mod common;
+use crate::common;
 use archsig::json::{JNode, parse};
 use common::cli::*;
 use std::{

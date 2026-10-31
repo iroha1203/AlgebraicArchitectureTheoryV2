@@ -41,13 +41,6 @@ impl Coordinate {
             _ => Err("多項式座標でない".into()),
         }
     }
-    #[cfg(test)]
-    fn polynomial_mut(&mut self) -> Result<&mut SourceCoordinate, ValidationFailure> {
-        match &mut self.source {
-            Source::Polynomial(q) => Ok(q),
-            _ => Err("多項式座標でない".into()),
-        }
-    }
     pub(super) fn value(&self, reading: Reading) -> Option<NodeRef> {
         match &self.source {
             Source::Polynomial(q) => match reading {

@@ -1,5 +1,5 @@
 //! 原始構造値の公開比較を独立入力と明示期待値で検査する。
-mod common;
+use crate::common;
 use archsig::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};

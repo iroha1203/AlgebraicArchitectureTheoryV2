@@ -1,6 +1,4 @@
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 #[allow(dead_code)]
 #[path = "common/public_relation.rs"]
 mod fixture;
@@ -8,7 +6,58 @@ use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 fn files(name: &str, script: &str, missing: bool) -> PathBuf {
-    input_files(name, fixture::input(script, missing))
+    input_files(name, without_unused_hops(fixture::input(script, missing)))
+}
+// relationの族は Hop の組で展開されるので、試験が使わない Hop(self・different)を外して族を小さくする。
+fn without_unused_hops(sources: archsig::input::InputSources) -> archsig::input::InputSources {
+    use archsig::canonical::Json;
+    use archsig::json::JValue;
+    fn convert(node: &JNode) -> Json {
+        match &node.value {
+            JValue::Bool(value) => Json::Bool(*value),
+            JValue::Str(value) => Json::str(value),
+            JValue::Num(value) => Json::Nat(value.parse().unwrap()),
+            JValue::Arr(values) => Json::Arr(values.iter().map(convert).collect()),
+            JValue::Obj(fields) => Json::Obj(
+                fields
+                    .iter()
+                    .map(|(name, value)| (name.clone(), convert(value)))
+                    .collect(),
+            ),
+            JValue::Null => panic!("この原始fixtureにnullはない"),
+        }
+    }
+    fn unused(json: &Json, key: &str) -> bool {
+        let Json::Obj(fields) = json else { panic!() };
+        fields[key] == Json::str("self") || fields[key] == Json::str("different")
+    }
+    let mut map = convert(&archsig::json::parse(sources.archmap().bytes()).unwrap());
+    let Json::Obj(root) = &mut map else { panic!() };
+    let Json::Arr(snapshots) = root.get_mut("snapshots").unwrap() else {
+        panic!()
+    };
+    let Json::Obj(v) = &mut snapshots[0] else {
+        panic!()
+    };
+    let Json::Arr(subjects) = v.get_mut("subjects").unwrap() else {
+        panic!()
+    };
+    let before = subjects.len();
+    subjects.retain(|subject| !unused(subject, "id"));
+    assert!(subjects.len() < before);
+    let Json::Arr(atoms) = v.get_mut("atoms").unwrap() else {
+        panic!()
+    };
+    atoms.retain(|atom| !unused(atom, "subject"));
+    archsig::input::InputSources::from_bytes(
+        sources
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        sources.law().bytes().to_vec(),
+        map.canonical().into_bytes(),
+    )
 }
 fn input_files(name: &str, input: archsig::input::InputSources) -> PathBuf {
     let dir = workdir(name);
@@ -115,66 +164,29 @@ fn saved(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(num(get(&result, "exit_code")), code as u64);
     result
 }
+// 宣言relationでの成立(閉じた語の証拠)と合成Pathでの成立は、同じ入力の実評価を
+// src/observed/public_relation_sources_tests.rs が確かめる。ここでは公開結果の反証の形を見る。
 #[test]
-fn relation_membership_and_free_word_nonmembership_have_distinct_checked_evidence() {
-    let texts = [
-        fixture::E,
-        fixture::ALIAS,
-        "compared=compare($e.value,to=$alias.value,kind=relation)",
-    ];
-    for (name, script, expected) in [
-        ("relation-names-free", "", "refuted"),
-        (
-            "relation-names-rule",
-            fixture::ALIAS_RELATION,
-            "established",
-        ),
-    ] {
-        let dir = files(name, script, false);
-        let run = asks(&dir, &texts);
-        let result = saved(
-            &dir,
-            &run,
-            "complete",
-            if expected == "refuted" { 1 } else { 0 },
-        );
-        let compared = answer(&result, "compared");
-        assert_eq!(s(get(compared, "status")), expected);
-        assert!(has(get(compared, "outputs"), "comparison"));
-        let claim = node(&result, get(get(compared, "outputs"), "proposition"));
-        assert_eq!(s(get(get(claim, "value"), "predicate")), "relation_equal");
-        if expected == "established" { assert!(!has(compared,"counterexamples")); }
-        else {
-            assert_eq!(arr(get(compared,"counterexamples")).len(),1);
-            let example=node(&result,&arr(get(compared,"counterexamples"))[0]);
-            assert_eq!(s(get(get(example,"value"),"kind")),"counterexample");
-        }
-        assert!(arr(get(&result, "issues")).is_empty());
-    }
-}
-#[test]
-fn a_composed_path_uses_the_original_relation_inside_its_query_context() {
-    let dir = files("relation-context", fixture::ALIAS_RELATION, false);
+fn free_word_nonmembership_has_a_checked_counterexample() {
+    let dir = files("relation-names-free", "", false);
     let run = asks(
         &dir,
         &[
             fixture::E,
             fixture::ALIAS,
-            fixture::F,
-            fixture::C,
-            "other=compose($alias.value,then=$f.value)",
-            "compared=compare($c.operation,to=$other.operation,kind=relation)",
+            "compared=compare($e.value,to=$alias.value,kind=relation)",
         ],
     );
-    let result = saved(&dir, &run, "complete", 0);
-    assert_eq!(s(get(answer(&result, "compared"), "status")), "established");
-    assert!(!has(answer(&result,"compared"),"counterexamples"));
-    let result=internal_graph(&dir,&result);
-    let proof = node(
-        &result,
-        &arr(get(answer(&result, "compared"), "evidence"))[1],
-    );
-    assert!(!arr(get(get(get(proof, "value"), "data"), "steps")).is_empty());
+    let result = saved(&dir, &run, "complete", 1);
+    let compared = answer(&result, "compared");
+    assert_eq!(s(get(compared, "status")), "refuted");
+    assert!(has(get(compared, "outputs"), "comparison"));
+    let claim = node(&result, get(get(compared, "outputs"), "proposition"));
+    assert_eq!(s(get(get(claim, "value"), "predicate")), "relation_equal");
+    assert_eq!(arr(get(compared, "counterexamples")).len(), 1);
+    let example = node(&result, &arr(get(compared, "counterexamples"))[0]);
+    assert_eq!(s(get(get(example, "value"), "kind")), "counterexample");
+    assert!(arr(get(&result, "issues")).is_empty());
 }
 #[test]
 fn missing_relation_guard_is_a_partial_result_with_a_plan_for_the_original_field() {

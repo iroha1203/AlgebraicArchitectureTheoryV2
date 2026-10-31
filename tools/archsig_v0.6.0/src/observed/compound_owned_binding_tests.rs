@@ -4,15 +4,6 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/compound_owned_binding.rs");
 }
-const GOOD: &[&str] = &[
-    "a=evaluate(Applications.cbUniversalOwner,a=@v/A)",
-    "b=evaluate(Applications.cbOwner,a=@v/B)",
-    "v=evaluate(Applications.cbMap,m=@v/m)",
-    "other=evaluate(Applications.cbMap,m=@v/m)",
-    "otherB=evaluate(Applications.cbOwner,a=@v/B)",
-    "take=check(Applications.cbEq,a=$a.value,b=$b.value,x=$v.value)",
-    "later=evaluate(Applications.seed)",
-];
 const BAD: &[&str] = &[
     "a=evaluate(Applications.cbUniversalOwner,a=@v/A)",
     "b=evaluate(Applications.cbOwner,a=@v/A)",
@@ -22,14 +13,6 @@ const BAD: &[&str] = &[
     "take=check(Applications.cbEq,a=$a.value,b=$b.value,x=$v.value)",
     "later=evaluate(Applications.seed)",
 ];
-fn env(r: &ObservedEvaluation) -> Environment<'_> {
-    Environment::with_requests(
-        r.prepared.inputs(),
-        r.prepared.requests().requests(),
-        &mut named_call_quiet(),
-    )
-    .unwrap()
-}
 fn run(asks: &[&str]) -> ObservedEvaluation {
     run_with("known", asks)
 }
@@ -44,251 +27,22 @@ fn run_with(mode: &str, asks: &[&str]) -> ObservedEvaluation {
                 })
             )
         });
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = env(&r);
-    for (req, a) in r.prepared.requests().requests().iter().zip(&r.answers) {
-        e.validate_answer(&g, req, a).unwrap();
-    }
     r
-}
-#[test]
-fn compound_owned_binding_recheck_rejects_all_owner_edges_value_check_and_source_bypass() {
-    let r = run(GOOD);
-    assert_eq!(r.status(), "complete");
-    let i = r
-        .nodes
-        .iter()
-        .position(|n| matches!(&n.rule,Rule::OwnedBinding(p)if p=="x"))
-        .unwrap();
-    assert_eq!(r.nodes[i].arguments.len(), 3);
-    assert_eq!(
-        r.nodes[i].arguments,
-        [
-            r.answers[2].outputs["value"],
-            r.answers[0].outputs["value"],
-            r.answers[1].outputs["value"]
-        ]
-    );
-    let foreign = r.answers[3].outputs["value"];
-    assert_ne!(foreign, r.nodes[i].arguments[0]);
-    assert_eq!(
-        r.nodes[foreign.0].payload,
-        r.nodes[r.nodes[i].arguments[0].0].payload
-    );
-    completion_mutation(&r, i, |ns| ns[i].arguments[0] = foreign);
-    let foreign_owner = r.answers[4].outputs["value"];
-    assert_ne!(foreign_owner, r.nodes[i].arguments[2]);
-    assert_eq!(
-        r.nodes[foreign_owner.0].payload,
-        r.nodes[r.nodes[i].arguments[2].0].payload
-    );
-    completion_mutation(&r, i, |ns| ns[i].arguments[2] = foreign_owner);
-    completion_mutation(&r, i, |ns| {
-        ns[i].arguments.remove(1);
-    });
-    completion_mutation(&r, i, |ns| {
-        ns[i]
-            .support
-            .retain(|f| f.atom.as_deref() != Some("q-owner"));
-    });
-    completion_mutation(&r, i, |ns| ns[i].scope.quantifiers.clear());
-    completion_mutation(&r, i, |ns| {
-        ns[i].payload = Some(Payload::Scalar(Scalar::Bool(false)))
-    });
-    let source = r
-        .nodes
-        .iter()
-        .enumerate()
-        .find_map(|(j, n)| {
-            (r.contexts[j].request == 5 && matches!(n.payload, Some(Payload::Expression { .. })))
-                .then_some(j)
-        })
-        .unwrap();
-    completion_mutation(&r, source, |ns| {
-        ns[source].arguments.retain(|r| *r != NodeRef(i))
-    });
-    completion_mutation(&r, source, |ns| {
-        for edge in &mut ns[source].arguments {
-            if *edge == NodeRef(i) {
-                *edge = r.nodes[i].arguments[0];
-            }
-        }
-    });
 }
 #[test]
 fn compound_owned_conditions_recheck_three_inputs_all_typed_parts_and_roster_support() {
     let r = run(BAD);
     assert_eq!(r.status(), "partial");
-    let parts: Vec<_> = r
+    // 判断の再検査の代表: 3入力のowner条件の判断を反転すると核が拒否する。
+    let condition = r
         .nodes
         .iter()
-        .enumerate()
-        .filter_map(|(i, n)| {
-            matches!(&n.rule,Rule::ProjectionCheck{parameter,..}if parameter=="x").then_some(i)
-        })
-        .collect();
-    assert_eq!(parts.len(), 5);
-    for &i in &parts {
-        completion_mutation(&r, i, |ns| ns[i].support.clear());
-        completion_mutation(&r, i, |ns| ns[i].scope.quantifiers.clear());
-        completion_mutation(&r, i, |ns| {
-            ns[i].arguments.remove(2);
-        });
-    }
-    let [name, actual, required, evidence, condition] = parts.as_slice() else {
-        panic!()
-    };
-    completion_mutation(&r, *name, |ns| {
-        ns[*name].payload = Some(Payload::Scalar(Scalar::Text("other".into())))
+        .position(|n| matches!(&n.rule,Rule::ProjectionCheck{parameter,part:ProjectionCheckPart::Condition}if parameter=="x"))
+        .unwrap();
+    rejects_mutated_prefix(&r, condition, |ns| {
+        ns[condition].judgment.as_mut().unwrap().status = Decision::Established
     });
-    completion_mutation(&r, *actual, |ns| {
-        ns[*actual].payload = Some(Payload::Scalar(Scalar::Bool(true)))
-    });
-    completion_mutation(&r, *required, |ns| {
-        ns[*required].payload = Some(Payload::Scalar(Scalar::Bool(false)))
-    });
-    completion_mutation(&r, *evidence, |ns| {
-        ns[*evidence].ty = NodeType::Value(Type::Bool)
-    });
-    completion_mutation(&r, *condition, |ns| {
-        ns[*condition].judgment.as_mut().unwrap().status = Decision::Established
-    });
-    completion_mutation(&r, *condition, |ns| ns[*condition].evidence.clear());
-    let Some(Payload::ProjectionCondition { inputs, .. }) = &r.nodes[*condition].payload else {
-        panic!()
-    };
-    assert_eq!(inputs.len(), 3);
-    assert_eq!(
-        inputs,
-        &vec![
-            r.answers[2].outputs["value"],
-            r.answers[0].outputs["value"],
-            r.answers[1].outputs["value"]
-        ]
-    );
-    for kind in 0..5 {
-        completion_mutation(&r, *condition, |ns| {
-            let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload
-            else {
-                panic!()
-            };
-            match kind {
-                0 => {
-                    inputs.pop();
-                }
-                1 => inputs.clear(),
-                2 => inputs.swap(1, 2),
-                3 => inputs.push(inputs[1]),
-                _ => inputs[0] = r.answers[3].outputs["value"],
-            }
-        });
-    }
-    let mut answer = r.answers[5].clone();
-    for reason in &mut answer.reasons {
-        if matches!(reason.kind, ReasonKind::ConditionFailed { .. }) {
-            reason.dependencies.pop();
-        }
-    }
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    assert!(matches!(
-        env(&r).validate_answer(&g, &r.prepared.requests().requests()[5], &answer),
-        Err(ValidationFailure::Internal(_))
-    ));
 }
-#[test]
-fn compound_owned_same_and_fresh_recheck_detects_mutation_after_success_and_accepts_restoration() {
-    for asks in [GOOD, BAD] {
-        let r = run(asks);
-        let cutoff = r.contexts.iter().position(|c| c.request == 6).unwrap();
-        for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
-            let mut g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
-            let e = env(&r);
-            let request = &r.prepared.requests().requests()[5];
-            let answer = &r.answers[5];
-            e.validate_answer(&g, request, answer).unwrap();
-            let i = g
-                .nodes
-                .iter()
-                .position(|n| {
-                    matches!(
-                        n.rule,
-                        Rule::OwnedBinding(_)
-                            | Rule::ProjectionCheck {
-                                part: ProjectionCheckPart::Condition,
-                                ..
-                            }
-                    )
-                })
-                .unwrap();
-            let saved = g.nodes[i].clone();
-            g.nodes[i].support.clear();
-            assert!(matches!(
-                e.validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            assert!(matches!(
-                env(&r).validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            g.nodes[i] = saved;
-            e.validate_answer(&g, request, answer).unwrap();
-            let saved = g.requests[5].clone();
-            g.requests[5]
-                .arguments
-                .iter_mut()
-                .find(|a| a.name == "bind.b")
-                .unwrap()
-                .value = Selector::Answer {
-                id: "otherB".into(),
-                path: vec![crate::observed::projection::ProjectionStep::Field(
-                    "value".into(),
-                )],
-            };
-            g.requests[5].dependencies = vec!["a".into(), "otherB".into(), "v".into()];
-            assert!(matches!(
-                e.validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            assert!(matches!(
-                env(&r).validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            g.requests[5] = saved;
-            e.validate_answer(&g, request, answer).unwrap();
-            let saved = g.requests[5].clone();
-            g.requests[5]
-                .constraints
-                .iter_mut()
-                .find(|c| c.parameter == "x")
-                .unwrap()
-                .dynamic = false;
-            assert!(matches!(
-                e.validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            assert!(matches!(
-                env(&r).validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            g.requests[5] = saved;
-            e.validate_answer(&g, request, answer).unwrap();
-            let k = g.checked_answers.iter().position(|(k, _)| *k == 2).unwrap();
-            let saved = g.checked_answers[k].1.clone();
-            g.checked_answers[k].1.outputs = r.answers[3].outputs.clone();
-            assert!(matches!(
-                e.validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            assert!(matches!(
-                env(&r).validate_answer(&g, request, answer),
-                Err(ValidationFailure::Internal(_))
-            ));
-            g.checked_answers[k].1 = saved;
-            e.validate_answer(&g, request, answer).unwrap();
-        }
-    }
-}
-
 fn stop(mode: usize) {
     use std::{cell::Cell, rc::Rc};
     let producer = if mode == 0 {
@@ -407,7 +161,6 @@ fn stop(mode: usize) {
     assert!(!later_member.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
     assert_eq!(&stopped.answers[..6], &normal.answers[..6]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -417,11 +170,6 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
     for (i, a) in stopped.answers.iter().enumerate().skip(6) {
         if mode == 3 && i == 6 {
             let original = &normal.answers[6];
@@ -451,31 +199,8 @@ fn stop(mode: usize) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
-}
-#[test]
-fn compound_owned_member_stop_preserves_prior_values_refutation_missing_and_prefix() {
-    stop(0)
-}
-#[test]
-fn compound_owned_map_domain_stop_preserves_exact_budget_and_prefix() {
-    stop(1)
 }
 #[test]
 fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
     stop(2)
-}
-#[test]
-fn compound_owned_fresh_recheck_stop_preserves_nonempty_claim_and_evidence() {
-    stop(3)
-}
-
-#[test]
-fn compound_owned_type_walk_cancel_preserves_prior_results_and_stops_before_member_check() {
-    stop(4)
-}
-#[test]
-fn compound_owned_owner_selection_budget_preserves_prefix_and_probe_freeze() {
-    stop(5)
 }

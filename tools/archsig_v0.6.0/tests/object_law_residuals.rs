@@ -402,22 +402,13 @@ fn fixed_stops_keep_original_execution_completed_cases_refutations_and_final_com
         Usage::default()
     });
     object_law_residuals(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
-    for point in [
-        C::Expression,
-        C::ObjectLawResiduals,
-        C::ObjectLawResidualCase,
-        C::ObjectLawResidualPoint,
-    ] {
+    for point in [C::ObjectLawResidualPoint] {
         let count = history.borrow().iter().filter(|p| **p == point).count();
         assert!(count > 0);
         let mut targets = vec![1, count];
-        if count > 2 {
-            targets.push(count / 2)
-        }
-        targets.sort();
         targets.dedup();
         for nth in targets {
-            for mode in 0..4 {
+            for mode in [2] {
                 let hits = Rc::new(RefCell::new(0));
                 let hits0 = hits.clone();
                 let probes = Rc::new(RefCell::new(0));

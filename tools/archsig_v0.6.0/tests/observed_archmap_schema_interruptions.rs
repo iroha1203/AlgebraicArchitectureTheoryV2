@@ -1,5 +1,5 @@
 //! Schema helper の内部と入力不正を確定した後の停止優先順位。
-mod common;
+use crate::common;
 use archsig::{
     control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     input::{InputSources, InputStatus, check_inputs},

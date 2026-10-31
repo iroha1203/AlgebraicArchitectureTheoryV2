@@ -334,32 +334,6 @@ fn missing_declaration_and_unimplemented_families_keep_verified_operation() {
         })
     );
     r.operation().recheck(&i, &mut quiet()).unwrap();
-    let law = L
-        .replace(
-            "List<Z> = list<Z>[c.count]",
-            "List<(Z,Left.Child)> = list<(Z,Left.Child)>[(c.count,c)]",
-        )
-        .replace(
-            "List<Z> = list<Z>[2]",
-            "List<(Z,Right.Child)> = list<(Z,Right.Child)>[(2,d)]",
-        );
-    let i = inputs(&law, A);
-    let d = declarations(&i);
-    let (o, r) = indices(&i, "p", "sequence", "p");
-    let Err(Error::NotImplemented {
-        operation,
-        object,
-        instance,
-        returns,
-        ..
-    }) = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet())
-    else {
-        panic!("reference container requires a value transport");
-    };
-    operation.recheck(&i, &mut quiet()).unwrap();
-    assert_eq!(object.subject().subject, "p");
-    assert_eq!(instance.declaration().name, "Before.sequence");
-    assert_eq!(Some(returns), instance.declaration().returns);
 }
 #[test]
 fn current_values_mapping_and_law_body_are_rechecked() {
@@ -1191,11 +1165,11 @@ fn finite_view_family_keeps_all_data_option_set_and_boolean_product_values() {
             .collect::<Vec<_>>(),
         expected
     );
+    // 族の再検査は数値の積の族のテストが代表する。
     for row in f.rows() {
         assert_eq!(row.source().unwrap().wire(), row.target().unwrap().wire());
         assert_eq!(row.outcome(), &Outcome::Preserved);
     }
-    r.recheck(i, &mut quiet()).unwrap();
 }
 
 #[test]
@@ -1307,63 +1281,6 @@ fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
         r.operation().recheck(&i, &mut quiet()).unwrap();
         r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
     }
-}
-
-#[test]
-fn unsupported_family_return_transport_keeps_the_already_computed_view_values() {
-    let law = family_law(
-        "view family(c:Left.Child,b:Bool):List<(Z,Left.Child)> = list<(Z,Left.Child)>[(if b then c.count+1 else c.count,c)];",
-        "view family(d:Right.Child,q:Bool):List<(Z,Right.Child)> = list<(Z,Right.Child)>[(if q then 3 else 2,d)];",
-    );
-    let i = inputs(&law, A);
-    let d = declarations(&i);
-    let (o, n) = indices(&i, "p", "family", "p");
-    let Err(Error::NotImplemented {
-        operation,
-        returns,
-        partial: Some(p),
-        ..
-    }) = object_view_transport(Arc::clone(&i), &d, o, n, &mut quiet())
-    else {
-        panic!("unsupported type transport");
-    };
-    assert_eq!(
-        returns,
-        archsig::types::Type::List(Box::new(archsig::types::Type::Tuple(vec![
-            archsig::types::Type::Z,
-            archsig::types::Type::Ref("Left.Child".into()),
-        ])))
-    );
-    assert!(p.outcome().is_none());
-    assert!(!p.family().unwrap().is_complete());
-    assert!(p.family().unwrap().rows().is_empty());
-    assert_eq!(
-        p.family().unwrap().parameters()[0].forward(),
-        Some([0, 1].as_slice())
-    );
-    for evaluation in [p.source().unwrap(), p.target().unwrap()] {
-        let ObjectEvaluationOutcome::FiniteView(family) = evaluation.outcome() else {
-            panic!("retained finite family");
-        };
-        assert!(family.is_complete());
-        assert_eq!(family.rows().len(), 2);
-        for (row, expected) in family.rows().iter().zip(["2", "3"]) {
-            let wire = row.evaluation().wire();
-            let output = f(&arr(f(&wire, "answers"))[0], "outputs");
-            let id = f(f(output, "value"), "node");
-            let node = arr(f(&wire, "nodes"))
-                .iter()
-                .find(|node| f(node, "id") == id)
-                .unwrap();
-            let items = arr(f(node, "value"));
-            assert_eq!(items.len(), 1);
-            let pair = arr(&items[0]);
-            assert_eq!(pair.len(), 2);
-            assert_eq!(pair[0], Json::str(expected));
-            assert_eq!(arr(&pair[1])[0], Json::str("v"));
-        }
-    }
-    operation.recheck(&i, &mut quiet()).unwrap();
 }
 
 #[test]

@@ -1,6 +1,6 @@
 //! CLI check の固定 checkpoint 取消と、配送を始めない停止。
 
-mod common;
+use crate::common;
 use archsig::control::{Checkpoint, Control, Limits, Usage};
 use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, run_check};

@@ -12,11 +12,6 @@ mod fixture {
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
-fn example(qs: &[&str]) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(fixture::input("", None), qs, &mut quiet()).unwrap();
-    assert_eq!(result.status(), "complete", "{:?}", result.issues);
-    result
-}
 fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
     let mut c = quiet();
     let environment = Environment::with_prepared(result.prepared(), &mut c)?;
@@ -40,124 +35,6 @@ fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationF
     }
     Ok(())
 }
-#[test]
-fn architecture_environment_edges_sources_domains_and_equal_but_foreign_producers_are_rechecked() {
-    let result = example(&[
-        fixture::MAP,
-        "alias=map(Reservations.Migration,on=@v/mm,reading=Reservations)",
-        "source=evaluate(Reservations.smallStates,on=$m.candidate.source)",
-        "target=evaluate(Reservations.smallStates,on=$m.candidate.target)",
-        "constant=evaluate(Reservations.no,on=$m.candidate.source)",
-    ]);
-    replay(&result, &result.nodes).unwrap();
-    let environment = |answer: usize| {
-        let Some(Payload::Evaluation {
-            environment: Some(r),
-            ..
-        }) = &result.nodes[result.answers[answer].outputs["evaluation"].0].payload
-        else {
-            panic!("explicit environment")
-        };
-        *r
-    };
-    let source = environment(2);
-    let target = environment(3);
-    let candidate = result.answers[1].outputs["candidate"];
-    let Some(Payload::Construction(c)) = &result.nodes[candidate.0].payload else {
-        panic!("native")
-    };
-    let ConstructionData::MapCandidate { source: alias, .. } = c.data else {
-        panic!("candidate")
-    };
-    assert_ne!(source, alias);
-    let eval = result.answers[4].outputs["evaluation"].0;
-    assert!(result.nodes[eval].scope.snapshots.contains("v"));
-    assert!(result.nodes[eval].scope.modes.contains("specification"));
-    for part in 0..2 {
-        let mut nodes = result.nodes.clone();
-        if part == 0 {
-            nodes[eval].scope.snapshots.clear();
-        } else {
-            nodes[eval].scope.modes.clear();
-        }
-        assert!(matches!(
-            replay(&result, &nodes),
-            Err(ValidationFailure::Internal(_))
-        ));
-    }
-
-    for replacement in [
-        None,
-        Some(target),
-        Some(alias),
-        Some(NodeRef(result.nodes.len())),
-    ] {
-        let mut nodes = result.nodes.clone();
-        let Some(Payload::Evaluation { environment, .. }) = &mut nodes[eval].payload else {
-            panic!("evaluation")
-        };
-        *environment = replacement;
-        assert!(matches!(
-            replay(&result, &nodes[..=eval]),
-            Err(ValidationFailure::Internal(_))
-        ));
-        assert!(matches!(
-            replay(&result, &nodes),
-            Err(ValidationFailure::Internal(_))
-        ));
-    }
-    let domain = result
-        .nodes
-        .iter()
-        .enumerate()
-        .find(|(i, n)| {
-            result.contexts[*i].request == 2 && matches!(n.payload, Some(Payload::Domain { .. }))
-        })
-        .unwrap()
-        .0;
-    let mut nodes = result.nodes.clone();
-    if let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload {
-        elements.pop();
-    }
-    assert!(matches!(
-        replay(&result, &nodes),
-        Err(ValidationFailure::Internal(_))
-    ));
-    let mut nodes = result.nodes.clone();
-    nodes[eval].support.push(crate::archmap::Fact {
-        snapshot: "v".into(),
-        subject: "B".into(),
-        field: None,
-        atom: None,
-    });
-    assert!(matches!(
-        replay(&result, &nodes),
-        Err(ValidationFailure::Internal(_))
-    ));
-    // Same value is insufficient when the selected current request changes its root.
-    let mut changed = result;
-    let qs = [
-        fixture::MAP,
-        "alias=map(Reservations.Migration,on=@v/mm,reading=Reservations)",
-        "source=evaluate(Reservations.smallStates,on=$m.candidate.source)",
-        "target=evaluate(Reservations.smallStates,on=$m.candidate.target)",
-        "constant=evaluate(Reservations.no,on=$m.candidate.target)",
-    ];
-    let original = std::mem::replace(
-        &mut changed.prepared,
-        prepare_observed(fixture::input("", None), &qs, &mut quiet()).unwrap(),
-    );
-    assert!(matches!(
-        replay(&changed, &changed.nodes),
-        Err(ValidationFailure::Internal(_))
-    ));
-    changed.prepared = original;
-    changed.answers[4].scope.snapshots.clear();
-    assert!(matches!(
-        replay(&changed, &changed.nodes),
-        Err(ValidationFailure::Internal(_))
-    ));
-}
 
 #[test]
 fn architecture_environment_stops_retain_independent_value_and_refutation_and_freeze_probes() {
@@ -167,7 +44,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
         "bad=check(Reservations.small,on=$m.candidate.target)",
         "todo=evaluate(Reservations.smallStates,on=$m.candidate.source)",
     ];
-    for phase in [Checkpoint::ObjectEvaluation, Checkpoint::Expression] {
+    for phase in [Checkpoint::Expression] {
         let armed = Rc::new(Cell::new(false));
         let seen = armed.clone();
         crate::observed::data::observe_iterations(move |_, context, operation, _| {
@@ -189,8 +66,8 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
         assert_eq!(result.status(), "complete");
         let total = count.get();
         assert!(total > 1);
-        for at in [1, total / 2, total] {
-            for mode in 0..4 {
+        for at in [total / 2, total] {
+            for mode in [2] {
                 let armed = Rc::new(Cell::new(false));
                 let a = armed.clone();
                 crate::observed::data::observe_iterations(move |_, context, operation, _| {

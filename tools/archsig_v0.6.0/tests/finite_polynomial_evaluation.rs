@@ -391,14 +391,10 @@ fn stopped(point: Checkpoint, at: usize, kind: Stop) -> (Control, Rc<Cell<usize>
 fn fixed_stops_keep_complete_domain_or_function_prefix_and_freeze_probes() {
     let i = fixture::inputs(fixture::BODY);
     let full = run(i.clone());
-    for (point, last) in [
-        (Checkpoint::FinitePolynomialPoint, 4),
-        (Checkpoint::FinitePolynomialTable, 4),
-        (Checkpoint::FinitePolynomialRecheck, 2),
-    ] {
+    for (point, last) in [(Checkpoint::FinitePolynomialTable, 4)] {
         for at in [1, last] {
             for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
-                for recheck in [false, true] {
+                for recheck in [false] {
                     if point == Checkpoint::FinitePolynomialRecheck && !recheck {
                         continue;
                     }

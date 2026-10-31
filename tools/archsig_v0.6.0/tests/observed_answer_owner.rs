@@ -1,5 +1,5 @@
 //! 依存戻り型の添字を生産側の束縛へ対応付け、値を評価せず所属を照合する。
-mod common;
+use crate::common;
 
 use archsig::{
     control::{Checkpoint, Control, Limits, StopReason, Usage},

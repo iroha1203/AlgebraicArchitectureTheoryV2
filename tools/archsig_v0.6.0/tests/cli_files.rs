@@ -1,6 +1,6 @@
 //! AC7: 入力の読込み、出力の確定、確定時の中断状態。
 
-mod common;
+use crate::common;
 use archsig::control::Control;
 use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, internal_outcome, run_check};

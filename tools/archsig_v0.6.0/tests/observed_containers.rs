@@ -1,5 +1,5 @@
 //! AC4原始containerの小さい三入力fixture。型、原始encoding、全元子、支持と停止prefixを確認する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},

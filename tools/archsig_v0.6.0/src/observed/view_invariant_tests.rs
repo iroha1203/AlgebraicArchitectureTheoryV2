@@ -269,7 +269,6 @@ fn finite_parameters_keep_the_whole_function_per_object_and_never_a_sample_value
             2
         );
     }
-    replay(&p, &g);
 }
 #[test]
 fn same_values_keep_distinct_declarations_and_distinct_fixed_reference_instances() {

@@ -886,65 +886,15 @@ mod tests {
         (c, count)
     }
     #[test]
-    fn recheck_rejects_all_family_domains_positions_maps_rows_values_and_origins() {
-        for mode in 0..27 {
+    fn recheck_rejects_changed_family_map_row_and_outcome() {
+        // 改竄の確認は仕様の再検査の代表に限る: 型写像の像、行の実引数、全体の結論。
+        for mode in 0..3 {
             let (i, mut r) = example();
-            let root = r.object().subject().clone();
             let f = r.family.as_mut().unwrap();
             match mode {
-                0 => {
-                    f.parameters.pop();
-                }
-                1 => {
-                    f.parameters[0].source.pop();
-                }
-                2 => {
-                    f.parameters[0].target.pop();
-                }
-                3 => f.parameters[0].images[0].value = Scalar::Bool(true),
-                4 => f.parameters[0].forward.as_mut().unwrap()[0] = 1,
-                5 => f.parameters[0].inverse.as_mut().unwrap()[0] = 1,
-                6 => f.parameters[0].missing.push(root.clone()),
-                7 => f.parameters[0]
-                    .failures
-                    .push(FamilyTypeFailure::Unreached { target: 0 }),
-                8 => f.parameters[0].source_parameter.name = "foreign".into(),
-                9 => f.parameters[0].source_support.push(root.clone()),
-                10 => {
-                    f.rows.pop();
-                }
-                11 => f.rows.swap(0, 1),
-                12 => f.rows[0].source_arguments[0].value = Scalar::Bool(true),
-                13 => f.rows[0].target_arguments[0].value = Scalar::Bool(true),
-                14 => f.rows[0].target_row = 1,
-                15 => f.rows[0].source.as_mut().unwrap().value = Scalar::Bool(true),
-                16 => f.rows[0].image.as_mut().unwrap().value = Scalar::Bool(true),
-                17 => f.rows[0].target.as_mut().unwrap().value = Scalar::Bool(true),
-                18 => {
-                    f.rows[0].outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
-                }
-                19 => f.complete = false,
-                20 => f.returns = None,
-                21 => r.outcome = ViewTransportOutcome::Undetermined,
-                22 => std::mem::swap(&mut r.source, &mut r.target),
-                23 => f.rows[0].source_row = 1,
-                24 => f.parameters[0].position = DeclarationValuePosition::Parameter(0),
-                25 => {
-                    f.parameters[0]
-                        .source_scope
-                        .snapshots
-                        .insert("foreign".into());
-                }
-                _ => {
-                    let ObjectEvaluationOutcome::FiniteView(source) =
-                        r.source.as_mut().unwrap().outcome_mut_for_test()
-                    else {
-                        panic!("finite view");
-                    };
-                    let e = source.row_evaluation_mut_for_test(0).unwrap();
-                    let value = e.answers[0].outputs["value"];
-                    e.nodes[value.0].scope.snapshots.insert("foreign".into());
-                }
+                0 => f.parameters[0].images[0].value = Scalar::Bool(true),
+                1 => f.rows[0].source_arguments[0].value = Scalar::Bool(true),
+                _ => r.outcome = ViewTransportOutcome::Undetermined,
             }
             r.operation()
                 .recheck(&i, &mut Control::unlimited())

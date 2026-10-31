@@ -1,6 +1,6 @@
 //! Law の読込みの順序(UTF-8・字句、版、文法、宣言)と、量化の区切り。
 
-mod common;
+use crate::common;
 use archsig::issue::{Code, Details, Location};
 use archsig::law::check_law;
 use common::law_definitions::*;

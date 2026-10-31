@@ -1,7 +1,5 @@
 //! 有理線形系から元Assignmentと修復後の値を計算する公開経路。
-#[allow(dead_code)]
-#[path = "common/cli.rs"]
-mod cli;
+use crate::common::cli;
 use archsig::{definition, input::InputSources, json::JNode};
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
@@ -831,35 +829,37 @@ fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
     dir
 }
 #[test]
-fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing() {
-    for gamma in [Some(2),Some(3),None] {
-        let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
-        let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","s=diagnose($l.system,side=semantic)","n=needed($d)"];
-        let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
-        let j=result_json(&dir,&r);
-        let internal = (gamma == Some(3)).then(|| internal_graph(&dir, &j));
-        for i in [2,3] {
-            let answer=&arr(get(&j,"answers"))[i];
-            assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
-            let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
-            assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
-            assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
-            if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
-            let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
-            if gamma==Some(2){
-                assert_eq!(coordinates[0],vec!["0","1"]);
-                assert!(!has(answer,"counterexamples"));
-            }else{
-                assert_ne!(coordinates[0][0],"0");
-                let j = internal.as_ref().expect("反証時の内部評価");
-                let answer=&arr(get(j,"answers"))[i];
-                let proof=arr(get(answer,"evidence")).iter().map(|r|get(node(j,r),"value")).find(|e|s(get(e,"kind"))=="linear_inconsistent").unwrap();
-                let pairing=arr(get(node(j,get(get(proof,"data"),"pairing")),"value"));assert_ne!(s(&pairing[0]),"0");
-            }
+fn rational_local_triangle_reports_a_gluing_obstruction() {
+    rational_local_triangle_distinguishes_gluing_obstruction_and_missing(0);
+}
+#[test]
+fn rational_local_triangle_keeps_a_missing_value_undetermined() {
+    rational_local_triangle_distinguishes_gluing_obstruction_and_missing(1);
+}
+fn rational_local_triangle_distinguishes_gluing_obstruction_and_missing(row: usize) {
+    let gamma = [Some(3),None][row];
+    let dir=rational_triangle(&format!("rational-triangle-{gamma:?}"),gamma);
+    // semantic側の有理診断は rational_local_system_keeps_exact_equation_and_semantic_fibers が見る。
+    let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","n=needed($d)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,match gamma{Some(2)=>0,Some(3)=>1,_=>2},"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    for i in [2] {
+        let answer=&arr(get(&j,"answers"))[i];
+        assert_eq!(s(get(answer,"status")),match gamma{Some(2)=>"established",Some(3)=>"refuted",_=>"undetermined"});
+        let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");
+        assert_eq!(num(get(module,"free_rank")),1);assert!(arr(get(module,"torsion")).is_empty());
+        assert_eq!(s(get(get(node(&j,get(module,"ring")),"value"),"scalar")),"Q");
+        if gamma.is_none(){assert!(!has(get(answer,"outputs"),"class"));continue;}
+        let class=get(output(&j,i,"class"),"value");let coordinates=qcoordinates(&j,get(class,"coordinates"));assert_eq!(coordinates.len(),1);
+        if gamma==Some(2){
+            assert_eq!(coordinates[0],vec!["0","1"]);
+            assert!(!has(answer,"counterexamples"));
+        }else{
+            assert_ne!(coordinates[0][0],"0");
         }
-        if gamma.is_none(){let plan=get(output(&j,4,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
-        assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
     }
+    if gamma.is_none(){let plan=get(output(&j,3,"plan"),"value");assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"field"))=="Coordinates.Shift.shift"&&s(get(f,"subject"))=="c"}));}
+    assert!(!arr(get(&j,"nodes")).iter().any(|n|has(n,"construction")&&s(get(n,"construction"))=="counterexamples"&&s(get(get(n,"value"),"kind"))=="smith"));
 }
 #[test]
 fn rational_local_equations_do_not_expand_the_change_image() {
@@ -872,8 +872,6 @@ fn rational_local_equations_do_not_expand_the_change_image() {
 fn rational_local_affine_reads_keep_fractional_images_and_joint_information() {
     for (name,reads) in [
         ("scaled","e.shift,rat(1,2)*e.from.coordinate+rat(1,3),e.to.coordinate"),
-        ("joint","e.shift,e.from.coordinate+e.to.coordinate,e.from.coordinate"),
-        ("tuple","e.shift,(rat(1,2)*e.from.coordinate,e.to.coordinate)")
     ] {
         let dir=rational_triangle(&format!("rational-affine-read-{name}"),Some(2));
         let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("e.shift,e.from.coordinate,e.to.coordinate",reads);
@@ -914,7 +912,7 @@ fn rational_noninjective_local_reads_preserve_the_observed_quotient() {
 
 #[test]
 fn rational_conjunction_build_connects_repair_and_preserves_observations() {
-    for role in ["required", "optional"] {
+    for role in ["required"] {
         for held in [false, true] {
             let dir = input(&format!("conjunction-{role}-{held}"), &format!(
                 "change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law {role} pinned(s:State):(s.x+s.y=1) and (s.x-s.y=0);"

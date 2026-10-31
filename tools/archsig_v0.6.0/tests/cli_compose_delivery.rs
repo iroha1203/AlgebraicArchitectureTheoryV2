@@ -1,5 +1,5 @@
 //! composeの取消・資源停止と、同じ配送経路の既存データ保護。
-mod common;
+use crate::common;
 use archsig::{
     control::{Checkpoint, Control, Limits, Usage},
     input::InputSources,

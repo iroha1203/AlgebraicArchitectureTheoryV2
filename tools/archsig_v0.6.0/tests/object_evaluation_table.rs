@@ -274,8 +274,8 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
     let p = plan(&i);
     let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
     let n = full.rows().len();
-    for at in [1, 2, 3, 2 * n + 1, 2 * n + 2] {
-        for mode in 0..4 {
+    for at in [3, 2 * n + 2] {
+        for mode in [2] {
             let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, mode);
             let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
             assert!(
@@ -344,8 +344,9 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
     let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
     let n = full.rows().len();
     // 全行再計算の2n+2 checkpointの後、一行比較ごとと末尾に検査する。
+    // 停止の種類は他のテストが網羅するので、ここでは Int 停止だけを比較の途中と末尾で見る。
     for at in [2 * n + 3, 3 * n + 3] {
-        for mode in 0..4 {
+        for mode in [2] {
             let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, mode);
             let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
             assert!(

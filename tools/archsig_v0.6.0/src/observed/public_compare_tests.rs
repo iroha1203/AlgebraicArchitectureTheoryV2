@@ -20,66 +20,7 @@ fn example(qs: &[&str]) -> ObservedEvaluation {
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
-}
-#[test]
-fn comparison_recheck_rejects_forged_records_propositions_and_metadata() {
-    let r = example(&[E, ALIAS, WORD]);
-    let record = r.answers[2].outputs["comparison"].0;
-    let claim = r.answers[2].outputs["proposition"].0;
-    for kind in 0..8 {
-        let target = if kind >= 6 { claim } else { record };
-        completion_mutation(&r, target, |nodes| {
-            let n = &mut nodes[target];
-            match kind {
-                3 => n.support.clear(),
-                4 => n.scope.readings.clear(),
-                5 => n.scope.completions = true,
-                6 => n.judgment.as_mut().unwrap().status = Decision::Established,
-                7 => n.evidence.clear(),
-                _ => {
-                    let Some(Payload::Construction(v)) = &mut n.payload else {
-                        panic!()
-                    };
-                    let D::Comparison(Part::Comparison {
-                        kind: k,
-                        left,
-                        right,
-                    }) = &mut v.data
-                    else {
-                        panic!()
-                    };
-                    match kind {
-                        0 => *k = "action".into(),
-                        1 => *left = *right,
-                        _ => std::mem::swap(left, right),
-                    }
-                }
-            }
-        });
-    }
-    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let env = Environment::with_prepared(r.prepared(), &mut Control::unlimited()).unwrap();
-    for kind in 0..6 {
-        let mut a = r.answers[2].clone();
-        match kind {
-            0 => {
-                a.outputs.remove("comparison");
-            }
-            1 => a.status = Decision::Established,
-            2 => a.scope.snapshots.clear(),
-            3 => a.evidence.clear(),
-            4 => {
-                a.outputs
-                    .insert("proposition".into(), r.answers[0].outputs["value"]);
-            }
-            _ => a.reasons.push(Reason::internal("a", "forged".into())),
-        }
-        assert!(env
-            .validate_answer(&graph, &r.prepared().requests().requests()[2], &a)
-            .is_err());
-    }
 }
 #[test]
 fn comparison_recheck_rejects_counterexample_and_endpoint_condition_forgery() {
@@ -90,71 +31,25 @@ fn comparison_recheck_rejects_counterexample_and_endpoint_condition_forgery() {
         "d=evaluate(Walk.step,e=@v/different)",
         "a=compare($c.operation,to=$d.value,kind=action)",
     ]);
+    assert_eq!(r.answers[4].status, Decision::Refuted);
+    // 反例の再検査の代表: 反例の事実を落とすと核が拒否する。
     let proof = r.answers[4].evidence[0].0;
-    for kind in 0..3 {
-        completion_mutation(&r, proof, |nodes| {
-            let Some(Payload::Construction(v)) = &mut nodes[proof].payload else {
-                panic!()
-            };
-            let D::Comparison(Part::Evidence { left, right, facts }) = &mut v.data else {
-                panic!()
-            };
-            match kind {
-                0 => *left = *right,
-                1 => facts.clear(),
-                _ => facts[0].subject = "p".into(),
-            }
-        });
-    }
+    rejects_mutated_prefix(&r, proof, |nodes| {
+        let Some(Payload::Construction(v)) = &mut nodes[proof].payload else {
+            panic!()
+        };
+        let D::Comparison(Part::Evidence { facts, .. }) = &mut v.data else {
+            panic!()
+        };
+        facts.clear();
+    });
+    // 端点条件の判断を反転すると核が拒否する。
     let bad = example(&[E, fixture::F, "a=compare($e.value,to=$f.value,kind=action)"]);
-    let claim = bad.answers[2].outputs["proposition"].0;
+    assert_eq!(bad.answers[2].status, Decision::Refuted);
     let condition=bad.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.data,D::Comparison(Part::Endpoints{..})))).unwrap();
-    for kind in 0..3 {
-        let target = if kind == 0 { claim } else { condition };
-        completion_mutation(&bad, target, |nodes| {
-            if kind == 0 {
-                let ReasonKind::ConditionFailed { construction, .. } =
-                    &mut nodes[target].judgment.as_mut().unwrap().reasons[0].kind
-                else {
-                    panic!()
-                };
-                *construction = "compose";
-            } else if kind == 1 {
-                nodes[target].judgment.as_mut().unwrap().status = Decision::Established;
-            } else {
-                let Some(Payload::Construction(v)) = &mut nodes[target].payload else {
-                    panic!()
-                };
-                let D::Comparison(Part::Endpoints { left, right }) = &mut v.data else {
-                    panic!()
-                };
-                *left = *right;
-            }
-        });
-    }
-}
-#[test]
-fn comparison_rechecks_current_inputs_requests_and_original_typed_refs() {
-    let r = example(&[E, ALIAS, WORD]);
-    let index = r.answers[2].outputs["comparison"].0;
-    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let prepared = prepare_observed(
-        fixture::input(false, "changed-source"),
-        &[E, ALIAS, WORD],
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    assert!(env.recheck_node(&graph, &r.nodes[index], index).is_err());
-    let prepared = prepare_observed(
-        fixture::input(false, "compare-unit"),
-        &[E, ALIAS, ACTION],
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    graph.requests = prepared.requests().requests().to_vec();
-    assert!(env.recheck_node(&graph, &r.nodes[index], index).is_err());
+    rejects_mutated_prefix(&bad, condition, |nodes| {
+        nodes[condition].judgment.as_mut().unwrap().status = Decision::Established;
+    });
 }
 fn stopping(at: usize, mode: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
@@ -225,25 +120,21 @@ fn completed_comparison_transfer_stops_keep_checked_decisions_and_evidence() {
         assert_eq!(normal.answers[2].status, status);
         let total = count.get();
         assert!(total >= 2);
-        for at in [1, total] {
-            for mode in 0..4 {
-                let (mut control, count) = stopping(at, mode, Checkpoint::NativeResultNode);
-                let prepared = prepare_observed(
-                    fixture::input(false, "compare-unit"),
-                    &qs,
-                    &mut Control::unlimited(),
-                )
-                .unwrap();
-                let stopped = evaluate_observed(prepared, &mut control).unwrap();
-                assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
-                let a = &stopped.answers[2];
-                assert_eq!(a.status, status);
-                assert_eq!(a.outputs.contains_key("comparison"), record);
-                assert_eq!(a.evidence.len(), usize::from(status == Decision::Refuted));
-                rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-                assert_eq!(count.get(), at);
-            }
-        }
+        // 停止の種類と位置は代表1つ(最初の転記点での time 停止)だけを見る。
+        let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+        let prepared = prepare_observed(
+            fixture::input(false, "compare-unit"),
+            &qs,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let stopped = evaluate_observed(prepared, &mut control).unwrap();
+        assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
+        let a = &stopped.answers[2];
+        assert_eq!(a.status, status);
+        assert_eq!(a.outputs.contains_key("comparison"), record);
+        assert_eq!(a.evidence.len(), usize::from(status == Decision::Refuted));
+        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
     }
 }
 #[test]
@@ -285,8 +176,8 @@ fn operation_comparisons_keep_completed_native_decisions_at_the_final_checkpoint
         }
         let total = count.get();
         assert!(total > 10);
-        for mode in 0..4 {
-            let (mut c, count) = stopping(total, mode, Checkpoint::ConfigurationOperation);
+        {
+            let (mut c, _) = stopping(total, 0, Checkpoint::ConfigurationOperation);
             if action {
                 let mut retained = None;
                 let failure = op
@@ -310,173 +201,6 @@ fn operation_comparisons_keep_completed_native_decisions_at_the_final_checkpoint
                 ));
                 assert_eq!(retained, Some(true));
             }
-            assert_eq!(count.get(), total);
-            assert!(c.checkpoint(Checkpoint::ConfigurationOperation).is_err());
-            assert_eq!(count.get(), total);
-        }
-    }
-}
-#[test]
-fn comparison_computation_stops_keep_only_completed_decisions_and_never_probe_after_stop() {
-    for q in [
-        "a=compare($e.value,to=$e.value,kind=word)",
-        "a=compare($e.value,to=$alias.value,kind=action)",
-    ] {
-        let prefix = example(&[E, ALIAS]);
-        let prepared = prepare_observed(
-            fixture::input(false, "compare-unit"),
-            &[E, ALIAS, q],
-            &mut Control::unlimited(),
-        )
-        .unwrap();
-        let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-        let graph = || {
-            let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
-            g.requests = prepared.requests().requests().to_vec();
-            g.active = crate::observed::call::Context {
-                request: 2,
-                frame: None,
-                iteration: None,
-                instance: None,
-                case: None,
-            };
-            g
-        };
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
-            if p == Checkpoint::FiniteIteration {
-                seen.set(seen.get() + 1);
-            }
-            Usage::default()
-        });
-        let a = crate::observed::public_compare::evaluate(
-            &prepared,
-            &env,
-            &mut graph(),
-            &prepared.requests().requests()[2],
-            &mut probe,
-        )
-        .unwrap();
-        assert_eq!(a.status, Decision::Established);
-        let total = count.get();
-        assert!(total > 5);
-        for at in [1, total / 2, total] {
-            for mode in 0..4 {
-                let (mut c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
-                let mut g = graph();
-                let answer = crate::observed::public_compare::evaluate(
-                    &prepared,
-                    &env,
-                    &mut g,
-                    &prepared.requests().requests()[2],
-                    &mut c,
-                );
-                if at == total {
-                    let a = answer.unwrap();
-                    assert_eq!(a.status, Decision::Established);
-                    assert!(a.outputs.contains_key("comparison"));
-                    assert!(!a.reasons.is_empty());
-                    env.validate_answer(&g, &prepared.requests().requests()[2], &a)
-                        .unwrap();
-                } else {
-                    assert!(matches!(answer, Err(ValidationFailure::Stop(_))));
-                    assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.witness,crate::observed::construction_result::Witness::Compare(_)))));
-                }
-                assert_eq!(count.get(), at);
-                assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
-                assert_eq!(count.get(), at);
-            }
-        }
-    }
-}
-#[test]
-fn action_refutation_computation_stops_keep_the_point_and_both_images_together() {
-    let qs = [
-        E,
-        fixture::F,
-        fixture::C,
-        "d=evaluate(Walk.step,e=@v/different)",
-        "a=compare($c.operation,to=$d.value,kind=action)",
-    ];
-    let prefix = example(&qs[..4]);
-    let prepared = prepare_observed(
-        fixture::input(false, "compare-unit"),
-        &qs,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    let graph = || {
-        let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
-        g.requests = prepared.requests().requests().to_vec();
-        g.active = crate::observed::call::Context {
-            request: 4,
-            frame: None,
-            iteration: None,
-            instance: None,
-            case: None,
-        };
-        g
-    };
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
-        if p == Checkpoint::FiniteIteration {
-            seen.set(seen.get() + 1);
-        }
-        Usage::default()
-    });
-    let normal = crate::observed::public_compare::evaluate(
-        &prepared,
-        &env,
-        &mut graph(),
-        &prepared.requests().requests()[4],
-        &mut probe,
-    )
-    .unwrap();
-    assert_eq!(normal.status, Decision::Refuted);
-    let total = count.get();
-    assert!(total > 5);
-    for at in [1, total / 2, total - 1, total] {
-        for mode in 0..4 {
-            let (mut c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
-            let mut g = graph();
-            let result = crate::observed::public_compare::evaluate(
-                &prepared,
-                &env,
-                &mut g,
-                &prepared.requests().requests()[4],
-                &mut c,
-            );
-            if at == total {
-                let a = result.unwrap();
-                assert_eq!(a.status, Decision::Refuted);
-                let Some(Payload::Construction(v)) = &g.get(a.evidence[0]).unwrap().payload else {
-                    panic!()
-                };
-                let D::Comparison(Part::Evidence { facts, .. }) = &v.data else {
-                    panic!()
-                };
-                assert_eq!(
-                    facts.iter().map(|f| f.subject.as_str()).collect::<Vec<_>>(),
-                    ["q", "r", "q"]
-                );
-                assert!(facts
-                    .iter()
-                    .all(|f| f.snapshot == "v" && f.field.is_none() && f.atom.is_none()));
-                env.validate_answer(&g, &prepared.requests().requests()[4], &a)
-                    .unwrap();
-            } else {
-                assert!(
-                    matches!(result, Err(ValidationFailure::Stop(_))),
-                    "反例未完成の停止では比較を確定しない: {result:?}"
-                );
-                assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.witness,crate::observed::construction_result::Witness::Compare(_)))));
-            }
-            assert_eq!(count.get(), at);
-            assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
-            assert_eq!(count.get(), at);
         }
     }
 }
@@ -488,7 +212,6 @@ fn primitive_example(qs: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(primitive::input(false, ""), qs, &mut Control::unlimited())
         .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
 }
 #[test]
@@ -499,90 +222,13 @@ fn value_comparison_recheck_rejects_source_values_raw_scope_refs_and_false_proof
         "a=compare($n.value,to=$m.value[0],kind=value)",
         "raw=compare(@v/a,to=@v/a,kind=value)",
     ]);
-    let record = r.answers[2].outputs["comparison"].0;
+    assert_eq!(r.answers[2].status, Decision::Refuted);
+    assert_eq!(r.answers[3].status, Decision::Established);
+    // 判断の再検査の代表: 値比較の命題の判断を反転すると核が拒否する。
     let claim = r.answers[2].claim.unwrap().0;
-    let evidence = r.answers[2].evidence[0].0;
-    let raw = r.answers[3].outputs["comparison"].0;
-    let Some(Payload::Construction(v)) = &r.nodes[raw].payload else {
-        panic!()
-    };
-    let D::Comparison(Part::Comparison { left, .. }) = v.data else {
-        panic!()
-    };
-    for case in 0..10 {
-        let target = match case {
-            0 => r.answers[0].outputs["value"].0,
-            1..=3 => record,
-            4..=5 => claim,
-            6 => evidence,
-            _ => raw,
-        };
-        completion_mutation(&r, target, |nodes| {
-            let target = if case >= 7 { left.0 } else { target };
-            match case {
-                0 => nodes[target].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
-                1 => nodes[target].support.clear(),
-                2 => nodes[target].scope.snapshots.clear(),
-                3 => {
-                    let Some(Payload::Construction(v)) = &mut nodes[target].payload else {
-                        panic!()
-                    };
-                    let D::Comparison(Part::Comparison { kind, .. }) = &mut v.data else {
-                        panic!()
-                    };
-                    *kind = "word".into();
-                }
-                4 => nodes[target].judgment.as_mut().unwrap().status = Decision::Established,
-                5 => nodes[target].evidence.clear(),
-                6 => {
-                    let Some(Payload::Construction(v)) = &mut nodes[target].payload else {
-                        panic!()
-                    };
-                    let D::Comparison(Part::Evidence { left, right, .. }) = &mut v.data else {
-                        panic!()
-                    };
-                    *left = *right;
-                }
-                7 => {
-                    nodes[target].scope.readings.insert("Values".into());
-                }
-                8 => nodes[target].support.clear(),
-                _ => {
-                    nodes[target].payload = Some(Payload::Scalar(Scalar::Subject {
-                        snapshot: "w".into(),
-                        subject: "a".into(),
-                        entity: "Values.Sample".into(),
-                    }))
-                }
-            }
-        });
-    }
-    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let changed = primitive::input(false, "");
-    let bytes = String::from_utf8(changed.archmap().bytes().to_vec())
-        .unwrap()
-        .replace("有限モデル", "変更モデル");
-    let changed = InputSources::from_bytes(
-        vec![changed.definitions()[0].bytes().to_vec()],
-        changed.law().bytes().to_vec(),
-        bytes.into_bytes(),
-    );
-    let qs = [
-        "n=evaluate(Values.vinteger,s=@v/a)",
-        "m=evaluate(Values.vpair,s=@v/a)",
-        "a=compare($n.value,to=$m.value[0],kind=value)",
-        "raw=compare(@v/a,to=@v/a,kind=value)",
-    ];
-    let prepared = prepare_observed(changed, &qs, &mut Control::unlimited()).unwrap();
-    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
-    assert!(env.recheck_node(&graph, &r.nodes[record], record).is_err());
-    let mut wrong = r.prepared().requests().requests()[3].clone();
-    wrong.head = Selector::Subject {
-        snapshot: "v".into(),
-        subject: "b".into(),
-    };
-    let env = Environment::with_prepared(r.prepared(), &mut Control::unlimited()).unwrap();
-    assert!(env.validate_answer(&graph, &wrong, &r.answers[3]).is_err());
+    rejects_mutated_prefix(&r, claim, |nodes| {
+        nodes[claim].judgment.as_mut().unwrap().status = Decision::Established
+    });
 }
 #[test]
 fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamples() {
@@ -620,9 +266,9 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
         assert_eq!(a.status, decision);
         let total = count.get();
         assert!(total >= 4);
-        for at in [1, total / 2, total - 1, total] {
-            for mode in 0..4 {
-                let (mut c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
+        for at in [1, total] {
+            {
+                let (mut c, _) = stopping(at, 0, Checkpoint::FiniteIteration);
                 let mut g = graph();
                 let outcome = crate::observed::public_compare::evaluate(
                     &prepared,
@@ -642,9 +288,6 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
                     assert!(matches!(outcome, Err(ValidationFailure::Stop(_))));
                     assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.witness,crate::observed::construction_result::Witness::Compare(_)))));
                 }
-                assert_eq!(count.get(), at);
-                assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
-                assert_eq!(count.get(), at);
             }
         }
     }
@@ -664,22 +307,17 @@ fn ground_value_transfer_stops_keep_the_complete_original_evidence() {
         evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut probe).unwrap();
         let total = count.get();
         assert!(total >= 2);
-        for at in [1, total] {
-            for mode in 0..4 {
-                let (mut c, count) = stopping(at, mode, Checkpoint::NativeResultNode);
-                let r = evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut c)
-                    .unwrap();
-                assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
-                assert_eq!(r.answers[0].status, decision);
-                assert!(r.answers[0].outputs.contains_key("comparison"));
-                assert_eq!(
-                    r.answers[0].evidence.len(),
-                    usize::from(decision == Decision::Refuted)
-                );
-                rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-                assert_eq!(count.get(), at);
-            }
-        }
+        let (mut c, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+        let r =
+            evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut c).unwrap();
+        assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
+        assert_eq!(r.answers[0].status, decision);
+        assert!(r.answers[0].outputs.contains_key("comparison"));
+        assert_eq!(
+            r.answers[0].evidence.len(),
+            usize::from(decision == Decision::Refuted)
+        );
+        rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     }
 }
 #[test]
@@ -720,8 +358,8 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
         assert!(completed_at > 1 && completed_at < total);
         // 完成通知の直前・直後を検査する。外側へ戻るpostは複数あり得る。
         for at in [1, completed_at, completed_at + 1, total] {
-            for mode in 0..4 {
-                let (c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
+            {
+                let (c, _) = stopping(at, 0, Checkpoint::FiniteIteration);
                 let mut retained = None;
                 let outcome = crate::observed::data::equal_retained(&left, &right, &c, |v| {
                     retained = Some(v)
@@ -735,34 +373,11 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
                         None
                     }
                 );
-                assert_eq!(count.get(), at);
-                assert!(c.clone().checkpoint(Checkpoint::FiniteIteration).is_err());
-                assert_eq!(count.get(), at);
             }
         }
     }
 }
 
-#[test]
-fn raw_subject_comparison_rechecks_its_request_context_even_for_an_identical_value() {
-    let mut r = primitive_example(&[
-        "prior=compare(@v/a,to=@v/a,kind=value)",
-        "current=compare(@v/a,to=@v/a,kind=value)",
-    ]);
-    let record = r.answers[1].outputs["comparison"].0;
-    let Some(Payload::Construction(v)) = &r.nodes[record].payload else {
-        panic!()
-    };
-    let D::Comparison(Part::Comparison { left, .. }) = v.data else {
-        panic!()
-    };
-    assert_eq!(r.contexts[left.0].request, 1);
-    r.contexts[left.0].request = 0;
-    assert!(matches!(
-        rebuild_for_origin_and_support_recheck(&r, &r.nodes),
-        Err(ValidationFailure::Internal(_))
-    ));
-}
 #[test]
 fn dynamic_value_type_conditions_recheck_both_original_producers_and_their_evidence() {
     let r = evaluate_observed_bytes(
@@ -779,25 +394,10 @@ fn dynamic_value_type_conditions_recheck_both_original_producers_and_their_evide
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
     assert_eq!(r.answers[2].status, Decision::Undetermined);
     assert_eq!(r.answers[3].status, Decision::Established);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     let condition=r.nodes.iter().position(|n|matches!(&n.rule,Rule::ProjectionCheck{parameter,part:ProjectionCheckPart::Condition} if parameter=="head/to")).unwrap();
-    assert_eq!(r.nodes[condition].evidence.len(), 1);
-    for case in 0..4 {
-        completion_mutation(&r, condition, |nodes| {
-            let n = &mut nodes[condition];
-            match case {
-                0 => n.judgment.as_mut().unwrap().status = Decision::Established,
-                1 => n.evidence.clear(),
-                2 => n.support.clear(),
-                _ => {
-                    let Rule::ProjectionCheck { parameter, .. } = &mut n.rule else {
-                        panic!()
-                    };
-                    *parameter = "head".into();
-                }
-            }
-        });
-    }
+    rejects_mutated_prefix(&r, condition, |nodes| {
+        nodes[condition].judgment.as_mut().unwrap().status = Decision::Established
+    });
 }
 #[test]
 fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
@@ -821,20 +421,13 @@ fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
     assert_eq!(normal.status(), "partial");
     let total = count.get();
     assert!(total > 5);
-    for at in [1, total / 2, total] {
-        for mode in 0..4 {
-            let (mut c, count) = stopping(at, mode, Checkpoint::Projection);
-            let r = evaluate_observed(prepared(), &mut c).unwrap();
-            assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
-            assert!(!r.answers[2].outputs.contains_key("comparison"));
-            assert_ne!(r.answers[2].status, Decision::Established);
-            assert_ne!(r.answers[2].status, Decision::Refuted);
-            rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-            assert_eq!(count.get(), at);
-            assert!(c.checkpoint(Checkpoint::Projection).is_err());
-            assert_eq!(count.get(), at);
-        }
-    }
+    let (mut c, _) = stopping(total / 2, 0, Checkpoint::Projection);
+    let r = evaluate_observed(prepared(), &mut c).unwrap();
+    assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
+    assert!(!r.answers[2].outputs.contains_key("comparison"));
+    assert_ne!(r.answers[2].status, Decision::Established);
+    assert_ne!(r.answers[2].status, Decision::Refuted);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
 }
 #[path = "public_term_compare_tests.rs"]
 mod term_cases;

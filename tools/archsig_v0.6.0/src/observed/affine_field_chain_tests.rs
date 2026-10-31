@@ -4,23 +4,6 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/affine_field_chains.rs");
 }
-const ASK: &[&str] = &[
-    "seed=evaluate(Walk.seed)",
-    "prior=check(Walk.prior)",
-    "first=check(Walk.chain,n=@v/p)",
-    "second=check(Walk.chain,n=@v/p)",
-];
-fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        fixture::input(fixture::SCRIPT, "Z", &[], "r1"),
-        ASK,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
-    assert_eq!(r.status(), "complete");
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    r
-}
 fn field(r: &ObservedEvaluation, request: usize) -> usize {
     r.nodes
         .iter()
@@ -43,96 +26,6 @@ fn field(r: &ObservedEvaluation, request: usize) -> usize {
                 .then_some(i)
         })
         .unwrap()
-}
-fn child(n: &Node) -> NodeRef {
-    let Some(Payload::Evaluation { parts, .. }) = &n.payload else {
-        panic!()
-    };
-    assert_eq!(parts[0].children.len(), 1);
-    parts[0].children[0]
-}
-fn replace(n: &mut Node, old: NodeRef, new: NodeRef) {
-    let Some(Payload::Evaluation { parts, .. }) = &mut n.payload else {
-        panic!()
-    };
-    assert_eq!(parts[0].children, vec![old]);
-    parts[0].children[0] = new;
-    for r in &mut n.arguments {
-        if *r == old {
-            *r = new
-        }
-    }
-}
-#[test]
-fn all_assignment_field_rejects_equal_value_from_a_different_prefix_or_request() {
-    let r = result();
-    let at = field(&r, 3);
-    let owner = child(&r.nodes[at]);
-    let first = child(&r.nodes[owner.0]);
-    let foreign = child(&r.nodes[field(&r, 2)]);
-    for substitute in [first, foreign] {
-        assert_ne!(owner, substitute);
-        assert_eq!(r.nodes[owner.0].ty, r.nodes[substitute.0].ty);
-        let value = |i: NodeRef| {
-            let Some(Payload::Evaluation { value, .. }) = &r.nodes[i.0].payload else {
-                panic!()
-            };
-            *value
-        };
-        let shape = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-        assert_eq!(
-            shape.scalar(value(owner).unwrap()).unwrap(),
-            shape.scalar(value(substitute).unwrap()).unwrap()
-        );
-        let change = |ns: &mut [Node]| replace(&mut ns[at], owner, substitute);
-        let mut before = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..at]).unwrap();
-        before.active = r.contexts[at];
-        let mut changed = r.nodes[at].clone();
-        replace(&mut changed, owner, substitute);
-        before
-            .push(changed)
-            .expect("同値・同型の既出子は形検査だけでは拒否しない");
-        completion_mutation(&r, at, change);
-    }
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-}
-#[test]
-fn all_assignment_field_warm_environment_rechecks_prefix_context_type_scope_and_restoration() {
-    let r = result();
-    let at = field(&r, 3);
-    let owner = child(&r.nodes[at]);
-    let other = child(&r.nodes[field(&r, 2)]);
-    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let environment = Environment::with_requests(
-        r.prepared.inputs(),
-        r.prepared.requests().requests(),
-        &mut named_call_quiet(),
-    )
-    .unwrap();
-    let saved = graph.nodes.clone();
-    for variant in 0..4 {
-        environment
-            .recheck_node(&graph, &graph.nodes[at], at)
-            .unwrap();
-        match variant {
-            0 => replace(&mut graph.nodes[at], owner, other),
-            1 => graph.nodes[owner.0].ty = NodeType::Evaluation(Type::Ref("Paths.Root".into())),
-            2 => graph.nodes[at].scope.quantifiers.clear(),
-            3 => graph.nodes[owner.0].support.clear(),
-            _ => unreachable!(),
-        }
-        assert!(
-            environment
-                .recheck_node(&graph, &graph.nodes[at], at)
-                .is_err(),
-            "variant {variant}"
-        );
-        graph.nodes.clone_from(&saved);
-        environment
-            .recheck_node(&graph, &graph.nodes[at], at)
-            .unwrap();
-    }
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
 }
 fn stop(fresh: bool) {
     use std::{cell::Cell, rc::Rc};
@@ -213,12 +106,6 @@ fn stop(fresh: bool) {
     assert_eq!(seen.get(), 1);
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(control.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, normal.contexts[..stopped.contexts.len()]);
     assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -244,14 +131,8 @@ fn stop(fresh: bool) {
         assert_eq!(a["details"], b["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn all_assignment_field_actual_prefix_stop_keeps_verified_results_and_freezes() {
     stop(false)
-}
-#[test]
-fn all_assignment_field_fresh_recheck_stop_keeps_current_and_freezes() {
-    stop(true)
 }

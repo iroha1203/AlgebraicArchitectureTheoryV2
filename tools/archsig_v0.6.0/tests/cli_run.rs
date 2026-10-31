@@ -1,5 +1,5 @@
 //! run の実バイナリと、本文から独立したCounter入力・期待値。
-mod common;
+use crate::common;
 use archsig::json::{JNode, JValue};
 use common::cli::*;
 use std::collections::BTreeSet;

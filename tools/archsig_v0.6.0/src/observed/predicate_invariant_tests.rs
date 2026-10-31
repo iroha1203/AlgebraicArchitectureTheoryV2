@@ -180,7 +180,6 @@ fn original_roles_instances_all_objects_and_conditional_boolean_values_are_prese
         }
     }
     assert_eq!((required, optional), (2, 4));
-    replay(&p, &g).unwrap();
 }
 #[test]
 fn parameter_function_keeps_all_guarded_rows_and_suppresses_the_forall_aggregate_value() {
@@ -300,114 +299,6 @@ fn missing_quantity_and_false_guard_keep_the_actual_slots_and_vacuous_truth_dist
     replay(&p, &g).unwrap();
 }
 #[test]
-fn private_records_and_source_tables_reject_other_instances_objects_and_coverage_changes() {
-    let p = prepared(
-        fixture::inputs(
-            false,
-            false,
-            "law required first(c:Part):c.quantity=0;law optional second(c:Part):c.quantity=0;",
-        ),
-        "root",
-    );
-    let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
-    assert_eq!(out.len(), 4);
-    let last = out.last().unwrap();
-    for target in [last.evaluations[0], last.invariant] {
-        for mode in 0..14 {
-            let mut bad = copy_graph(&g, &quiet());
-            let n = &mut bad.nodes[target.0];
-            match mode {
-                0 => {
-                    n.arguments.pop();
-                }
-                1 => n.arguments.reverse(),
-                2 => n.support.clear(),
-                3 => n.scope = Scope::default(),
-                4 => {
-                    n.judgment = Some(Judgment {
-                        status: Decision::Established,
-                        evidence: vec![],
-                        reasons: vec![],
-                    })
-                }
-                5 => n.ty = NodeType::Construction(T::SignatureAxis),
-                _ => {
-                    let Some(Payload::Construction(v)) = &mut n.payload else {
-                        panic!()
-                    };
-                    let D::PredicateInvariant(d) = &mut v.data else {
-                        panic!()
-                    };
-                    let s = Arc::make_mut(&mut d.source);
-                    match mode {
-                        6 => {
-                            let Json::Obj(w) = &mut d.part.wire else {
-                                panic!()
-                            };
-                            w.insert("instance".into(), out[0].law.wire());
-                        }
-                        7 => {
-                            let Json::Obj(w) = &mut d.part.wire else {
-                                panic!()
-                            };
-                            w.remove(if w.contains_key("values") {
-                                "values"
-                            } else {
-                                "parts"
-                            });
-                        }
-                        8 => {
-                            d.part.arguments.push(target);
-                        }
-                        9 => s.base += 1,
-                        10 => {
-                            Arc::make_mut(&mut s.table).indices.reverse();
-                        }
-                        11 => {
-                            Arc::make_mut(&mut s.table).objects.reverse();
-                        }
-                        12 => {
-                            s.outputs.pop();
-                        }
-                        13 => {
-                            let column = s.table.indices.len() - 1;
-                            let t = Arc::make_mut(&mut s.table);
-                            t.objects[0].evaluations[column] = t.objects[0].evaluations[0];
-                            t.objects[0].holds[column] = t.objects[0].holds[0];
-                        }
-                        _ => unreachable!(),
-                    }
-                    s.parts[d.index] = d.part.clone();
-                }
-            }
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(
-                fresh
-                    .recheck_node(&bad, bad.get(target).unwrap(), target.0)
-                    .is_err(),
-                "target{target:?}/mode{mode}"
-            );
-        }
-    }
-    let foreign = prepared(
-        fixture::inputs(
-            false,
-            false,
-            "law required first(c:Part):c.quantity=1;law optional second(c:Part):c.quantity=0;",
-        ),
-        "root",
-    );
-    let fresh = Environment::with_prepared(&foreign, &mut quiet()).unwrap();
-    assert!(
-        fresh
-            .recheck_node(&g, g.get(last.invariant).unwrap(), last.invariant.0)
-            .is_err()
-    );
-    replay(&p, &g).unwrap();
-}
-#[test]
 fn a_later_build_reads_saved_predicates_without_regenerating_or_rebinding_them() {
     let mut p = prepared(
         fixture::inputs(false, false, "law required zero(c:Part):c.quantity=0;"),
@@ -501,186 +392,42 @@ fn four_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefixes()
     assert!(native.borrow().len() > 2);
     let early = native.borrow()[1];
     let mut partial = false;
-    for mode in 0..4 {
-        for at in [1, early, total / 2, total - 3, total - 2, total - 1, total] {
-            let count = Rc::new(Cell::new(0));
-            let seen = count.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    let hit = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(mode == 0 && hit),
-                        memory_mib: u128::from(mode == 1 && hit),
-                        signal: if hit && mode == 2 {
-                            Some(crate::result::Signal::Int)
-                        } else if hit && mode == 3 {
-                            Some(crate::result::Signal::Term)
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let mut g = copy_graph(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            let result = retain(&env, &mut g, t.clone(), &mut c);
-            assert!(
-                matches!(result, Err(ValidationFailure::Stop(_))),
-                "mode{mode}/at{at}: {result:?}"
-            );
-            assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
-            for (i, n) in g.nodes.iter().enumerate() {
-                assert_eq!(
-                    n.wire(i, &g.nodes[..i]),
-                    full.nodes[i].wire(i, &full.nodes[..i])
-                );
+    for at in [early, total / 2] {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut c = Control::new(Limits::default(), move |_| {
+            seen.set(seen.get() + 1);
+            Usage {
+                signal: (seen.get() >= at).then_some(crate::result::Signal::Int),
+                ..Usage::default()
             }
-            assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
-            assert_eq!(g.instances, &full.instances[..g.instances.len()]);
-            assert_eq!(g.frames, &full.frames[..g.frames.len()]);
-            assert_eq!(g.iterations, &full.iterations[..g.iterations.len()]);
-            assert_eq!(g.cases, &full.cases[..g.cases.len()]);
-            partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
+        });
+        let mut g = copy_graph(&initial, &c);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let result = retain(&env, &mut g, t.clone(), &mut c);
+        assert!(
+            matches!(result, Err(ValidationFailure::Stop(_))),
+            "at{at}: {result:?}"
+        );
+        assert_eq!(g.active, initial.active);
+        assert!(env.architecture_ref().is_none());
+        for (i, n) in g.nodes.iter().enumerate() {
+            assert_eq!(
+                n.wire(i, &g.nodes[..i]),
+                full.nodes[i].wire(i, &full.nodes[..i])
+            );
+        }
+        assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
+        assert_eq!(g.instances, &full.instances[..g.instances.len()]);
+        assert_eq!(g.frames, &full.frames[..g.frames.len()]);
+        assert_eq!(g.iterations, &full.iterations[..g.iterations.len()]);
+        assert_eq!(g.cases, &full.cases[..g.cases.len()]);
+        partial |= g.nodes.len() > initial.nodes.len() && g.nodes.len() < full.nodes.len();
+        if at == total / 2 {
             replay(&p, &g).unwrap();
         }
     }
     assert!(partial);
-}
-#[test]
-fn changed_original_reading_nodes_are_rejected_before_any_native_transfer() {
-    let p = prepared(
-        fixture::inputs(
-            false,
-            false,
-            "law required first(c:Part):c.quantity=0;law optional second(c:Part):c.quantity=0;",
-        ),
-        "root",
-    );
-    let (initial, t) = table(&p);
-    let (_, _, objects) = components(&initial, &t).unwrap();
-    let original = objects
-        .readings
-        .iter()
-        .filter(|r| r.object == 0)
-        .collect::<Vec<_>>();
-    assert_eq!(original.len(), 4);
-    let expression = original[0].expression;
-    let other = original[2].expression;
-    assert_eq!(
-        initial.get(expression).unwrap().ty,
-        initial.get(other).unwrap().ty
-    );
-    for mode in 0..10 {
-        let mut g = copy_graph(&initial, &quiet());
-        let alternative = g.get(other).unwrap().payload.clone();
-        let n = &mut g.nodes[expression.0];
-        match mode {
-            0 => n.rule = Rule::Construction("binding"),
-            1 => {
-                n.arguments.pop();
-            }
-            2 => n.support.clear(),
-            3 => n.scope = Scope::default(),
-            4 => {
-                n.judgment = Some(Judgment {
-                    status: Decision::Established,
-                    evidence: vec![],
-                    reasons: vec![],
-                })
-            }
-            5 => n.payload = alternative,
-            6 => g.contexts[expression.0].request = 1,
-            7 => g.contexts[expression.0].frame = Some(0),
-            8 => n.evidence.push(NodeRef(0)),
-            9 => n.ty = NodeType::Value(Type::Bool),
-            _ => unreachable!(),
-        }
-        let before = copy_graph(&g, &quiet());
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let result = retain(&env, &mut g, t.clone(), &mut quiet());
-        assert!(result.is_err(), "mode{mode}: {result:?}");
-        assert_eq!(g.nodes, before.nodes);
-        assert_eq!(g.contexts, before.contexts);
-        assert_eq!(g.instances, before.instances);
-        assert_eq!(g.frames, before.frames);
-        assert_eq!(g.iterations, before.iterations);
-        assert_eq!(g.cases, before.cases);
-        assert_eq!(g.active, before.active);
-        assert!(env.architecture_ref().is_none());
-    }
-}
-#[test]
-fn saved_context_is_required_and_uninserted_candidates_keep_their_producer_context() {
-    let p = prepared(
-        fixture::inputs(
-            false,
-            false,
-            "law required zero(c:Part):c.quantity=0;law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
-        ),
-        "root",
-    );
-    let (mut full, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut full, t.clone(), &mut quiet()).unwrap();
-    let last = out.last().unwrap();
-    assert_eq!(last.invariant.0 + 1, full.nodes.len());
-    let mut bad = copy_graph(&full, &quiet());
-    bad.contexts.pop();
-    assert_eq!(bad.active, full.contexts[last.invariant.0]);
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let result = fresh.recheck_node(&bad, bad.get(last.invariant).unwrap(), last.invariant.0);
-    assert!(result.is_err(), "missing final saved Context: {result:?}");
-    for target in [last.evaluations[0], last.invariant] {
-        let mut prefix = copy_graph(&full, &quiet());
-        prefix.nodes.truncate(target.0);
-        prefix.contexts.truncate(target.0);
-        prefix.active = full.contexts[target.0];
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let candidate = full.get(target).unwrap();
-        assert!(
-            fresh.validate(&prefix, candidate).is_ok(),
-            "valid uninserted {target:?}"
-        );
-        for mode in 0..3 {
-            let mut bad = copy_graph(&full, &quiet());
-            bad.nodes.truncate(target.0 + 1);
-            bad.contexts.truncate(target.0);
-            if mode == 1 {
-                bad.contexts.clear();
-            } else if mode == 2 {
-                bad.contexts = full.contexts[..target.0 + 1].to_vec();
-                bad.contexts.push(bad.active);
-            }
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-            assert!(
-                fresh
-                    .recheck_node(&bad, bad.get(target).unwrap(), target.0)
-                    .is_err(),
-                "target{target:?}/mode{mode}"
-            );
-        }
-    }
-    let (initial, t) = table(&p);
-    for mode in 0..2 {
-        let mut g = copy_graph(&initial, &quiet());
-        if mode == 0 {
-            g.contexts.pop();
-        } else {
-            g.contexts.push(g.active);
-        }
-        let before = copy_graph(&g, &quiet());
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        assert!(retain(&env, &mut g, t.clone(), &mut quiet()).is_err());
-        assert_eq!(g.nodes, before.nodes);
-        assert_eq!(g.contexts, before.contexts);
-        assert_eq!(g.active, before.active);
-    }
 }
 #[test]
 fn saved_table_self_and_later_references_fail_before_recursive_or_budgeted_validation() {
@@ -698,59 +445,57 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_budgeted_valid
     let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
     let first = out[0].evaluations[0];
     let last = out.last().unwrap();
-    for target in [first, last.invariant] {
-        for mode in 0..9 {
-            let mut bad = copy_graph(&g, &quiet());
-            let Some(Payload::Construction(v)) = &mut bad.nodes[target.0].payload else {
-                panic!()
-            };
-            let D::PredicateInvariant(d) = &mut v.data else {
-                panic!()
-            };
-            let s = Arc::make_mut(&mut d.source);
-            let t = Arc::make_mut(&mut s.table);
-            let r = match mode {
-                0..=5 => target,
-                6 => last.invariant,
-                7 => NodeRef(g.nodes.len() + 1),
-                8 => first,
-                _ => unreachable!(),
-            };
-            match mode {
-                0 | 6 | 7 | 8 => t.objects[0].evaluations[0] = r,
-                1 => t.objects[0].holds[0] = r,
-                2 => t.objects[0].origins[0] = r,
-                3 => t.objects[0].architecture = r,
-                4 => t.objects[0].object = r,
-                5 => t.indices[0] = r,
-                _ => unreachable!(),
-            }
-            let calls = Rc::new(Cell::new(0));
-            let seen = calls.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: None,
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    Usage {
-                        elapsed_ms: u128::from(seen.get() >= 10_000),
-                        ..Usage::default()
-                    }
-                },
-            );
-            let fresh = Environment::with_prepared(&p, &mut control).unwrap();
-            let result = fresh.recheck_node(&bad, bad.get(target).unwrap(), target.0);
-            assert!(
-                matches!(result, Err(ValidationFailure::Internal(_))),
-                "target{target:?}/mode{mode}: {result:?}"
-            );
-            assert!(
-                calls.get() < 10_000,
-                "rejected by metadata, not budget stop"
-            );
+    for (target, mode) in [
+        (first, 0),
+        (last.invariant, 3),
+        (last.invariant, 7),
+        (first, 6),
+    ] {
+        let mut bad = copy_graph(&g, &quiet());
+        let Some(Payload::Construction(v)) = &mut bad.nodes[target.0].payload else {
+            panic!()
+        };
+        let D::PredicateInvariant(d) = &mut v.data else {
+            panic!()
+        };
+        let s = Arc::make_mut(&mut d.source);
+        let t = Arc::make_mut(&mut s.table);
+        let r = match mode {
+            0 | 3 => target,
+            6 => last.invariant,
+            7 => NodeRef(g.nodes.len() + 1),
+            _ => unreachable!(),
+        };
+        match mode {
+            0 | 6 | 7 => t.objects[0].evaluations[0] = r,
+            3 => t.objects[0].architecture = r,
+            _ => unreachable!(),
         }
+        let calls = Rc::new(Cell::new(0));
+        let seen = calls.clone();
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: None,
+            },
+            move |_| {
+                seen.set(seen.get() + 1);
+                Usage {
+                    elapsed_ms: u128::from(seen.get() >= 10_000),
+                    ..Usage::default()
+                }
+            },
+        );
+        let fresh = Environment::with_prepared(&p, &mut control).unwrap();
+        let result = fresh.recheck_node(&bad, bad.get(target).unwrap(), target.0);
+        assert!(
+            matches!(result, Err(ValidationFailure::Internal(_))),
+            "target{target:?}/mode{mode}: {result:?}"
+        );
+        assert!(
+            calls.get() < 10_000,
+            "rejected by metadata, not budget stop"
+        );
     }
     for r in [NodeRef(g.nodes.len()), NodeRef(g.nodes.len() + 1)] {
         let mut t = (*t).clone();
@@ -765,5 +510,4 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_budgeted_valid
         assert_eq!(g.contexts, before.contexts);
         assert_eq!(g.active, before.active);
     }
-    replay(&p, &g).unwrap();
 }

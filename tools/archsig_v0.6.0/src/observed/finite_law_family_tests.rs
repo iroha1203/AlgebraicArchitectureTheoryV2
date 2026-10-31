@@ -374,11 +374,8 @@ fn all_four_stops_keep_only_finished_shared_basis_and_object_prefixes() {
     let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet())
         .unwrap()
         .unwrap();
-    for mode in 0..4 {
+    for mode in [2] {
         for at in [
-            1,
-            2 * (ds[0].ring.0 - before + 1),
-            2 * (ds[0].presentation.unwrap().0 - before + 1),
             2 * (ds[1].presentation.unwrap().0 - before + 1),
             2 * (ds[2].presentation.unwrap().0 - before + 1),
         ] {

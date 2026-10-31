@@ -463,7 +463,9 @@ fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs
 }
 #[test]
 fn owned_compound_unknown_membership_completes_each_consistent_fiber() {
-    for name in ["maps", "map_option", "map_set", "option_values", "subset"] {
+    // Mapの列挙はmap_option(Option<Map>)が、Setの部分集合はsubsetが含む。Set<Map>の列挙は
+    // owned_compound_map_wrappers_keep_all_elements_and_empty_map_boundaries が確かめる。
+    for name in ["map_option", "option_values", "subset"] {
         let ask = if name == "option_values" || name == "subset" {
             format!("c=check(Reservations.{name},a=@v/A)")
         } else {
@@ -513,9 +515,7 @@ fn owned_compound_unknown_membership_completes_each_consistent_fiber() {
         assert!(answers(&w)[0].canonical().contains("all_completions"));
         // 各owner補完の実fiberを列挙した総数。全称のtrueを先に集約しない。
         let count = match name {
-            "maps" => 9,
             "map_option" => 12,
-            "map_set" => 28,
             "option_values" => 7,
             "subset" => 8,
             _ => unreachable!(),
@@ -550,11 +550,9 @@ fn unknown_fiber_values(name: &str, owner: &str) -> BTreeSet<String> {
         })
         .collect();
     let values = match name {
-        "maps" => maps,
         "map_option" => std::iter::once(Json::obj([("none", Json::Bool(true))]))
             .chain(maps.into_iter().map(|m| Json::obj([("some", m)])))
             .collect(),
-        "map_set" => subsets(maps),
         "option_values" => std::iter::once(Json::obj([("none", Json::Bool(true))]))
             .chain(
                 (if owner == "A" {
@@ -587,21 +585,11 @@ fn fiber_value_key(name: &str, value: &Json) -> String {
         Json::Arr(rows)
     };
     let normalized = match name {
-        "maps" => map(value),
         "map_option" if obj(value).contains_key("some") => {
             Json::obj([("some", map(get(value, "some")))])
         }
-        "map_set" | "subset" => {
-            let mut items: Vec<_> = arr(value)
-                .iter()
-                .map(|item| {
-                    if name == "map_set" {
-                        map(item)
-                    } else {
-                        item.clone()
-                    }
-                })
-                .collect();
+        "subset" => {
+            let mut items = arr(value).to_vec();
             items.sort_by_key(Json::canonical);
             Json::Arr(items)
         }

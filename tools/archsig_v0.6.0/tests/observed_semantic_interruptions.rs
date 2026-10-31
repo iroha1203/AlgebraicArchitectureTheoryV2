@@ -1,5 +1,5 @@
 //! 入力の字句・構文検査の後にも、型検査と循環探索へ共有中断制御が届く。
-mod common;
+use crate::common;
 
 use archsig::{
     archmap::check_archmap_controlled,

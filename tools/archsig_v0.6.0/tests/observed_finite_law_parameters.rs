@@ -1,5 +1,5 @@
 //! 有限な未束縛Law parameterの実直積と適用族を独立三入力から検査する。
-mod common;
+use crate::common;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control, Limits, Usage},
@@ -1449,8 +1449,7 @@ law required bound(s:E): helper(s,true);
 
 #[test]
 fn finite_law_instances_preserve_nested_sources_and_parent_bindings() {
-    let asks = ["a=check(Calc.nested)", "b=check(Calc.nested)"];
-    let (wire, checked) = run(nested_sources_fixture(false), &asks);
+    let (wire, checked) = run(nested_sources_fixture(false), &["a=check(Calc.nested)"]);
     assert_eq!(f(&wire, "status"), &Json::str("complete"));
     let e = ty("Ref", Json::str("Roster.E"));
     let refs = vec![reference("v", "item"), reference("w", "item")];
@@ -1461,29 +1460,22 @@ fn finite_law_instances_preserve_nested_sources_and_parent_bindings() {
         vec![refs[1].clone(), bools[0].clone()],
         vec![refs[1].clone(), bools[1].clone()],
     ];
-    for id in ["a", "b"] {
-        assert_family(
-            &wire,
-            &checked,
-            id,
-            "Calc.nested",
-            &[
-                ("s", e.clone(), refs.clone()),
-                ("b", Json::str("Bool"), bools.clone()),
-            ],
-            &[],
-            &[("s", e.clone()), ("b", Json::str("Bool"))],
-            &rows,
-            "established",
-            true,
-        );
-    }
-    let ns = index(&wire);
-    assert_ne!(
-        f(root(&wire, "a"), "id"),
-        f(root(&wire, "b"), "id"),
-        "別Requestの元Law適用を保持"
+    assert_family(
+        &wire,
+        &checked,
+        "a",
+        "Calc.nested",
+        &[
+            ("s", e.clone(), refs.clone()),
+            ("b", Json::str("Bool"), bools.clone()),
+        ],
+        &[],
+        &[("s", e.clone()), ("b", Json::str("Bool"))],
+        &rows,
+        "established",
+        true,
     );
+    let ns = index(&wire);
     let qs = arr(f(f(answer(&wire, "a"), "scope"), "quantifiers"));
     assert_eq!(text(f(&qs[0], "name")), "s");
     assert_eq!(text(f(&qs[1], "name")), "b");

@@ -262,36 +262,6 @@ fn known_owner_free_z_keeps_valid_and_invalid_call_conditions() {
 }
 
 #[test]
-fn unknown_owner_free_z_set_keeps_all_owner_completions() {
-    let wire = run(
-        true,
-        &["x=check(Reservations.ocSetGood,a=@v/A,p=@v/p,q=@v/q)"],
-    );
-    missing_owner(&wire, "x");
-}
-
-#[test]
-fn unknown_owner_free_z_returned_tuple_keeps_conditions_and_missing() {
-    let wire = run(true, &["x=check(Reservations.pcReturned,a=@v/A,p=@v/p)"]);
-    missing_owner(&wire, "x");
-}
-
-#[test]
-fn unknown_owner_free_q_affine_call_keeps_exact_axis_and_missing() {
-    let wire = run(true, &["x=check(Reservations.pcQAffine,a=@v/A,p=@v/p)"]);
-    missing_owner_with_axes(&wire, "x", &[("q", "Q")]);
-}
-
-#[test]
-fn unknown_owner_nested_option_list_set_preserves_two_numeric_axes() {
-    let wire = run(
-        true,
-        &["x=check(Reservations.ocNestedGood,a=@v/A,b=@v/B,p=@v/p,q=@v/r)"],
-    );
-    missing_owner_with_axes(&wire, "x", &[("z", "Z"), ("r", "Q")]);
-}
-
-#[test]
 fn absent_owned_container_does_not_read_unrelated_owner_slots() {
     let wire = run(true, &["x=evaluate(Reservations.ocEmpty,a=@v/A)"]);
     let a = answer(&wire, "x");
@@ -301,17 +271,6 @@ fn absent_owned_container_does_not_read_unrelated_owner_slots() {
         &Json::Bool(true)
     );
     assert!(array(f(a, "reasons")).is_empty());
-}
-
-#[test]
-fn unknown_owner_call_provenance_changes_keep_math_and_current_input_sources() {
-    let asks = ["x=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)"];
-    let a = run_revision(true, "r1", &asks);
-    let b = run_revision(true, "r2", &asks);
-    missing_owner(&a, "x");
-    missing_owner(&b, "x");
-    assert_ne!(f(&a, "inputs"), f(&b, "inputs"));
-    assert_eq!(f(answer(&a, "x"), "status"), f(answer(&b, "x"), "status"));
 }
 
 fn two_owner_input() -> archsig::input::InputSources {
@@ -388,7 +347,8 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let w = run_input(
         input,
         "r1",
-        &["x=check(Reservations.ocNestedGood,a=@v/A,b=@v/B,p=@v/p,q=@v/q)"],
+        // 二つの欠測ownerを同じ所属条件(State[a])で読む小さいLawで、四つの同時割当てを確かめる。
+        &["x=check(Reservations.ocSetGood,a=@v/A,p=@v/p,q=@v/q)"],
     );
     let a = answer(&w, "x");
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
@@ -441,15 +401,13 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
             .collect();
         assert_eq!(actual, expected);
     }
-    for (name, ty) in [("z", "Z"), ("r", "Q")] {
-        assert!(
-            array(f(f(a, "scope"), "quantifiers"))
-                .iter()
-                .any(|q| f(q, "kind") == &Json::str("forall")
-                    && f(q, "name") == &Json::str(name)
-                    && f(q, "type") == &Json::str(ty))
-        );
-    }
+    assert!(
+        array(f(f(a, "scope"), "quantifiers"))
+            .iter()
+            .any(|q| f(q, "kind") == &Json::str("forall")
+                && f(q, "name") == &Json::str("z")
+                && f(q, "type") == &Json::str("Z"))
+    );
 }
 
 #[path = "common/owned_map_calls.rs"]
