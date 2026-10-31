@@ -1,6 +1,7 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             ConfigurationTransport, Naturality, TransportConditionFailure, configuration_transport,
             correspondence, identity, internal_arrow,

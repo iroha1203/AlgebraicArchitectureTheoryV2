@@ -1,14 +1,15 @@
 use archsig::{
-    construction::{
-        ConstructionFailure,
-        readings::{
-            EquationPresentationStatus as S, ObjectPolynomialObservable as O,
-            PolynomialObservableFailure as F, PolynomialObservableReading as R,
-            PolynomialObservableValue as V, object_polynomial_observable,
-        },
-    },
+    construction::ConstructionFailure,
     control::{Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
+    observed::{
+        object_equation_presentation::EquationPresentationStatus as S,
+        object_polynomial_observable::{
+            ObjectPolynomialObservable as O, PolynomialObservableFailure as F,
+            PolynomialObservableReading as R, PolynomialObservableValue as V,
+            object_polynomial_observable,
+        },
+    },
     types::Type,
 };
 use std::sync::Arc;

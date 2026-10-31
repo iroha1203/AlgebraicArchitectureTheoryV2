@@ -15,11 +15,12 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{ConstructionFailure, readings::ObjectEvaluationPosition},
+    construction::ConstructionFailure,
     law::{
         ast::{BinOp, ExprKind},
         model::Signature,
     },
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
 };
 use std::sync::Arc;

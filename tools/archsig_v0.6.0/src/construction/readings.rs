@@ -2,34 +2,9 @@
 use super::*;
 use crate::law::model::{DeclarationInfo, Param, Signature};
 use crate::input::InputBytes;
-pub use crate::observed::object_evaluate::{
-    ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome, evaluate_object_instance,
-};
-pub use crate::observed::object_evaluation_table::{
-    ObjectEvaluationPosition, ObjectEvaluationRow, ObjectEvaluationTable,
-    ObjectEvaluationTableFailure, evaluate_object_table,
-};
-pub use crate::observed::object_view_compatibility::{
-    ObjectViewCompatibility, ObjectViewCompatibilityFailure, ViewCompatibilityCondition,
-    ViewCompatibilityOutcome, ViewCompatibilityPoint, ViewPatternComparison, ViewReadingEvaluation,
-    ViewReadingValue, object_view_compatibility,
-};
 use maps::ObjectIdentity;
 
-pub use crate::observed::object_law_compatibility::{
-    LawCompatibilityCondition, LawCompatibilityOutcome, LawCompatibilityPoint,
-    LawPatternComparison, LawReadingEvaluation, ObjectLawCompatibility,
-    ObjectLawCompatibilityFailure, object_law_compatibility,
-};
-pub use crate::observed::object_law_transport::{
-    LawReadingDomain, LawReadingFamily, LawReadingRow,
-};
 
-pub use crate::observed::object_law_residuals::{
-    LawNumericShape, LawResidualCase, LawResidualComparison, LawResidualComponent,
-    LawResidualEvaluation, LawResidualOutcome, LawResidualPoint, LawResidualRow,
-    ObjectLawResiduals, ObjectLawResidualsFailure, object_law_residuals,
-};
 
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -625,28 +600,6 @@ mod tests {
     }
 }
 
-pub use crate::observed::object_view_family::{
-    FiniteObjectView, FiniteViewDomain, FiniteViewRow, FiniteViewValue,
-};
 
-pub use crate::observed::object_law_circuits::{
-    LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitWitness, LawCircuitsCondition,
-    ObjectLawCircuits, ObjectLawCircuitsFailure, object_law_circuits,
-};
 
-pub use crate::observed::equation_polynomial::{EquationMonomial, EquationPolynomial};
-pub use crate::observed::object_equation_presentation::{
-    EquationGuard, EquationOccurrence, EquationPresentation, EquationPresentationFailure,
-    EquationPresentationStatus, EquationRing, EquationSlot, EquationStep, EquationSymbol,
-    EquationSymbolReading, object_equation_presentation,
-};
 
-pub use crate::observed::finite_polynomial_evaluation::{
-    FiniteEquationAssignment, FiniteEquationSymbol, FiniteIntegerFunction,
-    FinitePolynomialEvaluation, FinitePolynomialFailure, FinitePolynomialTable,
-    FinitePolynomialTableKind, finite_polynomial_evaluation,
-};
-pub use crate::observed::object_polynomial_observable::{
-    ObjectPolynomialObservable, PolynomialObservableCoordinate, PolynomialObservableFailure,
-    PolynomialObservableReading, PolynomialObservableValue, object_polynomial_observable,
-};

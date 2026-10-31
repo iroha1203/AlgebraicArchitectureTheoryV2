@@ -2,14 +2,12 @@
 use super::numeric_object_function::{self as source, Counterexample, Source};
 use super::*;
 use crate::{
-    construction::{
-        ConstructionFailure,
-        readings::{ObjectEvaluationPosition, ObjectReadingInstances},
-    },
+    construction::{ConstructionFailure, readings::ObjectReadingInstances},
     observed::{
         affine::{self, TermArgument},
         field_fiber, integer_fiber, numeric,
-        term::affine::{self as terms, Value},
+        object_evaluation_table::ObjectEvaluationPosition,
+        term::{affine as terms, affine::Value},
     },
 };
 use num_bigint::BigInt;

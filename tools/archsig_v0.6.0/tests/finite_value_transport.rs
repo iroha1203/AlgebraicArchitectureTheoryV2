@@ -1,14 +1,14 @@
 use archsig::{
     construction::{
         ConstructionFailure,
-        maps::{
-            DeclarationCorrespondence, DeclarationValuePosition as Position,
-            FiniteValueConditionFailure as Failure, FiniteValueTransport, correspondence,
-            declaration_correspondence, finite_declaration_value_transport,
-        },
+        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
     },
     control::{Checkpoint, Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
+    observed::value_transport::{
+        DeclarationValuePosition as Position, FiniteValueConditionFailure as Failure,
+        FiniteValueTransport, finite_declaration_value_transport,
+    },
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -72,7 +72,7 @@ fn result(i: &CheckedInputs, p: usize) -> FiniteValueTransport {
     )
     .unwrap()
 }
-fn wires(values: &[archsig::construction::maps::FiniteTransportValue]) -> Vec<String> {
+fn wires(values: &[archsig::observed::value_transport::FiniteTransportValue]) -> Vec<String> {
     values.iter().map(|v| v.wire().canonical()).collect()
 }
 fn expected(r: &FiniteValueTransport, source: &[&str], target: &[&str], images: &[&str]) {

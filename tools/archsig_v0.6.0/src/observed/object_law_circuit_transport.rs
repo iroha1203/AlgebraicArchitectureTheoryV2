@@ -14,9 +14,8 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{
-        ConstructionFailure, maps::DeclarationCorrespondence, readings::ObjectEvaluationPosition,
-    },
+    construction::{ConstructionFailure, maps::DeclarationCorrespondence},
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
 };
 use std::sync::Arc;

@@ -124,7 +124,7 @@ fn architecture_environment_edges_sources_domains_and_equal_but_foreign_producer
         Err(ValidationFailure::Internal(_))
     ));
     let mut nodes = result.nodes.clone();
-    nodes[eval].support.push(crate::construction::FactPointer {
+    nodes[eval].support.push(crate::archmap::Fact {
         snapshot: "v".into(),
         subject: "B".into(),
         field: None,

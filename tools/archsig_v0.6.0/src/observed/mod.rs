@@ -25,21 +25,21 @@ mod law_table;
 mod local_result;
 mod needed;
 mod numeric;
-pub(crate) mod numeric_transport;
+pub mod numeric_transport;
 mod object_component_diagram;
-pub(crate) mod object_evaluate;
-pub(crate) mod object_evaluation_table;
-pub(crate) mod object_law_circuit_transport;
-pub(crate) mod object_law_circuits;
-pub(crate) mod object_law_compatibility;
-pub(crate) mod object_law_residuals;
-pub(crate) mod object_law_transport;
+pub mod object_evaluate;
+pub mod object_evaluation_table;
+pub mod object_law_circuit_transport;
+pub mod object_law_circuits;
+pub mod object_law_compatibility;
+pub mod object_law_residuals;
+pub mod object_law_transport;
 mod object_reading_evaluation;
 mod object_reading_result;
 mod object_transport;
-pub(crate) mod object_view_compatibility;
-pub(crate) mod object_view_family;
-pub(crate) mod object_view_transport;
+pub mod object_view_compatibility;
+pub mod object_view_family;
+pub mod object_view_transport;
 mod observable_layout;
 mod path_compose;
 mod path_value;
@@ -53,7 +53,7 @@ pub mod result;
 mod term;
 mod summary;
 mod value_equality;
-pub(crate) mod value_transport;
+pub mod value_transport;
 mod view_family;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 #[cfg(test)]
@@ -190,11 +190,11 @@ pub fn prepare_shared_observed(
     }
 }
 
-pub(crate) mod equation_polynomial;
-pub(crate) mod object_equation_presentation;
+pub mod equation_polynomial;
+pub mod object_equation_presentation;
 
-pub(crate) mod finite_polynomial_evaluation;
-pub(crate) mod object_polynomial_observable;
+pub mod finite_polynomial_evaluation;
+pub mod object_polynomial_observable;
 
 mod view_invariant;
 

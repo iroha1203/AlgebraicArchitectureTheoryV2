@@ -1,6 +1,6 @@
 use archsig::{
-    archmap::{Slot, Value},
-    construction::{ConstructionFailure, FactPointer, construct},
+    archmap::{Fact as FactPointer, Slot, Value},
+    construction::{ConstructionFailure, construct},
     control::{Checkpoint, Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,

@@ -12,8 +12,8 @@ use super::{
     },
 };
 use crate::{
-    construction::{ConstructionFailure, FactPointer, readings::ObjectEvaluationPosition},
-    law::ast::BinOp,
+    archmap::Fact as FactPointer, construction::ConstructionFailure, law::ast::BinOp,
+    observed::object_evaluation_table::ObjectEvaluationPosition,
 };
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {

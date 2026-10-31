@@ -464,7 +464,7 @@ pub(super) struct Coordinate {
     pub instance: NodeRef,
     pub lhs: NodeRef,
     pub rhs: NodeRef,
-    pub position: crate::construction::readings::ObjectEvaluationPosition,
+    pub position: crate::observed::object_evaluation_table::ObjectEvaluationPosition,
     pub row: Option<usize>,
     pub case: usize,
     pub component: Vec<usize>,

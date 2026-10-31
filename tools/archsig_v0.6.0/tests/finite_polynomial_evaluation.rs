@@ -1,16 +1,13 @@
 #[path = "common/finite_polynomial_data.rs"]
 mod fixture;
 use archsig::{
-    construction::{
-        ConstructionFailure,
-        readings::{
-            FiniteIntegerFunction as V, FinitePolynomialEvaluation as E,
-            FinitePolynomialFailure as F, FinitePolynomialTableKind as K,
-            finite_polynomial_evaluation,
-        },
-    },
+    construction::ConstructionFailure,
     control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
     input::CheckedInputs,
+    observed::finite_polynomial_evaluation::{
+        FiniteIntegerFunction as V, FinitePolynomialEvaluation as E, FinitePolynomialFailure as F,
+        FinitePolynomialTableKind as K, finite_polynomial_evaluation,
+    },
     result::Signal,
     types::Type,
 };

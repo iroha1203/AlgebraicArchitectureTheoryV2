@@ -14,9 +14,8 @@ use super::{
     value_transport::FiniteTransportValue,
 };
 use crate::{
-    construction::{
-        ConstructionFailure, profiles::CircuitPattern, readings::ObjectEvaluationPosition,
-    },
+    construction::{ConstructionFailure, profiles::CircuitPattern},
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
 };
 use std::sync::Arc;

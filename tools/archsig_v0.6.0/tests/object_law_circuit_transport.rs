@@ -1,16 +1,19 @@
 use archsig::{
     construction::{
         ConstructionFailure, construct,
-        maps::{
-            DeclarationCorrespondence, LawCircuitTransportFailureCause,
-            LawCircuitTransportOutcome as Outcome, LawCircuitTransportRefutation as Refuted,
-            LawTransportOutcome, ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure,
-            correspondence, declaration_correspondence, object_law_circuit_transport,
-        },
+        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
     control::{Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
+    observed::{
+        object_law_circuit_transport::{
+            LawCircuitTransportFailureCause, LawCircuitTransportOutcome as Outcome,
+            LawCircuitTransportRefutation as Refuted, ObjectLawCircuitTransport,
+            ObjectLawCircuitTransportFailure, object_law_circuit_transport,
+        },
+        object_law_transport::LawTransportOutcome,
+    },
 };
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
@@ -306,8 +309,8 @@ fn original_nonnumeric_body_and_different_numeric_component_types_are_distinct()
     assert!(matches!(
         r.outcome(),
         Outcome::Construction {
-            source: archsig::construction::readings::LawCircuitsCondition::Unsupported,
-            target: archsig::construction::readings::LawCircuitsCondition::Unsupported
+            source: archsig::observed::object_law_circuits::LawCircuitsCondition::Unsupported,
+            target: archsig::observed::object_law_circuits::LawCircuitsCondition::Unsupported
         }
     ));
     let i = ground("2=0", "rat(1,2)=rat(0,1)");
@@ -587,14 +590,14 @@ fn a_failed_fixed_extension_keeps_its_refutation_and_does_not_generate_transport
     assert!(matches!(
         r.outcome(),
         Outcome::Construction {
-            source: archsig::construction::readings::LawCircuitsCondition::ConditionFailed,
+            source: archsig::observed::object_law_circuits::LawCircuitsCondition::ConditionFailed,
             ..
         }
     ));
     assert!(r.points().is_empty());
     assert!(matches!(
         r.source().unwrap().base().outcome(),
-        Some(archsig::construction::readings::LawResidualOutcome::Refuted { .. })
+        Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
     ));
     r.base().operation().recheck(&i, &mut quiet()).unwrap();
     r.recheck(i, &mut quiet()).unwrap();
@@ -610,7 +613,7 @@ fn unsupported_infinite_parameter_retains_the_original_failure_and_valid_operati
     let (o, n) = indices(&i, "p", "measure", "p");
     let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut quiet()).unwrap_err();
     let ObjectLawCircuitTransportFailure::Original(
-        archsig::construction::maps::ObjectLawTransportFailure::NotImplemented {
+        archsig::observed::object_law_transport::ObjectLawTransportFailure::NotImplemented {
             operation, ..
         },
     ) = f
@@ -655,14 +658,14 @@ fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as
 }
 #[test]
 fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_operation() {
-    use archsig::construction::readings::LawCircuitDetector as Detector;
+    use archsig::observed::object_law_circuits::LawCircuitDetector as Detector;
     let i = ground("2=0", "0=0");
     let r = run(i.clone());
     assert!(r.is_complete());
     assert!(matches!(
         r.outcome(),
         Outcome::Original(LawTransportOutcome::Refuted(
-            archsig::construction::maps::LawConditionFailure::Holds
+            archsig::observed::object_law_transport::LawConditionFailure::Holds
         ))
     ));
     assert_eq!(r.base().source_reading().unwrap().body(), Some(false));
@@ -709,7 +712,7 @@ fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_opera
 }
 #[test]
 fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence() {
-    use archsig::construction::readings::{
+    use archsig::observed::object_law_circuits::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition,
     };
     let missing = A

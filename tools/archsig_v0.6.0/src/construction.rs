@@ -1,5 +1,5 @@
 //! 検査済み三入力から、共通AtomUniverseと対象のConfigurationを生成する。
-pub use crate::observed::result::Fact as FactPointer;
+use crate::archmap::Fact as FactPointer;
 use crate::{
     archmap::{Slot, Subject, Value},
     canonical::Json,

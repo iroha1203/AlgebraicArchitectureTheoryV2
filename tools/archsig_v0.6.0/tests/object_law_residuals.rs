@@ -1,11 +1,11 @@
 use archsig::{
     canonical::Json,
-    construction::readings::{
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
+    observed::object_law_residuals::{
         LawNumericShape, LawResidualOutcome as Outcome, ObjectLawResiduals,
         ObjectLawResidualsFailure, object_law_residuals,
     },
-    control::{Control, Limits, Usage},
-    input::{CheckedInputs, InputSources, check_inputs},
     types::Type,
 };
 use std::sync::Arc;
@@ -48,7 +48,7 @@ fn missing() -> String {
         .join("\n")
         .replace(",\n]", "\n]")
 }
-fn text(v: &Option<archsig::construction::maps::NumericTransportValue>) -> Option<String> {
+fn text(v: &Option<archsig::observed::numeric_transport::NumericTransportValue>) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
 #[test]
@@ -62,7 +62,7 @@ fn two_false_laws_have_distinct_original_numeric_residuals_with_a_zero_tuple_com
     assert_eq!(r.evaluations().len(), 2);
     assert_eq!(
         r.base().outcome(),
-        Some(&archsig::construction::readings::LawCompatibilityOutcome::Compatible)
+        Some(&archsig::observed::object_law_compatibility::LawCompatibilityOutcome::Compatible)
     );
     assert_eq!(r.outcome(), Some(&Outcome::Refuted { component: vec![0] }));
     for (e, expected) in r.evaluations().iter().zip(["3", "2"]) {
@@ -643,7 +643,7 @@ fn conditional_membership_keeps_unknown_residuals_and_the_original_owner_conditi
             let c = &row.cases[0];
             if matches!(
                 c.reading.application(),
-                archsig::construction::maps::LawApplication::ConditionalMembership(_)
+                archsig::observed::object_law_transport::LawApplication::ConditionalMembership(_)
             ) {
                 count += 1;
                 assert!(c.components[0].epsilon.is_none());

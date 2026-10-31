@@ -2,13 +2,14 @@ use archsig::{
     archmap::Value,
     construction::{
         ConstructionFailure,
-        maps::{
-            DeclarationCorrespondence, DeclarationValuePosition as Position, NumericValueTransport,
-            correspondence, declaration_correspondence, numeric_declaration_value_transport,
-        },
+        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
     },
     control::{Checkpoint, Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
+    observed::{
+        numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
+        value_transport::DeclarationValuePosition as Position,
+    },
     result::Signal,
     types::Type,
 };

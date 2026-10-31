@@ -3,6 +3,7 @@
 use super::{PrepareFailure, PreparedObserved};
 
 use crate::control::{Checkpoint, Control, StopReason};
+pub use crate::archmap::Fact;
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
 #[path = "completion_graph.rs"]
@@ -462,29 +463,6 @@ impl PartialEq for Scalar {
     }
 }
 impl Eq for Scalar {}
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-/// 原始観測の位置。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
-pub struct Fact {
-    pub snapshot: String,
-    pub subject: String,
-    pub field: Option<String>,
-    pub atom: Option<String>,
-}
-impl Fact {
-    pub(crate) fn wire(&self) -> Json {
-        let mut f = BTreeMap::from([
-            ("snapshot".into(), Json::str(&self.snapshot)),
-            ("subject".into(), Json::str(&self.subject)),
-        ]);
-        if let Some(s) = &self.field {
-            f.insert("field".into(), Json::str(s));
-        }
-        if let Some(s) = &self.atom {
-            f.insert("atom".into(), Json::str(s));
-        }
-        Json::Obj(f)
-    }
-}
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Scope {
     pub readings: BTreeSet<String>,

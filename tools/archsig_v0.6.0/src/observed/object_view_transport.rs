@@ -12,16 +12,22 @@ use super::{
     result::{Decision, Payload, Scalar, ValidationFailure},
 };
 use crate::{
+    archmap::Fact as FactPointer,
     canonical::Json,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
-            ConfigurationTransportPartial, DeclarationCorrespondence, DeclarationValuePosition,
-            FiniteValueTransport, NumericValueTransport, ObjectIdentity, configuration_transport,
-            finite_declaration_value_transport, numeric_declaration_value_transport,
+            ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
+            configuration_transport,
         },
         readings::{ObjectInstance, ObjectReadingInstances, object_reading_instances},
+    },
+    observed::{
+        numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
+        value_transport::{
+            DeclarationValuePosition, FiniteValueTransport, finite_declaration_value_transport,
+        },
     },
     types::Type,
 };
@@ -738,7 +744,7 @@ fn checked_view_transport(
                     match compare(a, z, inputs.law(), c).map_err(invalid)? {
                         Comparison::Same => ViewTransportOutcome::Preserved,
                         Comparison::Different(unit) => {
-                            use crate::construction::readings::ObjectEvaluationPosition;
+                            use crate::observed::object_evaluation_table::ObjectEvaluationPosition;
                             r.numeric_counterexample = Some(functions::counterexample(
                                 &inputs,
                                 &r.source_readings,

@@ -1,10 +1,10 @@
 use archsig::{
-    construction::readings::{
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
+    observed::object_law_circuits::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
         ObjectLawCircuitsFailure, object_law_circuits,
     },
-    control::{Control, Limits, Usage},
-    input::{CheckedInputs, InputSources, check_inputs},
 };
 use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
@@ -212,7 +212,7 @@ fn same_pattern_disagreement_retains_candidates_and_refutation_but_no_codes() {
     );
     assert!(matches!(
         r.base().outcome(),
-        Some(archsig::construction::readings::LawResidualOutcome::Refuted { .. })
+        Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
     ));
 }
 #[test]

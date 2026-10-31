@@ -1,6 +1,7 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             DeclarationCorrespondence, ReferenceConditionFailure as Failure,
             ReferenceTypeTransport, correspondence, declaration_correspondence,

@@ -1,8 +1,9 @@
 #[path = "common/map_scope.rs"]
 mod map_scope;
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{Counterexample, correspondence},
     },
     control::{Checkpoint, Control, Limits, Usage},

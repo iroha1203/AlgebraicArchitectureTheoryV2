@@ -7,25 +7,6 @@ mod internal;
 mod operations;
 mod references;
 mod transport;
-pub use crate::observed::numeric_transport::{
-    NumericTransportValue, NumericValueMap, NumericValueTransport,
-    numeric_declaration_value_transport,
-};
-pub use crate::observed::object_law_transport::{
-    FiniteLawFamily, LawApplication, LawBooleanReading, LawConditionFailure,
-    LawParameterComparison, LawTransportOutcome, ObjectLawTransport, ObjectLawTransportFailure,
-    ObjectLawTransportPartial, object_law_transport,
-};
-pub use crate::observed::object_view_transport::{
-    ObjectViewTransport, ObjectViewTransportFailure, ObjectViewTransportPartial,
-    ViewConditionFailure, ViewTransportOutcome, ViewTransportValue, ViewValueEquivalence,
-    PrimitiveValueIdentity, StructuralValueEquivalence, FamilyTypeFailure, FiniteViewTransport,
-    FiniteViewTypeMap, ViewFamilyReturnMap, ViewParameterComparison, object_view_transport,
-};
-pub use crate::observed::value_transport::{
-    DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,
-    FiniteValueConditionFailure, FiniteValueTransport, finite_declaration_value_transport,
-};
 pub(crate) use declarations::moved_type as moved_declaration_type;
 pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
@@ -1566,8 +1547,3 @@ mod tests {
     }
 }
 
-pub use crate::observed::object_law_circuit_transport::{
-    LawCircuitTransportFailureCause, LawCircuitTransportOutcome, LawCircuitTransportPoint,
-    LawCircuitTransportRefutation, ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure,
-    object_law_circuit_transport,
-};

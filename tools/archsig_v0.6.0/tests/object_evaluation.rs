@@ -2,14 +2,18 @@ use archsig::{
     canonical::Json,
     construction::{
         ConstructionFailure, construct,
-        readings::{
-            ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
-            ObjectReadingInstances, evaluate_object_instance, object_reading_instances,
-        },
+        readings::{ObjectReadingInstances, object_reading_instances},
     },
     control::{Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
-    observed::{evaluate_observed, prepare_shared_observed},
+    observed::{
+        evaluate_observed,
+        object_evaluate::{
+            ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
+            evaluate_object_instance,
+        },
+        prepare_shared_observed,
+    },
 };
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");

@@ -1,6 +1,7 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
     },
     control::{Checkpoint, Control, Limits, Usage},

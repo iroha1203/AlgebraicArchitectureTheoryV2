@@ -39,8 +39,8 @@ use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 pub use canonical::model_json;
 pub use model::{
-    ArchMapFailure, CheckedArchMap, Field, Mode, Origin, Slot, Snapshot, Source, SourceLocation,
-    Subject,
+    ArchMapFailure, CheckedArchMap, Fact, Field, Mode, Origin, Slot, Snapshot, Source,
+    SourceLocation, Subject,
 };
 use schema::*;
 use std::collections::{BTreeMap, BTreeSet, HashMap};

@@ -868,7 +868,7 @@ fn native_generators_are_consumed_with_actual_owned_endpoints_and_public_project
         assert_eq!(word, vec![row.subject]);
         assert_eq!(
             kernel.word(),
-            &[crate::construction::FactPointer {
+            &[crate::archmap::Fact {
                 snapshot: "v".into(),
                 subject: if i == 0 { "e" } else { "f" }.into(),
                 field: None,

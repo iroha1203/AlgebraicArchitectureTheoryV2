@@ -1,6 +1,7 @@
 use archsig::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{Counterexample, internal_arrow, internal_arrows},
     },
     control::{Checkpoint, Control, Limits, Usage},

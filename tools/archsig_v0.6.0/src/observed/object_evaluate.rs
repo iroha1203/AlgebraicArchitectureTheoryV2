@@ -5,8 +5,9 @@ use crate::{
 };
 use super::{result::*, *};
 use crate::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::ObjectIdentity,
         readings::{
             InstanceApplication, MembershipCondition, ObjectInstance, ObjectReadingInstances,

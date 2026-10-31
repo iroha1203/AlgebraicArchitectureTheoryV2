@@ -16,9 +16,10 @@ use super::{
     result::{Fact, NodeRef, ObservedEvaluation, Payload, Scalar},
 };
 use crate::{
-    construction::{ConstructionFailure, readings::ObjectEvaluationPosition},
+    construction::ConstructionFailure,
     issue::Location,
     law::ast::{BinOp, ExprKind, UnOp},
+    observed::object_evaluation_table::ObjectEvaluationPosition,
     types::Type,
 };
 use std::sync::Arc;

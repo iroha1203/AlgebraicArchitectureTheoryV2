@@ -17,10 +17,13 @@ use super::{
     result::{Scalar, ValidationFailure},
     value_equality,
 };
-use crate::construction::{
-    ConstructionFailure,
-    profiles::{ConfigurationProfiles, construct_profiles},
-    readings::{ObjectEvaluationPosition, ObjectReadingInstances, object_reading_instances},
+use crate::{
+    construction::{
+        ConstructionFailure,
+        profiles::{ConfigurationProfiles, construct_profiles},
+        readings::{ObjectReadingInstances, object_reading_instances},
+    },
+    observed::object_evaluation_table::ObjectEvaluationPosition,
 };
 use std::sync::Arc;
 

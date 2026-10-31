@@ -1,10 +1,13 @@
 use archsig::{
-    construction::readings::{
-        EquationGuard as G, EquationPolynomial, EquationPresentation, EquationPresentationFailure,
-        EquationPresentationStatus as S, object_equation_presentation,
-    },
     control::{Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
+    observed::{
+        equation_polynomial::EquationPolynomial,
+        object_equation_presentation::{
+            EquationGuard as G, EquationPresentation, EquationPresentationFailure,
+            EquationPresentationStatus as S, object_equation_presentation,
+        },
+    },
     types::Type,
 };
 use std::sync::Arc;
@@ -45,7 +48,7 @@ fn terms(p: &EquationPolynomial) -> Vec<(Vec<usize>, String)> {
         .map(|t| (t.variables.clone(), t.coefficient.wire().canonical()))
         .collect()
 }
-fn number(v: &Option<archsig::construction::maps::NumericTransportValue>) -> Option<String> {
+fn number(v: &Option<archsig::observed::numeric_transport::NumericTransportValue>) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
 #[test]
@@ -639,7 +642,7 @@ fn two_subjects() -> String {
 }
 fn binding(
     r: &EquationPresentation,
-    q: &archsig::construction::readings::EquationOccurrence,
+    q: &archsig::observed::object_equation_presentation::EquationOccurrence,
     name: &str,
 ) -> String {
     r.base().base().readings().instances()[q.position.instance]
@@ -1046,7 +1049,7 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
                 Some(if truth { "\"2\"" } else { "\"0\"" }.into())
             );
             let evaluation = r.base().base().evaluations()[q.position.instance].evaluation();
-            let archsig::construction::readings::ObjectEvaluationOutcome::Evaluated(g) =
+            let archsig::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(g) =
                 evaluation.outcome()
             else {
                 panic!("original evaluation")

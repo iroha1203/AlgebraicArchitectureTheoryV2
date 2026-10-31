@@ -1,6 +1,9 @@
 //! 未束縛の数値引数を持つscalar多項式族。引数を有限標本や全称真偽に置換しない。
 use super::*;
-use crate::construction::readings::{InstanceApplication, ObjectEvaluationPosition};
+use crate::{
+    construction::readings::InstanceApplication,
+    observed::object_evaluation_table::ObjectEvaluationPosition,
+};
 use crate::observed::object_equation_presentation::{
     ParameterEquation, parameter_source_difference_bound,
 };

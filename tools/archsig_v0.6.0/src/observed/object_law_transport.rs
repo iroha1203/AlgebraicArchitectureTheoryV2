@@ -12,8 +12,9 @@ use super::{
     result::{NodeRef, ObservedEvaluation, Payload, Scalar},
 };
 use crate::{
+    archmap::Fact as FactPointer,
     construction::{
-        ConstructionFailure, FactPointer,
+        ConstructionFailure,
         maps::{
             ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
             ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
@@ -495,8 +496,8 @@ fn checked_transport(
                 &inputs,
                 [&r.source_readings, &r.target_readings],
                 [
-                    crate::construction::readings::ObjectEvaluationPosition { object, instance },
-                    crate::construction::readings::ObjectEvaluationPosition {
+                    crate::observed::object_evaluation_table::ObjectEvaluationPosition { object, instance },
+                    crate::observed::object_evaluation_table::ObjectEvaluationPosition {
                         object: to,
                         instance: ti,
                     },
