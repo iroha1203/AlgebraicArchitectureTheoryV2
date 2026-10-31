@@ -4124,7 +4124,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
     }
 
     #[test]
-    #[ignore = "#6068: 製品の変更後に期待値と実装のどちらが正しいか未判定"]
     fn answer_identity_failure_reaches_driver_and_preserves_prior_results() {
         fn prepare(control: &mut Control) -> PreparedObserved {
             let law = include_str!("../../tests/fixtures/counter.law").replace(
@@ -4330,7 +4329,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             );
         }
         assert_eq!(result.issues.len(), 2);
-        assert!(result.answers[2].outputs.contains_key("evaluation"));
+        // 検査で失敗した回答の出力は未検査の末尾として配送しない。
+        assert!(result.answers[2].outputs.is_empty());
         assert!(result.answers[3].outputs.is_empty());
         assert!(result.nodes.iter().all(|node| !matches!(&node.rule,
             Rule::Input { location: Location::Law { span }, .. }
