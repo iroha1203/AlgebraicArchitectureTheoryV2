@@ -7,7 +7,7 @@ use archsig::run::{
 use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::time::Instant;
 
 /// 実ファイルの操作。
@@ -45,8 +45,34 @@ struct ProcessSignals {
     frozen: Option<Option<Signal>>,
 }
 
-/// 予算に要る時計と peak RSS を読み直す間隔。予算の単位(ミリ秒)に合わせる。
-const USAGE_SAMPLE_PERIOD: std::time::Duration = std::time::Duration::from_millis(1);
+/// 予算に要る時計と peak RSS を読み直す、検査の回数の間隔。
+const USAGE_SAMPLE_INTERVAL: u32 = 256;
+
+/// 時計と peak RSS は検査のたびに読むと計算より重いので、最初の検査と、そのあと
+/// 一定回数ごとに読み直し、その間は前回の値を返す。
+struct UsageSampler<R> {
+    read: R,
+    checks: u32,
+    last: archsig::control::Usage,
+}
+
+impl<R: FnMut() -> archsig::control::Usage> UsageSampler<R> {
+    fn new(read: R) -> Self {
+        Self {
+            read,
+            checks: 0,
+            last: archsig::control::Usage::default(),
+        }
+    }
+
+    fn usage(&mut self) -> archsig::control::Usage {
+        if self.checks % USAGE_SAMPLE_INTERVAL == 0 {
+            self.last = (self.read)();
+        }
+        self.checks = self.checks.wrapping_add(1);
+        self.last
+    }
+}
 
 impl ProcessSignals {
     fn new() -> ProcessSignals {
@@ -124,44 +150,20 @@ impl ProcessSignals {
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        let sampled = usage_sampler(started, limits);
+        // signal は検査ごとに確かめる。
+        let mut sampler = UsageSampler::new(move || {
+            Self::usage_for_limits(
+                limits,
+                || started.elapsed().as_millis(),
+                || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
+                || None,
+            )
+        });
         Control::new(limits, move |_| archsig::control::Usage {
-            elapsed_ms: u128::from(sampled.0.load(Ordering::Relaxed)),
-            memory_mib: u128::from(sampled.1.load(Ordering::Relaxed)),
             signal: Self::observed_signal(&first, &int, &term),
+            ..sampler.usage()
         })
     }
-}
-
-/// 予算に要る経過時間(ms)と peak RSS(MiB)。区切りのたびに時計を読むと計算より重いので、
-/// 最初に一度読み、予算があれば別のスレッドが一定間隔で読み直す。区切りでは最新の値で判定する。
-fn usage_sampler(started: Instant, limits: archsig::control::Limits) -> Arc<(AtomicU64, AtomicU64)> {
-    let read = move || {
-        let usage = ProcessSignals::usage_for_limits(
-            limits,
-            || started.elapsed().as_millis(),
-            || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
-            || None,
-        );
-        let narrow = |value: u128| u64::try_from(value).unwrap_or(u64::MAX);
-        (narrow(usage.elapsed_ms), narrow(usage.memory_mib))
-    };
-    let (elapsed_ms, memory_mib) = read();
-    let sampled = Arc::new((AtomicU64::new(elapsed_ms), AtomicU64::new(memory_mib)));
-    if limits.time_ms.is_some() || limits.memory_mib.is_some() {
-        let shared = Arc::downgrade(&sampled);
-        std::thread::spawn(move || {
-            // 使う側(Control)が捨てられたら止まる。
-            while let Some(sampled) = shared.upgrade() {
-                let (elapsed_ms, memory_mib) = read();
-                sampled.0.store(elapsed_ms, Ordering::Relaxed);
-                sampled.1.store(memory_mib, Ordering::Relaxed);
-                drop(sampled);
-                std::thread::sleep(USAGE_SAMPLE_PERIOD);
-            }
-        });
-    }
-    sampled
 }
 
 impl Signals for ProcessSignals {
@@ -356,21 +358,20 @@ mod tests {
     }
 
     #[test]
-    fn usage_sampler_reads_at_once_and_keeps_refreshing_the_elapsed_time() {
-        let limits = archsig::control::Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        };
-        let sampled = usage_sampler(Instant::now(), limits);
-        // 最初の区切りの前に一度読む。peak RSS は常に1MiB以上ある。
-        assert!(sampled.1.load(Ordering::Relaxed) >= 1);
-        let deadline = Instant::now() + std::time::Duration::from_secs(5);
-        while sampled.0.load(Ordering::Relaxed) < 20 {
-            assert!(Instant::now() < deadline, "経過時間が読み直されない");
-            std::thread::yield_now();
+    fn usage_sampler_reads_at_the_first_check_and_then_every_interval() {
+        let mut reads = 0;
+        let mut sampler = UsageSampler::new(move || {
+            reads += 1;
+            archsig::control::Usage {
+                elapsed_ms: reads,
+                ..archsig::control::Usage::default()
+            }
+        });
+        assert_eq!(sampler.usage().elapsed_ms, 1);
+        for _ in 1..USAGE_SAMPLE_INTERVAL {
+            assert_eq!(sampler.usage().elapsed_ms, 1);
         }
-        let unlimited = usage_sampler(Instant::now(), archsig::control::Limits::default());
-        assert_eq!(unlimited.0.load(Ordering::Relaxed), 0, "予算がなければ時計を読まない");
+        assert_eq!(sampler.usage().elapsed_ms, 2);
     }
 
     fn signal_reaches_control(signal: i32, expected: Signal) {

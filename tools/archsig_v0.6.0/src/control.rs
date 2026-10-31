@@ -146,7 +146,7 @@ impl Resource {
     }
 }
 
-/// 停止時点の実測値を保ち、未着手の問いにも同じ原因を渡す。
+/// 停止を決めた時点で観測していた値を保ち、未着手の問いにも同じ原因を渡す。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum StopReason {
     BudgetExhausted {
