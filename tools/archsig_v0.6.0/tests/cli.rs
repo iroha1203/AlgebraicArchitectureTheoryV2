@@ -192,6 +192,7 @@ fn receipt_result_is_relative_to_the_calling_directory() {
         ],
     );
     consistent(&dir, &r, "complete", 0);
+    assert!(r.stderr.is_empty());
     assert_eq!(s(get(&r.receipt, "result")), "both/result.json");
 }
 

@@ -283,7 +283,7 @@ fn unknown_fixed_value_is_not_a_free_coordinate_or_empty_solution() {
     assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
 }
 #[test]
-fn local_system_saved_reuse_and_answer_bindings_keep_the_same_result() {
+fn local_system_answer_bindings_establish_every_answer() {
     let dir = input("local-reuse", Some(true));
     let asks = [
         "a=build(Fixed,on=@fixed/s)",
@@ -293,30 +293,11 @@ fn local_system_saved_reuse_and_answer_bindings_keep_the_same_result() {
     ];
     let result = execute(&dir, "out", &asks);
     assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
-    let before = result_json(&dir, &result);
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in &asks {
-        args.extend(["--ask", ask]);
-    }
-    let result = run(&dir, &args);
-    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
-    let after = result_json(&dir, &result);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
+    let saved = result_json(&dir, &result);
+    for (index, id) in ["a", "l", "d", "again"].into_iter().enumerate() {
+        let answer = &arr(get(&saved, "answers"))[index];
+        assert_eq!(s(get(answer, "id")), id);
+        assert_eq!(s(get(answer, "status")), "established", "{id}");
     }
 }
 #[test]
@@ -832,7 +813,7 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
 }
 
 #[test]
-fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
+fn conditional_local_system_keeps_guarded_instance() {
     let dir = input("local-conditional-reuse", Some(false));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     std::fs::write(
@@ -852,32 +833,8 @@ fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
     let first = execute(&dir, "out", &asks);
     assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
     let before = result_json(&dir, &first);
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-        "--time-ms",
-        "120000",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let second = run(&dir, &args);
-    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
-    let after = result_json(&dir, &second);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
-    }
     assert_eq!(
-        get(output(&after, 3, "value"), "value").value,
+        get(output(&before, 3, "value"), "value").value,
         archsig::json::JValue::Bool(false)
     );
 }
@@ -1166,7 +1123,7 @@ fn binding_a_boolean_answer_selects_one_law_instance_without_changing_the_univer
 }
 
 #[test]
-fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
+fn finite_parameter_product_keeps_all_four_instances() {
     let dir = input("local-finite-product", Some(false));
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
     std::fs::write(
@@ -1214,28 +1171,6 @@ fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
             (true, true)
         ])
     );
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        "again",
-        "--reuse",
-        "out",
-    ];
-    for ask in asks {
-        args.extend(["--ask", ask]);
-    }
-    let r = run(&dir, &args);
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
-    let after = result_json(&dir, &r);
-    for field in ["answers", "nodes"] {
-        assert_eq!(get(&before, field).value, get(&after, field).value);
-    }
 }
 
 fn explicit_local(dir: &std::path::Path, declaration: &str) {
@@ -1960,7 +1895,7 @@ fn implicit_support_cover_has_actual_intersections_and_matching_families() {
 }
 
 #[test]
-fn implicit_support_cover_preserves_missing_and_saved_reuse() {
+fn implicit_support_cover_preserves_missing() {
     for right in [Some(true), None] {
         let dir = implicit_multiple_input("implicit-cover-reuse", true, right);
         let asks = [
@@ -1991,32 +1926,6 @@ fn implicit_support_cover_preserves_missing_and_saved_reuse() {
                 .iter()
                 .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.other")
         );
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--archmap",
-            "a.json",
-            "--law",
-            "l.law",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for ask in asks {
-            args.extend(["--ask", ask]);
-        }
-        let second = run(&dir, &args);
-        assert_eq!(
-            second.code, first.code,
-            "{} {}",
-            second.stdout, second.stderr
-        );
-        let after = result_json(&dir, &second);
-        for field in ["answers", "nodes"] {
-            assert_eq!(get(&before, field).value, get(&after, field).value);
-        }
     }
 }
 

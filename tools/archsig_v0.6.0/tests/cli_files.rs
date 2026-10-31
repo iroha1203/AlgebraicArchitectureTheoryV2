@@ -73,7 +73,7 @@ fn source_uris_and_law_references_are_not_read() {
         ),
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -94,7 +94,7 @@ fn source_uris_and_law_references_are_not_read() {
         .replace("\"locations\": [],", "\"locations\": [{\"source\": \"src\", \"path\": \"src/missing.rs\"}],");
     std::fs::write(dir.join("l2.law"), LAW).unwrap();
     std::fs::write(dir.join("a.json"), observed).unwrap();
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -577,7 +577,7 @@ fn definition_dependencies_are_not_loaded_from_neighbor_files() {
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Empty {}\n",
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",

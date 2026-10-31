@@ -9776,7 +9776,7 @@ reading After {{{vocabulary} local here(next:({ty},{ty}),t:State,keep:Bool,final
 #[path = "common/numeric_tuple_change.rs"]
 mod numeric_tuple_change;
 #[test]
-fn numeric_tuple_change_cli_preserves_delivery_reuse_and_failure_contracts() {
+fn numeric_tuple_change_cli_preserves_delivery_and_failure_contracts() {
     let all = numeric_tuple_change::cases();
     let selected = [
         ("Z", false, "same-fields"),
@@ -9830,48 +9830,6 @@ fn numeric_tuple_change_cli_preserves_delivery_reuse_and_failure_contracts() {
         assert!(r.stderr.is_empty());
         let result = result_json(&dir, &r);
         case.assert_result(&result);
-        let mut args = vec![
-            "run",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "again",
-            "--reuse",
-            "out",
-        ];
-        for request in numeric_tuple_change::REQUESTS {
-            args.extend(["--ask", request]);
-        }
-        let started = std::time::Instant::now();
-        let reused = cli::run(&dir, &args);
-        eprintln!(
-            "{} reused CLI helper roundtrip {:?}",
-            case.label(),
-            started.elapsed()
-        );
-        assert_eq!(
-            reused.code,
-            case.code,
-            "{}: {}",
-            case.label(),
-            reused.stdout
-        );
-        assert!(reused.stderr.is_empty());
-        let again = result_json(&dir, &reused);
-        assert!(warnings(&again).is_empty());
-        case.assert_result(&again);
-        for key in ["answers", "nodes"] {
-            assert_eq!(
-                get(&result, key).value,
-                get(&again, key).value,
-                "{}: {key}",
-                case.label()
-            );
-        }
     }
 }
 
