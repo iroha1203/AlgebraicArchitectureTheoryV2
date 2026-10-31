@@ -99,8 +99,8 @@ fn spawn_failure_is_reported() {
 #[test]
 fn explicit_deadline_preserves_the_cli_receipt() {
     let dir = cli::workdir("watchdog-explicit-deadline");
-    let default = cli::run(&dir, &["run"]);
-    let explicit = cli::run_with_deadline(&dir, &["run"], Duration::from_secs(30));
+    let default = cli::run_binary(&dir, &["run"]);
+    let explicit = cli::run_binary_with_deadline(&dir, &["run"], Duration::from_secs(30));
     assert_ne!(default.code, 0);
     assert_eq!(explicit.code, default.code);
     assert_eq!(explicit.receipt.value, default.receipt.value);

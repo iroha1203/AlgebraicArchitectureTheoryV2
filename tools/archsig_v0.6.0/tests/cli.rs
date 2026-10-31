@@ -76,7 +76,10 @@ fn normative_examples_complete_both_checks() {
         );
         let res = consistent(&dir, &r, "complete", 0);
         assert_eq!(s(get(&res, "command")), "check");
-        assert_eq!(s(get(&r.receipt, "result")), "both/result.json");
+        assert_eq!(
+            s(get(&r.receipt, "result")),
+            dir.join("both/result.json").to_str().unwrap()
+        );
         for (id, path, source, kind) in [
             (
                 "definition0",

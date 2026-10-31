@@ -24,7 +24,7 @@ fn symlinked_inputs_are_resolved_and_copied() {
     std::fs::write(dir.join("real.law"), LAW).unwrap();
     std::os::unix::fs::symlink("d.json", dir.join("definition-link.json")).unwrap();
     std::os::unix::fs::symlink("real.law", dir.join("link.law")).unwrap();
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -73,7 +73,7 @@ fn source_uris_and_law_references_are_not_read() {
         ),
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -94,7 +94,7 @@ fn source_uris_and_law_references_are_not_read() {
         .replace("\"locations\": [],", "\"locations\": [{\"source\": \"src\", \"path\": \"src/missing.rs\"}],");
     std::fs::write(dir.join("l2.law"), LAW).unwrap();
     std::fs::write(dir.join("a.json"), observed).unwrap();
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -117,7 +117,7 @@ fn existing_outputs_are_never_overwritten() {
     std::fs::write(dir.join("l.law"), LAW).unwrap();
     std::fs::create_dir(dir.join("o")).unwrap();
     std::fs::write(dir.join("o/keep.txt"), "keep").unwrap();
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -136,7 +136,7 @@ fn existing_outputs_are_never_overwritten() {
         "keep"
     );
     assert!(!dir.join("o/result.json").exists());
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -150,7 +150,7 @@ fn existing_outputs_are_never_overwritten() {
     );
     assert_eq!(r.code, 64);
     assert!(!dir.join("missing-parent").exists());
-    let r = run(
+    let r = run_binary(
         &dir,
         &[
             "check",
@@ -165,7 +165,7 @@ fn existing_outputs_are_never_overwritten() {
     assert_eq!(r.code, 64);
     assert!(!has(&r.receipt, "result"));
     for out in ["d2/.", "d3/..", "."] {
-        let r = run(
+        let r = run_binary(
             &dir,
             &[
                 "check",
@@ -188,7 +188,7 @@ fn unreadable_inputs_are_io_errors() {
     let dir = input_dir("unreadable");
     std::fs::create_dir(dir.join("adir")).unwrap();
     std::fs::write(dir.join("a.json"), MAP).unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -208,7 +208,7 @@ fn unreadable_inputs_are_io_errors() {
     assert_eq!(s(get(get(issue, "details"), "operation")), "read");
     assert_eq!(s(get(get(issue, "details"), "path")), "adir");
     assert!(!dir.join("o").exists());
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -223,7 +223,7 @@ fn unreadable_inputs_are_io_errors() {
     notified(&dir, &r, "error", 74);
     // ArchMap だけが読めなくても、検査を始めない。
     std::fs::write(dir.join("l.law"), LAW).unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -535,7 +535,7 @@ fn unread_second_definition_reports_io_without_files() {
     let dir = input_dir("unread-second-definition");
     std::fs::write(dir.join("l.law"), b"invalid law").unwrap();
     std::fs::write(dir.join("a.json"), b"invalid JSON").unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -577,7 +577,7 @@ fn definition_dependencies_are_not_loaded_from_neighbor_files() {
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Empty {}\n",
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run(
+    let r = without_file_changes(&dir, || run_binary(
         &dir,
         &[
             "check",
@@ -628,7 +628,7 @@ fn failure_snapshot_rejects_files_directories_and_input_changes() {
         let dir = workdir(&format!("failure-snapshot-{defect}").replace('/', "-"));
         std::fs::write(dir.join("input"), "original").unwrap();
         let rejected = std::panic::catch_unwind(|| without_file_changes(&dir, || {
-            let r = run(&dir, &["run"]);
+            let r = run_binary(&dir, &["run"]);
             match defect {
                 "out" | "out/inputs" => std::fs::create_dir_all(dir.join(defect)).unwrap(),
                 _ => std::fs::write(dir.join(defect), "unexpected").unwrap(),
@@ -642,7 +642,7 @@ fn failure_snapshot_rejects_files_directories_and_input_changes() {
     std::fs::create_dir_all(dir.join("out/inputs")).unwrap();
     std::fs::write(dir.join("out/result.json"), "existing").unwrap();
     std::fs::write(dir.join("input"), "original").unwrap();
-    let r = without_file_changes(&dir, || run(&dir, &["run"]));
+    let r = without_file_changes(&dir, || run_binary(&dir, &["run"]));
     notified(&dir, &r, "invalid", 64);
     std::fs::remove_dir_all(dir).unwrap();
 }

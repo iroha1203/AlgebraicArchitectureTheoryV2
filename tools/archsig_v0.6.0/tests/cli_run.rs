@@ -427,7 +427,7 @@ fn run_argument_and_input_failures_never_create_failure_files() {
             get(&arr(get(&receipt, "issues"))[0], "details"),
             "path"
         )),
-        "l.law"
+        dir.join("l.law").to_str().unwrap()
     );
 }
 
