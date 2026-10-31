@@ -66,13 +66,16 @@ impl PartialEq for Data {
     }
 }
 impl Eq for Data {}
+/// 支持と Scope を集める元の参照。`metadata` と `metadata_matches` が同じ順で辿る。
+fn metadata_sources(o: &ViewOrigin) -> impl Iterator<Item = NodeRef> + '_ {
+    [o.expression, o.architecture, o.component]
+        .into_iter()
+        .chain(o.bindings.iter().map(|b| b.value))
+}
 fn metadata(g: &Graph, o: &ViewOrigin) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let mut support = vec![];
     let mut scope = Scope::default();
-    for r in [o.expression, o.architecture, o.component]
-        .into_iter()
-        .chain(o.bindings.iter().map(|b| b.value))
-    {
+    for r in metadata_sources(o) {
         g.tick()?;
         let n = g.get(r)?;
         support.extend(n.support.iter().cloned());
@@ -83,32 +86,28 @@ fn metadata(g: &Graph, o: &ViewOrigin) -> Result<(Vec<Fact>, Scope), ValidationF
     Ok((support, scope))
 }
 /// `metadata` と同じ支持と Scope になるかを、支持を複製・整列せずに確かめる。
+/// 食い違っても途中で抜けず、`metadata` と同じ区切りと参照を通る。
 fn metadata_matches(
     g: &Graph,
     o: &ViewOrigin,
     support: &[Fact],
     scope: &Scope,
 ) -> Result<bool, ValidationFailure> {
-    if !support.windows(2).all(|w| w[0] < w[1]) {
-        return Ok(false);
-    }
+    let mut matches = support.windows(2).all(|w| w[0] < w[1]);
     let mut seen = vec![false; support.len()];
     let mut merged = Scope::default();
-    for r in [o.expression, o.architecture, o.component]
-        .into_iter()
-        .chain(o.bindings.iter().map(|b| b.value))
-    {
+    for r in metadata_sources(o) {
         g.tick()?;
         let n = g.get(r)?;
         for fact in &n.support {
-            let Ok(i) = support.binary_search(fact) else {
-                return Ok(false);
-            };
-            seen[i] = true;
+            match support.binary_search(fact) {
+                Ok(i) if matches => seen[i] = true,
+                _ => matches = false,
+            }
         }
         merged.merge(&n.scope);
     }
-    Ok(seen.into_iter().all(|s| s) && &merged == scope)
+    Ok(matches && seen.into_iter().all(|s| s) && &merged == scope)
 }
 impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
