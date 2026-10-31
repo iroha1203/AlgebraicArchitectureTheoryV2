@@ -81,7 +81,8 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
     let mut words: Vec<std::ffi::OsString> = Vec::new();
     let mut path_value = false;
     for arg in args {
-        words.push(if path_value {
+        // 空の path はそのまま渡す。join すると作業 directory を指してしまう。
+        words.push(if path_value && !arg.is_empty() {
             dir.join(arg).into_os_string()
         } else {
             arg.into()

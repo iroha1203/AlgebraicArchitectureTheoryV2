@@ -9867,7 +9867,7 @@ reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};
     dir
 }
 
-fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_key: &str) {
+fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32) {
     let names = if reverse { ["q", "n"] } else { ["n", "q"] };
     let m = answer(j, "m");
     assert_eq!(
@@ -9879,7 +9879,7 @@ fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_ke
     let plan = value(j, get(get(answer(j, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).is_empty());
     if code == 1 {
-        let evidence = arr(get(m, evidence_key))
+        let evidence = arr(get(m, "evidence"))
             .iter()
             .find(|reference| {
                 let evidence = value(j, reference);
@@ -9933,7 +9933,7 @@ fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
                 let result = evaluate_observed(prepared, &mut control).unwrap();
                 assert_eq!(result.status(), "complete", "{name}/{integer}/{reverse}");
                 let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-                assert_mixed_constant_result(&j, reverse, code, "evidence");
+                assert_mixed_constant_result(&j, reverse, code);
             }
         }
     }

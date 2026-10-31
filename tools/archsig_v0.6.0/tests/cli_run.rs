@@ -324,8 +324,9 @@ fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
     .into_iter()
     .enumerate()
     {
+        // 予算を実際の計測につなぐのは main なので、実バイナリで確かめる。
         let dir = inputs(&format!("large-budget-{index}"), Some("2"), L);
-        let r = run(
+        let r = run_binary(
             &dir,
             &[
                 "run",
