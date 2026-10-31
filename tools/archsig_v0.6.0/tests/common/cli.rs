@@ -96,12 +96,20 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
     };
     let (io, signals) = (&mut FileIo, &mut NoSignal);
     let outcome = match parse_args(&words) {
-        Ok(Command::Check(check)) => {
-            run_check(io, signals, &check, started, &mut control(Limits::default()))
-        }
-        Ok(Command::Run(request)) => {
-            run_requests(io, signals, &request, started, &mut control(request.limits()))
-        }
+        Ok(Command::Check(check)) => run_check(
+            io,
+            signals,
+            &check,
+            started,
+            &mut control(Limits::default()),
+        ),
+        Ok(Command::Run(request)) => run_requests(
+            io,
+            signals,
+            &request,
+            started,
+            &mut control(request.limits()),
+        ),
         Ok(Command::Version) => panic!("version は run_binary で確かめる"),
         Err(error) => usage_outcome(io, signals, error, started),
     };
