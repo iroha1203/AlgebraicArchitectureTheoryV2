@@ -2,7 +2,7 @@
 
 use crate::canonical::Json;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 
 /// Law の型。`Owned` は依存参照 `E[p]` で、宣言 metadata だけで保持する。
 /// 式の型では `erase` で `Ref` へ落とす。
@@ -326,7 +326,7 @@ impl PartialEq for Type {
 mod controlled_tests {
     use super::*;
     use crate::issue::Issue;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

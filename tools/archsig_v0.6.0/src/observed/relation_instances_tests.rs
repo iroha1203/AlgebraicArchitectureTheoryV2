@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Resource, Usage},
     input::{InputSources, check_inputs},
 };

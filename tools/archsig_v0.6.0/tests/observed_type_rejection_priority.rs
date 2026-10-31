@@ -3,13 +3,11 @@
 mod positions;
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
     definition::check_definitions,
+    input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
     law::check_law,
-    observed::{
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::{InputFailure, InputSources, InputStatus, check_inputs},
-    },
     result::{ResultIssue, Signal},
 };
 use std::{cell::Cell, rc::Rc};

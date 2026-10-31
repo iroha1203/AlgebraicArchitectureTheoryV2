@@ -1,10 +1,9 @@
 //! 対象から生成した参照域を、同じ型付き評価・再検査の環境へ渡す。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
-    result::*,
-    *,
 };
+use super::{result::*, *};
 use crate::{
     construction::{
         ConstructionFailure, FactPointer,
@@ -365,7 +364,7 @@ mod tests {
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
     fn quiet() -> Control {
-        Control::new(control::Limits::default(), |_| control::Usage::default())
+        Control::new(crate::control::Limits::default(), |_| crate::control::Usage::default())
     }
     fn example(object: &str) -> ObservedEvaluation {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
@@ -374,8 +373,8 @@ mod tests {
         let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
         let digest = &defs.vocabularies["Instances"].digest;
         let inputs = Arc::new(
-            input::check_inputs(
-                input::InputSources::from_bytes(
+            crate::input::check_inputs(
+                crate::input::InputSources::from_bytes(
                     vec![d.to_vec()],
                     l.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                     a.replace("@INSTANCES_DIGEST@", digest).into_bytes(),

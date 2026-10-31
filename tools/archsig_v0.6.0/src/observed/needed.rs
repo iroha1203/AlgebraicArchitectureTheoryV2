@@ -1,6 +1,6 @@
 //! 現在の検査済み回答から、未観測位置とその他の理由を収集する。
+use crate::control::{Checkpoint, Control, StopReason};
 use super::{
-    control::{Checkpoint, Control, StopReason},
     environment::Environment,
     request::{QuestionKind, Request, Selector},
     result::{
@@ -332,7 +332,10 @@ pub(super) fn evaluate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{ObservedEvaluation, evaluate_observed_bytes, input::InputSources};
+    use crate::{
+        input::InputSources,
+        observed::{ObservedEvaluation, evaluate_observed_bytes},
+    };
     fn example() -> ObservedEvaluation {
         let map=include_str!("../../tests/fixtures/counter.archmap.json").replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}","");
         evaluate_observed_bytes(

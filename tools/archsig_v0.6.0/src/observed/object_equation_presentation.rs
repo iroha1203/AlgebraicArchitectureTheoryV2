@@ -1,8 +1,10 @@
 //! 選択対象の元Law導出から、原始slotを共有する型別K[X]とrequired idealを作る。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
-    equation_polynomial::{EquationPolynomial, invalid, tick},
     input::CheckedInputs,
+};
+use super::{
+    equation_polynomial::{EquationPolynomial, invalid, tick},
     numeric,
     numeric_transport::NumericTransportValue,
     object_evaluate::ObjectEvaluationOutcome,
@@ -1499,7 +1501,7 @@ pub fn object_equation_presentation(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
 
     fn inputs() -> Arc<CheckedInputs> {
         inputs_with("law required amount(c:Part):c.quantity+1=0;")

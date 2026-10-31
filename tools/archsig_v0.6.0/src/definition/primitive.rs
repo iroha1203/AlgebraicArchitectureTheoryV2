@@ -2,7 +2,7 @@
 //! 原始署名・Type・実入力位置から直接検査し、解決した構造を同じ表へ保持する。
 use super::*;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use crate::{prime::is_prime_controlled, types::Type};
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet};

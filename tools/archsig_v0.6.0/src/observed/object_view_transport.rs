@@ -1,9 +1,10 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
-use super::{
+use crate::{
     control::{Checkpoint, Control, StopReason},
-    data, finite,
     input::CheckedInputs,
-    numeric,
+};
+use super::{
+    data, finite, numeric,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -950,7 +951,7 @@ mod tests {
         construct,
         maps::{correspondence, declaration_correspondence},
     };
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     fn example() -> (Arc<CheckedInputs>, ObjectViewTransport) {
         example_named("Before.amount")
     }

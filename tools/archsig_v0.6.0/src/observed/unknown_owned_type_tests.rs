@@ -274,7 +274,7 @@ fn stop(stage: &'static str, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            super::super::super::control::Usage::default()
+            crate::control::Usage::default()
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut c).unwrap();

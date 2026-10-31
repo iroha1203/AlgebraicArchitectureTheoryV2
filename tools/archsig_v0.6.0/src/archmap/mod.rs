@@ -35,7 +35,7 @@ use crate::canonical::{Json, sha256_digest};
 use crate::definition::model::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Details, Issue, Location};
 use crate::json::InputError;
-use crate::observed::control::{CheckFailure, Checkpoint, Control};
+use crate::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 pub use canonical::model_json;
 pub use model::{
@@ -124,7 +124,7 @@ fn check_archmap_inner<E: InputError>(
 #[cfg(test)]
 mod entry_control_tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

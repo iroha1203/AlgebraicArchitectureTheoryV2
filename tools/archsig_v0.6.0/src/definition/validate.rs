@@ -1,7 +1,7 @@
 //! Atom 定義の登録済み namespace・dependency・原始型の静的検査。
 use super::*;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use std::collections::BTreeSet;
 
 pub(super) fn check<E: InputError>(

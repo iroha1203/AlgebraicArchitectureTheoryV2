@@ -1,14 +1,17 @@
 //! 型別の共有表示を、共通Uとroot存在Atom上のblock座標へ配置する。
 use super::{
-    construction_result::{self as native, ConstructionData as D, ConstructionType as T},
-    control::{Checkpoint, Control},
+    construction_result as native,
+    construction_result::{ConstructionData as D, ConstructionType as T},
     environment::Environment,
     finite_law_diagram,
-    input::CheckedInputs,
     law_table::Table,
     object_equation_presentation::{EquationGuard, EquationPresentationStatus},
     polynomial_law_diagram::{Coordinate as SourceCoordinate, Unavailable},
     result::*,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -3,12 +3,10 @@
 mod fixture;
 use archsig::{
     canonical::Json,
+    control::{Control, Limits, Usage},
     definition::check_definitions,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -265,7 +263,7 @@ fn finite_term_provenance_pair_keeps_mathematical_values_and_current_sources() {
         "c=check(Terms.different,s=@v/s)",
     ];
     let src = sources("r1");
-    let before = archsig::observed::input::check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
     let a = evaluate_observed_bytes(src, &asks, &mut quiet()).unwrap();
     let b = evaluate_observed_bytes(sources("r2"), &asks, &mut quiet()).unwrap();
     let (aw, bw) = (a.wire(), b.wire());
@@ -338,7 +336,7 @@ fn finite_term_missing_function_keeps_its_original_slot_and_inputs() {
         good.law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let before = archsig::observed::input::check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
     let field = before.archmap().snapshots()[0].subjects[0]
         .fields
         .iter()

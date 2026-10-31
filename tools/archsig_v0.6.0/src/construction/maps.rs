@@ -888,7 +888,7 @@ fn typed_reference_constraints_violation(
                     value: Json::Arr(rows),
                 });
             }
-            use crate::observed::control::CheckFailure;
+            use crate::control::CheckFailure;
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
@@ -1355,7 +1355,7 @@ pub fn correspondence_retained(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     #[test]
     fn reference_projection_checks_map_image_collisions_and_shared_unknown_leaves() {
         let reference = |id: &str| Value::Ref {

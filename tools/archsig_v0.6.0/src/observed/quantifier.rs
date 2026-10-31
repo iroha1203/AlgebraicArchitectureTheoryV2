@@ -1,6 +1,6 @@
 //! 明示In/有限型量化の静的出現と、未知を補わない有限Bool集約。
+use crate::control::{Checkpoint, Control};
 use super::{
-    control::{Checkpoint, Control},
     data, finite,
     result::{Quantifier, ValidationFailure},
 };

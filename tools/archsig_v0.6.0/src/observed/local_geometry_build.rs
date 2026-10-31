@@ -104,7 +104,7 @@ fn state(
     let mut slot_values = vec![];
     let mut slot_subjects = vec![];
     for position in positions {
-        c.checkpoint(super::super::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let subject = env.subject(&position.snapshot, &position.subject)?;
         let reference = change_result::value(
             b,
@@ -281,7 +281,7 @@ pub(super) fn build(
     let mut context_index = 0;
     while context_index < supports.len() {
         let support = &supports[context_index];
-        c.checkpoint(super::super::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut selected = vec![];
         for (i, required) in law_supports.iter().enumerate() {
             if if let Some(info) = information {
@@ -327,7 +327,7 @@ pub(super) fn build(
             .collect::<Vec<_>>();
         let mut selected_projections: Vec<&Projection> = vec![];
         for (i, p) in projections.iter().enumerate() {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if !support.contains(&p.support)
                 || !mixed_read::contains(&linear_reads[context_index], &information.map(|x| x.reading(None, &p.support.visible, c)).transpose()?, c)?
                 || visible
@@ -382,7 +382,7 @@ pub(super) fn build(
         states.push(state);
         // 完成したcontextを先に保持し、引戻し閉包を一つずつ拡張する。
         for j in 0..context_index {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let intersection = supports[context_index].intersect(&supports[j]);
             let read = mixed_read::intersect(&linear_reads[context_index], &linear_reads[j], c)?;
             if mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.is_none() {
@@ -402,7 +402,7 @@ pub(super) fn build(
     let mut integer_projections = BTreeMap::new();
     for (v, small) in supports.iter().enumerate() {
         for (w, big) in supports.iter().enumerate() {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if !big.contains(small) || !mixed_read::contains(&linear_reads[w], &linear_reads[v], c)? {
                 continue;
             }
@@ -482,7 +482,7 @@ pub(super) fn build(
     let mut overlaps = vec![];
     for &left in &patch_indices {
         for &right in &patch_indices {
-            c.checkpoint(super::super::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let intersection = supports[left].intersect(&supports[right]);
             let read = mixed_read::intersect(&linear_reads[left], &linear_reads[right], c)?;
             let i = mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.ok_or("交わりcontextがない")?;

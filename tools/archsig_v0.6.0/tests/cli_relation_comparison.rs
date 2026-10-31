@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 fn files(name: &str, script: &str, missing: bool) -> PathBuf {
     input_files(name, fixture::input(script, missing))
 }
-fn input_files(name: &str, input: archsig::observed::input::InputSources) -> PathBuf {
+fn input_files(name: &str, input: archsig::input::InputSources) -> PathBuf {
     let dir = workdir(name);
     std::fs::write(dir.join("d.json"), input.definitions()[0].bytes()).unwrap();
     std::fs::write(dir.join("l.law"), input.law().bytes()).unwrap();

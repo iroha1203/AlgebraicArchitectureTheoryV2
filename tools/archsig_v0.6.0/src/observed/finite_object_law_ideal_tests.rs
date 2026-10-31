@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::control::{Limits, Usage},
+    control::{Limits, Usage},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -593,7 +593,7 @@ fn interruptions_and_budgets_never_return_unfinished_ideals_or_generator_lists()
 
 #[test]
 fn the_result_only_derived_role_is_not_added_to_authored_law_declarations() {
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     let i = fixture::with_body(fixture::MAP, LAWS);
     let original = i.sources();
     let law = String::from_utf8(original.law().bytes().to_vec())

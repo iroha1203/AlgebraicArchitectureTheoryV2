@@ -1,12 +1,11 @@
 //! AC1 の byte → 型付き回答。期待値は I/O の最小の一周と結果 §§1–3,6 による。
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions,
+    input::{InputSources, check_inputs},
     observed::{
-        EvaluationFailure, PrepareFailure,
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed, evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
+        EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes,
         prepare_checked_observed,
     },
     result::Signal,

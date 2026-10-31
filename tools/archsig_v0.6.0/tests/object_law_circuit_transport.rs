@@ -9,10 +9,8 @@ use archsig::{
         },
         readings::object_reading_instances,
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
 };
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
@@ -342,7 +340,7 @@ fn changed_current_inputs_reject_previous_transport() {
 #[test]
 fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_frozen_probes() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -462,7 +460,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
 }
 #[test]
 fn source_or_target_circuit_failure_keeps_completed_other_side_and_original_operation() {
-    use archsig::{observed::control::Checkpoint as C, result::Signal};
+    use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = ground("2=0", "3=0");
     let d = declarations(&i);
@@ -764,7 +762,7 @@ fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence(
 #[test]
 fn side_construction_stops_retain_the_already_refuted_original_condition() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};

@@ -6,7 +6,7 @@
 
 use super::*;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 
 pub(crate) struct FieldAssignment {
     pub snapshot: String,

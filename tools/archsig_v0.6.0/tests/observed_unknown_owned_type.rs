@@ -1,10 +1,8 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 #[path = "common/unknown_owned_type.rs"]
 #[allow(dead_code)]
@@ -33,7 +31,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let c = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+    let c = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
     let r = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert_eq!(r.prepared().inputs().definitions(), c.definitions());
@@ -384,7 +382,7 @@ fn owned_map_type_provenance_pair_keeps_math_and_current_three_inputs() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("plain", revision);
-        let c = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let c = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
         assert_eq!(c.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.typeEvery,a=@v/A,b=@v/A)"]);
         established(&w, "x", true);

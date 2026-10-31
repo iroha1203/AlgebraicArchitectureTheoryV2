@@ -2,14 +2,21 @@
 mod common;
 
 use archsig::{
+
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
+
+    input::InputSources,
+
     observed::{
-        PrepareFailure,
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::InputSources,
-        prepare_observed,
+
+        PrepareFailure, prepare_observed,
+
         request::{RequestIssueCode, ResolveFailure, Selector},
+
     },
+
     result::Signal,
+
 };
 use std::{cell::Cell, rc::Rc};
 

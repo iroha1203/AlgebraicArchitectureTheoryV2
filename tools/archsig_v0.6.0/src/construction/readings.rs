@@ -1,7 +1,7 @@
 //! 標準対象域に適用されるLaw/viewの参照束縛と、未代入の全域値parameter。
 use super::*;
 use crate::law::model::{DeclarationInfo, Param, Signature};
-use crate::observed::input::InputBytes;
+use crate::input::InputBytes;
 pub use crate::observed::object_evaluate::{
     ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome, evaluate_object_instance,
 };
@@ -507,8 +507,8 @@ mod tests {
         let a = include_str!("../../tests/fixtures/object-instances.archmap.json");
         let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
         let digest = &definitions.vocabularies["Instances"].digest;
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],
                 l.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                 a.replace("@INSTANCES_DIGEST@", digest).into_bytes(),

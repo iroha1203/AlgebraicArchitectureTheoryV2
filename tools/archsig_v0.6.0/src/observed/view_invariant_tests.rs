@@ -1,9 +1,8 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
     input::InputSources,
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::sync::Arc;
 const DEFINITION: &[u8] = include_bytes!("../../tests/fixtures/configuration-profile.atoms.json");
@@ -19,7 +18,7 @@ fn prepared_with_definition(law: &str, map: &str, definition: &[u8]) -> Prepared
     let definitions = crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
     let digest = &definitions.vocabularies["Profile"].digest;
     let inputs = Arc::new(
-        crate::observed::input::check_inputs(
+        crate::input::check_inputs(
             InputSources::from_bytes(
                 vec![definition.to_vec()],
                 law.replace("@PROFILE_DIGEST@", digest).into_bytes(),
@@ -671,7 +670,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
         1,
     );
     let inputs = Arc::new(
-        crate::observed::input::check_inputs(
+        crate::input::check_inputs(
             InputSources::from_bytes(
                 vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
                 expand(&law),

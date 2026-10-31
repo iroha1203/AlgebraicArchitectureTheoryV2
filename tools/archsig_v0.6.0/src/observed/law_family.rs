@@ -1,12 +1,12 @@
 //! 元の有限parameter域と全行の実評価から、Law族の判断を保持する。
 use super::{
     construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness},
-    control::{Checkpoint, Control},
     environment::Environment,
     law_evaluation as frames,
     polynomial_law_diagram::FamilyInputs,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug, PartialEq, Eq)]

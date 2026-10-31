@@ -1,16 +1,17 @@
 //! 元Law表の適用条件付き評価を、全対象の述語不変量へ接続する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
     law_evaluation as frames,
     law_table::Table,
     object_component_diagram::Diagram as Objects,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::sync::Arc;
 fn saved_context(g: &Graph, r: NodeRef) -> Result<super::call::Context, ValidationFailure> {

@@ -1,13 +1,16 @@
 //! 標準対象族のidentityと部分構成を、元Architectureに由来するDAGへ保持する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::Environment,
-    input::CheckedInputs,
     result::*,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use crate::{
     canonical::Json,
@@ -525,13 +528,13 @@ fn plan(
     )))
 }
 fn primitive(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
-    ty.erase_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+    ty.erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
         c,
         Checkpoint::ObjectInstances,
     )
     .map_err(|e| match e {
-        super::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-        super::control::CheckFailure::Input(_) => "対象読取りの原始型がない".into(),
+        crate::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
+        crate::control::CheckFailure::Input(_) => "対象読取りの原始型がない".into(),
     })
 }
 fn reading_plan(

@@ -403,8 +403,8 @@ impl ObservedEvaluation {
                     value,
                     &self.nodes[..reference.0],
                     &node.arguments,
-                    &super::control::Control::new(super::control::Limits::default(), |_| {
-                        super::control::Usage::default()
+                    &crate::control::Control::new(crate::control::Limits::default(), |_| {
+                        crate::control::Usage::default()
                     }),
                 )
                 .expect("挿入時に検査した値の既出 Ref 表示"),

@@ -1,7 +1,10 @@
 //! 元readingのrelation instanceと、語を保った全域作用の検査。
 use super::*;
 use crate::law::model::{Declaration, Param, Signature};
-use crate::observed::{affine, input::InputSources, path_value::PathValue};
+use crate::{
+    input::InputSources,
+    observed::{affine, path_value::PathValue},
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum RelationState {

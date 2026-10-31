@@ -137,7 +137,7 @@ fn analyze(
             let mut next = vec![];
             for row in rows {
                 for value in &values {
-                    c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                    c.checkpoint(crate::control::Checkpoint::Localize)?;
                     let mut r = row.clone();
                     r.push((p.name.clone(), value.clone()));
                     next.push(r);
@@ -297,7 +297,7 @@ fn fibers(
     let mut semantic = vec![];
     for (support, reading) in supports.iter().zip(readings) {
         c.clone()
-            .checkpoint(super::super::control::Checkpoint::Localize)?;
+            .checkpoint(crate::control::Checkpoint::Localize)?;
         let positions = model
             .action
             .slots
@@ -766,7 +766,7 @@ pub(super) fn compute(
         let mut i = 0;
         while i < supports.len() {
             for j in 0..i {
-                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let support = supports[i].intersect(&supports[j]);
                 let reading = readings[i].intersect(&readings[j], c)?;
                 let mut found = false;
@@ -922,7 +922,7 @@ pub(super) fn compute(
         let mut coefficient_values = vec![];
         for v in 0..supports.len() {
             for w in 0..supports.len() {
-                c.checkpoint(super::super::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if !supports[w].contains(&supports[v]) || !readings[w].contains(&readings[v], c)? {
                     continue;
                 }

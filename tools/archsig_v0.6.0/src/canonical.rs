@@ -1,7 +1,7 @@
 //! canonical JSON(入力仕様 §4)と SHA-256 digest。
 
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
@@ -179,7 +179,7 @@ impl PartialEq for Json {
 mod controlled_tests {
     use super::*;
     use crate::issue::Issue;
-    use crate::observed::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

@@ -16,13 +16,13 @@ impl Builder<'_> {
             .law()
             .expr_type(expression)
             .ok_or("多項式operandの元型がない")?
-            .erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(
+            .erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
                 self.control,
                 Checkpoint::EquationPresentation,
             )
             .map_err(|e| match e {
-                super::super::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-                super::super::control::CheckFailure::Input(_) => {
+                crate::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
+                crate::control::CheckFailure::Input(_) => {
                     "多項式operandの原始型がない".into()
                 }
             })
@@ -224,13 +224,13 @@ impl Builder<'_> {
     }
 }
 fn erased(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
-    ty.erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(
+    ty.erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
         c,
         Checkpoint::EquationPresentation,
     )
     .map_err(|e| match e {
-        super::super::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-        super::super::control::CheckFailure::Input(_) => "多項式Lawの元parameter型がない".into(),
+        crate::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
+        crate::control::CheckFailure::Input(_) => "多項式Lawの元parameter型がない".into(),
     })
 }
 fn original(

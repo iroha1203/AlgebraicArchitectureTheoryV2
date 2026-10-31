@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Limits, Usage};
+use crate::control::{Limits, Usage};
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }

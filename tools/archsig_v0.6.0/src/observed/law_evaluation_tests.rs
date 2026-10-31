@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -110,7 +109,7 @@ fn native_polynomial_law_rows_use_the_regular_evaluator_and_each_object_environm
 mod finite_fixture {
     include!("../../tests/common/finite_law_family_data.rs");
 }
-fn inputs_prepared(inputs: Arc<crate::observed::input::CheckedInputs>) -> PreparedObserved {
+fn inputs_prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
         inputs.law(),
         inputs.archmap(),

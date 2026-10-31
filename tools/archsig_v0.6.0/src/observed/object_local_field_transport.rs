@@ -15,7 +15,7 @@ pub(super) struct Comparison {
 pub(super) fn compare_expression(
     b: &mut Builder<'_>,
     env: &Environment<'_>,
-    inputs: &super::super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declarations: [&Declaration; 2],
     correspondence: &construction::DeclarationCorrespondence,
     maps: &[LocalParameter],

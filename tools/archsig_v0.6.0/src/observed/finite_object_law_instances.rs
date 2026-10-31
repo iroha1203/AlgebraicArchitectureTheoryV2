@@ -2,8 +2,8 @@
 use super::*;
 use crate::{
     construction::readings::{InstanceApplication, ObjectInstance},
+    input::InputSources,
     law::{ast::QuantKind, model::Param},
-    observed::input::InputSources,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]

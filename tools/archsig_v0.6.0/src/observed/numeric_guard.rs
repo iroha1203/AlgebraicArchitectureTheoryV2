@@ -34,7 +34,7 @@ fn constant_forms(
     for form in forms {
         control
             .clone()
-            .checkpoint(crate::observed::control::Checkpoint::ObjectLawFamily)?;
+            .checkpoint(crate::control::Checkpoint::ObjectLawFamily)?;
         match form.value(control)? {
             Some(value) if value != numeric::zero(&value.ty(), control)? => return Ok(Some(false)),
             Some(_) => (),

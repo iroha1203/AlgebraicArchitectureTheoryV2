@@ -1,10 +1,8 @@
 use archsig::{
     archmap::{Slot, Value},
     construction::{ConstructionFailure, FactPointer, construct},
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};

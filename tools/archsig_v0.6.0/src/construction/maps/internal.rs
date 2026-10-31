@@ -478,7 +478,7 @@ pub fn internal_arrows(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     fn inputs() -> CheckedInputs {
         let d = include_bytes!("../../../tests/fixtures/internal-arrow.atoms.json");
         let checked = crate::definition::check_definitions(&[("definition0", d)]).unwrap();

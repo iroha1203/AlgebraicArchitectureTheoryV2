@@ -1,8 +1,8 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
-    evaluate::evaluate_observed_bytes,
     input::InputSources,
+    observed::evaluate::evaluate_observed_bytes,
 };
 mod fixture {
     include!("../../tests/common/object_view_compatibility_data.rs");
@@ -263,7 +263,7 @@ fn finite_owner_completion_same_assignment_does_not_determine_configuration() {
             "\"atoms\":[{{\"id\":\"oq\",\"subject\":\"q\",\"field\":\"Pattern.External.owner\",\"value\":[\"v\",\"{owner}\"],\"origin\":\"o\"}},"
         ));
         assert_ne!(map, original);
-        let inputs = crate::observed::input::check_inputs(
+        let inputs = crate::input::check_inputs(
             InputSources::from_bytes(
                 sources
                     .definitions()
@@ -374,7 +374,7 @@ fn finite_owner_completion_constructs_single_root_repair_without_observing_owner
             r#""subjects":["#,
             r#""subjects":[{"id":"other","type":"Pattern.Root","origin":"o"},"#,
         );
-    let changed = crate::observed::input::check_inputs(
+    let changed = crate::input::check_inputs(
         InputSources::from_bytes(
             sources
                 .definitions()

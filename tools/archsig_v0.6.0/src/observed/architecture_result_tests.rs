@@ -1,9 +1,8 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
     input::{InputSources, check_inputs},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]

@@ -254,8 +254,8 @@ mod tests {
         let d = include_bytes!("../../../tests/fixtures/cross-kind-transport.atoms.json");
         let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
         let digest = &defs.vocabularies["V"].digest;
-        let i = crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        let i = crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],
                 include_str!("../../../tests/fixtures/cross-kind-transport.law")
                     .replace("@DIGEST@", digest)

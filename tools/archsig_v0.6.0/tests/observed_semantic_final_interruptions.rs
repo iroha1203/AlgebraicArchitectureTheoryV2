@@ -1,9 +1,8 @@
 //! 小さい意味検査の成功・既知不正・表示の末尾へ共有制御が届くことを確認する。
-use archsig::observed::{
-    PrepareFailure,
+use archsig::{
     control::{Checkpoint, Control, Limits, StopReason, Usage},
     input::{InputSources, InputStatus, check_inputs},
-    prepare_observed,
+    observed::{PrepareFailure, prepare_observed},
 };
 use archsig::result::Signal;
 use std::{cell::Cell, rc::Rc};

@@ -418,7 +418,7 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
 }
 
 fn owned_private_phase_stop(phase: &'static str, kind: usize) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; {OWNED_VIEW} law required walk(a:System):forall s in State[a] . s.held>=0;"
@@ -612,7 +612,7 @@ fn owned_expression_family_post_validation_cancel_preserves_verified_current_set
 
 #[test]
 fn owned_expression_family_recheck_stops_and_success_memo_are_session_local() {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let result = owned_private_example(
         OWNED_VIEW,

@@ -3,10 +3,8 @@ use archsig::{
         LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
         ObjectLawCompatibility, object_law_compatibility,
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
 };
 use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]

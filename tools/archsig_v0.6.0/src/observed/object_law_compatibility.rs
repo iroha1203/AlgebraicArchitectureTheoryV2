@@ -1,8 +1,10 @@
 //! 同じ完全query pattern上のLaw適用条件と述語を、元評価の全代入で照合する。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
-    data,
     input::CheckedInputs,
+};
+use super::{
+    data,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -732,10 +734,10 @@ fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
-        result::Scalar,
+        observed::result::Scalar,
     };
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};

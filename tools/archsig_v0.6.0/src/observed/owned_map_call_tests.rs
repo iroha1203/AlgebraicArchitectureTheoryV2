@@ -373,9 +373,9 @@ fn owned_map_original_domain_roster_recheck_stop_keeps_verified_outputs_and_pref
 
 #[test]
 fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
-    let input = crate::observed::input::check_inputs(
+    let input = crate::input::check_inputs(
         owned_map_fixture::input("missing", "r1"),
         &mut named_call_quiet(),
     )

@@ -1,6 +1,6 @@
 // relationの観測・定義・元式。期待値は各試験が独立に記述する。
 use archsig as fixture_archsig;
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 mod base {
     use super::fixture_archsig as archsig;
     include!("public_path_compose.rs");

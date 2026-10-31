@@ -1,6 +1,6 @@
 //! 共通原始定義。意味・依存・入力位置を Law の構文木から独立して保持する。
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, types::Type};
 use std::collections::BTreeMap;
 
@@ -266,7 +266,7 @@ pub struct DataProperties {
 #[cfg(test)]
 mod field_control_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type Failure = CheckFailure<Box<crate::issue::Issue>>;

@@ -31,7 +31,7 @@ impl<'a> Renaming<'a> {
             .iter()
             .zip(op.map().candidate().images())
         {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let key = (
                 source.snapshot.clone(),
                 source.subject.clone(),
@@ -141,12 +141,12 @@ impl<'a> Renaming<'a> {
                 // Operation の全域作用と Path の全域作用の可換性。
                 // 対象外の位置を根へ送る作用も保持する。
                 for (source, image) in a.carrier.iter().zip(&a.images) {
-                    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                    c.checkpoint(crate::control::Checkpoint::Localize)?;
                     let Some(mapped_source) = self.image(source) else { return Ok(false); };
                     let Some(mapped_image) = self.image(image) else { return Ok(false); };
                     let mut target_image = None;
                     for (point, value) in b.carrier.iter().zip(&b.images) {
-                        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                        c.checkpoint(crate::control::Checkpoint::Localize)?;
                         if point.snapshot == mapped_source.snapshot && point.subject == mapped_source.subject
                             && point.field == mapped_source.field {
                             if target_image.is_some() { return Ok(false); }
@@ -189,7 +189,7 @@ impl<'a> Renaming<'a> {
         Some(Json::Obj(fields))
     }
     pub(in crate::observed::local_result) fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             if a.ty() != b.ty() { return Ok(false); }
             Ok(match (a, b) {
@@ -322,7 +322,7 @@ fn levels(
     let mut tuples = d.patches.iter().map(|i| vec![*i]).collect::<Vec<_>>();
     let mut levels = vec![];
     for k in 0..count {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut contexts = vec![];
         let mut offsets = vec![];
         let mut rank = 0;
@@ -339,7 +339,7 @@ fn levels(
         if k + 1 < count {
             for tuple in &tuples {
                 for p in &d.patches {
-                    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                    c.checkpoint(crate::control::Checkpoint::Localize)?;
                     let mut v = tuple.clone();
                     v.push(*p);
                     next.push(v);
@@ -367,7 +367,7 @@ fn cochains(
     for (a, b) in a.iter().zip(b) {
         let mut map = vec![vec![Z::zero(); a.rank]; b.rank];
         for (i, tuple) in a.tuples.iter().enumerate() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let image = tuple.iter().map(|p| contexts[*p]).collect::<Vec<_>>();
             let j = b
                 .tuples
@@ -431,7 +431,7 @@ pub(in crate::observed::local_result) fn between(
     for (name, bindings) in &a.requirements {
         let mut matches = vec![];
         for (i,(n,bs)) in b.requirements.iter().enumerate() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if n != name || bs.len() != bindings.len() { continue; }
             let mut equal = true;
             for ((n,x),(m,y)) in bindings.iter().zip(bs) {
@@ -499,7 +499,7 @@ pub(in crate::observed::local_result) fn between(
             .ok_or("局所Lawの元がない")?;
         let mut matches = vec![];
         for (j, target) in b.contexts.iter().enumerate() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let Some(Json::Arr(other)) = record(g, *target)?.get("carrier") else {
                 return Err("contextのcarrierがない".into());
             };
@@ -586,7 +586,7 @@ pub(in crate::observed::local_result) fn between(
     }
     for i in 0..context_map.len() {
         for j in 0..context_map.len() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if context_map[a.intersections[i][j]] != b.intersections[context_map[i]][context_map[j]]
             {
                 return Ok(None);
@@ -634,7 +634,7 @@ pub(in crate::observed::local_result) fn between(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     #[test]
     fn compound_bindings_preserve_structure_and_actual_images() {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};

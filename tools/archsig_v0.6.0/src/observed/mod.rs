@@ -5,7 +5,6 @@ mod architecture_result;
 mod call;
 mod circuit_pattern;
 pub(crate) mod construction_result;
-pub mod control;
 mod data;
 mod environment;
 mod equation_family;
@@ -60,13 +59,12 @@ pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 #[cfg(test)]
 pub(crate) use evaluate::evaluate_observed_with_rejected_answer;
 pub use result::{EvaluationFailure, ObservedEvaluation};
-pub mod input;
 pub mod projection;
 pub mod request;
 
 use crate::canonical::Json;
-use control::Control;
-use input::{CheckedInputs, InputFailure, InputSources, check_inputs};
+use crate::control::Control;
+use crate::input::{CheckedInputs, InputFailure, InputSources, check_inputs};
 use request::{ResolveFailure, ResolvedRequests, resolve_observed_requests_controlled};
 use std::sync::Arc;
 
@@ -240,9 +238,9 @@ impl DeterminedOwners {
 }
 /// 返す値は観測Atomでも候補による更新でもない。
 pub(crate) fn determined_owners(
-    inputs: &input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     fields: &[result::Fact],
-    control: &mut control::Control,
+    control: &mut crate::control::Control,
 ) -> Result<Option<DeterminedOwners>, crate::construction::ConstructionFailure> {
     use crate::construction::ConstructionFailure;
     use result::{Scalar, ValidationFailure};
@@ -288,7 +286,7 @@ pub(crate) fn determined_owners(
     }
     let mut owners = Vec::new();
     for (field, value) in fields.iter().zip(values) {
-        control.checkpoint(control::Checkpoint::Completion)?;
+        control.checkpoint(crate::control::Checkpoint::Completion)?;
         let Scalar::Subject {
             snapshot, subject, ..
         } = &value

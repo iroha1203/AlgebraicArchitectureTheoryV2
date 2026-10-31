@@ -2,11 +2,10 @@
 use archsig::{
     archmap::{Slot, Value},
     canonical::{Json, sha256_digest},
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{InputSources, check_inputs},
     observed::{
-        EvaluationFailure, PrepareFailure,
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
+        EvaluationFailure, PrepareFailure, evaluate_observed_bytes,
         request::{RequestIssueCode, ResolveFailure},
     },
 };

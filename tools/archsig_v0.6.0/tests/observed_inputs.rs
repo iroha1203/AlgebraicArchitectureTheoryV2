@@ -1,15 +1,21 @@
 //! 三入力の接続・identity・段階ごとの宣言保持・協調中断の回帰確認。
 
 use archsig::{
+
     archmap::check_archmap,
+
     canonical::{Json, sha256_digest},
+
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+
     definition::check_definitions,
+
+    input::{CheckedInputs, InputBytes, InputSources, InputStatus, check_inputs},
+
     law::check_law,
-    observed::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{CheckedInputs, InputBytes, InputSources, InputStatus, check_inputs},
-    },
+
     result::Signal,
+
 };
 use std::{cell::Cell, rc::Rc};
 

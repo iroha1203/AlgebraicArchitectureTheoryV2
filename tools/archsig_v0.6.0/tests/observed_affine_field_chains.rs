@@ -3,11 +3,9 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -219,7 +217,7 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
             &Json::Bool(true)
         );
         let inputs = fixture::input(fixture::SCRIPT, "Z", &[], revision);
-        let checked = archsig::observed::input::check_inputs(inputs, &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(inputs, &mut quiet()).unwrap();
         let map = checked.archmap();
         let subject = map
             .snapshots()

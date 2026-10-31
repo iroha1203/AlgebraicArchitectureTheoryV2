@@ -92,12 +92,12 @@ impl ProcessSignals {
     }
 
     fn usage_for_limits(
-        limits: archsig::observed::control::Limits,
+        limits: archsig::control::Limits,
         elapsed: impl FnOnce() -> u128,
         memory: impl FnOnce() -> u128,
         signal: impl FnOnce() -> Option<Signal>,
-    ) -> archsig::observed::control::Usage {
-        archsig::observed::control::Usage {
+    ) -> archsig::control::Usage {
+        archsig::control::Usage {
             elapsed_ms: if limits.time_ms.is_some() {
                 elapsed()
             } else {
@@ -115,9 +115,9 @@ impl ProcessSignals {
     fn control(
         &self,
         started: Instant,
-        limits: archsig::observed::control::Limits,
-    ) -> archsig::observed::control::Control {
-        use archsig::observed::control::Control;
+        limits: archsig::control::Limits,
+    ) -> archsig::control::Control {
+        use archsig::control::Control;
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
@@ -199,7 +199,7 @@ fn execute(
         Ok(Command::Version) => (None, VERSION_LINE),
         Ok(Command::Check(check)) => {
             let mut control =
-                signals.control(started, archsig::observed::control::Limits::default());
+                signals.control(started, archsig::control::Limits::default());
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 run_check(&mut io, &mut *signals, &check, started, &mut control)
             }));
@@ -238,11 +238,11 @@ mod test_watchdog;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use archsig::observed::control::{Checkpoint, StopReason};
+    use archsig::control::{Checkpoint, StopReason};
 
     #[test]
     fn resource_probes_follow_requested_limits_and_always_observe_signals() {
-        use archsig::observed::control::{Control, Limits, Resource};
+        use archsig::control::{Control, Limits, Resource};
         use std::{cell::RefCell, rc::Rc};
         for (time, memory) in [(false, false), (true, false), (false, true), (true, true)] {
             for signal in [None, Some(Signal::Int), Some(Signal::Term)] {
@@ -328,7 +328,7 @@ mod tests {
         let mut signals = ProcessSignals::new();
         let mut control = signals.control(
             Instant::now(),
-            archsig::observed::control::Limits::default(),
+            archsig::control::Limits::default(),
         );
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
@@ -363,7 +363,7 @@ mod tests {
             };
             let mut control = signals.control(
                 Instant::now(),
-                archsig::observed::control::Limits::default(),
+                archsig::control::Limits::default(),
             );
             assert_eq!(
                 control.checkpoint(Checkpoint::LawSemantics),

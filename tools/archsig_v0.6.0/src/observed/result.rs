@@ -1,9 +1,8 @@
 //! 評価内部の型付き DAG。JSON はこの不変データの表示に限定する。
 
-use super::{
-    PrepareFailure, PreparedObserved,
-    control::{Checkpoint, Control, StopReason},
-};
+use super::{PrepareFailure, PreparedObserved};
+
+use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
 #[path = "completion_graph.rs"]
@@ -1489,8 +1488,8 @@ impl Node {
                     value,
                     prior,
                     &self.arguments,
-                    &Control::new(super::control::Limits::default(), |_| {
-                        super::control::Usage::default()
+                    &Control::new(crate::control::Limits::default(), |_| {
+                        crate::control::Usage::default()
                     }),
                 )
                 .expect("挿入時に検査した値の既出 Ref 表示"),
@@ -4988,7 +4987,8 @@ mod invariant_tests {
 
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {
-        use super::super::{control::Resource, request::QuestionKind};
+        use crate::control::Resource;
+        use super::super::request::QuestionKind;
         use crate::result::Signal;
         let reason = |kind| Reason {
             kind,

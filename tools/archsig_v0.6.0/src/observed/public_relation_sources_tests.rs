@@ -1,7 +1,10 @@
 use super::*;
 use crate::law::model::Signature;
 use crate::observed::construction_result::Witness;
-use crate::observed::{call::Context, input::InputSources, public_compare::relation_sources};
+use crate::{
+    input::InputSources,
+    observed::{call::Context, public_compare::relation_sources},
+};
 #[allow(dead_code, unused_imports)]
 mod relation_fixture {
     use crate as archsig;

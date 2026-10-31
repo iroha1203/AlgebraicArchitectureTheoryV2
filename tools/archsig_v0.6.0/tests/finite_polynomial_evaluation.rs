@@ -9,10 +9,8 @@ use archsig::{
             finite_polynomial_evaluation,
         },
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::CheckedInputs,
-    },
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    input::CheckedInputs,
     result::Signal,
     types::Type,
 };

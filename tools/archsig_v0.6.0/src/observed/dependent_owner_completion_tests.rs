@@ -433,7 +433,7 @@ fn dependent_owner_completion_rejects_original_signature_parameter_type_and_orde
 }
 
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::observed::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, Some(true));
     let asks = [

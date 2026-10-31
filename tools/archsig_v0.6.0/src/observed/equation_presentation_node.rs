@@ -1,12 +1,13 @@
 //! 既存の有限/多項式表示を結ぶ、全支持ContextとEquationPresentationのpayload。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::sync::Arc;
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
@@ -250,7 +251,7 @@ impl Dependencies {
     /// 理由は元LawのExpressionに結び、転記中の追加nodeで計画をずらさない。
     pub fn missing_reasons(
         &self,
-        inputs: &super::input::CheckedInputs,
+        inputs: &crate::input::CheckedInputs,
         positions: &[Fact],
         expressions: &[NodeRef],
         request: &super::request::Request,
@@ -292,7 +293,7 @@ impl Dependencies {
     }
 }
 pub(super) fn dependencies(
-    inputs: &super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     positions: &[Fact],
     c: &mut Control,
     mut retain: impl FnMut(Scalar) -> Result<NodeRef, ValidationFailure>,

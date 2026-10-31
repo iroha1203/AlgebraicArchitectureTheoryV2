@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
     input::check_inputs,
 };
@@ -225,7 +225,7 @@ fn build_rejects_arrow_instances_as_roots() {
 
 #[test]
 fn reading_visibility_uses_transitive_imports_without_adding_other_registered_roots() {
-    use crate::observed::input::InputSources;
+    use crate::input::InputSources;
     let other = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Other","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Other.Root","meaning":"別の根。","parameters":[],"fields":[],"alignments":[]}]}]}"#;
     let o = crate::definition::check_definitions(&[("other", other.as_bytes())]).unwrap();
     let od = &o.vocabularies["Other"].digest;

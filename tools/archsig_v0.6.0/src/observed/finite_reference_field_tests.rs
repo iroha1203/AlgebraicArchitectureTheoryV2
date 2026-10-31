@@ -360,7 +360,7 @@ fn finite_reference_field_chain_prefix_original_source_edges_and_whole_count_are
 #[test]
 fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missing_identity() {
     use crate::archmap::{FieldAssignment, check_completion_with_values};
-    use crate::observed::control::CheckFailure;
+    use crate::control::CheckFailure;
     let r = example(0);
     let input = r.prepared.inputs();
     let pin = |field: &str, value: Json| FieldAssignment {
@@ -468,7 +468,7 @@ fn finite_reference_field_set_member_display_order_keeps_extensional_proof_and_o
     }
 }
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::observed::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(false, false, false);
     let asks = [

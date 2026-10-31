@@ -4,7 +4,7 @@
 use super::*;
 use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use std::collections::HashSet;
 #[path = "delta.rs"]
 mod delta;
@@ -613,7 +613,7 @@ fn read_location_inner<E: InputError>(
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;
@@ -721,7 +721,7 @@ mod interruption_tests {
 #[cfg(test)]
 mod required_identifier_priority_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;

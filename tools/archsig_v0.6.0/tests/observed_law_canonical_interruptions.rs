@@ -1,12 +1,9 @@
 use archsig::{
     canonical::{Json, sha256_digest},
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    input::{InputFailure, InputSources, InputStatus, check_inputs},
     law::{self, lexer},
-    observed::{
-        PrepareFailure,
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{InputFailure, InputSources, InputStatus, check_inputs},
-        prepare_observed,
-    },
+    observed::{PrepareFailure, prepare_observed},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

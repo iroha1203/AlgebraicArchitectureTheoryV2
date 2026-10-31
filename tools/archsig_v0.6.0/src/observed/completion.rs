@@ -1,7 +1,7 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
 use super::*;
 use crate::law::{ast::Role, model::Signature};
-use crate::observed::{control::CheckFailure, value_equality};
+use crate::{control::CheckFailure, observed::value_equality};
 
 #[derive(Clone)]
 pub(super) struct Seed {

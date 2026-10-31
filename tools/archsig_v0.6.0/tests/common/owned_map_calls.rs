@@ -6,8 +6,8 @@ mod base {
 }
 use archsig::{
     canonical::Json,
+    input::InputSources,
     json::{JNode, JValue, parse},
-    observed::input::InputSources,
 };
 pub const SCRIPT: &str = r#"
 view mcMissingZero(p:Reservations.State):Z=p.free-p.free;

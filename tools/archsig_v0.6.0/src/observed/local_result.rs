@@ -2,17 +2,17 @@
 use super::{
     PreparedObserved,
     build_result::{Builder, Part},
-    change_result,
+    change_result, construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::Control,
     environment::{AnswerBinding, Environment, change_search},
     projection::{ProjectionStep, ProjectionType},
     request::{QuestionKind, Request, Selector},
     result::*,
 };
+use crate::control::Control;
 use crate::{
     canonical::Json,
     issue::Location,
@@ -273,7 +273,7 @@ fn compute(
     base: usize,
     c: &mut Control,
 ) -> Result<Source, ValidationFailure> {
-    c.checkpoint(super::control::Checkpoint::Localize)?;
+    c.checkpoint(crate::control::Checkpoint::Localize)?;
     env.validation_graph_session(g, || {
         let target = reference(env, g, &request.head)?;
         let Some(Payload::Construction(original)) = &g.get(target)?.payload else {
@@ -397,7 +397,7 @@ fn compute(
                 let mut next = vec![];
                 for bindings in assignments {
                     for value in &values {
-                        c.checkpoint(super::control::Checkpoint::Localize)?;
+                        c.checkpoint(crate::control::Checkpoint::Localize)?;
                         let mut row = bindings.clone();
                         row.push((p.name.clone(), value.clone()));
                         next.push(row);

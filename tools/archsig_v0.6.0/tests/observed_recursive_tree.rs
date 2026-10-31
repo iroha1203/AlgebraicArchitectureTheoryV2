@@ -3,12 +3,10 @@
 mod tree;
 use archsig::{
     canonical::Json,
+    control::{Control, Limits, Usage},
     definition::check_definitions,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
-    },
+    input::{InputSources, check_inputs},
+    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 

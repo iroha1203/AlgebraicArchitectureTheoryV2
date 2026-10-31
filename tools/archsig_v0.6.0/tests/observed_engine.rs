@@ -4,11 +4,9 @@ mod engine;
 use archsig::observed::ObservedEvaluation;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{InputSources, check_inputs},
+    observed::evaluate_observed_bytes,
 };
 use num_bigint::BigInt;
 use std::collections::{BTreeMap, BTreeSet};
@@ -439,8 +437,8 @@ fn engine_operator_missing_keeps_subject_source_and_differing_completions_undete
 }
 
 fn unchanged(
-    before: &archsig::observed::input::CheckedInputs,
-    after: &archsig::observed::input::CheckedInputs,
+    before: &archsig::input::CheckedInputs,
+    after: &archsig::input::CheckedInputs,
 ) {
     assert_eq!(
         format!("{:?}", before.definitions()),

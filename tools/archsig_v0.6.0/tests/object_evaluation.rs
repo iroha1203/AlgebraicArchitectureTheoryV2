@@ -7,12 +7,9 @@ use archsig::{
             ObjectReadingInstances, evaluate_object_instance, object_reading_instances,
         },
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed,
-        input::{CheckedInputs, InputSources, check_inputs},
-        prepare_shared_observed,
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
+    observed::{evaluate_observed, prepare_shared_observed},
 };
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
@@ -431,7 +428,7 @@ fn current_quantities_optional_law_counterexamples_and_external_binding_identity
 
 #[test]
 fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluations() {
-    use archsig::{observed::control::Checkpoint, result::Signal};
+    use archsig::{control::Checkpoint, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = inputs(L, A);
     let p = plan(&i);

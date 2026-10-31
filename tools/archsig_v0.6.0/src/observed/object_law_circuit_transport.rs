@@ -1,7 +1,9 @@
 //! 実Operationに沿って数値成分の零性と有限detectorの受理を検査する。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
+};
+use super::{
     object_law_circuits::{
         LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitsCondition, ObjectLawCircuits,
         ObjectLawCircuitsFailure, object_law_circuits,
@@ -526,7 +528,7 @@ mod tests {
             maps::{correspondence, declaration_correspondence},
             readings::object_reading_instances,
         },
-        observed::input::{InputSources, check_inputs},
+        input::{InputSources, check_inputs},
     };
     fn example() -> (Arc<CheckedInputs>, DeclarationCorrespondence, usize, usize) {
         let left = include_bytes!("../../tests/fixtures/object-law-family.atoms.json");

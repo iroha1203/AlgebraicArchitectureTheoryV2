@@ -1,11 +1,9 @@
 //! composeの取消・資源停止と、同じ配送経路の既存データ保護。
 mod common;
 use archsig::{
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
     result::{Signal, Status},
     run::{CheckArgs, Io, RunArgs, Signals, run_requests},
 };

@@ -42,7 +42,7 @@ fn add_subject(
 ) -> Result<(), ValidationFailure> {
     let mut pending = vec![value];
     while let Some(value) = pending.pop() {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         match value {
             Scalar::Subject { .. } => support.carrier.push(Json::obj([
                 ("type", value.ty().wire()),
@@ -139,7 +139,7 @@ pub(super) fn analyze(
     let mut rational_equations = false;
     let mut points = vec![vec![]];
     for slot in &slots {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let ty = fixed
             .field(
                 &slot.snapshot,
@@ -155,7 +155,7 @@ pub(super) fn analyze(
             // 方程式側は別途、アフィンfiberを全域で解く。
             let mut values = vec![];
             for row in &candidates.rows {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if row.update.state == State::Ready {
                     for (field, value) in &row.update.values {
                         if field == slot && !values.contains(value) { values.push(value.clone()); }
@@ -182,7 +182,7 @@ pub(super) fn analyze(
         let mut next = vec![];
         for prefix in points {
             for value in &values {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let mut point = prefix.clone();
                 point.push(value.clone());
                 next.push(point);
@@ -243,7 +243,7 @@ pub(super) fn analyze(
             let mut next = vec![];
             for row in rows {
                 for value in &values {
-                    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                    c.checkpoint(crate::control::Checkpoint::Localize)?;
                     let mut row = row.clone();
                     row.push((p.name.clone(), value.clone()));
                     next.push(row);
@@ -261,7 +261,7 @@ pub(super) fn analyze(
     }
     let mut candidate_points = vec![];
     for candidate in &candidates.rows {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         match candidate.update.state {
             State::Excluded => candidate_points.push(None),
             State::Ready => {
@@ -309,7 +309,7 @@ pub(super) fn analyze(
     let mut readings: Vec<Reading> = vec![];
     let mut scope = Scope::default();
     for point in &points {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut assignments = env
             .fixed_values()
             .into_iter()

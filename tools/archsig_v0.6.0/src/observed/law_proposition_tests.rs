@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use crate::types::Type;
 use std::sync::Arc;
@@ -202,7 +201,7 @@ fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
     replay(&p, &g).unwrap();
 }
 
-fn from_inputs(inputs: Arc<crate::observed::input::CheckedInputs>) -> PreparedObserved {
+fn from_inputs(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
         inputs.law(),
         inputs.archmap(),
@@ -655,7 +654,7 @@ fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples(
 
 #[test]
 fn native_law_proposition_four_stops_keep_completed_evidence_and_exact_prefix() {
-    use crate::observed::control::Checkpoint;
+    use crate::control::Checkpoint;
     use std::{cell::Cell, rc::Rc};
     let p = prepared("law required zero(c:Part):c.quantity=0;");
     let (mut initial, a, objects) = start(&p);

@@ -3,10 +3,8 @@ use super::{
     architecture_result::{self, Architecture},
     circuit_pattern::{self, Diagram as Patterns},
     construction_result::{ConstructionData as D, ConstructionType as T},
-    control::{Checkpoint, Control},
     environment::Environment,
     equation_family,
-    input::CheckedInputs,
     internal_arrow_diagram::{self, Diagram as Arrows},
     law_table::{self, Table},
     native_source::Boundary,
@@ -16,6 +14,10 @@ use super::{
     request::Request,
     result::*,
     view_invariant::{self, Diagram as Views},
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use std::sync::Arc;
 

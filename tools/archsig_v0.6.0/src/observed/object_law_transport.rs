@@ -1,7 +1,9 @@
 //! 対象間で対応するLawのrequired status・適用条件・成立を実評価から比較する。
-use super::{
+use crate::{
     control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
+};
+use super::{
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -724,7 +726,7 @@ mod tests {
         construct,
         maps::{correspondence, declaration_correspondence},
     };
-    use crate::observed::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     pub(super) fn example(name: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
         example_with_law(
             name,

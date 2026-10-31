@@ -2,17 +2,18 @@
 #[path = "term_comparison_evaluate.rs"]
 mod term_comparison_evaluate;
 use super::{
-    PreparedObserved,
-    control::{Checkpoint, Control, StopReason},
-    data,
+    PreparedObserved, data,
     environment::{
         Environment, SourceAnalysis, conditional_branch, is_boolean_binary, is_comparison,
         partial_binary, scalar_from, supports_binary, unary,
     },
-    input::InputSources,
     numeric, prepare_observed,
     request::{QuestionKind, Request, Selector},
     result::*,
+};
+use crate::{
+    control::{Checkpoint, Control, StopReason},
+    input::InputSources,
 };
 use crate::{
     archmap::Slot,
@@ -3832,10 +3833,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
     }
 
     fn affine_comparison_phase_stop(stage: usize, kind: usize) {
-        use super::super::{
-            affine,
-            control::{Limits, Resource, Usage},
-        };
+        use super::super::affine;
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -4041,7 +4040,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn affine_normalization_cached_recheck_observes_stop_and_freezes_probes() {
-        use super::super::control::{Limits, Usage};
+        use crate::control::{Limits, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = affine_private_example(
@@ -4409,10 +4408,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     }
 
     fn affine_private_phase_stop(phase: &'static str, kind: usize) {
-        use super::super::{
-            affine,
-            control::{Limits, Resource, Usage},
-        };
+        use super::super::affine;
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -4619,7 +4616,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
 
     #[test]
     fn affine_scalar_cached_recheck_observes_stop_and_freezes_probes() {
-        use super::super::control::{Limits, Usage};
+        use crate::control::{Limits, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = affine_private_example(
@@ -4699,8 +4696,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             .unwrap()
         }
 
-        let mut normal_control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut normal_control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let normal_prepared = prepare(&mut normal_control);
         let normal = evaluate_observed(normal_prepared, &mut normal_control).unwrap();
@@ -4717,8 +4714,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             &Scalar::Z(149.into())
         );
 
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let prepared = prepare(&mut control);
         let Signature::View { body: later, .. } =
@@ -5439,8 +5436,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         result: &ObservedEvaluation,
         nodes: &[Node],
     ) -> Result<Graph, ValidationFailure> {
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let environment = Environment::with_requests(
             result.prepared.inputs(),
@@ -5470,8 +5467,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         assert_eq!(result.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
             .expect("改変前の全nodeは元順の入力照合とGraph検査を通る");
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
         let requests = result.prepared.requests().requests();
@@ -5740,8 +5737,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             "view amount(s: State): Z = s.count;",
             "law required truth(s: State): true;\n  view amount(s: State): Z = s.count;",
         );
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let truth = evaluate_observed_bytes(
             InputSources::from_bytes(
@@ -5814,8 +5811,8 @@ reading Follow {{
         {{"id":"x","origin":"model","subjects":[{{"id":"u","type":"Counter.State","origin":"model"}}],
           "atoms":[{{"id":"count-u","subject":"u","field":"Counter.State.count","value":"7","origin":"model"}}]}}]}}"#
         );
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let result = evaluate_observed_bytes(
             InputSources::from_bytes(
@@ -5918,8 +5915,8 @@ reading R {{
       "origins":[{{"id":"model","mode":"specification","method":"二つの対象を提示する。","locations":[],"note":"Bool条件と値の小さい仕様モデル。"}}],
       "snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Signal.Cell","origin":"model"}},{{"id":"t","type":"Signal.Cell","origin":"model"}}],"atoms":[{atoms}]}}]}}"#
         );
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         evaluate_observed_bytes(
             InputSources::from_bytes(
@@ -6107,8 +6104,8 @@ reading R {{
                 "補完で真偽が異なるLawへ確定値を補えない"
             );
         }
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
         environment
@@ -6178,8 +6175,8 @@ reading R {{
                 "件数と条件を提示する仕様モデル。",
             )
             .replace("\"atoms\": [", &format!("\"atoms\": [{additions},"));
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         evaluate_observed_bytes(
             InputSources::from_bytes(
@@ -6649,11 +6646,11 @@ reading R {{
         "view total(s: State): Z = s.count + s.other;\n  view reversed(s: State): Z = s.other + s.count;");
         let inputs = InputSources::new(
             existing.definitions().to_vec(),
-            super::super::input::InputBytes::new(existing.law().id(), law.into_bytes()),
+            crate::input::InputBytes::new(existing.law().id(), law.into_bytes()),
             existing.archmap().clone(),
         );
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         let result = evaluate_observed_bytes(
             inputs,
@@ -6867,11 +6864,11 @@ reading R {{
         "law required computed(s: State): s.count + s.other = 10;\n  law required separated(s: State): s.count - s.other = 0;");
         let inputs = InputSources::new(
             existing.definitions().to_vec(),
-            super::super::input::InputBytes::new(existing.law().id(), law.into_bytes()),
+            crate::input::InputBytes::new(existing.law().id(), law.into_bytes()),
             existing.archmap().clone(),
         );
-        let mut control = Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        let mut control = Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         });
         evaluate_observed_bytes(
             inputs,
@@ -8007,7 +8004,7 @@ reading R {{
 
     #[test]
     fn finite_law_family_actual_domain_product_row_evidence_and_recheck_stops() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -8935,8 +8932,8 @@ reading Calc {{
         );
     }
     fn named_call_quiet() -> Control {
-        Control::new(super::super::control::Limits::default(), |_| {
-            super::super::control::Usage::default()
+        Control::new(crate::control::Limits::default(), |_| {
+            crate::control::Usage::default()
         })
     }
     #[test]
@@ -9407,7 +9404,7 @@ reading Calc {{
     }
     #[test]
     fn unimplemented_evaluation_retains_verified_prefix_and_stops_later_answers() {
-        use crate::observed::{input::InputSources, prepare_observed};
+        use crate::{input::InputSources, observed::prepare_observed};
         let sources = InputSources::from_bytes(
             vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
             include_bytes!("../../tests/fixtures/counter.law").to_vec(),
@@ -9815,7 +9812,7 @@ reading Calc {{
     }
     #[test]
     fn named_parameter_name_token_checkpoint_preserves_original_stop_through_driver() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -10589,7 +10586,7 @@ reading Calc {{
 
     #[test]
     fn primitive_set_and_sum_iterations_preserve_original_stop_inside_actual_evaluation() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -11077,7 +11074,7 @@ reading Calc {{
     }
     #[test]
     fn set_comprehension_actual_iteration_filter_and_set_loops_keep_original_stops() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -13959,7 +13956,7 @@ reading Calc {{
         kind: usize,
         known: Option<bool>,
     ) {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -14268,7 +14265,7 @@ reading Calc {{
     }
     #[test]
     fn finite_completion_recheck_entry_stops_keep_graph_and_original_reason() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = finite_completion_example(
@@ -14945,7 +14942,7 @@ reading Calc {{
         fp_completion_phase_stop("completion_enum", 1, 2, Some(true));
     }
     fn fp_completion_phase_stop(phase: &'static str, at: usize, kind: usize, known: Option<bool>) {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -15257,7 +15254,7 @@ reading Calc {{
     }
     #[test]
     fn fp_completion_recheck_entry_stops_keep_graph_and_original_reason() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = fp_completion_example(
@@ -15812,7 +15809,7 @@ reading Calc {{
     }
     #[test]
     fn bool_completion_recheck_entry_stops_preserve_graph_and_reason() {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let result = completion_private_example(
@@ -15928,7 +15925,7 @@ reading Calc {{
         bool_completion_known_original_stop(true);
     }
     fn bool_completion_known_original_stop(check: bool) {
-        use super::super::control::{Limits, Usage};
+        use crate::control::{Limits, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -16150,7 +16147,7 @@ reading Calc {{
         assert_eq!(probes.get(), before);
     }
     fn bool_completion_actual_phase_stop(phase: &'static str, at: usize, kind: usize) {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -16365,7 +16362,7 @@ reading Calc {{
         }
     }
     fn quantifier_actual_phases_preserve_stops(typed: bool, plain: bool) {
-        use super::super::control::{Limits, Resource, Usage};
+        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},

@@ -1,12 +1,11 @@
 //! 元native Law行の固定束縛を、通常Evaluatorのinstance入力へ接続する。
 use super::{
-    construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness,
-    },
-    control::{Checkpoint, Control},
+    construction_result as native,
+    construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness},
     environment::Environment,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::sync::Arc;
 

@@ -6,7 +6,7 @@ use super::parser::Parser;
 use crate::definition::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Issue, Location};
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use crate::prime::is_prime_controlled;
 use crate::types::Type;
 use num_bigint::BigUint;

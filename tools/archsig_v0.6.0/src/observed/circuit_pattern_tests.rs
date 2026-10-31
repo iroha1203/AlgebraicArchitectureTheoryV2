@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::collections::BTreeSet;
 const DEFINITION: &[u8] = include_bytes!("../../tests/fixtures/configuration-profile.atoms.json");
@@ -15,8 +14,8 @@ fn inputs(map: &str) -> Arc<CheckedInputs> {
     let defs = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
     let digest = &defs.vocabularies["Profile"].digest;
     Arc::new(
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![DEFINITION.to_vec()],
                 LAW.replace("@PROFILE_DIGEST@", digest).into_bytes(),
                 map.replace("@PROFILE_DIGEST@", digest).into_bytes(),
@@ -662,8 +661,8 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
         let defs = crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
         let digest = &defs.vocabularies["Flow"].digest;
         Arc::new(
-            crate::observed::input::check_inputs(
-                crate::observed::input::InputSources::from_bytes(
+            crate::input::check_inputs(
+                crate::input::InputSources::from_bytes(
                     vec![definition.to_vec()],
                     law.replace("@FLOW_DIGEST@", digest).into_bytes(),
                     map.replace("@FLOW_DIGEST@", digest).into_bytes(),

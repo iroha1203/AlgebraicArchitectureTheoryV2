@@ -7,10 +7,8 @@ use archsig::{
             correspondence, declaration_correspondence, numeric_declaration_value_transport,
         },
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
     types::Type,
 };

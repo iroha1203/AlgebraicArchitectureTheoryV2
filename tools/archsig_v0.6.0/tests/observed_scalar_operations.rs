@@ -1,13 +1,11 @@
 //! AC4段階1: 小さいZ/Bool演算の値・判断・元式・欠測・由来をbyte入口から検査する。
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions,
+    input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,

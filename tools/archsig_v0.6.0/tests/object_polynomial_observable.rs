@@ -7,10 +7,8 @@ use archsig::{
             PolynomialObservableValue as V, object_polynomial_observable,
         },
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     types::Type,
 };
 use std::sync::Arc;
@@ -515,7 +513,7 @@ fn current_inputs_provenance_and_invalid_object_are_checked_again() {
 #[test]
 fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_probes() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};

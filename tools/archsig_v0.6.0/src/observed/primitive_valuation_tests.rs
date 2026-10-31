@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Limits, Resource, Usage};
+use crate::control::{Limits, Resource, Usage};
 use crate::{law::model::Signature, result::Signal};
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]

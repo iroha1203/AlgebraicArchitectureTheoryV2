@@ -463,7 +463,7 @@ fn map_field_table_row_display_order_keeps_extensional_proof_and_original_slots(
     }
 }
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::observed::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(true, false, false, false);
     let asks = [
@@ -649,7 +649,7 @@ fn map_field_actual_totality_cover_memory_stop_keeps_strict_prefix() {
 #[test]
 fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missing_identity() {
     use crate::archmap::{FieldAssignment, check_completion_with_values};
-    use crate::observed::control::CheckFailure;
+    use crate::control::CheckFailure;
     let pin = |field: &str, value: Json| FieldAssignment {
         snapshot: "v".into(),
         subject: "h".into(),

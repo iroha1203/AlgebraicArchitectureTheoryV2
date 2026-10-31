@@ -1,7 +1,9 @@
 //! 全対象と全instanceの実評価を、元の適用状態と導出のまま保持する。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
+};
+use super::{
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
         evaluate_object_instance,
@@ -114,10 +116,8 @@ mod tests {
     use super::*;
     use crate::{
         construction::{construct, readings::object_reading_instances},
-        observed::{
-            control::{Limits, Usage},
-            input::{InputSources, check_inputs},
-        },
+        control::{Limits, Usage},
+        input::{InputSources, check_inputs},
     };
     fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())

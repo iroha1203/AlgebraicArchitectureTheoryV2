@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::control::{Limits, Resource, Usage};
+use crate::control::{Limits, Resource, Usage};
 use crate::{law::model::Signature, result::Signal};
 use std::{cell::Cell, rc::Rc, sync::Arc};
 #[allow(dead_code)]
@@ -15,8 +15,8 @@ mod map_fixture {
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
-fn checked(s: crate::observed::input::InputSources) -> Arc<CheckedInputs> {
-    Arc::new(crate::observed::input::check_inputs(s, &mut quiet()).unwrap())
+fn checked(s: crate::input::InputSources) -> Arc<CheckedInputs> {
+    Arc::new(crate::input::check_inputs(s, &mut quiet()).unwrap())
 }
 fn fact(namespace: &str, subject: &str, field: &str) -> Fact {
     Fact {
@@ -485,7 +485,7 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
 #[test]
 fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
     use super::super::finite_law_valuations::finite_law_family_valuations;
-    use crate::{canonical::Json, json::parse, observed::input::InputSources};
+    use crate::{canonical::Json, input::InputSources, json::parse};
     let original = arrow_fixture::input("normal", "finite-path");
     let mut defs = map_fixture::convert(&parse(original.definitions()[0].bytes()).unwrap());
     let Json::Obj(root) = &mut defs else { panic!() };

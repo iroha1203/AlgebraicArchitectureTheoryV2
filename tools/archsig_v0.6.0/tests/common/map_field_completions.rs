@@ -1,4 +1,4 @@
-use archsig::{canonical::Json, definition::check_definitions, observed::input::InputSources};
+use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
 pub fn reference(snapshot: &str, subject: &str) -> Json {
     Json::Arr(vec![Json::str(snapshot), Json::str(subject)])
 }

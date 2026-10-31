@@ -3,10 +3,8 @@ use archsig::{
         ConstructionFailure, FactPointer,
         maps::{Counterexample, internal_arrow, internal_arrows},
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeMap, rc::Rc};

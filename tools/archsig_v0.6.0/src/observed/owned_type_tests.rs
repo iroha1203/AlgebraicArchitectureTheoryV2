@@ -651,7 +651,7 @@ fn owned_type_quantification_call_pattern_and_outer_iteration_keep_actual_produc
 }
 
 fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; view wrapped(a:System):Bool=forall bag:Option<Set<State[a]>> . true;";
     let current = "current=evaluate(Reservations.wrapped,a=@v/A)";
@@ -844,7 +844,7 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
 
 #[test]
 fn owned_type_quantification_recheck_stops_and_success_memo_are_session_local() {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let result = owned_private_example(
         OWNED_TYPE_VIEW,

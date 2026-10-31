@@ -1,11 +1,11 @@
 //! 同じ元Lawの完全束縛を、検査済み対象外テンプレートへ接続する。
 use super::{
     construction_result::{ConstructionData as D, ConstructionValue, Witness},
-    control::{Checkpoint, Control},
     environment::Environment,
     law_evaluation as frames,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::canonical::Json;
 use std::sync::Arc;
 

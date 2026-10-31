@@ -2,7 +2,7 @@
 mod primitive {
     include!("terms.rs");
 }
-use archsig::{definition::check_definitions, observed::input::InputSources};
+use archsig::{definition::check_definitions, input::InputSources};
 pub const SCRIPT: &str = r#"
 view observed(s:Sample):Term<(Bool)->Z> = s.g;
 view finiteSame():Term<(Bool)->Z> = fn(t:Bool)=>if not t then 9 else 4;

@@ -1,9 +1,9 @@
 //! 候補を現在の検査済み導出へ照合し、推論は採用せず全再計算する。
 use crate::canonical::Json;
 use crate::json::{JNode, JValue};
-use crate::observed::{
-    ObservedEvaluation,
+use crate::{
     control::{CheckFailure, Checkpoint, Control, StopReason},
+    observed::ObservedEvaluation,
 };
 use crate::result::ResultIssue;
 use std::{

@@ -2,12 +2,10 @@
 #[path = "../../tests/common/numeric_tuple_change.rs"]
 mod fixture;
 use super::result::ReasonKind;
-use archsig::observed::{
-    EvaluationFailure,
+use archsig::{
     control::{Checkpoint, Control, Limits, Usage},
-    evaluate::evaluate_observed,
     input::check_inputs,
-    prepare_shared_observed,
+    observed::{EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed},
 };
 use std::sync::Arc;
 #[test]

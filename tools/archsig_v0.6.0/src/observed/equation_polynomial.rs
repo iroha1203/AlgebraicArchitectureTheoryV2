@@ -1,6 +1,6 @@
 //! 元導出から得た多項式の正確な正規化。原式の評価は既存Evaluatorが担う。
+use crate::control::{Checkpoint, Control};
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     numeric_transport::NumericTransportValue,
     result::{Scalar, ValidationFailure},

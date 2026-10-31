@@ -3,11 +3,13 @@ use super::{
     build_plan::Plan,
     build_result::Builder,
     construction_result::{ConstructionData as D, ConstructionType as T},
-    control::{Checkpoint, Control},
     environment::Environment,
-    input::CheckedInputs,
     law_evaluation, object_law_transport,
     result::*,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use crate::{
     canonical::Json,

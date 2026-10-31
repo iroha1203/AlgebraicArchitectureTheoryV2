@@ -1,7 +1,9 @@
 //! 元数値等式の差をscalar成分で読み、同じ完全patternの全代入で照合する。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
+};
+use super::{
     numeric,
     numeric_transport::NumericTransportValue,
     object_evaluate::ObjectEvaluationOutcome,
@@ -1120,8 +1122,8 @@ mod tests {
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; law required amount(c:Part,b:Bool):((if (forall a:Root . false) then 2 else 3),c.quantity)=(0,2); }}"
         );
         Arc::new(
-            super::super::input::check_inputs(
-                super::super::input::InputSources::from_bytes(
+            crate::input::check_inputs(
+                crate::input::InputSources::from_bytes(
                     vec![fixture::D.as_bytes().to_vec()],
                     law.into_bytes(),
                     fixture::A.replace("@DIGEST@", digest).into_bytes(),

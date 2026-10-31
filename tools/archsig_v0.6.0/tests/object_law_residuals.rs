@@ -4,10 +4,8 @@ use archsig::{
         LawNumericShape, LawResidualOutcome as Outcome, ObjectLawResiduals,
         ObjectLawResidualsFailure, object_law_residuals,
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     types::Type,
 };
 use std::sync::Arc;
@@ -391,7 +389,7 @@ fn different_complete_patterns_keep_their_own_numeric_laws_without_equality_obli
 }
 #[test]
 fn fixed_stops_keep_original_execution_completed_cases_refutations_and_final_completion() {
-    use archsig::{observed::control::Checkpoint as C, result::Signal};
+    use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required amount(c:Part,b:Bool):((if (forall a:Root . false) then 2 else 3),c.quantity)=(0,2);",
@@ -491,7 +489,7 @@ fn fixed_stops_keep_original_execution_completed_cases_refutations_and_final_com
 }
 #[test]
 fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes() {
-    use archsig::observed::control::Checkpoint as C;
+    use archsig::control::Checkpoint as C;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs("law required amount(c:Part):c.quantity=2;", fixture::A);
     let r = run(i.clone());
@@ -508,7 +506,7 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     assert!(nth > 0);
     use archsig::{
         construction::ConstructionFailure,
-        observed::control::{Resource, StopReason},
+        control::{Resource, StopReason},
         result::Signal,
     };
     for mode in 0..4 {

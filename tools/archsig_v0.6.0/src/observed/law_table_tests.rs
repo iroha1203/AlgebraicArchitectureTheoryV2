@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -537,7 +536,7 @@ fn four_stops_leave_exact_completed_dag_prefix_and_no_completed_table() {
 
 #[test]
 fn unknown_ownership_keeps_a_pending_architecture_and_never_completes_the_table() {
-    use crate::observed::input::{InputBytes, InputSources, check_inputs};
+    use crate::input::{InputBytes, InputSources, check_inputs};
     let original = fixture::inputs(false, false, "law required truth(c:Part):true;");
     let source = original.sources();
     let map = String::from_utf8(source.archmap().bytes().to_vec()).unwrap();

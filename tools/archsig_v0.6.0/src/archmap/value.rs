@@ -5,7 +5,7 @@ use super::*;
 use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
 use crate::law::TermBody;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Signed};
@@ -232,7 +232,7 @@ fn z_encoding<E: InputError>(
 #[cfg(test)]
 mod lexical_priority_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, Usage};
+    use crate::control::{CheckFailure, Limits, Usage};
     use crate::result::Signal;
 
     #[test]

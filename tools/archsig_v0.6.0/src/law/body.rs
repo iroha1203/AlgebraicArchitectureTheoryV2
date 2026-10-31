@@ -5,7 +5,7 @@ use super::check::*;
 use super::expr::*;
 use super::model::*;
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 

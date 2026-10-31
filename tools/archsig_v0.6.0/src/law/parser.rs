@@ -6,7 +6,7 @@ use super::ast::*;
 use super::lexer::{Token, TokenKind};
 use crate::issue::{Code, Issue};
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 use std::collections::HashMap;
 
 pub use crate::names::RESERVED;
@@ -1328,7 +1328,7 @@ impl<E: InputError> Parser<E> {
 #[cfg(test)]
 mod qname_interruption_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -1521,8 +1521,8 @@ mod qname_interruption_tests {
 pub(super) mod candidate_priority_tests {
     use super::*;
     use crate::{
+        control::{CheckFailure, Limits, StopReason, Usage},
         issue::Location,
-        observed::control::{CheckFailure, Limits, StopReason, Usage},
         result::Signal,
     };
     use std::{

@@ -1,4 +1,4 @@
-use archsig::{definition::check_definitions, observed::input::InputSources};
+use archsig::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod known {
     include!("known_map.rs");

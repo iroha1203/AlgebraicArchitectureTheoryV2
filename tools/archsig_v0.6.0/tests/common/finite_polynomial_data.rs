@@ -1,4 +1,4 @@
-use archsig::observed::{
+use archsig::{
     control::{Control, Limits, Usage},
     input::{CheckedInputs, InputSources, check_inputs},
 };

@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 use std::collections::BTreeMap;
 fn quiet() -> Control {
@@ -379,7 +377,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Reservations.option_values,a=$owner.value)",

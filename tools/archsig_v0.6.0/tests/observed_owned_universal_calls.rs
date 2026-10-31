@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = j else {
@@ -44,11 +42,11 @@ fn run_revision(unknown: bool, revision: &str, asks: &[&str]) -> Json {
     run_input(inputs, revision, asks)
 }
 fn run_input(
-    inputs: archsig::observed::input::InputSources,
+    inputs: archsig::input::InputSources,
     revision: &str,
     asks: &[&str],
 ) -> Json {
-    let checked = archsig::observed::input::check_inputs(
+    let checked = archsig::input::check_inputs(
         inputs.clone(),
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )
@@ -320,7 +318,7 @@ fn unknown_owner_call_provenance_changes_keep_math_and_current_input_sources() {
     assert_eq!(f(answer(&a, "x"), "status"), f(answer(&b, "x"), "status"));
 }
 
-fn two_owner_input() -> archsig::observed::input::InputSources {
+fn two_owner_input() -> archsig::input::InputSources {
     use archsig::json::{JNode, JValue, parse};
     fn convert(n: &JNode) -> Json {
         match &n.value {
@@ -355,7 +353,7 @@ fn two_owner_input() -> archsig::observed::input::InputSources {
         atoms.retain(|a| f(a, "id") != &Json::str("q-owner"));
         assert_eq!(atoms.len() + 1, before);
     }
-    archsig::observed::input::InputSources::from_bytes(
+    archsig::input::InputSources::from_bytes(
         input
             .definitions()
             .iter()
@@ -368,7 +366,7 @@ fn two_owner_input() -> archsig::observed::input::InputSources {
 #[test]
 fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let input = two_owner_input();
-    let checked = archsig::observed::input::check_inputs(
+    let checked = archsig::input::check_inputs(
         input.clone(),
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )
@@ -461,7 +459,7 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
 #[path = "common/owned_map_calls.rs"]
 #[allow(dead_code)]
 mod map_fixture;
-fn small_map_input(mode: &str) -> archsig::observed::input::InputSources {
+fn small_map_input(mode: &str) -> archsig::input::InputSources {
     use archsig::json::{JNode, JValue, parse};
     fn convert(n: &JNode) -> Json {
         match &n.value {
@@ -482,7 +480,7 @@ fn small_map_input(mode: &str) -> archsig::observed::input::InputSources {
     assert_eq!(snapshots.len(), 2);
     snapshots.retain(|s| f(s, "id") == &Json::str("v"));
     assert_eq!(snapshots.len(), 1);
-    archsig::observed::input::InputSources::from_bytes(
+    archsig::input::InputSources::from_bytes(
         input
             .definitions()
             .iter()
@@ -551,7 +549,7 @@ fn small_owned_map_missing_table_keeps_all_four_tables_and_original_conditions()
         .collect();
     assert_eq!(values, expected);
     let i = small_map_input("unknown_owner");
-    archsig::observed::input::check_inputs(
+    archsig::input::check_inputs(
         i.clone(),
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )

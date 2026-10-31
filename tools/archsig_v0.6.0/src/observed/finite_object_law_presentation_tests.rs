@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::control::{Limits, Usage},
+    control::{Limits, Usage},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

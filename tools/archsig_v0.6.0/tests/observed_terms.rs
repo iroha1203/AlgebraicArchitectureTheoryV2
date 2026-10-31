@@ -3,12 +3,10 @@
 mod terms;
 use archsig::{
     canonical::Json,
+    control::{Control, Limits, Usage},
     definition::check_definitions,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -235,7 +233,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
 #[test]
 fn closed_term_missing_callee_and_argument_preserve_the_original_slots() {
     let s = sources("r1");
-    let before = archsig::observed::input::check_inputs(s.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(s.clone(), &mut quiet()).unwrap();
     let r = evaluate_observed_bytes(
         s,
         &[

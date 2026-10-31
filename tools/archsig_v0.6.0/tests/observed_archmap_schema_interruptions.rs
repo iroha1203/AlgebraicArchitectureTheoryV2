@@ -1,12 +1,9 @@
 //! Schema helper の内部と入力不正を確定した後の停止優先順位。
 mod common;
 use archsig::{
-    observed::{
-        PrepareFailure,
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
-        input::{InputSources, InputStatus, check_inputs},
-        prepare_observed,
-    },
+    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    input::{InputSources, InputStatus, check_inputs},
+    observed::{PrepareFailure, prepare_observed},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

@@ -3,10 +3,8 @@ use archsig::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
         ObjectLawCircuitsFailure, object_law_circuits,
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
 };
 use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
@@ -265,7 +263,7 @@ fn no_laws_has_no_circuits_and_is_complete() {
 #[test]
 fn fixed_generation_and_recheck_stops_preserve_prefix_final_completion_and_freeze_probes() {
     use archsig::{
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};

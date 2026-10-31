@@ -1,6 +1,6 @@
 //! 観測評価の公開射影の静的型付け。動的な constructor・index・owner 条件は評価へ残す。
 
-use super::control::{Checkpoint, Control, StopReason};
+use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, definition::PrimitiveSignature, law::CheckedLaw, types::Type};
 
 /// Law の型と、計算結果だけに存在する record 型を区別する。

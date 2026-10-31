@@ -3,10 +3,8 @@ use archsig::{
         EquationGuard as G, EquationPolynomial, EquationPresentation, EquationPresentationFailure,
         EquationPresentationStatus as S, object_equation_presentation,
     },
-    observed::{
-        control::{Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     types::Type,
 };
 use std::sync::Arc;
@@ -349,7 +347,7 @@ fn changed_current_input_and_invalid_object_are_rejected() {
 fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_completion() {
     use archsig::{
         construction::ConstructionFailure,
-        observed::control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, Resource, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -1174,7 +1172,7 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
-    use archsig::observed::control::{Checkpoint, Resource, StopReason};
+    use archsig::control::{Checkpoint, Resource, StopReason};
     let i = inputs_with(
         fixture::D,
         "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",

@@ -602,7 +602,7 @@ fn engine_snapshot_rejects_duplicate_nested_set_members_after_normal_validation(
     );
     let input = InputSources::new(
         original.definitions().to_vec(),
-        super::super::input::InputBytes::new("law", script.into_bytes()),
+        crate::input::InputBytes::new("law", script.into_bytes()),
         original.archmap().clone(),
     );
     let mut c = named_call_quiet();

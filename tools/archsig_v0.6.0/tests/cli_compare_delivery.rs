@@ -12,12 +12,10 @@ const TERM_ASKS: [&str; 3] = [
     "a=compare($l.value,to=$r.value,kind=value)",
 ];
 use archsig::{
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
     result::{Signal, Status},
-    run::{run_requests, CheckArgs, Io, RunArgs, Signals},
+    run::{CheckArgs, Io, RunArgs, Signals, run_requests},
 };
 use common::cli::*;
 use std::{

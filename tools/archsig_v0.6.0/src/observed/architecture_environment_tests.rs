@@ -1,7 +1,7 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
-    *,
+    observed::*,
 };
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
@@ -248,7 +248,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
 #[test]
 fn architecture_on_resolution_stops_are_latched_before_evaluation() {
     let inputs =
-        crate::observed::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
+        crate::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
     let qs = [
         fixture::MAP,
         "v=evaluate(Reservations.no,on=$m.candidate.source)",

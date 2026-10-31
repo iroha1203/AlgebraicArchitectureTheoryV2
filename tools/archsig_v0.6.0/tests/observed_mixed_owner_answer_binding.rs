@@ -3,11 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        ObservedEvaluation,
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::{ObservedEvaluation, evaluate_observed_bytes},
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -32,7 +29,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn run(input: archsig::observed::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
+fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed_bytes(input, asks, &mut quiet()).unwrap_or_else(|e| match e {
         archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
             panic!("unimplemented: {feature}")
@@ -570,7 +567,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn mixed_keeps_three_inputs_dag_fixed_and_free_owner_facts_and_current_sources() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     use std::collections::BTreeSet;
     for mode in ["known", "unknown_owner"] {
         let asks = [

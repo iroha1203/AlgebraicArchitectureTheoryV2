@@ -751,7 +751,7 @@ fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() 
         "integer-nonlinear",
         "change setpair(s:State,a:Z,b:Z)=s with{x=a*a,y=b};",
     );
-    let sources = archsig::observed::input::InputSources::from_bytes(
+    let sources = archsig::input::InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
@@ -759,7 +759,7 @@ fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() 
     let observed = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-        &mut archsig::observed::control::Control::new(Default::default(), |_| Default::default()),
+        &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
     )
     .unwrap();
     assert_eq!(observed.status(), "partial");
@@ -892,8 +892,11 @@ fn assert_module_owners(result: &JNode) {
 
 #[test]
 fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
-    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage},
-        input::InputSources, evaluate::evaluate_observed_bytes};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
     use std::{cell::Cell, rc::Rc};
     let dir = input("integer-stop", "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
     for mode in 0..3 {
@@ -1161,7 +1164,11 @@ fn integer_quotient_keeps_repaired_architecture_offset() {
 }
 #[test]
 fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
-    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
     use std::{cell::Cell,rc::Rc};
     let dir=input("integer-quotient-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
     for mode in 0..3 {
@@ -1249,7 +1256,11 @@ fn integer_law_descent_missing_operands_do_not_become_a_true_constant_family() {
 
 #[test]
 fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
-    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
+    };
     use std::{cell::Cell,rc::Rc};
     let dir=input("integer-law-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};view combined(s:State):Z=s.x+s.y;law optional same(s:State):s.x=s.x;");
     for mode in 0..3 {
@@ -1453,9 +1464,7 @@ fn quotient_integer_infeasible_guard_preserves_inapplicable_family() {
 }
 #[test]
 fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
-    use archsig::observed::{
-        control::Control, evaluate::evaluate_observed_bytes, input::InputSources,
-    };
+    use archsig::{control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes};
     // Argument order is (b,a), while the state is (x,y)=(a,b).
     let dir = input("integer-conditional-image", "change choose(s:State,b:Z,a:Z)=s with{x=a,y=b};view odd(s:State):Z=2*s.x+1;law optional active(s:State) when s.x=1:s.x=s.x;law optional bad(s:State) when s.x=1:s.y=s.y;");
     let sources = InputSources::from_bytes(
@@ -1572,7 +1581,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"
         };
         if case.starts_with("conditional-") {
-            let sources = archsig::observed::input::InputSources::from_bytes(
+            let sources = archsig::input::InputSources::from_bytes(
                 vec![std::fs::read(dir.join("d.json")).unwrap()],
                 law.as_bytes().to_vec(),
                 std::fs::read(dir.join("a.json")).unwrap(),
@@ -1580,7 +1589,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let evaluated = archsig::observed::evaluate_observed_bytes(
                 sources,
                 &[query],
-                &mut archsig::observed::control::Control::new(Default::default(), |_| {
+                &mut archsig::control::Control::new(Default::default(), |_| {
                     Default::default()
                 }),
             )

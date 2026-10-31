@@ -1,7 +1,9 @@
 //! 参照を含まない数値型の恒等写像を、有限標本を使わず型の全域に構成する。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
     input::CheckedInputs,
+};
+use super::{
     numeric,
     result::{Scalar, ValidationFailure},
     value_transport::{DeclarationValuePosition, selected_types},
@@ -196,7 +198,7 @@ mod tests {
     use super::*;
     use crate::{
         construction::maps::{correspondence, declaration_correspondence},
-        observed::input::{InputSources, check_inputs},
+        input::{InputSources, check_inputs},
     };
     fn example() -> (CheckedInputs, NumericValueTransport) {
         let left = include_bytes!("../../tests/fixtures/configuration-map-left.atoms.json");

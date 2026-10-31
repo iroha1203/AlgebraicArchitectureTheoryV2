@@ -2,17 +2,17 @@
 use super::{
     PreparedObserved,
     build_result::{Builder, Part},
-    change_result,
+    change_result, construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::Control,
     environment::{AnswerBinding, Environment, quotient_evaluation},
     projection::{ProjectionStep, ProjectionType},
     request::{Request, Selector},
     result::*,
 };
+use crate::control::Control;
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "quotient_law_result.rs"]
@@ -244,7 +244,7 @@ fn compute(
             g.tick()?;
             let mut existing = None;
             for (index, (image, _)) in fibers.iter().enumerate() {
-                c.checkpoint(super::control::Checkpoint::Quotient)?;
+                c.checkpoint(crate::control::Checkpoint::Quotient)?;
                 if super::data::equal(image, &row.image, c)? {
                     existing = Some(index);
                     break;

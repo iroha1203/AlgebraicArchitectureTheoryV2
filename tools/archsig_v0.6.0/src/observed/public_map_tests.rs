@@ -1,6 +1,6 @@
 use super::*;
 use crate::observed::construction_result::ConstructionData as D;
-use crate::observed::control::{Limits, Usage};
+use crate::control::{Limits, Usage};
 const D_BYTES: &[u8] = include_bytes!("../../tests/fixtures/reservations.atoms.json");
 const L_BYTES: &[u8] = include_bytes!("../../tests/fixtures/reservations.law");
 const A_BYTES: &str = include_str!("../../tests/fixtures/reservations.archmap.json");

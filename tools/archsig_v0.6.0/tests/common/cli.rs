@@ -182,13 +182,13 @@ pub fn warnings(result: &JNode) -> &[JNode] {
 
 /// 導出の検査は内部APIで行い、利用者用の保存形式に証明データを要求しない。
 pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
-    let sources = archsig::observed::input::InputSources::from_bytes(
+    let sources = archsig::input::InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
     );
     let asks: Vec<_> = arr(get(saved, "requests")).iter().map(|r| s(get(r,"text"))).collect();
     let result = archsig::observed::evaluate_observed_bytes(sources, &asks,
-        &mut archsig::observed::control::Control::unlimited()).unwrap();
+        &mut archsig::control::Control::unlimited()).unwrap();
     parse(result.wire().canonical().as_bytes()).unwrap()
 }

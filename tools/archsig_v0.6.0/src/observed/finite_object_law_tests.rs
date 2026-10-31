@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    observed::control::{Limits, Usage},
+    control::{Limits, Usage},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -537,7 +537,7 @@ fn foreign_reading_and_out_of_range_object_selection_are_rejected() {
         law.into_bytes(),
         original.sources().archmap().bytes().to_vec(),
     );
-    let inputs = crate::observed::input::check_inputs(sources, &mut quiet()).unwrap();
+    let inputs = crate::input::check_inputs(sources, &mut quiet()).unwrap();
     let a = readings(&inputs, "root");
     let choices = vec![(
         "Foreign.constant".into(),

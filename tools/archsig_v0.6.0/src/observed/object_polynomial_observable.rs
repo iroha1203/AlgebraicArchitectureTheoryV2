@@ -1,8 +1,10 @@
 //! 元の共有K[X]を保つ有限block積と、base root存在Atom上の方程式座標。
-use super::{
+use crate::{
     control::{Checkpoint, Control},
-    equation_polynomial::{EquationPolynomial, invalid},
     input::CheckedInputs,
+};
+use super::{
+    equation_polynomial::{EquationPolynomial, invalid},
     numeric,
     object_equation_presentation::{
         EquationPresentation, EquationPresentationFailure, EquationPresentationStatus as Status,
@@ -453,7 +455,7 @@ pub fn object_polynomial_observable(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::{
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
     };

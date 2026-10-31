@@ -3,16 +3,17 @@ use super::{
     PreparedObserved,
     architecture_result::{self, Architecture},
     build_result::{Builder, Part},
+    construction_result as native,
     construction_result::{
-        self as native, ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
+        ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
     },
-    control::{Checkpoint, Control},
     environment::{Environment, change_evaluation::State, change_search},
     native_source::Boundary,
     projection::{ProjectionStep, ProjectionType},
     request::{QuestionKind, Request, Selector},
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "change_linear_result.rs"]

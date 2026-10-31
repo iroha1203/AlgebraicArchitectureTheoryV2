@@ -3,7 +3,7 @@ mod base {
     use super::fixture_archsig as archsig;
     include!("owned_compound_calls.rs");
 }
-use archsig::observed::input::InputSources;
+use archsig::input::InputSources;
 pub const SCRIPT: &str = r#"
 view pcAccept(a:System,x:(State[a],Z)):Bool=true;
 view pcReturn(a:System,p:State,z:Z):(State[a],Z)=(p,z);

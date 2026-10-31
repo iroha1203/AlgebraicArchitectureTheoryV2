@@ -2,9 +2,9 @@
 //! scalar と多倍長整数の library 等値は一原始演算、文字列は固定長 byte 単位で比較する。
 use super::BundleError;
 use crate::{
+    control::{Checkpoint, Control},
     issue::{Code, Details, Issue, Location},
     json::InputError,
-    observed::control::{Checkpoint, Control},
 };
 use std::collections::BTreeMap;
 
@@ -1306,11 +1306,11 @@ mod tests {
     use crate::{
         archmap::value::{TermValue, Value},
         canonical::Json,
+        control::{CheckFailure, Limits, StopReason, Usage},
         law::{
             TermBody,
             ast::{Builtin, Ident, Pattern, TypeAst},
         },
-        observed::control::{CheckFailure, Limits, StopReason, Usage},
         result::Signal,
         types::Type,
     };

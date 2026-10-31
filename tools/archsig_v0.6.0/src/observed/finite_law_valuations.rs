@@ -1,7 +1,10 @@
 //! 固定した元Lawと束縛を、共有原始位置の有限候補上で読む。
 use super::*;
 use crate::law::model::{Declaration, Signature};
-use crate::observed::{affine, finite, input::InputSources};
+use crate::{
+    input::InputSources,
+    observed::{affine, finite},
+};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
@@ -719,7 +722,7 @@ fn validate_binding_term(
     e: &Environment<'_>,
     term: &crate::observed::term::Term,
 ) -> Result<(), ValidationFailure> {
-    use crate::observed::control::CheckFailure;
+    use crate::control::CheckFailure;
     // 閉じた値は、選択Law以外のreadingや原始fieldからも来る。
     // 現在入力のscopeで本文を再検査し、保持した全実行情報と一致するものを要求する。
     let mut readings = BTreeSet::new();

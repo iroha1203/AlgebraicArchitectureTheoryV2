@@ -1,9 +1,7 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 #[path = "common/correspondence_paths.rs"]
 #[allow(dead_code)]
@@ -239,7 +237,7 @@ fn correspondence_missing_target_atom_is_not_created_by_completion() {
 }
 #[test]
 fn correspondence_current_provenance_pair_keeps_math_and_checked_input_tables() {
-    use archsig::observed::input::check_inputs;
+    use archsig::input::check_inputs;
     let asks = [
         "x=evaluate(Reservations.step,m=@v/m)",
         "same=evaluate(Reservations.same,m=@v/m,n=@v/alias)",

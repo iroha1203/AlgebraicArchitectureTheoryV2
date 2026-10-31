@@ -1,9 +1,7 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 #[path = "common/composed_paths.rs"]
 #[allow(dead_code)]
@@ -197,7 +195,7 @@ fn then_provenance_pair_preserves_math_and_current_checked_input_tables() {
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let mut c = Control::new(Limits::default(), |_| Usage::default());
-        let checked = archsig::observed::input::check_inputs(input.clone(), &mut c).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             input.clone(),

@@ -1399,10 +1399,10 @@ fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
 
 #[test]
 fn interruption_during_additional_transport_keeps_the_checked_operation() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate_observed_bytes,
     };
     use archsig::result::Signal;
     for mode in 0..4 {
@@ -1569,10 +1569,10 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
 
 #[test]
 fn closed_law_transport_stop_keeps_operation_without_claiming_a_map() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate_observed_bytes,
     };
     let law = r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Alternative {
@@ -1808,7 +1808,11 @@ view holdings(s: State): (Z, Z) = (s.free,s.held);
 
 #[test]
 fn closed_view_transport_stop_retains_only_the_checked_operation() {
-    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage}, evaluate_observed_bytes, input::InputSources};
+    use archsig::{
+        control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources,
+        observed::evaluate_observed_bytes,
+    };
     let mut control = Control::new(Limits { time_ms: None, memory_mib: None }, |point| Usage {
         elapsed_ms: 0, memory_mib: 0,
         signal: (point == Checkpoint::ObjectViewTransport).then_some(archsig::result::Signal::Term),
@@ -11435,8 +11439,10 @@ fn assert_mixed_constant_result(j: &JNode, reverse: bool, code: i32, evidence_ke
 
 #[test]
 fn local_mixed_numeric_constant_guards_use_full_or_empty_domains() {
-    use archsig::observed::{
-        control::Control, evaluate_observed, input::InputSources, prepare_observed,
+    use archsig::{
+        control::Control,
+        input::InputSources,
+        observed::{evaluate_observed, prepare_observed},
     };
     for reverse in [false, true] {
         for integer in [false, true] {
@@ -11767,9 +11773,9 @@ reading Before {{use vocabulary Reservations version "1" digest "{digest}";view 
 reading After {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):(Option<State>,RefBox)=(some(s),Held(s));}}"#
     );
     let evaluated = archsig::observed::evaluate_observed_bytes(
-        archsig::observed::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
+        archsig::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-        &mut archsig::observed::control::Control::unlimited(),
+        &mut archsig::control::Control::unlimited(),
     ).unwrap();
     let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
     let m = answer(&j, "m");
@@ -11827,10 +11833,10 @@ reading Before {{use vocabulary Reservations version "1" digest "{digest}";view 
 reading After {{use vocabulary Reservations version "1" digest "{digest}";view boxes(s:State):Hidden=Empty;}}"#
         );
         let evaluated = archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
+            archsig::input::InputSources::from_bytes(vec![definition.into_bytes()], law.into_bytes(), map.into_bytes()),
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
               "same=compare($m.operation,to=$m.operation,kind=action)"],
-            &mut archsig::observed::control::Control::unlimited(),
+            &mut archsig::control::Control::unlimited(),
         ).unwrap();
         let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
         let m = answer(&j, "m");
@@ -12082,11 +12088,11 @@ reading Before {{{uses} view affine(s:State,{source_params}):{returns}={source};
 reading After {{{uses} view affine(s:State,{target_params}):{returns}={target};}}"#
         );
         let result=archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(
+            archsig::input::InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
                 include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-            &mut archsig::observed::control::Control::unlimited(),
+            &mut archsig::control::Control::unlimited(),
         ).unwrap();
         let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let m = answer(&j, "m");
@@ -12165,7 +12171,7 @@ reading After {{{uses} view affine(s:State,{target_params}):{returns}={target};}
 
 #[test]
 fn numeric_view_function_stops_keep_the_checked_operation() {
-    use archsig::observed::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::control::{Checkpoint, Control, Limits, Usage};
     for stop_at in [1, 8] {
         let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         let law = format!(
@@ -12185,7 +12191,7 @@ reading After {{{uses} view affine(s:State,renamed:Z):Z=renamed+1;}}"#
             }
         });
         let result=archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(
+            archsig::input::InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
                 include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
@@ -12313,11 +12319,11 @@ reading Before {{{uses} law required equation(s:State,{a}):{left};}}
 reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
         );
         let result=archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(
+            archsig::input::InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
                 include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-            &mut archsig::observed::control::Control::unlimited(),
+            &mut archsig::control::Control::unlimited(),
         ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
         let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let m = answer(&j, "m");
@@ -12378,11 +12384,11 @@ reading After {{{uses} law required equation(s:State,x:Z) when true: {};}}"#,
             body.replace('n', "x")
         );
         let result=archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(
+            archsig::input::InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
                 include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
             &["base=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After)","m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-            &mut archsig::observed::control::Control::unlimited(),
+            &mut archsig::control::Control::unlimited(),
         ).unwrap_or_else(|e|panic!("{guard}: {e:?}"));
         let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let m = answer(&j, "m");
@@ -12447,11 +12453,11 @@ reading Before {{{uses} law required equation(s:State,{params}):{source};}}
 reading After {{{uses} law required equation(s:State,{renamed}):{target};}}"#
         );
         let result=archsig::observed::evaluate_observed_bytes(
-            archsig::observed::input::InputSources::from_bytes(
+            archsig::input::InputSources::from_bytes(
                 vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
                 include_bytes!("fixtures/configuration-operation.archmap.json").to_vec()),
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-            &mut archsig::observed::control::Control::unlimited(),
+            &mut archsig::control::Control::unlimited(),
         ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
         let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let m = answer(&j, "m");

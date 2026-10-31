@@ -1,11 +1,9 @@
 //! 実際に保持された補完caseからExpression停止点を特定する。再検査のprobeも数え、固定回数を仮定しない。
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{

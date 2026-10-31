@@ -1,13 +1,15 @@
 //! 元viewの有限値parameter全域を、参照束縛と対象を固定した関数族として読む。
 use super::{
     PreparedObserved,
-    control::{Checkpoint, Control},
     environment::Environment,
     evaluate_observed,
-    input::CheckedInputs,
     object_evaluate::{ObjectContext, ObjectDomain, ObjectEvaluationFailure},
     request::{Request, resolve_object_view_requests},
     result::{Fact, ObservedEvaluation, Scalar, Scope, ValidationFailure},
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use crate::{
     construction::{
@@ -465,9 +467,11 @@ pub(super) fn evaluate_finite_view(
 
 #[cfg(test)]
 mod tests {
-    use super::super::{
+    use crate::{
         control::{Limits, Usage},
         input::{InputSources, check_inputs},
+    };
+    use super::super::{
         object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
         result::Payload,
     };
@@ -706,7 +710,7 @@ mod missing_tests {
 
 #[cfg(test)]
 mod stop_tests {
-    use super::super::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
@@ -921,7 +925,7 @@ mod owner_tests {
 
 #[cfg(test)]
 mod owner_missing_tests {
-    use super::super::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
@@ -1060,8 +1064,8 @@ mod owner_missing_tests {
 
 #[cfg(test)]
 mod recheck_regression_tests {
+    use crate::control::{Limits, Usage};
     use super::super::{
-        control::{Limits, Usage},
         object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
         result::Payload,
     };
@@ -1290,7 +1294,7 @@ mod empty_list_tests {
 
 #[cfg(test)]
 mod empty_list_composite_tests {
-    use super::super::input::{InputSources, check_inputs};
+    use crate::input::{InputSources, check_inputs};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};

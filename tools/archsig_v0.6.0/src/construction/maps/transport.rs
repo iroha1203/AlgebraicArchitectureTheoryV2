@@ -502,8 +502,8 @@ mod tests {
         let d = include_bytes!("../../../tests/fixtures/cross-kind-transport.atoms.json");
         let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
         let digest = &definitions.vocabularies["V"].digest;
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],
                 include_str!("../../../tests/fixtures/cross-kind-transport.law")
                     .replace("@DIGEST@", digest)
@@ -517,8 +517,8 @@ mod tests {
         .unwrap()
     }
     fn inputs(map: &str) -> CheckedInputs {
-        crate::observed::input::check_inputs(
-            crate::observed::input::InputSources::from_bytes(
+        crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(
                 vec![include_bytes!("../../../tests/fixtures/reservations.atoms.json").to_vec()],
                 include_bytes!("../../../tests/fixtures/configuration-operation.law").to_vec(),
                 map.as_bytes().to_vec(),

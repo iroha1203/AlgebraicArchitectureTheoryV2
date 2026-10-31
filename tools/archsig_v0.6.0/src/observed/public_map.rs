@@ -2,16 +2,17 @@
 use super::{
     PreparedObserved,
     architecture_result::architecture,
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, MapWitness, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        MapWitness, Witness,
     },
-    control::{Checkpoint, Control},
     environment::{AnswerBinding, Environment},
     projection::ProjectionStep as P,
     request::{QuestionKind, Request, Selector},
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{
     archmap::{Slot, Value},
     construction::ConstructionFailure,

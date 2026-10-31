@@ -2,7 +2,7 @@
 //! 構文エラーは byte 区間、それ以外は JSON Pointer で位置を返す。
 
 use crate::issue::{Code, Issue, Location};
-use crate::observed::control::{CheckFailure, Checkpoint, Control};
+use crate::control::{CheckFailure, Checkpoint, Control};
 
 impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
     fn from(issue: Box<Issue>) -> Self {
@@ -58,7 +58,7 @@ impl InputError for CheckFailure<Box<Issue>> {
     fn is_budget_stop(&self) -> bool {
         matches!(
             self,
-            Self::Stopped(crate::observed::control::StopReason::BudgetExhausted { .. })
+            Self::Stopped(crate::control::StopReason::BudgetExhausted { .. })
         )
     }
 }

@@ -2,13 +2,11 @@
 use archsig::result::Signal;
 use archsig::{
     canonical::Json,
+    control::{Checkpoint, Control, Limits, Usage},
     definition::check_definitions,
+    input::{InputSources, check_inputs},
     law::model::Signature,
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
-    },
+    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,

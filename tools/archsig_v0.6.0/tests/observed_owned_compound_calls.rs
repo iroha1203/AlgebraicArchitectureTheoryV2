@@ -3,10 +3,8 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-    },
+    control::{Control, Limits, Usage},
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
@@ -207,7 +205,7 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let original = input.clone();
-        let before = archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());

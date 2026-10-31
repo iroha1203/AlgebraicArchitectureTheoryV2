@@ -2,12 +2,10 @@
 mod common;
 use archsig::{
     archmap::check_archmap,
+    control::{Checkpoint, Control, Limits, StopReason, Usage},
     definition::check_definitions,
+    input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
-    observed::{
-        control::{Checkpoint, Control, Limits, StopReason, Usage},
-        input::{InputSources, InputStatus, check_inputs},
-    },
     result::{ResultIssue, Signal},
 };
 use std::{cell::Cell, rc::Rc};

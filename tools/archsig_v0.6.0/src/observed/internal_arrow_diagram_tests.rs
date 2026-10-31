@@ -1,9 +1,8 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved, architecture_result,
+use crate::{
     control::{Limits, Usage},
     input::{InputSources, check_inputs},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, architecture_result, request::resolve_native_for_test},
 };
 use std::{cell::Cell, rc::Rc};
 const DEF: &[u8] = include_bytes!("../../tests/fixtures/internal-arrow.atoms.json");

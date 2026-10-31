@@ -70,7 +70,7 @@ pub enum ResultIssue {
     },
     Cancelled(Signal),
     BudgetExhausted {
-        resource: crate::observed::control::Resource,
+        resource: crate::control::Resource,
         limit: u128,
         observed: u128,
     },

@@ -3,11 +3,9 @@ mod common;
 mod fixture;
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::{InputSources, check_inputs},
-    },
+    control::{Control, Limits, Usage},
+    input::{InputSources, check_inputs},
+    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 fn quiet() -> Control {
@@ -503,7 +501,7 @@ fn map_field_empty_domains_and_inconsistent_nonempty_to_empty_keep_input_stages(
     let failure = check_inputs(fixture::no_images(), &mut quiet()).unwrap_err();
     assert_eq!(
         failure.status(),
-        archsig::observed::input::InputStatus::Invalid
+        archsig::input::InputStatus::Invalid
     );
     assert!(
         failure

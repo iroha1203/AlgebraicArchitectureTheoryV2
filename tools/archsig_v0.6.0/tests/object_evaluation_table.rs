@@ -8,10 +8,8 @@ use archsig::{
             evaluate_object_instance, evaluate_object_table, object_reading_instances,
         },
     },
-    observed::{
-        control::{Checkpoint, Control, Limits, Usage},
-        input::{CheckedInputs, InputSources, check_inputs},
-    },
+    control::{Checkpoint, Control, Limits, Usage},
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};

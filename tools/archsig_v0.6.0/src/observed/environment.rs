@@ -1,9 +1,10 @@
 //! 不変の原始観測表からの参照・slot 読取りと、生成 leaf の元入力照合。
-use super::{
+use crate::{
     control::{Checkpoint, Control, StopReason},
-    data,
     input::CheckedInputs,
-    numeric, quantifier,
+};
+use super::{
+    data, numeric, quantifier,
     request::{QuestionKind, Request, Selector},
     result::*,
 };

@@ -165,7 +165,7 @@ fn finite_map_domain_success_does_not_authorize_later_missing_function() {
     e.validate(&graph, &r.nodes[t]).unwrap();
 }
 fn finite_map_private_stop(kind: usize, after_answer: bool) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",
@@ -295,7 +295,7 @@ fn finite_map_recheck_stops_freeze_the_shared_control() {
             if arm.get() {
                 usage
             } else {
-                super::super::control::Usage::default()
+                crate::control::Usage::default()
             }
         });
         let environment = Environment::new(r.prepared.inputs(), &mut control).unwrap();

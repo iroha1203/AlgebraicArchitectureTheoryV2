@@ -4,9 +4,9 @@ mod bool_fixture {
     include!("finite_data_quotient.rs");
 }
 fn bool_result(extra: &str, asks: &[&str]) -> JNode {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
+        observed::evaluate::evaluate_observed_bytes,
     };
     let result = evaluate_observed_bytes(
         bool_fixture::sources("", extra),
@@ -145,10 +145,10 @@ fn atomic_bool_cli_saves_and_reuses_checked_families() {
 }
 #[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     let original = bool_fixture::sources(
         "",
@@ -221,9 +221,9 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
 
 #[test]
 fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
-    use archsig::observed::{
+    use archsig::{
         control::{Checkpoint, Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
+        observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     for mode in 0..4 {
@@ -295,10 +295,10 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
 
 #[test]
 fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
         input::InputSources,
+        observed::evaluate::evaluate_observed_bytes,
     };
     for (body, expected) in [
         ("if false then s.y else s.x", "established"),
@@ -438,10 +438,9 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
 
 #[test]
 fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
-    use archsig::observed::{
+    use archsig::{
         control::{Control, Limits, Usage},
-        evaluate::evaluate_observed_bytes,
-        result::EvaluationFailure,
+        observed::{evaluate::evaluate_observed_bytes, result::EvaluationFailure},
     };
     let result = bool_result(
         "view first(s:State):Bool=s.x;law optional empty_family(s:State):forall b in list<Bool>[] . b;",

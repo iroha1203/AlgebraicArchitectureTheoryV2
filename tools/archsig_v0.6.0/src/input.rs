@@ -2,7 +2,7 @@
 
 mod comparison;
 
-use super::control::{CheckFailure, Checkpoint, Control, StopReason};
+use crate::control::{CheckFailure, Checkpoint, Control, StopReason};
 use crate::{
     archmap::{CheckedArchMap, check_archmap_controlled},
     canonical::{Json, sha256_digest},

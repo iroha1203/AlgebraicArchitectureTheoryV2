@@ -2,9 +2,9 @@
 mod common;
 use archsig::{
     archmap::CheckedArchMap,
+    control::{Control, Limits, StopReason, Usage},
     law::CheckedLaw,
     observed::{
-        control::{Control, Limits, StopReason, Usage},
         projection::{ProjectionStep, ProjectionType},
         request::{
             ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure,

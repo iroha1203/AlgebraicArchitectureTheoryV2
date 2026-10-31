@@ -1,5 +1,5 @@
 use archsig as fixture_archsig;
-use archsig::{canonical::Json, definition::check_definitions, observed::input::InputSources};
+use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod maps {
     use super::fixture_archsig as archsig;

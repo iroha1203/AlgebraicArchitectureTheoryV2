@@ -106,10 +106,10 @@ fn identity_pairs(
     let right = elements(g, target)?;
     let mut result = vec![];
     for a in &left {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut images = vec![];
         for z in &right {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if g.scalar(*a)? == g.scalar(*z)? {
                 images.push(*z);
             }
@@ -157,10 +157,10 @@ pub(super) fn compute(
     // mapは対象外のUを根へ送る。局所系の観測位置・参照に対する実作用を確認する。
     let mut identity = true;
     for position in &system.fixed_positions {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut found = false;
         for (fact, image) in candidate.universe().iter().zip(candidate.images()) {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             if fact.snapshot == position.snapshot
                 && fact.subject == position.subject
                 && fact.field == position.field
@@ -330,10 +330,10 @@ pub(super) fn compute(
         let lp = pairs(g, lr)?;
         let rp = pairs(g, rr)?;
         for (x, y) in &lp {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let mut transported = None;
             for (a, z) in &correspondence {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if g.scalar(*a)? == g.scalar(*y)? {
                     transported = Some(*z);
                 }
@@ -341,7 +341,7 @@ pub(super) fn compute(
             let transported = transported.ok_or("matchingの像がない")?;
             let mut global_image = None;
             for (a, z) in &global_pairs {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if g.scalar(*a)? == g.scalar(*x)? {
                     global_image = Some(*z);
                 }
@@ -349,7 +349,7 @@ pub(super) fn compute(
             let global_image = global_image.ok_or("大域状態の像がない")?;
             let mut commutes = false;
             for (a, z) in &rp {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 commutes |= g.scalar(*a)? == g.scalar(global_image)?
                     && g.scalar(*z)? == g.scalar(transported)?;
             }

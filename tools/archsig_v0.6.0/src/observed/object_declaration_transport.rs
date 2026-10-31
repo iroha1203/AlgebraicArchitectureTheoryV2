@@ -332,7 +332,7 @@ fn applicable(
 }
 
 fn field_read(
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     mut id: usize,
     parameters: &[Param],
     c: &mut Control,
@@ -360,7 +360,7 @@ fn field_read(
 }
 
 fn read_parameter(
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     mut id: usize,
     parameters: &[Param],
     c: &mut Control,
@@ -443,7 +443,7 @@ fn value_map(
 }
 fn reference_map(
     b: &mut Builder<'_>,
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
     st: &str,
     tt: &str,
@@ -464,7 +464,7 @@ fn reference_map(
 }
 fn checked_reference_map(
     b: &mut Builder<'_>,
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
     st: &str,
     tt: &str,
@@ -563,7 +563,7 @@ fn outside_value(
 }
 fn value_type_map(
     b: &mut Builder<'_>,
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
     declaration: &str,
     types: [&Type; 2],
@@ -708,7 +708,7 @@ fn value_type_map(
 
 fn expression(
     b: &mut Builder<'_>,
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     id: usize,
     params: &[Param],
     dependencies: &[NodeRef],
@@ -748,7 +748,7 @@ fn expression(
 pub(super) fn retain(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
-    inputs: &super::super::input::CheckedInputs,
+    inputs: &crate::input::CheckedInputs,
     declarations: &construction::DeclarationCorrespondence,
     dependencies: &[NodeRef],
     request: &Request,

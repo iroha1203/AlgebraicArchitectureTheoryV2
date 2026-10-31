@@ -1,6 +1,6 @@
 //! Q/Fp上の正確な行消去。全解・核・像と矛盾行の左零化子を保持する。
+use crate::control::{Checkpoint, Control};
 use super::{
-    control::{Checkpoint, Control},
     numeric,
     result::{Scalar, ValidationFailure},
 };
@@ -206,7 +206,7 @@ pub(super) fn solve(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::control::{Limits, Usage};
+    use crate::control::{Limits, Usage};
     fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }

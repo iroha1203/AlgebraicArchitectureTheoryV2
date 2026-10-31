@@ -38,7 +38,7 @@ fn differential(
     let mut d = vec![vec![Z::zero(); from.rank]; to.rank];
     for (i, tuple) in to.tuples.iter().enumerate() {
         for omitted in 0..tuple.len() {
-            c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+            c.checkpoint(crate::control::Checkpoint::Localize)?;
             let face = tuple
                 .iter()
                 .enumerate()
@@ -93,11 +93,11 @@ pub(in crate::observed::local_result) fn diagnose(
         diagram.patches.iter().map(|i| vec![*i]).collect(),
     )];
     for _ in 0..=degree {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let mut tuples = vec![];
         for tuple in &levels.last().ok_or("Čechの次数がない")?.tuples {
             for patch in &diagram.patches {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let mut next = tuple.clone();
                 next.push(*patch);
                 tuples.push(next);

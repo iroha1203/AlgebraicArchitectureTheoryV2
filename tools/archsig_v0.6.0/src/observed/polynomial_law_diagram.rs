@@ -1,18 +1,21 @@
 //! 元の共有K[X]と原式の評価を、型付きnative DAGへ保持する。
 use super::{
+    construction_result as native,
     construction_result::{
-        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
-        ConstructionValue, Witness,
+        ArchitectureWitness, ConstructionData as D, ConstructionType as T, ConstructionValue,
+        Witness,
     },
-    control::{Checkpoint, Control},
     environment::{Environment, numeric_parameters},
     equation_polynomial::EquationPolynomial,
-    input::CheckedInputs,
     object_equation_presentation::{
         EquationGuard, EquationPresentation, EquationPresentationFailure,
         EquationPresentationStatus, object_equation_presentation,
     },
     result::*,
+};
+use crate::{
+    control::{Checkpoint, Control},
+    input::CheckedInputs,
 };
 use crate::{
     canonical::Json,

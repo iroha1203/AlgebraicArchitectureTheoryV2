@@ -415,7 +415,7 @@ fn dependent_private_body_phase_stop(
     at: usize,
     kind: usize,
 ) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"
@@ -615,7 +615,7 @@ fn dependent_family_post_validation_cancel_preserves_verified_current_counterexa
 
 #[test]
 fn dependent_family_recheck_stops_and_success_memo_are_session_local() {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let result = dependent_private_example(
         DEPENDENT_BODY,

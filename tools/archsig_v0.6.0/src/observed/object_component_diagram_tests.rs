@@ -1,8 +1,8 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
-    evaluate_observed_bytes,
     input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())

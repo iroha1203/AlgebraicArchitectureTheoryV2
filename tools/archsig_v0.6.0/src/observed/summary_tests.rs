@@ -1,5 +1,5 @@
 use super::*;
-use crate::observed::{control::Control, evaluate_observed_bytes, input::InputSources};
+use crate::{control::Control, input::InputSources, observed::evaluate_observed_bytes};
 use crate::types::Type;
 
 fn evaluated_counter() -> (ObservedEvaluation, NodeRef) {

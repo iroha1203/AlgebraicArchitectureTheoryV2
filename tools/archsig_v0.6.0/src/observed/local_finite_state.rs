@@ -27,7 +27,7 @@ pub(super) fn restriction(
 ) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let mut pairs = vec![];
     for (value, r) in values(from, equation) {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let image = project(value, from, to, c)?;
         let target = values(to, equation)
             .iter()
@@ -51,7 +51,7 @@ pub(super) fn summary(
         let mut next = vec![];
         for row in matching {
             for (value, _) in values(&states[patch], equation) {
-                c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let mut compatible = true;
                 for (j, previous) in row.iter().enumerate() {
                     let overlap = intersections[patch][patches[j]];
@@ -70,7 +70,7 @@ pub(super) fn summary(
     let matching = matching.into_iter().map(Scalar::Tuple).collect::<Vec<_>>();
     let mut restriction = vec![];
     for (value, r) in values(&states[base], equation) {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let image = Scalar::Tuple(
             patches
                 .iter()
@@ -135,16 +135,16 @@ pub(super) fn bijective(summary: &FiniteSide, c: &mut Control) -> Result<bool, V
     ]).canonical();
     let mut counts = BTreeMap::<String, usize>::new();
     for (_, value) in &summary.restriction {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         *counts.entry(key(value)).or_default() += 1;
     }
     for value in &summary.matching {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         if counts.get(&key(value)) != Some(&1) {
             return Ok(false);
         }
     }
-    c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+    c.checkpoint(crate::control::Checkpoint::Localize)?;
     Ok(true)
 }
 
@@ -156,7 +156,7 @@ fn scalar_domain(
 ) -> Result<(NodeRef, Vec<(Scalar, NodeRef)>), ValidationFailure> {
     let mut elements = vec![];
     for value in values {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         if !elements.iter().any(|(v, _)| v == value) {
             elements.push((value.clone(), change_result::value(b, value)?));
         }
@@ -195,7 +195,7 @@ pub(super) fn build(
     let mut equation_values = vec![];
     let holds = |i: usize| selected.iter().all(|law| model.truth[i][*law]);
     for (i, point) in model.points.iter().enumerate() {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let value = if let Some(reading) = reading {
             let values = point.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
             Scalar::Tuple(integer::linear::apply(&reading.map, &values,c)?.into_iter().map(integer::coefficient_value).collect())
@@ -213,7 +213,7 @@ pub(super) fn build(
     let mut solution_parameters = vec![];
     let mut solution_images = vec![];
     for (row, point) in model.candidates.rows.iter().zip(&model.candidate_points) {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let Some(point) = point else { continue };
         let parameters = Scalar::Tuple(row.parameters.clone());
         all_parameters.push(parameters.clone());
@@ -249,7 +249,7 @@ pub(super) fn build(
     let mut fixed = vec![];
     let mut slot_subjects = vec![];
     for slot in &support.positions {
-        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let subject = env.subject(&slot.snapshot, &slot.subject)?;
         let r = change_result::value(
             b,

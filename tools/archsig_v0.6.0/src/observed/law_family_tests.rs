@@ -1,8 +1,7 @@
 use super::*;
-use crate::observed::{
-    PreparedObserved,
+use crate::{
     control::{Limits, Usage},
-    request::resolve_native_for_test,
+    observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
 mod fixture {
@@ -37,7 +36,7 @@ mod finite_fixture {
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
-fn prepared(inputs: Arc<crate::observed::input::CheckedInputs>) -> PreparedObserved {
+fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
         inputs.law(),
         inputs.archmap(),

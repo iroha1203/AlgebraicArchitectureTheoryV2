@@ -1,11 +1,11 @@
 //! 検査済み対象域の外にある元Lawを、未評価bodyと条件付き成立として保持する。
 use super::{
     construction_result::{ArchitectureWitness, ConstructionData as D, ConstructionValue, Witness},
-    control::{Checkpoint, Control},
     environment::Environment,
     law_evaluation as frames,
     result::*,
 };
+use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 

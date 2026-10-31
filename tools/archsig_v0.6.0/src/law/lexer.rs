@@ -2,7 +2,7 @@
 
 use crate::issue::{Code, Issue};
 use crate::json::InputError;
-use crate::observed::control::{Checkpoint, Control};
+use crate::control::{Checkpoint, Control};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenKind {
@@ -257,7 +257,7 @@ fn hex4(src: &[u8], at: usize) -> Option<u32> {
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, Limits, StopReason, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 

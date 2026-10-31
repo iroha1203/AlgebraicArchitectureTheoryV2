@@ -1,8 +1,8 @@
 use archsig as fixture_archsig;
 use archsig::{
     canonical::Json,
+    input::InputSources,
     json::{JNode, JValue, parse},
-    observed::input::InputSources,
 };
 #[allow(dead_code)]
 mod base {

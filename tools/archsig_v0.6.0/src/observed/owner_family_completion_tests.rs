@@ -336,7 +336,7 @@ fn owner_completion_shared_source_projection_prefix_rejects_value_outside_origin
 }
 
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::observed::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, false);
     let asks = [

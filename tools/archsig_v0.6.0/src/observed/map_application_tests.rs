@@ -211,7 +211,7 @@ fn map_application_normal_validation_does_not_authorize_later_condition_changes(
     e.validate(&g, &r.nodes[p]).unwrap();
 }
 fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: bool) {
-    use super::super::control::Usage;
+    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Applications.prior)",
@@ -343,7 +343,7 @@ fn map_application_recheck_stops_freeze_the_shared_control() {
             if arm.get() {
                 usage
             } else {
-                super::super::control::Usage::default()
+                crate::control::Usage::default()
             }
         });
         let environment = Environment::new(r.prepared.inputs(), &mut control).unwrap();

@@ -1,5 +1,5 @@
 //! 字句不正を持つ小さい byte bundle でも、終了時の取消と状態順位を保持する。
-use archsig::observed::{
+use archsig::{
     control::{Checkpoint, Control, Limits, StopReason, Usage},
     input::{InputSources, InputStatus, check_inputs},
 };

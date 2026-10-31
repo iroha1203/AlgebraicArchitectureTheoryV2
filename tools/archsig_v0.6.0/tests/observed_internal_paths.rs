@@ -1,10 +1,8 @@
 use archsig::{
     canonical::Json,
-    observed::{
-        control::{Control, Limits, Usage},
-        evaluate_observed_bytes,
-        input::InputSources,
-    },
+    control::{Control, Limits, Usage},
+    input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 #[path = "common/finite_map.rs"]
 #[allow(dead_code)]
@@ -231,7 +229,7 @@ fn internal_path_provenance_pair_retains_math_and_returns_to_current_inputs() {
     let mut out = vec![];
     for revision in ["r1", "r2"] {
         let inputs = small::input("normal", revision);
-        let checked = archsig::observed::input::check_inputs(inputs.clone(), &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(inputs.clone(), &mut quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             inputs.clone(),

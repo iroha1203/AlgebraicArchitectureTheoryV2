@@ -1,8 +1,8 @@
 use super::*;
-use crate::observed::{
+use crate::{
     control::{Limits, Usage},
-    evaluate_observed_bytes,
     input::InputSources,
+    observed::evaluate_observed_bytes,
 };
 
 fn quiet() -> Control {
@@ -600,7 +600,7 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
 fn stopping(mode: usize, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     Control::new(
-        super::super::control::Limits {
+        crate::control::Limits {
             time_ms: (mode == 2).then_some(1),
             memory_mib: (mode == 3).then_some(1),
         },
@@ -609,7 +609,7 @@ fn stopping(mode: usize, at: usize) -> Control {
                 seen.set(seen.get() + 1);
             }
             let stop = seen.get() >= at;
-            super::super::control::Usage {
+            crate::control::Usage {
                 signal: if stop && mode < 2 {
                     Some(if mode == 0 {
                         crate::result::Signal::Int
