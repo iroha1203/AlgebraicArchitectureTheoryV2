@@ -1914,6 +1914,9 @@ fn implicit_support_cover_preserves_missing() {
         );
         let before = result_json(&dir, &first);
         if right.is_some() {
+            for answer in arr(get(&before, "answers")) {
+                assert_eq!(s(get(answer, "status")), "established");
+            }
             continue;
         }
         assert!(!has(

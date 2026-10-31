@@ -875,3 +875,30 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
     assert_eq!(s(get(origin, "mode")), "specification");
     assert!(arr(get(origin, "locations")).is_empty());
 }
+
+/// --reuse の path も呼出し cwd 基準で読む。cwd はプロセスの性質なので実バイナリで確かめる。
+#[test]
+fn reuse_path_is_relative_to_the_calling_directory() {
+    let dir = inputs("reuse-relative", Some("2"), L);
+    let first = requests_with(&dir, &ASKS, run_binary);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for ask in ASKS {
+        args.extend(["--ask", ask]);
+    }
+    let reused = run_binary(&dir, &args);
+    assert_eq!(reused.code, first.code, "{}", reused.stdout);
+    assert!(reused.stderr.is_empty());
+    assert!(warnings(&result_json(&dir, &reused)).is_empty());
+}

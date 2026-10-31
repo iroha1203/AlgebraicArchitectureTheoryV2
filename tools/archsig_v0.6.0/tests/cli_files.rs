@@ -130,6 +130,7 @@ fn existing_outputs_are_never_overwritten() {
         ],
     );
     assert_eq!(r.code, 64);
+    assert!(r.stderr.is_empty());
     assert!(!has(&r.receipt, "result"));
     assert_eq!(
         std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),

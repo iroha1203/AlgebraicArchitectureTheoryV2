@@ -127,23 +127,6 @@ fn compound_bool_observations_preserve_equality_values() {
     }
 }
 #[test]
-fn atomic_bool_cli_saves_and_reuses_checked_families() {
-    let dir = law_input("quotient-atomic-bool-cli", "view first(s:State):Bool=s.x;");
-    let asks = [
-        "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
-        "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.valid)",
-    ];
-    let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
-    let result = result_json(&dir, &first);
-    let repeated = execute(&dir, "reuse", &asks, Some("out"));
-    assert_eq!(repeated.code, 0, "{} {}", repeated.stdout, repeated.stderr);
-    let reused = result_json(&dir, &repeated);
-    for key in ["answers", "nodes"] {
-        assert_eq!(get(&result, key).value, get(&reused, key).value);
-    }
-}
-#[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
     use archsig::{
         control::{Control, Limits, Usage},

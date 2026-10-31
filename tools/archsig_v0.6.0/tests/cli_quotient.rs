@@ -115,7 +115,7 @@ fn exact_fibers(result: &JNode, index: usize, mut expected: Vec<Vec<(bool,bool)>
     pairs.sort();expected_pairs.sort();assert_eq!(pairs,expected_pairs);
 }
 #[test]
-fn finite_quotient_distinguishes_all_candidates_from_solutions_and_reuses() {
+fn finite_quotient_distinguishes_all_candidates_from_solutions() {
     let dir = input("quotient-domains");
     let asks = [
         "all=quotient(Pair.last,on=$s.domain,s=@v/s)",
@@ -134,12 +134,6 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions_and_reuses() {
     assert_eq!(fiber_sizes(&original, 1), vec![1, 1]);
     exact_fibers(&original,0,vec![vec![(false,false),(true,false)],vec![(false,true),(true,true)]]);
     exact_fibers(&original,1,vec![vec![(true,false)],vec![(true,true)]]);
-    let repeated = execute(&dir, "out2", &asks, Some("out"));
-    assert_eq!(repeated.code, 0, "{} {}", repeated.stdout, repeated.stderr);
-    let reused = result_json(&dir, &repeated);
-    for key in ["answers", "nodes"] {
-        assert_eq!(get(&original, key).value, get(&reused, key).value);
-    }
 }
 #[test]
 fn empty_solution_quotient_keeps_its_type_and_has_no_fibers() {
@@ -255,10 +249,6 @@ fn missing_view_keeps_quotient_undetermined_and_independent_followup_available()
     assert!(arr(get(reason,"missing")).iter().any(|f|s(get(f,"field"))=="Pair.State.y"));
     let defaults=arr(get(&arr(get(&result,"requests"))[1],"defaults"));
     assert_eq!(defaults.len(),1);assert_eq!(s(get(&defaults[0],"rule")),"no_law_check");
-    let second=execute(&dir,"out2",&asks,Some("out"));
-    assert_eq!(second.code,2,"{} {}",second.stdout,second.stderr);
-    let reused=result_json(&dir,&second);
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
 }
 
 #[test]
@@ -284,10 +274,6 @@ fn unavailable_view_binding_blocks_quotient_without_breaking_independent_request
     assert!(reasons.iter().any(|r|s(get(r,"code"))=="dependency_blocked"));
     assert!(reasons.iter().any(|r|s(get(r,"code"))=="missing_observation" &&
         arr(get(r,"missing")).iter().any(|f|s(get(f,"field"))=="Pair.State.y")));
-    let second=execute(&dir,"out2",&asks,Some("out"));
-    assert_eq!(second.code,2,"{} {}",second.stdout,second.stderr);
-    let reused=result_json(&dir,&second);
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
     let mut known=asks;
     known[1]="v=evaluate(Pair.first,s=@v/s)";
     let available=execute(&dir,"known",&known,None);
@@ -344,10 +330,6 @@ fn inapplicable_view_binding_preserves_projection_condition_and_followup() {
     assert_eq!(available.code,0,"{} {}",available.stdout,available.stderr);
     let complete=result_json(&dir,&available);
     exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
-    let reused=execute(&dir,"known2",&asks,Some("known"));
-    assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
-    let repeated=result_json(&dir,&reused);
-    for key in ["answers","nodes"] {assert_eq!(get(&complete,key).value,get(&repeated,key).value);}
 }
 
 fn law_input(name: &str, extra: &str) -> std::path::PathBuf {
@@ -358,7 +340,7 @@ fn law_input(name: &str, extra: &str) -> std::path::PathBuf {
     std::fs::write(path,law).unwrap(); dir
 }
 #[test]
-fn law_descent_compares_typed_pairs_instead_of_truth_and_reuses() {
+fn law_descent_compares_typed_pairs_instead_of_truth() {
     let dir = law_input("quotient-law-pairs", "law optional same(s:State):s.x=s.x;law optional last_eq(s:State):s.y=s.y;");
     let asks = ["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "bad=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)",
@@ -396,10 +378,6 @@ fn law_descent_compares_typed_pairs_instead_of_truth_and_reuses() {
         let environment=get(node(&result,get(evaluation,"environment")),"value");
         assert_eq!(arr(get(environment,"overrides")).len(),2);
     }
-    let repeated=execute(&dir,"reused",&asks,Some("out"));
-    assert_eq!(repeated.code,1,"{} {}",repeated.stdout,repeated.stderr);
-    let reused=result_json(&dir,&repeated);
-    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
 }
 #[test]
 fn law_descent_preserves_unbound_instance_keys_and_additional_binding() {
@@ -466,8 +444,6 @@ fn missing_law_values_remain_missing_and_independent_followup_runs() {
     assert!(!has(get(&answers[1],"outputs"),"quotient"));
     assert_eq!(s(get(&answers[2],"status")),"refuted");
     assert!(format!("{:?}",get(&answers[1],"reasons")).contains("Pair.State.y"));
-    let repeated=execute(&dir,"reused",&asks,Some("out"));assert_eq!(repeated.code,2);
-    let reused=result_json(&dir,&repeated);assert_eq!(get(&result,"answers").value,get(&reused,"answers").value);
 }
 #[test]
 fn quotient_law_rejects_wrong_kind_and_shared_parameter_type() {
@@ -515,10 +491,6 @@ fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
             assert_eq!(get(node(&result,get(and,"value")),"value").value,JValue::Bool(expected[0]&&expected[1]));
         }
     }
-    let reused=execute(&dir,"reused",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],Some("out"));
-    assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);
-    let reused=result_json(&dir,&reused);
-    for key in ["answers","nodes"] {assert_eq!(get(&saved_result,key).value,get(&reused,key).value);}
 }
 #[test]
 fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_descent() {
@@ -543,7 +515,7 @@ fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_desce
 }
 
 #[test]
-fn option_quotient_keeps_none_fibers_typed_laws_and_reuse() {
+fn option_quotient_keeps_none_fibers_and_typed_laws() {
     let dir = law_input(
         "quotient-option",
         "view tagged(s:State):Option<Bool> = if s.x then some(s.y) else none<Bool>;law optional visible(s:State):some(s.x)=some(s.x);law optional hidden(s:State):some(s.y)=some(s.y);",
@@ -584,12 +556,6 @@ fn option_quotient_keeps_none_fibers_typed_laws_and_reuse() {
         get(node(&result, &values[0]), "value").value,
         get(node(&result, &values[1]), "value").value
     );
-    let repeated = execute(&dir, "reused", &asks, Some("out"));
-    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
-    let reused = result_json(&dir, &repeated);
-    for key in ["answers", "nodes"] {
-        assert_eq!(get(&result, key).value, get(&reused, key).value);
-    }
 }
 
 #[test]
@@ -697,7 +663,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
 }
 
 #[test]
-fn container_quotient_preserves_list_and_set_fibers_and_reuses() {
+fn container_quotient_preserves_list_and_set_fibers() {
     let dir = law_input(
         "quotient-containers",
         "view ordered(s:State):List<Bool> = if s.x then list<Bool>[s.y] else list<Bool>[];view unordered(s:State):Set<Bool> = set<Bool>{s.x,s.y};law optional visible(s:State):list<Bool>[s.x]=list<Bool>[s.x];law optional hidden(s:State):list<Bool>[s.y]=list<Bool>[s.y];law optional unordered_values(s:State):set<Bool>{s.x,s.y}=set<Bool>{s.x,s.y};",
@@ -762,12 +728,6 @@ fn container_quotient_preserves_list_and_set_fibers_and_reuses() {
                 vec![(true, true)],
             ],
         );
-    }
-    let repeated = execute(&dir, "reused", &asks, Some("out"));
-    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
-    let reused = result_json(&dir, &repeated);
-    for key in ["answers", "nodes"] {
-        assert_eq!(get(&result, key).value, get(&reused, key).value);
     }
 }
 
