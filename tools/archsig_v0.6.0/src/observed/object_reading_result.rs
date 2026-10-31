@@ -402,5 +402,4 @@ pub(super) fn evaluate(
     Ok(Outcome::Evaluation { evaluation, value })
 }
 #[cfg(test)]
-#[path = "object_reading_result_tests.rs"]
 mod tests;

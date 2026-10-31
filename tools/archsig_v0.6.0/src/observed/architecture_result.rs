@@ -467,5 +467,4 @@ pub(super) fn validate_build_origin(
 }
 
 #[cfg(test)]
-#[path = "architecture_result_tests.rs"]
 mod tests;

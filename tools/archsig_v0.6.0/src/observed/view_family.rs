@@ -806,5 +806,4 @@ pub(super) fn evaluate(
     }))
 }
 #[cfg(test)]
-#[path = "view_family_tests.rs"]
 mod tests;

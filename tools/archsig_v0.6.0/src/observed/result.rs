@@ -6,9 +6,7 @@ pub(crate) use crate::archmap::Fact;
 use crate::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
-#[path = "completion_graph.rs"]
 mod completion_graph;
-#[path = "semantic_result.rs"]
 mod semantic_result;
 pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};

@@ -23,7 +23,6 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-#[path = "equation_source_polynomial.rs"]
 mod source_polynomial;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())

@@ -1,5 +1,4 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
-#[path = "term_comparison_evaluate.rs"]
 mod term_comparison_evaluate;
 use super::{
     PreparedObserved, data,
@@ -25,23 +24,14 @@ use crate::{
     input::InputSources,
 };
 use std::collections::BTreeMap;
-#[path = "answer_projection_condition_evaluate.rs"]
 mod answer_projection_condition;
-#[path = "completion_evaluate.rs"]
 mod completion;
-#[path = "dependent_family_evaluate.rs"]
 mod dependent_family;
-#[path = "family_evaluate.rs"]
 mod family;
-#[path = "owned_call_evaluate.rs"]
 mod owned_call;
-#[path = "owned_family_evaluate.rs"]
 mod owned_family;
-#[path = "owned_type_evaluate.rs"]
 mod owned_type;
-#[path = "path_evaluate.rs"]
 mod path;
-#[path = "universal_evaluate.rs"]
 mod universal;
 
 pub fn evaluate_observed_bytes(

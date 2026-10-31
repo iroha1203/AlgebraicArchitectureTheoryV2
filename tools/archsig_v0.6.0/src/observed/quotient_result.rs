@@ -15,9 +15,7 @@ use super::{
 use crate::control::Control;
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
-#[path = "quotient_law_result.rs"]
 mod law_result;
-#[path = "quotient_affine_result.rs"]
 mod affine_result;
 #[derive(Debug)]
 pub(super) struct Source {

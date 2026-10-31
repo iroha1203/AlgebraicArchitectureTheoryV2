@@ -193,5 +193,4 @@ pub(super) fn instantiate(
     Ok(r)
 }
 #[cfg(test)]
-#[path = "law_instantiation_tests.rs"]
 mod tests;

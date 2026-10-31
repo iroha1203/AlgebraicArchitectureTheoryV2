@@ -6,7 +6,6 @@ use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
 use std::collections::HashSet;
-#[path = "delta.rs"]
 mod delta;
 
 #[derive(Clone)]

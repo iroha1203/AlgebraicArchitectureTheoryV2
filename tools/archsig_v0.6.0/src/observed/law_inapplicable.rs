@@ -317,5 +317,4 @@ pub(super) fn check(
     }))
 }
 #[cfg(test)]
-#[path = "law_inapplicable_tests.rs"]
 mod tests;

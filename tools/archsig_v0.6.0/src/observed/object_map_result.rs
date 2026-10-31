@@ -21,7 +21,6 @@ use crate::{
     definition::PrimitiveSignature,
 };
 use std::sync::Arc;
-#[path = "object_declaration_transport.rs"]
 mod declaration_transport;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {

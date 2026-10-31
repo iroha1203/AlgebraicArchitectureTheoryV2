@@ -559,5 +559,4 @@ pub(super) fn evaluate(
 }
 
 #[cfg(test)]
-#[path = "law_evaluation_tests.rs"]
 mod tests;
