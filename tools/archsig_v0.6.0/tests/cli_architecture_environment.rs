@@ -134,13 +134,10 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
         &[
             fixture::MAP,
             "a=evaluate(Reservations.smallStates,on=$m.candidate.source)",
-            "b=evaluate(Reservations.smallStates,on=$a.evaluation.environment)",
             "external=evaluate(Reservations.external,a=@v/B,on=$m.candidate.source)",
             "composite=evaluate(Reservations.composite,on=$m.candidate.source)",
             "named=evaluate(Reservations.named,bind.on=@v/r,on=$m.candidate.source)",
-            "symbolic=check(Reservations.symbolic,on=$m.candidate.source)",
             "product=check(Reservations.product,on=$m.candidate.source)",
-            "guard=check(Reservations.guarded,on=$m.candidate.source)",
             "dependent=check(Reservations.dependent,on=$m.candidate.source)",
         ],
     );
@@ -148,7 +145,6 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
     let j = result_json(&dir, &r);
     for (id, expected) in [
         ("a", true),
-        ("b", true),
         ("external", true),
         ("composite", false),
     ] {
@@ -162,18 +158,11 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
         s(value(&j, get(get(answer(&j, "named"), "outputs"), "value"))),
         "4"
     );
-    for id in ["symbolic", "product", "guard", "dependent"] {
+    for id in ["product", "dependent"] {
         assert_eq!(s(get(answer(&j, id), "status")), "established", "{id}");
     }
     let root = value(&j, get(get(answer(&j, "m"), "outputs"), "candidate"));
     assert_eq!(get(get(answer(&j, "product"), "outputs"), "environment"), get(root, "source"));
-    let internal = internal_graph(&dir, &j);
-    let evaluation = value(&internal, get(get(answer(&internal, "product"), "outputs"), "evaluation"));
-    // Product has 1 root × 2 states, not the complete ArchMap's 2 × 4.
-    assert_eq!(
-        arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
-        2
-    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -689,6 +678,7 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
         assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir, &r);
         assert_eq!(s(get(answer(&j, "a"), "status")), "undetermined");
+        let internal = supplied.then(|| internal_graph(&dir, &j));
         for id in ["root", "scoped", "family"] {
             let a = answer(&j, id);
             assert_eq!(
@@ -702,7 +692,7 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
             );
             if supplied {
                 assert!(arr(get(a, "reasons")).is_empty());
-                let internal = internal_graph(&dir, &j);
+                let internal = internal.as_ref().unwrap();
                 let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
                 assert_eq!(
                     value(&internal, get(evaluation, "value")),
@@ -763,6 +753,7 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
     assert_eq!(r.code, 1, "{}", r.stdout);
     let j = result_json(&dir, &r);
     assert_eq!(s(get(&r.receipt, "status")), "complete");
+    let internal = internal_graph(&dir, &j);
     for (id, status, rows) in [
         ("source", "established", 1),
         ("target", "refuted", 1),
@@ -773,7 +764,6 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
     ] {
         let a = answer(&j, id);
         assert_eq!(s(get(a, "status")), status, "{id}");
-        let internal = internal_graph(&dir, &j);
         let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),

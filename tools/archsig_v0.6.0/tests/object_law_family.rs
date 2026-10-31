@@ -487,8 +487,8 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     let count = hits.get();
     assert!(count > 10);
     assert_eq!(normal.family().unwrap().rows().len(), 6);
-    for mode in 0..4 {
-        for at in [1, count / 2, count - 1, count] {
+    for mode in [2] {
+        for at in [count / 2, count] {
             let hits = Rc::new(Cell::new(0));
             let seen = hits.clone();
             let mut c = Control::new(

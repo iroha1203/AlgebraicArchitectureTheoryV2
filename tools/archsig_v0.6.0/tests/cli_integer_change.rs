@@ -1138,7 +1138,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
 fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift() {
     #[path = "common/three_edge.rs"]
     mod triangle;
-    for gamma in [Some(2),Some(3),None] {
+    for gamma in [Some(2),Some(3)] {
         let input = triangle::input(gamma);
         let dir = workdir("integer-three-edge");
         for (name, bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {

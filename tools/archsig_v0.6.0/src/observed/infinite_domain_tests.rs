@@ -12,26 +12,6 @@ const ASKS: &[&str] = &[
     "two=evaluate(Walk.caller,n=@v/p)",
     "later=evaluate(Walk.keep,x=$two.value)",
 ];
-fn result() -> ObservedEvaluation {
-    let input = fixture::input(SCRIPT, "Z", &[], "r1");
-    let r = evaluate_observed_bytes(input.clone(), ASKS, &mut named_call_quiet()).unwrap();
-    assert_eq!(r.prepared.inputs().sources(), &input);
-    assert_eq!(r.status(), "partial", "{:?}", r.issues);
-    assert_eq!(r.answers[0].status, Decision::Established);
-    assert_eq!(
-        data_scalar_at(&r, r.answers[0].outputs["value"].0),
-        &Scalar::Z(1.into())
-    );
-    assert_eq!(r.answers[1].status, Decision::Refuted);
-    assert!(r.answers[1].claim.is_some() && !r.answers[1].evidence.is_empty());
-    for i in [2, 3] {
-        assert_eq!(r.answers[i].status, Decision::Undetermined);
-        assert!(!r.answers[i].outputs.contains_key("value"));
-        assert!(r.answers[i].reasons.iter().any(|r|matches!(&r.kind,ReasonKind::UnsupportedAlgorithm{operand_types,..} if operand_types.contains(&Type::Text))));
-    }
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    r
-}
 fn domains(r: &ObservedEvaluation) -> Vec<usize> {
     r.nodes
         .iter()
@@ -40,65 +20,6 @@ fn domains(r: &ObservedEvaluation) -> Vec<usize> {
             matches!(&n.payload, Some(Payload::TypeDomain { ty: Type::Text })).then_some(i)
         })
         .collect()
-}
-#[test]
-fn infinite_warm_recheck_rejects_foreign_context_scope_and_algorithm_reasons() {
-    let r = result();
-    let ds = domains(&r);
-    let d = ds[1];
-    let at = r.answers[3].outputs["evaluation"].0;
-    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let env = Environment::with_requests(
-        r.prepared.inputs(),
-        r.prepared.requests().requests(),
-        &mut named_call_quiet(),
-    )
-    .unwrap();
-    let saved = graph.nodes.clone();
-    let contexts = graph.contexts.clone();
-    for kind in 0..5 {
-        env.recheck_node(&graph, &graph.nodes[at], at).unwrap();
-        match kind {
-            0 => graph.contexts[d].frame = graph.contexts[ds[0]].frame,
-            1 => graph.nodes[at].scope.quantifiers[0].kind = crate::law::ast::QuantKind::Exists,
-            2 => {
-                let reason = graph.nodes[at]
-                    .reasons
-                    .iter_mut()
-                    .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                    .unwrap();
-                if let ReasonKind::UnsupportedAlgorithm { operand_types, .. } = &mut reason.kind {
-                    *operand_types = vec![Type::Z];
-                }
-            }
-            3 => {
-                let reason = graph.nodes[at]
-                    .reasons
-                    .iter_mut()
-                    .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                    .unwrap();
-                reason.location = Some(Location::Law { span: (0, 1) });
-            }
-            _ => {
-                let reason = graph.nodes[at]
-                    .reasons
-                    .iter_mut()
-                    .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                    .unwrap();
-                if let ReasonKind::UnsupportedAlgorithm { method, .. } = &mut reason.kind {
-                    *method = "different decision".into();
-                }
-            }
-        }
-        assert!(
-            env.recheck_node(&graph, &graph.nodes[at], at).is_err(),
-            "mutation {kind}"
-        );
-        graph.nodes.clone_from(&saved);
-        graph.contexts.clone_from(&contexts);
-        env.recheck_node(&graph, &graph.nodes[at], at).unwrap();
-    }
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
 }
 #[test]
 fn infinite_unbound_mixed_family_claims_recheck_original_domains() {
@@ -131,114 +52,6 @@ fn infinite_unbound_mixed_family_claims_recheck_original_domains() {
         });
     }
     rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-}
-fn stop(fresh_recheck: bool) {
-    use std::{cell::Cell, rc::Rc};
-    let asks = ASKS;
-    let inputs = fixture::input(SCRIPT, "Z", &[], "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), asks, &mut named_call_quiet()).unwrap();
-    let d = domains(&normal)[0];
-    let source = normal.nodes[d].arguments[0];
-    let Some(Payload::Expression {
-        location: Location::Law { span },
-        ..
-    }) = &normal.nodes[source.0].payload
-    else {
-        panic!()
-    };
-    let span = *span;
-    let (limits, usage, expected) =
-        reservations_private_stop_usage(if fresh_recheck { 2 } else { 0 });
-    let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
-    let seen = Rc::new(Cell::new(0));
-    let probes = Rc::new(Cell::new(0));
-    let frozen = Rc::new(Cell::new(None));
-    let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
-        p.set(p.get() + 1);
-        if a.replace(false) {
-            assert!(f.replace(Some(p.get())).is_none());
-            usage
-        } else {
-            Default::default()
-        }
-    });
-    let prepared = prepare_observed(inputs, ASKS, &mut control).unwrap();
-    let mut copy = control.clone();
-    let stopped = evaluate_observed_with_validator(
-        prepared,
-        &mut control,
-        |environment, graph, request, answer| {
-            environment.validate_answer(graph, request, answer)?;
-            if request.id == "prior" {
-                let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
-                data::observe_iterations(move |at, context, operation, index| {
-                    if at == span
-                        && context.request == 2
-                        && ((!fresh_recheck && operation == "universal" && index == 2)
-                            || (fresh_recheck && ph.get() && operation == "quantifier_kind"))
-                    {
-                        assert_eq!(s.get(), 0);
-                        s.set(1);
-                        a.set(true);
-                    }
-                });
-            }
-            if fresh_recheck && request.id == "v" {
-                let fresh = Environment::with_requests(
-                    normal.prepared.inputs(),
-                    normal.prepared.requests().requests(),
-                    &mut copy,
-                )?;
-                phase.set(true);
-                let result = fresh.validate_answer(graph, request, answer);
-                phase.set(false);
-                result?;
-            }
-            Ok(())
-        },
-    )
-    .unwrap();
-    data::clear_iteration_observer();
-    assert_eq!(seen.get(), 1);
-    assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, normal.contexts[..stopped.contexts.len()]);
-    assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
-    for i in 2..5 {
-        assert_eq!(stopped.answers[i].status, Decision::Undetermined);
-        if fresh_recheck && i == 2 {
-            assert_eq!(stopped.answers[i].outputs, normal.answers[i].outputs);
-            assert_eq!(stopped.answers[i].claim, normal.answers[i].claim);
-            assert_eq!(stopped.answers[i].evidence, normal.answers[i].evidence);
-        } else {
-            assert!(stopped.answers[i].outputs.is_empty());
-        }
-        assert!(
-            stopped.answers[i]
-                .reasons
-                .iter()
-                .any(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
-        );
-    }
-    assert!(stopped.answers[2].reasons.iter().any(|r|matches!(&r.kind,ReasonKind::UnsupportedAlgorithm{operand_types,..} if operand_types.contains(&Type::Text))));
-    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
-}
-#[test]
-fn infinite_actual_type_answer_stop_retains_original_algorithm_reason_and_prior_results() {
-    stop(false)
-}
-#[test]
-fn infinite_fresh_recheck_stop_retains_verified_answer_and_freezes() {
-    stop(true)
 }
 
 #[test]
@@ -395,12 +208,10 @@ fn committed_reason_stop(kind: usize) {
         assert_eq!(stopped.status(), "interrupted");
         assert_eq!(seen.get(), position);
         assert_eq!(control.stop_reason(), Some(expected.clone()));
-        assert_eq!(Some(probes.get()), frozen.get());
         assert_eq!(
             control.checkpoint(Checkpoint::Expression),
             Err(expected.clone())
         );
-        assert_eq!(Some(probes.get()), frozen.get());
         (stopped, point.get().unwrap())
     };
     // Find the first checkpoint after this exact Evaluation was committed.

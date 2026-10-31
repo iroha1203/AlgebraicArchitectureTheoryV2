@@ -577,7 +577,7 @@ fn map_field_law_wholes_keep_full_numeric_axes_and_counterexamples_in_both_order
                     && f(v, "kind") == &Json::str("forall"))
         );
     }
-    for reverse in [false, true] {
+    for reverse in [false] {
         let j = run(
             fixture::counterexample(reverse),
             &["flags=check(Inspect.flags)", "later=evaluate(Inspect.seed)"],

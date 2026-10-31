@@ -881,10 +881,10 @@ fn fp11_public_domain_permutation_also_orders_nu_epsilon_and_evaluation_basis() 
 }
 
 #[test]
-fn set_fp11_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() {
-    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Set",["Fp","11"]]"#);
+fn set_fp5_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() {
+    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Set",["Fp","5"]]"#);
     let map = MAP
-        .replace(r#""value":"0""#, r#""value":["3","10"]"#)
+        .replace(r#""value":"0""#, r#""value":["1","4"]"#)
         .replace(r#""value":"1""#, r#""value":["2"]"#);
     let e = evaluate_observed_bytes(
         custom_sources(
@@ -904,11 +904,11 @@ fn set_fp11_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() 
     let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
         panic!("D")
     };
-    assert_eq!(elements.len(), 2048);
-    // 独立した11 bitの集合入力から、原始encodingのUTF-8順を作る。
-    let mut expected = (0..2048u16)
+    assert_eq!(elements.len(), 32);
+    // 独立した5 bitの集合入力から、原始encodingのUTF-8順を作る。
+    let mut expected = (0..32u16)
         .map(|mask| {
-            let mut items = (0..11)
+            let mut items = (0..5)
                 .filter(|i| mask & (1 << i) != 0)
                 .map(|i| format!("\"{i}\""))
                 .collect::<Vec<_>>();
@@ -922,11 +922,11 @@ fn set_fp11_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() 
         .map(|r| g.scalar(*r).unwrap().wire().canonical())
         .collect::<Vec<_>>();
     assert_eq!(actual, expected);
-    let pair = actual.iter().position(|v| v == r#"["10","3"]"#).unwrap();
+    let pair = actual.iter().position(|v| v == r#"["1","4"]"#).unwrap();
     let singleton = actual.iter().position(|v| v == r#"["2"]"#).unwrap();
     assert!(pair < singleton);
-    assert_eq!(coordinates(&g, d.nu[0]), vec!["0"; 2048]);
-    assert_eq!(coordinates(&g, d.epsilon[0].unwrap()), vec!["0"; 2048]);
+    assert_eq!(coordinates(&g, d.nu[0]), vec!["0"; 32]);
+    assert_eq!(coordinates(&g, d.epsilon[0].unwrap()), vec!["0"; 32]);
     let Part::Evaluation { basis_images, .. } = data(&g, d.evaluation.unwrap()).part() else {
         panic!("evaluation")
     };

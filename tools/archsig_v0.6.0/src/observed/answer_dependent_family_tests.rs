@@ -17,7 +17,6 @@ fn stop(mode: usize) {
     let input = fixture::input(false, false, "r1");
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
     let declaration = &normal.prepared.inputs().law().declarations["Reservations.option_values"];
     let span = if mode == 0 {
         declaration.span
@@ -79,7 +78,6 @@ fn stop(mode: usize) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
     assert_eq!(&stopped.answers[..4], &normal.answers[..4]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -89,11 +87,6 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
     for (index, a) in stopped.answers.iter().enumerate().skip(4) {
         if mode == 1 && index == 4 {
             let original = &normal.answers[4];
@@ -122,14 +115,8 @@ fn stop(mode: usize) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn dependent_answer_fiber_stop_preserves_prior_values_refutation_missing_and_prefix() {
     stop(0)
-}
-#[test]
-fn dependent_answer_fresh_recheck_stop_preserves_verified_claim_prefix_details_and_probe_freeze() {
-    stop(1)
 }

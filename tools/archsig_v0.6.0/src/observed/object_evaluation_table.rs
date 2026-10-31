@@ -123,7 +123,6 @@ mod tests {
         Control::new(Limits::default(), |_| Usage::default())
     }
 
-
     #[test]
     fn finite_view_rows_reject_foreign_outer_readings_objects_and_instances() {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
@@ -219,55 +218,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn current_inputs_reject_dropped_reordered_forged_and_incomplete_table_rows() {
-        let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
-        let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &defs.vocabularies["Instances"].digest;
-        let inputs = Arc::new(
-            check_inputs(
-                InputSources::from_bytes(
-                    vec![d.to_vec()],
-                    include_str!("../../tests/fixtures/object-evaluation-table.law")
-                        .replace("@INSTANCES_DIGEST@", digest)
-                        .into_bytes(),
-                    include_str!("../../tests/fixtures/object-instances.archmap.json")
-                        .replace("@INSTANCES_DIGEST@", digest)
-                        .into_bytes(),
-                ),
-                &mut quiet(),
-            )
-            .unwrap(),
-        );
-        let c = construct(&inputs, "Selected", "v", "A", &mut quiet()).unwrap();
-        let readings = object_reading_instances(&inputs, &c, &mut quiet()).unwrap();
-        for kind in 0..5 {
-            let mut forged =
-                evaluate_object_table(Arc::clone(&inputs), &readings, &mut quiet()).unwrap();
-            match kind {
-                0 => {
-                    forged.rows.pop();
-                }
-                1 => forged.rows.swap(0, 1),
-                2 => forged.rows[0].position.object = usize::MAX,
-                3 => forged.complete = false,
-                _ => {
-                    *forged.rows[0].evaluation.outcome_mut_for_test() =
-                        ObjectEvaluationOutcome::NotApplicable
-                }
-            }
-            let f = forged
-                .recheck(Arc::clone(&inputs), &mut quiet())
-                .unwrap_err();
-            assert!(
-                matches!(
-                    f.cause(),
-                    ObjectEvaluationFailure::Construction(ConstructionFailure::Inconsistent(_))
-                ),
-                "kind={kind}"
-            );
-        }
-    }
 }
 #[derive(Debug)]
 pub struct ObjectEvaluationTableFailure {

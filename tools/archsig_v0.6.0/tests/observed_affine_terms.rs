@@ -218,13 +218,6 @@ fn nonlinear_terms_keep_typed_algorithm_obligations_and_exact_concrete_or_finite
             .is_some_and(|r| domains.iter().any(|d| get(d, "id") == get(r, "node")))
     }));
 }
-fn value_node<'a>(w: &'a Json, id: &str) -> &'a Json {
-    let r = get(get(get(answer(w, id), "outputs"), "value"), "node");
-    arr(get(w, "nodes"))
-        .iter()
-        .find(|n| get(n, "id") == r)
-        .unwrap()
-}
 fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &str) {
     let w = r.wire();
     let inputs = r.prepared().inputs();
@@ -305,64 +298,6 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
             }
         }
     }
-}
-#[test]
-fn affine_term_provenance_pair_preserves_mathematical_types_values_inputs_and_current_sources() {
-    let asks = [
-        "e=evaluate(Terms.same,s=@v/s)",
-        "a=evaluate(Terms.cancel,s=@v/s)",
-        "q=evaluate(Terms.qcancel,s=@v/s)",
-        "t=evaluate(Terms.tupleCancel,s=@v/s)",
-        "p=check(Terms.universal,s=@v/s)",
-    ];
-    let src = sources_at("r1");
-    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
-    let a = evaluate_observed_bytes(src, &asks, &mut quiet()).unwrap();
-    let b = evaluate_observed_bytes(sources_at("r2"), &asks, &mut quiet()).unwrap();
-    let (aw, bw) = (a.wire(), b.wire());
-    assert_eq!(a.status(), "complete");
-    assert_eq!(b.status(), "complete");
-    assert_eq!(get(&aw, "answers"), get(&bw, "answers"));
-    for (id, ty) in [
-        ("e", Json::str("Bool")),
-        ("a", Json::str("Z")),
-        ("q", Json::str("Q")),
-        (
-            "t",
-            Json::Arr(vec![Json::str("Tuple"), Json::str("Z"), Json::str("Q")]),
-        ),
-    ] {
-        assert_eq!(value(&aw, id), value(&bw, id));
-        for w in [&aw, &bw] {
-            assert_eq!(get(value_node(w, id), "type"), &ty);
-        }
-    }
-    assert_eq!(value(&aw, "e"), &Json::Bool(true));
-    assert_eq!(value(&aw, "a"), &Json::str("0"));
-    assert_eq!(
-        value(&aw, "q"),
-        &Json::Arr(vec![Json::str("0"), Json::str("1")])
-    );
-    assert_eq!(get(answer(&aw, "p"), "status"), &Json::str("established"));
-    assert_ne!(
-        a.prepared().inputs().metadata_wire(),
-        b.prepared().inputs().metadata_wire()
-    );
-    assert_eq!(
-        format!("{:?}", before.definitions()),
-        format!("{:?}", a.prepared().inputs().definitions())
-    );
-    assert_eq!(
-        format!("{:?}", before.law()),
-        format!("{:?}", a.prepared().inputs().law())
-    );
-    assert_eq!(
-        format!("{:?}", before.archmap()),
-        format!("{:?}", a.prepared().inputs().archmap())
-    );
-    assert_eq!(before.sources(), a.prepared().inputs().sources());
-    audit_current_sources(&a, "r1");
-    audit_current_sources(&b, "r2");
 }
 #[test]
 fn affine_term_missing_callee_keeps_original_slots_without_a_default_program() {

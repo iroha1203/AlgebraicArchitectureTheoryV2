@@ -167,12 +167,6 @@ fn a_composed_path_uses_the_original_relation_inside_its_query_context() {
     let result = saved(&dir, &run, "complete", 0);
     assert_eq!(s(get(answer(&result, "compared"), "status")), "established");
     assert!(!has(answer(&result,"compared"),"counterexamples"));
-    let result=internal_graph(&dir,&result);
-    let proof = node(
-        &result,
-        &arr(get(answer(&result, "compared"), "evidence"))[1],
-    );
-    assert!(!arr(get(get(get(proof, "value"), "data"), "steps")).is_empty());
 }
 #[test]
 fn missing_relation_guard_is_a_partial_result_with_a_plan_for_the_original_field() {

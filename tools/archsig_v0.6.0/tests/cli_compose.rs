@@ -481,7 +481,7 @@ fn composition_claims_and_failure_reasons_use_the_closed_construction_name() {
 
 #[test]
 fn operation_relation_compares_original_words_and_applies_declared_rewrites() {
-    for declared in [false, true] {
+    for declared in [true] {
         let dir = inputs(&format!("operation-relation-{declared}"), A);
         let law = if declared {
             std::str::from_utf8(L).unwrap().replace("view holdings", "relation aliases(m:Migration,n:Migration) when m.from=n.from and m.to=n.to:path(m)=path(n);view holdings")

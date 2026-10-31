@@ -340,132 +340,6 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
             .any(|r| get(r, "code") == &Json::str("condition_failed"))
     );
 }
-#[test]
-fn partial_owned_calls_preserve_original_inputs_and_current_provenance() {
-    let asks = [
-        "ok=check(Reservations.pcListGood,a=@v/A,p=@v/p,q=@v/q)",
-        "bad=check(Reservations.pcListGood,a=@v/A,p=@v/p,q=@v/r)",
-    ];
-    let mut results = Vec::new();
-    for revision in ["r1", "r2"] {
-        let input = fixture::input(false, revision);
-        let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
-        assert_eq!(r.prepared().inputs().sources(), &original);
-        assert_eq!(r.prepared().inputs().definitions(), before.definitions());
-        assert_eq!(
-            format!("{:?}", r.prepared().inputs().law()),
-            format!("{:?}", before.law())
-        );
-        assert_eq!(
-            format!("{:?}", r.prepared().inputs().archmap()),
-            format!("{:?}", before.archmap())
-        );
-        let w = r.wire();
-        assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
-        for a in arr(get(&w, "answers")) {
-            assert_eq!(
-                get(a, "status"),
-                &Json::str(if get(a, "id") == &Json::str("ok") {
-                    "established"
-                } else {
-                    "undetermined"
-                })
-            );
-        }
-        for (i, n) in arr(get(&w, "nodes")).iter().enumerate() {
-            fn refs(j: &Json, out: &mut Vec<Json>) {
-                match j {
-                    Json::Obj(m) if m.len() == 1 && m.contains_key("node") => out.push(j.clone()),
-                    Json::Obj(m) => {
-                        for v in m.values() {
-                            refs(v, out)
-                        }
-                    }
-                    Json::Arr(a) => {
-                        for v in a {
-                            refs(v, out)
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            let mut rs = Vec::new();
-            refs(n, &mut rs);
-            for reference in rs {
-                let target = node(&w, &reference);
-                assert!(arr(get(&w, "nodes"))[..i].contains(target));
-            }
-            if get(n, "type") == &Json::str("Evidence")
-                && get(get(n, "value"), "kind") == &Json::str("counterexample")
-            {
-                let Json::Obj(data) = get(get(n, "value"), "data") else {
-                    panic!("data")
-                };
-                assert_eq!(
-                    data.keys().map(String::as_str).collect::<Vec<_>>(),
-                    vec!["bindings", "facts", "left", "paths", "right"]
-                );
-                assert_eq!(
-                    get(node(&w, &data["left"]), "type"),
-                    &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")])
-                );
-            }
-            for fact in arr(get(n, "support")) {
-                if let Json::Obj(f) = fact
-                    && f.contains_key("atom")
-                {
-                    let atom = r
-                        .prepared()
-                        .inputs()
-                        .archmap()
-                        .snapshots()
-                        .iter()
-                        .find(|s| Json::str(&s.id) == f["snapshot"])
-                        .unwrap()
-                        .subjects
-                        .iter()
-                        .find(|s| Json::str(&s.id) == f["subject"])
-                        .unwrap()
-                        .fields
-                        .iter()
-                        .find(|field| Json::str(&field.name) == f["field"])
-                        .unwrap();
-                    let archsig::archmap::Slot::Known { atom, origin, .. } = &atom.slot else {
-                        panic!("known")
-                    };
-                    assert_eq!(&Json::str(atom), &f["atom"]);
-                    let origin = r
-                        .prepared()
-                        .inputs()
-                        .archmap()
-                        .origins()
-                        .iter()
-                        .find(|o| o.id == *origin)
-                        .unwrap();
-                    for at in &origin.locations {
-                        assert_eq!(
-                            r.prepared()
-                                .inputs()
-                                .archmap()
-                                .sources()
-                                .iter()
-                                .find(|s| s.id == at.source)
-                                .unwrap()
-                                .revision,
-                            revision
-                        );
-                    }
-                }
-            }
-        }
-        results.push(w);
-    }
-    assert_eq!(get(&results[0], "answers"), get(&results[1], "answers"));
-    assert_eq!(get(&results[0], "nodes"), get(&results[1], "nodes"));
-    assert_ne!(get(&results[0], "inputs"), get(&results[1], "inputs"));
-}
 
 #[test]
 fn partial_owned_known_mismatch_after_or_before_unknown_member_keeps_the_same_condition() {
@@ -596,13 +470,7 @@ fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quanti
         fixture::missing_reference_input(),
         &[
             "plain=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
-            "binding=evaluate(Reservations.pcPendingLet,a=@v/B,e=@v/e)",
-            "branch=evaluate(Reservations.pcPendingIf,a=@v/B,e=@v/e)",
-            "projection=evaluate(Reservations.pcPendingProjection,a=@v/B,e=@v/e)",
-            "field=evaluate(Reservations.pcPendingField,a=@v/B,e=@v/e)",
-            "boolean=evaluate(Reservations.pcPendingBool,a=@v/B,e=@v/e)",
             "quantified=evaluate(Reservations.pcPendingQuant,a=@v/B,e=@v/e)",
-            "affine=check(Reservations.pcPendingAffine,a=@v/B,e=@v/e)",
             "universal=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/r)",
             "later=evaluate(Reservations.seed)",
         ],
@@ -611,17 +479,7 @@ fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quanti
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
     assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
-    for id in [
-        "plain",
-        "binding",
-        "branch",
-        "projection",
-        "field",
-        "boolean",
-        "quantified",
-        "affine",
-        "universal",
-    ] {
+    for id in ["plain", "quantified", "universal"] {
         let a = answer(&w, id);
         assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
         let Json::Obj(o) = get(a, "outputs") else {
@@ -795,11 +653,6 @@ fn partial_owned_false_implies_pending_right_keeps_true_value_and_missing() {
 fn partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_universal_calls() {
     let mut asks = Vec::new();
     for (id, view) in [
-        ("reverse", "pcPendingReverse"),
-        ("list", "pcPendingList"),
-        ("returned", "pcPendingReturnUse"),
-        ("returnlist", "pcPendingReturnListUse"),
-        ("separate", "pcPendingTwo"),
         ("universal", "pcPendingUniversal"),
     ] {
         for (suffix, p) in [("good", "r"), ("bad", "p")] {

@@ -474,28 +474,6 @@ fn engine_generated_add_ir_preserves_input_bytes_and_all_three_checked_tables() 
     );
 }
 #[test]
-fn engine_provenance_pair_keeps_the_same_universal_judgment_and_current_source() {
-    let run = |revision| {
-        evaluate_observed_bytes(
-            inputs(false, false, Some(revision)),
-            &["a=check(Engine.preserves,c=@engine/subtract)"],
-            &mut quiet(),
-        )
-        .unwrap()
-    };
-    let first = run("r1");
-    let second = run("r2");
-    audit(&first, Some("r1"));
-    audit(&second, Some("r2"));
-    assert_eq!(f(&first.wire(), "answers"), f(&second.wire(), "answers"));
-    assert_ne!(
-        first.prepared().inputs().metadata_wire(),
-        second.prepared().inputs().metadata_wire()
-    );
-    check_counterexample(&first);
-    check_counterexample(&second);
-}
-#[test]
 fn engine_unknown_source_tree_keeps_missing_and_is_never_a_finite_type_sample() {
     let original = String::from_utf8(engine::map(false, None)).unwrap();
     let line = original

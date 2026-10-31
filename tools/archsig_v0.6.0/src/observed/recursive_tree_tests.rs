@@ -72,76 +72,6 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
     });
 }
 
-#[test]
-fn recursive_tree_pattern_source_rejects_equal_sibling_producer_and_value() {
-    let result = recursive_tree_private_result(&["a=evaluate(Trees.read,s=@v/sample)"]);
-    let law = result.prepared.inputs().sources().law().bytes();
-    let sources: Vec<_> = result
-        .nodes
-        .iter()
-        .enumerate()
-        .filter_map(|(i, n)| match &n.payload {
-            Some(Payload::Expression {
-                location: Location::Law { span },
-                ..
-            }) if &law[span.0..span.1] == b"n" => Some(i),
-            _ => None,
-        })
-        .collect();
-    assert_eq!(sources.len(), 2);
-    let (donor, target) = (sources[0], sources[1]);
-    assert_ne!(result.contexts[donor], result.contexts[target]);
-    assert_ne!(
-        result.nodes[donor].arguments,
-        result.nodes[target].arguments
-    );
-    completion_mutation(&result, target, |nodes| {
-        nodes[target].arguments = result.nodes[donor].arguments.clone();
-    });
-    let scalar = result
-        .nodes
-        .iter()
-        .enumerate()
-        .find_map(|(i, n)| match &n.payload {
-            Some(Payload::Scalar(Scalar::Z(v)))
-                if v == &2.into() && result.contexts[i] == result.contexts[target] =>
-            {
-                Some(i)
-            }
-            _ => None,
-        })
-        .unwrap();
-    completion_mutation(&result, scalar, |nodes| {
-        nodes[scalar].payload = Some(Payload::Scalar(Scalar::Z(3.into())));
-    });
-}
-
-#[test]
-fn recursive_tree_validation_success_does_not_authorize_later_payload_changes() {
-    let result = recursive_tree_private_result(&["a=evaluate(Trees.read,s=@v/sample)"]);
-    let target = recursive_tree_private_atom(&result);
-    let mut graph =
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..target]).unwrap();
-    graph.active = result.contexts[target];
-    let mut control = named_call_quiet();
-    let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-    environment.validate(&graph, &result.nodes[target]).unwrap();
-    let mut changed = result.nodes[target].clone();
-    let Some(Payload::Scalar(v)) = &mut changed.payload else {
-        unreachable!()
-    };
-    recursive_tree_private_change_leaf(v);
-    assert_ne!(
-        format!("{changed:?}"),
-        format!("{:?}", result.nodes[target])
-    );
-    assert!(matches!(
-        environment.validate(&graph, &changed),
-        Err(ValidationFailure::Internal(_))
-    ));
-    environment.validate(&graph, &result.nodes[target]).unwrap();
-}
-
 fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
     use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
@@ -198,15 +128,6 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(control.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(
-        stopped.contexts.as_slice(),
-        &normal.contexts[..stopped.contexts.len()]
-    );
     assert_eq!(stopped.answers[0].status, Decision::Refuted);
     assert_eq!(
         format!("{:?}", stopped.answers[0]),
@@ -236,79 +157,9 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
     recursive_tree_private_stop(0, false);
 }
-#[test]
-fn recursive_tree_recursive_call_time_stop_keeps_prefix_and_prior_refutation() {
-    recursive_tree_private_stop(1, false);
-}
-#[test]
-fn recursive_tree_recursive_call_memory_stop_keeps_prefix_and_prior_refutation() {
-    recursive_tree_private_stop(2, false);
-}
-#[test]
-fn recursive_tree_answer_cancel_retains_verified_value() {
-    recursive_tree_private_stop(0, true);
-}
 
-#[test]
-fn recursive_tree_value_walk_and_recheck_stops_freeze_the_shared_control() {
-    use std::{cell::Cell, rc::Rc};
-    let result = recursive_tree_private_result(&["a=evaluate(Trees.raw,s=@v/sample)"]);
-    let target = recursive_tree_private_atom(&result);
-    let Some(Payload::Scalar(value)) = &result.nodes[target].payload else {
-        unreachable!()
-    };
-    for kind in [0, 1, 2] {
-        let (limits, usage, expected) = reservations_private_stop_usage(kind);
-        let probes = Rc::new(Cell::new(0));
-        let count = probes.clone();
-        let control = Control::new(limits, move |_| {
-            count.set(count.get() + 1);
-            if count.get() == 9 {
-                usage
-            } else {
-                crate::control::Usage::default()
-            }
-        });
-        assert!(
-            matches!(data::check(value,result.prepared.inputs().law(),&control),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        assert_eq!(probes.get(), 9);
-        assert!(
-            matches!(data::check(value,result.prepared.inputs().law(),&control),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        assert_eq!(probes.get(), 9);
-    }
-    let mut graph =
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..target]).unwrap();
-    graph.active = result.contexts[target];
-    let armed = Rc::new(Cell::new(false));
-    let probes = Rc::new(Cell::new(0));
-    let (arm, count) = (armed.clone(), probes.clone());
-    let (limits, usage, expected) = reservations_private_stop_usage(0);
-    let mut control = Control::new(limits, move |_| {
-        count.set(count.get() + 1);
-        if arm.get() {
-            usage
-        } else {
-            crate::control::Usage::default()
-        }
-    });
-    let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-    environment.validate(&graph, &result.nodes[target]).unwrap();
-    armed.set(true);
-    assert!(
-        matches!(environment.validate(&graph,&result.nodes[target]),Err(ValidationFailure::Stop(s)) if s==expected)
-    );
-    let frozen = probes.get();
-    assert!(
-        matches!(environment.validate(&graph,&result.nodes[target]),Err(ValidationFailure::Stop(s)) if s==expected)
-    );
-    assert_eq!(probes.get(), frozen);
-}

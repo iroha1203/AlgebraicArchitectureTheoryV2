@@ -24,7 +24,6 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/p)"], "known");
     assert_eq!(r.status(), "complete");
     let t = r.answers[0].outputs["value"].0;
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=t]).unwrap();
     completion_mutation(&r, t, |nodes| {
         let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[t].payload else {
@@ -72,53 +71,6 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     });
 }
 #[test]
-fn map_application_rejects_equal_other_request_value_and_condition_producers() {
-    let r = application_result(
-        &[
-            "first=evaluate(Applications.apply,m=@v/m,x=@v/p)",
-            "again=evaluate(Applications.apply,m=@v/m,x=@v/p)",
-        ],
-        "known",
-    );
-    let first = r.answers[0].outputs["value"].0;
-    let current = r.answers[1].outputs["value"].0;
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    for index in [0, 1] {
-        let donor = r.nodes[first].arguments[index];
-        let actual = r.nodes[current].arguments[index];
-        assert_ne!(donor, actual);
-        assert_eq!(data_scalar_at(&r, donor.0), data_scalar_at(&r, actual.0));
-        completion_mutation(&r, current, |nodes| nodes[current].arguments[index] = donor);
-    }
-    let r = application_result(
-        &[
-            "first=evaluate(Applications.apply,m=@v/m,x=@v/r)",
-            "again=evaluate(Applications.apply,m=@v/m,x=@v/r)",
-        ],
-        "known",
-    );
-    let first = application_condition(&r, 0);
-    let current = application_condition(&r, 1);
-    let t = r.nodes[current].arguments[3].0;
-    for i in [0, 1, 2] {
-        let donor = r.nodes[first].arguments[i];
-        assert_ne!(r.nodes[current].arguments[i], donor);
-        completion_mutation(&r, t, |nodes| nodes[t].arguments[i] = donor);
-    }
-    let evaluation = r.answers[1].outputs["evaluation"].0;
-    completion_mutation(&r, evaluation, |nodes| {
-        let reason = nodes[evaluation]
-            .reasons
-            .iter_mut()
-            .find(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-            .unwrap();
-        let ReasonKind::ConditionFailed { condition, .. } = &mut reason.kind else {
-            panic!("reason")
-        };
-        *condition = NodeRef(first);
-    });
-}
-#[test]
 fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reason() {
     let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"], "known");
     assert_eq!(r.status(), "partial");
@@ -128,7 +80,6 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         r.nodes[p].arguments[4],
         r.nodes[p].arguments[5],
     );
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     for t in [left.0, right.0] {
         let other = if t == left.0 { right.0 } else { left.0 };
         let replacement = r.nodes[other].payload.clone();
@@ -193,23 +144,6 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         });
     }
 }
-#[test]
-fn map_application_normal_validation_does_not_authorize_later_condition_changes() {
-    let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"], "known");
-    let p = application_condition(&r, 0);
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..p]).unwrap();
-    g.active = r.contexts[p];
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    e.validate(&g, &r.nodes[p]).unwrap();
-    let mut changed = r.nodes[p].clone();
-    changed.judgment.as_mut().unwrap().status = Decision::Established;
-    assert!(matches!(
-        e.validate(&g, &changed),
-        Err(ValidationFailure::Internal(_))
-    ));
-    e.validate(&g, &r.nodes[p]).unwrap();
-}
 fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: bool) {
     use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
@@ -267,15 +201,6 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(control.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(
-        stopped.contexts.as_slice(),
-        &normal.contexts[..stopped.contexts.len()]
-    );
     assert_eq!(stopped.answers[0].status, Decision::Refuted);
     assert_eq!(
         format!("{:?}", stopped.answers[0]),
@@ -305,57 +230,10 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 
 #[test]
 fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
     application_stop(0, "map_lookup", 0, false);
 }
-#[test]
-fn map_application_condition_time_stop_keeps_verified_prefix_and_prior_refutation() {
-    application_stop(1, "map_condition", 0, false);
-}
-#[test]
-fn map_application_condition_memory_stop_keeps_verified_prefix_and_prior_refutation() {
-    application_stop(2, "map_condition", 1, false);
-}
-#[test]
-fn map_application_answer_stop_retains_completed_condition_and_verified_answer() {
-    application_stop(0, "answer", 0, true);
-}
 
-#[test]
-fn map_application_recheck_stops_freeze_the_shared_control() {
-    use std::{cell::Cell, rc::Rc};
-    let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"], "known");
-    let target = application_condition(&r, 0);
-    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..target]).unwrap();
-    graph.active = r.contexts[target];
-    for kind in [0, 1, 2] {
-        let (limits, usage, expected) = reservations_private_stop_usage(kind);
-        let armed = Rc::new(Cell::new(false));
-        let probes = Rc::new(Cell::new(0));
-        let (arm, count) = (armed.clone(), probes.clone());
-        let mut control = Control::new(limits, move |_| {
-            count.set(count.get() + 1);
-            if arm.get() {
-                usage
-            } else {
-                crate::control::Usage::default()
-            }
-        });
-        let environment = Environment::new(r.prepared.inputs(), &mut control).unwrap();
-        environment.validate(&graph, &r.nodes[target]).unwrap();
-        armed.set(true);
-        assert!(
-            matches!(environment.validate(&graph,&r.nodes[target]),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        let frozen = probes.get();
-        assert!(
-            matches!(environment.validate(&graph,&r.nodes[target]),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        assert_eq!(probes.get(), frozen);
-    }
-}

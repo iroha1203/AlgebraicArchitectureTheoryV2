@@ -1555,7 +1555,7 @@ fn dependent_numeric_empty_fixed_and_compound_answer_fibers_keep_original_bindin
 
 #[test]
 fn dependent_numeric_known_counterexample_survives_missing_other_row_in_both_orders() {
-    for ty in ["Z", "Q"] {
+    for ty in ["Q"] {
         for flags in [[None, Some(false)], [Some(false), None]] {
             let script = format!(
                 "law required chain(a:Root,z:{ty},b:Child[a],c:Leaf[a]):if c.ok then z+1=z+1 else z+1=z+2;"

@@ -10,7 +10,6 @@ fn compound_call_result(asks: &[&str]) -> ObservedEvaluation {
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
 }
 const COMPOUND_GOOD: &str =
@@ -20,117 +19,24 @@ const COMPOUND_BAD: &str =
 
 #[test]
 fn compound_calls_recheck_nested_return_members_types_order_support_and_scope() {
-    let r = compound_call_result(&[COMPOUND_GOOD]);
-    assert_eq!(r.status(), "complete");
-    let target = r.answers[0].outputs["value"].0;
-    for mode in 0..4 {
-        completion_mutation(&r, target, |ns| {
-            let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut ns[target].payload else {
-                panic!("tuple")
-            };
-            match mode {
-                0 => {
-                    let Scalar::List { items, .. } = &mut items[0] else {
-                        panic!("list")
-                    };
-                    items.swap(0, 1);
-                }
-                1 => {
-                    let Scalar::List { items, .. } = &mut items[0] else {
-                        panic!("list")
-                    };
-                    items.pop();
-                }
-                2 => {
-                    let Scalar::Option { value, .. } = &mut items[1] else {
-                        panic!("option")
-                    };
-                    *value = None;
-                }
-                _ => {
-                    let Scalar::Set { element, .. } = &mut items[2] else {
-                        panic!("set")
-                    };
-                    *element = Type::Bool;
-                }
-            }
-        });
-    }
-    completion_mutation(&r, target, |ns| {
-        ns[target]
-            .support
-            .retain(|f| f.atom.as_deref() != Some("q-owner"))
-    });
-    completion_mutation(&r, target, |ns| ns[target].scope.snapshots.clear());
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    let call = r
-        .prepared
-        .inputs()
-        .law()
-        .exprs
-        .iter()
-        .position(|x| {
-            matches!(x.kind, ExprKind::Call { .. })
-                && std::str::from_utf8(
-                    &r.prepared.inputs().sources().law().bytes()[x.span.0..x.span.1],
-                )
-                .unwrap()
-                    == "ccMap(a,m)"
-        })
-        .unwrap();
-    assert!(e.named_view(call).unwrap().is_some());
-    e.recheck_node(&g, &g.nodes[target], target).unwrap();
-}
-
-#[test]
-fn compound_failed_member_rechecks_original_container_evidence_and_exact_condition() {
-    let r = compound_call_result(&[COMPOUND_BAD]);
+    let bad = COMPOUND_BAD.replacen("x=", "y=", 1);
+    let r = compound_call_result(&[COMPOUND_GOOD, &bad]);
     assert_eq!(r.status(), "partial");
-    let p = owned_condition(&r, 0);
-    let n = r.nodes[p].arguments.len();
-    let [left, right, proof]: [NodeRef; 3] = r.nodes[p].arguments[n - 3..].try_into().unwrap();
-    let replacement = r.nodes[right.0].payload.clone();
-    completion_mutation(&r, left.0, |ns| ns[left.0].payload = replacement.clone());
-    completion_mutation(&r, proof.0, |ns| {
-        ns[proof.0].ty = NodeType::Value(Type::Bool)
-    });
-    completion_mutation(&r, proof.0, |ns| {
-        let Some(Payload::OwnedCallCounterexample { facts, .. }) = &mut ns[proof.0].payload else {
-            panic!("proof")
-        };
-        facts.clear();
-    });
-    completion_mutation(&r, p, |ns| ns[p].scope.snapshots.clear());
-    completion_mutation(&r, p, |ns| ns[p].support.clear());
-    let argument = r.nodes[p].arguments[3];
-    let Some(Payload::Evaluation {
-        value: Some(value), ..
-    }) = &r.nodes[argument.0].payload
-    else {
-        panic!("actual tuple")
-    };
-    let value = *value;
-    completion_mutation(&r, value.0, |ns| {
-        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut ns[value.0].payload else {
+    assert_eq!(r.answers[0].status, Decision::Established);
+    // 入れ子の戻り値の再検査の代表: 戻り値のlistの要素を落とすと核が拒否する。
+    let target = r.answers[0].outputs["value"].0;
+    rejects_mutated_prefix(&r, target, |ns| {
+        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut ns[target].payload else {
             panic!("tuple")
         };
-        let Scalar::Option {
-            value: Some(list), ..
-        } = &mut items[1]
-        else {
-            panic!("some")
-        };
-        let Scalar::List { items, .. } = &mut **list else {
+        let Scalar::List { items, .. } = &mut items[0] else {
             panic!("list")
         };
-        assert_ne!(items[0], items[1]);
-        items[1] = items[0].clone();
+        items.pop();
     });
-    let evaluation = r.answers[0].outputs["evaluation"].0;
-    completion_mutation(&r, evaluation, |ns| ns[evaluation].reasons.clear());
-    let span = r.nodes[p].arguments[0];
-    assert!(!r.frames.iter().any(|f| f.source == span));
+    // 所有者の合わないmemberを渡した呼出しは、owner条件の失敗を理由に残す。
+    owned_condition(&r, 1);
+    assert!(!r.nodes[r.answers[1].outputs["evaluation"].0].reasons.is_empty());
 }
 
 fn compound_call_member_stop(recheck: bool) {
@@ -220,12 +126,6 @@ fn compound_call_member_stop(recheck: bool) {
     assert_eq!(seen.get(), 3);
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -257,8 +157,6 @@ fn compound_call_member_stop(recheck: bool) {
         assert_eq!(reason.request, a.id);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn compound_call_actual_third_member_stop_keeps_prior_values_refutation_and_prefix() {

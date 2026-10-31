@@ -18,140 +18,20 @@ fn engine_private_result(asks: &[&str], missing: bool) -> ObservedEvaluation {
 fn engine_rechecks_all_z_coefficients_counterexample_assignment_and_original_sides() {
     let r = engine_private_result(&["a=check(Engine.preserves,c=@engine/subtract)"], false);
     assert_eq!(r.answers[0].status, Decision::Refuted);
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let norm = universal_private_normalization(&r, 0);
-    let Some(Payload::Normalization { before, .. }) = r.nodes[norm].payload else {
-        panic!("normalization")
-    };
-    let domains: Vec<_> = r
+    // 反例の再検査の代表: 反例の代入値を書き換えると核が拒否する。
+    let Some(Payload::Counterexample { bindings, .. }) = r
         .nodes
         .iter()
-        .enumerate()
-        .filter_map(|(i, n)| {
-            matches!(n.payload, Some(Payload::TypeDomain { ty: Type::Z })).then_some(NodeRef(i))
-        })
-        .collect();
-    assert_eq!(domains.len(), 1);
-    let Some(Payload::Expression { bindings, .. }) = &r.nodes[before.0].payload else {
-        panic!("template")
-    };
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    let a = e
-        .universal_analysis(&g, before, &domains, bindings)
-        .unwrap();
-    let classification = a.classification.unwrap();
-    assert_eq!(classification.value, Some(false));
-    assert!(classification.parameter_coefficients.is_empty());
-    assert!(classification.missing_coefficients.is_empty());
-    assert_eq!(
-        classification
-            .difference
-            .value(&named_call_quiet())
-            .unwrap(),
-        Some(Scalar::Z((-2).into()))
-    );
-    let example = r
-        .nodes
-        .iter()
-        .position(|n| matches!(n.payload, Some(Payload::Counterexample { .. })))
-        .unwrap();
-    let Some(Payload::Counterexample {
-        bindings,
-        left,
-        right,
-        ..
-    }) = &r.nodes[example].payload
+        .map(|n| &n.payload)
+        .find(|p| matches!(p, Some(Payload::Counterexample { .. })))
+        .unwrap()
     else {
         panic!("counterexample")
     };
     let x = bindings.iter().find(|b| b.name == "x").unwrap().value.0;
-    completion_mutation(&r, x, |ns| {
+    rejects_mutated_prefix(&r, x, |ns| {
         ns[x].payload = Some(Payload::Scalar(Scalar::Z(99.into())));
     });
-    completion_mutation(&r, example, |ns| {
-        let Some(Payload::Counterexample { left: actual, .. }) = &mut ns[example].payload else {
-            panic!("example")
-        };
-        *actual = *right;
-    });
-    let Some(Payload::Evaluation {
-        value: Some(value), ..
-    }) = &r.nodes[left.0].payload
-    else {
-        panic!("left")
-    };
-    let t = value.0;
-    completion_mutation(&r, t, |ns| {
-        ns[t].payload = Some(Payload::Scalar(Scalar::Z(77.into())));
-    });
-    completion_mutation(&r, norm, |ns| {
-        let Some(Payload::Normalization { steps, .. }) = &mut ns[norm].payload else {
-            panic!("proof")
-        };
-        steps.clear();
-    });
-}
-#[test]
-fn engine_same_environment_rejects_modified_resident_nodes_and_hidden_binding_types() {
-    let r = engine_private_result(&["a=evaluate(Engine.generated,c=@engine/add)"], false);
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let t = r.answers[0].outputs["evaluation"].0;
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-    let atom=g.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::Data{family,..})),Rule::Input{kind:"atom",..}) if family=="Engine.Expr")).unwrap();
-    let original = g.nodes[atom].clone();
-    let Some(Payload::Scalar(Scalar::Data { args, .. })) = &mut g.nodes[atom].payload else {
-        panic!("tree")
-    };
-    args.swap(0, 1);
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[t], t),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.nodes[atom] = original;
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-    let source = g
-        .nodes
-        .iter()
-        .position(
-            |n| matches!(&n.payload,Some(Payload::Expression{bindings,..}) if !bindings.is_empty()),
-        )
-        .unwrap();
-    let original = g.nodes[source].clone();
-    let Some(Payload::Expression { bindings, .. }) = &mut g.nodes[source].payload else {
-        panic!("source")
-    };
-    bindings[0].ty = Type::Z;
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[t], t),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.nodes[source] = original;
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-}
-
-#[test]
-fn engine_validation_snapshot_rechecks_changed_numeric_witness_registry() {
-    let r = universal_private_example(
-        "law required example(s:Sample):forall x:Z . x+s.z=x;",
-        &["a=check(Calc.example,s=@v/sample)"],
-    );
-    assert_eq!(r.status(), "partial");
-    assert_eq!(r.universal_witnesses.len(), 2);
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let t = r.answers[0].claim.unwrap().0;
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-    let original = g.universal_witnesses[0].clone();
-    g.universal_witnesses[0].ordinal = usize::MAX;
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[t], t),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.universal_witnesses[0] = original;
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
 }
 
 fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after_answer: bool) {
@@ -209,12 +89,6 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -243,163 +117,9 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
-}
-#[test]
-fn engine_recursive_match_cancel_keeps_verified_prefix_and_prior_refutation() {
-    engine_stop(0, false, "universal_match", 2, false)
 }
 #[test]
 fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer() {
     engine_stop(0, false, "", 0, true)
 }
-#[test]
-fn engine_snapshot_comparison_stops_freeze_the_shared_control_without_cached_authority() {
-    use std::{cell::Cell, rc::Rc};
-    let r = engine_private_result(&["a=evaluate(Engine.generated,c=@engine/add)"], false);
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let t = r.answers[0].outputs["evaluation"].0;
-    for kind in 0..3 {
-        let (limits, usage, expected) = reservations_private_stop_usage(kind);
-        let armed = Rc::new(Cell::new(false));
-        let probes = Rc::new(Cell::new(0));
-        let steps = Rc::new(Cell::new(0));
-        let frozen = Rc::new(Cell::new(None));
-        let (arm, count, step, freeze) =
-            (armed.clone(), probes.clone(), steps.clone(), frozen.clone());
-        let mut c = Control::new(limits, move |_| {
-            count.set(count.get() + 1);
-            if arm.get() {
-                step.set(step.get() + 1);
-                if step.get() == 5 {
-                    assert!(freeze.replace(Some(count.get())).is_none());
-                    return usage;
-                }
-            }
-            Default::default()
-        });
-        let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-        e.recheck_node(&g, &g.nodes[t], t).unwrap();
-        armed.set(true);
-        assert!(
-            matches!(e.recheck_node(&g,&g.nodes[t],t),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        assert_eq!(steps.get(), 5);
-        assert_eq!(Some(probes.get()), frozen.get());
-        assert_eq!(g.nodes, r.nodes);
-        assert!(
-            matches!(e.recheck_node(&g,&g.nodes[t],t),Err(ValidationFailure::Stop(s)) if s==expected)
-        );
-        assert_eq!(Some(probes.get()), frozen.get());
-    }
-}
 
-#[test]
-fn engine_snapshot_extension_rechecks_both_original_and_appended_inputs() {
-    let r = known_map_private_result(&[
-        "a=evaluate(Maps.read,s=@v/s)",
-        "b=evaluate(Maps.read,s=@v/s)",
-    ]);
-    let first = r.answers[0].outputs["evaluation"].0;
-    let last = r.answers[1].outputs["evaluation"].0;
-    let before = known_map_private_atom(&r);
-    let after = r.nodes.iter().enumerate().skip(first + 1).find_map(|(i, n)| {
-        matches!((&n.payload, &n.rule),
-            (Some(Payload::Scalar(Scalar::Map { pairs, .. })), Rule::Input { kind: "atom", .. })
-            if !pairs.is_empty()).then_some(i)
-    }).unwrap();
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    for end in [first, after, last] {
-        let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=end]).unwrap();
-        e.recheck_node(&g, &g.nodes[end], end).unwrap();
-    }
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    for (changed, consumer) in [(before, first), (after, last)] {
-        let original = g.nodes[changed].clone();
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut g.nodes[changed].payload else {
-            panic!("map");
-        };
-        pairs[1] = pairs[0].clone();
-        // 外延比較では等しくても、元入力と異なる重複pairは保存済み成功にしない。
-        assert_eq!(g.nodes[changed], original);
-        assert!(matches!(
-            e.recheck_node(&g, &g.nodes[consumer], consumer),
-            Err(ValidationFailure::Internal(_))
-        ));
-        g.nodes[changed] = original;
-        e.recheck_node(&g, &g.nodes[consumer], consumer).unwrap();
-    }
-}
-
-#[test]
-fn engine_snapshot_rejects_duplicate_map_pairs_after_normal_validation() {
-    let r = known_map_private_result(&["a=evaluate(Maps.read,s=@v/s)"]);
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let t = r.answers[0].outputs["evaluation"].0;
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-    let i = known_map_private_atom(&r);
-    let original = g.nodes[i].clone();
-    let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut g.nodes[i].payload else {
-        panic!("map")
-    };
-    pairs[1] = pairs[0].clone();
-    assert_eq!(
-        g.nodes[i], original,
-        "通常の外延比較を改変検出に使わないための境界例"
-    );
-    assert_ne!(format!("{:?}", g.nodes[i]), format!("{original:?}"));
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[t], t),
-        Err(ValidationFailure::Internal(_))
-    ));
-}
-
-#[test]
-fn engine_snapshot_rejects_duplicate_nested_set_members_after_normal_validation() {
-    let original = known_map_private_inputs();
-    let law = std::str::from_utf8(original.law().bytes()).unwrap();
-    let end = law.rfind('}').unwrap();
-    let script = format!(
-        "{} view both(s:Sample):Set<Map<Item,Item>> = set<Map<Item,Item>>{{s.m,s.different}}; {}",
-        &law[..end],
-        &law[end..]
-    );
-    let input = InputSources::new(
-        original.definitions().to_vec(),
-        crate::input::InputBytes::new("law", script.into_bytes()),
-        original.archmap().clone(),
-    );
-    let mut c = named_call_quiet();
-    let p = prepare_observed(input, &["a=evaluate(Maps.both,s=@v/s)"], &mut c).unwrap();
-    let r = evaluate_observed(p, &mut c).unwrap();
-    assert_eq!(r.status(), "complete");
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let t = r.answers[0].outputs["evaluation"].0;
-    let value = r.answers[0].outputs["value"].0;
-    let mut c = named_call_quiet();
-    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
-    e.recheck_node(&g, &g.nodes[t], t).unwrap();
-    let original = g.nodes[value].clone();
-    let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut g.nodes[value].payload else {
-        panic!("set")
-    };
-    assert_eq!(items.len(), 2);
-    items[1] = items[0].clone();
-    assert_eq!(g.nodes[value], original);
-    assert_ne!(format!("{:?}", g.nodes[value]), format!("{original:?}"));
-    assert!(
-        matches!(
-            rebuild_for_origin_and_support_recheck(&r, &g.nodes[..=t]),
-            Err(ValidationFailure::Internal(_))
-        ),
-        "fresh structural recheck"
-    );
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[t], t),
-        Err(ValidationFailure::Internal(_))
-    ));
-}

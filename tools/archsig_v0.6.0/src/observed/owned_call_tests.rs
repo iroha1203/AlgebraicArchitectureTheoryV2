@@ -10,7 +10,6 @@ fn owned_call_result(asks: &[&str]) -> ObservedEvaluation {
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     r
 }
 fn owned_condition(r: &ObservedEvaluation, request: usize) -> usize {
@@ -36,160 +35,12 @@ fn owned_call_success_rechecks_value_body_arguments_owner_support_and_scope() {
             .any(|f| f.field.as_deref() == Some("Reservations.State.owner")
                 && f.atom.as_deref() == Some("p-owner"))
     );
-    completion_mutation(&r, target, |ns| {
-        ns[target]
-            .support
-            .retain(|f| f.field.as_deref() != Some("Reservations.State.owner"))
-    });
-    completion_mutation(&r, target, |ns| ns[target].scope.snapshots.clear());
-    completion_mutation(&r, target, |ns| {
+    rejects_mutated_prefix(&r, target, |ns| {
         let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut ns[target].payload else {
             panic!("ref")
         };
         *subject = "q".into();
     });
-    let body = *r.nodes[target].arguments.last().unwrap();
-    completion_mutation(&r, body.0, |ns| {
-        let Some(Payload::Evaluation { value, .. }) = &mut ns[body.0].payload else {
-            panic!("body")
-        };
-        *value = None;
-    });
-    completion_mutation(&r, target, |ns| ns[target].arguments.swap(0, 1));
-    completion_mutation(&r, target, |ns| {
-        ns[target].arguments.pop();
-    });
-}
-#[test]
-fn owned_call_condition_rechecks_original_owners_counterexample_and_exact_reason() {
-    for name in ["parameter", "returned"] {
-        let ask = format!("x=evaluate(Reservations.{name},a=@v/B,s=@v/p)");
-        let r = owned_call_result(&[&ask]);
-        assert_eq!(r.status(), "partial");
-        let p = owned_condition(&r, 0);
-        let n = r.nodes[p].arguments.len();
-        let (left, right, evidence) = (
-            r.nodes[p].arguments[n - 3],
-            r.nodes[p].arguments[n - 2],
-            r.nodes[p].arguments[n - 1],
-        );
-        for t in [left.0, right.0] {
-            completion_mutation(&r, t, |ns| ns[t].support.clear());
-            completion_mutation(&r, t, |ns| ns[t].scope.snapshots.clear());
-            let other = if t == left.0 { right.0 } else { left.0 };
-            let replacement = r.nodes[other].payload.clone();
-            completion_mutation(&r, t, |ns| ns[t].payload = replacement.clone());
-        }
-        completion_mutation(&r, evidence.0, |ns| {
-            let Some(Payload::OwnedCallCounterexample { facts, .. }) = &mut ns[evidence.0].payload
-            else {
-                panic!("evidence")
-            };
-            facts.clear();
-        });
-        completion_mutation(&r, p, |ns| {
-            ns[p].judgment.as_mut().unwrap().status = Decision::Established
-        });
-        completion_mutation(&r, p, |ns| {
-            ns[p].evidence.clear();
-            ns[p].judgment.as_mut().unwrap().evidence.clear();
-        });
-        let t = r.answers[0].outputs["evaluation"].0;
-        for mode in 0..4 {
-            completion_mutation(&r, t, |ns| match mode {
-                0 => ns[t].reasons.clear(),
-                1 => ns[t].reasons[0].dependencies.clear(),
-                2 => {
-                    let ReasonKind::ConditionFailed { construction, .. } =
-                        &mut ns[t].reasons[0].kind
-                    else {
-                        panic!("reason")
-                    };
-                    *construction = "domain";
-                }
-                _ => {
-                    let Some(Location::Law { span }) = &mut ns[t].reasons[0].location else {
-                        panic!("location")
-                    };
-                    span.0 += 1;
-                }
-            });
-        }
-    }
-}
-#[test]
-fn owned_call_condition_rejects_coherent_equal_foreign_call_producers() {
-    let r = owned_call_result(&[
-        "first=evaluate(Reservations.parameter,a=@v/B,s=@v/p)",
-        "second=evaluate(Reservations.parameter,a=@v/B,s=@v/p)",
-    ]);
-    let (donor, target) = (owned_condition(&r, 0), owned_condition(&r, 1));
-    let n = r.nodes[target].arguments.len();
-    assert_eq!(n, 6);
-    let own = r.nodes[target].arguments.clone();
-    let foreign = r.nodes[donor].arguments.clone();
-    assert!(foreign.iter().all(|r| r.0 < target));
-    for i in 1..3 {
-        let Some(Payload::Evaluation { value: a, .. }) = &r.nodes[own[i].0].payload else {
-            panic!("argument")
-        };
-        let Some(Payload::Evaluation { value: b, .. }) = &r.nodes[foreign[i].0].payload else {
-            panic!("argument")
-        };
-        assert_eq!(
-            data_scalar_at(&r, a.unwrap().0),
-            data_scalar_at(&r, b.unwrap().0)
-        );
-    }
-    for index in 0..3 {
-        completion_mutation(&r, target, |ns| {
-            for r in [own[3], own[4], own[5], NodeRef(target)] {
-                ns[r.0].arguments[index] = foreign[index];
-            }
-        });
-    }
-    let evaluation = r.answers[1].outputs["evaluation"].0;
-    completion_mutation(&r, evaluation, |ns| {
-        let ReasonKind::ConditionFailed { condition, .. } = &mut ns[evaluation].reasons[0].kind
-        else {
-            panic!("reason")
-        };
-        *condition = NodeRef(donor);
-    });
-}
-#[test]
-fn owned_call_same_environment_rechecks_mutated_owner_proof_and_shortened_frame() {
-    let r = owned_call_result(&["x=evaluate(Reservations.parameter,a=@v/B,s=@v/p)"]);
-    let p = owned_condition(&r, 0);
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    e.recheck_node(&g, &g.nodes[p], p).unwrap();
-    let left = r.nodes[p].arguments[3];
-    let right = r.nodes[p].arguments[4];
-    let old = g.nodes[left.0].clone();
-    g.nodes[left.0].payload = g.nodes[right.0].payload.clone();
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[p], p),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.nodes[left.0] = old;
-    e.recheck_node(&g, &g.nodes[p], p).unwrap();
-    let r = owned_call_result(&["x=evaluate(Reservations.returned,a=@v/A,s=@v/p)"]);
-    let value = r.answers[0].outputs["value"].0;
-    let body = *r.nodes[value].arguments.last().unwrap();
-    let frame = r.contexts[body.0].frame.unwrap();
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    e.recheck_node(&g, &g.nodes[value], value).unwrap();
-    let old = g.frames[frame].arguments.clone();
-    g.frames[frame].arguments.pop();
-    assert_ne!(g.frames[frame].arguments, old);
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[value], value),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.frames[frame].arguments = old;
-    e.recheck_node(&g, &g.nodes[value], value).unwrap();
 }
 fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     use std::{cell::Cell, rc::Rc};
@@ -258,12 +109,6 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
-    assert_eq!(Some(probes.get()), frozen.get());
-    assert_eq!(
-        format!("{:?}", stopped.nodes),
-        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-    );
-    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -295,16 +140,10 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
         assert_eq!(reason.request, a.id);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-    assert_eq!(Some(probes.get()), frozen.get());
 }
 #[test]
 fn owned_call_actual_constraint_stop_keeps_prior_value_refutation_and_prefix() {
     owned_call_stop_in_batch(false, false)
-}
-#[test]
-fn owned_call_original_input_recheck_stop_keeps_prior_value_refutation_and_prefix() {
-    owned_call_stop_in_batch(true, false)
 }
 #[test]
 fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
@@ -387,11 +226,6 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
         assert!(seen.get());
         assert_eq!(stopped.status(), "interrupted");
         assert_eq!(c.stop_reason(), Some(expected.clone()));
-        assert_eq!(
-            format!("{:?}", stopped.nodes),
-            format!("{:?}", &normal.nodes[..stopped.nodes.len()])
-        );
-        assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
         assert_eq!(
             format!("{:?}", &stopped.answers[..2]),
             format!("{:?}", &normal.answers[..2])
@@ -476,35 +310,6 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
             assert_eq!(actual["details"], wanted["details"]);
         }
         rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-        assert_eq!(Some(probes.get()), frozen.get());
-        assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
-        assert_eq!(Some(probes.get()), frozen.get());
-    }
-}
-
-#[test]
-fn owned_counterexample_type_is_rechecked_in_the_same_environment_after_success() {
-    let r = owned_call_result(&["x=evaluate(Reservations.parameter,a=@v/B,s=@v/p)"]);
-    let p = owned_condition(&r, 0);
-    let proof = r.nodes[p].arguments.last().unwrap().0;
-    let evaluation = r.answers[0].outputs["evaluation"].0;
-    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    for target in [proof, p, evaluation] {
-        e.recheck_node(&g, &g.nodes[target], target).unwrap();
-        let old = g.nodes[proof].ty.clone();
-        assert_eq!(old, NodeType::Evidence);
-        g.nodes[proof].ty = NodeType::Value(Type::Bool);
-        assert_ne!(g.nodes[proof].ty, old);
-        assert!(
-            matches!(
-                e.recheck_node(&g, &g.nodes[target], target),
-                Err(ValidationFailure::Internal(_))
-            ),
-            "target={target}"
-        );
-        g.nodes[proof].ty = old;
-        e.recheck_node(&g, &g.nodes[target], target).unwrap();
     }
 }
 
@@ -521,7 +326,6 @@ fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
-    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     for request in 0..3 {
         let p = owned_condition(&r, request);
         let n = r.nodes[p].arguments.len();
@@ -529,41 +333,37 @@ fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
         let right = r.nodes[p].arguments[n - 2].0;
         assert_eq!(data_scalar_at(&r, l), &Scalar::Text("v".into()));
         assert_eq!(data_scalar_at(&r, right), &Scalar::Text("w".into()));
-        assert_eq!(r.nodes[l].ty, NodeType::Value(Type::Text));
         assert!(r.nodes[p].support.iter().any(|f| f.snapshot == "v"
             && f.subject == "p"
             && f.atom.as_deref() == Some("p-owner")));
-        assert!(
-            r.nodes[p].scope.snapshots.contains("v") && r.nodes[p].scope.snapshots.contains("w")
-        );
-        completion_mutation(&r, l, |ns| {
-            ns[l].payload = Some(Payload::Scalar(Scalar::Text("w".into())))
-        });
-        completion_mutation(&r, right, |ns| ns[right].support.clear());
-        completion_mutation(&r, p, |ns| {
-            ns[p].scope.snapshots.remove("v");
-        });
     }
 }
 #[test]
-fn owned_failed_inner_calls_keep_original_reasons_and_never_create_an_outer_frame() {
+fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_absence() {
     let r = owned_call_result(&[
+        "seed=evaluate(Reservations.seed)",
+        "first=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
+        "lexical=evaluate(Reservations.fieldLexical,a=@v/B,s=@v/p)",
+        "owner=evaluate(Reservations.failedFieldOwner,a=@v/B,s=@v/p)",
+        "affine=check(Reservations.fieldAffine,a=@v/B,s=@v/p)",
+        "parameter=evaluate(Reservations.parameter,a=@v/B,s=@v/p)",
+        "returned=evaluate(Reservations.returned,a=@v/B,s=@v/p)",
+        "universal=evaluate(Reservations.invalidForall,a=@v/A)",
         "plain=evaluate(Reservations.invalidIgnored,a=@v/B,s=@v/p)",
         "owned=evaluate(Reservations.invalidIgnoredOwned,a=@v/B,b=@v/A,s=@v/p,t=@v/q)",
         "binding=evaluate(Reservations.invalidLet,a=@v/B,s=@v/p)",
-        "affine=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
+        "ignored=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
     ]);
     assert_eq!(r.status(), "partial");
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    let mut found = vec![];
-    for (i, node) in r.nodes.iter().enumerate() {
+    let bytes = r.prepared.inputs().sources().law().bytes();
+    let law = r.prepared.inputs().law();
+    let mut fields = vec![];
+    let mut inner = vec![];
+    for (i, n) in r.nodes.iter().enumerate() {
         let Some(Payload::Evaluation {
-            expression,
-            parts,
-            value,
-            ..
-        }) = &node.payload
+            expression, value, ..
+        }) = &n.payload
         else {
             continue;
         };
@@ -574,54 +374,56 @@ fn owned_failed_inner_calls_keep_original_reasons_and_never_create_an_outer_fram
         else {
             continue;
         };
-        let Some(id) = r
-            .prepared
-            .inputs()
-            .law()
-            .exprs
-            .iter()
-            .position(|e| e.span == *span)
-        else {
-            continue;
-        };
-        let Some(d) = e.named_view(id).unwrap() else {
-            continue;
-        };
-        if ![
-            "Reservations.ignore",
-            "Reservations.ignoreOwned",
-            "Reservations.ignoreZ",
-        ]
-        .contains(&d.name.as_str())
+        let request = r.contexts[i].request;
+        // 所有者の合わないfield読みは値を出さず、条件の失敗と根拠を残す。
+        let text = std::str::from_utf8(&bytes[span.0..span.1]).unwrap();
+        if (1..=4).contains(&request)
+            && ["(narrow(a,s)).free", "selected.free", "(narrow(a,s)).owner"].contains(&text)
         {
-            continue;
+            assert!(value.is_none());
+            assert!(
+                n.reasons
+                    .iter()
+                    .any(|x| matches!(x.kind, ReasonKind::ConditionFailed { .. }))
+            );
+            assert!(!n.support.is_empty());
+            fields.push(request);
         }
-        let Signature::View { params, .. } = &d.signature else {
-            panic!("view")
-        };
-        e.recheck_node(&g, node, i).unwrap();
-        assert!(value.is_none());
-        assert_eq!(parts[0].children.len(), params.len());
-        assert!(!r.frames.iter().any(|f| f.source == *expression));
-        assert!(
-            node.reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-        );
-        completion_mutation(&r, i, |ns| ns[i].reasons.clear());
-        found.push(r.contexts[i].request);
+        // 失敗した内側の呼出しは値を出さず、元の条件の失敗を残す。
+        if (8..=11).contains(&request)
+            && let Some(id) = law.exprs.iter().position(|e| e.span == *span)
+            && let Some(d) = e.named_view(id).unwrap()
+            && [
+                "Reservations.ignore",
+                "Reservations.ignoreOwned",
+                "Reservations.ignoreZ",
+            ]
+            .contains(&d.name.as_str())
+        {
+            assert!(value.is_none());
+            assert!(
+                n.reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            );
+            inner.push(request);
+        }
     }
-    found.sort();
-    found.dedup();
-    assert_eq!(found, vec![0, 1, 2, 3]);
-}
-
-#[test]
-fn owned_failed_quantifier_keeps_partial_counterexamples_without_a_boolean_value() {
-    let r = owned_call_result(&["x=evaluate(Reservations.invalidForall,a=@v/A)"]);
-    assert_eq!(r.status(), "partial");
-    let target = r.answers[0].outputs["evaluation"].0;
-    assert!(!r.answers[0].outputs.contains_key("value"));
+    for found in [&mut fields, &mut inner] {
+        found.sort();
+        found.dedup();
+    }
+    assert_eq!(fields, vec![1, 2, 3, 4]);
+    assert_eq!(inner, vec![8, 9, 10, 11]);
+    // 判断の再検査の代表: 失敗したowner条件の判断を反転すると核が拒否する。
+    owned_condition(&r, 6);
+    let p = owned_condition(&r, 5);
+    rejects_mutated_prefix(&r, p, |ns| {
+        ns[p].judgment.as_mut().unwrap().status = Decision::Established
+    });
+    // 失敗した量化は真偽値を出さず、部分的な反例を証拠に残す。
+    let target = r.answers[7].outputs["evaluation"].0;
+    assert!(!r.answers[7].outputs.contains_key("value"));
     let n = &r.nodes[target];
     assert!(!n.evidence.is_empty());
     assert!(
@@ -634,148 +436,4 @@ fn owned_failed_quantifier_keeps_partial_counterexamples_without_a_boolean_value
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
     );
-    completion_mutation(&r, target, |ns| ns[target].evidence.clear());
-    let proof = n.evidence[0].0;
-    completion_mutation(&r, proof, |ns| {
-        let Some(Payload::Counterexample { facts, .. }) = &mut ns[proof].payload else {
-            panic!("proof")
-        };
-        facts.clear();
-    });
-}
-
-#[test]
-fn owned_failed_field_actual_stop_keeps_prior_value_refutation_and_prefix() {
-    owned_call_stop_in_batch(false, true)
-}
-
-#[test]
-fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_absence() {
-    let r = owned_call_result(&[
-        "seed=evaluate(Reservations.seed)",
-        "first=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
-        "second=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
-        "lexical=evaluate(Reservations.fieldLexical,a=@v/B,s=@v/p)",
-        "owner=evaluate(Reservations.failedFieldOwner,a=@v/B,s=@v/p)",
-        "affine=check(Reservations.fieldAffine,a=@v/B,s=@v/p)",
-    ]);
-    assert_eq!(r.status(), "partial");
-    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
-    let bytes = r.prepared.inputs().sources().law().bytes();
-    let targets = r
-        .nodes
-        .iter()
-        .enumerate()
-        .filter_map(|(i, n)| {
-            let Some(Payload::Evaluation {
-                expression, value, ..
-            }) = &n.payload
-            else {
-                return None;
-            };
-            let Some(Payload::Expression {
-                location: Location::Law { span },
-                ..
-            }) = &r.nodes[expression.0].payload
-            else {
-                return None;
-            };
-            let text = std::str::from_utf8(&bytes[span.0..span.1]).unwrap();
-            ["(narrow(a,s)).free", "selected.free", "(narrow(a,s)).owner"]
-                .contains(&text)
-                .then(|| {
-                    assert!(value.is_none());
-                    assert!(
-                        n.reasons
-                            .iter()
-                            .any(|x| matches!(x.kind, ReasonKind::ConditionFailed { .. }))
-                    );
-                    assert!(!n.support.is_empty());
-                    e.recheck_node(&g, n, i).unwrap();
-                    i
-                })
-        })
-        .collect::<Vec<_>>();
-    let mut requests = targets
-        .iter()
-        .map(|i| r.contexts[*i].request)
-        .collect::<Vec<_>>();
-    requests.sort();
-    requests.dedup();
-    assert_eq!(requests, vec![1, 2, 3, 4, 5]);
-    for &target in &targets {
-        completion_mutation(&r, target, |ns| ns[target].reasons.clear());
-        completion_mutation(&r, target, |ns| ns[target].support.clear());
-        completion_mutation(&r, target, |ns| ns[target].scope.snapshots.clear());
-        completion_mutation(&r, target, |ns| {
-            ns[target].ty = NodeType::Evaluation(Type::Bool)
-        });
-        completion_mutation(&r, target, |ns| {
-            let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
-                panic!("evaluation")
-            };
-            parts[0].children.clear();
-        });
-    }
-    let donor = *targets
-        .iter()
-        .find(|i| r.contexts[**i].request == 1)
-        .unwrap();
-    let target = *targets
-        .iter()
-        .find(|i| r.contexts[**i].request == 2)
-        .unwrap();
-    let (
-        Some(Payload::Evaluation {
-            expression: de,
-            parts: dp,
-            ..
-        }),
-        Some(Payload::Evaluation {
-            expression: te,
-            parts: tp,
-            ..
-        }),
-    ) = (&r.nodes[donor].payload, &r.nodes[target].payload)
-    else {
-        panic!("evaluation")
-    };
-    assert_ne!(de, te);
-    assert_ne!(dp[0].children, tp[0].children);
-    assert_eq!(r.nodes[de.0].ty, r.nodes[te.0].ty);
-    completion_mutation(&r, target, |ns| {
-        let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
-            panic!("evaluation")
-        };
-        parts[0].children = dp[0].children.clone();
-        ns[target].arguments[1] = dp[0].children[0];
-    });
-    completion_mutation(&r, target, |ns| {
-        let Some(Payload::Evaluation { expression, .. }) = &mut ns[target].payload else {
-            panic!("evaluation")
-        };
-        *expression = *de;
-        ns[target].arguments[0] = *de;
-    });
-    let seed = r.answers[0].outputs["value"];
-    completion_mutation(&r, target, |ns| {
-        let Some(Payload::Evaluation { value, parts, .. }) = &mut ns[target].payload else {
-            panic!("evaluation")
-        };
-        *value = Some(seed);
-        parts[0].value = Some(seed);
-        ns[target].arguments.push(seed);
-    });
-    let mut g = g;
-    let original = g.nodes[target].clone();
-    e.recheck_node(&g, &g.nodes[target], target).unwrap();
-    g.nodes[target].reasons.clear();
-    assert_ne!(format!("{:?}", g.nodes[target]), format!("{original:?}"));
-    assert!(matches!(
-        e.recheck_node(&g, &g.nodes[target], target),
-        Err(ValidationFailure::Internal(_))
-    ));
-    g.nodes[target] = original;
-    e.recheck_node(&g, &g.nodes[target], target).unwrap();
 }

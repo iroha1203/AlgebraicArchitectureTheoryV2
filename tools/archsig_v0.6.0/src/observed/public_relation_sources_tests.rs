@@ -10,11 +10,60 @@ mod relation_fixture {
     use crate as archsig;
     include!("../../tests/common/public_relation.rs");
 }
+// relationの族は Hop の組で展開されるので、試験が使わない Hop(self・different)を外して族を小さくする。
+fn without_unused_hops(sources: InputSources) -> InputSources {
+    use crate::canonical::Json;
+    use crate::json::{JNode, JValue};
+    fn convert(node: &JNode) -> Json {
+        match &node.value {
+            JValue::Bool(value) => Json::Bool(*value),
+            JValue::Str(value) => Json::str(value),
+            JValue::Num(value) => Json::Nat(value.parse().unwrap()),
+            JValue::Arr(values) => Json::Arr(values.iter().map(convert).collect()),
+            JValue::Obj(fields) => Json::Obj(
+                fields
+                    .iter()
+                    .map(|(name, value)| (name.clone(), convert(value)))
+                    .collect(),
+            ),
+            JValue::Null => panic!("この原始fixtureにnullはない"),
+        }
+    }
+    fn unused(json: &Json, key: &str) -> bool {
+        let Json::Obj(fields) = json else { panic!() };
+        fields[key] == Json::str("self") || fields[key] == Json::str("different")
+    }
+    let mut map = convert(&crate::json::parse(sources.archmap().bytes()).unwrap());
+    let Json::Obj(root) = &mut map else { panic!() };
+    let Json::Arr(snapshots) = root.get_mut("snapshots").unwrap() else {
+        panic!()
+    };
+    let Json::Obj(v) = &mut snapshots[0] else {
+        panic!()
+    };
+    let Json::Arr(subjects) = v.get_mut("subjects").unwrap() else {
+        panic!()
+    };
+    subjects.retain(|subject| !unused(subject, "id"));
+    let Json::Arr(atoms) = v.get_mut("atoms").unwrap() else {
+        panic!()
+    };
+    atoms.retain(|atom| !unused(atom, "subject"));
+    InputSources::from_bytes(
+        sources
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        sources.law().bytes().to_vec(),
+        map.canonical().into_bytes(),
+    )
+}
 fn inputs(extra: &str) -> InputSources {
-    relation_fixture::input(extra, false)
+    without_unused_hops(relation_fixture::input(extra, false))
 }
 fn inputs_mode(extra: &str, missing: bool) -> InputSources {
-    relation_fixture::input(extra, missing)
+    without_unused_hops(relation_fixture::input(extra, missing))
 }
 fn setup(extra: &str) -> (PreparedObserved, Graph, NodeRef, NodeRef) {
     let sources = inputs(extra);
@@ -196,33 +245,42 @@ fn an_inactive_guard_cannot_publish_a_body_value() {
     check_graph(&prepared, &graph);
 }
 const ALIAS_RELATION: &str = "relation aliasing(e:Hop,f:Hop) when source(path(e))=source(path(f)) and target(path(e))=target(path(f)):path(e)=path(f);";
-fn public(extra: &str, queries: &[&str]) -> ObservedEvaluation {
-    let result =
-        evaluate_observed_bytes(inputs(extra), queries, &mut Control::unlimited()).unwrap();
+// 完了した評価は evaluate_observed の validate_answer が回答から辿れる全nodeを検査済みなので、ここでは再検査しない。
+fn public(sources: InputSources, queries: &[&str]) -> ObservedEvaluation {
+    let result = evaluate_observed_bytes(sources, queries, &mut Control::unlimited()).unwrap();
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
 }
 #[test]
 fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
+    use crate::observed::public_compare::relations::Data;
     let queries = [
         E,
         ALIAS,
+        fixture::F,
+        fixture::C,
+        "other=compose($alias.value,then=$f.value)",
         "compared=compare($e.value,to=$alias.value,kind=relation)",
+        "backward=compare($alias.value,to=$e.value,kind=relation)",
+        "composed=compare($c.operation,to=$other.operation,kind=relation)",
     ];
-    let without = public("", &queries);
-    assert_eq!(without.answers[2].status, Decision::Refuted);
-    let with = public(ALIAS_RELATION, &queries);
-    assert_eq!(with.answers[2].status, Decision::Established);
-    assert!(with.answers[2].outputs.contains_key("comparison"));
+    let without = public(inputs(""), &queries);
+    for answer in &without.answers[5..] {
+        assert_eq!(answer.status, Decision::Refuted, "{}", answer.id);
+    }
+    let with = public(inputs(ALIAS_RELATION), &queries);
+    for answer in &with.answers[5..] {
+        assert_eq!(answer.status, Decision::Established, "{}", answer.id);
+    }
+    assert!(with.answers[5].outputs.contains_key("comparison"));
     assert!(
-        with.answers[2]
+        with.answers[5]
             .scope
             .quantifiers
             .iter()
             .any(|q| q.name == "relation_word" && q.domain.is_some())
     );
-    let claim = with.answers[2].claim.unwrap();
+    let claim = with.answers[5].claim.unwrap();
     let Payload::Construction(value) = with.nodes[claim.0].payload.as_ref().unwrap() else {
         panic!()
     };
@@ -233,43 +291,37 @@ fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
         panic!()
     };
     assert!(part.wire(w).canonical().contains("relation_equal"));
-    let proof = with.answers[2].evidence[1];
+    let proof = with.answers[5].evidence[1];
     let Payload::Construction(proof) = with.nodes[proof.0].payload.as_ref().unwrap() else {
         panic!()
     };
     let D::Comparison(Part::RelationDerived { data, .. }) = &proof.data else {
         panic!()
     };
-    assert!(
-        matches!(data.as_ref(), crate::observed::public_compare::relations::Data::Normalization{steps,..} if !steps.is_empty())
-    );
-}
-#[test]
-fn composed_query_words_are_compared_in_their_actual_rewrite_context() {
-    let with = public(
-        ALIAS_RELATION,
-        &[
-            E,
-            ALIAS,
-            fixture::F,
-            fixture::C,
-            "other=compose($alias.value,then=$f.value)",
-            "compared=compare($c.operation,to=$other.operation,kind=relation)",
-        ],
-    );
-    assert_eq!(with.answers[5].status, Decision::Established);
-    let without = public(
-        "",
-        &[
-            E,
-            ALIAS,
-            fixture::F,
-            fixture::C,
-            "other=compose($alias.value,then=$f.value)",
-            "compared=compare($c.operation,to=$other.operation,kind=relation)",
-        ],
-    );
-    assert_eq!(without.answers[5].status, Decision::Refuted);
+    assert!(matches!(data.as_ref(), Data::Normalization { steps, .. } if !steps.is_empty()));
+    // 証拠の再検査の代表: word の値と比較命題の判断を改竄すると核が拒否する。
+    let graph = rebuild_for_origin_and_support_recheck(&with, &with.nodes).unwrap();
+    let env = Environment::with_prepared(with.prepared(), &mut Control::unlimited()).unwrap();
+    let word = graph.nodes.iter().position(|node| matches!(&node.payload, Some(Payload::Construction(value)) if matches!(&value.data, D::Comparison(Part::RelationDerived { data, .. }) if matches!(data.as_ref(), Data::Value { value: Scalar::Tuple(values), .. } if values.len() == 4)))).unwrap();
+    let mut forged = graph.nodes[word].clone();
+    let Some(Payload::Construction(value)) = &mut forged.payload else {
+        panic!()
+    };
+    let D::Comparison(Part::RelationDerived { data, .. }) = &mut value.data else {
+        panic!()
+    };
+    let Data::Value {
+        value: Scalar::Tuple(values),
+        ..
+    } = data.as_mut()
+    else {
+        panic!()
+    };
+    values[3] = Scalar::Z(999.into());
+    assert!(env.recheck_node(&graph, &forged, word).is_err());
+    let mut forged = graph.nodes[claim.0].clone();
+    forged.judgment.as_mut().unwrap().status = Decision::Refuted;
+    assert!(env.recheck_node(&graph, &forged, claim.0).is_err());
 }
 
 #[test]
@@ -325,7 +377,6 @@ fn an_unknown_guard_stays_undetermined_and_needed_keeps_its_original_slot() {
         ])
     );
 
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
 }
 
 #[test]
@@ -373,7 +424,6 @@ fn an_invalid_relation_refutes_constructibility_instead_of_congruence_membership
     };
     assert!(part.wire(w).canonical().contains("constructible"));
     assert!(!answer.evidence.is_empty());
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
 }
 #[test]
 fn a_noncomposable_relation_body_retains_the_original_path_failure() {
@@ -409,9 +459,8 @@ fn a_noncomposable_relation_body_retains_the_original_path_failure() {
         "{:?}",
         result.issues
     );
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     let inactive = public(
-        "relation inactive(e:Hop) when false:then(path(e),path(e))=then(path(e),path(e));",
+        inputs("relation inactive(e:Hop) when false:then(path(e),path(e))=then(path(e),path(e));"),
         &[
             E,
             ALIAS,
@@ -466,7 +515,6 @@ fn known_failure_with_an_independent_nonfinite_relation(invalid: &str, expected:
         panic!()
     };
     assert!(part.wire(witness).canonical().contains("constructible"));
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
 }
 
 #[test]
@@ -603,7 +651,6 @@ fn actual_endpoint_and_reading_mismatches_are_comparison_conditions() {
             "{:?}",
             result.issues
         );
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
 }
 
@@ -626,125 +673,29 @@ fn public_relation_stops_keep_prior_values_and_only_finished_sealed_comparisons(
     let normal = evaluate_observed_bytes(inputs(script), &qs, &mut probe).unwrap();
     assert_eq!(normal.answers[2].status, Decision::Refuted);
     let total = count.get();
-    assert!(total > 20);
+    assert!(total > 4);
+    // 停止の種類は共通の停止処理を通るので time 停止だけを、停止位置は未完と完了直後の2点を見る。
     for at in [1, total - 3] {
-        for mode in 0..4 {
-            let (mut control, count) = stopping(at, mode, Checkpoint::NativeResultNode);
-            let prepared =
-                crate::observed::prepare_observed(inputs(script), &qs, &mut Control::unlimited())
-                    .unwrap();
-            let result = evaluate_observed(prepared, &mut control).unwrap();
-            assert_eq!(result.status(), "interrupted");
-            assert_eq!(result.answers[..2], normal.answers[..2]);
-            assert_eq!(result.answers[2].outputs.contains_key("comparison"), at > 1);
-            if at > 1 {
-                assert_eq!(result.answers[2].status, Decision::Refuted);
-                assert_eq!(result.answers[2].evidence.len(), 2);
-            }
-            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-            assert_eq!(count.get(), at);
-            assert!(control.checkpoint(Checkpoint::NativeResultNode).is_err());
-            assert_eq!(count.get(), at);
+        let (mut control, _) = stopping(at, 0, Checkpoint::NativeResultNode);
+        let prepared =
+            crate::observed::prepare_observed(inputs(script), &qs, &mut Control::unlimited())
+                .unwrap();
+        let result = evaluate_observed(prepared, &mut control).unwrap();
+        assert_eq!(result.status(), "interrupted");
+        assert_eq!(result.answers[..2], normal.answers[..2]);
+        assert_eq!(result.answers[2].outputs.contains_key("comparison"), at > 1);
+        if at > 1 {
+            assert_eq!(result.answers[2].status, Decision::Refuted);
+            assert_eq!(result.answers[2].evidence.len(), 2);
         }
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
-}
-#[test]
-fn reconstructed_relation_proofs_reject_payload_plan_scope_and_source_family_forgery() {
-    use crate::observed::public_compare::relations::Data;
-    let result = public(
-        ALIAS_RELATION,
-        &[
-            E,
-            ALIAS,
-            "compared=compare($e.value,to=$alias.value,kind=relation)",
-        ],
-    );
-    let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-    let env = Environment::with_prepared(result.prepared(), &mut Control::unlimited()).unwrap();
-    env.validate_answer(
-        &graph,
-        &result.prepared().requests().requests()[2],
-        &result.answers[2],
-    )
-    .unwrap();
-    let word=graph.nodes.iter().position(|node|matches!(&node.payload,Some(Payload::Construction(value)) if matches!(&value.data,D::Comparison(Part::RelationDerived{data,..}) if matches!(data.as_ref(),Data::Value{value:Scalar::Tuple(values),..} if values.len()==4)))).unwrap();
-    let claim = result.answers[2].claim.unwrap().0;
-    for mode in 0..10 {
-        let index = if mode >= 7 { claim } else { word };
-        let mut node = graph.nodes[index].clone();
-        match mode {
-            0 => node.arguments.clear(),
-            1 => node.support.clear(),
-            2 => node.scope.readings.clear(),
-            3 => node.scope.completions = !node.scope.completions,
-            7 => node.judgment.as_mut().unwrap().status = Decision::Refuted,
-            8 => node.evidence.clear(),
-            _ => {
-                let Some(Payload::Construction(value)) = &mut node.payload else {
-                    panic!()
-                };
-                if mode == 9 {
-                    let Witness::Compare(w) = &mut value.witness else {
-                        panic!()
-                    };
-                    let w = std::sync::Arc::make_mut(w);
-                    w.scope.completions = !w.scope.completions;
-                    node.scope = w.scope.clone();
-                } else {
-                    let D::Comparison(Part::RelationDerived { index, data }) = &mut value.data
-                    else {
-                        panic!()
-                    };
-                    match data.as_mut() {
-                        Data::Value {
-                            value: Scalar::Tuple(values),
-                            arguments,
-                        } => match mode {
-                            4 => values[3] = Scalar::Z(999.into()),
-                            5 => arguments.clear(),
-                            _ => values.swap(0, 1),
-                        },
-                        _ => panic!(),
-                    }
-                    if mode == 6 {
-                        let Witness::Compare(w) = &mut value.witness else {
-                            panic!()
-                        };
-                        let w = std::sync::Arc::make_mut(w);
-                        std::sync::Arc::make_mut(w.relation_plan.as_mut().unwrap()).nodes[*index] =
-                            data.as_ref().clone();
-                    }
-                }
-            }
-        }
-        assert!(
-            env.recheck_node(&graph, &node, index).is_err(),
-            "forgery {mode}"
-        );
-    }
-    let source=graph.nodes.iter().position(|node|matches!(&node.payload,Some(Payload::Construction(value)) if matches!(value.data,D::Comparison(Part::RelationSource(_))))).unwrap();
-    let mut forged = graph.nodes[source].clone();
-    let Some(Payload::Construction(value)) = &mut forged.payload else {
-        panic!()
-    };
-    let Witness::Compare(w) = &mut value.witness else {
-        panic!()
-    };
-    let family = std::sync::Arc::make_mut(
-        std::sync::Arc::make_mut(w)
-            .relation_family
-            .as_mut()
-            .unwrap(),
-    );
-    family.table.instances[0].state =
-        crate::observed::environment::relation_instances::RelationState::Pending;
-    assert!(env.recheck_node(&graph, &forged, source).is_err());
 }
 
 #[test]
 fn an_empty_word_and_an_identity_action_have_different_relation_classes() {
     let result = public(
-        "",
+        relation_fixture::input("", false),
         &[
             "edge=evaluate(Walk.step,e=@v/self)",
             "identityValue=evaluate(Walk.identityAt,x=@v/p)",
@@ -834,14 +785,13 @@ fn a_relation_with_matching_endpoints_still_checks_every_actual_action_image() {
             ("v", "q", None, None)
         ]
     );
-    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
 }
 
 #[test]
 fn the_missing_guard_can_change_the_actual_relation_decision_in_both_completions() {
     for (value, expected) in [(false, Decision::Refuted), (true, Decision::Established)] {
         let result = evaluate_observed_bytes(
-            relation_fixture::known_guard(value),
+            without_unused_hops(relation_fixture::known_guard(value)),
             &[
                 E,
                 ALIAS,
@@ -853,160 +803,5 @@ fn the_missing_guard_can_change_the_actual_relation_decision_in_both_completions
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
         assert_eq!(result.answers[2].status, expected);
         assert!(result.issues.is_empty());
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
-}
-fn path_names(value: &Scalar) -> Vec<(String, String, String)> {
-    let Scalar::Path(path) = value else { panic!() };
-    let Some(step) = &path.step else {
-        return vec![];
-    };
-    std::iter::once(&step.generator)
-        .chain(&step.word_tail)
-        .map(|value| match value {
-            Scalar::Subject {
-                snapshot,
-                subject,
-                entity,
-            } => (snapshot.clone(), subject.clone(), entity.clone()),
-            _ => panic!(),
-        })
-        .collect()
-}
-fn certificate_names(value: &Scalar) -> Vec<(String, String, String)> {
-    let Scalar::Tuple(values) = value else {
-        panic!()
-    };
-    let Scalar::List { items, .. } = &values[2] else {
-        panic!()
-    };
-    items
-        .iter()
-        .map(|value| {
-            let Scalar::Tuple(names) = value else {
-                panic!()
-            };
-            let [
-                Scalar::Text(snapshot),
-                Scalar::Text(subject),
-                Scalar::Text(entity),
-            ] = names.as_slice()
-            else {
-                panic!()
-            };
-            (snapshot.clone(), subject.clone(), entity.clone())
-        })
-        .collect()
-}
-fn relation_data(
-    graph: &Graph,
-    reference: NodeRef,
-) -> Option<&crate::observed::public_compare::relations::Data> {
-    let Payload::Construction(value) = graph.get(reference).unwrap().payload.as_ref()? else {
-        return None;
-    };
-    let D::Comparison(Part::RelationDerived { data, .. }) = &value.data else {
-        return None;
-    };
-    Some(data)
-}
-#[test]
-fn both_orientations_of_a_public_derivation_agree_with_the_original_binding_and_word_context() {
-    use crate::observed::public_compare::relations::Data;
-    let result = public(
-        ALIAS_RELATION,
-        &[
-            E,
-            ALIAS,
-            "forward=compare($e.value,to=$alias.value,kind=relation)",
-            "backward=compare($alias.value,to=$e.value,kind=relation)",
-        ],
-    );
-    let mut graph = Graph::new(&Control::unlimited());
-    graph.nodes = result.nodes.clone().into();
-    let mut reversed = false;
-    for answer in &result.answers[2..] {
-        assert_eq!(answer.status, Decision::Established);
-        let Some(Data::Normalization {
-            before,
-            after,
-            steps,
-            ..
-        }) = relation_data(&graph, answer.evidence[1])
-        else {
-            panic!()
-        };
-        let mut current = path_names(graph.scalar(*before).unwrap());
-        for step in steps {
-            let Some(Data::Rewrite {
-                left,
-                right,
-                arguments,
-            }) = relation_data(&graph, *step)
-            else {
-                panic!()
-            };
-            reversed |= arguments
-                .iter()
-                .any(|r| matches!(relation_data(&graph, *r), Some(Data::Rewrite { .. })));
-            let originals = arguments
-                .iter()
-                .filter_map(|reference| match &graph.get(*reference).unwrap().payload {
-                    Some(Payload::Evaluation {
-                        value: Some(value), ..
-                    }) if matches!(
-                        graph.get(*reference).unwrap().ty,
-                        NodeType::Evaluation(Type::Path(..))
-                    ) =>
-                    {
-                        Some(*value)
-                    }
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
-            assert_eq!(originals.len(), 2);
-            let metadata = arguments
-                .iter()
-                .filter_map(|reference| match relation_data(&graph, *reference) {
-                    Some(Data::Value {
-                        value: Scalar::Tuple(values),
-                        ..
-                    }) if values.len() == 2 => Some(values),
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
-            assert_eq!(metadata.len(), 1);
-            let [Scalar::Bool(right_to_left), Scalar::Z(offset)] = metadata[0].as_slice() else {
-                panic!()
-            };
-            assert_eq!(
-                (*left, *right),
-                if *right_to_left {
-                    (originals[1], originals[0])
-                } else {
-                    (originals[0], originals[1])
-                }
-            );
-            let words = arguments
-                .iter()
-                .filter_map(|reference| match relation_data(&graph, *reference) {
-                    Some(Data::Value {
-                        value: word @ Scalar::Tuple(values),
-                        ..
-                    }) if values.len() == 4 => Some(certificate_names(word)),
-                    _ => None,
-                })
-                .collect::<Vec<_>>();
-            assert_eq!(words.len(), 2);
-            assert_eq!(words[0], current);
-            let offset = offset.to_string().parse::<usize>().unwrap();
-            let from = path_names(graph.scalar(*left).unwrap());
-            let to = path_names(graph.scalar(*right).unwrap());
-            assert_eq!(current[offset..offset + from.len()], from);
-            current.splice(offset..offset + from.len(), to);
-            assert_eq!(words[1], current);
-        }
-        assert_eq!(current, path_names(graph.scalar(*after).unwrap()));
-    }
-    assert!(reversed);
 }

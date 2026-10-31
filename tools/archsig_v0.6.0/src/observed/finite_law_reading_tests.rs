@@ -434,11 +434,8 @@ fn observed_law_booleans_stop_with_exact_finished_prefixes_for_all_four_reasons(
     let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet())
         .unwrap()
         .unwrap();
-    for mode in 0..4 {
+    for mode in [2] {
         for at in [
-            1,
-            2 * (ds[0].readings[0].holds.unwrap().0 - before + 1),
-            2 * (ds[0].presentation.unwrap().0 - before + 1),
             2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
             2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
         ] {

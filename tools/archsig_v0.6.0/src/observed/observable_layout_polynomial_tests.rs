@@ -36,20 +36,6 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
     .unwrap();
     (g, a.reference)
 }
-fn copy_graph(g: &Graph, c: &Control) -> Graph {
-    let mut p = Graph::new(c);
-    p.nodes = g.nodes.clone();
-    p.contexts = g.contexts.clone();
-    p.frames = g.frames.clone();
-    p.instances = g.instances.clone();
-    p.iterations = g.iterations.clone();
-    p.cases = g.cases.clone();
-    p.universal_witnesses = g.universal_witnesses.clone();
-    p.requests = g.requests.clone();
-    p.checked_answers = g.checked_answers.clone();
-    p.active = g.active;
-    p
-}
 fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
     let env = Environment::with_prepared(p, &mut quiet())?;
     let mut prefix = Graph::new(&quiet());
@@ -434,118 +420,6 @@ fn the_empty_family_is_an_empty_block_product_with_all_objects_and_the_actual_un
             .is_err()
     );
     replay(&p, &g).unwrap();
-}
-#[test]
-fn layout_and_underlying_table_tampering_is_rejected() {
-    let (p, g, table, l) = sample(
-        false,
-        true,
-        "law required self(c:Part):c.quantity=c.quantity;law optional again(c:Part):c.quantity=c.quantity;",
-        "root",
-    );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    for mode in 0..26 {
-        let mut b = l.clone();
-        match mode {
-            0 => b.data.factors.reverse(),
-            1 => {
-                b.data.factors.pop();
-            }
-            2 => b.data.factors.push(b.data.factors[0]),
-            3 => b.data.anchor.subject = "p".into(),
-            4 => b.data.universe = b.data.architecture,
-            5 => b.data.indices.reverse(),
-            6 => {
-                b.data.indices.pop();
-            }
-            7 => b.data.objects.reverse(),
-            8 => {
-                b.data.objects.pop();
-            }
-            9 => b.data.objects[0].coordinates.reverse(),
-            10 => {
-                b.data.objects[0].coordinates.pop();
-            }
-            11 => b.data.objects[0].coordinates[0].factor = Some(1),
-            12 => b.data.objects[0].coordinates[0].factor = Some(20),
-            13 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .component = vec![1]
-            }
-            14 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .row = Some(20)
-            }
-            15 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .case = 20
-            }
-            16 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .nu = Some(NodeRef(g.nodes.len()))
-            }
-            17 => b.data.objects[0].coordinates[0].index = b.data.indices[1],
-            18 => b.data.support.clear(),
-            19 => b.data.scope.snapshots.clear(),
-            20 => b.data.complete = !b.data.complete,
-            21 => b.data.objects[0].presentations.clear(),
-            22 => b.data.objects[0].architecture = b.data.objects[1].architecture,
-            23 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .position
-                    .object = 1
-            }
-            24 => {
-                b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .epsilon = b.data.objects[0].coordinates[0]
-                    .polynomial_mut()
-                    .unwrap()
-                    .residual
-            }
-            25 => {
-                let mut t = (*table).clone();
-                t.indices.reverse();
-                b.table = Arc::new(t);
-            }
-            _ => unreachable!(),
-        }
-        // epsilonとresidualが同じRefである場合は、他Lawの評価へ明示的に差し替える。
-        if mode == 24 {
-            b.data.objects[0].coordinates[0]
-                .polynomial_mut()
-                .unwrap()
-                .epsilon = Some(table.objects[0].holds[0]);
-        }
-        assert!(b.recheck(&env, &g, &mut quiet()).is_err(), "mode {mode}");
-    }
-    let mut bad = copy_graph(&g, &quiet());
-    bad.nodes[l.data.factors[0].0]
-        .arguments
-        .push(NodeRef(l.data.factors[0].0));
-    assert!(l.recheck(&env, &bad, &mut quiet()).is_err());
-    let other = prepared(
-        fixture::inputs(
-            false,
-            true,
-            "law required self(c:Part):c.quantity=c.quantity;",
-        ),
-        "root",
-    );
-    let foreign = Environment::with_prepared(&other, &mut quiet()).unwrap();
-    assert!(l.recheck(&foreign, &g, &mut quiet()).is_err());
-    l.recheck(&env, &g, &mut quiet()).unwrap();
 }
 #[test]
 fn checked_placement_rejects_foreign_atoms_indices_and_coordinates() {

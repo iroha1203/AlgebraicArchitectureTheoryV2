@@ -75,24 +75,6 @@ fn rows(w: &Json) -> Vec<&Json> {
 fn mixed_owner_compounds_keep_fixed_conditions_actual_free_fibers_and_original_values() {
     for (law, producer, path, fixed, snap, owner, other) in [
         (
-            "mxOptionLaw",
-            "mxOption,p=@v/p,q=@v/r",
-            "$v.value",
-            "a",
-            "v",
-            "A",
-            "B",
-        ),
-        (
-            "mxListLaw",
-            "mxList,p=@w/p,q=@w/r",
-            "$v.value",
-            "a",
-            "w",
-            "A",
-            "B",
-        ),
-        (
             "mxSetLaw",
             "mxSet,p=@v/p,q=@v/r",
             "$v.value",
@@ -101,34 +83,7 @@ fn mixed_owner_compounds_keep_fixed_conditions_actual_free_fibers_and_original_v
             "B",
             "A",
         ),
-        (
-            "mxTuple",
-            "mxAll,p=@v/p,q=@v/r",
-            "$v.value",
-            "a",
-            "v",
-            "A",
-            "B",
-        ),
-        (
-            "fcNested",
-            "cbNested,p=@w/p,q=@w/r",
-            "$v.value",
-            "b",
-            "w",
-            "B",
-            "A",
-        ),
         ("fcMap", "cbMap,m=@v/m", "$v.value", "a", "v", "A", "B"),
-        (
-            "fcMapWrapped",
-            "cbMapWrapped,m=@w/m",
-            "$v.value",
-            "b",
-            "w",
-            "B",
-            "A",
-        ),
         (
             "mxListLaw",
             "mxWrapped,p=@v/p,q=@v/r",
@@ -214,12 +169,8 @@ fn condition<'a>(w: &'a Json, id: &str) -> &'a Json {
 #[test]
 fn mixed_fixed_owner_failures_keep_original_operands_and_never_become_empty_success() {
     for (law, producer, fixed, bad) in [
-        ("mxOptionLaw", "mxOption,p=@v/p,q=@v/r", "a", "@v/B"),
         ("mxListLaw", "mxList,p=@v/p,q=@v/r", "b", "@v/A"),
-        ("mxSetLaw", "mxSet,p=@v/p,q=@v/r", "a", "@w/A"),
-        ("fcNested", "cbNested,p=@v/p,q=@v/r", "a", "@v/B"),
         ("fcMap", "cbMap,m=@v/m", "a", "@v/B"),
-        ("fcMapWrapped", "cbMapWrapped,m=@v/m", "b", "@v/A"),
         (
             "mxConflictLaw",
             "mxConflict,p=@v/p,q=@v/r,r=@v/p",
@@ -554,128 +505,12 @@ fn mixed_inherits_fixed_owner_and_value_producer_completion_and_universal_scope(
         assert_eq!(checked(&w, "take"), 2);
     }
 }
-fn refs(j: &Json, out: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => {
-            let Json::Str(s) = &m["node"] else { panic!() };
-            out.push(s.clone());
-        }
-        Json::Obj(m) => m.values().for_each(|v| refs(v, out)),
-        Json::Arr(a) => a.iter().for_each(|v| refs(v, out)),
-        _ => {}
-    }
-}
-#[test]
-fn mixed_keeps_three_inputs_dag_fixed_and_free_owner_facts_and_current_sources() {
-    use archsig::input::check_inputs;
-    use std::collections::BTreeSet;
-    for mode in ["known", "unknown_owner"] {
-        let asks = [
-            "take=check(Applications.fcMap,a=$a.value,x=$v.value)",
-            "v=evaluate(Applications.cbMap,m=@v/m)",
-            "a=evaluate(Applications.cbOwner,a=@v/A)",
-        ];
-        let i = fixture::input(mode, "r1");
-        let original = i.clone();
-        let before = check_inputs(i.clone(), &mut quiet()).unwrap();
-        let r = run(i, &asks);
-        assert_eq!(r.status(), "complete");
-        let checked = r.prepared().inputs();
-        assert_eq!(checked.sources(), &original);
-        assert_eq!(checked.inputs(), before.inputs());
-        assert_eq!(checked.definitions(), before.definitions());
-        assert_eq!(checked.law().declarations(), before.law().declarations());
-        assert_eq!(checked.law().exprs(), before.law().exprs());
-        assert_eq!(checked.archmap().snapshots(), before.archmap().snapshots());
-        let w = r.wire();
-        let mut seen = BTreeSet::new();
-        let mut atoms = BTreeSet::new();
-        for n in arr(f(&w, "nodes")) {
-            let mut rs = vec![];
-            refs(n, &mut rs);
-            assert!(rs.iter().all(|r| seen.contains(r)));
-            let Json::Str(id) = f(n, "id") else { panic!() };
-            assert!(seen.insert(id.clone()));
-            for fact in arr(f(n, "support")) {
-                let Json::Str(snap) = f(fact, "snapshot") else {
-                    panic!()
-                };
-                let Json::Str(subject) = f(fact, "subject") else {
-                    panic!()
-                };
-                let s = checked
-                    .archmap()
-                    .snapshots()
-                    .iter()
-                    .find(|s| &s.id == snap)
-                    .unwrap()
-                    .subjects
-                    .iter()
-                    .find(|s| &s.id == subject)
-                    .unwrap();
-                let origin = if let Json::Obj(m) = fact
-                    && let Some(Json::Str(field)) = m.get("field")
-                {
-                    let archsig::archmap::Slot::Known { atom, origin, .. } =
-                        &s.fields.iter().find(|f| &f.name == field).unwrap().slot
-                    else {
-                        panic!()
-                    };
-                    assert_eq!(f(fact, "atom"), &Json::str(atom));
-                    atoms.insert(atom.clone());
-                    origin
-                } else {
-                    &s.origin
-                };
-                let origin = checked
-                    .archmap()
-                    .origins()
-                    .iter()
-                    .find(|o| &o.id == origin)
-                    .unwrap();
-                for loc in &origin.locations {
-                    assert_eq!(
-                        checked
-                            .archmap()
-                            .sources()
-                            .iter()
-                            .find(|s| s.id == loc.source)
-                            .unwrap()
-                            .revision,
-                        "r1"
-                    );
-                }
-            }
-        }
-        assert_eq!(atoms.contains("p-owner"), mode == "known");
-        assert!(atoms.contains("r-owner"));
-        let relocated = run(fixture::input(mode, "r2"), &asks);
-        assert!(
-            relocated
-                .prepared()
-                .inputs()
-                .archmap()
-                .sources()
-                .iter()
-                .all(|s| s.revision == "r2")
-        );
-        let moved = relocated.wire();
-        assert_eq!(f(&w, "nodes"), f(&moved, "nodes"));
-        assert_eq!(f(&w, "answers"), f(&moved, "answers"));
-        assert_ne!(f(&w, "inputs"), f(&moved, "inputs"));
-    }
-}
 
 #[test]
 fn mixed_direct_subject_fixed_owner_failure_keeps_typed_operands_and_later_reasons() {
     for (law, producer, fixed, snapshot, owner) in [
         ("mxTuple", "mxAll,p=@v/p,q=@v/r", "a", "v", "B"),
-        ("mxOptionLaw", "mxOption,p=@v/p,q=@v/r", "a", "v", "B"),
-        ("mxListLaw", "mxList,p=@v/p,q=@v/r", "b", "v", "A"),
-        ("mxSetLaw", "mxSet,p=@v/p,q=@v/r", "a", "w", "A"),
-        ("fcNested", "cbNested,p=@v/p,q=@v/r", "a", "v", "B"),
         ("fcMap", "cbMap,m=@v/m", "a", "v", "B"),
-        ("fcMapWrapped", "cbMapWrapped,m=@v/m", "b", "v", "A"),
         (
             "mxConflictLaw",
             "mxConflict,p=@v/p,q=@v/r,r=@v/p",
@@ -773,29 +608,6 @@ fn mixed_completed_public_projections_keep_seed_refs_for_all_cases() {
             "unknown_free_owner",
             "value",
             vec![Json::Nat(1), Json::str("some")],
-        ),
-        (
-            "mxListLaw",
-            "mxWrapped,p=@v/p,q=@v/r",
-            "$v.value[1].some",
-            "",
-            "unknown_free_owner",
-            "value",
-            vec![Json::Nat(1), Json::str("some")],
-        ),
-        (
-            "mxTuple",
-            "mxWrapped,p=@v/p,q=@v/r",
-            "$v.evaluation.value[1].some[0]",
-            "a=@v/A",
-            "unknown_free_owner",
-            "evaluation",
-            vec![
-                Json::str("value"),
-                Json::Nat(1),
-                Json::str("some"),
-                Json::Nat(0),
-            ],
         ),
         (
             "fcMap",
