@@ -271,12 +271,19 @@ fn public_relation_without_its_declaration_refutes_every_comparison() {
     }
 }
 #[test]
-fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
-    use crate::observed::public_compare::relations::Data;
-    let with = public(inputs(ALIAS_RELATION), &public_relation_queries());
+fn public_relation_holds_backward_and_through_composed_paths() {
+    let queries = public_relation_queries();
+    let asked = [&queries[..5], &queries[6..]].concat();
+    let with = public(inputs(ALIAS_RELATION), &asked);
     for answer in &with.answers[5..] {
         assert_eq!(answer.status, Decision::Established, "{}", answer.id);
     }
+}
+#[test]
+fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
+    use crate::observed::public_compare::relations::Data;
+    let with = public(inputs(ALIAS_RELATION), &public_relation_queries()[..6]);
+    assert_eq!(with.answers[5].status, Decision::Established);
     assert!(with.answers[5].outputs.contains_key("comparison"));
     assert!(
         with.answers[5]

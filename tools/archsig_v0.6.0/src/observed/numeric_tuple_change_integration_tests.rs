@@ -8,7 +8,7 @@ use archsig::{
     observed::{EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed},
 };
 use std::sync::Arc;
-// 条件ごとに、型と入れ子で結果の終了コードが変わる組だけを残し、4本に分けて並列に回す。
+// 条件ごとに、型と入れ子で結果の終了コードが変わる組だけを残し、6本に分けて並列に回す。
 #[test]
 fn numeric_tuple_change_transport_preserves_each_condition_0() {
     check_part(0);
@@ -25,6 +25,14 @@ fn numeric_tuple_change_transport_preserves_each_condition_2() {
 fn numeric_tuple_change_transport_preserves_each_condition_3() {
     check_part(3);
 }
+#[test]
+fn numeric_tuple_change_transport_preserves_each_condition_4() {
+    check_part(4);
+}
+#[test]
+fn numeric_tuple_change_transport_preserves_each_condition_5() {
+    check_part(5);
+}
 fn check_part(part: usize) {
     let mut seen = std::collections::BTreeSet::new();
     let cases: Vec<_> = fixture::cases()
@@ -32,7 +40,7 @@ fn check_part(part: usize) {
         .filter(|case| seen.insert((case.name, case.code)))
         .collect();
     for (index, case) in cases.into_iter().enumerate() {
-        if index % 4 != part {
+        if index % 6 != part {
             continue;
         }
         let started = std::time::Instant::now();

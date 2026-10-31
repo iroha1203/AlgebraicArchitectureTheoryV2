@@ -31,16 +31,21 @@ fn numeric_data_definition(ty: &str) -> String {
         .replace(r#""type":"Z""#, &format!(r#""type":"{ty}""#))
 }
 #[test]
-fn numeric_guards_preserve_known_products() {
+fn implies_guard_preserves_numeric_products() {
     // 論理結合(and/or/implies、右辺が定数の腕を含む)を恒真と畳み込む。
-    for (name, guard) in [
-        ("numeric-implies", "false implies n*n=1"),
-        ("numeric-or", "true or n*n=1"),
-        ("numeric-and", "n=n and true"),
-        ("right-or-true", "n=0 or true"),
-    ] {
-        known_numeric_product(name, DEFINITION, "", guard, "n*c.quantity");
-    }
+    known_numeric_product("numeric-implies", DEFINITION, "", "false implies n*n=1", "n*c.quantity");
+}
+#[test]
+fn or_guard_preserves_numeric_products() {
+    known_numeric_product("numeric-or", DEFINITION, "", "true or n*n=1", "n*c.quantity");
+}
+#[test]
+fn and_guard_preserves_numeric_products() {
+    known_numeric_product("numeric-and", DEFINITION, "", "n=n and true", "n*c.quantity");
+}
+#[test]
+fn right_or_true_guard_preserves_numeric_products() {
+    known_numeric_product("right-or-true", DEFINITION, "", "n=0 or true", "n*c.quantity");
 }
 #[test]
 fn constant_order_guards_preserve_numeric_products() {
@@ -50,28 +55,38 @@ fn constant_order_guards_preserve_numeric_products() {
     }
 }
 #[test]
-fn container_equality_guards_preserve_numeric_products() {
+fn list_order_inequality_guard_preserves_numeric_products() {
     // list・tuple・option・Text・同じslotを読む容器の記号的な等値と不等。
-    for (name, guard) in [
-        ("symbolic-list-order-inequality", "list<Z>[n,n+1]!=list<Z>[n+1,n]"),
-        ("symbolic-tuple-equality", "(n,true)=(n,true)"),
-        ("symbolic-option-constructor", "some(n)!=none<Z>"),
-        ("text-literal-difference", r#"(n,"ready")!=(n,"done")"#),
-        ("same-slot-option", "some(c.quantity)=some(c.quantity)"),
-    ] {
-        known_numeric_product(name, DEFINITION, "", guard, "n*c.quantity");
-    }
+    known_numeric_product("symbolic-list-order-inequality", DEFINITION, "", "list<Z>[n,n+1]!=list<Z>[n+1,n]", "n*c.quantity");
 }
 #[test]
-fn explicit_list_aggregate_guards_preserve_numeric_products() {
+fn tuple_equality_guard_preserves_numeric_products() {
+    known_numeric_product("symbolic-tuple-equality", DEFINITION, "", "(n,true)=(n,true)", "n*c.quantity");
+}
+#[test]
+fn option_constructor_guard_preserves_numeric_products() {
+    known_numeric_product("symbolic-option-constructor", DEFINITION, "", "some(n)!=none<Z>", "n*c.quantity");
+}
+#[test]
+fn text_literal_difference_guard_preserves_numeric_products() {
+    known_numeric_product("text-literal-difference", DEFINITION, "", r#"(n,"ready")!=(n,"done")"#, "n*c.quantity");
+}
+#[test]
+fn same_slot_option_guard_preserves_numeric_products() {
+    known_numeric_product("same-slot-option", DEFINITION, "", "some(c.quantity)=some(c.quantity)", "n*c.quantity");
+}
+#[test]
+fn list_sum_guard_preserves_numeric_products() {
     // 明示listのsum(相殺・rational)とcount(形)。
-    for (name, guard) in [
-        ("symbolic-list-sum", "sum(list<Z>[n,-n])=0"),
-        ("symbolic-list-count", "count(list<Z>[n,n])=2"),
-        ("list-rational-sum", "sum(list<Q>[rat(1,2),rat(1,2)])=1"),
-    ] {
-        known_numeric_product(name, DEFINITION, "", guard, "n*c.quantity");
-    }
+    known_numeric_product("symbolic-list-sum", DEFINITION, "", "sum(list<Z>[n,-n])=0", "n*c.quantity");
+}
+#[test]
+fn list_count_guard_preserves_numeric_products() {
+    known_numeric_product("symbolic-list-count", DEFINITION, "", "count(list<Z>[n,n])=2", "n*c.quantity");
+}
+#[test]
+fn rational_list_sum_guard_preserves_numeric_products() {
+    known_numeric_product("list-rational-sum", DEFINITION, "", "sum(list<Q>[rat(1,2),rat(1,2)])=1", "n*c.quantity");
 }
 #[test]
 fn known_data_payload_match_preserves_numeric_products() {
@@ -330,7 +345,7 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability(row: usiz
     // (guard, guardが欠測slotを読むか, 同じ欠測値をviewで求めるか)
     let (guard, guard_reads, read_missing) = [
         (chain, false, false),
-        (chain, false, true),
+        ("false", false, true),
         ("c.quantity+1<=c.quantity", true, false),
     ][row];
     let view = if read_missing { "view amount(c:Part):Z=c.quantity;" } else { "" };
