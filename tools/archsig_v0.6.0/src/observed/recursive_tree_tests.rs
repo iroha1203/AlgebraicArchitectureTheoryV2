@@ -162,4 +162,3 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
 fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
     recursive_tree_private_stop(0, false);
 }
-

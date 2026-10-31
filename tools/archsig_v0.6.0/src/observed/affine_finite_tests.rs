@@ -254,4 +254,3 @@ fn stop(fresh: bool, quant: bool) {
 fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
     stop(false, false)
 }
-

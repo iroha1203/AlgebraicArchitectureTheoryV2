@@ -263,4 +263,3 @@ fn committed_reason_stop(kind: usize) {
 fn infinite_committed_evaluation_post_cancel_retains_original_algorithm_reason() {
     committed_reason_stop(0)
 }
-

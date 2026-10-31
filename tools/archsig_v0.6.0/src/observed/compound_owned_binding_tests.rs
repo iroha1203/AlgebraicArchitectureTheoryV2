@@ -204,4 +204,3 @@ fn stop(mode: usize) {
 fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
     stop(2)
 }
-

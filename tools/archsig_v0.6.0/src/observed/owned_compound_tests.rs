@@ -181,4 +181,3 @@ fn compound_stop(kind: usize, after_answer: bool) {
 fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation() {
     compound_stop(0, false);
 }
-

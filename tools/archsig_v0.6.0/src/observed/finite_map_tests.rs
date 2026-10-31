@@ -185,4 +185,3 @@ fn finite_map_enumeration_cancel_keeps_verified_prefix_and_prior_refutation() {
 fn finite_map_answer_stop_retains_completed_domain_and_verified_answer() {
     finite_map_private_stop(0, true);
 }
-

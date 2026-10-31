@@ -495,4 +495,3 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) 
 fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
     reservations_private_phase_stop("field_prepare", 1, 0);
 }
-

@@ -247,4 +247,3 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
  {
     stop(0)
 }
-

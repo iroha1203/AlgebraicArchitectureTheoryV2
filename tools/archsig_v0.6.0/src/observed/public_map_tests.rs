@@ -164,4 +164,3 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
         }
     }
 }
-

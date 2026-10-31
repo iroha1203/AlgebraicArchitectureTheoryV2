@@ -358,4 +358,3 @@ fn partial_option_missing_reference_resolves_known_owner_and_quantified_unknown_
             .any(|r| get(r, "code") == &Json::str("condition_failed"))
     );
 }
-

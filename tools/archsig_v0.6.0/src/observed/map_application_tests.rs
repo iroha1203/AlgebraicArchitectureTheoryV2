@@ -236,4 +236,3 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
 fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
     application_stop(0, "map_lookup", 0, false);
 }
-

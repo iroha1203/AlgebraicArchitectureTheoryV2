@@ -405,4 +405,3 @@ fn owned_private_phase_stop(phase: &'static str, kind: usize) {
 fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_answers() {
     owned_private_phase_stop("owned_family_enum", 0);
 }
-

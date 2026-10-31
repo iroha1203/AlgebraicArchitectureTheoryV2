@@ -692,4 +692,3 @@ fn owned_type_quantification_option_tag_changes_are_legal_members_but_rejected_i
         });
     }
 }
-

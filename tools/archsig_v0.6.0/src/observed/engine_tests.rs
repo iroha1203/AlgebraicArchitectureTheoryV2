@@ -122,4 +122,3 @@ fn engine_stop(kind: usize, missing: bool, phase: &'static str, at: usize, after
 fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer() {
     engine_stop(0, false, "", 0, true)
 }
-

@@ -240,4 +240,3 @@ const DEPENDENT_NUMERIC_BODY: &str = "law required chain(z:Z,a:Root,b:Child[a],q
 fn dependent_numeric_family_domain_cancel_keeps_strict_prefix_and_prior_answers() {
     dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_domain_done", 1, 0);
 }
-

@@ -169,4 +169,3 @@ fn projection_stop(recheck: bool, law: bool) {
 fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_prefix() {
     projection_stop(false, false)
 }
-

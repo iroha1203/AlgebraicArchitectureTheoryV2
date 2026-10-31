@@ -228,4 +228,3 @@ fn closed_term_rechecks_original_constructor_references_and_quantifier_binder_ty
         *term.quantifier_types.values_mut().next().unwrap() = Type::Z;
     });
 }
-
