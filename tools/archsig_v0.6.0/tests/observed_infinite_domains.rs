@@ -1,7 +1,6 @@
 //! 検査済み無限型量化を、元の型と域を持つ未決として返す。
 #[allow(dead_code)]
-#[path = "common/infinite_domains.rs"]
-mod fixture;
+use crate::common::infinite_domains as fixture;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn field<'a>(json: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = json else {

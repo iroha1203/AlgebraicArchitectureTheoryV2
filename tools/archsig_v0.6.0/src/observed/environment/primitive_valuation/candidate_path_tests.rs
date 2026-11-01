@@ -11,9 +11,7 @@ mod map_fixture {
     use crate as archsig;
     include!("../../../../tests/common/correspondence_paths.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn checked(s: crate::input::InputSources) -> Arc<CheckedInputs> {
     Arc::new(crate::input::check_inputs(s, &mut quiet()).unwrap())
 }

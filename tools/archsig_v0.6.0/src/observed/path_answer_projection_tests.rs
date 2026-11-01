@@ -15,12 +15,8 @@ fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent
         "take=evaluate(Walk.keep_node,x=$p.value.target)",
         "later=evaluate(Walk.seed)",
     ];
-    let normal = evaluate_observed_bytes(
-        fixture::composed(false, "r1"),
-        &asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let normal =
+        evaluate_observed_bytes(fixture::composed(false, "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
         &normal.prepared.inputs().law().declarations["Walk.keep_node"].signature

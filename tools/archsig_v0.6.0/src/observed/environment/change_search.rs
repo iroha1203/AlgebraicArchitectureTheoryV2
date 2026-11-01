@@ -120,7 +120,7 @@ mod tests {
             &map,
             "change choose(c:Part,b:Bool) when not c.flag=c with {flag=b};law required valid(c:Part):c.flag;",
         );
-        let mut c = quiet_for_valuation();
+        let mut c = quiet();
         let env = Environment::new(&inputs, &mut c).unwrap();
         let requests = resolve_native_for_test(
             inputs.law(),
@@ -210,9 +210,7 @@ mod tests {
         lost.valuation.clear();
         assert!(verify_point(&env, &witness, &lost, 0, &mut c).is_err());
     }
-    fn quiet_for_valuation() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
 }
 pub(in crate::observed) struct SearchFailure {
     pub cause: ValidationFailure,

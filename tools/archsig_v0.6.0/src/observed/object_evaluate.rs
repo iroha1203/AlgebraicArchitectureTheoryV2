@@ -364,9 +364,7 @@ pub fn evaluate_object_instance(
 mod tests {
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
-    fn quiet() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     fn example(object: &str) -> ObservedEvaluation {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
         let l = include_str!("../../tests/fixtures/object-evaluation.law");

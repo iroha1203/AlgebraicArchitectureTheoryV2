@@ -1,11 +1,8 @@
 //! 固定Answer ownerから元snapshotの実依存fiberを構成する。
-#[path = "common/answer_dependent_family.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use crate::common::answer_dependent_family as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 use std::collections::BTreeMap;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(m) = j else { panic!("object") };
     m

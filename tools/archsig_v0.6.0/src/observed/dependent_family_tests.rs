@@ -47,12 +47,9 @@ fn dependent_private_example(
     asks: &[&str],
     flags: [Option<bool>; 2],
 ) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(
-        dependent_private_fixture(body, flags),
-        asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(dependent_private_fixture(body, flags), asks, &mut quiet())
+            .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -120,7 +117,7 @@ fn dependent_private_body_phase_stop() {
         "later=evaluate(Inspect.seed)",
     ];
     let inputs = dependent_private_fixture(&body, [None, Some(false)]);
-    let mut quiet = named_call_quiet();
+    let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let target = prepared.inputs().law().declarations["Inspect.chain"].span;
     let normal = evaluate_observed(prepared, &mut quiet).unwrap();

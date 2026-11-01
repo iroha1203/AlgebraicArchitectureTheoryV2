@@ -19,7 +19,7 @@ fn stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = ASK;
     let input = fixture::input(false, false, "r1");
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations["Reservations.foMixed"];
     assert!(normal.answers[5].claim.is_some());

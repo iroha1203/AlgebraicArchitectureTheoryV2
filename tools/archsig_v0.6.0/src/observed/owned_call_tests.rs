@@ -6,7 +6,7 @@ fn owned_call_result(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         owned_call_fixture::input(false, true, "r1"),
         asks,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
@@ -290,7 +290,7 @@ fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
             "r=evaluate(Reservations.returned,a=@w/A,s=@v/p)",
             "a=check(Reservations.affineCall,a=@w/A,s=@v/p)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
@@ -323,7 +323,7 @@ fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_ab
         "ignored=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
     ]);
     assert_eq!(r.status(), "partial");
-    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &mut quiet()).unwrap();
     let bytes = r.prepared.inputs().sources().law().bytes();
     let law = r.prepared.inputs().law();
     let mut fields = vec![];

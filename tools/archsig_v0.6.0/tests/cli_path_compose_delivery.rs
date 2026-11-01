@@ -1,7 +1,6 @@
 //! Path composeの取消と、同じ配送経路の既存データ保護。
 use crate::common;
-#[path = "common/public_path_compose.rs"]
-mod fixture;
+use crate::common::public_path_compose as fixture;
 use archsig::{
     control::{Checkpoint, Control},
     observed::evaluate_observed_bytes,

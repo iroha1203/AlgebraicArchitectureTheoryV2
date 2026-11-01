@@ -473,10 +473,8 @@ mod tests {
     };
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
+    pub(super) use crate::control::quiet;
     use crate::input::{InputSources, check_inputs};
-    pub(super) fn quiet() -> Control {
-        Control::unlimited()
-    }
     pub(super) fn fixture(extra: &str) -> Arc<CheckedInputs> {
         let d = include_str!("../../tests/fixtures/object-instances.atoms.json").replace("\"declarations\": [", r#""declarations": [
           {"kind":"data","name":"Instances.Choice","meaning":"有限の三値。","constructors":[{"name":"No","arguments":[],"meaning":"零個。"},{"name":"Yes","arguments":["Bool"],"meaning":"一個。"}]},

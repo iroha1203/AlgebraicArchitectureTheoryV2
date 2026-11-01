@@ -13,7 +13,7 @@ fn input(omitted: &[&str], body: &str) -> InputSources {
 }
 fn run(omitted: &[&str], body: &str) -> ObservedEvaluation {
     let inputs = input(omitted, body);
-    let result = evaluate_observed_bytes(inputs.clone(), ASKS, &mut named_call_quiet()).unwrap();
+    let result = evaluate_observed_bytes(inputs.clone(), ASKS, &mut quiet()).unwrap();
     assert_eq!(result.prepared.inputs().sources(), &inputs);
     assert_eq!(result.status(), "partial", "{body}: {:?}", result.issues);
     assert_eq!(result.answers[0].status, Decision::Established);
@@ -144,7 +144,7 @@ fn infinite_exists_callee_returns_typed_undetermined_instead_of_early_error() {
     let result = evaluate_observed_bytes(
         inputs,
         &["v=evaluate(Calc.caller,s=@v/sample)"],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .expect("有効な無限域の算法非対応は型付き未決回答を返す");
     assert_eq!(result.status(), "partial");
@@ -227,7 +227,7 @@ fn finite_and_affine_quantifiers_and_short_circuit_still_decide() {
         let result = evaluate_observed_bytes(
             input(&[], &format!("view caller(s:Sample):Bool={expression};")),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(
@@ -254,7 +254,7 @@ fn infinite_exists_law_retains_undetermined_proposition_and_rechecks_original_re
             "law required existential(s:Sample):exists item:Z.item*item=0;",
         ),
         &asks,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "partial");
@@ -279,7 +279,7 @@ fn infinite_exists_law_retains_undetermined_proposition_and_rechecks_original_re
     let environment = Environment::with_requests(
         result.prepared.inputs(),
         result.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     let request = &result.prepared.requests().requests()[2];
@@ -322,7 +322,7 @@ fn infinite_exists_preserves_mathematics_and_current_observation_provenance() {
     );
     let mut wires = Vec::new();
     for (input, revision, span) in [(first, "r1", (2, 5)), (second, "r2", (12, 15))] {
-        let result = evaluate_observed_bytes(input.clone(), ASKS, &mut named_call_quiet()).unwrap();
+        let result = evaluate_observed_bytes(input.clone(), ASKS, &mut quiet()).unwrap();
         assert_eq!(result.status(), "partial");
         assert_eq!(result.prepared.inputs().sources(), &input);
         check_quantifiers(&result);
@@ -374,7 +374,7 @@ fn infinite_exists_actual_domain_stop_keeps_verified_prefix_and_prior_answers() 
     use std::{cell::Cell, rc::Rc};
     let body = "view caller(s:Sample):Bool=exists item:Z.item*item=0;";
     let inputs = input(&[], body);
-    let normal = evaluate_observed_bytes(inputs.clone(), ASKS, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), ASKS, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let (source, _, _) = quantified(&normal);
     let span = match &normal.nodes[source].payload {

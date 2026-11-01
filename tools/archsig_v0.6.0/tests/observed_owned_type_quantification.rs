@@ -1,18 +1,15 @@
 //! 元Owned TypeAstと実ownerを保つ有限型量化の三入力byte API検査。
 use crate::common;
+use crate::common::quiet;
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
-    control::Control,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{Builtin, ExprKind, QuantDomain, QuantSplit, TypeAst},
     observed::{ObservedEvaluation, evaluate_observed_bytes},
 };
 use std::collections::{BTreeMap, BTreeSet};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")

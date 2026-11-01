@@ -371,8 +371,7 @@ fn short_circuit_truth_keeps_missing_local_reads_and_needed_slots() {
 
 #[test]
 fn missing_parameter_owner_domain_reaches_needed_without_becoming_unimplemented() {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     let map = fixture::remove_atom("p-owner");
     let input = fixture::input("law optional localValid(s:State):true=true;", Some(&map));
     let dir = workdir("local-owner-domain");
@@ -468,8 +467,7 @@ fn boolean_law_forms_localize_with_their_actual_truth_and_missing_reads() {
 
 #[test]
 fn fixed_integer_comparison_is_a_finite_local_condition() {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     for (index, condition, expected) in [(0, "s.free<3", true), (1, "s.free>3", false)] {
         let input = fixture::input(
             &format!("law optional localCompare(s:State):{condition};"),
@@ -1086,8 +1084,7 @@ fn product_read_does_not_publish_a_references_fields_or_fill_a_missing_component
 }
 
 fn diagnostic_compare_input(name: &str, identity: bool, valid: bool) -> std::path::PathBuf {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let map = fixture::changed_map(|j| {
         if identity {
@@ -1211,9 +1208,8 @@ fn finite_diagnostic_comparison_rejects_incompatible_degree_side_and_non_operati
 
 #[test]
 fn matching_values_require_identity_action_while_repeated_plans_compare() {
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
     let dir = diagnostic_compare_input("diagnostic-compare-moved-positions", true, true);
     let path = dir.join("a.json");
     let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
@@ -1725,8 +1721,7 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
 
 #[test]
 fn integer_translation_local_system_generates_cech_group_and_actual_obstruction() {
-    #[path = "common/three_edge.rs"]
-    mod triangle;
+    use crate::common::three_edge as triangle;
     fn vector(j:&JNode,r:&JNode)->Vec<i64> {
         arr(get(get(node(j,r),"value"),"coordinates")).iter().map(|r|s(get(node(j,r),"value")).parse().unwrap()).collect()
     }
@@ -1795,8 +1790,7 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
 
 #[test]
 fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_image() {
-    #[path = "common/three_edge.rs"]
-    mod triangle;
+    use crate::common::three_edge as triangle;
     let input=triangle::input(Some(2));let dir=workdir("integer-local-even-action");
     for (name,bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
         let mut text=String::from_utf8(bytes.to_vec()).unwrap();if name=="l.law" {text=text.replace("coordinate=p.coordinate+d","coordinate=p.coordinate+2*d");}
@@ -1817,7 +1811,7 @@ fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_imag
 }
 
 fn integer_local_variant(name:&str, edit:impl FnOnce(String)->String, remove:Option<(&str,&str)>) -> std::path::PathBuf {
-    #[path = "common/three_edge.rs"] mod triangle;
+    use crate::common::three_edge as triangle;
     let input=triangle::input(Some(2));let dir=workdir(name);
     std::fs::write(dir.join("d.json"),input.definitions()[0].bytes()).unwrap();
     std::fs::write(dir.join("l.law"),edit(String::from_utf8(input.law().bytes().to_vec()).unwrap())).unwrap();
@@ -2030,7 +2024,7 @@ fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_di
 
 
 fn integer_transport_input(name: &str, reorder: bool) -> std::path::PathBuf {
-    #[path = "common/architecture_environment.rs"] mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let dir=diagnostic_compare_input(name,false,true);
     let mut map=fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
@@ -2152,8 +2146,7 @@ fn finite_diagnostic_input(name: &str, valid: bool) -> std::path::PathBuf {
     finite_diagnostic_input_at(dir, valid)
 }
 fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path::PathBuf {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definitions = old.replace(
@@ -2227,7 +2220,7 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
 
 #[test]
 fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
-    #[path = "common/architecture_environment.rs"] mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     for guard in [false, true] {
         let dir = finite_diagnostic_input(&format!("empty-local-laws-missing-{guard}"), false);
@@ -2389,8 +2382,7 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
 
 #[test]
 fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     for linked in [true, false] {
         let dir = finite_diagnostic_input_at(
@@ -2625,8 +2617,7 @@ fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
 }
 #[test]
 fn finite_integer_localization_keeps_missing_fixed_fields() {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let dir = diagnostic_compare_input("finite-integer-missing", true, true);
     let path = dir.join("l.law");
@@ -2749,8 +2740,7 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
     }));
 }
 fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let dir = if identity {
         diagnostic_compare_input(name, true, true)
@@ -2826,8 +2816,7 @@ fn rational_diagnostic_inclusion_has_field_cokernel() {
 
 #[test]
 fn diagnostic_comparison_rejects_different_coefficient_rings() {
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let dir = diagnostic_compare_input("diagnostic-coefficient-rings", true, true);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();

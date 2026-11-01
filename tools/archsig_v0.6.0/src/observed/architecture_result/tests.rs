@@ -14,9 +14,7 @@ mod reservations {
     use crate as archsig;
     include!("../../../tests/common/architecture_environment.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 const BODY: &str = "law required bound(p:Item) when p.quantity>=0:p.quantity=0;law optional root(a:Root):true;view amount(p:Item):Z=p.quantity;law optional symbolic(p:Item,z:Z):z=z;";
 fn sources(missing_owner: bool, body: &str) -> InputSources {
     let original = fixture::input();

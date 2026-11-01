@@ -4,7 +4,7 @@ mod fixture {
     include!("../../tests/common/answer_bindings.rs");
 }
 fn result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &mut named_call_quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &mut quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -33,12 +33,8 @@ fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
         "current=evaluate(Applications.abKeep,x=$seed.value,p=@v/p)",
         "later=evaluate(Applications.abSeed)",
     ];
-    let normal = evaluate_observed_bytes(
-        fixture::input_mode("stop", "r1"),
-        &asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let normal =
+        evaluate_observed_bytes(fixture::input_mode("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
         &normal.prepared.inputs().law().declarations["Applications.abKeep"].signature

@@ -1,13 +1,9 @@
 //! 実prefixのownerに従う有限複合Law parameterの三入力接続。
-#[path = "common/completion_evidence.rs"]
-mod completion_evidence;
-#[path = "common/owned_compound_family.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use crate::common::completion_evidence;
+use crate::common::owned_compound_family as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 use std::collections::{BTreeMap, BTreeSet};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else { panic!("object") };
     x

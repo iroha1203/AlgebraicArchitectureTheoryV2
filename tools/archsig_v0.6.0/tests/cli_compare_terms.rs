@@ -1,7 +1,6 @@
 //! 閉じたTermの公開等値を独立三入力から確認する。
 use crate::common;
-#[path = "common/public_term_compare.rs"]
-mod fixture;
+use crate::common::public_term_compare as fixture;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 fn inputs(name: &str) -> PathBuf {

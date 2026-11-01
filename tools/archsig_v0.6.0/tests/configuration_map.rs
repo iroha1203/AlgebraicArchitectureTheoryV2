@@ -1,5 +1,4 @@
-#[path = "common/map_scope.rs"]
-mod map_scope;
+use crate::common::map_scope;
 use archsig::{
     archmap::Fact as FactPointer,
     construction::{

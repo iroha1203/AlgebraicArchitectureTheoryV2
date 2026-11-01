@@ -1,13 +1,10 @@
 //! 有限な引数型の全値域で、元の閉じた関数の外延を比較する。
-#[path = "common/term_equality.rs"]
-mod fixture;
+use crate::common::quiet;
+use crate::common::term_equality as fixture;
 use archsig::{
-    canonical::Json, control::Control, definition::check_definitions, input::InputSources,
+    canonical::Json, definition::check_definitions, input::InputSources,
     observed::evaluate_observed_bytes,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn sources(revision: &str) -> InputSources {
     let defs = fixture::definitions();
     let d = check_definitions(&[("definition0", defs.as_bytes())]).unwrap();

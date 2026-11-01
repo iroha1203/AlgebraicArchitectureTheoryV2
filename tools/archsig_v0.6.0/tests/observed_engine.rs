@@ -1,18 +1,14 @@
 //! 三入力から有限木の変換と全Z域の保存を追う。
-#[path = "common/engine.rs"]
-mod engine;
+use crate::common::engine;
+use crate::common::quiet;
 use archsig::observed::ObservedEvaluation;
 use archsig::{
     canonical::Json,
-    control::Control,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
 use num_bigint::BigInt;
 use std::collections::{BTreeMap, BTreeSet};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn inputs(wrappers: bool, missing: bool, revision: Option<&str>) -> InputSources {
     InputSources::from_bytes(
         vec![engine::DEFINITIONS.to_vec()],

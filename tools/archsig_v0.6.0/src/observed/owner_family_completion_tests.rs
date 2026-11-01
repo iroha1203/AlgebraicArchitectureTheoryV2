@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -20,12 +20,8 @@ fn example() -> ObservedEvaluation {
         "later=evaluate(RefCalc.seed)".into(),
     ];
     let asks: Vec<_> = asks.iter().map(String::as_str).collect();
-    let r = evaluate_observed_bytes(
-        fixture::input(2, false, false, false),
-        &asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let r = evaluate_observed_bytes(fixture::input(2, false, false, false), &asks, &mut quiet())
+        .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -157,7 +153,7 @@ fn owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
         "current=check(RefCalc.nonnegative,a=@v/A)",
         "later=evaluate(RefCalc.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);

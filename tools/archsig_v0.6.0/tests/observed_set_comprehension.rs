@@ -1,7 +1,7 @@
 //! 既知List/Set上の内包を独立三入力から評価し、元式・依存・支持・停止prefixを確認する。
 use crate::common;
-#[path = "common/expression_stops.rs"]
-mod expression_stops;
+use crate::common::expression_stops;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -16,9 +16,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

@@ -1,13 +1,10 @@
 //! 元Termのアフィン全域と実引数の相関を三入力bytesから確認する。
-#[path = "common/affine_terms.rs"]
-mod fixture;
+use crate::common::affine_terms as fixture;
+use crate::common::quiet;
 use archsig::{
-    canonical::Json, control::Control, definition::check_definitions, input::InputSources,
+    canonical::Json, definition::check_definitions, input::InputSources,
     observed::evaluate_observed_bytes,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn sources() -> InputSources {
     sources_at("r1")
 }

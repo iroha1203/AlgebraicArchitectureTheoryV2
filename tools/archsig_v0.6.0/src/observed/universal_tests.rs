@@ -1,10 +1,6 @@
 fn universal_private_example(body: &str, requests: &[&str]) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(
-        affine_private_fixture(body),
-        requests,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(affine_private_fixture(body), requests, &mut quiet()).unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -538,7 +534,7 @@ fn universal_counterexample_post_stop_retains_completed_evidence() {
         "current=check(Calc.current,s=@v/sample)",
         "later=evaluate(Calc.later)",
     ];
-    let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[0].status, Decision::Established);
     assert_eq!(normal.answers[1].status, Decision::Refuted);

@@ -1,3 +1,5 @@
+use crate::common::object_view_compatibility_data as fixture;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::Control,
@@ -9,11 +11,6 @@ use archsig::{
     types::Type,
 };
 use std::sync::Arc;
-#[path = "common/object_view_compatibility_data.rs"]
-mod fixture;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
 }

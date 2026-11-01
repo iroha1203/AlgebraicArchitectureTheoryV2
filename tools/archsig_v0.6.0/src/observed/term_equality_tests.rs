@@ -13,7 +13,7 @@ fn equality_inputs(revision: &str) -> InputSources {
     )
 }
 fn equality_result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(equality_inputs("r1"), asks, &mut named_call_quiet()).unwrap();
+    let r = evaluate_observed_bytes(equality_inputs("r1"), asks, &mut quiet()).unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }

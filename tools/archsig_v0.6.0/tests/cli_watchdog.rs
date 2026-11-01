@@ -1,6 +1,5 @@
 //! 製品CLIに依存せず、実際の子プロセスでテスト用監視を検査する。
-#[path = "common/watchdog.rs"]
-mod watchdog;
+use crate::common::watchdog;
 
 use crate::common::cli;
 

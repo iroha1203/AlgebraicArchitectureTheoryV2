@@ -1,8 +1,7 @@
 //! 整数全解、元Assignmentの非一意・一意、修復後の通常評価。
 use crate::common::cli;
 #[allow(dead_code)]
-#[path = "common/object_view_compatibility_data.rs"]
-mod local_fixture;
+use crate::common::object_view_compatibility_data as local_fixture;
 use archsig::{definition, json::JNode};
 use cli::*;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"整数対。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
@@ -1130,8 +1129,7 @@ fn three_edge_integer_repair_keeps_the_missing_shift() {
     three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift(2);
 }
 fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_shift(row: usize) {
-    #[path = "common/three_edge.rs"]
-    mod triangle;
+    use crate::common::three_edge as triangle;
     let gamma = [Some(2),Some(3),None][row];
     let input = triangle::input(gamma);
     let asks=["a=build(Coordinates,on=@triangle/root)","r=repair(Coordinates.aligned,on=$a.object,using=Coordinates.move)","n=needed($r)"];

@@ -13,7 +13,7 @@ fn finite_map_private_inputs() -> InputSources {
     )
 }
 fn finite_map_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = named_call_quiet();
+    let mut control = quiet();
     let p = prepare_observed(finite_map_private_inputs(), asks, &mut control).unwrap();
     evaluate_observed(p, &mut control).unwrap()
 }

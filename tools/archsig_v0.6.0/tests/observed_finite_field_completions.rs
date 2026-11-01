@@ -1,5 +1,6 @@
 //! 原始Fp欠測の共有補完を三入力から読み、元体・slot・whole・証拠と停止prefixを検査する。
 use crate::common;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -14,9 +15,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

@@ -12,9 +12,7 @@ mod map_fixture {
     use crate as archsig;
     include!("../../../../tests/common/correspondence_paths.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn inputs(mode: &str, script: &str) -> CheckedInputs {
     let original = arrow_fixture::input(mode, "relation");
     with_script(original, "Walk", "Paths", script, "")

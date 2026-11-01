@@ -18,9 +18,7 @@ use archsig::{
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();

@@ -1653,9 +1653,7 @@ mod tests {
         use crate as archsig;
         include!("../../../tests/common/architecture_environment.rs");
     }
-    fn quiet() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     #[test]
     fn local_owner_missing_survives_the_first_free_state_stop() {
         let map = fixture::remove_atom("p-owner");

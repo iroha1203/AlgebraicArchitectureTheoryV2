@@ -340,8 +340,7 @@ fn large_requested_values_are_available_in_explicit_saved_results() {
 #[test]
 fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation() {
     #[allow(dead_code)]
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::{canonical::Json, definition};
     let dir = workdir("summary-diagnostics");
     let original = include_str!("fixtures/reservations.atoms.json");

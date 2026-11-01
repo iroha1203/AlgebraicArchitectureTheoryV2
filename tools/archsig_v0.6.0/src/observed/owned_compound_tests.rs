@@ -3,7 +3,7 @@ mod compound_fixture {
     include!("../../tests/common/owned_compound_family.rs");
 }
 fn compound_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut c = named_call_quiet();
+    let mut c = quiet();
     let p = prepare_observed(compound_fixture::input(false, false, "r1"), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }

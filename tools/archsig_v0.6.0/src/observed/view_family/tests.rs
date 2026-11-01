@@ -7,9 +7,7 @@ use std::sync::Arc;
 const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     let definitions = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
     let digest = &definitions.vocabularies["Profile"].digest;

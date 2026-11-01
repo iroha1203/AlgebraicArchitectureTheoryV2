@@ -14,7 +14,7 @@ fn recursive_tree_private_inputs() -> crate::input::InputSources {
     )
 }
 fn recursive_tree_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = named_call_quiet();
+    let mut control = quiet();
     let prepared = prepare_observed(recursive_tree_private_inputs(), asks, &mut control).unwrap();
     evaluate_observed(prepared, &mut control).unwrap()
 }

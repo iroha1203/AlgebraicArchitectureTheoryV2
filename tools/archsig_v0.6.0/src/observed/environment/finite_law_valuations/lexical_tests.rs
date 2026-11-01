@@ -3,9 +3,7 @@ use super::*;
 mod fixture {
     include!("../../../../tests/common/primitive_valuation_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn subject(name: &str) -> Scalar {
     Scalar::Subject {
         snapshot: "v".into(),

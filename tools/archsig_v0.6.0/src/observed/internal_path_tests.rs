@@ -9,7 +9,7 @@ fn example(view: &str) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input("normal", "r1"),
         &["seed=evaluate(Walk.seed)", "prior=check(Walk.prior)", &ask],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert!(
@@ -24,7 +24,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -210,7 +210,7 @@ fn stopped() {
         "current=evaluate(Walk.maybe,e=@v/e)",
         "later=evaluate(Walk.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
     let reason = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));

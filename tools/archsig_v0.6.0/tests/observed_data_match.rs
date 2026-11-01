@@ -1,5 +1,6 @@
 //! AC4の非再帰Dataと既知値match。独立した三入力から元式・型・支持・停止prefixを読む。
 use crate::common;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -14,9 +15,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

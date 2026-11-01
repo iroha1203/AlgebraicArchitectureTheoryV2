@@ -4,7 +4,6 @@ use crate::common;
 use archsig::{
     archmap::Slot,
     canonical::Json,
-    control::Control,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, InputStatus, check_inputs},
     law::{ast::ExprKind, model::Signature},
@@ -12,9 +11,7 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

@@ -1,12 +1,6 @@
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
-#[path = "common/finite_map.rs"]
-#[allow(dead_code)]
-mod fixture;
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::finite_map as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
@@ -70,9 +64,7 @@ fn internal_arrow_path_keeps_original_generator_and_distinct_endpoints() {
         &Json::Arr(vec![Json::str("v"), Json::str("e")])
     );
 }
-#[path = "common/internal_paths.rs"]
-#[allow(dead_code)]
-mod small;
+use crate::common::internal_paths as small;
 fn run_small(mode: &str, asks: &[&str]) -> Json {
     let inputs = small::input(mode, "r1");
     let r = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap();

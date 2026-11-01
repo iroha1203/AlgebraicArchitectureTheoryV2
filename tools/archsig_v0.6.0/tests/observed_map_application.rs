@@ -1,13 +1,8 @@
 //! 元表・実callee/引数・構成条件を保つMap適用。
-#[path = "common/map_application.rs"]
-mod fixture;
-use archsig::{
-    canonical::Json, control::Control, input::check_inputs, observed::evaluate_observed_bytes,
-};
+use crate::common::map_application as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, input::check_inputs, observed::evaluate_observed_bytes};
 use std::collections::BTreeMap;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else { panic!("object") };
     x

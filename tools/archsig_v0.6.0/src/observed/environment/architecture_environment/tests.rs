@@ -6,9 +6,7 @@ mod fixture {
     use crate as archsig;
     include!("../../../../tests/common/architecture_environment.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
     let mut c = quiet();
     let environment = Environment::with_prepared(result.prepared(), &mut c)?;

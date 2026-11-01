@@ -1,6 +1,5 @@
 //! Mapのkey/image所属と完全なOwned始域を元三入力から計算する。
-#[path = "common/owned_map_calls.rs"]
-mod fixture;
+use crate::common::owned_map_calls as fixture;
 use archsig::{
     canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
 };
@@ -30,9 +29,7 @@ fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvalu
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
     run_input(fixture::input("known", "r1"), asks)
 }

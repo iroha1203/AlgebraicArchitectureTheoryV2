@@ -2,8 +2,7 @@
 #![cfg(unix)]
 use crate::common;
 #[allow(dead_code)]
-#[path = "common/watchdog.rs"]
-mod watchdog;
+use crate::common::watchdog;
 use archsig::json::parse;
 use common::cli::*;
 use nix::sys::signal::{Signal, kill};

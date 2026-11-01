@@ -1,11 +1,8 @@
 //! 比較の取消と配送失敗時の既存データ保護。
 use crate::common;
-#[path = "common/public_path_compose.rs"]
-mod fixture;
-#[path = "common/compare_values.rs"]
-mod primitive;
-#[path = "common/public_term_compare.rs"]
-mod term_fixture;
+use crate::common::compare_values as primitive;
+use crate::common::public_path_compose as fixture;
+use crate::common::public_term_compare as term_fixture;
 const TERM_ASKS: [&str; 3] = [
     "l=evaluate(Terms.read,s=@v/s)",
     "r=evaluate(Terms.affineSlope)",

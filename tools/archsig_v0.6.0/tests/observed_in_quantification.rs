@@ -1,7 +1,7 @@
 //! 明示In量化を独立三入力から評価し、有限域・原出現・欠測・証拠と停止prefixを確認する。
 use crate::common;
-#[path = "common/expression_stops.rs"]
-mod expression_stops;
+use crate::common::expression_stops;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -19,9 +19,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

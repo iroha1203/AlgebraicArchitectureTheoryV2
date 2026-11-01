@@ -11,7 +11,7 @@ fn example(mode: &str) -> ObservedEvaluation {
             "prior=check(MapCall.prior)",
             "target=evaluate(MapCall.call,a=@v/A,h=@v/h)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -22,7 +22,7 @@ fn env(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -84,7 +84,7 @@ fn stop() {
         "later=evaluate(MapCall.seed)",
     ];
     let inputs = fixture::input("empty_varying", "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));

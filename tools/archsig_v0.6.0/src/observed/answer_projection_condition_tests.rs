@@ -8,7 +8,7 @@ fn env(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -44,8 +44,7 @@ fn projection_condition_undetermined_environment_rechecks_original_reasons_and_p
         "take=evaluate(Applications.acRoot,a=$missing.evaluation.environment.root)",
         "later=evaluate(Applications.abSeed)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
-        .unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     let e = env(&r);
@@ -129,8 +128,7 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
-            .unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[4].status, Decision::Undetermined);
     assert!(

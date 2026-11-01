@@ -1,8 +1,7 @@
 //! 元changeのparameter全域を公開solveで解く。
 use crate::common::cli;
 #[allow(dead_code)]
-#[path = "common/object_view_compatibility_data.rs"]
-mod fixture;
+use crate::common::object_view_compatibility_data as fixture;
 fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
     let definitions = fixture::D.replace(
         r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,
