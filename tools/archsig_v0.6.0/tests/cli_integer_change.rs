@@ -388,58 +388,25 @@ fn universal_integer_law_repairs_finite_and_integer_changes() {
 
 #[test]
 fn universal_integer_law_keeps_empty_and_nonunique_repairs_distinct() {
-    for finite in [false, true] {
-        for predicate in ["z=z", "z=s.x"] {
-            let change = if finite {
-                "change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};"
-            } else {
-                "change setpair(s:State,a:Z)=s with{x=a,y=0};"
-            };
-            let dir = input("universal-integer-empty-nonunique", change);
-            let path = dir.join("l.law");
-            let law = std::fs::read_to_string(&path).unwrap().replace(
-                "total(s:State):s.x+s.y=1",
-                &format!("total(z:Z,s:State):{predicate}"),
-            );
-            std::fs::write(path, law).unwrap();
-            let result = execute(
-                &dir,
-                "out",
-                &["r=repair(Pair.total,on=@pair/s,using=Pair.setpair)"],
-            );
-            assert_eq!(result.code, 1, "{}", result.stdout);
-            let j = result_json(&dir, &result);
-            assert!(!has(get(&arr(get(&j, "answers"))[0], "outputs"), "object"));
-            let all = predicate == "z=z";
-            assert_eq!(
-                s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
-                if all { "established" } else { "refuted" }
-            );
-            let repr = get(get(output(&j, 0, "solutions"), "value"), "representation");
-            assert_eq!(
-                s(get(repr, "kind")),
-                if !all {
-                    "empty"
-                } else if finite {
-                    "finite"
-                } else {
-                    "affine"
-                }
-            );
-            if all && finite {
-                assert_eq!(arr(get(repr, "values")).len(), 2);
-            }
-            if all && !finite {
-                assert_eq!(
-                    num(get(
-                        get(node(&j, get(repr, "directions")), "value"),
-                        "free_rank"
-                    )),
-                    1
-                );
-            }
-        }
-    }
+    for finite in [false,true] { for predicate in ["z=z","z=s.x"] {
+        let change = if finite { "change setpair(s:State,b:Bool)=s with{x=if b then 1 else 0,y=0};" }
+            else { "change setpair(s:State,a:Z)=s with{x=a,y=0};" };
+        let dir = input("universal-integer-empty-nonunique",change);
+        let path = dir.join("l.law");
+        let law = std::fs::read_to_string(&path).unwrap()
+            .replace("total(s:State):s.x+s.y=1", &format!("total(z:Z,s:State):{predicate}"));
+        std::fs::write(path,law).unwrap();
+        let result = execute(&dir,"out",&["r=repair(Pair.total,on=@pair/s,using=Pair.setpair)"]);
+        assert_eq!(result.code,1,"{}",result.stdout);
+        let j = result_json(&dir,&result);
+        assert!(!has(get(&arr(get(&j,"answers"))[0],"outputs"),"object"));
+        let all = predicate == "z=z";
+        assert_eq!(s(get(get(output(&j,0,"existence"),"judgment"),"status")),if all {"established"} else {"refuted"});
+        let repr = get(get(output(&j,0,"solutions"),"value"),"representation");
+        assert_eq!(s(get(repr,"kind")),if !all {"empty"} else if finite {"finite"} else {"affine"});
+        if all && finite { assert_eq!(arr(get(repr,"values")).len(),2); }
+        if all && !finite { assert_eq!(num(get(get(node(&j,get(repr,"directions")),"value"),"free_rank")),1); }
+    }}
 }
 
 #[test]
@@ -944,65 +911,24 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     let dir=input("integer-quotient-image","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view combined(s:State):Z=s.x+s.y;");
     let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
         "all=quotient(Pair.first,on=$s.domain,s=@pair/s)",
-        "good=quotient(Pair.combined,on=$s.solutions,s=@pair/s)",
-    ];
-    let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 0, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    assert_module_owners(&result);
-    let all = quotient_representation(&result, 1);
-    assert_eq!(s(get(all, "kind")), "affine");
-    assert_eq!(
-        integer_columns(&result, get(all, "map")),
-        vec![vec![2], vec![0]]
-    );
-    assert_eq!(coordinates(&result, get(all, "offset")), vec![1]);
-    for (field, rank) in [("image", 1), ("kernel", 1)] {
-        assert_eq!(
-            num(get(
-                get(node(&result, get(all, field)), "value"),
-                "free_rank"
-            )),
-            rank
-        );
-    }
-    let image_module = get(node(&result, get(all, "image")), "value");
-    assert_eq!(
-        s(get(&arr(get(image_module, "generators"))[0], "value"))
-            .parse::<i64>()
-            .unwrap()
-            .abs(),
-        2
-    );
-    let original_map = get(node(&result, get(all, "map")), "value");
-    let inclusions = arr(get(&result, "nodes"))
-        .iter()
-        .filter(|n| {
-            if !has(n, "value") {
-                return false;
-            }
-            let v = get(n, "value");
-            has(v, "columns")
-                && get(v, "source").value == get(all, "image").value
-                && get(v, "target").value == get(original_map, "target").value
-        })
-        .collect::<Vec<_>>();
-    assert_eq!(inclusions.len(), 1, "実像の包含ModuleMapが必要");
-    let coefficient = s(get(
-        node(
-            &result,
-            &arr(&arr(get(get(inclusions[0], "value"), "columns"))[0])[0],
-        ),
-        "value",
-    ))
-    .parse::<i64>()
-    .unwrap();
-    assert_eq!(
-        coefficient,
-        s(get(&arr(get(image_module, "generators"))[0], "value"))
-            .parse::<i64>()
-            .unwrap()
-    );
+        "good=quotient(Pair.combined,on=$s.solutions,s=@pair/s)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{}",r.stdout);
+    let result=result_json(&dir,&r);assert_module_owners(&result);
+    let all=quotient_representation(&result,1);
+    assert_eq!(s(get(all,"kind")),"affine");
+    assert_eq!(integer_columns(&result,get(all,"map")),vec![vec![2],vec![0]]);
+    assert_eq!(coordinates(&result,get(all,"offset")),vec![1]);
+    for (field,rank) in [("image",1),("kernel",1)] {assert_eq!(num(get(get(node(&result,get(all,field)),"value"),"free_rank")),rank);}
+    let image_module=get(node(&result,get(all,"image")),"value");
+    assert_eq!(s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap().abs(),2);
+    let original_map=get(node(&result,get(all,"map")),"value");
+    let inclusions=arr(get(&result,"nodes")).iter().filter(|n| {
+        if !has(n,"value") {return false;} let v=get(n,"value");
+        has(v,"columns") && get(v,"source").value==get(all,"image").value && get(v,"target").value==get(original_map,"target").value
+    }).collect::<Vec<_>>();
+    assert_eq!(inclusions.len(),1,"実像の包含ModuleMapが必要");
+    let coefficient=s(get(node(&result,&arr(&arr(get(get(inclusions[0],"value"),"columns"))[0])[0]),"value")).parse::<i64>().unwrap();
+    assert_eq!(coefficient,s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap());
 
     let kernel_inclusions=arr(get(&result,"nodes")).iter().filter(|n| {
         if !has(n,"value") {return false;} let v=get(n,"value");
@@ -1027,26 +953,12 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
 }
 #[test]
 fn integer_quotient_distinguishes_empty_solutions_from_one_class() {
-    for (label, law, empty) in [
-        ("empty", "Pair.pinned", true),
-        ("nonempty", "Pair.total", false),
-    ] {
-        let dir = input(
-            &format!("integer-quotient-{label}"),
-            "change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view constant(s:State):Z=7;",
-        );
-        let solve = format!("s=solve({law},on=@pair/s,using=Pair.setpair,s=@pair/s)");
-        let r = execute(
-            &dir,
-            "out",
-            &[
-                &solve,
-                "q=quotient(Pair.constant,on=$s.solutions,s=@pair/s)",
-            ],
-        );
-        assert_eq!(r.code, if empty { 1 } else { 0 }, "{}", r.stdout);
-        let result = result_json(&dir, &r);
-        let rep = quotient_representation(&result, 1);
+    for (label,law,empty) in [("empty","Pair.pinned",true),("nonempty","Pair.total",false)] {
+        let dir=input(&format!("integer-quotient-{label}"),"change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view constant(s:State):Z=7;");
+        let solve=format!("s=solve({law},on=@pair/s,using=Pair.setpair,s=@pair/s)");
+        let r=execute(&dir,"out",&[&solve,"q=quotient(Pair.constant,on=$s.solutions,s=@pair/s)"]);
+        assert_eq!(r.code,if empty {1}else{0},"{}",r.stdout);
+        let result=result_json(&dir,&r);let rep=quotient_representation(&result,1);
         if empty {
             assert_eq!(s(get(rep,"kind")),"finite");assert!(arr(get(rep,"fibers")).is_empty());
             let q=get(output(&result,1,"quotient"),"value");let classes=get(node(&result,get(q,"classes")),"value");
@@ -1059,59 +971,26 @@ fn integer_quotient_distinguishes_empty_solutions_from_one_class() {
 }
 #[test]
 fn integer_quotient_respects_guard_fiber_and_empty_candidate_domain() {
-    for (label, guard, empty) in [("line", "a=b", false), ("empty", "2*a=1", true)] {
-        let dir = input(
-            &format!("integer-quotient-guard-{label}"),
-            &format!(
-                "change setpair(s:State,a:Z,b:Z) when {guard}=s with{{x=a,y=b}};view combined(s:State):Z=s.x+s.y;"
-            ),
-        );
-        let r = execute(
-            &dir,
-            "out",
-            &[
-                "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-                "q=quotient(Pair.combined,on=$s.domain,s=@pair/s)",
-            ],
-        );
-        assert_eq!(r.code, 1, "{}", r.stdout);
-        let result = result_json(&dir, &r);
-        let rep = quotient_representation(&result, 1);
-        if empty {
-            assert_eq!(s(get(rep, "kind")), "finite");
-            assert!(arr(get(rep, "fibers")).is_empty());
-        } else {
-            let columns = integer_columns(&result, get(rep, "map"));
-            assert_eq!(columns.len(), 1);
-            assert_eq!(columns[0][0].abs(), 2);
-            assert_eq!(coordinates(&result, get(rep, "offset")), vec![0]);
-        }
+    for (label,guard,empty) in [("line","a=b",false),("empty","2*a=1",true)] {
+        let dir=input(&format!("integer-quotient-guard-{label}"),&format!("change setpair(s:State,a:Z,b:Z) when {guard}=s with{{x=a,y=b}};view combined(s:State):Z=s.x+s.y;"));
+        let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.combined,on=$s.domain,s=@pair/s)"]);
+        assert_eq!(r.code,1,"{}",r.stdout);let result=result_json(&dir,&r);let rep=quotient_representation(&result,1);
+        if empty {assert_eq!(s(get(rep,"kind")),"finite");assert!(arr(get(rep,"fibers")).is_empty());}
+        else {let columns=integer_columns(&result,get(rep,"map"));assert_eq!(columns.len(),1);assert_eq!(columns[0][0].abs(),2);assert_eq!(coordinates(&result,get(rep,"offset")),vec![0]);}
     }
 }
 
 #[test]
 fn integer_quotient_keeps_repaired_architecture_offset() {
-    let dir = input(
-        "integer-quotient-repaired",
-        "change setpair(s:State,a:Z,b:Z)=s with{x=s.x+a,y=s.y+b};view combined(s:State):Z=s.x+s.y;",
-    );
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "r=repair(Pair.pinned,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "s=solve(Pair.total,on=$r.object,using=Pair.setpair,s=@pair/s)",
-            "q=quotient(Pair.combined,on=$s.domain,s=@pair/s)",
-        ],
-    );
-    assert_eq!(r.code, 0, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    let rep = quotient_representation(&result, 2);
-    assert_eq!(coordinates(&result, get(rep, "offset")), vec![1]);
-    assert_eq!(
-        integer_columns(&result, get(rep, "map")),
-        vec![vec![1], vec![1]]
-    );
+    let dir=input("integer-quotient-repaired","change setpair(s:State,a:Z,b:Z)=s with{x=s.x+a,y=s.y+b};view combined(s:State):Z=s.x+s.y;");
+    let r=execute(&dir,"out",&[
+        "r=repair(Pair.pinned,on=@pair/s,using=Pair.setpair,s=@pair/s)",
+        "s=solve(Pair.total,on=$r.object,using=Pair.setpair,s=@pair/s)",
+        "q=quotient(Pair.combined,on=$s.domain,s=@pair/s)"]);
+    assert_eq!(r.code,0,"{}",r.stdout);let result=result_json(&dir,&r);
+    let rep=quotient_representation(&result,2);
+    assert_eq!(coordinates(&result,get(rep,"offset")),vec![1]);
+    assert_eq!(integer_columns(&result,get(rep,"map")),vec![vec![1],vec![1]]);
 }
 #[test]
 fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
@@ -1138,39 +1017,15 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
 
 #[test]
 fn integer_quotient_missing_unmodified_view_field_is_not_a_zero_image() {
-    let dir = input(
-        "integer-quotient-missing",
-        "change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=0;view second(s:State):Z=s.y;",
-    );
-    let path = dir.join("a.json");
-    let before = std::fs::read_to_string(&path).unwrap();
-    let after = before.replace(
-        r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,
-        "",
-    );
-    assert_ne!(before, after);
-    std::fs::write(path, after).unwrap();
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.first_zero,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "q=quotient(Pair.second,on=$s.domain,s=@pair/s)",
-            "later=evaluate(Pair.first,s=@pair/s)",
-        ],
-    );
-    assert_eq!(r.code, 2, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    let answers = arr(get(&result, "answers"));
-    assert_eq!(s(get(&answers[1], "status")), "undetermined");
-    assert!(!has(get(&answers[1], "outputs"), "quotient"));
-    assert!(
-        arr(get(&answers[1], "reasons"))
-            .iter()
-            .any(|r| s(get(r, "code")) == "missing_observation"
-                && !arr(get(r, "missing")).is_empty())
-    );
-    assert_eq!(s(get(&answers[2], "status")), "established");
+    let dir=input("integer-quotient-missing","change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=0;view second(s:State):Z=s.y;");
+    let path=dir.join("a.json");let before=std::fs::read_to_string(&path).unwrap();
+    let after=before.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,"");assert_ne!(before,after);std::fs::write(path,after).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.first_zero,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.second,on=$s.domain,s=@pair/s)","later=evaluate(Pair.first,s=@pair/s)"]);
+    assert_eq!(r.code,2,"{}",r.stdout);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation" && !arr(get(r,"missing")).is_empty()));
+    assert_eq!(s(get(&answers[2],"status")),"established");
 }
 
 #[test]
@@ -1180,16 +1035,22 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
         "good=quotient(Pair.twice,on=$s.domain,s=@pair/s,law=Pair.same)",
         "bad=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.same)",
         "solutions=quotient(Pair.combined,on=$s.solutions,s=@pair/s,law=Pair.total)",
-        "false_law=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.unequal)",
-    ];
-    let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    assert_module_owners(&result);
-    let answers = arr(get(&result, "answers"));
-    for i in [1, 3, 4] {
-        assert_eq!(s(get(&answers[i], "status")), "established");
-        assert!(has(get(&answers[i], "outputs"), "proposition"));
+        "false_law=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.unequal)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{}",r.stdout);
+    let result=result_json(&dir,&r);assert_module_owners(&result);let answers=arr(get(&result,"answers"));
+    for i in [1,3,4] {assert_eq!(s(get(&answers[i],"status")),"established");assert!(has(get(&answers[i],"outputs"),"proposition"));}
+    let quotient=get(output(&result,1,"quotient"),"value");
+    let descent=get(node(&result,get(quotient,"descent")),"value");
+    let map=get(node(&result,get(descent,"linear")),"value");
+    assert_eq!(get(map,"source").value,get(get(quotient,"representation"),"image").value);
+    let columns=integer_columns(&result,get(descent,"linear"));assert_eq!(columns.len(),1);assert_eq!(columns[0].len(),2);
+    let image_module=get(node(&result,get(map,"source")),"value");let image_generator=s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap();
+    assert_eq!(image_generator.abs(),2);assert_eq!(columns[0],vec![image_generator/2,image_generator/2]);
+    assert_eq!(coordinates(&result,get(descent,"offset")),vec![0,0]);
+    let family=get(node(&result,get(map,"target")),"value");let labels=arr(get(family,"generators"));assert_eq!(labels.len(),2);
+    for (label,side) in labels.iter().zip(["lhs","rhs"]) {
+        let label=arr(get(label,"value"));assert_eq!(s(&label[1]),side);
+        let key=arr(&label[0]);assert_eq!(key.len(),1);assert_eq!(key[0].value,archsig::json::parse(br#"["pair","s"]"#).unwrap().value);
     }
     assert_eq!(s(get(&answers[2],"status")),"refuted");let evidence=get(node(&result,&arr(get(&answers[2],"counterexamples"))[0]),"value");assert_eq!(s(get(evidence,"kind")),"separating_pair");
     let data=get(evidence,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&result,&views[0]),"value").value,get(node(&result,&views[1]),"value").value);
@@ -1201,78 +1062,21 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
 }
 #[test]
 fn integer_law_descent_preserves_guard_origin_extra_binding_and_empty_domain() {
-    let dir = input(
-        "integer-law-guard",
-        "change setpair(s:State,a:Z,b:Z) when a=b=s with{x=a,y=b};law optional sum_two(s:State):s.x+s.y=2;law optional comparison(s:State,k:Z):s.x=k;view twice(s:State):Z=2*s.x;view threshold(s:State):Z=3;",
-    );
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.sum_two,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "k=evaluate(Pair.threshold,s=@pair/s)",
-            "q=quotient(Pair.twice,on=$s.solutions,s=@pair/s,law=Pair.comparison,k=$k.value)",
-            "e=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "empty=quotient(Pair.twice,on=$e.solutions,s=@pair/s,law=Pair.comparison,k=$k.value)",
-        ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    let q = get(output(&result, 2, "quotient"), "value");
-    let descent = get(node(&result, get(q, "descent")), "value");
-    assert_eq!(coordinates(&result, get(descent, "offset")), vec![1, 3]);
-    assert!(integer_columns(&result, get(descent, "linear")).is_empty());
-    let map = get(node(&result, get(descent, "linear")), "value");
-    let family = get(node(&result, get(map, "target")), "value");
-    for generator in arr(get(family, "generators")) {
-        let label = arr(get(generator, "value"));
-        let key = arr(&label[0]);
-        assert_eq!(key.len(), 2);
-        assert_eq!(s(&key[1]), "3");
-    }
-    let empty = get(output(&result, 4, "quotient"), "value");
-    let descent = get(node(&result, get(empty, "descent")), "value");
-    assert_eq!(s(get(descent, "kind")), "finite");
-    assert!(arr(get(descent, "pairs")).is_empty());
-    assert_eq!(
-        s(get(&arr(get(&result, "answers"))[4], "status")),
-        "established"
-    );
+    let dir=input("integer-law-guard","change setpair(s:State,a:Z,b:Z) when a=b=s with{x=a,y=b};law optional sum_two(s:State):s.x+s.y=2;law optional comparison(s:State,k:Z):s.x=k;view twice(s:State):Z=2*s.x;view threshold(s:State):Z=3;");
+    let r=execute(&dir,"out",&["s=solve(Pair.sum_two,on=@pair/s,using=Pair.setpair,s=@pair/s)","k=evaluate(Pair.threshold,s=@pair/s)","q=quotient(Pair.twice,on=$s.solutions,s=@pair/s,law=Pair.comparison,k=$k.value)","e=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","empty=quotient(Pair.twice,on=$e.solutions,s=@pair/s,law=Pair.comparison,k=$k.value)"]);
+    assert_eq!(r.code,1,"{}",r.stdout);let result=result_json(&dir,&r);
+    let q=get(output(&result,2,"quotient"),"value");let descent=get(node(&result,get(q,"descent")),"value");assert_eq!(coordinates(&result,get(descent,"offset")),vec![1,3]);assert!(integer_columns(&result,get(descent,"linear")).is_empty());
+    let map=get(node(&result,get(descent,"linear")),"value");let family=get(node(&result,get(map,"target")),"value");
+    for generator in arr(get(family,"generators")) {let label=arr(get(generator,"value"));let key=arr(&label[0]);assert_eq!(key.len(),2);assert_eq!(s(&key[1]),"3");}
+    let empty=get(output(&result,4,"quotient"),"value");let descent=get(node(&result,get(empty,"descent")),"value");assert_eq!(s(get(descent,"kind")),"finite");assert!(arr(get(descent,"pairs")).is_empty());
+    assert_eq!(s(get(&arr(get(&result,"answers"))[4],"status")),"established");
 }
 #[test]
 fn integer_law_descent_missing_operands_do_not_become_a_true_constant_family() {
-    let dir = input(
-        "integer-law-missing",
-        "change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=0;law optional same_second(s:State):s.y=s.y;",
-    );
-    let path = dir.join("a.json");
-    let before = std::fs::read_to_string(&path).unwrap();
-    let after = before.replace(
-        r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,
-        "",
-    );
-    assert_ne!(before, after);
-    std::fs::write(path, after).unwrap();
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.first_zero,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "q=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.same_second)",
-            "later=evaluate(Pair.first,s=@pair/s)",
-        ],
-    );
-    assert_eq!(r.code, 2, "{}", r.stdout);
-    let result = result_json(&dir, &r);
-    let answers = arr(get(&result, "answers"));
-    assert_eq!(s(get(&answers[1], "status")), "undetermined");
-    assert!(!has(get(&answers[1], "outputs"), "quotient"));
-    assert!(
-        arr(get(&answers[1], "reasons"))
-            .iter()
-            .any(|r| s(get(r, "code")) == "missing_observation")
-    );
-    assert_eq!(s(get(&answers[2], "status")), "established");
+    let dir=input("integer-law-missing","change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=0;law optional same_second(s:State):s.y=s.y;");
+    let path=dir.join("a.json");let before=std::fs::read_to_string(&path).unwrap();let after=before.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,"");assert_ne!(before,after);std::fs::write(path,after).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.first_zero,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.same_second)","later=evaluate(Pair.first,s=@pair/s)"]);
+    assert_eq!(r.code,2,"{}",r.stdout);let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));assert_eq!(s(get(&answers[1],"status")),"undetermined");assert!(!has(get(&answers[1],"outputs"),"quotient"));assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));assert_eq!(s(get(&answers[2],"status")),"established");
 }
 
 #[test]
@@ -1349,16 +1153,11 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
     for (name, bytes) in [("d.json",input.definitions()[0].bytes()),("l.law",input.law().bytes()),("a.json",input.archmap().bytes())] {
         std::fs::write(dir.join(name),bytes).unwrap();
     }
-    let r = execute(&dir, "out", &asks);
-    assert_eq!(
-        r.code,
-        if gamma.is_some() { 1 } else { 2 },
-        "gamma {gamma:?}: {}",
-        r.stdout
-    );
-    let j = result_json(&dir, &r);
-    let answer = &arr(get(&j, "answers"))[1];
-    assert!(!has(get(answer, "outputs"), "object"));
+    let r = execute(&dir,"out", &asks);
+    assert_eq!(r.code,if gamma.is_some() {1} else {2},"gamma {gamma:?}: {}",r.stdout);
+    let j = result_json(&dir,&r);
+    let answer = &arr(get(&j,"answers"))[1];
+    assert!(!has(get(answer,"outputs"),"object"));
     if gamma.is_some() {
         let representation = get(get(output(&j,1,"solutions"),"value"),"representation");
         assert_eq!(s(get(representation,"kind")),"affine");
@@ -1392,21 +1191,13 @@ fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
         ("guard","change setpair(s:State,a:Z) when a=s.y=s with{x=a};law optional first_zero(s:State):s.x=0;","a=s.y"),
         ("law","change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=s.y;","s.x=s.y"),
     ] {
-        let dir = input(label, change);
-        let map = std::fs::read_to_string(dir.join("a.json"))
-            .unwrap()
-            .replace(
-                r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,
-                "",
-            );
-        std::fs::write(dir.join("a.json"), map).unwrap();
-        let asks = [
-            "r=repair(Pair.first_zero,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-            "n=needed($r)",
-        ];
-        let result = execute(&dir, "out", &asks);
-        assert_eq!(result.code, 2, "{label}: {}", result.stdout);
-        let j = result_json(&dir, &result);
+        let dir=input(label,change);
+        let map=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,"");
+        std::fs::write(dir.join("a.json"),map).unwrap();
+        let asks=["r=repair(Pair.first_zero,using=Pair.setpair,on=@pair/s,s=@pair/s)","n=needed($r)"];
+        let result=execute(&dir,"out",&asks);
+        assert_eq!(result.code,2,"{label}: {}",result.stdout);
+        let j=result_json(&dir,&result);
         let internal = internal_graph(&dir, &j);
         let answer=&arr(get(&internal,"answers"))[0];
         let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
@@ -1426,154 +1217,36 @@ fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
 
 #[test]
 fn integer_tuple_quotient_keeps_lattice_image_and_nested_view_values() {
-    let dir = input(
-        "integer-tuple-quotient",
-        "change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,(Z,Z))=(s.x,(s.y,7));view coupled(s:State):(Z,Z)=(s.x+s.y,2*(s.x+s.y));law optional same(s:State):s.x=s.x;",
-    );
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "q=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.same)",
-            "bad=quotient(Pair.coupled,on=$s.domain,s=@pair/s,law=Pair.same)",
-        ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_module_owners(&j);
-    let rep = quotient_representation(&j, 1);
-    assert_eq!(coordinates(&j, get(rep, "offset")), vec![1, 0, 7]);
-    assert_eq!(
-        integer_columns(&j, get(rep, "map")),
-        vec![vec![2, 0, 0], vec![0, 1, 0]]
-    );
-    let image = get(node(&j, get(rep, "image")), "value");
-    assert_eq!(num(get(image, "free_rank")), 2);
-    let generators = arr(get(image, "generators"));
-    assert_eq!(generators.len(), 2);
-    let mut xs = vec![];
-    for g in generators {
-        let v = arr(get(g, "value"));
-        assert_eq!(v.len(), 2);
-        assert_eq!(arr(&v[1]).len(), 2);
-        xs.push(s(&v[0]).parse::<i64>().unwrap().abs());
-    }
-    xs.sort();
-    assert_eq!(xs, vec![0, 2]);
-    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
-    assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "refuted");
+    let dir=input("integer-tuple-quotient","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,(Z,Z))=(s.x,(s.y,7));view coupled(s:State):(Z,Z)=(s.x+s.y,2*(s.x+s.y));law optional same(s:State):s.x=s.x;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.same)","bad=quotient(Pair.coupled,on=$s.domain,s=@pair/s,law=Pair.same)"]);
+    assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);assert_module_owners(&j);
+    let rep=quotient_representation(&j,1);assert_eq!(coordinates(&j,get(rep,"offset")),vec![1,0,7]);assert_eq!(integer_columns(&j,get(rep,"map")),vec![vec![2,0,0],vec![0,1,0]]);
+    let image=get(node(&j,get(rep,"image")),"value");assert_eq!(num(get(image,"free_rank")),2);
+    let generators=arr(get(image,"generators"));assert_eq!(generators.len(),2);
+    let mut xs=vec![];for g in generators {let v=arr(get(g,"value"));assert_eq!(v.len(),2);assert_eq!(arr(&v[1]).len(),2);xs.push(s(&v[0]).parse::<i64>().unwrap().abs());}xs.sort();assert_eq!(xs,vec![0,2]);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
 }
 
 #[test]
 fn integer_tuple_law_descent_uses_all_values_on_the_lattice_image() {
-    let dir = input(
-        "integer-tuple-law",
-        "change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional nested(s:State):(s.x,(s.y,7))=(s.x,(s.y,7));",
-    );
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.nested)",
-            "bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.nested)",
-        ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_module_owners(&j);
-    let q = get(output(&j, 1, "quotient"), "value");
-    let d = get(node(&j, get(q, "descent")), "value");
-    assert_eq!(coordinates(&j, get(d, "offset")), vec![1, 0, 7, 1, 0, 7]);
-    let columns = integer_columns(&j, get(d, "linear"));
-    assert_eq!(columns.len(), 2);
-    for column in columns {
-        assert_eq!(column.len(), 6);
-        assert_eq!(&column[..3], &column[3..]);
-        assert_eq!(column[2], 0);
-        assert_eq!(column[0] % 2, 0);
-    }
-    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
-    assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "refuted");
+    let dir=input("integer-tuple-law","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional nested(s:State):(s.x,(s.y,7))=(s.x,(s.y,7));");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.nested)","bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.nested)"]);assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);assert_module_owners(&j);
+    let q=get(output(&j,1,"quotient"),"value");let d=get(node(&j,get(q,"descent")),"value");assert_eq!(coordinates(&j,get(d,"offset")),vec![1,0,7,1,0,7]);let columns=integer_columns(&j,get(d,"linear"));assert_eq!(columns.len(),2);for column in columns{assert_eq!(column.len(),6);assert_eq!(&column[..3],&column[3..]);assert_eq!(column[2],0);assert_eq!(column[0]%2,0);}
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
 }
 
 #[test]
 fn integer_quotient_finite_law_instances_preserve_lattice_and_false_keys() {
-    let dir = input(
-        "integer-finite-law",
-        "change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional indexed(s:State,b:Bool) when b:s.y=s.y;",
-    );
-    let r = execute(
-        &dir,
-        "out",
-        &[
-            "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-            "good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)",
-            "bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.indexed)",
-        ],
-    );
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_module_owners(&j);
-    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
-    let bad = &arr(get(&j, "answers"))[2];
-    assert_eq!(s(get(bad, "status")), "refuted");
-    let proof = get(node(&j, &arr(get(bad, "counterexamples"))[0]), "value");
-    let data = get(proof, "data");
-    let views = arr(get(data, "view_values"));
-    assert_eq!(
-        get(node(&j, &views[0]), "value").value,
-        get(node(&j, &views[1]), "value").value
-    );
-    let laws = arr(get(data, "law_values"));
-    assert_ne!(
-        get(node(&j, &laws[0]), "value").value,
-        get(node(&j, &laws[1]), "value").value
-    );
-    for reference in laws {
-        let rows = arr(get(node(&j, reference), "value"));
-        assert_eq!(rows.len(), 2);
-        assert_eq!(
-            rows.iter().filter(|row| has(&arr(row)[1], "none")).count(),
-            1
-        );
-        assert_eq!(
-            rows.iter().filter(|row| has(&arr(row)[1], "some")).count(),
-            1
-        );
-    }
+    let dir=input("integer-finite-law","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional indexed(s:State,b:Bool) when b:s.y=s.y;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);assert_module_owners(&j);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);for reference in laws{let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
 }
 
 #[test]
 fn integer_quotient_composed_guard_uses_the_candidate_lattice() {
-    let dir = input(
-        "integer-composed-guard",
-        "change setpair(s:State,a:Z,b:Z) when a+b=1=s with{x=2*a+1,y=2*b};view pair(s:State):(Z,Z)=(s.x,s.y);view combined(s:State):Z=s.x+s.y;law optional indexed(s:State,b:Bool) when (let fixed=s.x+s.y=3 in fixed and b):s.x=s.x;",
-    );
-    let asks = [
-        "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
-        "good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)",
-        "bad=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.indexed)",
-    ];
-    let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 1, "{}", r.stdout);
-    let j = result_json(&dir, &r);
-    assert_module_owners(&j);
-    assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
-    let bad = &arr(get(&j, "answers"))[2];
-    assert_eq!(s(get(bad, "status")), "refuted");
-    let proof = get(node(&j, &arr(get(bad, "counterexamples"))[0]), "value");
-    let data = get(proof, "data");
-    let views = arr(get(data, "view_values"));
-    for reference in views {
-        assert_eq!(s(get(node(&j, reference), "value")), "3");
-    }
-    let laws = arr(get(data, "law_values"));
-    assert_ne!(
-        get(node(&j, &laws[0]), "value").value,
-        get(node(&j, &laws[1]), "value").value
-    );
+    let dir=input("integer-composed-guard","change setpair(s:State,a:Z,b:Z) when a+b=1=s with{x=2*a+1,y=2*b};view pair(s:State):(Z,Z)=(s.x,s.y);view combined(s:State):Z=s.x+s.y;law optional indexed(s:State,b:Bool) when (let fixed=s.x+s.y=3 in fixed and b):s.x=s.x;");
+    let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.indexed)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);assert_module_owners(&j);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"counterexamples"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));for reference in views {assert_eq!(s(get(node(&j,reference),"value")),"3");}let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);
 }
 
 #[test]
