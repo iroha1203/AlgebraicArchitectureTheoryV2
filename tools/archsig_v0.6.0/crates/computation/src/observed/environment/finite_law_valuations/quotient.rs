@@ -6,7 +6,9 @@ use num_traits::{One, Zero};
 fn invalid(f: ConstructionFailure) -> ValidationFailure {
     match f {
         ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-        f => internal!(format!("有限整数値関数の構成: {f:?}")).into(),
+        f => f
+            .internal_context(format!("有限整数値関数の構成: {f:?}"))
+            .into(),
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {

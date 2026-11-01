@@ -55,7 +55,9 @@ fn checkpoint(c: &Control) -> Result<(), ValidationFailure> {
 fn ring_failure(failure: crate::construction::ConstructionFailure) -> ValidationFailure {
     match failure {
         crate::construction::ConstructionFailure::Stopped(stop) => stop.into(),
-        other => internal!(format!("有限方程式表示の関数: {other:?}")).into(),
+        other => other
+            .internal_context(format!("有限方程式表示の関数: {other:?}"))
+            .into(),
     }
 }
 fn components(

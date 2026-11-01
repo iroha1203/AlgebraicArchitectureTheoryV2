@@ -1611,7 +1611,7 @@ fn construction_failure(e: &crate::construction::ConstructionFailure) -> Validat
             internal!(format!("元多項式: {message}")).into()
         }
         crate::construction::ConstructionFailure::Inconsistent(message) => {
-            internal!(format!("元多項式: {message}")).into()
+            message.with_message(format!("元多項式: {message}")).into()
         }
     }
 }

@@ -674,7 +674,9 @@ pub(super) fn evaluate(
                 crate::construction::ConstructionFailure::Stopped(stop) => {
                     ValidationFailure::Stop(stop)
                 }
-                other => ValidationFailure::Internal(internal!(format!("Path reading: {other:?}"))),
+                other => ValidationFailure::Internal(
+                    other.internal_context(format!("Path reading: {other:?}")),
+                ),
             })?;
     let mut invisible = None;
     for r in [source, middle_left, middle_right, target]

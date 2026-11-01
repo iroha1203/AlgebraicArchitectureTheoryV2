@@ -21,6 +21,13 @@ impl InternalError {
     pub fn location(&self) -> &'static Location<'static> {
         self.location
     }
+    /// 文脈を補った本文へ置換し、最初の発生位置を保持する。
+    pub fn with_message(&self, message: String) -> Self {
+        Self {
+            message: Cow::Owned(message),
+            location: self.location,
+        }
+    }
     pub fn into_message(self) -> String {
         self.message.into_owned()
     }
@@ -73,6 +80,9 @@ mod tests {
         let label = "internal";
         let formatted = crate::internal!(format!("{label} failure"));
         assert_eq!(formatted, error);
+        let context = error.with_message("context".into());
+        assert_eq!(context.location(), error.location());
+        assert_eq!(context.message(), "context");
         #[track_caller]
         fn forwarded() -> super::InternalError {
             crate::internal!("internal failure")

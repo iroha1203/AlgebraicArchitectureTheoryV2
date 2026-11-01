@@ -70,7 +70,9 @@ fn bad(s: &str) -> ConstructionFailure {
 fn invalid(e: ValidationFailure) -> ConstructionFailure {
     match e {
         ValidationFailure::Stop(s) => s.into(),
-        e => bad(&format!("数値Lawの全引数比較: {e:?}")),
+        e => ConstructionFailure::Inconsistent(
+            e.internal_context(format!("数値Lawの全引数比較: {e:?}")),
+        ),
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {

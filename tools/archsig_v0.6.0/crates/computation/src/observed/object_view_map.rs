@@ -49,7 +49,7 @@ fn transport(
             .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| internal!(format!("view保存検査: {e:?}")).into())
+                    .unwrap_or_else(|| e.internal_context(format!("view保存検査: {e:?}")).into())
             })?,
     );
     env.results.remember(KernelCacheEntry {
@@ -283,7 +283,10 @@ fn finite_action(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| internal!(format!("view値型の構造検査: {e:?}")).into())
+                .unwrap_or_else(|| {
+                    e.internal_context(format!("view値型の構造検査: {e:?}"))
+                        .into()
+                })
         })?
         .ok_or(internal!("view値型の構造写像がない"))?;
     for family in components.families {
@@ -301,7 +304,10 @@ fn finite_action(
                 .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| internal!(format!("有限view参照型の全域検査: {e:?}")).into())
+                    .unwrap_or_else(|| {
+                        e.internal_context(format!("有限view参照型の全域検査: {e:?}"))
+                            .into()
+                    })
             })?;
         if transport.bijection().is_none() {
             return Ok(None);
@@ -577,7 +583,10 @@ pub(super) fn retain(
             .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| internal!(format!("view値の構造写像検査: {e:?}")).into())
+                    .unwrap_or_else(|| {
+                        e.internal_context(format!("view値の構造写像検査: {e:?}"))
+                            .into()
+                    })
             })?;
             let Some(map) = map else {
                 out.pending
@@ -600,7 +609,10 @@ pub(super) fn retain(
                 .map_err(|e| {
                     c.stop_reason()
                         .map(ValidationFailure::Stop)
-                        .unwrap_or_else(|| internal!(format!("有限view値の全域検査: {e:?}")).into())
+                        .unwrap_or_else(|| {
+                            e.internal_context(format!("有限view値の全域検査: {e:?}"))
+                                .into()
+                        })
                 })?,
             )
         } else {

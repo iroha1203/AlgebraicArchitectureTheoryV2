@@ -1117,9 +1117,9 @@ impl ArchitectureWitness {
                     super::finite::field_completion_supported(&parameter.ty, inputs.law(), control)
                         .map_err(|failure| match failure {
                             ValidationFailure::Stop(stop) => ConstructionFailure::Stopped(stop),
-                            other => ConstructionFailure::Inconsistent(internal!(format!(
-                                "変更parameter型の有限性検査: {other:?}"
-                            ))),
+                            other => ConstructionFailure::Inconsistent(other.internal_context(
+                                format!("変更parameter型の有限性検査: {other:?}"),
+                            )),
                         })?;
             }
         }

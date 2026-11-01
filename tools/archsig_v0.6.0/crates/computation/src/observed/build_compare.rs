@@ -322,7 +322,9 @@ pub(super) fn compare(
                         crate::construction::ConstructionFailure::Stopped(s) => {
                             ValidationFailure::Stop(s)
                         }
-                        e => internal!(format!("数値guardの全域互換性: {e:?}")).into(),
+                        e => e
+                            .internal_context(format!("数値guardの全域互換性: {e:?}"))
+                            .into(),
                     })?;
                     return Ok(Some(family));
                 }

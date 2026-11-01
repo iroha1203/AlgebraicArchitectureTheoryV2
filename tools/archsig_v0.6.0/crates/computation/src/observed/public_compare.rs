@@ -762,9 +762,9 @@ fn completed_operation<T>(
             }
             None => Err(ValidationFailure::Stop(s)),
         },
-        Err(other) => Err(ValidationFailure::Internal(internal!(format!(
-            "Operation比較: {other:?}"
-        )))),
+        Err(other) => Err(ValidationFailure::Internal(
+            other.internal_context(format!("Operation比較: {other:?}")),
+        )),
     }
 }
 // 同じModuleの表示ベクトルの差が、関係の生成する部分加群に入るかを解く。

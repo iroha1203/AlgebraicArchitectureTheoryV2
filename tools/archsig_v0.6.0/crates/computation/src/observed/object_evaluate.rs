@@ -230,6 +230,19 @@ pub enum ObjectEvaluationFailure {
         instance: ObjectInstance,
     },
 }
+impl ObjectEvaluationFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(
+        &self,
+        message: String,
+    ) -> archsig_common::internal::InternalError {
+        match self {
+            Self::Construction(cause) => cause.internal_context(message),
+            Self::FiniteView { cause, .. } => cause.internal_context(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<ConstructionFailure> for ObjectEvaluationFailure {
     fn from(f: ConstructionFailure) -> Self {
         Self::Construction(f)
@@ -344,7 +357,9 @@ pub fn evaluate_object_instance(
                 domain: ObjectDomain::from_readings(&prepared.inputs, readings, object, control)
                     .map_err(|f| match f {
                         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-                        other => ConstructionFailure::Inconsistent(internal!(format!("{other:?}"))),
+                        other => ConstructionFailure::Inconsistent(
+                            other.internal_context(format!("{other:?}")),
+                        ),
                     })?,
                 instance: row.clone(),
                 values: None,

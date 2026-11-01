@@ -32,7 +32,9 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        other => bad(&format!("view互換性の型付き比較: {other:?}")),
+        other => ConstructionFailure::Inconsistent(
+            other.internal_context(format!("view互換性の型付き比較: {other:?}")),
+        ),
     }
 }
 #[track_caller]

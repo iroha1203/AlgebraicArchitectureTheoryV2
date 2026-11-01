@@ -56,7 +56,7 @@ fn transport(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| internal!(format!("Law保存検査: {e:?}")).into())
+                .unwrap_or_else(|| e.internal_context(format!("Law保存検査: {e:?}")).into())
         })?,
     );
     env.results.remember(KernelCacheEntry {
@@ -218,7 +218,7 @@ fn matching_component(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| internal!(format!("成分の引数移送: {e:?}")).into())
+                .unwrap_or_else(|| e.internal_context(format!("成分の引数移送: {e:?}")).into())
         })?;
         if !super::data::equal(&moved, g.scalar(image.value)?, c)? {
             return Ok(false);
@@ -666,7 +666,7 @@ pub(super) fn retain(
                             c.stop_reason()
                                 .map(ValidationFailure::Stop)
                                 .unwrap_or_else(|| {
-                                    internal!(format!("Lawの成分型移送: {e:?}")).into()
+                                    e.internal_context(format!("Lawの成分型移送: {e:?}")).into()
                                 })
                         })?;
                 source_components.push((d.component.clone(), moved))

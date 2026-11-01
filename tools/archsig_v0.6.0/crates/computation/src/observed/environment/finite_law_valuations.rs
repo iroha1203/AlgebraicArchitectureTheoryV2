@@ -1074,9 +1074,9 @@ pub(in crate::observed) fn equation(
                     crate::construction::ConstructionFailure::Stopped(s) => {
                         ValidationFailure::Stop(s)
                     }
-                    f => {
-                        ValidationFailure::Internal(internal!(format!("元等式の束縛match: {f:?}")))
-                    }
+                    f => ValidationFailure::Internal(
+                        f.internal_context(format!("元等式の束縛match: {f:?}")),
+                    ),
                 })?;
                 match child {
                     Some(child) => id = child,

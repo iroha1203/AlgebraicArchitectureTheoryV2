@@ -802,7 +802,11 @@ pub(super) fn evaluate(
             ConstructionFailure::InvalidSelection(_) if first.target() != then.source() => {
                 (None, None)
             }
-            other => return Err(internal!(format!("native compose: {other:?}")).into()),
+            other => {
+                return Err(other
+                    .internal_context(format!("native compose: {other:?}"))
+                    .into());
+            }
         },
     };
     let c = Arc::new(ComposeWitness {

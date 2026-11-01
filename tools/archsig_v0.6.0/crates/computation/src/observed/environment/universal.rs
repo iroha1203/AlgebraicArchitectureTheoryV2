@@ -262,9 +262,9 @@ impl Environment<'_> {
                     crate::construction::ConstructionFailure::Stopped(stop) => {
                         ValidationFailure::Stop(stop)
                     }
-                    other => ValidationFailure::Internal(internal!(format!(
-                        "欠測係数の元式照合: {other:?}"
-                    ))),
+                    other => ValidationFailure::Internal(
+                        other.internal_context(format!("欠測係数の元式照合: {other:?}")),
+                    ),
                 })?;
             return Ok(source.filter(|s| s.guard.is_true()));
         }
@@ -1723,9 +1723,9 @@ impl Environment<'_> {
                         crate::construction::ConstructionFailure::Stopped(stop) => {
                             ValidationFailure::Stop(stop)
                         }
-                        other => ValidationFailure::Internal(internal!(format!(
-                            "相関消去の定数差: {other:?}"
-                        ))),
+                        other => ValidationFailure::Internal(
+                            other.internal_context(format!("相関消去の定数差: {other:?}")),
+                        ),
                     })?
                     .ok_or(internal!("相関消去した定数差の値がない"))?;
                 let zero = crate::observed::numeric::zero(&source.ring.ty, &self.control)?;

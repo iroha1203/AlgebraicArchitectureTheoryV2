@@ -195,7 +195,9 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
 fn failure(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        f => ConstructionFailure::Inconsistent(internal!(format!("有限値計算の不整合: {f:?}"))),
+        f => ConstructionFailure::Inconsistent(
+            f.internal_context(format!("有限値計算の不整合: {f:?}")),
+        ),
     }
 }
 pub(super) fn selected_types(
@@ -1335,4 +1337,31 @@ pub(super) fn structural_components(
         }
     }
     Ok(Some(out))
+}
+
+#[cfg(test)]
+mod internal_error_tests {
+    use super::*;
+
+    #[test]
+    fn contextual_transport_failure_keeps_origin_and_existing_message() {
+        let original = internal!("元の不整合");
+        let location = original.location();
+        let converted = failure(ValidationFailure::Internal(original));
+        let ConstructionFailure::Inconsistent(ref error) = converted else {
+            panic!("内部エラー以外へ変換された")
+        };
+        assert_eq!(error.location(), location);
+        assert_eq!(
+            error.message(),
+            "有限値計算の不整合: Internal(\"元の不整合\")"
+        );
+        let wrapped =
+            crate::observed::object_view_transport::ObjectViewTransportFailure::Construction(
+                converted,
+            );
+        let context = wrapped.internal_context("view context".into());
+        assert_eq!(context.location(), location);
+        assert_eq!(context.message(), "view context");
+    }
 }

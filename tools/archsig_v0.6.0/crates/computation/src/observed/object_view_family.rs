@@ -19,9 +19,9 @@ use std::sync::Arc;
 fn invalid(f: ValidationFailure) -> ObjectEvaluationFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        other => {
-            ConstructionFailure::Inconsistent(internal!(format!("有限view族の検査: {other:?}")))
-        }
+        other => ConstructionFailure::Inconsistent(
+            other.internal_context(format!("有限view族の検査: {other:?}")),
+        ),
     }
     .into()
 }

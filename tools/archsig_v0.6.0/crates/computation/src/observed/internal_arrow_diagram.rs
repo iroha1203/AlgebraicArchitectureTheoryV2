@@ -25,7 +25,9 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn failure(e: ConstructionFailure) -> ValidationFailure {
     match e {
         ConstructionFailure::Stopped(s) => s.into(),
-        e => internal!(format!("内部arrowのnative接続: {e:?}")).into(),
+        e => e
+            .internal_context(format!("内部arrowのnative接続: {e:?}"))
+            .into(),
     }
 }
 fn refs(rs: &[NodeRef]) -> Json {

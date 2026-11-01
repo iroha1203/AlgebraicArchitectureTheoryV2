@@ -10,7 +10,9 @@ fn step(c: &Control) -> Result<(), ValidationFailure> {
 fn ring_failure(failure: ConstructionFailure) -> ValidationFailure {
     match failure {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        other => internal!(format!("有限環の対象評価: {other:?}")).into(),
+        other => other
+            .internal_context(format!("有限環の対象評価: {other:?}"))
+            .into(),
     }
 }
 pub(in crate::observed) struct FiniteLawObjectEvaluation<'a> {

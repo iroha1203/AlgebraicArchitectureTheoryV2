@@ -152,7 +152,9 @@ pub(super) fn compute(
         .recheck(env.indexes.inputs, c)
         .map_err(|e| match e {
             crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-            e => ValidationFailure::Internal(internal!(format!("診断比較のOperation: {e:?}"))),
+            e => ValidationFailure::Internal(
+                e.internal_context(format!("診断比較のOperation: {e:?}")),
+            ),
         })?;
     let (from, to, _, _) = public_compose::components(g, along)?;
     let object = field(g, left_system, "base")?;

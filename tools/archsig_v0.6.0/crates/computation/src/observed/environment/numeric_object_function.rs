@@ -35,7 +35,9 @@ pub(super) enum Source {
 fn invalid(e: ValidationFailure) -> ConstructionFailure {
     match e {
         ValidationFailure::Stop(s) => s.into(),
-        e => ConstructionFailure::Inconsistent(internal!(format!("数値viewの元式: {e:?}"))),
+        e => {
+            ConstructionFailure::Inconsistent(e.internal_context(format!("数値viewの元式: {e:?}")))
+        }
     }
 }
 pub(super) fn fixed_bindings(

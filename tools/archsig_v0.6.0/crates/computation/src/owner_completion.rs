@@ -36,7 +36,7 @@ impl DeterminedOwners {
 #[derive(Debug)]
 pub(crate) enum Failure {
     Invalid(String),
-    Kernel(String),
+    Kernel(archsig_common::internal::InternalError),
     Stopped(Signal),
 }
 impl From<Signal> for Failure {
@@ -48,8 +48,9 @@ fn tick(c: &Control) -> Result<(), Failure> {
     c.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
+#[track_caller]
 fn kernel(message: &str) -> Failure {
-    Failure::Kernel(message.into())
+    Failure::Kernel(internal!(message))
 }
 
 pub(crate) fn determined_owners(
@@ -221,7 +222,7 @@ pub(crate) fn determined_owners(
             Err(CheckFailure::Input(issue)) if issue.code == Code::InconsistentObservation => (),
             Err(CheckFailure::Stopped(signal)) => return Err(Failure::Stopped(signal)),
             Err(CheckFailure::Input(issue)) => {
-                return Err(Failure::Kernel(format!(
+                return Err(Failure::Kernel(internal!(
                     "参照補完候補の元入力検査: {}",
                     issue.message
                 )));

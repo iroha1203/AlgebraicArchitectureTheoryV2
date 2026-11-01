@@ -60,6 +60,20 @@ pub enum ObjectViewTransportFailure {
         transport: Option<Box<ConfigurationTransportPartial>>,
     },
 }
+impl ObjectViewTransportFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(
+        &self,
+        message: String,
+    ) -> archsig_common::internal::InternalError {
+        match self {
+            Self::Construction(cause) => cause.internal_context(message),
+            Self::Transport(cause) => cause.cause().internal_context(message),
+            Self::Evaluation { failure, .. } => failure.internal_context(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<ConstructionFailure> for ObjectViewTransportFailure {
     fn from(f: ConstructionFailure) -> Self {
         Self::Construction(f)
@@ -500,7 +514,7 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        f => ConstructionFailure::Inconsistent(internal!(format!("view値の比較: {f:?}"))),
+        f => ConstructionFailure::Inconsistent(f.internal_context(format!("view値の比較: {f:?}"))),
     }
 }
 fn scalar(e: &ObjectEvaluation) -> Result<Option<Scalar>, ConstructionFailure> {

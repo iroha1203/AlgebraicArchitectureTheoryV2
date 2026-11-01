@@ -16,7 +16,9 @@ pub(super) struct Selection {
 pub(super) fn failure(cause: ConstructionFailure) -> ValidationFailure {
     match cause {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        other => internal!(format!("有限Law族の対象選択: {other:?}")).into(),
+        other => other
+            .internal_context(format!("有限Law族の対象選択: {other:?}"))
+            .into(),
     }
 }
 impl Selection {

@@ -431,9 +431,9 @@ fn parameter_coefficient_forms(
             crate::construction::ConstructionFailure::InvalidSelection(message) => {
                 internal!(format!("数値Law係数: {message}")).into()
             }
-            crate::construction::ConstructionFailure::Inconsistent(message) => {
-                internal!(format!("数値Law係数: {message}")).into()
-            }
+            crate::construction::ConstructionFailure::Inconsistent(message) => message
+                .with_message(format!("数値Law係数: {message}"))
+                .into(),
         })?
     else {
         return Ok(None);

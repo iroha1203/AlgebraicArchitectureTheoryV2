@@ -41,9 +41,9 @@ pub(crate) fn determined_owners(
         env.completion_assignments(fields, &mut |_, _| {})
             .map_err(|failure| match failure {
                 ValidationFailure::Stop(reason) => ConstructionFailure::Stopped(reason),
-                other => ConstructionFailure::Inconsistent(internal!(format!(
-                    "owner補完の構成検査: {other:?}"
-                ))),
+                other => ConstructionFailure::Inconsistent(
+                    other.internal_context(format!("owner補完の構成検査: {other:?}")),
+                ),
             })?;
     if all.values.len() != 1 {
         return Ok(None);

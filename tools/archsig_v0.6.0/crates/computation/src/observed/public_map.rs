@@ -24,7 +24,9 @@ fn tick(control: &Control) -> Result<(), ValidationFailure> {
 fn failure(cause: ConstructionFailure) -> ValidationFailure {
     match cause {
         ConstructionFailure::Stopped(stop) => stop.into(),
-        other => ValidationFailure::Internal(internal!(format!("native map: {other:?}"))),
+        other => {
+            ValidationFailure::Internal(other.internal_context(format!("native map: {other:?}")))
+        }
     }
 }
 fn field(name: &str) -> Vec<P> {

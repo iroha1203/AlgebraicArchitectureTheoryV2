@@ -176,7 +176,9 @@ impl Builder<'_> {
                         crate::construction::ConstructionFailure::Stopped(s) => {
                             ValidationFailure::Stop(s)
                         }
-                        other => internal!(format!("多項式operandの束縛match: {other:?}")).into(),
+                        other => other
+                            .internal_context(format!("多項式operandの束縛match: {other:?}"))
+                            .into(),
                     })?
                     .ok_or(internal!("多項式operandのmatchが単一束縛でない"))?;
                     let source = *scrutinee;

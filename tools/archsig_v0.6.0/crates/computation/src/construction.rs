@@ -202,6 +202,15 @@ pub enum ConstructionFailure {
     Inconsistent(InternalError),
     Stopped(Signal),
 }
+impl ConstructionFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(&self, message: String) -> InternalError {
+        match self {
+            Self::Inconsistent(error) => error.with_message(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<Signal> for ConstructionFailure {
     fn from(reason: Signal) -> Self {
         Self::Stopped(reason)
@@ -487,7 +496,7 @@ pub(crate) fn construct_resolving_owners(
                 ConstructionFailure::Inconsistent(internal!(message))
             }
             crate::owner_completion::Failure::Kernel(message) => ConstructionFailure::Inconsistent(
-                internal!(format!("owner補完の構成検査: Internal({message:?})")),
+                message.with_message(format!("owner補完の構成検査: Internal({message:?})")),
             ),
             crate::owner_completion::Failure::Stopped(reason) => {
                 ConstructionFailure::Stopped(reason)

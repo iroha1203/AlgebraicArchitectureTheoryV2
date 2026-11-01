@@ -24,7 +24,9 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn failure(e: ConstructionFailure) -> ValidationFailure {
     match e {
         ConstructionFailure::Stopped(s) => s.into(),
-        e => internal!(format!("完全query patternの構成: {e:?}")).into(),
+        e => e
+            .internal_context(format!("完全query patternの構成: {e:?}"))
+            .into(),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]

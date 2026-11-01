@@ -800,11 +800,15 @@ impl Source {
             )
             .map_err(|e| match e {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-                other => internal!(format!("対象族の構成: {other:?}")).into(),
+                other => other
+                    .internal_context(format!("対象族の構成: {other:?}"))
+                    .into(),
             })?;
         a.readings().recheck(inputs, c).map_err(|e| match e {
             crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-            other => internal!(format!("対象族の適用: {other:?}")).into(),
+            other => other
+                .internal_context(format!("対象族の適用: {other:?}"))
+                .into(),
         })?;
         let (parts, outputs) = plan(inputs, a, self.reference, root, laws, self.base, c)?
             .ok_or(internal!("対象族の元構成が未完成"))?;

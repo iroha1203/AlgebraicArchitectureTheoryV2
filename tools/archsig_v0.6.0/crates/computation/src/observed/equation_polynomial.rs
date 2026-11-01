@@ -17,7 +17,9 @@ pub(super) fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 pub(super) fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        f => ConstructionFailure::Inconsistent(internal!(format!("方程式表示の数値演算: {f:?}"))),
+        f => ConstructionFailure::Inconsistent(
+            f.internal_context(format!("方程式表示の数値演算: {f:?}")),
+        ),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]

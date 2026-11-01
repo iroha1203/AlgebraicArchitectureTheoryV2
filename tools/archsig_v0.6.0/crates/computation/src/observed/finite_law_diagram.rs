@@ -1261,7 +1261,9 @@ impl Source {
             .recheck(inputs, c)
             .map_err(|e| match e {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-                other => internal!(format!("有限Lawの元reading: {other:?}")).into(),
+                other => other
+                    .internal_context(format!("有限Lawの元reading: {other:?}"))
+                    .into(),
             })?;
         let other = Self::compute_plan(
             self.inputs.clone(),

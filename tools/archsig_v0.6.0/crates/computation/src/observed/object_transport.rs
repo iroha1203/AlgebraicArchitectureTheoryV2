@@ -112,9 +112,9 @@ pub(super) fn same_evaluation_controlled(
                         super::result::ValidationFailure::Stop(reason) => {
                             ConstructionFailure::Stopped(reason)
                         }
-                        other => ConstructionFailure::Inconsistent(internal!(format!(
-                            "view族の再照合: {other:?}"
-                        ))),
+                        other => ConstructionFailure::Inconsistent(
+                            other.internal_context(format!("view族の再照合: {other:?}")),
+                        ),
                     }
                 })
             }

@@ -1824,6 +1824,15 @@ pub(crate) enum ValidationFailure {
         feature: String,
     },
 }
+impl ValidationFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(&self, message: String) -> InternalError {
+        match self {
+            Self::Internal(error) => error.with_message(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<InternalError> for ValidationFailure {
     fn from(error: InternalError) -> Self {
         Self::Internal(error)

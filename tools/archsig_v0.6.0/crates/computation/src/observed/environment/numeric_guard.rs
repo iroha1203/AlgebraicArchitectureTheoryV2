@@ -75,7 +75,9 @@ struct Normalized {
 fn invalid(error: ConstructionFailure) -> ValidationFailure {
     match error {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        error => internal!(format!("数値guardの正規化: {error:?}")).into(),
+        error => error
+            .internal_context(format!("数値guardの正規化: {error:?}"))
+            .into(),
     }
 }
 /// 既存の線形解析を優先し、その外側では正確な数値多項式だけを分類する。

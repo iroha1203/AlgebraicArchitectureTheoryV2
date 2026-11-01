@@ -88,9 +88,10 @@ impl ObjectEvaluationTable {
                                 super::result::ValidationFailure::Stop(s) => {
                                     ConstructionFailure::Stopped(s)
                                 }
-                                other => ConstructionFailure::Inconsistent(internal!(format!(
-                                    "有限view表の再照合: {other:?}"
-                                ))),
+                                other => ConstructionFailure::Inconsistent(
+                                    other
+                                        .internal_context(format!("有限view表の再照合: {other:?}")),
+                                ),
                             })?,
                         _ => same_evaluation(Some(&a.evaluation), Some(&b.evaluation)),
                     };

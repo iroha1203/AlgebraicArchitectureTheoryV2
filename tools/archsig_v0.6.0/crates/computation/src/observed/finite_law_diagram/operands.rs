@@ -138,7 +138,9 @@ impl Builder<'_> {
                         crate::construction::ConstructionFailure::Stopped(s) => {
                             ValidationFailure::Stop(s)
                         }
-                        other => internal!(format!("有限operandの束縛match: {other:?}")).into(),
+                        other => other
+                            .internal_context(format!("有限operandの束縛match: {other:?}"))
+                            .into(),
                     })?
                     .ok_or(internal!("有限operandのmatchが単一束縛でない"))?;
                     let source = *scrutinee;

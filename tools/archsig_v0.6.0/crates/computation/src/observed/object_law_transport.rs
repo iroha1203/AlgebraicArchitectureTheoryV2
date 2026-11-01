@@ -54,6 +54,20 @@ pub enum ObjectLawTransportFailure {
         transport: Option<Box<ConfigurationTransportPartial>>,
     },
 }
+impl ObjectLawTransportFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(
+        &self,
+        message: String,
+    ) -> archsig_common::internal::InternalError {
+        match self {
+            Self::Construction(cause) => cause.internal_context(message),
+            Self::Transport(cause) => cause.cause().internal_context(message),
+            Self::Evaluation { failure, .. } => failure.internal_context(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<ConstructionFailure> for ObjectLawTransportFailure {
     fn from(f: ConstructionFailure) -> Self {
         Self::Construction(f)
