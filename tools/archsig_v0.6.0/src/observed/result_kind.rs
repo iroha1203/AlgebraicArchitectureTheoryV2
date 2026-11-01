@@ -7,6 +7,8 @@ use super::{
 pub(super) trait ResultKind {
     type Input<'a, 'input: 'a>;
     type Output;
+    /// 再利用表に保持する値。保持しない種類はunit。
+    type Stored;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,
     ) -> Result<Self::Output, ValidationFailure>;

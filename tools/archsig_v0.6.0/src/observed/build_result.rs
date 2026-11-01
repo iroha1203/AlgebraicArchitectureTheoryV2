@@ -836,7 +836,7 @@ impl Environment<'_> {
         d.position(at)?;
         let c = self.control.clone();
         d.source.plan.boundary.recheck(self, g, at, &c)?;
-        if self.build_source_checked(&d.source) {
+        if self.results.source_checked(&d.source) {
             return Ok(());
         }
         let producer = g.context_at(d.source.plan.architecture.reference.0).request;
@@ -845,7 +845,7 @@ impl Environment<'_> {
         if parts != d.source.parts || answer != d.source.answer {
             return Err("buildの全構成が元計画の再検査と違う".into());
         }
-        self.remember_build_source(d.source.clone());
+        self.results.remember(d.source.clone());
         Ok(())
     }
 }
@@ -904,6 +904,7 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a PreparedObserved,
         &'a Environment<'input>,

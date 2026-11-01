@@ -1257,7 +1257,7 @@ impl Environment<'_> {
         {
             return Err("局所系の位置・既出参照が違う".into());
         }
-        if self.local_source_checked(&d.source) {
+        if self.results.source_checked(&d.source) {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
@@ -1287,7 +1287,7 @@ impl Environment<'_> {
             {
                 return Err("局所系の停止断片の再構成が違う".into());
             }
-            self.remember_local_source(d.source.clone());
+            self.results.remember(d.source.clone());
             return Ok(());
         }
         if rebuilt.scope_domains != d.source.scope_domains
@@ -1297,7 +1297,7 @@ impl Environment<'_> {
         {
             return Err("局所系の再構成が違う".into());
         }
-        self.remember_local_source(d.source.clone());
+        self.results.remember(d.source.clone());
         Ok(())
     }
 }
@@ -1387,6 +1387,7 @@ pub(super) fn validate_origin(
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a PreparedObserved,
         &'a Environment<'input>,

@@ -578,7 +578,7 @@ impl Environment<'_> {
         {
             return Err("商の位置・既出参照が違う".into());
         }
-        if self.quotient_source_checked(&d.source) {
+        if self.results.source_checked(&d.source) {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
@@ -590,7 +590,7 @@ impl Environment<'_> {
         {
             return Err("商の再構成が違う".into());
         }
-        self.remember_quotient_source(d.source.clone());
+        self.results.remember(d.source.clone());
         Ok(())
     }
 }
@@ -651,6 +651,7 @@ pub(super) fn validate_origin(
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a PreparedObserved,
         &'a Environment<'input>,

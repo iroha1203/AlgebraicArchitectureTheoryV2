@@ -1200,7 +1200,7 @@ impl Environment<'_> {
         }
         let c = self.control.clone();
         d.source.boundary.recheck(self, g, at, &c)?;
-        if self.change_source_checked(&d.source) {
+        if self.results.source_checked(&d.source) {
             return Ok(());
         }
         let origin = Witness::Architecture(d.source.architecture.witness.clone());
@@ -1225,7 +1225,7 @@ impl Environment<'_> {
         if parts != d.source.parts || answer != d.source.answer {
             return Err("changeの再構成が違う".into());
         }
-        self.remember_change_source(d.source.clone());
+        self.results.remember(d.source.clone());
         Ok(())
     }
 }
@@ -1388,6 +1388,7 @@ pub(super) fn architecture_overrides(
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a PreparedObserved,
         &'a Environment<'input>,

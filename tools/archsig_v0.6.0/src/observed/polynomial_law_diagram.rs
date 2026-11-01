@@ -2074,6 +2074,7 @@ mod tests;
 mod family_tests;
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a mut Graph,
         Arc<CheckedInputs>,
