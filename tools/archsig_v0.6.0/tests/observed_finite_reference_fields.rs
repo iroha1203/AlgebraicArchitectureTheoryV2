@@ -1,10 +1,8 @@
 use crate::common::finite_reference_fields as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::{InputSources, check_inputs};
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -140,11 +138,11 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
                     .find(|s| s.name == text(field))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, origin, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, origin, .. } => {
                         assert_eq!(f(fact, "atom"), &Json::str(atom));
                         origin
                     }
-                    archsig::archmap::Slot::Missing => {
+                    archsig_input::archmap::Slot::Missing => {
                         assert!(!obj(fact).contains_key("atom"));
                         &subject.origin
                     }
@@ -263,9 +261,9 @@ fn finite_owned_field_completions_keep_shared_values_independent_slots_and_exact
         .unwrap();
     assert_eq!(
         original.ty,
-        archsig::types::Type::Owned("Fields.Sample".into(), "owner".into())
+        archsig_common::types::Type::Owned("Fields.Sample".into(), "owner".into())
     );
-    assert_eq!(original.slot, archsig::archmap::Slot::Missing);
+    assert_eq!(original.slot, archsig_input::archmap::Slot::Missing);
     let j = run(
         input,
         &[
@@ -468,7 +466,7 @@ fn finite_owned_field_values_keep_known_map_totality_and_raw_missing_slots() {
             .fields
             .iter()
             .filter(|f| f.name.ends_with(".owner") || f.name.ends_with(".chosen"))
-            .all(|f| f.slot == archsig::archmap::Slot::Missing)
+            .all(|f| f.slot == archsig_input::archmap::Slot::Missing)
     );
     let j = run(
         input,

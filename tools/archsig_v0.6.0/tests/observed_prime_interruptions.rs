@@ -1,11 +1,13 @@
 //! Fp の素数性内部へ三入力検査の共有制御が届き、既知不正と元位置を保つ。
 use crate::common::positions;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+    issue::{Code, Issue, Location},
+};
+use archsig_input::{
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-    issue::{Code, Issue, Location},
     law::{check_law, check_law_controlled},
     result::ResultIssue,
     result::Signal,

@@ -1,6 +1,6 @@
 //! 原始候補・総作用・部分結果を実バイナリから検査する独立fixture。
 use crate::common;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/reservations.atoms.json");
@@ -266,7 +266,7 @@ fn map_projection_binds_the_existing_subject_and_keeps_original_answer_order() {
     let universes = arr(get(&result, "nodes"))
         .iter()
         .filter(
-            |n| matches!(&get(n,"type").value,archsig::json::JValue::Str(t) if t=="AtomUniverse"),
+            |n| matches!(&get(n,"type").value,archsig_common::json::JValue::Str(t) if t=="AtomUniverse"),
         )
         .count();
     assert_eq!(universes, 1);
@@ -364,7 +364,7 @@ fn unknown_owner_retains_conditional_laws_as_blocked_partial_records() {
     let conditional = nodes
         .iter()
         .filter(|n| {
-            matches!(&get(n,"type").value,archsig::json::JValue::Str(t) if t=="LawInstance")
+            matches!(&get(n,"type").value,archsig_common::json::JValue::Str(t) if t=="LawInstance")
                 && s(get(n, "state")) == "blocked"
         })
         .collect::<Vec<_>>();
@@ -485,10 +485,10 @@ fn map_reuse_rechecks_the_total_action_and_rejects_a_forged_saved_operation() {
     let output = get(answer(&original, "m"), "outputs");
     let operation_id = s(get(get(output, "operation"), "node"));
     let mut forged = std::fs::read_to_string(dir.join("out/result.json")).unwrap();
-    let node_text = archsig::canonical::Json::str(operation_id).canonical();
+    let node_text = archsig_common::canonical::Json::str(operation_id).canonical();
     let old_word = format!(
         "\"word\":[{{\"node\":{}}}]",
-        archsig::canonical::Json::str(s(get(
+        archsig_common::canonical::Json::str(s(get(
             &arr(get(value(&original, get(output, "operation")), "word"))[0],
             "node"
         )))
@@ -608,7 +608,7 @@ fn map_dependency_cycles_report_edges_without_calculating_or_writing_results() {
         );
         assert!(!has(issue, "location"));
         assert!(
-            matches!(&get(issue,"details").value,archsig::json::JValue::Obj(fields) if fields.is_empty())
+            matches!(&get(issue,"details").value,archsig_common::json::JValue::Obj(fields) if fields.is_empty())
         );
     }
     assert!(!dir.join("out").exists());
@@ -637,7 +637,8 @@ fn architecture_scope_keeps_classification_without_exporting_support() {
             .any(|f| s(get(f, "subject")) == "r")
     );
     let saved =
-        archsig::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap()).unwrap();
+        archsig_common::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap())
+            .unwrap();
     assert!(
         arr(get(&arr(get(&saved, "snapshots"))[0], "atoms"))
             .iter()
@@ -756,7 +757,7 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
         "\"name\": \"other\"",
         1,
     );
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("definition0", left),
         ("definition1", right.as_bytes()),
     ])
@@ -766,7 +767,7 @@ fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_mis
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("definition0", left),
         ("definition1", right.as_bytes()),
         ("definition2", bridge.as_bytes()),
@@ -985,7 +986,7 @@ fn map_reuse_rejects_saved_values_that_drop_preservation_conditions() {
     ));
     let needle = format!(
         "\"conditions\":[{{\"node\":{}}}]",
-        archsig::canonical::Json::str(condition).canonical()
+        archsig_common::canonical::Json::str(condition).canonical()
     );
     let original = std::fs::read_to_string(dir.join("out/result.json")).unwrap();
     assert_eq!(original.matches(&needle).count(), 2);

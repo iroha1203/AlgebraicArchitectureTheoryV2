@@ -1,6 +1,6 @@
 //! 引数fixtureの明示期待値で、実CLIのusage通知と既存データ保護を検査する。
 use crate::common;
-use archsig::json::{JNode, parse};
+use archsig_common::json::{JNode, parse};
 use common::cli::*;
 use std::{
     collections::BTreeMap,

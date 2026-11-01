@@ -1,6 +1,6 @@
 //! run の実バイナリと、本文から独立したCounter入力・期待値。
 use crate::common;
-use archsig::json::{JNode, JValue};
+use archsig_common::json::{JNode, JValue};
 use common::cli::*;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -104,7 +104,7 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
         let bytes = std::fs::read(dir.join("out").join(s(get(i, "path")))).unwrap();
         assert_eq!(
             s(get(i, "bytes_digest")),
-            archsig::canonical::sha256_digest(&bytes)
+            archsig_common::canonical::sha256_digest(&bytes)
         );
     }
     let mut prior = BTreeSet::new();
@@ -396,7 +396,7 @@ struct NoSignal {
     freezes: usize,
 }
 impl archsig::run::Signals for NoSignal {
-    fn freeze(&mut self) -> Option<archsig::result::Signal> {
+    fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
         self.freezes += 1;
         None
     }
@@ -416,12 +416,9 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
 
 #[test]
 fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate_observed_bytes,
-        result::Signal,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate_observed_bytes;
+    use archsig_input::{input::InputSources, result::Signal};
     use std::{cell::Cell, rc::Rc};
     for reused in [false, true] {
         let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
@@ -470,8 +467,8 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args, &control);
         assert_eq!(outcome.exit_code, 130);
         assert_eq!(signals.freezes, 1);
-        let res =
-            archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+        let res = archsig_common::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap())
+            .unwrap();
         assert_eq!(s(get(answer(&res, "n"), "status")), "established");
         assert_eq!(
             s(get(
@@ -497,7 +494,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
     assert_eq!(outcome.exit_code, 130);
     assert!(outcome.result.is_none());
     assert!(!dir.join("out").exists());
-    let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+    let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
     assert!(!arr(get(&receipt, "issues")).is_empty());
 }
 
@@ -566,8 +563,8 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
 
 #[test]
 fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
-    use archsig::control::{Checkpoint, Control};
-    use archsig::result::Signal;
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let dir = inputs("reuse-stop", Some("2"), L);
     let initial = requests(&dir, &ASKS);
@@ -620,7 +617,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
                     outcome.result.is_some(),
                     "照合前に得た検査済み結果を保持する"
                 );
-                let res = archsig::json::parse(
+                let res = archsig_common::json::parse(
                     &std::fs::read(args.inputs.out.as_ref().unwrap().join("result.json")).unwrap(),
                 )
                 .unwrap();
@@ -639,7 +636,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
                         .all(|a| s(get(a, "status")) == "established")
                 );
             }
-            let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+            let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
             assert!(!arr(get(&receipt, "issues")).is_empty());
             assert!(!std::fs::read_dir(&dir).unwrap().any(|e| {
                 e.unwrap()
@@ -684,7 +681,7 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
         &mut WriteFailure,
         &mut NoSignal::default(),
         &args,
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     );
     assert_eq!(outcome.exit_code, 74);
     assert!(!dir.join("out").exists());
@@ -695,7 +692,7 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
             .to_string_lossy()
             .contains(".archsig-")
     }));
-    let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+    let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
     assert!(!has(&receipt, "result"));
     assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "io");
     assert_eq!(
@@ -727,7 +724,8 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
     assert_eq!(s(get(binding, "name")), "s");
     let subject = get(node(&res, get(binding, "value")), "value");
     let saved =
-        archsig::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap()).unwrap();
+        archsig_common::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap())
+            .unwrap();
     let snapshot = arr(get(&saved, "snapshots"))
         .iter()
         .find(|v| s(get(v, "id")) == s(&arr(subject)[0]))

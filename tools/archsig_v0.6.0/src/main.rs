@@ -1,9 +1,9 @@
 //! `archsig check`・`run`・`version`。
 
-use archsig::result::Signal;
 use archsig::run::{
     FileIo, Outcome, Signals, VERSION_LINE, execute_command, parse_args, usage_outcome,
 };
+use archsig_input::result::Signal;
 use std::io::Write;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
@@ -64,10 +64,10 @@ impl ProcessSignals {
     }
 
     /// checkpointでsignalを確かめる。
-    fn control(&self) -> archsig::control::Control {
+    fn control(&self) -> archsig_common::control::Control {
         // Flags may already be set before control construction (including test injection).
         Self::observed_signal(&self.first, &self.int, &self.term);
-        archsig::control::Control::from_signal_flag(
+        archsig_common::control::Control::from_signal_flag(
             Arc::clone(&self.first),
             signal_hook::consts::SIGINT,
             signal_hook::consts::SIGTERM,
@@ -156,7 +156,7 @@ mod test_watchdog;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use archsig::control::Checkpoint;
+    use archsig_common::control::Checkpoint;
     use std::time::Instant;
 
     /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
@@ -332,7 +332,7 @@ mod tests {
 
     #[test]
     fn real_signals_cancel_cli_execution_before_artifacts() {
-        use archsig::json::{JNode, JValue, parse};
+        use archsig_common::json::{JNode, JValue, parse};
         use nix::sys::signal::{Signal as OsSignal, kill};
         use nix::unistd::Pid;
         use std::io::{BufRead, BufReader, Read};

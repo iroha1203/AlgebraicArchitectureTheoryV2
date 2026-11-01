@@ -1,7 +1,7 @@
 //! 再利用候補を採用しない全再計算と、現在入力への帰属。
 use crate::common;
-use archsig::canonical::Json;
-use archsig::json::{JNode, JValue};
+use archsig_common::canonical::Json;
+use archsig_common::json::{JNode, JValue};
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/counter.atoms.json");
@@ -381,7 +381,7 @@ fn reuse_never_imports_old_values_bindings_laws_or_provenance() {
         .unwrap();
     assert_eq!(
         s(get(identity, "bytes_digest")),
-        archsig::canonical::sha256_digest(&current_bytes)
+        archsig_common::canonical::sha256_digest(&current_bytes)
     );
     assert_eq!(
         s(get(&arr(get(&result, "answers"))[1], "status")),
@@ -412,7 +412,7 @@ fn reuse_never_imports_old_values_bindings_laws_or_provenance() {
             .iter()
             .all(|n| !has(n, "support"))
     );
-    let saved = archsig::json::parse(
+    let saved = archsig_common::json::parse(
         &std::fs::read(dir.join("binding-changed/inputs/archmap.json")).unwrap(),
     )
     .unwrap();

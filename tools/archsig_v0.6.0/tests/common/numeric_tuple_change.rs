@@ -1,5 +1,6 @@
 //! Tuple changeの独立入力と、移送の数学的な期待値。CLI配送処理は持たない。
-use archsig::{canonical::Json, input::InputSources, json::JNode};
+use archsig_common::{canonical::Json, json::JNode};
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 #[path = "architecture_environment.rs"]
 mod architecture;
@@ -201,9 +202,10 @@ impl Case {
         } else {
             old.clone()
         };
-        let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let before =
+            archsig_input::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let after =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = &after.vocabularies()["Reservations"].digest;
         let text = include_str!("../fixtures/object-configuration-map.archmap.json")
             .to_string()
@@ -216,7 +218,8 @@ impl Case {
                 r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#,
             )
             .replace(&before.vocabularies()["Reservations"].digest, digest);
-        let mut archmap = architecture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+        let mut archmap =
+            architecture::owned(&archsig_common::json::parse(text.as_bytes()).unwrap());
         let atoms = architecture::atoms(&mut archmap);
         atoms.retain(|atom|!missing||!matches!(atom,Json::Obj(a) if a.get("subject")==Some(&Json::str("p"))&&a.get("field")==Some(&Json::str("Reservations.State.held"))));
         if ty == "Q" {
@@ -389,7 +392,7 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
     }
 }
 fn get<'a>(j: &'a JNode, k: &str) -> &'a JNode {
-    let archsig::json::JValue::Obj(v) = &j.value else {
+    let archsig_common::json::JValue::Obj(v) = &j.value else {
         panic!("object")
     };
     v.iter()
@@ -403,19 +406,19 @@ fn get<'a>(j: &'a JNode, k: &str) -> &'a JNode {
         })
 }
 fn has(j: &JNode, k: &str) -> bool {
-    let archsig::json::JValue::Obj(v) = &j.value else {
+    let archsig_common::json::JValue::Obj(v) = &j.value else {
         panic!("object")
     };
     v.iter().any(|(n, _)| n == k)
 }
 fn arr(j: &JNode) -> &[JNode] {
-    let archsig::json::JValue::Arr(v) = &j.value else {
+    let archsig_common::json::JValue::Arr(v) = &j.value else {
         panic!("array")
     };
     v
 }
 fn s(j: &JNode) -> &str {
-    let archsig::json::JValue::Str(v) = &j.value else {
+    let archsig_common::json::JValue::Str(v) = &j.value else {
         panic!("string")
     };
     v
@@ -438,7 +441,9 @@ fn value<'a>(r: &'a JNode, reference: &JNode) -> &'a JNode {
 fn assert_json(actual: &JNode, expected: &str) {
     assert_eq!(
         actual.value,
-        archsig::json::parse(expected.as_bytes()).unwrap().value
+        archsig_common::json::parse(expected.as_bytes())
+            .unwrap()
+            .value
     );
 }
 fn numeric_tuple_test_type(ty: &str, nested: bool) -> String {

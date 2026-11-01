@@ -1,15 +1,15 @@
 //! 原始定義の所属・対応・型適格性の小さい回帰確認。
 use crate::common;
-use archsig::issue::Code;
+use archsig_common::issue::Code;
 use common::law_definitions::*;
 use common::*;
 fn rejects_definition(src: &str, code: Code) {
-    let f = archsig::definition::check_definitions(&[("definition0", src.as_bytes())])
+    let f = archsig_input::definition::check_definitions(&[("definition0", src.as_bytes())])
         .expect_err("不正な原始定義");
     assert_eq!(f.issue.code, code);
     assert!(matches!(
         f.issue.location,
-        archsig::issue::Location::Definition { .. }
+        archsig_common::issue::Location::Definition { .. }
     ));
 }
 #[test]

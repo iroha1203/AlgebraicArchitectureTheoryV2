@@ -1,7 +1,9 @@
 //! 元表・実callee/引数・構成条件を保つMap適用。
 use crate::common::map_application as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::check_inputs, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::check_inputs;
 use std::collections::BTreeMap;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else { panic!("object") };
@@ -102,7 +104,7 @@ fn refs(j: &Json, rs: &mut Vec<String>) {
         _ => {}
     }
 }
-fn audit(result: &archsig::observed::ObservedEvaluation) {
+fn audit(result: &archsig_computation::observed::ObservedEvaluation) {
     let w = result.wire();
     let mut seen = BTreeSet::new();
     let checked = result.prepared().inputs();
@@ -143,7 +145,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                     .iter()
                     .find(|f| f.name == text(field))
                     .unwrap();
-                let archsig::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
                     panic!("support is known")
                 };
                 assert_eq!(get(fact, "atom"), &Json::str(atom));
@@ -201,7 +203,11 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
     }
 }
 
-fn assert_condition(r: &archsig::observed::ObservedEvaluation, keys: &[&str], argument: &str) {
+fn assert_condition(
+    r: &archsig_computation::observed::ObservedEvaluation,
+    keys: &[&str],
+    argument: &str,
+) {
     let w = r.wire();
     let a = answer(&w, "a");
     assert_eq!(r.status(), "partial");

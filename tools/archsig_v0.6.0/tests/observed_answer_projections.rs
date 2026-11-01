@@ -1,5 +1,6 @@
 use crate::common::answer_projections as fixture;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -308,7 +309,7 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
         let input = fixture::input("known", revision);
         let original = input.clone();
         let c = quiet();
-        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &c).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);
@@ -380,7 +381,7 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
                     .iter()
                     .find(|p| Json::str(&p.name) == fact["field"])
                     .unwrap();
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom: actual,
                     origin,
                     ..

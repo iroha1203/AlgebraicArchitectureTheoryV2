@@ -1,15 +1,17 @@
 use crate::common::helpers::add;
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::{
     construction::{
         ConstructionFailure,
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
     },
-    control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::value_transport::{
         DeclarationValuePosition as Position, FiniteValueConditionFailure as Failure,
         FiniteValueTransport, finite_declaration_value_transport,
     },
+};
+use archsig_input::{
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -20,13 +22,14 @@ fn inputs(a: &str) -> CheckedInputs {
 }
 fn with_left(left: &[u8], a: &str) -> CheckedInputs {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -65,7 +68,9 @@ fn result(i: &CheckedInputs, p: usize) -> FiniteValueTransport {
     )
     .unwrap()
 }
-fn wires(values: &[archsig::observed::value_transport::FiniteTransportValue]) -> Vec<String> {
+fn wires(
+    values: &[archsig_computation::observed::value_transport::FiniteTransportValue],
+) -> Vec<String> {
     values.iter().map(|v| v.wire().canonical()).collect()
 }
 fn expected(r: &FiniteValueTransport, source: &[&str], target: &[&str], images: &[&str]) {
@@ -502,7 +507,7 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
         .replace("Right.Root", "Left.Root")
         .replace("Right.Child.amount", "Left.Child.count")
         .replace("Right.Child", "Left.Child");
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),

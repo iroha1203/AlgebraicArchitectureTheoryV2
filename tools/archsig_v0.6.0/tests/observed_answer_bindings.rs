@@ -1,7 +1,8 @@
 //! 同一batchの既知出力を元Requestと既出Refへ接続する。
 use crate::common::answer_bindings as fixture;
 use crate::common::helpers::get;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -238,7 +239,10 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
         let e = evaluate_observed_bytes(fixture::input("r1"), &asks, &Control::unlimited())
             .unwrap_err();
         assert!(
-            matches!(e, archsig::observed::EvaluationFailure::Prepare(_)),
+            matches!(
+                e,
+                archsig_computation::observed::EvaluationFailure::Prepare(_)
+            ),
             "{e:?}"
         );
         let w = e.wire().unwrap();
@@ -288,7 +292,7 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
         let i = fixture::input(revision);
         let original = i.clone();
         let c = Control::unlimited();
-        let checked = archsig::input::check_inputs(i.clone(), &c).unwrap();
+        let checked = archsig_input::input::check_inputs(i.clone(), &c).unwrap();
         let r = evaluate_observed_bytes(i, &asks, &c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);
@@ -344,7 +348,7 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
                     .iter()
                     .find(|p| Json::str(&p.name) == f["field"])
                     .unwrap();
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom: actual,
                     origin,
                     ..

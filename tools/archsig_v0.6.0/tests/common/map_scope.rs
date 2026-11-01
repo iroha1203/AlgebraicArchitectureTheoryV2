@@ -1,7 +1,8 @@
 //! 同じ未知参照の反復と、その有限な型付き補完を表す独立入力。
 pub fn fixture(entries: Option<(&str, &str)>, source_links: &str) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
     let definition = include_bytes!("../fixtures/configuration-map-graph.atoms.json");
-    let checked = archsig::definition::check_definitions(&[("definition0", definition)]).unwrap();
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definition)]).unwrap();
     let digest = &checked.vocabularies()["Graph"].digest;
     let law = include_str!("../fixtures/configuration-map-graph.law").replace("@DIGEST@", digest);
     let mut map = include_str!("../fixtures/configuration-map-graph.archmap.json")

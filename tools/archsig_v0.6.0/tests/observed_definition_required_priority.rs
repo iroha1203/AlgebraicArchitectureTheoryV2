@@ -1,11 +1,13 @@
 //! 必須の依存・所属・field・添字探索の終端拒否を、三入力 byte 経路で検査する。
 use crate::common::helpers::probe;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::Checkpoint,
+    issue::{Code, Details, Issue, Location},
+};
+use archsig_input::{
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-    issue::{Code, Details, Issue, Location},
     result::ResultIssue,
     result::Signal,
 };

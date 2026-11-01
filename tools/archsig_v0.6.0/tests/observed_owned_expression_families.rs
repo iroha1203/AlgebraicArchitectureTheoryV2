@@ -1,14 +1,16 @@
 //! 元Family式のowner・有限Set・In域・支持を三入力byte APIから確かめる。
 use crate::common;
 
-use archsig::{
-    archmap::{Mode, Slot},
+use archsig_common::{
     canonical::{Json, sha256_digest},
+    types::Type,
+};
+use archsig_computation::observed::{ObservedEvaluation, evaluate_observed_bytes};
+use archsig_input::{
+    archmap::{Mode, Slot},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{ExprKind, QuantDomain, QuantSplit},
-    observed::{ObservedEvaluation, evaluate_observed_bytes},
-    types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
 

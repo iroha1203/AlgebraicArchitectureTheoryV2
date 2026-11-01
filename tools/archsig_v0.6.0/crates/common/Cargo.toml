@@ -4,9 +4,6 @@ version = "0.6.0"
 edition = "2024"
 publish = false
 
-[lib]
-path = "../../src/common_lib.rs"
-
 [dependencies]
 num-bigint = "0.4"
 num-integer = "0.1"

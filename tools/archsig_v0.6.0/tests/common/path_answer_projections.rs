@@ -1,23 +1,22 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod identities {
-    use super::fixture_archsig as archsig;
+
     include!("identity_paths.rs");
 }
 #[allow(dead_code)]
 mod arrows {
-    use super::fixture_archsig as archsig;
+
     include!("internal_paths.rs");
 }
 #[allow(dead_code)]
 mod composed {
-    use super::fixture_archsig as archsig;
+
     include!("composed_paths.rs");
 }
 #[allow(dead_code)]
 mod correspondences {
-    use super::fixture_archsig as archsig;
+
     include!("correspondence_paths.rs");
 }
 pub fn identity(moved: bool) -> InputSources {

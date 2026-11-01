@@ -1,15 +1,12 @@
 //! 依存戻り型の添字を生産側の束縛へ対応付け、値を評価せず所属を照合する。
 use crate::common;
 
-use archsig::{
-    control::{Checkpoint, Control},
-    input::InputSources,
-    observed::{
-        PrepareFailure, prepare_observed,
-        request::{RequestIssueCode, ResolveFailure, Selector},
-    },
-    result::Signal,
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::observed::{
+    PrepareFailure, prepare_observed,
+    request::{RequestIssueCode, ResolveFailure, Selector},
 };
+use archsig_input::{input::InputSources, result::Signal};
 use std::{cell::Cell, rc::Rc};
 
 fn sources(known_owner: bool) -> InputSources {

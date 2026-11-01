@@ -1,12 +1,12 @@
 //! ArchMap の JSON と版(入力仕様 §1)、AC5 の ArchMap 側(集合表の順、List の順と重複)。
 
 use crate::common;
-use archsig::archmap::check_archmap;
-use archsig::canonical::sha256_digest;
-use archsig::issue::{Code, Details, Location};
+use archsig_common::canonical::sha256_digest;
+use archsig_common::issue::{Code, Details, Location};
+use archsig_input::archmap::check_archmap;
 use common::*;
 
-fn failure(map: &[u8]) -> archsig::issue::Issue {
+fn failure(map: &[u8]) -> archsig_common::issue::Issue {
     let checked = definitions_ok(&[RESERVATIONS_DEFINITION]);
     check_archmap(map, &checked).expect_err("落ちるはず").issue
 }
@@ -252,7 +252,7 @@ fn list_order_and_repetition_are_kept() {
 fn text_values_keep_unicode_and_control_characters() {
     let doc = list_doc(r#"[]"#, r#"[]"#, r#""éé\u0001\n\"\\/\u007f😀""#);
     let c = map_ok(LISTS, &doc);
-    let canonical = archsig::archmap::model_json(&c).canonical();
+    let canonical = archsig_input::archmap::model_json(&c).canonical();
     assert!(
         canonical.contains("\"value\":\"\u{e9}e\u{301}\\u0001\\u000a\\\"\\\\/\u{7f}\u{1f600}\""),
         "{canonical}"

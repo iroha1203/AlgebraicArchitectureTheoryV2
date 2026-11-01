@@ -1,19 +1,18 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    input::{CheckedInputs, InputSources, check_inputs},
-    observed::object_law_compatibility::{
-        LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
-        ObjectLawCompatibility, object_law_compatibility,
-    },
+use archsig_computation::observed::object_law_compatibility::{
+    LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
+    ObjectLawCompatibility, object_law_compatibility,
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
 }
 fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
-        archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
     let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
@@ -105,22 +104,26 @@ fn two_refuted_whole_laws_do_not_hide_disagreement_at_each_boolean_argument() {
     let r = run(Arc::clone(&i));
     assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Holds)));
     for e in r.evaluations() {
-        let archsig::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(graph) =
-            e.evaluation().outcome()
+        let archsig_computation::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(
+            graph,
+        ) = e.evaluation().outcome()
         else {
             panic!("evaluated Law")
         };
         assert_eq!(graph.status(), "complete");
-        let archsig::canonical::Json::Obj(ref wire) = graph.wire() else {
+        let archsig_common::canonical::Json::Obj(ref wire) = graph.wire() else {
             panic!("graph")
         };
-        let archsig::canonical::Json::Arr(answers) = &wire["answers"] else {
+        let archsig_common::canonical::Json::Arr(answers) = &wire["answers"] else {
             panic!("answers")
         };
-        let archsig::canonical::Json::Obj(answer) = &answers[0] else {
+        let archsig_common::canonical::Json::Obj(answer) = &answers[0] else {
             panic!("answer")
         };
-        assert_eq!(answer["status"], archsig::canonical::Json::str("refuted"));
+        assert_eq!(
+            answer["status"],
+            archsig_common::canonical::Json::str("refuted")
+        );
         assert!(e.family().is_complete());
         assert_eq!(e.family().rows().len(), 2);
     }
@@ -132,7 +135,7 @@ fn two_refuted_whole_laws_do_not_hide_disagreement_at_each_boolean_argument() {
     {
         assert_eq!(
             p.arguments()[0].wire(),
-            archsig::canonical::Json::Bool(argument)
+            archsig_common::canonical::Json::Bool(argument)
         );
         assert_eq!(p.source().application().value(), Some(true));
         assert_eq!(p.target().application().value(), Some(true));
@@ -146,7 +149,7 @@ fn two_refuted_whole_laws_do_not_hide_disagreement_at_each_boolean_argument() {
 }
 #[test]
 fn all_six_guarded_parameter_assignments_keep_false_none_and_conditional_truth_separate() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let i = inputs(
         "law optional family(c:Part,b:Bool,x:Option<Bool>) when x!=none<Bool>:not b;",
         fixture::A,
@@ -215,7 +218,7 @@ fn empty_parameter_domains_are_known_while_missing_required_values_remain_undete
 
 #[test]
 fn owner_domain_and_conditional_membership_remain_unknown_with_the_original_slots() {
-    use archsig::observed::object_law_transport::LawApplication;
+    use archsig_computation::observed::object_law_transport::LawApplication;
     let map=fixture::A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"t\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}");
     let i = inputs(
         "law required belongs(c:Part):true; law optional ownerDomain(a:Root,x:Option<Part[a]>):true;",
@@ -238,7 +241,7 @@ fn owner_domain_and_conditional_membership_remain_unknown_with_the_original_slot
 }
 #[test]
 fn an_empty_element_list_is_one_law_assignment_with_a_real_false_body() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let i = inputs(
         "law required singleton(c:Part,x:List<Vacant>):false;",
         fixture::A,
@@ -312,7 +315,7 @@ fn unbounded_identity_law_is_compared_as_a_universal_family() {
         let parameters = r.readings().instances()[e.position().instance].parameters();
         assert_eq!(parameters.len(), 1);
         assert_eq!(parameters[0].name, "z");
-        assert_eq!(parameters[0].ty, archsig::types::Type::Z);
+        assert_eq!(parameters[0].ty, archsig_common::types::Type::Z);
     }
     r.recheck(i, &quiet()).unwrap();
 }
@@ -336,7 +339,10 @@ fn finite_missing_boolean_cases_retain_every_original_case_for_every_assignment(
     assert_eq!(r.outcome(), Some(&Outcome::Undetermined));
     assert_eq!(r.comparisons()[0].points().len(), 2);
     for (row, b) in r.comparisons()[0].points().iter().zip([false, true]) {
-        assert_eq!(row.arguments()[0].wire(), archsig::canonical::Json::Bool(b));
+        assert_eq!(
+            row.arguments()[0].wire(),
+            archsig_common::canonical::Json::Bool(b)
+        );
         assert_eq!(row.source().application().value(), Some(true));
         assert_eq!(row.target().application().value(), Some(true));
         assert_eq!(row.source().body(), None);
@@ -378,18 +384,18 @@ fn a_false_guard_with_missing_body_keeps_known_inapplicability() {
 
 #[test]
 fn ordinary_law_requests_keep_the_original_symbolic_list_domain() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let i = inputs(
         "law required singleton(c:Part,x:List<Vacant>):false;",
         fixture::A,
     );
-    let prepared = archsig::observed::prepare_shared_observed(
+    let prepared = archsig_computation::observed::prepare_shared_observed(
         i,
         &["a=check(Selected.singleton,c=@v/p)"],
         &quiet(),
     )
     .unwrap();
-    let e = archsig::observed::evaluate_observed(prepared, &quiet()).unwrap();
+    let e = archsig_computation::observed::evaluate_observed(prepared, &quiet()).unwrap();
     assert_eq!(e.status(), "complete");
     let wire = e.wire();
     let Json::Obj(wire) = &wire else {
@@ -419,7 +425,7 @@ fn ordinary_law_requests_keep_the_original_symbolic_list_domain() {
 
 #[test]
 fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_families() {
-    use archsig::observed::object_law_transport::LawApplication;
+    use archsig_computation::observed::object_law_transport::LawApplication;
     for body in [
         "law required outside(a:Root):true;",
         "law optional outside(a:Root,b:Bool):false;",
@@ -442,7 +448,7 @@ fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_famili
                 assert_eq!(row.bindings()[0].0, "b");
                 assert_eq!(
                     row.bindings()[0].1.wire(),
-                    archsig::canonical::Json::Bool(index == 1)
+                    archsig_common::canonical::Json::Bool(index == 1)
                 );
             }
         }
@@ -470,7 +476,7 @@ fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_famili
 }
 #[test]
 fn empty_owner_list_domains_use_the_fixed_owner_and_keep_the_original_false_row() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let map=fixture::A.replace("{\"id\":\"root\",\"type\":\"Pattern.Root\",\"origin\":\"model\"}","{\"id\":\"root\",\"type\":\"Pattern.Root\",\"origin\":\"model\"},{\"id\":\"other\",\"type\":\"Pattern.Root\",\"origin\":\"model\"}").replace("\"value\":[\"v\",\"root\"]","\"value\":[\"v\",\"other\"]");
     let i = inputs("law required empty(a:Root,x:List<Part[a]>):false;", &map);
     let r = run(Arc::clone(&i));
@@ -497,7 +503,7 @@ fn empty_owner_list_domains_use_the_fixed_owner_and_keep_the_original_false_row(
     let failure = object_law_compatibility(i, "Selected", "v", "other", &quiet()).unwrap_err();
     assert!(matches!(
         failure.cause(),
-        archsig::observed::object_evaluate::ObjectEvaluationFailure::NotImplemented { .. }
+        archsig_computation::observed::object_evaluate::ObjectEvaluationFailure::NotImplemented { .. }
     ));
     assert!(
         failure

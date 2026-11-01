@@ -6,13 +6,15 @@ use crate::common::helpers::{
     text, ty, val,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -152,11 +154,11 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, origin, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, origin, .. } => {
                         assert_eq!(f(fact, "atom"), &Json::str(atom));
                         (origin, "values", 4)
                     }
-                    archsig::archmap::Slot::Missing => {
+                    archsig_input::archmap::Slot::Missing => {
                         assert!(!obj(fact).contains_key("atom"));
                         (&subject.origin, "subjects", 2)
                     }
@@ -279,7 +281,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .iter()
                     .find(|field| field.name == text(f(fact, "field")))
                     .unwrap();
-                assert!(matches!(&field.slot, archsig::archmap::Slot::Missing));
+                assert!(matches!(&field.slot, archsig_input::archmap::Slot::Missing));
             }
         }
     }

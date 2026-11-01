@@ -1,5 +1,6 @@
 use crate::common::answer_projection_conditions as fixture;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -201,7 +202,7 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
@@ -280,7 +281,7 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
                 .iter()
                 .find(|s| Json::str(&s.name) == fact["field"])
                 .unwrap();
-            let archsig::archmap::Slot::Known {
+            let archsig_input::archmap::Slot::Known {
                 atom: actual,
                 origin,
                 ..
@@ -330,7 +331,10 @@ fn projection_conditions_keep_missing_unsupported_and_blocked_environment_source
         ];
         let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| match e {
-                archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
+                archsig_computation::observed::EvaluationFailure::NotImplemented {
+                    feature,
+                    ..
+                } => {
                     panic!("unexpected NotImplemented: {feature}")
                 }
                 e => panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))),

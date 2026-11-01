@@ -1,5 +1,6 @@
 use super::*;
-use archsig::{control::Control, input::InputSources};
+use archsig_common::control::Control;
+use archsig_input::input::InputSources;
 
 fn sources(
     two_roots: bool,
@@ -48,30 +49,30 @@ fn sources(
         map.into_bytes(),
     )
 }
-fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
+fn result(sources: InputSources, asks: &[&str]) -> archsig_common::json::JNode {
     let prepared = observed::prepare_observed(sources, asks, &quiet()).unwrap();
     let evaluation = observed::evaluate_observed(prepared, &quiet()).unwrap();
     assert!(!evaluation.wire().canonical().contains("not implemented"));
-    archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
+    archsig_common::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
 use crate::common::quiet;
-fn evidence(j: &archsig::json::JNode) -> &archsig::json::JNode {
+fn evidence(j: &archsig_common::json::JNode) -> &archsig_common::json::JNode {
     arr(get(j, "nodes"))
         .iter()
         .find(|n| {
             has(n, "value")
-                && matches!(&get(n, "value").value, archsig::json::JValue::Obj(_))
+                && matches!(&get(n, "value").value, archsig_common::json::JValue::Obj(_))
                 && has(get(n, "value"), "kind")
                 && s(get(get(n, "value"), "kind")) == "completion_fibers"
         })
         .unwrap()
 }
-fn unique(j: &archsig::json::JNode) -> &str {
+fn unique(j: &archsig_common::json::JNode) -> &str {
     let n = arr(get(j, "nodes"))
         .iter()
         .find(|n| {
             has(n, "value")
-                && matches!(&get(n, "value").value, archsig::json::JValue::Obj(_))
+                && matches!(&get(n, "value").value, archsig_common::json::JValue::Obj(_))
                 && has(get(n, "value"), "predicate")
                 && s(get(get(n, "value"), "predicate")) == "unique_solution"
         })
@@ -131,7 +132,7 @@ fn finite_owner_completions_quantify_full_solution_fibers_and_keep_family_change
         let target = node(&j, get(data, "solutions"));
         assert_eq!(s(get(target, "state")), "blocked");
         assert!(!has(target, "value"));
-        assert!(!arr(get(&j,"nodes")).iter().any(|n| matches!(&get(n,"type").value, archsig::json::JValue::Str(t) if t=="Assignment"||t=="Repair")));
+        assert!(!arr(get(&j,"nodes")).iter().any(|n| matches!(&get(n,"type").value, archsig_common::json::JValue::Str(t) if t=="Assignment"||t=="Repair")));
         if body == "c.flag" {
             let mut widths = cases
                 .iter()
@@ -175,9 +176,12 @@ fn finite_owner_completions_keep_empty_subject_product_and_guard_meanings() {
 
 #[test]
 fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
-    use archsig::control::Checkpoint;
+    use archsig_common::control::Checkpoint;
     use std::{cell::Cell, rc::Rc};
-    for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
+    for signal in [
+        archsig_input::result::Signal::Int,
+        archsig_input::result::Signal::Term,
+    ] {
         let seen = Rc::new(Cell::new(false));
         let stage = seen.clone();
         let c = Control::new(move |point| {
@@ -196,10 +200,11 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
         )
         .unwrap();
         assert!(seen.get());
-        let j = archsig::json::parse(value.wire().canonical().as_bytes()).unwrap();
+        let j = archsig_common::json::parse(value.wire().canonical().as_bytes()).unwrap();
         assert_eq!(s(get(answer(&j, "v"), "status")), "established");
         assert_eq!(s(get(answer(&j, "r"), "status")), "undetermined");
-        let archsig::json::JValue::Obj(outputs) = &get(answer(&j, "r"), "outputs").value else {
+        let archsig_common::json::JValue::Obj(outputs) = &get(answer(&j, "r"), "outputs").value
+        else {
             panic!("outputs")
         };
         assert!(outputs.is_empty());
@@ -286,7 +291,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         source.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let failure = archsig::input::check_inputs(invalid, &quiet()).unwrap_err();
+    let failure = archsig_input::input::check_inputs(invalid, &quiet()).unwrap_err();
     assert!(
         failure.issues().iter().any(|issue| issue
             .canonical()
@@ -327,7 +332,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         );
         if additional {
             let evaluated = evaluated.unwrap();
-            let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let j = archsig_common::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
             assert_eq!(s(get(answer(&j, "r"), "status")), "refuted");
             assert!(!has(get(answer(&j, "r"), "outputs"), "object"));
             assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
@@ -371,7 +376,7 @@ fn finite_owner_completion_missing_finite_guard_is_exhausted_without_an_excludin
         &quiet(),
     )
     .unwrap();
-    let j = archsig::json::parse(completed.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(completed.wire().canonical().as_bytes()).unwrap();
     assert_eq!(s(get(answer(&j, "r"), "status")), "refuted");
     assert_eq!(unique(&j), "refuted");
     let mut counts = arr(get(get(get(evidence(&j), "value"), "data"), "cases"))
@@ -384,8 +389,8 @@ fn finite_owner_completion_missing_finite_guard_is_exhausted_without_an_excludin
     assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
 }
 
-fn owned(node: &archsig::json::JNode) -> archsig::canonical::Json {
-    use archsig::{canonical::Json as J, json::JValue as V};
+fn owned(node: &archsig_common::json::JNode) -> archsig_common::canonical::Json {
+    use archsig_common::{canonical::Json as J, json::JValue as V};
     match &node.value {
         V::Bool(v) => J::Bool(*v),
         V::Str(v) => J::str(v),
@@ -396,17 +401,17 @@ fn owned(node: &archsig::json::JNode) -> archsig::canonical::Json {
     }
 }
 fn field_mut<'a>(
-    node: &'a mut archsig::canonical::Json,
+    node: &'a mut archsig_common::canonical::Json,
     key: &str,
-) -> &'a mut archsig::canonical::Json {
-    let archsig::canonical::Json::Obj(fields) = node else {
+) -> &'a mut archsig_common::canonical::Json {
+    let archsig_common::canonical::Json::Obj(fields) = node else {
         panic!("record")
     };
     fields.get_mut(key).unwrap()
 }
 #[test]
 fn finite_owner_completion_partial_save_is_explicit_and_reuse_rejects_case_and_request_tamper() {
-    use archsig::canonical::Json as J;
+    use archsig_common::canonical::Json as J;
     let source = sources(true, "", "", "c.flag", false);
     let dir = workdir("owner-explicit-save");
     for (name, bytes) in [
@@ -574,19 +579,19 @@ fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_struct
     }
 
     let mut damaged = owned(&original);
-    let archsig::canonical::Json::Arr(nodes) = field_mut(&mut damaged, "nodes") else {
+    let archsig_common::canonical::Json::Arr(nodes) = field_mut(&mut damaged, "nodes") else {
         panic!("nodes")
     };
     let configuration = nodes
         .iter_mut()
         .find(|node| {
-            let archsig::canonical::Json::Obj(fields) = node else {
+            let archsig_common::canonical::Json::Obj(fields) = node else {
                 return false;
             };
-            fields.get("type") == Some(&archsig::canonical::Json::str("Configuration"))
+            fields.get("type") == Some(&archsig_common::canonical::Json::str("Configuration"))
         })
         .unwrap();
-    let archsig::canonical::Json::Arr(family) =
+    let archsig_common::canonical::Json::Arr(family) =
         field_mut(field_mut(configuration, "value"), "family")
     else {
         panic!("family")

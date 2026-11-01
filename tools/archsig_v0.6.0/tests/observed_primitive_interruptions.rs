@@ -1,10 +1,12 @@
 //! 原始定義の意味検査へ届いた共有中断が、入力不正や false に変わらないことを確かめる。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{CheckFailure, Checkpoint, Control},
+    issue::Code,
+};
+use archsig_input::{
     definition::{check_definitions, check_definitions_controlled},
     input::{InputSources, InputStatus, check_inputs},
-    issue::Code,
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -32,7 +34,7 @@ fn semantic_control(
     (control, calls)
 }
 
-fn assert_empty_stage(failure: &archsig::input::InputFailure) {
+fn assert_empty_stage(failure: &archsig_input::input::InputFailure) {
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert!(failure.declarations().is_empty());
     assert!(failure.primitives().is_empty());

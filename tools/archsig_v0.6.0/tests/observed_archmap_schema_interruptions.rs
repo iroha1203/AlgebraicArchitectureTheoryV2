@@ -1,9 +1,9 @@
 //! Schema helper の内部と入力不正を確定した後の停止優先順位。
 use crate::common;
-use archsig::{
-    control::{Checkpoint, Control},
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::observed::{PrepareFailure, prepare_observed};
+use archsig_input::{
     input::{InputSources, InputStatus, check_inputs},
-    observed::{PrepareFailure, prepare_observed},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

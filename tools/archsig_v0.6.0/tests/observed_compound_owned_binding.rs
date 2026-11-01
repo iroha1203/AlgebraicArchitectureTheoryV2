@@ -1,7 +1,9 @@
 //! 全ownerを固定した複合値の元Refと動的所属を同batchで検査する。
 use crate::common::compound_owned_binding as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]
@@ -22,13 +24,13 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run_input(i: InputSources, asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let r = evaluate_observed_bytes(i, asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())));
     assert_ne!(r.status(), "error", "{:?}", f(&r.wire(), "issues"));
     r
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     run_input(fixture::input("known", "r1"), asks)
 }
 fn binding<'a>(w: &'a Json, id: &str, name: &str) -> &'a Json {
@@ -427,7 +429,7 @@ fn fixed_compound_owned_static_invalid_unprovided_unknown_and_cross_snapshot_rem
             .find(|f| f.name == "Reservations.State.owner")
             .unwrap()
             .slot,
-        archsig::archmap::Slot::Missing
+        archsig_input::archmap::Slot::Missing
     ));
     let r = run(&[
         "take=evaluate(Applications.cbOptionUse,a=$a.value,x=$v.value)",
@@ -450,7 +452,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_provenance() {
-    use archsig::input::check_inputs;
+    use archsig_input::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Applications.cbEq,a=$a.value,b=$b.value,x=$v.value)",
@@ -501,7 +503,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
                 && let Some(Json::Str(field)) = m.get("field")
             {
                 let slot = &s.fields.iter().find(|f| &f.name == field).unwrap().slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!()
                 };
                 assert_eq!(f(fact, "atom"), &Json::str(atom));

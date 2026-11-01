@@ -1,6 +1,8 @@
 use crate::common::affine_field_chains as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(xs) = j else { panic!("object") };
     xs.get(k)
@@ -208,7 +210,7 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
             &Json::Bool(true)
         );
         let inputs = fixture::input(fixture::SCRIPT, "Z", &[], revision);
-        let checked = archsig::input::check_inputs(inputs, &quiet()).unwrap();
+        let checked = archsig_input::input::check_inputs(inputs, &quiet()).unwrap();
         let map = checked.archmap();
         let subject = map
             .snapshots()
@@ -222,7 +224,7 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
         for field in ["Paths.Node.link", "Paths.Node.mark"] {
             let fact=arr(f(&w,"nodes")).iter().flat_map(|n|arr(f(n,"support"))).find(|fact|matches!(fact,Json::Obj(fs)if fs.get("field")==Some(&Json::str(field))&&fs.get("snapshot")==Some(&Json::str("v"))&&fs.get("subject")==Some(&Json::str("p")))).unwrap();
             let field = subject.fields.iter().find(|f| f.name == field).unwrap();
-            let archsig::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
+            let archsig_input::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
                 panic!()
             };
             assert_eq!(f(fact, "atom"), &Json::str(atom));

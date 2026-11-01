@@ -1,4 +1,4 @@
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 pub const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Requests","version":"1","dependencies":[],"declarations":[
 {"kind":"entity","name":"Requests.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},
 {"kind":"entity","name":"Requests.Item","meaning":"所属する項目。","parameters":[{"name":"owner","type":["Ref","Requests.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"未観測の数量。"}],"alignments":[]},
@@ -21,7 +21,7 @@ law required require(b: Bool): b;
 law required prior(): false;
 "#;
 pub fn input() -> InputSources {
-    let d = archsig::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Requests"].digest;
     let l = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Requests version \"1\" digest \"{digest}\";{BODY}}}"

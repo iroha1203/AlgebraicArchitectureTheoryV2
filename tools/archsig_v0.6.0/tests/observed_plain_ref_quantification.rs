@@ -4,13 +4,15 @@ use crate::common::helpers::{
     arr, data, declared_body, member_key, obj, reached, reference, refs, source, text, ty,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{ExprKind, QuantDomain, QuantSplit},
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -296,7 +298,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -322,9 +324,9 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 origin.mode,
                 match snapshot.id.as_str() {
-                    "v" => archsig::archmap::Mode::Specification,
-                    "w" => archsig::archmap::Mode::Proposed,
-                    _ => archsig::archmap::Mode::Observed,
+                    "v" => archsig_input::archmap::Mode::Specification,
+                    "w" => archsig_input::archmap::Mode::Proposed,
+                    _ => archsig_input::archmap::Mode::Observed,
                 }
             );
             let source = checked
@@ -619,7 +621,7 @@ law required self_law(): forall r:E . r=r;
         assert_eq!(origin.locations[0].span, Some((0, 1)));
         if snapshot.id == "z" {
             assert!(snapshot.subjects.is_empty());
-            assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Observed);
         }
         for subject in snapshot.subjects.iter().filter(|s| s.ty == "Roster.E") {
             assert_eq!(
@@ -629,7 +631,7 @@ law required self_law(): forall r:E . r=r;
                     .find(|f| f.name == "Roster.E.owner")
                     .unwrap()
                     .slot,
-                archsig::archmap::Slot::Missing
+                archsig_input::archmap::Slot::Missing
             );
         }
     }

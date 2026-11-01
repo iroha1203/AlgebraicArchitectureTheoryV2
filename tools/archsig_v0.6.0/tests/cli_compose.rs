@@ -1,8 +1,8 @@
 //! 原始三入力からの公開Operation合成。期待値は文書本文から取得しない。
 use crate::common;
-use archsig::{
-    control::Control, input::InputSources, json::JNode, observed::evaluate_observed_bytes,
-};
+use archsig_common::{control::Control, json::JNode};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/reservations.atoms.json");
@@ -392,7 +392,7 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
             &Control::unlimited(),
         )
         .unwrap();
-        let internal = archsig::json::parse(internal.wire().canonical().as_bytes()).unwrap();
+        let internal = archsig_common::json::parse(internal.wire().canonical().as_bytes()).unwrap();
         let r = asks(&dir, &questions);
         let j = saved(&dir, &r, "partial", 2);
         for id in ["m", "n", "c"] {

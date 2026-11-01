@@ -1,11 +1,13 @@
 //! AC4のlet/if段階: 三入力byteから値、lexicalな出現、欠測と中断を確認する。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,
@@ -240,7 +242,7 @@ fn audit_selected(
                     .find(|s| s.name == txt(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("欠測を支持Atomにしない")
                 };
                 assert_eq!(atom, txt(f(fact, "atom")));
@@ -255,7 +257,7 @@ fn audit_selected(
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Observed);
             let location = &origin.locations[0];
             let source = checked
                 .archmap()
@@ -434,7 +436,7 @@ fn audit_selected(
                         .unwrap()
                         .slot;
                     match slot {
-                        archsig::archmap::Slot::Known { atom, .. } => {
+                        archsig_input::archmap::Slot::Known { atom, .. } => {
                             assert!(
                                 arr(f(evaluation, "support"))
                                     .iter()
@@ -444,7 +446,7 @@ fn audit_selected(
                                 "原始fieldのEvaluationは元の支持Atomを保持する"
                             );
                         }
-                        archsig::archmap::Slot::Missing => {
+                        archsig_input::archmap::Slot::Missing => {
                             if let Some(value) = obj(part).get("value") {
                                 assert!(completion_case, "元観測の欠測fieldは未決のまま");
                                 assert_eq!(ty.wire(), Json::str("Bool"));
@@ -748,7 +750,7 @@ fn unknown_if_retains_condition_missing_and_both_branches_without_choosing_one()
             Some(f(val(aggregate), "expression"))
         );
         let decl = &checked.law().declarations()[txt(f(f(request, "head"), "name"))];
-        let archsig::law::model::Signature::View { body, .. } = &decl.signature else {
+        let archsig_input::law::model::Signature::View { body, .. } = &decl.signature else {
             panic!("view")
         };
         let at = checked.law().exprs()[*body].span;
@@ -1049,7 +1051,7 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
             seen.set(seen.get() + 1);
             if seen.get() == target_count {
                 stopped.set(Some(calls.get()));
-                return Some(archsig::result::Signal::Int);
+                return Some(archsig_input::result::Signal::Int);
             }
         }
         None
@@ -1171,7 +1173,7 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
             "true補完の既知field値も到達可能に保持する"
         );
         let declaration = &checked.law().declarations()[name];
-        let archsig::law::model::Signature::View { body, .. } = &declaration.signature else {
+        let archsig_input::law::model::Signature::View { body, .. } = &declaration.signature else {
             panic!("view")
         };
         let at = checked.law().exprs()[*body].span;

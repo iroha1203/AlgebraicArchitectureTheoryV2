@@ -1,21 +1,18 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
-    observed::{
-        equation_polynomial::EquationPolynomial,
-        object_equation_presentation::{
-            EquationGuard as G, EquationPresentation, EquationPresentationFailure,
-            EquationPresentationStatus as S, object_equation_presentation,
-        },
+use archsig_common::{control::Control, types::Type};
+use archsig_computation::observed::{
+    equation_polynomial::EquationPolynomial,
+    object_equation_presentation::{
+        EquationGuard as G, EquationPresentation, EquationPresentationFailure,
+        EquationPresentationStatus as S, object_equation_presentation,
     },
-    types::Type,
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 fn inputs_with(definition: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
-    let d =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+        .unwrap();
     let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{use vocabulary Pattern version \"1\" digest \"{digest}\"; {body}}}"
@@ -46,7 +43,7 @@ fn terms(p: &EquationPolynomial) -> Vec<(Vec<usize>, String)> {
         .collect()
 }
 fn number(
-    v: &Option<archsig::observed::numeric_transport::NumericTransportValue>,
+    v: &Option<archsig_computation::observed::numeric_transport::NumericTransportValue>,
 ) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
@@ -301,7 +298,7 @@ fn outside_selected_object_keeps_finite_rows_and_symbolic_equation_without_body_
         let original = &r.base().base().evaluations()[q.position.instance];
         assert_eq!(
             original.family().rows()[row].bindings()[0].1.wire(),
-            archsig::canonical::Json::Bool(row == 1)
+            archsig_common::canonical::Json::Bool(row == 1)
         );
         assert!(q.evaluation.is_none());
         assert!(q.operands.is_empty());
@@ -350,7 +347,9 @@ fn changed_current_input_and_invalid_object_are_rejected() {
 }
 #[test]
 fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_completion() {
-    use archsig::{construction::ConstructionFailure, control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_computation::construction::ConstructionFailure;
+    use archsig_input::result::Signal;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required first(c:Part) when true or c.quantity>0:(match c { d=>d.quantity; })=0;law required second(c:Part) when c.quantity-c.quantity=0:(match c.quantity { x=>x*x; })=1;",
@@ -600,7 +599,7 @@ fn two_subjects() -> String {
 }
 fn binding(
     r: &EquationPresentation,
-    q: &archsig::observed::object_equation_presentation::EquationOccurrence,
+    q: &archsig_computation::observed::object_equation_presentation::EquationOccurrence,
     name: &str,
 ) -> String {
     r.base().base().readings().instances()[q.position.instance]
@@ -1027,12 +1026,13 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
                 Some(if truth { "\"2\"" } else { "\"0\"" }.into())
             );
             let evaluation = r.base().base().evaluations()[q.position.instance].evaluation();
-            let archsig::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(g) =
-                evaluation.outcome()
+            let archsig_computation::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(
+                g,
+            ) = evaluation.outcome()
             else {
                 panic!("original evaluation")
             };
-            use archsig::canonical::Json;
+            use archsig_common::canonical::Json;
             fn missing_fact(j: &Json) -> bool {
                 match j {
                     Json::Obj(o) => {
@@ -1153,7 +1153,8 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
-    use archsig::{control::Checkpoint, result::Signal};
+    use archsig_common::control::Checkpoint;
+    use archsig_input::result::Signal;
     let i = inputs_with(
         fixture::D,
         "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",
@@ -1184,7 +1185,7 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
         };
         assert_eq!(
             cause,
-            archsig::construction::ConstructionFailure::Stopped(Signal::Int)
+            archsig_computation::construction::ConstructionFailure::Stopped(Signal::Int)
         );
         assert!(!partial.is_complete());
         assert_eq!(partial.status(), S::Undetermined);

@@ -1,6 +1,6 @@
 //! 原始構造値の公開比較を独立入力と明示期待値で検査する。
 use crate::common;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/counter.atoms.json");

@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("owned_map_calls.rs");
 }
 pub const PACK: &str = "(Z,Q,Fp(5),Bool,Text,Unit,List<Z>,Set<Z>,Option<Z>,Reservations.State,Map<Reservations.State,Reservations.State>,Term<(Z)->Z>)";
@@ -50,9 +49,11 @@ mod tree {
     include!("recursive_tree.rs");
 }
 pub fn tree_input(revision: &str) -> InputSources {
-    let checked =
-        archsig::definition::check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())])
-            .unwrap();
+    let checked = archsig_input::definition::check_definitions(&[(
+        "definition0",
+        tree::DEFINITIONS.as_bytes(),
+    )])
+    .unwrap();
     let digest = &checked.vocabularies()["Trees"].digest;
     InputSources::from_bytes(
         vec![tree::DEFINITIONS.as_bytes().to_vec()],

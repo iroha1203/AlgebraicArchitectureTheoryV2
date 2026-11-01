@@ -6,13 +6,15 @@ use crate::common::helpers::{
     expression, f, index, numbers, obj, part, reached, refs, source, span, target, text, ty, val,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{ExprKind, QuantDomain, QuantSplit},
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};
@@ -86,7 +88,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -107,7 +109,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             let at = &origin.locations[0];
             let cited_source = checked
                 .archmap()

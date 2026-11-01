@@ -1,15 +1,14 @@
 use crate::common::helpers::add;
-use archsig::{
-    archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        maps::{
-            DeclarationCorrespondence, ReferenceConditionFailure as Failure,
-            ReferenceTypeTransport, correspondence, declaration_correspondence,
-            reference_type_transport,
-        },
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{
+        DeclarationCorrespondence, ReferenceConditionFailure as Failure, ReferenceTypeTransport,
+        correspondence, declaration_correspondence, reference_type_transport,
     },
-    control::{Checkpoint, Control},
+};
+use archsig_input::{
+    archmap::Fact as FactPointer,
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -24,13 +23,14 @@ fn inputs(a: &str) -> CheckedInputs {
 }
 fn with_left(left: &[u8], a: &str) -> CheckedInputs {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -269,7 +269,7 @@ fn same_type_mapping_does_not_invent_inverse_by_reversing_only_selected_table() 
 #[test]
 fn legal_entity_arrow_transport_is_a_value_condition_instead_of_input_error() {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["V"].digest;
     let i = check_inputs(
         InputSources::from_bytes(
@@ -403,7 +403,7 @@ fn external_owned_subjects_with_unknown_owner_remain_in_plain_ref_domain() {
 #[test]
 fn entity_to_arrow_type_with_full_bijection_is_accepted() {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["V"].digest;
     let i = check_inputs(
         InputSources::from_bytes(

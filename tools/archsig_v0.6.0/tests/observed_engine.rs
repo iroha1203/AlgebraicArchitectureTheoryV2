@@ -1,12 +1,10 @@
 //! 三入力から有限木の変換と全Z域の保存を追う。
 use crate::common::engine;
 use crate::common::quiet;
-use archsig::observed::ObservedEvaluation;
-use archsig::{
-    canonical::Json,
-    input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::ObservedEvaluation;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::{InputSources, check_inputs};
 use num_bigint::BigInt;
 use std::collections::{BTreeMap, BTreeSet};
 fn inputs(wrappers: bool, missing: bool, revision: Option<&str>) -> InputSources {
@@ -180,7 +178,7 @@ fn audit(r: &ObservedEvaluation, revision: Option<&str>) {
                     .find(|x| x.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -196,7 +194,7 @@ fn audit(r: &ObservedEvaluation, revision: Option<&str>) {
                 &subject.origin
             };
             let origin = m.origins().iter().find(|o| &o.id == origin).unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             if let Some(rev) = revision {
                 assert!(!origin.locations.is_empty());
                 for l in &origin.locations {
@@ -342,7 +340,7 @@ fn check_counterexample(r: &ObservedEvaluation) {
         .find(|f| f.name == "Engine.Compiler.source")
         .unwrap()
         .slot;
-    let archsig::archmap::Slot::Known {
+    let archsig_input::archmap::Slot::Known {
         value: original, ..
     } = source
     else {
@@ -388,7 +386,8 @@ fn engine_generated_ir_and_recursive_views_keep_original_parts_and_facts() {
     assert_eq!(value(&w, "target", Json::str("Z")), &Json::str("6"));
     let law = r.prepared().inputs().law();
     for name in ["Engine.evalSource", "Engine.translate", "Engine.evalIR"] {
-        let archsig::law::model::Signature::View { body, .. } = &law.declarations()[name].signature
+        let archsig_input::law::model::Signature::View { body, .. } =
+            &law.declarations()[name].signature
         else {
             panic!("view")
         };
@@ -445,7 +444,10 @@ fn engine_operator_missing_keeps_subject_source_and_differing_completions_undete
     );
 }
 
-fn unchanged(before: &archsig::input::CheckedInputs, after: &archsig::input::CheckedInputs) {
+fn unchanged(
+    before: &archsig_input::input::CheckedInputs,
+    after: &archsig_input::input::CheckedInputs,
+) {
     assert_eq!(
         format!("{:?}", before.definitions()),
         format!("{:?}", after.definitions())

@@ -1,8 +1,8 @@
 // relationの観測・定義・元式。期待値は各試験が独立に記述する。
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+
+use archsig_input::input::InputSources;
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("public_path_compose.rs");
 }
 pub use base::{C, E, F};
@@ -29,9 +29,9 @@ pub fn input(extra: &str, missing: bool) -> InputSources {
 }
 
 pub fn partial_domain_input(outside: bool, body: &str) -> InputSources {
-    use fixture_archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let original = base::visibility_input();
-    let mut map = fixture_json(&fixture_archsig::json::parse(original.archmap().bytes()).unwrap());
+    let mut map = fixture_json(&archsig_common::json::parse(original.archmap().bytes()).unwrap());
     let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
         panic!()
     };
@@ -86,8 +86,8 @@ pub fn partial_domain_input(outside: bool, body: &str) -> InputSources {
         map.canonical().into_bytes(),
     )
 }
-fn fixture_json(node: &fixture_archsig::json::JNode) -> fixture_archsig::canonical::Json {
-    use fixture_archsig::{canonical::Json, json::JValue};
+fn fixture_json(node: &archsig_common::json::JNode) -> archsig_common::canonical::Json {
+    use archsig_common::{canonical::Json, json::JValue};
     match &node.value {
         JValue::Bool(value) => Json::Bool(*value),
         JValue::Str(value) => Json::str(value),
@@ -103,25 +103,25 @@ fn fixture_json(node: &fixture_archsig::json::JNode) -> fixture_archsig::canonic
     }
 }
 fn field_mut<'a>(
-    node: &'a mut fixture_archsig::canonical::Json,
+    node: &'a mut archsig_common::canonical::Json,
     name: &str,
-) -> &'a mut fixture_archsig::canonical::Json {
-    let fixture_archsig::canonical::Json::Obj(fields) = node else {
+) -> &'a mut archsig_common::canonical::Json {
+    let archsig_common::canonical::Json::Obj(fields) = node else {
         panic!()
     };
     fields.get_mut(name).unwrap()
 }
 fn with_missing_guard(sources: InputSources) -> InputSources {
-    use fixture_archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     assert_eq!(sources.definitions().len(), 1);
-    let original = fixture_archsig::definition::check_definitions(&[(
+    let original = archsig_input::definition::check_definitions(&[(
         "definition0",
         sources.definitions()[0].bytes(),
     )])
     .unwrap();
     let old = &original.vocabularies()["Paths"].digest;
     let mut definitions =
-        fixture_json(&fixture_archsig::json::parse(sources.definitions()[0].bytes()).unwrap());
+        fixture_json(&archsig_common::json::parse(sources.definitions()[0].bytes()).unwrap());
     let Json::Arr(vocabularies) = field_mut(&mut definitions, "vocabularies") else {
         panic!()
     };
@@ -145,9 +145,9 @@ fn with_missing_guard(sources: InputSources) -> InputSources {
     ]));
     let definitions = definitions.canonical().into_bytes();
     let checked =
-        fixture_archsig::definition::check_definitions(&[("definition0", &definitions)]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", &definitions)]).unwrap();
     let digest = &checked.vocabularies()["Paths"].digest;
-    let mut map = fixture_json(&fixture_archsig::json::parse(sources.archmap().bytes()).unwrap());
+    let mut map = fixture_json(&archsig_common::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
         panic!()
     };
@@ -169,10 +169,10 @@ fn with_missing_guard(sources: InputSources) -> InputSources {
     )
 }
 pub fn composition_refutation() -> InputSources {
-    use fixture_archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let script = "relation shortcut(e:Hop,f:Hop,g:Hop) when target(path(e))=source(path(f)) and source(path(e))=source(path(g)) and target(path(f))=target(path(g)):then(path(e),path(f))=path(g);";
     let sources = input(script, false);
-    let mut map = fixture_json(&fixture_archsig::json::parse(sources.archmap().bytes()).unwrap());
+    let mut map = fixture_json(&archsig_common::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
         panic!()
     };
@@ -202,9 +202,9 @@ pub fn composition_refutation() -> InputSources {
 }
 pub const PENDING_RELATION: &str = "relation unknown_guard(g:Guard,e:Hop,f:Hop) when g.flag and source(path(e))=source(path(f)) and target(path(e))=target(path(f)):path(e)=path(f);";
 pub fn known_guard(value: bool) -> InputSources {
-    use fixture_archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let sources = input(PENDING_RELATION, true);
-    let mut map = fixture_json(&fixture_archsig::json::parse(sources.archmap().bytes()).unwrap());
+    let mut map = fixture_json(&archsig_common::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
         panic!()
     };

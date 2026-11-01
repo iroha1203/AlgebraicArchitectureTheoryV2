@@ -58,14 +58,14 @@ pub mod unknown_map_domain;
 pub mod unknown_owned_type;
 pub mod watchdog;
 
-use archsig::archmap::{CheckedArchMap, Field, Slot};
-use archsig::issue::Issue;
-use archsig::law::{CheckedLaw, check_law};
-use archsig::types::Type;
+use archsig_common::issue::Issue;
+use archsig_common::types::Type;
+use archsig_input::archmap::{CheckedArchMap, Field, Slot};
+use archsig_input::law::{CheckedLaw, check_law};
 
 /// 止めない制御。テストの既定の入力として使う。
-pub fn quiet() -> archsig::control::Control {
-    archsig::control::Control::unlimited()
+pub fn quiet() -> archsig_common::control::Control {
+    archsig_common::control::Control::unlimited()
 }
 
 pub const HEADER: &str = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\n";
@@ -78,7 +78,7 @@ pub const COUNTER_DEFINITION: &str = include_str!("../fixtures/counter.atoms.jso
 pub const COUNTER_LIBRARY: &str = include_str!("../fixtures/counter-library.atoms.json");
 pub const EMPTY_DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Unused","version":"1","dependencies":[],"declarations":[]}]}"#;
 
-pub fn definitions_ok(inputs: &[&str]) -> archsig::definition::CheckedDefinitions {
+pub fn definitions_ok(inputs: &[&str]) -> archsig_input::definition::CheckedDefinitions {
     let ids: Vec<_> = (0..inputs.len())
         .map(|i| format!("definition{i}"))
         .collect();
@@ -87,7 +87,7 @@ pub fn definitions_ok(inputs: &[&str]) -> archsig::definition::CheckedDefinition
         .zip(&ids)
         .map(|(src, id)| (id.as_str(), src.as_bytes()))
         .collect();
-    archsig::definition::check_definitions(&files)
+    archsig_input::definition::check_definitions(&files)
         .unwrap_or_else(|e| panic!("定義の検査: {:?}", e.issue))
 }
 pub fn ok(definition: &str, src: &str) -> CheckedLaw {
@@ -108,7 +108,7 @@ pub fn reading_with(namespace: &str, digest: &str, body: &str) -> String {
     ))
 }
 fn quoted(text: &str) -> String {
-    archsig::canonical::Json::str(text).canonical()
+    archsig_common::canonical::Json::str(text).canonical()
 }
 pub fn definition_json(vocabularies: &str) -> String {
     format!(
@@ -154,18 +154,18 @@ pub const RESERVATIONS_MAP: &str = include_str!("../fixtures/reservations.archma
 pub const ENGINE_MAP: &str = include_str!("../fixtures/engine.archmap.json");
 
 pub fn map_ok(definition: &str, map: &str) -> CheckedArchMap {
-    archsig::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
+    archsig_input::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
         .unwrap_or_else(|e| panic!("ArchMap の検査: {:?}\n{map}", e.issue))
 }
 pub fn map_err(definition: &str, map: &str) -> Issue {
-    archsig::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
+    archsig_input::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
         .expect_err("ArchMap の検査が落ちるはず")
         .issue
 }
 
 pub fn pointer(issue: &Issue) -> &str {
     match &issue.location {
-        archsig::issue::Location::ArchMap { pointer, .. } => pointer,
+        archsig_common::issue::Location::ArchMap { pointer, .. } => pointer,
         other => panic!("ArchMap の位置ではない: {other:?}"),
     }
 }

@@ -1,10 +1,9 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-    result::Signal,
 };
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{input::InputSources, result::Signal};
 use std::{cell::Cell, rc::Rc};
 pub fn at_checkpoint(inputs: &InputSources, asks: &[&str], position: usize) -> Json {
     let seen = Rc::new(Cell::new(0));

@@ -1,28 +1,31 @@
-use archsig::{
-    construction::{
-        ConstructionFailure,
-        maps::{
-            DeclarationConditionFailure as Failure, DeclarationCorrespondence, correspondence,
-            declaration_correspondence, identity,
-        },
-    },
+use archsig_common::{
     control::{Checkpoint, Control},
+    types::Type,
+};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{
+        DeclarationConditionFailure as Failure, DeclarationCorrespondence, correspondence,
+        declaration_correspondence, identity,
+    },
+};
+use archsig_input::{
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
-    types::Type,
 };
 use std::{cell::Cell, rc::Rc};
 const L: &str = include_str!("fixtures/declaration-correspondence.law");
 fn sources(law: &str) -> InputSources {
     let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -149,7 +152,7 @@ fn all_five_kinds_match_only_selected_readings_with_positional_owner_and_compoun
 fn candidate<'a>(
     r: &'a DeclarationCorrespondence,
     name: &str,
-) -> &'a archsig::construction::maps::DeclarationCandidate {
+) -> &'a archsig_computation::construction::maps::DeclarationCandidate {
     r.candidates()
         .iter()
         .find(|c| c.source().name == format!("Before.{name}"))
@@ -400,7 +403,7 @@ fn internal_identity_and_composite_maps_cannot_supply_declaration_correspondence
         &Control::unlimited(),
     )
     .unwrap();
-    let e = archsig::construction::maps::internal_arrow(
+    let e = archsig_computation::construction::maps::internal_arrow(
         &i,
         "Reservations",
         "v",

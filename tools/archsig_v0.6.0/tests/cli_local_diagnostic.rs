@@ -2,7 +2,8 @@
 use crate::common;
 use crate::common::cli;
 use crate::common::helpers::execute;
-use archsig::{definition, json::JNode};
+use archsig_common::json::JNode;
+use archsig_input::definition;
 use cli::*;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
@@ -76,7 +77,7 @@ fn fixed_state_diagnostic_keeps_empty_solutions_separate_from_identity_gluing() 
         for index in [5, 6, 7] {
             assert_eq!(
                 get(output(&json, index, "value"), "value").value,
-                archsig::json::JValue::Bool(value)
+                archsig_common::json::JValue::Bool(value)
             );
         }
         let system = get(output(&json, 1, "system"), "value");
@@ -231,11 +232,9 @@ fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
 }
 #[test]
 fn localize_signal_stop_keeps_the_prior_architecture() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = input("local-stop", Some(true));
     let seen = Rc::new(Cell::new(false));
@@ -244,7 +243,7 @@ fn localize_signal_stop_keeps_the_prior_architecture() {
         if point == Checkpoint::Localize {
             active.set(true);
         }
-        active.get().then_some(archsig::result::Signal::Term)
+        active.get().then_some(archsig_input::result::Signal::Term)
     });
     let sources = InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -258,7 +257,7 @@ fn localize_signal_stop_keeps_the_prior_architecture() {
     )
     .unwrap();
     assert!(seen.get());
-    let json = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let json = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let answers = arr(get(&json, "answers"));
     assert!(has(get(&answers[0], "outputs"), "object"));
     assert!(!has(get(&answers[1], "outputs"), "system"));
@@ -697,7 +696,7 @@ fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
     assert_eq!(arr(get(cover, "patches")).len(), 2);
     assert_eq!(
         get(output(&result, 1, "value"), "value").value,
-        archsig::json::JValue::Bool(true)
+        archsig_common::json::JValue::Bool(true)
     );
 }
 
@@ -740,7 +739,7 @@ fn finite_law_parameters_are_universal_and_keep_each_binding() {
             .unwrap();
         seen.push(
             match &get(node(&result, get(binding, "value")), "value").value {
-                archsig::json::JValue::Bool(v) => *v,
+                archsig_common::json::JValue::Bool(v) => *v,
                 _ => panic!("Bool binding"),
             },
         );
@@ -995,7 +994,7 @@ fn multiple_read_local_keeps_hidden_and_unobserved_fields_distinct() {
         }
         assert_eq!(
             get(output(&j, 3, "value"), "value").value,
-            archsig::json::JValue::Bool(true)
+            archsig_common::json::JValue::Bool(true)
         );
     }
 }
@@ -1039,11 +1038,17 @@ fn product_reads_preserve_the_typed_coordinate_and_each_component() {
         let value = get(node(&j, &arr(get(image, "elements"))[0]), "value");
         let tuple = arr(value);
         if reads == "(t.flag,t.other)" {
-            assert_eq!(tuple[0].value, archsig::json::JValue::Bool(left));
-            assert_eq!(tuple[1].value, archsig::json::JValue::Bool(right));
+            assert_eq!(tuple[0].value, archsig_common::json::JValue::Bool(left));
+            assert_eq!(tuple[1].value, archsig_common::json::JValue::Bool(right));
         } else {
-            assert_eq!(arr(&tuple[0])[0].value, archsig::json::JValue::Bool(left));
-            assert_eq!(arr(&tuple[1])[1].value, archsig::json::JValue::Bool(right));
+            assert_eq!(
+                arr(&tuple[0])[0].value,
+                archsig_common::json::JValue::Bool(left)
+            );
+            assert_eq!(
+                arr(&tuple[1])[1].value,
+                archsig_common::json::JValue::Bool(right)
+            );
         }
     }
 }
@@ -1075,7 +1080,7 @@ fn product_read_does_not_publish_a_references_fields_or_fill_a_missing_component
 
 fn diagnostic_compare_input(name: &str, identity: bool, valid: bool) -> std::path::PathBuf {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let map = fixture::changed_map(|j| {
         if identity {
             for a in fixture::atoms(j) {
@@ -1198,10 +1203,11 @@ fn finite_diagnostic_comparison_rejects_incompatible_degree_side_and_non_operati
 #[test]
 fn matching_values_require_identity_action_while_repeated_plans_compare() {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = diagnostic_compare_input("diagnostic-compare-moved-positions", true, true);
     let path = dir.join("a.json");
-    let mut map = fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+    let mut map =
+        fixture::owned(&archsig_common::json::parse(&std::fs::read(&path).unwrap()).unwrap());
     for a in fixture::atoms(&mut map) {
         let Json::Obj(o) = a else { panic!("atom") };
         match o.get("id") {
@@ -1337,7 +1343,7 @@ fn implicit_support_cover_has_actual_intersections_and_matching_families() {
         }
         assert_eq!(
             get(output(&j, 4, "value"), "value").value,
-            archsig::json::JValue::Bool(left)
+            archsig_common::json::JValue::Bool(left)
         );
     }
 }
@@ -1463,13 +1469,13 @@ fn tuple_intersections_retain_typed_component_projections() {
     assert_eq!(readings.len(), 2);
     let reading = readings
         .iter()
-        .find(|v| matches!(&get(v,"type").value, archsig::json::JValue::Str(t) if t=="Bool"))
+        .find(|v| matches!(&get(v,"type").value, archsig_common::json::JValue::Str(t) if t=="Bool"))
         .unwrap();
     let image = get(node(&j, get(reading, "domain")), "value");
     assert_eq!(arr(get(image, "elements")).len(), 1);
     assert_eq!(
         get(node(&j, &arr(get(image, "elements"))[0]), "value").value,
-        archsig::json::JValue::Bool(false)
+        archsig_common::json::JValue::Bool(false)
     );
     for i in [2, 3] {
         assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "refuted");
@@ -1654,7 +1660,7 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
         let elements = arr(get(image, "elements"));
         assert_eq!(elements.len(), 2);
         for expected in [false, true] {
-            assert!(elements.iter().any(|r| matches!(get(node(&j,r),"value").value,archsig::json::JValue::Bool(v) if v==expected)));
+            assert!(elements.iter().any(|r| matches!(get(node(&j,r),"value").value,archsig_common::json::JValue::Bool(v) if v==expected)));
         }
         for (i, count) in [(2, 2), (3, if constant { 1 } else { 2 })] {
             let d = get(output(&j, i, "diagnostic"), "value");
@@ -2109,11 +2115,9 @@ fn integer_local_vectors_compare_only_in_the_same_module() {
 
 #[test]
 fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = integer_local_variant(
         "integer-empty-degree-stop",
@@ -2160,7 +2164,7 @@ fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
         if point == Checkpoint::Localize {
             count += 1;
         }
-        (count >= stop).then_some(archsig::result::Signal::Term)
+        (count >= stop).then_some(archsig_input::result::Signal::Term)
     });
     let result = evaluate_observed_bytes(
         inputs(),
@@ -2168,7 +2172,7 @@ fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
         &c,
     )
     .unwrap();
-    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let d = &arr(get(&j, "answers"))[2];
     assert_eq!(s(get(d, "status")), "undetermined");
     assert!(!has(get(d, "outputs"), "space"));
@@ -2398,10 +2402,11 @@ fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_di
 
 fn integer_transport_input(name: &str, reorder: bool) -> std::path::PathBuf {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = diagnostic_compare_input(name, false, true);
-    let mut map =
-        fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
+    let mut map = fixture::owned(
+        &archsig_common::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap(),
+    );
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(fields) = atom else {
             panic!("atom")
@@ -2606,7 +2611,7 @@ fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
             s(get(v, "predicate")) == "equal"
                 && matches!(
                     &get(node(&j, &arr(get(v, "operands"))[0]), "value").value,
-                    archsig::json::JValue::Str(_)
+                    archsig_common::json::JValue::Str(_)
                 )
         })
         .expect("整数値の等値として群の零条件を保持する");
@@ -2644,7 +2649,7 @@ fn finite_diagnostic_input(name: &str, valid: bool) -> std::path::PathBuf {
 }
 fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path::PathBuf {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definitions = old.replace(
         r#""name": "free", "type": "Z""#,
@@ -2661,7 +2666,7 @@ fn finite_diagnostic_input_at(dir: std::path::PathBuf, valid: bool) -> std::path
     let raw = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(&old_digest, digest);
-    let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
+    let mut map = fixture::owned(&archsig_common::json::parse(raw.as_bytes()).unwrap());
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(fields) = atom else {
             panic!("atom")
@@ -2732,7 +2737,7 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
                 arr(get(node(&j, r), "value"))
                     .iter()
                     .map(|v| match v.value {
-                        archsig::json::JValue::Bool(value) => value,
+                        archsig_common::json::JValue::Bool(value) => value,
                         _ => panic!("Bool状態"),
                     })
                     .collect::<Vec<_>>()
@@ -2747,7 +2752,7 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
 #[test]
 fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     for guard in [false, true] {
         let dir = finite_diagnostic_input(&format!("empty-local-laws-missing-{guard}"), false);
         let path = dir.join("l.law");
@@ -2767,7 +2772,7 @@ fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
         .unwrap();
         let path = dir.join("a.json");
         let mut map =
-            fixture::owned(&archsig::json::parse(&std::fs::read(&path).unwrap()).unwrap());
+            fixture::owned(&archsig_common::json::parse(&std::fs::read(&path).unwrap()).unwrap());
         let atoms = fixture::atoms(&mut map);
         let before = atoms.len();
         atoms.retain(|atom| !matches!(atom, Json::Obj(fields) if fields.get("id") == Some(&Json::str("p-held"))));
@@ -3035,7 +3040,7 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
         assert!(
             arr(x)
                 .iter()
-                .all(|v| matches!(v.value, archsig::json::JValue::Bool(true)))
+                .all(|v| matches!(v.value, archsig_common::json::JValue::Bool(true)))
         );
     }
     let conditions = arr(get(cmp, "conditions"));
@@ -3055,7 +3060,7 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
 #[test]
 fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     for linked in [true, false] {
         let dir = finite_diagnostic_input_at(
             diagnostic_compare_input(&format!("finite-identify-{linked}"), false, true),
@@ -3067,7 +3072,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
             .vocabularies()["Reservations"]
             .digest
             .clone();
-        let mut definitions = fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
+        let mut definitions = fixture::owned(&archsig_common::json::parse(old.as_bytes()).unwrap());
         let Json::Arr(vocabs) = fixture::field(&mut definitions, "vocabularies") else {
             panic!("vocabularies")
         };
@@ -3100,7 +3105,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
         let raw = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
             .replace(&old_digest, &digest);
-        let mut map = fixture::owned(&archsig::json::parse(raw.as_bytes()).unwrap());
+        let mut map = fixture::owned(&archsig_common::json::parse(raw.as_bytes()).unwrap());
         let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
             panic!("snapshots")
         };
@@ -3192,7 +3197,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
                 assert_eq!(x[0].value, y[0].value);
                 assert_eq!(x[1].value, y[0].value);
                 observed.push(match y[0].value {
-                    archsig::json::JValue::Bool(v) => v,
+                    archsig_common::json::JValue::Bool(v) => v,
                     _ => panic!("Bool"),
                 });
             }
@@ -3278,13 +3283,14 @@ fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
 #[test]
 fn finite_integer_localization_keeps_missing_fixed_fields() {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = diagnostic_compare_input("finite-integer-missing", true, true);
     let path = dir.join("l.law");
     let law = std::fs::read_to_string(&path).unwrap();
     std::fs::write(path,law.replace("law optional localValid","change choose(s:State,b:Bool)=s with{free=if b then 2 else 3}; law optional localValid").replace("localValid(s:State):s.free=2","localValid(s:State):s.free=s.held")).unwrap();
-    let mut map =
-        fixture::owned(&archsig::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap());
+    let mut map = fixture::owned(
+        &archsig_common::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap(),
+    );
     fixture::atoms(&mut map).retain(|a| !matches!(a,Json::Obj(f) if f["id"]==Json::str("p-held")));
     std::fs::write(dir.join("a.json"), map.canonical()).unwrap();
     let asks = [
@@ -3458,7 +3464,7 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
 }
 fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = if identity {
         diagnostic_compare_input(name, true, true)
     } else {
@@ -3486,7 +3492,7 @@ fn rational_compare_input(name: &str, identity: bool) -> std::path::PathBuf {
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(digest, updated);
-    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    let mut map = fixture::owned(&archsig_common::json::parse(text.as_bytes()).unwrap());
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(a) = atom else { panic!("atom") };
         if matches!(a.get("field"),Some(Json::Str(f)) if f=="Reservations.State.free"||f=="Reservations.State.held")
@@ -3544,11 +3550,11 @@ fn rational_diagnostic_inclusion_has_field_cokernel() {
 #[test]
 fn diagnostic_comparison_rejects_different_coefficient_rings() {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = diagnostic_compare_input("diagnostic-coefficient-rings", true, true);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let before = definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
-    let mut definitions = fixture::owned(&archsig::json::parse(old.as_bytes()).unwrap());
+    let mut definitions = fixture::owned(&archsig_common::json::parse(old.as_bytes()).unwrap());
     fn field(j: &mut Json) {
         match j {
             Json::Obj(o) => {
@@ -3574,7 +3580,7 @@ fn diagnostic_comparison_rejects_different_coefficient_rings() {
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(&before.vocabularies()["Reservations"].digest, digest);
-    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    let mut map = fixture::owned(&archsig_common::json::parse(text.as_bytes()).unwrap());
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(a) = atom else { panic!("atom") };
         if a.get("field") == Some(&Json::str("Reservations.State.held")) {

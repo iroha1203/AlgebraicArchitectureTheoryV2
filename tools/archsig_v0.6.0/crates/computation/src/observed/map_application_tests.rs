@@ -1,0 +1,222 @@
+#[allow(dead_code)]
+mod application_fixture {
+
+    include!("../../../../tests/common/map_application.rs");
+}
+fn application_result(asks: &[&str], mode: &str) -> ObservedEvaluation {
+    let c = quiet();
+    let p = prepare_observed(application_fixture::owned(mode), asks, &c).unwrap();
+    evaluate_observed(p, &c).unwrap()
+}
+fn application_condition(r: &ObservedEvaluation) -> usize {
+    r.nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (r.contexts[i].request == 0
+                && matches!(n.payload, Some(Payload::MapDomainCondition { .. })))
+            .then_some(i)
+        })
+        .unwrap()
+}
+#[test]
+fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
+    let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/p)"], "known");
+    assert_eq!(r.status(), "complete");
+    let t = r.answers[0].outputs["value"].0;
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=t]).unwrap();
+    completion_mutation(&r, t, |nodes| {
+        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[t].payload else {
+            panic!("ref")
+        };
+        *subject = "s".into();
+    });
+    completion_mutation(&r, t, |nodes| {
+        nodes[t].ty = NodeType::Value(Type::Ref("Reservations.System".into()));
+        let Some(Payload::Scalar(Scalar::Subject { entity, .. })) = &mut nodes[t].payload else {
+            panic!("ref")
+        };
+        *entity = "Reservations.System".into();
+    });
+    completion_mutation(&r, t, |nodes| nodes[t].support.clear());
+    completion_mutation(&r, t, |nodes| {
+        nodes[t].scope.snapshots.remove("v");
+    });
+    completion_mutation(&r, t, |nodes| {
+        let Rule::Input {
+            location: Location::Law { span },
+            ..
+        } = &mut nodes[t].rule
+        else {
+            panic!("location")
+        };
+        span.0 += 1;
+    });
+    let key = r.nodes[t].arguments[1].0;
+    completion_mutation(&r, key, |nodes| {
+        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[key].payload else {
+            panic!("key")
+        };
+        *subject = "q".into();
+    });
+    let map = r.nodes[t].arguments[0].0;
+    completion_mutation(&r, map, |nodes| {
+        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[map].payload else {
+            panic!("map")
+        };
+        let Scalar::Subject { subject, .. } = &mut pairs[0].1 else {
+            panic!("image")
+        };
+        *subject = "s".into();
+    });
+}
+#[test]
+fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reason() {
+    let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"], "known");
+    assert_eq!(r.status(), "partial");
+    let p = application_condition(&r);
+    let (left, right, evidence) = (
+        r.nodes[p].arguments[3],
+        r.nodes[p].arguments[4],
+        r.nodes[p].arguments[5],
+    );
+    for t in [left.0, right.0] {
+        let other = if t == left.0 { right.0 } else { left.0 };
+        let replacement = r.nodes[other].payload.clone();
+        completion_mutation(&r, t, |nodes| {
+            nodes[t].payload = replacement.clone();
+        });
+        completion_mutation(&r, t, |nodes| nodes[t].support.clear());
+        completion_mutation(&r, t, |nodes| {
+            nodes[t].scope.snapshots.clear();
+        });
+    }
+    completion_mutation(&r, evidence.0, |nodes| {
+        let Some(Payload::Counterexample { facts, .. }) = &mut nodes[evidence.0].payload else {
+            panic!("evidence")
+        };
+        facts.clear();
+    });
+    completion_mutation(&r, evidence.0, |nodes| {
+        let Some(Payload::Counterexample { left: actual, .. }) = &mut nodes[evidence.0].payload
+        else {
+            panic!("evidence")
+        };
+        *actual = right;
+        nodes[evidence.0].arguments[3] = right;
+    });
+    completion_mutation(&r, p, |nodes| {
+        nodes[p].judgment.as_mut().unwrap().status = Decision::Established;
+    });
+    completion_mutation(&r, p, |nodes| {
+        let Some(Payload::MapDomainCondition { left: actual, .. }) = &mut nodes[p].payload else {
+            panic!("condition")
+        };
+        *actual = right;
+        nodes[p].arguments[3] = right;
+    });
+    completion_mutation(&r, p, |nodes| {
+        nodes[p].evidence.clear();
+        nodes[p].judgment.as_mut().unwrap().evidence.clear();
+    });
+    let evaluation = r.answers[0].outputs["evaluation"].0;
+    for variant in 0..4 {
+        completion_mutation(&r, evaluation, |nodes| match variant {
+            0 => nodes[evaluation].reasons.clear(),
+            1 => {
+                let ReasonKind::ConditionFailed { construction, .. } =
+                    &mut nodes[evaluation].reasons[0].kind
+                else {
+                    panic!("kind")
+                };
+                *construction = "domain";
+            }
+            2 => {
+                nodes[evaluation].reasons[0].dependencies.clear();
+            }
+            _ => {
+                let Some(Location::Law { span }) = &mut nodes[evaluation].reasons[0].location
+                else {
+                    panic!("location")
+                };
+                span.0 += 1;
+            }
+        });
+    }
+}
+#[test]
+fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
+    use std::{cell::Cell, rc::Rc};
+    let asks = [
+        "prior=check(Applications.prior)",
+        "current=evaluate(Applications.apply,m=@v/m,x=@v/r)",
+        "later=evaluate(Applications.seed)",
+    ];
+    let normal = application_result(&asks, "known");
+    let expected = archsig_input::result::Signal::Term;
+    let armed = Rc::new(Cell::new(false));
+    let seen = Rc::new(Cell::new(false));
+    let probes = Rc::new(Cell::new(0));
+    let frozen = Rc::new(Cell::new(None));
+    let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+    let control = Control::new(move |_| {
+        count.set(count.get() + 1);
+        if arm.replace(false) {
+            assert!(freeze.replace(Some(count.get())).is_none());
+            Some(archsig_input::result::Signal::Term)
+        } else {
+            None
+        }
+    });
+    let prepared =
+        prepare_observed(application_fixture::owned("known"), &asks, &control).unwrap();
+    let law = prepared.inputs().sources().law().bytes().to_vec();
+    let stopped = evaluate_observed_with_validator(
+        prepared,
+        &control,
+        |environment, graph, request, answer| {
+            environment.validate_answer(graph, request, answer)?;
+            if request.id == "prior" {
+                let (arm, seen, law) = (armed.clone(), seen.clone(), law.clone());
+                data::observe_iterations(move |span, context, operation, index| {
+                    if context.request == 1
+                        && operation == "map_lookup"
+                        && index == 0
+                        && &law[span.0..span.1] == b"m.states(x)"
+                    {
+                        assert!(!seen.replace(true));
+                        arm.set(true);
+                    }
+                });
+            }
+            Ok(())
+        },
+    );
+    data::clear_iteration_observer();
+    let stopped = stopped.unwrap();
+    assert!(seen.get());
+    assert_eq!(stopped.status(), "interrupted");
+    assert_eq!(control.stop_reason(), Some(expected));
+    assert_eq!(stopped.answers[0].status, Decision::Refuted);
+    assert_eq!(
+        format!("{:?}", stopped.answers[0]),
+        format!("{:?}", normal.answers[0])
+    );
+    for answer in &stopped.answers[1..] {
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.is_empty() && answer.evidence.is_empty() && answer.claim.is_none());
+        let reason = answer
+            .reasons
+            .iter()
+            .find(|r| matches!(&r.kind,ReasonKind::Stop(s) if s==&expected))
+            .unwrap();
+        let Json::Obj(ref actual) = reason.wire() else {
+            unreachable!()
+        };
+        let Json::Obj(ref expected) = expected.issue() else {
+            unreachable!()
+        };
+        assert_eq!(actual["details"], expected["details"]);
+    }
+    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+}

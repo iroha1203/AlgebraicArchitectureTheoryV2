@@ -1,4 +1,5 @@
-use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
+use archsig_common::canonical::Json;
+use archsig_input::{definition::check_definitions, input::InputSources};
 pub const DEFINITIONS: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"MapCall","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"MapCall.Root","meaning":"Root","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"MapCall.Item","meaning":"Item","parameters":[{"name":"owner","type":["Ref","MapCall.Root"],"meaning":"owner"}],"fields":[],"alignments":[]},{"kind":"entity","name":"MapCall.Holder","meaning":"Holder","parameters":[{"name":"owner","type":["Ref","MapCall.Root"],"meaning":"owner"}],"fields":[{"name":"table","type":["Map",["Owned","MapCall.Item","owner"],["Owned","MapCall.Item","owner"]],"meaning":"table"}],"alignments":[]}]}]}"#;
 pub const SCRIPT: &str = r#"
 view accept(a:Root,f:Map<Item[a],Item[a]>):Bool=true;

@@ -19,7 +19,7 @@ fn setup(name: &str, extra: &str, missing: bool) -> PathBuf {
     }
     dir
 }
-fn answer<'a>(j: &'a archsig::json::JNode, id: &str) -> &'a archsig::json::JNode {
+fn answer<'a>(j: &'a archsig_common::json::JNode, id: &str) -> &'a archsig_common::json::JNode {
     arr(get(j, "answers"))
         .iter()
         .find(|a| s(get(a, "id")) == id)
@@ -73,7 +73,7 @@ fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_eviden
         }
         let data = get(get(n, "value"), "data");
         for binding in arr(get(data, "bindings")) {
-            let archsig::json::JValue::Obj(fields) = &binding.value else {
+            let archsig_common::json::JValue::Obj(fields) = &binding.value else {
                 panic!("Binding is a record")
             };
             assert_eq!(
@@ -98,15 +98,15 @@ fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_eviden
     assert_eq!(elements.len(), 2);
     assert_eq!(
         get(node(&j, &elements[0]), "value"),
-        &archsig::json::parse(b"false").unwrap()
+        &archsig_common::json::parse(b"false").unwrap()
     );
     assert_eq!(
         get(node(&j, &elements[1]), "value"),
-        &archsig::json::parse(b"true").unwrap()
+        &archsig_common::json::parse(b"true").unwrap()
     );
     let norms = evidence(&j, "affine_equal", "normalization");
     assert_eq!(norms.len(), 2);
-    let expected = archsig::json::parse(br#"[[["0","0"],["0",["2","-1"]]]]"#).unwrap();
+    let expected = archsig_common::json::parse(br#"[[["0","0"],["0",["2","-1"]]]]"#).unwrap();
     for e in norms {
         let data = get(get(e, "value"), "data");
         assert_eq!(get(node(&j, get(data, "after")), "value"), &expected);
@@ -138,22 +138,25 @@ fn finite_and_affine_term_values_compare_by_all_assignments_with_concrete_eviden
         let bindings = arr(get(data, "bindings"));
         bindings.len() == 1
             && get(node(&j, get(&bindings[0], "value")), "value")
-                == &archsig::json::parse(b"true").unwrap()
+                == &archsig_common::json::parse(b"true").unwrap()
     }));
     std::fs::remove_dir_all(dir).unwrap();
 }
 
-fn node<'a>(j: &'a archsig::json::JNode, r: &archsig::json::JNode) -> &'a archsig::json::JNode {
+fn node<'a>(
+    j: &'a archsig_common::json::JNode,
+    r: &archsig_common::json::JNode,
+) -> &'a archsig_common::json::JNode {
     arr(get(j, "nodes"))
         .iter()
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
 fn evidence<'a>(
-    j: &'a archsig::json::JNode,
+    j: &'a archsig_common::json::JNode,
     id: &str,
     kind: &str,
-) -> Vec<&'a archsig::json::JNode> {
+) -> Vec<&'a archsig_common::json::JNode> {
     let a = answer(j, id);
     arr(get(
         a,
@@ -374,11 +377,11 @@ view bigRight():Term<(Z)->Z> = fn(y:Z)=>y*12345678901234567890123456789012345678
     let data = get(get(e[0], "value"), "data");
     assert_eq!(
         get(node(&j, get(data, "left")), "value"),
-        &archsig::json::parse(br#"["5","6"]"#).unwrap()
+        &archsig_common::json::parse(br#"["5","6"]"#).unwrap()
     );
     assert_eq!(
         get(node(&j, get(data, "right")), "value"),
-        &archsig::json::parse(br#"["1","1"]"#).unwrap()
+        &archsig_common::json::parse(br#"["1","1"]"#).unwrap()
     );
     let e = evidence(&j, "tuple_difference", "counterexample");
     let data = get(get(e[0], "value"), "data");
@@ -386,7 +389,7 @@ view bigRight():Term<(Z)->Z> = fn(y:Z)=>y*12345678901234567890123456789012345678
     assert_eq!(bs.len(), 1);
     assert_eq!(
         get(node(&j, get(&bs[0], "value")), "value"),
-        &archsig::json::parse(br#"["0",["1","1"]]"#).unwrap()
+        &archsig_common::json::parse(br#"["0",["1","1"]]"#).unwrap()
     );
     std::fs::remove_dir_all(dir).unwrap();
 }

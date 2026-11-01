@@ -1,14 +1,18 @@
 //! 既知 owner と二段以上の束縛 prefix に従う有限 Law parameter 族を元三入力 byte から検査する。
 use crate::common;
 
-use archsig::{
-    archmap::{Mode, Slot},
+use archsig_common::{
     canonical::{Json, sha256_digest},
+    types::Type,
+};
+use archsig_computation::observed::{
+    ObservedEvaluation, evaluate_observed_bytes, request::Selector,
+};
+use archsig_input::{
+    archmap::{Mode, Slot},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
-    observed::{ObservedEvaluation, evaluate_observed_bytes, request::Selector},
-    types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
 

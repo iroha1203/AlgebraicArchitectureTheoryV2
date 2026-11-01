@@ -1,8 +1,6 @@
-use crate as archsig;
-use archsig::{
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
-};
+
+use archsig_common::{control::Control};
+use archsig_input::{input::{CheckedInputs, InputSources, check_inputs}};
 use std::sync::Arc;
 mod base {
     include!("object_view_compatibility_data.rs");
@@ -18,7 +16,7 @@ pub fn with_map(map: &str) -> Arc<CheckedInputs> {
 pub fn with_body(map: &str, body: &str) -> Arc<CheckedInputs> {
     let fields = r#"{"name":"programs","type":["List",["Term",[["Fp","2"]],["Fp","2"]]],"meaning":"閉じた関数の列。"},{"name":"packet","type":["Data","Pattern.Packet"],"meaning":"入れ子constructor。"},{"name":"sequence","type":["List","Bool"],"meaning":"順序列。"},{"name":"empty","type":["List",["Ref","Pattern.Vacant"]],"meaning":"唯一の空列。"},{"name":"text","type":"Text","meaning":"文字列。"},{"name":"bundle","type":["Tuple",["List","Bool"],["Option","Text"]],"meaning":"入れ子値。"},{"name":"program","type":["Term",[["Fp","2"]],["Fp","2"]],"meaning":"閉じた関数。"},{"name":"quantity","type":["Fp","2"],"meaning":"値。"},{"name":"other","type":["Fp","2"],"meaning":"別値。"},{"name":"third","type":["Fp","3"],"meaning":"欠測値。"},{"name":"ratio","type":"Q","meaning":"有理値。"},{"name":"integer","type":"Z","meaning":"整数値。"},{"name":"table","type":["Map",["Ref","Pattern.Part"],["Ref","Pattern.Part"]],"meaning":"全域表。"},{"name":"nested","type":["Tuple","Unit",["Map",["Ref","Pattern.Part"],["Ref","Pattern.Part"]]],"meaning":"入れ子表。"},{"name":"ownedtable","type":["Map",["Owned","Pattern.Part","owner"],["Owned","Pattern.Part","owner"]],"meaning":"所属表。"},{"name":"emptytable","type":["Map",["Ref","Pattern.Vacant"],["Ref","Pattern.Part"]],"meaning":"空の始域。"},{"name":"flag","type":"Bool","meaning":"条件。"},{"name":"link","type":["Ref","Pattern.Part"],"meaning":"参照。"},{"name":"pair","type":["Tuple",["Fp","2"],"Bool"],"meaning":"積。"},{"name":"choice","type":["Data","Pattern.Token"],"meaning":"選択。"}"#;
     let d=base::D.replacen(r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,fields,1).replace(r#"{"kind":"entity","name":"Pattern.Root""#,r#"{"kind":"data","name":"Pattern.Packet","meaning":"入れ子値。","constructors":[{"name":"Wrap","meaning":"包む。","arguments":[["List","Bool"],"Text"]}]},{"kind":"data","name":"Pattern.Token","meaning":"有限選択。","constructors":[{"name":"Left","meaning":"左。","arguments":[["Fp","2"]]},{"name":"Right","meaning":"右。","arguments":[["Fp","2"]]}]},{"kind":"entity","name":"Pattern.Root""#);
-    let defs = archsig::definition::check_definitions(&[("definition0", d.as_bytes())]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d.as_bytes())]).unwrap();
     let digest = &defs.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";{body}}}"

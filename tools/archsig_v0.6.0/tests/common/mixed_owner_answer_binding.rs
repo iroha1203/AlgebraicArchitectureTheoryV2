@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("free_compound_answer_binding.rs");
 }
 pub const SCRIPT: &str = r#"
@@ -25,7 +24,7 @@ law required mxConflictLaw(a:Reservations.System,b:Reservations.System,x:(Reserv
 law required mxFalse(a:Reservations.System,b:Reservations.System,x:(Reservations.State[a],Reservations.State[b])):false;
 "#;
 pub fn input(mode: &str, revision: &str) -> InputSources {
-    use archsig::{
+    use archsig_common::{
         canonical::Json,
         json::{JNode, JValue, parse},
     };

@@ -1,9 +1,11 @@
 //! 三入力の接続・identity・段階ごとの宣言保持・協調中断の回帰確認。
 
-use archsig::{
-    archmap::check_archmap,
+use archsig_common::{
     canonical::{Json, sha256_digest},
     control::{Checkpoint, Control},
+};
+use archsig_input::{
+    archmap::check_archmap,
     definition::check_definitions,
     input::{CheckedInputs, InputBytes, InputSources, InputStatus, check_inputs},
     law::check_law,
@@ -231,7 +233,7 @@ fn cloned_controls_share_stop_and_never_resume_after_cancellation() {
     assert_eq!(control.stop_reason(), Some(stopped));
 }
 
-fn changed_definitions() -> archsig::definition::CheckedDefinitions {
+fn changed_definitions() -> archsig_input::definition::CheckedDefinitions {
     let altered = String::from_utf8(DEFINITIONS.to_vec()).unwrap().replace(
         "実装中の一つのカウンタ状態。",
         "実装中の一つのカウンタ状態。 altered",

@@ -1,6 +1,6 @@
 //! 最後の構文候補が確定した不正より、取消の停止が優先されることを確認する。
-use archsig::{
-    control::{Checkpoint, Control},
+use archsig_common::control::{Checkpoint, Control};
+use archsig_input::{
     input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };

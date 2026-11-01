@@ -1,7 +1,7 @@
 //! AC1・AC5・AC6・AC7: 独立定義を使う check と version。
 
 use crate::common;
-use archsig::json::{JNode, parse};
+use archsig_common::json::{JNode, parse};
 use common::cli::*;
 use std::path::{Path, PathBuf};
 
@@ -94,7 +94,7 @@ fn normative_examples_complete_both_checks() {
             assert_eq!(s(get(identity, "path")), path);
             assert_eq!(
                 s(get(identity, "bytes_digest")),
-                archsig::canonical::sha256_digest(&bytes)
+                archsig_common::canonical::sha256_digest(&bytes)
             );
             assert!(s(get(identity, "model_digest")).starts_with("sha256:"));
         }
@@ -329,7 +329,7 @@ fn counter_count_outside_law_and_missing_are_static_successes() {
         assert!(has(map_input, "model_digest"));
         assert_eq!(
             s(get(map_input, "bytes_digest")),
-            archsig::canonical::sha256_digest(map.as_bytes())
+            archsig_common::canonical::sha256_digest(map.as_bytes())
         );
         assert_eq!(
             arr(get(&res, "declarations"))

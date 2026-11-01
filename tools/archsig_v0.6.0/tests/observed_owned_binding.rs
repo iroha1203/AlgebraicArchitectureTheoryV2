@@ -1,7 +1,8 @@
 //! 固定ownerと原始Owned参照の同batch束縛。
 use crate::common::owned_binding as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]
@@ -16,7 +17,7 @@ fn a<'a>(w: &'a Json, id: &str) -> &'a Json {
         .find(|a| f(a, "id") == &Json::str(id))
         .unwrap()
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     match evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &quiet()) {
         Ok(r) => r,
         Err(e) => panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))),
@@ -471,7 +472,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_provenance() {
-    use archsig::input::check_inputs;
+    use archsig_input::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Reservations.obFamily,a=$owner.value,p=$child.value)",
@@ -520,7 +521,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
                 && let Some(Json::Str(field)) = m.get("field")
             {
                 let slot = &s.fields.iter().find(|f| &f.name == field).unwrap().slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!()
                 };
                 assert_eq!(f(fact, "atom"), &Json::str(atom));
@@ -694,7 +695,7 @@ fn fixed_owned_binding_unknown_membership_keeps_missing_and_direct_dependency_ch
                 .find(|f| f.name == "Reservations.State.owner")
                 .unwrap()
                 .slot,
-            archsig::archmap::Slot::Missing
+            archsig_input::archmap::Slot::Missing
         ));
     }
 }
@@ -758,7 +759,7 @@ fn fixed_owned_binding_completed_membership_uses_roster_and_known_map_constraint
                 .find(|f| f.name == "Reservations.State.owner")
                 .unwrap()
                 .slot,
-            archsig::archmap::Slot::Missing
+            archsig_input::archmap::Slot::Missing
         ));
     }
 }
@@ -821,7 +822,7 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
         for revision in ["r1", "r2"] {
             let input = fixture::completion_input(mode, revision);
             let original = input.clone();
-            let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+            let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
             let r = evaluate_observed_bytes(
                 input,
                 &[
@@ -870,7 +871,7 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
                         .iter()
                         .find(|f| Json::str(&f.name) == fact["field"])
                         .unwrap();
-                    let archsig::archmap::Slot::Known {
+                    let archsig_input::archmap::Slot::Known {
                         atom: actual,
                         origin,
                         ..

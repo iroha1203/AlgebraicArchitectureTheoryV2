@@ -8,13 +8,13 @@ pub use evaluate::{run_internal_outcome, run_requests};
 
 pub use args::{Checked, parse_args};
 
-use crate::archmap::check_archmap_controlled;
-use crate::canonical::{Json, sha256_digest};
-use crate::control::{CheckFailure, Control};
-use crate::definition::check_definitions_controlled;
-use crate::issue::Code;
-use crate::law::check_law_controlled;
-use crate::result::*;
+use archsig_common::canonical::{Json, sha256_digest};
+use archsig_common::control::{CheckFailure, Control};
+use archsig_common::issue::Code;
+use archsig_input::archmap::check_archmap_controlled;
+use archsig_input::definition::check_definitions_controlled;
+use archsig_input::law::check_law_controlled;
+use archsig_input::result::*;
 use output::{finalize, usage_without_result};
 use std::path::{Path, PathBuf};
 

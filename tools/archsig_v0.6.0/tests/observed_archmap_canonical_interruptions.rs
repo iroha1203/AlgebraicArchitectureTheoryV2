@@ -1,9 +1,11 @@
 //! ArchMap の検査中正規化・namespace/field/constructor 走査への共有制御。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_input::{
     input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };

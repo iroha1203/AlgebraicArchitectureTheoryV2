@@ -1,9 +1,7 @@
 //! 公開候補域と解集合を混同しない有限view商。
 use crate::common::cli;
-use archsig::{
-    definition,
-    json::{JNode, JValue},
-};
+use archsig_common::json::{JNode, JValue};
+use archsig_input::definition;
 use cli::*;
 fn input(name: &str) -> std::path::PathBuf {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの条件。","parameters":[],"fields":[{"name":"x","type":"Bool","meaning":"第一条件。"},{"name":"y","type":"Bool","meaning":"第二条件。"}],"alignments":[]}]}]}"#;
@@ -218,11 +216,9 @@ fn quotient_rejects_wrong_domain_missing_bindings_private_fields_and_cycles() {
 
 #[test]
 fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = law_input("quotient-stop", "law optional same(s:State,b:Bool):s.x=b;");
     for case in [0, 3, 6] {
@@ -237,7 +233,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
             } else {
                 count.get() == 2
             };
-            stop.then_some(archsig::result::Signal::Term)
+            stop.then_some(archsig_input::result::Signal::Term)
         });
         let sources = InputSources::from_bytes(
             vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -264,7 +260,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
         } else {
             assert_eq!(seen.get(), 2);
         }
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         assert_eq!(s(get(&answers[0], "status")), "established");
         assert!(has(get(&answers[0], "outputs"), "solutions"));
@@ -886,9 +882,9 @@ fn option_quotient_keeps_none_fibers_and_typed_laws() {
 
 #[test]
 fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
-    use archsig::{
-        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     let views = [
         (
             "Option<Z>",
@@ -929,7 +925,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
             &Control::unlimited(),
         )
         .unwrap();
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         assert_eq!(s(get(&answers[1], "status")), "established");
         assert_eq!(s(get(&answers[2], "status")), "refuted");
@@ -1057,9 +1053,9 @@ fn container_quotient_preserves_list_and_set_fibers() {
 
 #[test]
 fn finite_container_quotient_uses_typed_recursive_equality() {
-    use archsig::{
-        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     let separate = vec![
         vec![(false, false)],
         vec![(false, true)],
@@ -1175,12 +1171,14 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
             &Control::unlimited(),
         )
         .unwrap();
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         let value = node(&wire, get(get(&answers[1], "outputs"), "value"));
         assert_eq!(
             get(value, "type").value,
-            archsig::json::parse(wire_type.as_bytes()).unwrap().value
+            archsig_common::json::parse(wire_type.as_bytes())
+                .unwrap()
+                .value
         );
         assert_eq!(s(get(&answers[2], "status")), "established");
         for index in [2, 3] {
@@ -1245,12 +1243,9 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
 
 #[test]
 fn finite_container_fiber_comparison_propagates_signal_stops() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-        result::Signal,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::{input::InputSources, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let dir = law_input(
         "quotient-container-stop",
@@ -1290,7 +1285,7 @@ fn finite_container_fiber_comparison_propagates_signal_stops() {
         .unwrap();
         assert!(hit.get());
         assert_eq!(count.get(), 5);
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         assert_eq!(s(get(&answers[0], "status")), "established");
         assert!(has(get(&answers[0], "outputs"), "solutions"));

@@ -1,0 +1,1161 @@
+//! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
+use super::{
+    data, finite, numeric,
+    object_evaluate::{
+        ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
+        evaluate_object_instance,
+    },
+    result::{Decision, Payload, Scalar, ValidationFailure},
+};
+use crate::{
+    construction::{
+        ConstructionFailure,
+        maps::{
+            ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
+            ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
+            configuration_transport,
+        },
+        readings::{ObjectInstance, ObjectReadingInstances, object_reading_instances},
+    },
+    observed::{
+        numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
+        value_transport::{
+            DeclarationValuePosition, FiniteValueTransport, finite_declaration_value_transport,
+        },
+    },
+};
+use archsig_common::control::{Checkpoint, Control};
+use archsig_common::{canonical::Json, types::Type};
+use archsig_input::archmap::Fact as FactPointer;
+use archsig_input::{input::CheckedInputs, result::Signal};
+use std::sync::Arc;
+mod family;
+pub use family::{
+    FamilyTypeFailure, FiniteViewTransport, FiniteViewTypeMap, ViewFamilyReturnMap,
+    ViewParameterComparison,
+};
+
+#[derive(Debug)]
+pub enum ObjectViewTransportFailure {
+    Construction(ConstructionFailure),
+    Transport(Box<ConfigurationTransportFailure>),
+    NotImplemented {
+        operation: Box<ConfigurationOperation>,
+        object: ObjectIdentity,
+        instance: Box<ObjectInstance>,
+        returns: Type,
+        partial: Option<Box<ObjectViewTransportPartial>>,
+    },
+    Evaluation {
+        operation: Box<ConfigurationOperation>,
+        partial: Option<Box<ObjectViewTransportPartial>>,
+        failure: Box<ObjectEvaluationFailure>,
+    },
+    /// 停止理由と、停止前に検査・計算できた成果だけを返す。
+    Stopped {
+        reason: Signal,
+        operation: Box<ConfigurationOperation>,
+        partial: Option<Box<ObjectViewTransportPartial>>,
+        evaluation: Option<Box<ObjectEvaluationFailure>>,
+        transport: Option<Box<ConfigurationTransportPartial>>,
+    },
+}
+impl From<ConstructionFailure> for ObjectViewTransportFailure {
+    fn from(f: ConstructionFailure) -> Self {
+        Self::Construction(f)
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ViewConditionFailure {
+    Object,
+    Declaration {
+        source: String,
+    },
+    TargetInstance {
+        declaration: String,
+        bindings: Vec<(String, FactPointer)>,
+    },
+    ValueType,
+    ParameterType {
+        position: usize,
+    },
+    Applicability,
+    Value,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ViewTransportOutcome {
+    Preserved,
+    Refuted(ViewConditionFailure),
+    Undetermined,
+}
+#[derive(Clone, Debug, Eq)]
+pub struct ViewTransportValue {
+    value: Scalar,
+}
+impl PartialEq for ViewTransportValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl ViewTransportValue {
+    pub fn ty(&self) -> Type {
+        self.value.ty()
+    }
+    pub fn wire(&self) -> Json {
+        self.value.wire()
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PrimitiveValueIdentity {
+    ty: Type,
+}
+impl PrimitiveValueIdentity {
+    pub fn ty(&self) -> &Type {
+        &self.ty
+    }
+    fn checked(
+        inputs: &CheckedInputs,
+        declarations: &DeclarationCorrespondence,
+        declaration: &str,
+        c: &Control,
+    ) -> Result<Option<Self>, ConstructionFailure> {
+        let (source, target) = super::value_transport::selected_types(
+            inputs,
+            declarations,
+            declaration,
+            DeclarationValuePosition::Return,
+            c,
+        )?;
+        if source != target {
+            return Ok(None);
+        }
+        if super::value_transport::identity_declarations(&source, inputs.law(), c)
+            .map_err(invalid)?
+            .is_none()
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self { ty: source }))
+    }
+    fn image(&self, value: &Scalar, c: &Control) -> Result<Scalar, ConstructionFailure> {
+        tick(c)?;
+        if value.ty() != self.ty {
+            return Err(ConstructionFailure::Inconsistent(
+                "原始値の恒等写像と実値の型が違う".into(),
+            ));
+        }
+        // 参照を含まない値とconstructorの型構造。型の全元を順逆とも固定する。
+        Ok(value.clone())
+    }
+}
+
+/// 有限参照域の両逆写像を、値の型構造へ延長する。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StructuralValueEquivalence {
+    source: Type,
+    target: Type,
+    declarations: DeclarationCorrespondence,
+    declaration: String,
+    complete: bool,
+}
+impl StructuralValueEquivalence {
+    pub fn source_type(&self) -> &Type {
+        &self.source
+    }
+    pub fn target_type(&self) -> &Type {
+        &self.target
+    }
+    pub fn is_bijection(&self) -> bool {
+        self.complete
+    }
+
+    pub(super) fn checked(
+        inputs: &CheckedInputs,
+        declarations: &DeclarationCorrespondence,
+        declaration: &str,
+        c: &Control,
+    ) -> Result<Option<Self>, ConstructionFailure> {
+        let (source, target) = super::value_transport::selected_types(
+            inputs,
+            declarations,
+            declaration,
+            DeclarationValuePosition::Return,
+            c,
+        )?;
+        let Some(components) =
+            super::value_transport::structural_components(&source, inputs.law(), c)?
+        else {
+            return Ok(None);
+        };
+        let pair = declarations
+            .candidates()
+            .iter()
+            .find(|candidate| candidate.source().name == declaration)
+            .and_then(|candidate| candidate.pair())
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent("構造値写像の宣言対応がない".into())
+            })?;
+        let mu = declarations.types().iter().cloned().collect();
+        let alpha = pair.parameters().iter().cloned().collect();
+        let mut complete =
+            crate::construction::maps::moved_declaration_type(&source, &mu, &alpha, c)? == target;
+        // Dataのfamily/constructorは固定し、未評価のpayload型も保存する。
+        for family in components.families {
+            for constructor in data::constructors(inputs.law(), &family).map_err(invalid)? {
+                tick(c)?;
+                for ty in &constructor.arguments {
+                    complete &=
+                        crate::construction::maps::moved_declaration_type(ty, &mu, &alpha, c)?
+                            == *ty;
+                }
+            }
+        }
+        for entity in components.references {
+            let map = crate::construction::maps::reference_type_transport(
+                inputs,
+                declarations,
+                &entity,
+                c,
+            )?;
+            complete &= map.bijection().is_some();
+        }
+        Ok(Some(Self {
+            source,
+            target,
+            declarations: declarations.clone(),
+            declaration: declaration.into(),
+            complete,
+        }))
+    }
+
+    fn image(
+        &self,
+        inputs: &CheckedInputs,
+        value: &Scalar,
+        c: &Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        if !self.complete || value.ty() != self.source.erase() {
+            return Err(ConstructionFailure::Inconsistent(
+                "構造値の順逆写像と元値が一致しない".into(),
+            ));
+        }
+        let image = super::value_transport::candidate_image(
+            inputs,
+            &self.declarations,
+            &self.declaration,
+            value,
+            c,
+        )?;
+        if image.ty() != self.target.erase() {
+            return Err(ConstructionFailure::Inconsistent(
+                "構造値の像が終域型と一致しない".into(),
+            ));
+        }
+        data::check(&image, inputs.law(), c).map_err(invalid)?;
+        Ok(image)
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ViewValueEquivalence {
+    Finite(Box<FiniteValueTransport>),
+    Numeric(Box<NumericValueTransport>),
+    PrimitiveIdentity(PrimitiveValueIdentity),
+    Structural(Box<StructuralValueEquivalence>),
+}
+impl ViewValueEquivalence {
+    fn complete(&self) -> bool {
+        match self {
+            Self::Finite(r) => r.bijection().is_some(),
+            Self::Numeric(_) => true,
+            Self::PrimitiveIdentity(_) => true,
+            Self::Structural(r) => r.is_bijection(),
+        }
+    }
+    fn image(
+        &self,
+        v: &Scalar,
+        inputs: &CheckedInputs,
+        c: &Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        match self {
+            Self::Finite(r) => r.transport_scalar(v, c),
+            Self::Numeric(r) => Ok(r.forward().apply_scalar(v, c)?.scalar().clone()),
+            Self::PrimitiveIdentity(r) => r.image(v, c),
+            Self::Structural(r) => r.image(inputs, v, c),
+        }
+    }
+}
+#[derive(Debug)]
+pub struct ObjectViewTransport {
+    declarations: DeclarationCorrespondence,
+    objects: ConfigurationTransport,
+    source_readings: ObjectReadingInstances,
+    target_readings: ObjectReadingInstances,
+    object: usize,
+    instance: usize,
+    target_object: Option<usize>,
+    target_instance: Option<usize>,
+    source: Option<ObjectEvaluation>,
+    target: Option<ObjectEvaluation>,
+    equivalence: Option<ViewValueEquivalence>,
+    source_value: Option<ViewTransportValue>,
+    image: Option<ViewTransportValue>,
+    target_value: Option<ViewTransportValue>,
+    outcome: ViewTransportOutcome,
+    family: Option<FiniteViewTransport>,
+    numeric_counterexample: Option<super::environment::numeric_object_function::Counterexample>,
+    numeric_family: Option<(
+        super::environment::numeric_object_function::Reading,
+        super::environment::numeric_object_function::Reading,
+    )>,
+}
+/// 未着手の比較に結論を与えず、検査済みの構成・評価・値を保持する。
+#[derive(Debug)]
+pub struct ObjectViewTransportPartial {
+    state: ObjectViewTransport,
+    outcome: Option<ViewTransportOutcome>,
+}
+impl ObjectViewTransportPartial {
+    pub fn family(&self) -> Option<&FiniteViewTransport> {
+        self.state.family()
+    }
+    pub fn operation(&self) -> &ConfigurationOperation {
+        self.state.operation()
+    }
+    pub fn objects(&self) -> &ConfigurationTransport {
+        self.state.objects()
+    }
+    pub fn source_readings(&self) -> &ObjectReadingInstances {
+        self.state.source_readings()
+    }
+    pub fn target_readings(&self) -> &ObjectReadingInstances {
+        self.state.target_readings()
+    }
+    pub fn object(&self) -> &ObjectIdentity {
+        self.state.object()
+    }
+    pub fn instance(&self) -> &ObjectInstance {
+        self.state.instance()
+    }
+    pub fn target_object(&self) -> Option<&ObjectIdentity> {
+        self.state.target_object()
+    }
+    pub fn target_instance(&self) -> Option<&ObjectInstance> {
+        self.state.target_instance()
+    }
+    pub fn source(&self) -> Option<&ObjectEvaluation> {
+        self.state.source()
+    }
+    pub fn target(&self) -> Option<&ObjectEvaluation> {
+        self.state.target()
+    }
+    pub fn equivalence(&self) -> Option<&ViewValueEquivalence> {
+        self.state.equivalence()
+    }
+    pub fn source_value(&self) -> Option<&ViewTransportValue> {
+        self.state.source_value()
+    }
+    pub fn image(&self) -> Option<&ViewTransportValue> {
+        self.state.image()
+    }
+    pub fn target_value(&self) -> Option<&ViewTransportValue> {
+        self.state.target_value()
+    }
+    /// 比較を完了した場合だけ結論を返す。
+    pub fn outcome(&self) -> Option<&ViewTransportOutcome> {
+        self.outcome.as_ref()
+    }
+}
+impl ObjectViewTransport {
+    pub fn family(&self) -> Option<&FiniteViewTransport> {
+        self.family.as_ref()
+    }
+    pub fn operation(&self) -> &ConfigurationOperation {
+        self.objects.operation()
+    }
+    pub fn objects(&self) -> &ConfigurationTransport {
+        &self.objects
+    }
+    pub fn source_readings(&self) -> &ObjectReadingInstances {
+        &self.source_readings
+    }
+    pub fn target_readings(&self) -> &ObjectReadingInstances {
+        &self.target_readings
+    }
+    pub fn object(&self) -> &ObjectIdentity {
+        self.source_readings.objects()[self.object].identity()
+    }
+    pub fn instance(&self) -> &ObjectInstance {
+        &self.source_readings.instances()[self.instance]
+    }
+    pub fn target_object(&self) -> Option<&ObjectIdentity> {
+        self.target_object
+            .map(|n| self.target_readings.objects()[n].identity())
+    }
+    pub fn target_instance(&self) -> Option<&ObjectInstance> {
+        self.target_instance
+            .map(|n| &self.target_readings.instances()[n])
+    }
+    pub fn source(&self) -> Option<&ObjectEvaluation> {
+        self.source.as_ref()
+    }
+    pub fn target(&self) -> Option<&ObjectEvaluation> {
+        self.target.as_ref()
+    }
+    pub fn equivalence(&self) -> Option<&ViewValueEquivalence> {
+        self.equivalence.as_ref()
+    }
+    pub fn source_value(&self) -> Option<&ViewTransportValue> {
+        self.source_value.as_ref()
+    }
+    pub fn image(&self) -> Option<&ViewTransportValue> {
+        self.image.as_ref()
+    }
+    pub fn target_value(&self) -> Option<&ViewTransportValue> {
+        self.target_value.as_ref()
+    }
+    pub(super) fn numeric_counterexample(
+        &self,
+    ) -> Option<&super::environment::numeric_object_function::Counterexample> {
+        self.numeric_counterexample.as_ref()
+    }
+    pub(super) fn numeric_pending(&self) -> Option<(bool, Vec<super::result::Fact>)> {
+        use super::environment::numeric_object_function::Reading;
+        let (a, z) = self.numeric_family.as_ref()?;
+        for (reading, target) in [(a, false), (z, true)] {
+            if let Reading::Unknown(facts) = reading {
+                return Some((target, facts.clone()));
+            }
+        }
+        None
+    }
+    pub fn outcome(&self) -> &ViewTransportOutcome {
+        &self.outcome
+    }
+    pub fn recheck(
+        &self,
+        inputs: Arc<CheckedInputs>,
+        c: &Control,
+    ) -> Result<(), ObjectViewTransportFailure> {
+        tick(c)?;
+        let r = object_view_transport(inputs, &self.declarations, self.object, self.instance, c)?;
+        let comparison = (|| -> Result<bool, ConstructionFailure> {
+            let same = family::same(self.family.as_ref(), r.family.as_ref(), c)?;
+            let equal = same
+                && !(self.declarations != r.declarations
+                    || self.objects != r.objects
+                    || self.source_readings != r.source_readings
+                    || self.target_readings != r.target_readings
+                    || self.target_object != r.target_object
+                    || self.target_instance != r.target_instance
+                    || !super::object_transport::same_evaluation_controlled(
+                        self.source.as_ref(),
+                        r.source.as_ref(),
+                        c,
+                    )?
+                    || !super::object_transport::same_evaluation_controlled(
+                        self.target.as_ref(),
+                        r.target.as_ref(),
+                        c,
+                    )?
+                    || self.equivalence != r.equivalence
+                    || self.source_value != r.source_value
+                    || self.image != r.image
+                    || self.target_value != r.target_value
+                    || self.numeric_family != r.numeric_family
+                    || self.numeric_counterexample != r.numeric_counterexample
+                    || self.outcome != r.outcome);
+            tick(c)?;
+            Ok(equal)
+        })();
+        let equal = match comparison {
+            Ok(equal) => equal,
+            Err(ConstructionFailure::Stopped(reason)) => {
+                let operation = Box::new(r.operation().clone());
+                let outcome = Some(r.outcome.clone());
+                return Err(ObjectViewTransportFailure::Stopped {
+                    reason,
+                    operation,
+                    partial: Some(Box::new(ObjectViewTransportPartial { state: r, outcome })),
+                    evaluation: None,
+                    transport: None,
+                });
+            }
+            Err(failure) => return Err(failure.into()),
+        };
+        if !equal {
+            return Err(ConstructionFailure::Inconsistent(
+                "対象viewの対応・実評価・値可換性が現在入力と違う".into(),
+            )
+            .into());
+        }
+        Ok(())
+    }
+}
+
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
+    c.checkpoint(Checkpoint::ObjectViewTransport)
+        .map_err(Into::into)
+}
+fn invalid(f: ValidationFailure) -> ConstructionFailure {
+    match f {
+        ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
+        f => ConstructionFailure::Inconsistent(format!("view値の比較: {f:?}")),
+    }
+}
+fn scalar(e: &ObjectEvaluation) -> Result<Option<Scalar>, ConstructionFailure> {
+    let ObjectEvaluationOutcome::Evaluated(e) = e.outcome() else {
+        return Ok(None);
+    };
+    scalar_evaluation(e)
+}
+pub(super) fn scalar_evaluation(
+    e: &super::result::ObservedEvaluation,
+) -> Result<Option<Scalar>, ConstructionFailure> {
+    let a = e
+        .answers
+        .first()
+        .ok_or_else(|| ConstructionFailure::Inconsistent("view評価の回答がない".into()))?;
+    if a.status != Decision::Established {
+        return Ok(None);
+    }
+    let Some(reference) = a.outputs.get("value") else {
+        return Ok(None);
+    };
+    match e.nodes.get(reference.0).and_then(|n| n.payload.as_ref()) {
+        Some(Payload::Scalar(v)) => Ok(Some(v.clone())),
+        _ => Err(ConstructionFailure::Inconsistent(
+            "viewの確定値が型付き値でない".into(),
+        )),
+    }
+}
+fn not_implemented(
+    r: &ObjectViewTransport,
+) -> Result<ObjectViewTransportFailure, ConstructionFailure> {
+    Ok(ObjectViewTransportFailure::NotImplemented {
+        partial: None,
+        operation: Box::new(r.operation().clone()),
+        object: r.object().clone(),
+        instance: Box::new(r.instance().clone()),
+        returns: r
+            .instance()
+            .declaration()
+            .returns
+            .clone()
+            .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?,
+    })
+}
+/// 単一の全束縛view instanceを対応対象へ運び、実評価との可換性を計算する。
+pub fn object_view_transport(
+    inputs: Arc<CheckedInputs>,
+    declarations: &DeclarationCorrespondence,
+    object: usize,
+    instance: usize,
+    c: &Control,
+) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
+    tick(c)?;
+    declarations.recheck(&inputs, c)?;
+    let operation = Box::new(declarations.operation().clone());
+    match checked_view_transport(inputs, declarations, object, instance, c) {
+        Err(ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(reason))) => {
+            Err(ObjectViewTransportFailure::Stopped {
+                reason,
+                operation,
+                partial: None,
+                evaluation: None,
+                transport: None,
+            })
+        }
+        result => result,
+    }
+}
+fn checked_view_transport(
+    inputs: Arc<CheckedInputs>,
+    declarations: &DeclarationCorrespondence,
+    object: usize,
+    instance: usize,
+    c: &Control,
+) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
+    let objects =
+        configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
+            match failure.cause() {
+                ConstructionFailure::Stopped(reason) => {
+                    let reason = *reason;
+                    let (_, transport) = failure.into_parts();
+                    ObjectViewTransportFailure::Stopped {
+                        reason,
+                        operation: Box::new(declarations.operation().clone()),
+                        partial: None,
+                        evaluation: None,
+                        transport,
+                    }
+                }
+                _ => ObjectViewTransportFailure::Transport(Box::new(failure)),
+            }
+        })?;
+    let readings = (|| -> Result<_, ConstructionFailure> {
+        let source = object_reading_instances(&inputs, objects.source().construction(), c)?;
+        let target = object_reading_instances(&inputs, objects.target().construction(), c)?;
+        Ok((source, target))
+    })();
+    let (source_readings, target_readings) = match readings {
+        Ok(readings) => readings,
+        Err(ConstructionFailure::Stopped(reason)) => {
+            return Err(ObjectViewTransportFailure::Stopped {
+                reason,
+                operation: Box::new(objects.operation().clone()),
+                partial: None,
+                evaluation: None,
+                transport: Some(Box::new(objects.into_partial())),
+            });
+        }
+        Err(failure) => return Err(failure.into()),
+    };
+    if source_readings.objects().get(object).is_none()
+        || source_readings.instances().get(instance).is_none()
+    {
+        return Err(ConstructionFailure::InvalidSelection(
+            "viewの対象またはinstance添字がない".into(),
+        )
+        .into());
+    }
+    if source_readings.instances()[instance].declaration().kind != "view" {
+        return Err(ConstructionFailure::InvalidSelection("view instanceを選択する".into()).into());
+    }
+    let mut r = ObjectViewTransport {
+        declarations: declarations.clone(),
+        objects,
+        source_readings,
+        target_readings,
+        object,
+        instance,
+        target_object: None,
+        target_instance: None,
+        source: None,
+        target: None,
+        equivalence: None,
+        source_value: None,
+        image: None,
+        target_value: None,
+        outcome: ViewTransportOutcome::Undetermined,
+        family: None,
+        numeric_family: None,
+        numeric_counterexample: None,
+    };
+    let mut decided = false;
+    let calculated = (|| -> Result<(), ObjectViewTransportFailure> {
+        let mapped = r
+            .objects
+            .objects()
+            .iter()
+            .find(|p| p.source() == r.object());
+        let Some(mapped) = mapped.filter(|p| p.is_preserved()) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Object);
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        r.target_object = r
+            .target_readings
+            .objects()
+            .iter()
+            .position(|o| Some(o.identity()) == mapped.target());
+        let candidate = declarations
+            .candidates()
+            .iter()
+            .find(|p| p.source().name == r.instance().declaration().name);
+        let Some(pair) = candidate.and_then(|p| p.pair()) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Declaration {
+                source: r.instance().declaration().name.clone(),
+            });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        let mapped = super::object_transport::mapped_instance(
+            &r.objects,
+            r.instance(),
+            pair,
+            &r.target_readings,
+            c,
+            Checkpoint::ObjectViewTransport,
+        )?;
+        r.target_instance = mapped.index;
+        let bindings = mapped.bindings;
+        let (Some(to), Some(ti)) = (r.target_object, r.target_instance) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::TargetInstance {
+                declaration: pair.target().into(),
+                bindings,
+            });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        let numeric_return = match r.instance().declaration().returns.as_ref() {
+            Some(ty) => numeric::is_numeric_type(ty, c).map_err(invalid)?,
+            None => false,
+        };
+        if !r.instance().parameters().is_empty()
+            && r.instance()
+                .parameters()
+                .iter()
+                .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+            && r.target_instance().is_some_and(|i| {
+                i.parameters()
+                    .iter()
+                    .all(|p| super::environment::numeric_parameters::numeric_width(&p.ty).is_some())
+            })
+            && numeric_return
+        {
+            use super::environment::numeric_object_function::{self as functions, Reading};
+            let equivalence = numeric_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?;
+            r.equivalence = Some(ViewValueEquivalence::Numeric(Box::new(equivalence)));
+            let a = functions::read(
+                &inputs,
+                &r.source_readings,
+                object,
+                instance,
+                pair.parameters(),
+                false,
+                c,
+            )?;
+            let z = functions::read(
+                &inputs,
+                &r.target_readings,
+                to,
+                ti,
+                pair.parameters(),
+                true,
+                c,
+            )?;
+            r.outcome = match (&a, &z) {
+                (Reading::Unknown(_), _) | (_, Reading::Unknown(_)) => {
+                    ViewTransportOutcome::Undetermined
+                }
+                (Reading::Outside, Reading::Outside) => ViewTransportOutcome::Preserved,
+                (Reading::Value(a), Reading::Value(z)) => {
+                    use super::term::affine::{Comparison, compare};
+                    match compare(a, z, inputs.law(), c).map_err(invalid)? {
+                        Comparison::Same => ViewTransportOutcome::Preserved,
+                        Comparison::Different(unit) => {
+                            use crate::observed::object_evaluation_table::ObjectEvaluationPosition;
+                            r.numeric_counterexample = Some(functions::counterexample(
+                                &inputs,
+                                &r.source_readings,
+                                &r.target_readings,
+                                [
+                                    ObjectEvaluationPosition { object, instance },
+                                    ObjectEvaluationPosition {
+                                        object: to,
+                                        instance: ti,
+                                    },
+                                ],
+                                pair.parameters(),
+                                unit.as_ref(),
+                                c,
+                            )?);
+                            ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+                        }
+                        Comparison::Unsupported => {
+                            return Err(ConstructionFailure::Inconsistent(
+                                "数値viewの正規形が数値比較に未対応".into(),
+                            )
+                            .into());
+                        }
+                    }
+                }
+                _ => ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability),
+            };
+            r.numeric_family = Some((a, z));
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if !r.instance().parameters().is_empty() {
+            family::evaluate(Arc::clone(&inputs), &mut r, to, ti, c)?;
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        let returns = r
+            .instance()
+            .declaration()
+            .returns
+            .as_ref()
+            .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?;
+        r.equivalence = Some(if numeric::is_numeric_type(returns, c).map_err(invalid)? {
+            ViewValueEquivalence::Numeric(Box::new(numeric_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?))
+        } else if finite::supported(returns, inputs.law(), c).map_err(invalid)? {
+            ViewValueEquivalence::Finite(Box::new(finite_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?))
+        } else if let Some(identity) = PrimitiveValueIdentity::checked(
+            &inputs,
+            declarations,
+            &r.instance().declaration().name,
+            c,
+        )? {
+            ViewValueEquivalence::PrimitiveIdentity(identity)
+        } else if let Some(map) = StructuralValueEquivalence::checked(
+            &inputs,
+            declarations,
+            &r.instance().declaration().name,
+            c,
+        )? {
+            ViewValueEquivalence::Structural(Box::new(map))
+        } else {
+            return Err(not_implemented(&r)?);
+        });
+        if !r
+            .equivalence
+            .as_ref()
+            .is_some_and(ViewValueEquivalence::complete)
+        {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::ValueType);
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        r.source = Some(
+            evaluate_object_instance(Arc::clone(&inputs), &r.source_readings, object, instance, c)
+                .map_err(|failure| ObjectViewTransportFailure::Evaluation {
+                    operation: Box::new(r.operation().clone()),
+                    partial: None,
+                    failure: Box::new(failure),
+                })?,
+        );
+        if let Some(source) = &r.source {
+            r.source_value = scalar(source)?.map(|value| ViewTransportValue { value });
+        }
+        tick(c)?;
+        r.target = Some(
+            evaluate_object_instance(Arc::clone(&inputs), &r.target_readings, to, ti, c).map_err(
+                |failure| ObjectViewTransportFailure::Evaluation {
+                    operation: Box::new(r.operation().clone()),
+                    partial: None,
+                    failure: Box::new(failure),
+                },
+            )?,
+        );
+        if let Some(target) = &r.target {
+            r.target_value = scalar(target)?.map(|value| ViewTransportValue { value });
+        }
+        tick(c)?;
+        let (Some(source), Some(target)) = (&r.source, &r.target) else {
+            return Err(ConstructionFailure::Inconsistent("view実評価の行がない".into()).into());
+        };
+        let source_na = matches!(source.outcome(), ObjectEvaluationOutcome::NotApplicable);
+        let target_na = matches!(target.outcome(), ObjectEvaluationOutcome::NotApplicable);
+        let conditional = matches!(source.outcome(), ObjectEvaluationOutcome::Conditional(_))
+            || matches!(target.outcome(), ObjectEvaluationOutcome::Conditional(_));
+        if conditional {
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if source_na || target_na {
+            r.outcome = if source_na == target_na {
+                ViewTransportOutcome::Preserved
+            } else {
+                ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability)
+            };
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if let (Some(source), Some(target), Some(equivalence)) =
+            (&r.source_value, &r.target_value, &r.equivalence)
+        {
+            let image = equivalence.image(&source.value, &inputs, c)?;
+            r.image = Some(ViewTransportValue {
+                value: image.clone(),
+            });
+            let equal = data::equal(&image, &target.value, c).map_err(invalid)?;
+            r.outcome = if equal {
+                ViewTransportOutcome::Preserved
+            } else {
+                ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+            };
+        }
+        decided = true;
+        tick(c)?;
+        Ok(())
+    })();
+    match calculated {
+        Ok(()) => Ok(r),
+        Err(failure) => {
+            let operation = Box::new(r.operation().clone());
+            let outcome = (decided || r.family.as_ref().is_some_and(|f| f.is_complete()))
+                .then(|| r.outcome.clone());
+            let partial = Some(Box::new(ObjectViewTransportPartial { state: r, outcome }));
+            match failure {
+                ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(reason)) => {
+                    Err(ObjectViewTransportFailure::Stopped {
+                        reason,
+                        operation,
+                        partial,
+                        evaluation: None,
+                        transport: None,
+                    })
+                }
+                ObjectViewTransportFailure::Evaluation { failure, .. } => {
+                    if let Some(reason) = c.stop_reason() {
+                        Err(ObjectViewTransportFailure::Stopped {
+                            reason,
+                            operation,
+                            partial,
+                            evaluation: Some(failure),
+                            transport: None,
+                        })
+                    } else {
+                        Err(ObjectViewTransportFailure::Evaluation {
+                            operation,
+                            partial,
+                            failure,
+                        })
+                    }
+                }
+                ObjectViewTransportFailure::NotImplemented {
+                    operation,
+                    object,
+                    instance,
+                    returns,
+                    ..
+                } => Err(ObjectViewTransportFailure::NotImplemented {
+                    operation,
+                    object,
+                    instance,
+                    returns,
+                    partial,
+                }),
+                failure => Err(failure),
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::construction::{
+        construct,
+        maps::{correspondence, declaration_correspondence},
+    };
+    use archsig_input::input::{InputSources, check_inputs};
+    fn example() -> (Arc<CheckedInputs>, ObjectViewTransport) {
+        example_named("Before.amount")
+    }
+    pub(super) fn example_named(name: &str) -> (Arc<CheckedInputs>, ObjectViewTransport) {
+        example_named_with_law(
+            name,
+            include_str!("../../../../tests/fixtures/object-view-transport.law"),
+        )
+    }
+    fn example_named_with_law(name: &str, law: &str) -> (Arc<CheckedInputs>, ObjectViewTransport) {
+        let left = include_bytes!("../../../../tests/fixtures/object-view-transport.atoms.json");
+        let right = include_bytes!("../../../../tests/fixtures/configuration-map-right.atoms.json");
+        let ds = archsig_input::definition::check_definitions(&[("left", left), ("right", right)])
+            .unwrap();
+        let ld = &ds.vocabularies()["Left"].digest;
+        let rd = &ds.vocabularies()["Right"].digest;
+        let bridge = include_str!("../../../../tests/fixtures/configuration-map-bridge.atoms.json")
+            .replace("@LEFT_DIGEST@", ld)
+            .replace("@RIGHT_DIGEST@", rd);
+        let ds = archsig_input::definition::check_definitions(&[
+            ("left", left),
+            ("right", right),
+            ("bridge", bridge.as_bytes()),
+        ])
+        .unwrap();
+        let expand = |s: &str| {
+            s.replace("@LEFT_DIGEST@", ld)
+                .replace("@RIGHT_DIGEST@", rd)
+                .replace("@BRIDGE_DIGEST@", &ds.vocabularies()["Bridge"].digest)
+                .into_bytes()
+        };
+        let i = Arc::new(
+            check_inputs(
+                InputSources::from_bytes(
+                    vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
+                    expand(law),
+                    expand(include_str!(
+                        "../../../../tests/fixtures/object-view-transport.archmap.json"
+                    )),
+                ),
+                &Control::unlimited(),
+            )
+            .unwrap(),
+        );
+        let m =
+            correspondence(&i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
+        let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
+        let p = object_reading_instances(
+            &i,
+            &construct(&i, "Before", "v", "a", &Control::unlimited()).unwrap(),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let o = p
+            .objects()
+            .iter()
+            .position(|o| o.identity().subject().subject == "p")
+            .unwrap();
+        let n = p
+            .instances()
+            .iter()
+            .position(|r| r.declaration().name == name && r.bindings()[0].subject().subject == "p")
+            .unwrap();
+        let r = object_view_transport(Arc::clone(&i), &d, o, n, &Control::unlimited()).unwrap();
+        (i, r)
+    }
+    #[test]
+    fn structural_value_maps_follow_nominal_reference_images_and_recheck() {
+        for parameter in [false, true] {
+            let (sp, tp, sv, tv) = if parameter {
+                (
+                    ", b: Bool",
+                    ", q: Bool",
+                    "if b then list<Left.Child>[c,c] else list<Left.Child>[c]",
+                    "if q then list<Right.Child>[d,d] else list<Right.Child>[d]",
+                )
+            } else {
+                ("", "", "list<Left.Child>[c,c]", "list<Right.Child>[d,d]")
+            };
+            let law = include_str!("../../../../tests/fixtures/object-view-transport.law")
+                .replace(
+                    "view sequence(c: Left.Child): List<Z> = list<Z>[c.count];",
+                    &format!("view sequence(c: Left.Child{sp}): List<Left.Child> = {sv};"),
+                )
+                .replace(
+                    "view sequence(d: Right.Child): List<Z> = list<Z>[2];",
+                    &format!("view sequence(d: Right.Child{tp}): List<Right.Child> = {tv};"),
+                );
+            let (inputs, mut result) = example_named_with_law("Before.sequence", &law);
+            assert_eq!(result.outcome(), &ViewTransportOutcome::Preserved);
+            let mut images = vec![];
+            if let Some(family) = result.family() {
+                for row in family.rows() {
+                    images.push(row.image().unwrap());
+                }
+            } else {
+                images.push(result.image().unwrap());
+            }
+            assert_eq!(images.len(), if parameter { 2 } else { 1 });
+            let mut lengths = vec![];
+            for image in images {
+                let Scalar::List { element, items } = &image.value else {
+                    panic!("List image");
+                };
+                assert_eq!(element, &Type::Ref("Right.Child".into()));
+                lengths.push(items.len());
+                for item in items {
+                    assert_eq!(
+                        item,
+                        &Scalar::Subject {
+                            snapshot: "v".into(),
+                            subject: "q".into(),
+                            entity: "Right.Child".into()
+                        }
+                    );
+                }
+            }
+            lengths.sort();
+            assert_eq!(lengths, if parameter { vec![1, 2] } else { vec![2] });
+            result
+                .recheck(Arc::clone(&inputs), &Control::unlimited())
+                .unwrap();
+            if !parameter {
+                let Some(ViewValueEquivalence::Structural(map)) = &mut result.equivalence else {
+                    panic!("structural map");
+                };
+                assert_eq!(
+                    map.source_type(),
+                    &Type::List(Box::new(Type::Ref("Left.Child".into())))
+                );
+                assert_eq!(
+                    map.target_type(),
+                    &Type::List(Box::new(Type::Ref("Right.Child".into())))
+                );
+                map.complete = false;
+                assert!(
+                    result
+                        .recheck(Arc::clone(&inputs), &Control::unlimited())
+                        .is_err()
+                );
+            }
+        }
+    }
+    #[test]
+    fn recheck_rejects_modified_values_status_targets_and_original_evaluation_dag() {
+        for mode in 0..7 {
+            let (i, mut r) = example();
+            match mode {
+                0 => r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Value),
+                1 => {
+                    r.image = Some(ViewTransportValue {
+                        value: Scalar::Z(99.into()),
+                    })
+                }
+                2 => {
+                    r.source_value = Some(ViewTransportValue {
+                        value: Scalar::Z(99.into()),
+                    })
+                }
+                3 => {
+                    r.target_value = Some(ViewTransportValue {
+                        value: Scalar::Z(99.into()),
+                    })
+                }
+                4 => r.target_instance = None,
+                5 => r.equivalence = None,
+                _ => {
+                    let ObjectEvaluationOutcome::Evaluated(e) =
+                        r.source.as_mut().unwrap().outcome_mut_for_test()
+                    else {
+                        panic!()
+                    };
+                    e.nodes
+                        .iter_mut()
+                        .find(|n| !n.support.is_empty())
+                        .unwrap()
+                        .support
+                        .clear();
+                }
+            }
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
+        }
+    }
+    #[test]
+    fn forged_duplicate_sets_are_not_equal_in_either_direction() {
+        let a = ViewTransportValue {
+            value: Scalar::Set {
+                element: Type::Bool,
+                items: vec![Scalar::Bool(false), Scalar::Bool(false)],
+            },
+        };
+        let b = ViewTransportValue {
+            value: Scalar::Set {
+                element: Type::Bool,
+                items: vec![Scalar::Bool(false), Scalar::Bool(true)],
+            },
+        };
+        assert_ne!(a, b);
+        assert_ne!(b, a);
+    }
+}

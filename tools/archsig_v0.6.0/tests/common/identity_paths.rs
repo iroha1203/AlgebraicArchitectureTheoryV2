@@ -1,4 +1,4 @@
-use archsig::{definition::check_definitions, input::InputSources};
+use archsig_input::{definition::check_definitions, input::InputSources};
 
 pub const SCRIPT: &str = r#"
 view id(x:Node):Path<Node,Node> =identity(x);

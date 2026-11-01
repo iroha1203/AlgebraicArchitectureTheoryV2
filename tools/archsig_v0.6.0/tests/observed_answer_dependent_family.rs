@@ -1,7 +1,8 @@
 //! 固定Answer ownerから元snapshotの実依存fiberを構成する。
 use crate::common::answer_dependent_family as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 use std::collections::BTreeMap;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(m) = j else { panic!("object") };
@@ -20,7 +21,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .find(|a| f(a, "id") == &Json::str(id))
         .unwrap()
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &quiet());
     match r {
         Ok(r) => r,
@@ -370,7 +371,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance() {
-    use archsig::input::check_inputs;
+    use archsig_input::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Reservations.option_values,a=$owner.value)",
@@ -414,7 +415,7 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
                     .find(|ff| ff.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("known fact")
                 };
                 assert_eq!(f(fact, "atom"), &Json::str(atom));
@@ -495,7 +496,7 @@ fn answer_owner_families_still_reject_static_invalid_bindings_before_nodes() {
 
 #[test]
 fn answer_owner_fixed_owned_constraints_are_checked_before_finite_family_evaluation() {
-    use archsig::observed::prepare_observed;
+    use archsig_computation::observed::prepare_observed;
     for selector in [
         "$owner.value",
         "$owner.evaluation.value",

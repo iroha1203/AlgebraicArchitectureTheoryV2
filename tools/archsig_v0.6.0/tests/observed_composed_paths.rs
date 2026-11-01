@@ -1,6 +1,7 @@
 use crate::common::composed_paths as fixture;
 use crate::common::helpers::arr;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
@@ -181,7 +182,7 @@ fn then_provenance_pair_preserves_math_and_current_checked_input_tables() {
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let c = Control::unlimited();
-        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &c).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             input.clone(),

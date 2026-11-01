@@ -1,11 +1,12 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
+    control::{Checkpoint, Control},
+};
+use archsig_computation::{
     construction::{
         ConstructionFailure, construct,
         readings::{ObjectReadingInstances, object_reading_instances},
     },
-    control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::{
             ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
@@ -15,6 +16,9 @@ use archsig::{
             ObjectEvaluationPosition, ObjectEvaluationTable, evaluate_object_table,
         },
     },
+};
+use archsig_input::{
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
@@ -23,7 +27,7 @@ const L: &str = include_str!("fixtures/object-evaluation-table.law");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
-    let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &d.vocabularies()["Instances"].digest;
     Arc::new(
         check_inputs(

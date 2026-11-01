@@ -1,9 +1,8 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{control::Control, types::Type};
+use archsig_computation::{
     construction::ConstructionFailure,
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_equation_presentation::EquationPresentationStatus as S,
         object_polynomial_observable::{
@@ -12,12 +11,12 @@ use archsig::{
             object_polynomial_observable,
         },
     },
-    types::Type,
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 fn inputs_with(body: &str, map: &str) -> Arc<CheckedInputs> {
-    let d =
-        archsig::definition::check_definitions(&[("definition0", fixture::D.as_bytes())]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
+        .unwrap();
     let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";{body}}}"
@@ -485,7 +484,8 @@ fn current_inputs_provenance_and_invalid_object_are_checked_again() {
 }
 #[test]
 fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_probes() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::RefCell, rc::Rc};
     let i =
         inputs("law required first(c:Part):c.quantity=0;law required second(c:Part):c.quantity=1;");

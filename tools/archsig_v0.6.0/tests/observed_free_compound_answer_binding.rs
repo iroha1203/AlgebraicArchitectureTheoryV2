@@ -2,10 +2,8 @@
 use crate::common::completion_evidence;
 use crate::common::free_compound_answer_binding as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    observed::{ObservedEvaluation, evaluate_observed_bytes},
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::{ObservedEvaluation, evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]
@@ -26,7 +24,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
+fn run(input: archsig_input::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed_bytes(input, asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())))
 }
@@ -415,7 +413,7 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 #[test]
 fn free_compound_answer_keeps_three_inputs_dag_map_owner_facts_and_current_sources() {
-    use archsig::input::check_inputs;
+    use archsig_input::input::check_inputs;
     use std::collections::BTreeSet;
     let asks = [
         "take=check(Applications.fcMap,x=$v.value)",
@@ -462,7 +460,7 @@ fn free_compound_answer_keeps_three_inputs_dag_map_owner_facts_and_current_sourc
             let origin = if let Json::Obj(m) = fact
                 && let Some(Json::Str(field)) = m.get("field")
             {
-                let archsig::archmap::Slot::Known { atom, origin, .. } =
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } =
                     &s.fields.iter().find(|f| &f.name == field).unwrap().slot
                 else {
                     panic!()
@@ -532,7 +530,10 @@ fn free_compound_answer_dynamic_public_projection_failure_keeps_conditions_and_b
             &quiet(),
         ) {
             Ok(r) => r,
-            Err(archsig::observed::EvaluationFailure::NotImplemented { feature, .. }) => {
+            Err(archsig_computation::observed::EvaluationFailure::NotImplemented {
+                feature,
+                ..
+            }) => {
                 panic!("dynamic projection escaped typed condition: {feature}")
             }
             Err(e) => panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())),

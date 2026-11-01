@@ -1,9 +1,9 @@
 //! CLI check の固定 checkpoint 取消と、配送を始めない停止。
 
 use crate::common;
-use archsig::control::{Checkpoint, Control};
-use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, run_check};
+use archsig_common::control::{Checkpoint, Control};
+use archsig_input::result::{Signal, Status};
 use common::cli::*;
 use std::cell::RefCell;
 use std::path::Path;
@@ -96,7 +96,7 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
             assert_eq!(trace.last(), Some(&point));
             assert_eq!(trace.iter().filter(|p| **p == point).count(), 1);
             assert!(outcome.result.is_none());
-            let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+            let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
             let issues = arr(get(&receipt, "issues"));
             assert_eq!(issues.len(), 1);
             assert_eq!(s(get(&issues[0], "code")), "cancelled");
@@ -139,7 +139,7 @@ fn earlier_checkpoint_signal_is_not_replaced_at_finalize() {
         let outcome = run_check(&mut NoOutput, &mut signals, &args, &control);
         assert_eq!(outcome.exit_code, code);
         assert_eq!(signals.calls, 1);
-        let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+        let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
         let issues = arr(get(&receipt, "issues"));
         assert_eq!(issues.len(), 1);
         assert_eq!(s(get(get(&issues[0], "details"), "signal")), first.wire());

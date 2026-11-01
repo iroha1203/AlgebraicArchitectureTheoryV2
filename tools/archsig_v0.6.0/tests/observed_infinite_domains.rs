@@ -1,6 +1,7 @@
 //! 検査済み無限型量化を、元の型と域を持つ未決として返す。
 use crate::common::infinite_domains as fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn field<'a>(json: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = json else {
         panic!("object")
@@ -268,7 +269,7 @@ fn infinite_domains_preserve_current_provenance_without_changing_mathematical_an
             .iter()
             .find(|f| f.name == "Paths.Node.mark")
             .unwrap();
-        let archsig::archmap::Slot::Known { atom, origin, .. } = &slot.slot else {
+        let archsig_input::archmap::Slot::Known { atom, origin, .. } = &slot.slot else {
             panic!()
         };
         assert!(array(field(&wire,"nodes")).iter().flat_map(|n|array(field(n,"support"))).any(|fact|matches!(fact,Json::Obj(o) if o.get("field")==Some(&Json::str("Paths.Node.mark"))&&o.get("subject")==Some(&Json::str("p"))&&o.get("atom")==Some(&Json::str(atom)))));

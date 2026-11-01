@@ -6,16 +6,18 @@ use crate::common::helpers::{
     ty, val,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::{
         ast::{ExprKind, QuantDomain, QuantSplit},
         model::Signature,
     },
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};
@@ -89,7 +91,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -110,7 +112,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             let at = &origin.locations[0];
             let cited_source = checked
                 .archmap()
@@ -995,11 +997,12 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             );
             let quantifier_id = declared_body(&checked, &declaration);
             let ExprKind::Quant {
-                kind: archsig::law::ast::QuantKind::Forall,
+                kind: archsig_input::law::ast::QuantKind::Forall,
                 var,
                 split:
                     QuantSplit::Fixed {
-                        domain: QuantDomain::Type(archsig::law::ast::TypeAst::Builtin(builtin, _)),
+                        domain:
+                            QuantDomain::Type(archsig_input::law::ast::TypeAst::Builtin(builtin, _)),
                         body: body_id,
                     },
             } = &checked.law().exprs()[quantifier_id].kind
@@ -1011,9 +1014,9 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             assert_eq!(
                 builtin,
                 &if ty == "Z" {
-                    archsig::law::ast::Builtin::Z
+                    archsig_input::law::ast::Builtin::Z
                 } else {
-                    archsig::law::ast::Builtin::Q
+                    archsig_input::law::ast::Builtin::Q
                 }
             );
             for id in [quantifier_id, *body_id] {

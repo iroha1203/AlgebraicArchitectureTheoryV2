@@ -1,12 +1,13 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
+    control::{Checkpoint, Control},
+};
+use archsig_computation::{
     construction::{
         ConstructionFailure, construct,
         maps::{correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
-    control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
         object_law_transport::{
@@ -14,6 +15,9 @@ use archsig::{
             ObjectLawTransport, ObjectLawTransportFailure as Error, object_law_transport,
         },
     },
+};
+use archsig_input::{
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
@@ -24,13 +28,14 @@ use crate::common::helpers::{declarations, edit, indices, remove, stop_at};
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", D),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -368,7 +373,7 @@ fn fixed_external_reference_bindings_and_original_support_are_retained() {
         .declaration()
         .expressions
         .iter()
-        .find(|e| e.kind == archsig::law::model::ExpressionKind::Body)
+        .find(|e| e.kind == archsig_input::law::model::ExpressionKind::Body)
         .unwrap()
         .span;
     assert_eq!(
@@ -384,7 +389,7 @@ fn fixed_external_reference_bindings_and_original_support_are_retained() {
         .iter()
         .find(|f| f.name == "Left.Child.count")
         .unwrap();
-    let archsig::archmap::Slot::Known { origin, .. } = &atom.slot else {
+    let archsig_input::archmap::Slot::Known { origin, .. } = &atom.slot else {
         panic!()
     };
     let origin = i
@@ -689,7 +694,7 @@ fn stopped_law_transport_retains_completed_dags_truth_and_only_completed_decisio
 #[test]
 fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["V"].digest;
     let law = "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Read { use vocabulary V version \"1\" digest \"@DIGEST@\"; law required probe(s: V.S): false; }";
     let i = Arc::new(

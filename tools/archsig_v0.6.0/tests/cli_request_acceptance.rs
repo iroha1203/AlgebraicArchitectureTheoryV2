@@ -1,12 +1,10 @@
 use crate::common::cli;
 use crate::common::quiet;
 use crate::common::request_acceptance_data as fixture;
-use archsig::{
-    json::{JNode, JValue, parse},
-    observed::{
-        PrepareFailure, evaluate_observed_bytes, prepare_observed,
-        request::{ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure},
-    },
+use archsig_common::json::{JNode, JValue, parse};
+use archsig_computation::observed::{
+    PrepareFailure, evaluate_observed_bytes, prepare_observed,
+    request::{ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure},
 };
 use cli::*;
 use std::path::{Path, PathBuf};

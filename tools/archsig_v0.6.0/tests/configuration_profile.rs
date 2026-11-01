@@ -1,10 +1,10 @@
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
+};
+use archsig_input::{
     archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
-    },
-    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -13,7 +13,7 @@ const D: &[u8] = include_bytes!("fixtures/configuration-profile.atoms.json");
 const L: &str = include_str!("fixtures/configuration-profile.law");
 const A: &str = include_str!("fixtures/configuration-profile.archmap.json");
 fn bundle(d: &[u8], l: &str, a: &str, namespace: &str, placeholder: &str) -> CheckedInputs {
-    let definitions = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let definitions = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &definitions.vocabularies()[namespace].digest;
     check_inputs(
         InputSources::from_bytes(

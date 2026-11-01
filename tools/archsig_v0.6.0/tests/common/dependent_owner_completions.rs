@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod owners {
-    use super::fixture_archsig as archsig;
+
     include!("owner_completions.rs");
 }
 #[allow(unused_imports)]
@@ -75,7 +74,8 @@ pub fn arrow() -> InputSources {
 fn nested_base() -> InputSources {
     let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Dep","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Dep.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Child","meaning":"根に属する対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Leaf","meaning":"同じ根に属する別の対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[{"name":"ok","type":"Bool","meaning":"観測条件。"}],"alignments":[]}]}]}"#;
     let checked =
-        archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
     let digest = &checked.vocabularies()["Dep"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Inspect {{ use vocabulary Dep version \"1\" digest \"{digest}\"; {NESTED_SCRIPT} }}"

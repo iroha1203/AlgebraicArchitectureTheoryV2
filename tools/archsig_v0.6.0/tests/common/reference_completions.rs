@@ -1,8 +1,8 @@
-use archsig as fixture_archsig;
-use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
+use archsig_common::canonical::Json;
+use archsig_input::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod maps {
-    use super::fixture_archsig as archsig;
+
     include!("map_application.rs");
 }
 pub const SCRIPT: &str = r#"

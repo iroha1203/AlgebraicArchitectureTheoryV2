@@ -1,5 +1,6 @@
 use crate::common::answer_dependencies as fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -205,7 +206,7 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
         let input = fixture::input("stop", revision);
         let original = input.clone();
         let c = Control::unlimited();
-        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &c).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &c).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
@@ -243,7 +244,7 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
                     .iter()
                     .find(|p| Json::str(&p.name) == fact["field"])
                     .unwrap();
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom: actual,
                     origin,
                     ..

@@ -1,13 +1,15 @@
 //! AC9: 元 Reservations 三入力の byte API と、各参照 prefix の原式・支持・由来。
-use archsig::{
-    archmap::{Mode, Slot},
+use archsig_common::{
     canonical::{Json, sha256_digest},
-    input::{CheckedInputs, InputSources, check_inputs},
     json::{JNode, JValue},
+};
+use archsig_computation::observed::{
+    ObservedEvaluation, evaluate_observed, evaluate_observed_bytes, prepare_checked_observed,
+};
+use archsig_input::{
+    archmap::{Mode, Slot},
+    input::{CheckedInputs, InputSources, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::{
-        ObservedEvaluation, evaluate_observed, evaluate_observed_bytes, prepare_checked_observed,
-    },
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -274,7 +276,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
         .supplied
         .iter()
         .filter_map(|r| match r {
-            archsig::law::model::SuppliedRule::GuardTrue { span } => Some(*span),
+            archsig_input::law::model::SuppliedRule::GuardTrue { span } => Some(*span),
             _ => None,
         })
         .collect();
@@ -455,7 +457,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
     let free = &checked.definitions().declarations()["Reservations.State"]
         .location
         .clone();
-    let archsig::issue::Location::Definition { input, pointer, .. } = free else {
+    let archsig_common::issue::Location::Definition { input, pointer, .. } = free else {
         panic!("定義位置")
     };
     assert_eq!(input, "definition0");
@@ -467,7 +469,8 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
     for (index, expected) in [(0, "free"), (1, "held")] {
         assert_eq!(fields[index].name, expected);
         assert_eq!(fields[index].ty.wire(), Json::str("Z"));
-        let archsig::issue::Location::Definition { input, pointer, .. } = &fields[index].location
+        let archsig_common::issue::Location::Definition { input, pointer, .. } =
+            &fields[index].location
         else {
             panic!("原始field位置")
         };
@@ -481,7 +484,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
 
 fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
     let mut seen = BTreeSet::new();
-    let original = archsig::json::parse(checked.sources().archmap().bytes()).unwrap();
+    let original = archsig_common::json::parse(checked.sources().archmap().bytes()).unwrap();
     for node in arr(f(wire, "nodes")) {
         for pointer in arr(f(node, "support")) {
             assert_eq!(f(pointer, "snapshot"), &Json::str("v"));

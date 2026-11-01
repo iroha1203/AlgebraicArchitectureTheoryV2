@@ -1,6 +1,8 @@
 use crate::common::identity_paths as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::check_inputs, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::check_inputs;
 use std::collections::BTreeMap;
 fn object(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(fields) = j else {

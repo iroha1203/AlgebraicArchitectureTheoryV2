@@ -1,4 +1,5 @@
-use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
+use archsig_common::canonical::Json;
+use archsig_input::{definition::check_definitions, input::InputSources};
 pub const DEFINITIONS: &str = include_str!("../fixtures/reservations.atoms.json");
 pub const SCRIPT: &str = r#"
 law required option_values(a:System,f:Option<State[a]>):f=f;

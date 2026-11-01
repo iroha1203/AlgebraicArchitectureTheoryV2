@@ -1,6 +1,7 @@
 //! 有理線形系から元Assignmentと修復後の値を計算する公開経路。
 use crate::common::cli;
-use archsig::{definition, input::InputSources, json::JNode};
+use archsig_common::json::JNode;
+use archsig_input::{definition, input::InputSources};
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
     arr(get(j, "nodes"))
@@ -319,11 +320,9 @@ fn rational_guard_and_missing_preserve_original_parameters_and_needed_field() {
 
 #[test]
 fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = input(
         "rational-stop",
@@ -335,7 +334,7 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
         if point == Checkpoint::ChangeWitness {
             count.set(count.get() + 1);
         }
-        (count.get() == 2).then_some(archsig::result::Signal::Term)
+        (count.get() == 2).then_some(archsig_input::result::Signal::Term)
     });
     let source = InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -352,7 +351,7 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
     )
     .unwrap();
     assert_eq!(seen.get(), 2);
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let answers = arr(get(&wire, "answers"));
     let first = &answers[0];
     assert_eq!(s(get(first, "status")), "undetermined");
@@ -435,10 +434,8 @@ fn missing_sources(body: &str) -> InputSources {
 
 #[test]
 fn rational_missing_conditions_keep_source_binding_and_needed_field() {
-    use archsig::{
-        control::Control,
-        observed::{evaluate_observed, prepare_observed},
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::{evaluate_observed, prepare_observed};
     for (guard, body, parameter_count) in MISSING_CONDITIONS {
         let sources = missing_sources(body);
         let law = std::str::from_utf8(sources.law().bytes())
@@ -448,7 +445,7 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
         let prepared = prepare_observed(sources, &MISSING_ASKS, &control).unwrap();
         let result = evaluate_observed(prepared, &control).unwrap();
         assert_eq!(result.status(), "partial", "{guard}");
-        let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let internal = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&internal, "answers"))[0];
         let reason = arr(get(answer, "reasons"))
             .iter()
@@ -920,7 +917,7 @@ fn rational_quotient_finite_law_instances_keep_guard_false_keys() {
 }
 
 fn get_bool(value: &JNode) -> bool {
-    if let archsig::json::JValue::Bool(value) = value.value {
+    if let archsig_common::json::JValue::Bool(value) = value.value {
         value
     } else {
         panic!("Boolが必要")
@@ -1636,7 +1633,8 @@ fn rational_conjunction_build_keeps_missing_operands_and_unknown_guards() {
 
 #[test]
 fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
-    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     for (guard, domain) in [
         ("s.x=0 and s.x=1", "$s.domain"),
         ("s.x=0 and s.y=0", "$s.solutions"),
@@ -1656,7 +1654,7 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
             "inconsistent guard must have empty applicability"
         );
         let result = evaluated.unwrap();
-        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
         let q = get(output(&j, 1, "quotient"), "value");
         let descent = get(node(&j, get(q, "descent")), "value");
@@ -1670,12 +1668,13 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
 }
 
 fn conditional_internal(body: &str, asks: &[&str]) -> JNode {
-    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     let result = evaluate_observed_bytes(input_sources(body), asks, &Control::unlimited());
     let Ok(result) = result else {
         panic!("conditional quotient must complete")
     };
-    archsig::json::parse(result.wire().canonical().as_bytes()).unwrap()
+    archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap()
 }
 fn conditional_descent(j: &JNode, index: usize) -> &JNode {
     let q = get(output(j, index, "quotient"), "value");
@@ -1873,7 +1872,8 @@ fn quotient_nonempty_guard_on_quotient_coordinate_cli() {
 }
 #[test]
 fn quotient_variable_guard_missing_is_not_empty_and_empty_skips_missing_body() {
-    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     for (guard, expected) in [
         ("s.x=0 and s.y=1", "undetermined"),
         ("s.x=0 and s.x=1", "established"),
@@ -1893,7 +1893,7 @@ fn quotient_variable_guard_missing_is_not_empty_and_empty_skips_missing_body() {
         let Ok(result) = result else {
             panic!("missing and empty must remain separate")
         };
-        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&j, "answers"))[1];
         assert_eq!(s(get(answer, "status")), expected);
         if expected == "undetermined" {
@@ -1950,11 +1950,9 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
 }
 #[test]
 fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
-    use archsig::result::Signal;
-    use archsig::{
-        control::{Checkpoint, Control},
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     for signal in [Signal::Int, Signal::Term] {
         let hit = Rc::new(Cell::new(false));
@@ -1984,16 +1982,17 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
         };
         assert!(hit.get(), "stop must occur inside guarded family assembly");
         assert_eq!(control.stop_reason(), Some(signal));
-        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&j, "answers"));
         assert_eq!(answers.len(), 3);
         assert_eq!(s(get(&answers[0], "status")), "established");
         assert!(has(get(&answers[0], "outputs"), "solutions"));
-        let expected_wire = archsig::json::parse(signal.issue().canonical().as_bytes()).unwrap();
+        let expected_wire =
+            archsig_common::json::parse(signal.issue().canonical().as_bytes()).unwrap();
         for (answer, id) in answers[1..].iter().zip(["q", "later"]) {
             assert_eq!(s(get(answer, "id")), id);
             assert_eq!(s(get(answer, "status")), "undetermined");
-            let archsig::json::JValue::Obj(outputs) = &get(answer, "outputs").value else {
+            let archsig_common::json::JValue::Obj(outputs) = &get(answer, "outputs").value else {
                 panic!("outputs must be an object")
             };
             assert!(outputs.is_empty());
@@ -2056,14 +2055,14 @@ fn rational_unknown_guard_keeps_its_own_source_bindings_and_free_parameter() {
     let law = std::str::from_utf8(sources.law().bytes())
         .unwrap()
         .to_owned();
-    let evaluated = archsig::observed::evaluate_observed_bytes(
+    let evaluated = archsig_computation::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,on=@v/s,using=Pair.choose,c=@v/s)"],
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(evaluated.status(), "partial");
-    let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
     let a = &arr(get(&j, "answers"))[0];
     let reason = arr(get(a, "reasons"))
         .iter()

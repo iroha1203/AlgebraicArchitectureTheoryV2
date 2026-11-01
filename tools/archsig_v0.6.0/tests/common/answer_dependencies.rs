@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("answer_bindings.rs");
 }
 pub const SCRIPT: &str = r#"

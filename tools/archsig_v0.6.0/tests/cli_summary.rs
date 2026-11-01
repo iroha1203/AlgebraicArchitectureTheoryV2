@@ -34,9 +34,9 @@ fn execute(dir: &Path, asks: &[&str], extra: &[&str]) -> Run {
     args.extend(extra);
     run(dir, &args)
 }
-fn no_saved_proofs(result: &archsig::json::JNode) {
+fn no_saved_proofs(result: &archsig_common::json::JNode) {
     for node in arr(get(result, "nodes")) {
-        if let archsig::json::JValue::Str(ty) = &get(node, "type").value {
+        if let archsig_common::json::JValue::Str(ty) = &get(node, "type").value {
             assert!(!matches!(ty.as_str(), "Evidence" | "Evaluation"));
             if ty == "Counterexample" {
                 assert!(matches!(
@@ -259,10 +259,10 @@ fn daily_answers_return_values_refutations_and_missing_without_files() {
         }
         for node in arr(get(&result, "nodes")) {
             assert!(
-                !matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if matches!(t.as_str(), "Evaluation" | "Expression" | "LawInstance" | "Proposition"))
+                !matches!(&get(node,"type").value, archsig_common::json::JValue::Str(t) if matches!(t.as_str(), "Evaluation" | "Expression" | "LawInstance" | "Proposition"))
             );
             assert!(!has(node, "evidence"));
-            if matches!(&get(node,"type").value, archsig::json::JValue::Str(t) if t == "Counterexample")
+            if matches!(&get(node,"type").value, archsig_common::json::JValue::Str(t) if t == "Counterexample")
             {
                 assert!(matches!(
                     s(get(get(node, "value"), "kind")),
@@ -334,7 +334,8 @@ fn large_requested_values_are_available_in_explicit_saved_results() {
 #[test]
 fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation() {
     use crate::common::architecture_environment as fixture;
-    use archsig::{canonical::Json, definition};
+    use archsig_common::canonical::Json;
+    use archsig_input::definition;
     let dir = workdir("summary-diagnostics");
     let original = include_str!("fixtures/reservations.atoms.json");
     let definition = original.replace("\"type\": \"Z\"", "\"type\": \"Q\"");
@@ -347,7 +348,7 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     let text = include_str!("fixtures/configuration-operation.archmap.json").replace(old, digest)
         .replace("\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"4\"", "\"id\":\"r-free\",\"subject\":\"r\",\"field\":\"Reservations.State.free\",\"value\":\"2\"")
         .replace("\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"3\"", "\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"1\"");
-    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    let mut map = fixture::owned(&archsig_common::json::parse(text.as_bytes()).unwrap());
     // 診断の比較に使うのは移行mと状態p,q,r,sだけなので、他の移行と予約操作を外す。
     let unused = |value: Option<&Json>| matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()));
     {

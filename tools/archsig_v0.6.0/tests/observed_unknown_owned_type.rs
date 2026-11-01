@@ -1,6 +1,8 @@
 use crate::common::quiet;
 use crate::common::unknown_owned_type as fixture;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!("object") };
     &o[k]
@@ -22,7 +24,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let c = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+    let c = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
     let r = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert_eq!(r.prepared().inputs().definitions(), c.definitions());
@@ -373,7 +375,7 @@ fn owned_map_type_provenance_pair_keeps_math_and_current_three_inputs() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("plain", revision);
-        let c = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let c = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         assert_eq!(c.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.typeEvery,a=@v/A,b=@v/A)"]);
         established(&w, "x", true);

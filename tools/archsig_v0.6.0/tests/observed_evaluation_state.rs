@@ -1,13 +1,15 @@
 //! AC14: 三入力 byte から混在状態・停止時の確定判断保持までを接続する。
-use archsig::{
-    archmap::{Slot, Value},
+use archsig_common::{
     canonical::{Json, sha256_digest},
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::{
+    EvaluationFailure, PrepareFailure, evaluate_observed_bytes,
+    request::{RequestIssueCode, ResolveFailure},
+};
+use archsig_input::{
+    archmap::{Slot, Value},
     input::{InputSources, check_inputs},
-    observed::{
-        EvaluationFailure, PrepareFailure, evaluate_observed_bytes,
-        request::{RequestIssueCode, ResolveFailure},
-    },
     result::Signal,
 };
 use std::{
@@ -295,7 +297,7 @@ fn assert_known_answers(wire: &Json) {
         .iter()
         .find(|o| &o.id == origin)
         .unwrap();
-    assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+    assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
     let absent = snapshot.subjects.iter().find(|s| s.id == "t").unwrap();
     assert_eq!(absent.pointer, "/snapshots/0/subjects/1");
     assert!(matches!(&absent.fields[0].slot, Slot::Missing));

@@ -1,14 +1,13 @@
-use archsig as fixture_archsig;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("map_application.rs");
 }
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    input::InputSources,
     json::{JNode, JValue, parse},
 };
+use archsig_input::input::InputSources;
 pub const SCRIPT: &str = r#"
 view mcMissingZero(p:Reservations.State):Z=p.free-p.free;
 view mcObserved(a:Reservations.System,b:Reservations.System,m:Reservations.Migration,p:Reservations.State):Bool=let zero=p.free-p.free in mcParameter(a,b,m);

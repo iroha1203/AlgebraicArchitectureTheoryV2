@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::{definition::check_definitions, input::InputSources};
+use archsig_input::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod fields {
-    use super::fixture_archsig as archsig;
+
     include!("affine_field_chains.rs");
 }
 pub fn input(script: &str, number: &str, omitted: &[&str], revision: &str) -> InputSources {

@@ -1,4 +1,4 @@
-use archsig::{definition::check_definitions, input::InputSources};
+use archsig_input::{definition::check_definitions, input::InputSources};
 pub const DEFINITIONS: &str = r#"{
   "format": "archsig.atom-definition/1",
   "semantics": "archsig/0.6.0",
@@ -553,41 +553,42 @@ pub fn input(quantity_variant: bool) -> InputSources {
 }
 pub fn mismatched_input(kind: usize) -> InputSources {
     let normal = input(false);
-    let mut map = super::fixture::convert(&archsig::json::parse(normal.archmap().bytes()).unwrap());
-    let archsig::canonical::Json::Obj(root) = &mut map else {
+    let mut map =
+        super::fixture::convert(&archsig_common::json::parse(normal.archmap().bytes()).unwrap());
+    let archsig_common::canonical::Json::Obj(root) = &mut map else {
         panic!()
     };
-    let archsig::canonical::Json::Arr(snaps) = root.get_mut("snapshots").unwrap() else {
+    let archsig_common::canonical::Json::Arr(snaps) = root.get_mut("snapshots").unwrap() else {
         panic!()
     };
-    let archsig::canonical::Json::Obj(snap) = &mut snaps[0] else {
+    let archsig_common::canonical::Json::Obj(snap) = &mut snaps[0] else {
         panic!()
     };
-    let archsig::canonical::Json::Arr(atoms) = snap.get_mut("atoms").unwrap() else {
+    let archsig_common::canonical::Json::Arr(atoms) = snap.get_mut("atoms").unwrap() else {
         panic!()
     };
     for a in atoms {
-        let archsig::canonical::Json::Obj(a) = a else {
+        let archsig_common::canonical::Json::Obj(a) = a else {
             panic!()
         };
-        if a["id"] == archsig::canonical::Json::str("r-targets") {
-            let archsig::canonical::Json::Arr(parts) = a.get_mut("value").unwrap() else {
+        if a["id"] == archsig_common::canonical::Json::str("r-targets") {
+            let archsig_common::canonical::Json::Arr(parts) = a.get_mut("value").unwrap() else {
                 panic!()
             };
             match kind {
                 0 => {
-                    let archsig::canonical::Json::Arr(list) = &mut parts[0] else {
+                    let archsig_common::canonical::Json::Arr(list) = &mut parts[0] else {
                         panic!()
                     };
                     list.pop();
                 }
                 1 => {
-                    parts[1] = archsig::canonical::Json::obj([(
+                    parts[1] = archsig_common::canonical::Json::obj([(
                         "none",
-                        archsig::canonical::Json::Bool(true),
+                        archsig_common::canonical::Json::Bool(true),
                     )])
                 }
-                _ => parts[2] = archsig::canonical::Json::Arr(vec![]),
+                _ => parts[2] = archsig_common::canonical::Json::Arr(vec![]),
             }
         }
     }
@@ -598,7 +599,7 @@ pub fn mismatched_input(kind: usize) -> InputSources {
     )
 }
 pub fn unmatched_root_field_input() -> InputSources {
-    use archsig::{canonical::Json, json::parse};
+    use archsig_common::{canonical::Json, json::parse};
     let normal = input(false);
     let mut definitions = super::fixture::convert(&parse(DEFINITIONS.as_bytes()).unwrap());
     let Json::Obj(root) = &mut definitions else {

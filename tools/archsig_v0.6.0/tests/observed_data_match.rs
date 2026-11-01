@@ -5,13 +5,15 @@ use crate::common::helpers::{
     reached, refs, source, span, target, text, val,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};
@@ -185,7 +187,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -206,7 +208,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             let at = &origin.locations[0];
             assert_eq!(
                 at.path,
@@ -415,7 +417,8 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
         "同じ値でも観測と別producerを共有しない"
     );
     let declaration = &checked.law().definitions().declarations()["Cases.Packet"];
-    let archsig::definition::PrimitiveSignature::Data { constructors } = &declaration.signature
+    let archsig_input::definition::PrimitiveSignature::Data { constructors } =
+        &declaration.signature
     else {
         panic!("data定義")
     };
@@ -424,7 +427,7 @@ fn nonrecursive_data_constructors_preserve_payload_types_and_origins() {
         (&declaration.location, "/declarations/0"),
         (&constructors[1].location, "/declarations/0/constructors/1"),
     ] {
-        let archsig::issue::Location::Definition { input, pointer, .. } = location else {
+        let archsig_common::issue::Location::Definition { input, pointer, .. } = location else {
             panic!("定義元Location")
         };
         assert_eq!(input, "definition0");

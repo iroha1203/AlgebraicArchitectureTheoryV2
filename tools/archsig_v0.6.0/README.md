@@ -23,14 +23,15 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 
 | package | 担当 | entry point |
 | --- | --- | --- |
-| `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `src/common_lib.rs` |
-| `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `src/input_lib.rs` |
-| `archsig-computation` | construction・observedとowner補完 | `src/computation_lib.rs` |
-| `archsig` | run・main、既存ライブラリ経路のre-export | `src/lib.rs`、`src/main.rs` |
+| `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
+| `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
+| `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
+| `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
-各packageのmanifestは`crates/`にあり、ソースは既存の`src/`配置を保持します。
-各モジュールは担当crateで一度だけコンパイルします。統合テストの
-`archsig::archmap`などの経路はCLI packageのre-exportで維持します。
+下位3 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
+各モジュールは担当crateで一度だけコンパイルします。統合テストも
+`archsig_input::archmap`、`archsig_computation::observed`など所有crateを直接参照し、
+CLI packageから下位モジュールを再公開しません。
 検査済み入力は共有参照のgetterで読み取り、上位crateから構築・更新できません。
 
 workspaceの`default-members`は4 packageすべてです。既存のmanifest指定の

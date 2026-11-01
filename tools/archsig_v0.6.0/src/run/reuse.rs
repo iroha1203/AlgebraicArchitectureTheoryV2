@@ -1,12 +1,10 @@
 //! 候補を現在の検査済み導出へ照合し、推論は採用せず全再計算する。
-use crate::canonical::Json;
-use crate::json::{JNode, JValue};
-use crate::result::ResultIssue;
-use crate::{
-    control::{CheckFailure, Checkpoint, Control},
-    observed::ObservedEvaluation,
-    result::Signal,
-};
+use archsig_common::canonical::Json;
+use archsig_common::control::{CheckFailure, Checkpoint, Control};
+use archsig_common::json::{JNode, JValue};
+use archsig_computation::observed::ObservedEvaluation;
+use archsig_input::result::ResultIssue;
+use archsig_input::result::Signal;
 use std::{
     collections::BTreeMap,
     io::Read,
@@ -90,11 +88,10 @@ pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidat
             return Ok(candidate);
         }
     };
-    let document = match crate::json::parse_inner::<CheckFailure<Box<crate::issue::Issue>>>(
-        &bytes,
-        control,
-        Checkpoint::Reuse,
-    ) {
+    let document = match archsig_common::json::parse_inner::<
+        CheckFailure<Box<archsig_common::issue::Issue>>,
+    >(&bytes, control, Checkpoint::Reuse)
+    {
         Ok(document) => document,
         Err(CheckFailure::Stopped(reason)) => return Err(reason),
         Err(CheckFailure::Input(issue)) => {
@@ -160,14 +157,14 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
 }
 fn nat(node: &JNode) -> Checked<()> {
     match &node.value {
-        JValue::Num(s) if crate::archmap::nat_value(s).is_some() => Ok(()),
+        JValue::Num(s) if archsig_input::archmap::nat_value(s).is_some() => Ok(()),
         _ => Err(invalid("Nat must be an integer in 0..9007199254740991")),
     }
 }
 fn header(document: &JNode, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
-    if text(field(document, "format")?)? != crate::result::RESULT_FORMAT
-        || text(field(document, "semantics")?)? != crate::law::SEMANTICS
+    if text(field(document, "format")?)? != archsig_input::result::RESULT_FORMAT
+        || text(field(document, "semantics")?)? != archsig_input::law::SEMANTICS
     {
         return Err(invalid(
             "format/semantics does not match the supported version",
@@ -253,7 +250,7 @@ fn normalized_candidate(
         Ok(match &node.value {
             JValue::Bool(b) => Json::Bool(*b),
             JValue::Num(s) => {
-                Json::Nat(crate::archmap::nat_value(s).ok_or_else(|| {
+                Json::Nat(archsig_input::archmap::nat_value(s).ok_or_else(|| {
                     invalid("value is outside the Nat range or is not an integer")
                 })?)
             }
@@ -323,9 +320,10 @@ fn normalized_wire(
     })
 }
 fn encoding(json: &Json, control: &Control) -> Checked<String> {
-    match json
-        .canonical_controlled::<CheckFailure<Box<crate::issue::Issue>>>(control, Checkpoint::Reuse)
-    {
+    match json.canonical_controlled::<CheckFailure<Box<archsig_common::issue::Issue>>>(
+        control,
+        Checkpoint::Reuse,
+    ) {
         Ok(s) => Ok(s),
         Err(CheckFailure::Stopped(reason)) => Err(Failure::Stopped(reason)),
         Err(CheckFailure::Input(issue)) => Err(invalid(issue.message)),

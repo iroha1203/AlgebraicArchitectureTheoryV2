@@ -2,11 +2,11 @@
 use crate::common::finite_map as maps;
 use crate::common::helpers::obj;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
 };
 use std::collections::BTreeSet;
 fn sources(revision: &str) -> InputSources {
@@ -164,7 +164,7 @@ fn finite_map_type_domain_enumerates_all_four_functions_across_snapshots() {
             .iter()
             .flat_map(|s| &s.subjects)
             .flat_map(|s| &s.fields)
-            .all(|f| matches!(f.slot, archsig::archmap::Slot::Missing))
+            .all(|f| matches!(f.slot, archsig_input::archmap::Slot::Missing))
     );
 }
 
@@ -184,7 +184,7 @@ fn refs(j: &Json, rs: &mut Vec<String>) {
         _ => {}
     }
 }
-fn audit(result: &archsig::observed::ObservedEvaluation) {
+fn audit(result: &archsig_computation::observed::ObservedEvaluation) {
     let w = result.wire();
     let mut seen = BTreeSet::new();
     let checked = result.prepared().inputs();
@@ -225,7 +225,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                     .iter()
                     .find(|f| f.name == text(field))
                     .unwrap();
-                let archsig::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
                     panic!("support is known")
                 };
                 assert_eq!(get(fact, "atom"), &Json::str(atom));
@@ -603,7 +603,7 @@ fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims
                 original.archmap().bytes().to_vec(),
             );
             let checked = check_inputs(input.clone(), &quiet()).unwrap();
-            let archsig::law::model::Signature::Law { params, body, .. } =
+            let archsig_input::law::model::Signature::Law { params, body, .. } =
                 &checked.law().declarations()["Reservations.nested"].signature
             else {
                 panic!("Law signature");

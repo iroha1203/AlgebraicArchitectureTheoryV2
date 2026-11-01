@@ -1,16 +1,14 @@
 //! 検査済み三入力から観測評価と公開結果の配送を接続する。
 
 use super::{Io, Outcome, RunArgs, Signals, output, read};
-use crate::canonical::Json;
-use crate::result::{ResultIssue, Signal, Status, exit_code};
-use crate::{
-    control::Control,
-    input::{InputSources, InputStatus},
-    observed::{
-        EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
-        request::ResolveFailure,
-    },
+use archsig_common::canonical::Json;
+use archsig_common::control::Control;
+use archsig_computation::observed::{
+    EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
+    request::ResolveFailure,
 };
+use archsig_input::input::{InputSources, InputStatus};
+use archsig_input::result::{ResultIssue, Signal, Status, exit_code};
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
     failure(
@@ -241,8 +239,8 @@ fn deliver(
         Json::Arr(identities.iter().map(|i| i.wire()).collect()),
     );
     for (key, value) in [
-        ("format", Json::str(crate::result::RESULT_FORMAT)),
-        ("semantics", Json::str(crate::law::SEMANTICS)),
+        ("format", Json::str(archsig_input::result::RESULT_FORMAT)),
+        ("semantics", Json::str(archsig_input::law::SEMANTICS)),
         ("command", Json::str("run")),
         ("status", Json::str(status.wire())),
         ("exit_code", Json::Nat(u64::from(code))),

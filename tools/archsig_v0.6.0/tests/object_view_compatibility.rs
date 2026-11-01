@@ -1,20 +1,19 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    input::{CheckedInputs, InputSources, check_inputs},
-    observed::{
-        object_evaluate::ObjectEvaluationOutcome,
-        object_view_compatibility::{
-            ObjectViewCompatibility, ViewCompatibilityCondition as Failed,
-            ViewCompatibilityOutcome as Outcome, object_view_compatibility,
-        },
+use archsig_common::canonical::Json;
+use archsig_computation::observed::{
+    object_evaluate::ObjectEvaluationOutcome,
+    object_view_compatibility::{
+        ObjectViewCompatibility, ViewCompatibilityCondition as Failed,
+        ViewCompatibilityOutcome as Outcome, object_view_compatibility,
     },
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use fixture::{A, D};
 use std::sync::Arc;
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
-    let defs = archsig::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
     let digest = &defs.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
@@ -243,7 +242,7 @@ fn conditional_membership_and_known_conflicts_keep_their_separate_evidence() {
 
 #[test]
 fn unsupported_parameter_evaluation_is_preserved_as_an_execution_failure() {
-    use archsig::observed::object_evaluate::ObjectEvaluationFailure;
+    use archsig_computation::observed::object_evaluate::ObjectEvaluationFailure;
     let i = inputs("view family(c:Part,n:Z):Z=n+c.quantity;", A);
     let f = object_view_compatibility(i, "Selected", "v", "root", &quiet()).unwrap_err();
     assert!(matches!(

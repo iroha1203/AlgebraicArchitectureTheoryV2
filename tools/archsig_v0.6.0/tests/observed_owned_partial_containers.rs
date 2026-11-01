@@ -1,9 +1,9 @@
 //! 部分Option/Setの所属を元三入力から計算する。
 use crate::common::helpers::get;
 use crate::common::owned_partial_containers as fixture;
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -20,7 +20,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
-fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run_input(i: InputSources, asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let original = i.clone();
     let r = evaluate_observed_bytes(i, asks, &Control::unlimited())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
@@ -28,7 +28,7 @@ fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvalu
     assert_eq!(r.prepared().inputs().sources(), &original);
     r
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     run_input(fixture::input(false, "r1"), asks)
 }
 fn codes(a: &Json) -> Vec<&Json> {
@@ -52,11 +52,9 @@ fn assert_failed(w: &Json, id: &str) {
     assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
     assert!(!arr(get(c, "support")).is_empty());
 }
-fn assert_original_arrow_owner(r: &archsig::observed::ObservedEvaluation) {
-    use archsig::{
-        archmap::{Slot, Value},
-        types::Type,
-    };
+fn assert_original_arrow_owner(r: &archsig_computation::observed::ObservedEvaluation) {
+    use archsig_common::types::Type;
+    use archsig_input::archmap::{Slot, Value};
     let snapshot = r
         .prepared()
         .inputs()
@@ -138,7 +136,7 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
             .unwrap();
         if matches!(
             law.expr_type(id),
-            Some(archsig::types::Type::Set(_) | archsig::types::Type::Option(_))
+            Some(archsig_common::types::Type::Set(_) | archsig_common::types::Type::Option(_))
         ) {
             let Json::Obj(m) = ev else { panic!() };
             assert!(!m.contains_key("value"));

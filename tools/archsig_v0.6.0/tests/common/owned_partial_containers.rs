@@ -1,9 +1,8 @@
-use archsig as fixture_archsig;
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("owned_partial_calls.rs");
 }
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 pub const SCRIPT: &str = r#"
 view ocSome(a:System,x:Option<(State[a],Z)>):Bool=true;
 view ocSet(a:System,x:Set<(State[a],Z)>):Bool=true;

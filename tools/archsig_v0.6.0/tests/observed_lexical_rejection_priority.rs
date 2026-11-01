@@ -1,11 +1,13 @@
 //! 必須の字句拒否を確定した直後にも、観測した停止を共有停止理由として報告する。
 use crate::common;
-use archsig::{
-    archmap::check_archmap,
+use archsig_common::{
     control::{Checkpoint, Control},
+    issue::{Code, Issue, Location},
+};
+use archsig_input::{
+    archmap::check_archmap,
     definition::check_definitions,
     input::{InputSources, InputStatus, check_inputs},
-    issue::{Code, Issue, Location},
     result::ResultIssue,
     result::Signal,
 };

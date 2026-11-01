@@ -1,7 +1,6 @@
-use archsig::{
+use archsig_common::control::Control;
+use archsig_computation::{
     construction::ConstructionFailure,
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_law_circuit_transport::{
             LawCircuitTransportFailureCause, LawCircuitTransportOutcome as Outcome,
@@ -11,6 +10,7 @@ use archsig::{
         object_law_transport::LawTransportOutcome,
     },
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
@@ -18,13 +18,14 @@ use crate::common::helpers::{declarations, indices};
 use crate::common::quiet;
 fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", D),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -158,7 +159,7 @@ fn bool_fp_parameter_images_cover_all_six_arguments_and_accept_exact_nonzero_cas
         assert_eq!(p.target_bindings[1].0, "g");
         assert_eq!(
             p.source_bindings[0].1.wire(),
-            archsig::canonical::Json::Bool(b)
+            archsig_common::canonical::Json::Bool(b)
         );
         assert_eq!(
             p.source_bindings[1].1.wire().canonical(),
@@ -277,15 +278,15 @@ fn original_nonnumeric_body_and_different_numeric_component_types_are_distinct()
     assert!(matches!(
         r.outcome(),
         Outcome::Construction {
-            source: archsig::observed::object_law_circuits::LawCircuitsCondition::Unsupported,
-            target: archsig::observed::object_law_circuits::LawCircuitsCondition::Unsupported
+            source: archsig_computation::observed::object_law_circuits::LawCircuitsCondition::Unsupported,
+            target: archsig_computation::observed::object_law_circuits::LawCircuitsCondition::Unsupported
         }
     ));
     let i = ground("2=0", "rat(1,2)=rat(0,1)");
     let r = run(i.clone());
     assert_eq!(r.base().outcome(), &LawTransportOutcome::Preserved);
     assert!(
-        matches!(r.outcome(),Outcome::Refuted(Refuted::Components{source,target}) if source==&vec![(vec![],archsig::types::Type::Z)]&&target==&vec![(vec![],archsig::types::Type::Q)])
+        matches!(r.outcome(),Outcome::Refuted(Refuted::Components{source,target}) if source==&vec![(vec![],archsig_common::types::Type::Z)]&&target==&vec![(vec![],archsig_common::types::Type::Q)])
     );
     r.recheck(i, &quiet()).unwrap();
 }
@@ -310,7 +311,8 @@ fn changed_current_inputs_reject_previous_transport() {
 }
 #[test]
 fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_frozen_probes() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required measure(c:Left.Child,b:Bool):(if b then 1 else 0,1)=(0,0);",
@@ -374,7 +376,8 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
 }
 #[test]
 fn source_or_target_circuit_failure_keeps_completed_other_side_and_original_operation() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = ground("2=0", "3=0");
     let d = declarations(&i);
@@ -436,11 +439,11 @@ fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_ima
         );
         assert_eq!(
             p.source_bindings[0].1.wire(),
-            archsig::canonical::Json::Bool(b)
+            archsig_common::canonical::Json::Bool(b)
         );
         assert_eq!(
             p.target_bindings[0].1.wire(),
-            archsig::canonical::Json::Bool(b)
+            archsig_common::canonical::Json::Bool(b)
         );
         for (side, circuit) in [
             (r.source().unwrap(), p.source_circuit),
@@ -451,7 +454,7 @@ fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_ima
             assert_eq!(circuit.points.len(), 2);
             assert_eq!(
                 circuit.points[j].arguments[0].wire(),
-                archsig::canonical::Json::Bool(b)
+                archsig_common::canonical::Json::Bool(b)
             );
             assert_eq!(circuit.points[j].when, Some(false));
             assert!(!circuit.points[j].witnesses.is_empty());
@@ -497,14 +500,16 @@ fn a_failed_fixed_extension_keeps_its_refutation_and_does_not_generate_transport
     assert!(matches!(
         r.outcome(),
         Outcome::Construction {
-            source: archsig::observed::object_law_circuits::LawCircuitsCondition::ConditionFailed,
+            source: archsig_computation::observed::object_law_circuits::LawCircuitsCondition::ConditionFailed,
             ..
         }
     ));
     assert!(r.points().is_empty());
     assert!(matches!(
         r.source().unwrap().base().outcome(),
-        Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
+        Some(
+            archsig_computation::observed::object_law_residuals::LawResidualOutcome::Refuted { .. }
+        )
     ));
     r.base().operation().recheck(&i, &quiet()).unwrap();
     r.recheck(i, &quiet()).unwrap();
@@ -544,14 +549,14 @@ fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as
 }
 #[test]
 fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_operation() {
-    use archsig::observed::object_law_circuits::LawCircuitDetector as Detector;
+    use archsig_computation::observed::object_law_circuits::LawCircuitDetector as Detector;
     let i = ground("2=0", "0=0");
     let r = run(i.clone());
     assert!(r.is_complete());
     assert!(matches!(
         r.outcome(),
         Outcome::Original(LawTransportOutcome::Refuted(
-            archsig::observed::object_law_transport::LawConditionFailure::Holds
+            archsig_computation::observed::object_law_transport::LawConditionFailure::Holds
         ))
     ));
     assert_eq!(r.base().source_reading().unwrap().body(), Some(false));
@@ -598,7 +603,7 @@ fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_opera
 }
 #[test]
 fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence() {
-    use archsig::observed::object_law_circuits::{
+    use archsig_computation::observed::object_law_circuits::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition,
     };
     let missing = A
@@ -650,7 +655,8 @@ fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence(
 }
 #[test]
 fn side_construction_stops_retain_the_already_refuted_original_condition() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = ground("2=0", "0=0");
     let d = declarations(&i);

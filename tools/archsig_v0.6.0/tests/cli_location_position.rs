@@ -1,6 +1,6 @@
 //! 元 byte span と、人が読む1始まりの Unicode scalar 位置。
 use crate::common;
-use archsig::json::{JNode, JValue};
+use archsig_common::json::{JNode, JValue};
 use common::cli::*;
 
 const D: &str = include_str!("fixtures/counter.atoms.json");

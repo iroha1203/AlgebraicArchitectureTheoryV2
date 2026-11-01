@@ -1,8 +1,8 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    input::InputSources,
     json::{JNode, JValue, parse},
 };
+use archsig_input::input::InputSources;
 pub const SCRIPT: &str = r#"
 view step(m:Migration):Path<System,System> =path(m);
 view keep(p:Path<System,System>):Path<System,System> =p;

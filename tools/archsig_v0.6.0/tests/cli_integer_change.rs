@@ -2,7 +2,8 @@
 use crate::common::cli;
 use crate::common::helpers::execute;
 use crate::common::object_view_compatibility_data as local_fixture;
-use archsig::{definition, json::JNode};
+use archsig_common::json::JNode;
+use archsig_input::definition;
 use cli::*;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"整数対。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, change: &str) -> std::path::PathBuf {
@@ -646,19 +647,19 @@ fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() 
         "integer-nonlinear",
         "change setpair(s:State,a:Z,b:Z)=s with{x=a*a,y=b};",
     );
-    let sources = archsig::input::InputSources::from_bytes(
+    let sources = archsig_input::input::InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
     );
-    let observed = archsig::observed::evaluate_observed_bytes(
+    let observed = archsig_computation::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(observed.status(), "partial");
-    let internal = archsig::json::parse(observed.wire().canonical().as_bytes()).unwrap();
+    let internal = archsig_common::json::parse(observed.wire().canonical().as_bytes()).unwrap();
     let reason = &arr(get(&arr(get(&internal, "answers"))[0], "reasons"))[0];
     let source = node(&internal, &arr(get(reason, "dependencies"))[0]);
     let parameters = arr(get(get(source, "value"), "parameters"));
@@ -801,11 +802,9 @@ fn assert_module_owners(result: &JNode) {
 
 #[test]
 fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = input(
         "integer-stop",
@@ -817,7 +816,7 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
         if point == Checkpoint::ChangeWitness {
             count.set(count.get() + 1);
         }
-        (count.get() == 2).then_some(archsig::result::Signal::Term)
+        (count.get() == 2).then_some(archsig_input::result::Signal::Term)
     });
     let source = InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -834,7 +833,7 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
     )
     .unwrap();
     assert_eq!(seen.get(), 2);
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let answers = arr(get(&wire, "answers"));
     let first = &answers[0];
     assert_eq!(s(get(first, "status")), "undetermined");
@@ -1204,11 +1203,9 @@ fn integer_quotient_keeps_repaired_architecture_offset() {
 }
 #[test]
 fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = input(
         "integer-quotient-stop",
@@ -1220,7 +1217,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
         if point == Checkpoint::Quotient {
             count.set(count.get() + 1);
         }
-        (count.get() == 2).then_some(archsig::result::Signal::Term)
+        (count.get() == 2).then_some(archsig_input::result::Signal::Term)
     });
     let sources = InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -1236,7 +1233,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
         &c,
     )
     .unwrap();
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let answers = arr(get(&wire, "answers"));
     assert_eq!(seen.get(), 2);
     assert_eq!(s(get(&answers[0], "status")), "established");
@@ -1336,7 +1333,9 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
         assert_eq!(key.len(), 1);
         assert_eq!(
             key[0].value,
-            archsig::json::parse(br#"["pair","s"]"#).unwrap().value
+            archsig_common::json::parse(br#"["pair","s"]"#)
+                .unwrap()
+                .value
         );
     }
     assert_eq!(s(get(&answers[2], "status")), "refuted");
@@ -1367,7 +1366,7 @@ fn integer_law_descent_uses_value_pairs_and_the_actual_image_basis() {
         let evaluation = get(node(&result, evaluation), "value");
         assert_eq!(
             get(node(&result, get(evaluation, "value")), "value").value,
-            archsig::json::JValue::Bool(true)
+            archsig_common::json::JValue::Bool(true)
         );
         assert!(has(evaluation, "environment"));
         assert!(!has(evaluation, "parts"));
@@ -1459,11 +1458,9 @@ fn integer_law_descent_missing_operands_do_not_become_a_true_constant_family() {
 
 #[test]
 fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     use std::{cell::Cell, rc::Rc};
     let dir = input(
         "integer-law-stop",
@@ -1480,7 +1477,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
         if active.get() && point == Checkpoint::FiniteLawOperand {
             stopped.set(true);
         }
-        stopped.get().then_some(archsig::result::Signal::Term)
+        stopped.get().then_some(archsig_input::result::Signal::Term)
     });
     let sources = InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
@@ -1497,7 +1494,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
     )
     .unwrap();
     assert!(seen.get());
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let answers = arr(get(&wire, "answers"));
     assert_eq!(s(get(&answers[0], "status")), "established");
     assert!(has(get(&answers[0], "outputs"), "solutions"));
@@ -1535,14 +1532,14 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
     if gamma == Some(3) {
         // 反証の証拠(Smith変換)は内部graphにだけあるので、同じ三入力を一度だけ内部で評価する。
         // 公開結果がSmith証書を持たないことは cli_summary の empty_integer_solutions_are_saved_without_smith_certificates が見る。
-        let result = archsig::observed::evaluate_observed_bytes(
+        let result = archsig_computation::observed::evaluate_observed_bytes(
             input,
             &asks,
-            &archsig::control::Control::unlimited(),
+            &archsig_common::control::Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
-        let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&j, "answers"))[1];
         assert!(!has(get(answer, "outputs"), "object"));
         let representation = get(get(output(&j, 1, "solutions"), "value"), "representation");
@@ -1908,14 +1905,14 @@ fn quotient_integer_infeasible_guard_preserves_inapplicable_family() {
     assert_eq!(tags.len(), 1);
     assert!(matches!(
         arr(&tags[0])[1].value,
-        archsig::json::JValue::Bool(false)
+        archsig_common::json::JValue::Bool(false)
     ));
 }
 #[test]
 fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
-    use archsig::{
-        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     // Argument order is (b,a), while the state is (x,y)=(a,b).
     let dir = input(
         "integer-conditional-image",
@@ -1938,7 +1935,7 @@ fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
     let Ok(result) = result else {
         panic!("integer conditional quotient must complete")
     };
-    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
     let q = get(output(&j, 1, "quotient"), "value");
     let rep = get(q, "representation");
@@ -2035,18 +2032,19 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"
         };
         if case.starts_with("conditional-") {
-            let sources = archsig::input::InputSources::from_bytes(
+            let sources = archsig_input::input::InputSources::from_bytes(
                 vec![std::fs::read(dir.join("d.json")).unwrap()],
                 law.as_bytes().to_vec(),
                 std::fs::read(dir.join("a.json")).unwrap(),
             );
-            let evaluated = archsig::observed::evaluate_observed_bytes(
+            let evaluated = archsig_computation::observed::evaluate_observed_bytes(
                 sources,
                 &[query],
-                &archsig::control::Control::unlimited(),
+                &archsig_common::control::Control::unlimited(),
             )
             .unwrap();
-            let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let internal =
+                archsig_common::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
             let a = &arr(get(&internal, "answers"))[0];
             let reason = arr(get(a, "reasons"))
                 .iter()

@@ -1,16 +1,17 @@
 use crate::common::finite_polynomial_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    construction::ConstructionFailure,
+use archsig_common::{
     control::{Checkpoint, Control},
-    input::CheckedInputs,
+    types::Type,
+};
+use archsig_computation::{
+    construction::ConstructionFailure,
     observed::finite_polynomial_evaluation::{
         FiniteIntegerFunction as V, FinitePolynomialEvaluation as E, FinitePolynomialFailure as F,
         FinitePolynomialTableKind as K, finite_polynomial_evaluation,
     },
-    result::Signal,
-    types::Type,
 };
+use archsig_input::{input::CheckedInputs, result::Signal};
 use num_bigint::BigInt;
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 fn run(i: Arc<CheckedInputs>) -> E {

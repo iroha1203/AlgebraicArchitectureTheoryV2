@@ -1,6 +1,8 @@
 use crate::common::path_answer_projections as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(value: &'a Json, name: &str) -> &'a Json {
     let Json::Obj(fields) = value else {
         panic!("object")
@@ -55,7 +57,7 @@ fn refs(value: &Json, found: &mut Vec<String>) {
         _ => {}
     }
 }
-fn run(input: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(input: InputSources, asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let result = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap_or_else(|error| {
         panic!("{:?}", error.wire().map(|wire| f(&wire, "issues").clone()))
     });
@@ -453,7 +455,8 @@ fn path_projection_preserves_producer_prefix_support_scope_and_current_provenanc
                         .iter()
                         .find(|f| f.name == text("field"))
                         .unwrap();
-                    let archsig::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
+                    let archsig_input::archmap::Slot::Known { atom, origin, .. } = &field.slot
+                    else {
                         panic!("known support")
                     };
                     assert_eq!(atom, text("atom"));

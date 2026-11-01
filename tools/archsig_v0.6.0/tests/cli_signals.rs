@@ -2,7 +2,7 @@
 #![cfg(unix)]
 use crate::common;
 use crate::common::watchdog;
-use archsig::json::parse;
+use archsig_common::json::parse;
 use common::cli::*;
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;

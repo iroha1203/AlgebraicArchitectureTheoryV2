@@ -1,10 +1,8 @@
 //! 固定/自由ownerの実prefixと固定複合Answer値を元三入力から検査する。
 use crate::common::mixed_owner_answer_binding as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    observed::{ObservedEvaluation, evaluate_observed_bytes},
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::{ObservedEvaluation, evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]
@@ -25,9 +23,9 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
+fn run(input: archsig_input::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed_bytes(input, asks, &quiet()).unwrap_or_else(|e| match e {
-        archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
+        archsig_computation::observed::EvaluationFailure::NotImplemented { feature, .. } => {
             panic!("unimplemented: {feature}")
         }
         e => panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())),
