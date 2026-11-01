@@ -1919,87 +1919,57 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod required_predicate_priority_tests {
     use super::*;
-    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
-    fn probe(point: Checkpoint, at: usize, mode: usize) -> Control {
+    fn probe(point: Checkpoint, at: usize) -> Control {
         let seen = Rc::new(Cell::new(0));
-        Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |current| {
-                if current == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        )
-    }
-    #[test]
-    fn required_and_optional_delimiter_false_have_different_priority() {
-        for mode in 0..3 {
-            // take/expect pre 1, ws pre/post 2/3, mismatch post 4.
-            let control = probe(Checkpoint::RequestSyntax, 4, mode);
-            let mut parser = Parser::new("!", &control);
-            assert!(matches!(
-                parser.take(b'='),
-                Err(ResolveFailure::Interrupted { .. })
-            ));
-            let control = probe(Checkpoint::RequestSyntax, 4, mode);
-            let mut parser = Parser::new("!", &control);
-            parser.id = "a".into();
-            let result = parser.expect(b'=').unwrap_err();
-            if mode == 0 {
-                assert!(matches!(result, ResolveFailure::Interrupted { .. }));
-            } else {
-                assert!(
-                    matches!(result, ResolveFailure::Invalid { issues, stop_reason: Some(StopReason::BudgetExhausted { .. }), .. }
-                    if issues == [problem(RequestIssueCode::Syntax, "a", "!", "invalid request separator")])
-                );
+        Control::new(move |current| {
+            if current == point {
+                seen.set(seen.get() + 1);
             }
-        }
+            (seen.get() >= at).then_some(Signal::Term)
+        })
     }
     #[test]
-    fn required_lookup_only_promotes_the_exhausted_search_to_reference() {
-        for mode in 0..3 {
-            for at in [3, 5] {
-                // pre 1, candidate 1 pre/post 2/3, candidate 2 pre/post 4/5.
-                let mut control = probe(Checkpoint::RequestBinding, at, mode);
-                let error = checked_require(
+    fn required_and_optional_delimiter_false_both_stop_at_the_final_checkpoint() {
+        // take/expect pre 1, ws pre/post 2/3, mismatch post 4.
+        let control = probe(Checkpoint::RequestSyntax, 4);
+        let mut parser = Parser::new("!", &control);
+        assert!(matches!(
+            parser.take(b'='),
+            Err(ResolveFailure::Interrupted { .. })
+        ));
+        let control = probe(Checkpoint::RequestSyntax, 4);
+        let mut parser = Parser::new("!", &control);
+        parser.id = "a".into();
+        let result = parser.expect(b'=').unwrap_err();
+        assert!(matches!(result, ResolveFailure::Interrupted { .. }));
+    }
+    #[test]
+    fn required_lookup_and_find_stop_at_candidate_checkpoints() {
+        for at in [3, 5] {
+            // pre 1, candidate 1 pre/post 2/3, candidate 2 pre/post 4/5.
+            let mut control = probe(Checkpoint::RequestBinding, at);
+            let error = checked_require(
+                &[1, 2],
+                |value| *value == 3,
+                &mut control,
+                Checkpoint::RequestBinding,
+                || invalid(problem(RequestIssueCode::Reference, "a", "x", "missing")),
+            )
+            .unwrap_err();
+            assert!(matches!(error, ResolveFailure::Interrupted { .. }));
+            let mut control = probe(Checkpoint::RequestBinding, at);
+            assert!(matches!(
+                checked_find(
                     &[1, 2],
                     |value| *value == 3,
                     &mut control,
-                    Checkpoint::RequestBinding,
-                    || invalid(problem(RequestIssueCode::Reference, "a", "x", "missing")),
-                )
-                .unwrap_err();
-                if at == 5 && mode != 0 {
-                    assert!(
-                        matches!(error, ResolveFailure::Invalid { issues, stop_reason: Some(StopReason::BudgetExhausted { .. }), .. }
-                        if issues == [problem(RequestIssueCode::Reference, "a", "x", "missing")])
-                    );
-                } else {
-                    assert!(matches!(error, ResolveFailure::Interrupted { .. }));
-                }
-                let mut control = probe(Checkpoint::RequestBinding, at, mode);
-                assert!(matches!(
-                    checked_find(
-                        &[1, 2],
-                        |value| *value == 3,
-                        &mut control,
-                        Checkpoint::RequestBinding
-                    ),
-                    Err(ResolveFailure::Interrupted { .. })
-                ));
-            }
+                    Checkpoint::RequestBinding
+                ),
+                Err(ResolveFailure::Interrupted { .. })
+            ));
         }
     }
 }

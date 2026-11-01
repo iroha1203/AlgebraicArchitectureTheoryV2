@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     observed::{
         construction_result::ConstructionData as D, path_compose, public_path_compose::Part,
     },
@@ -138,30 +137,15 @@ fn path_composition_recheck_rejects_forged_values_refs_conditions_scope_and_inpu
     let bad = example(&[E, "bad=compose($e.value,then=$e.value)"]);
     assert_eq!(bad.answers[1].status, Decision::Refuted);
 }
-fn stopping(at: usize, mode: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
+fn stopping(at: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let c = Control::new(
-        Limits {
-            time_ms: (mode == 0).then_some(1),
-            memory_mib: (mode == 1).then_some(1),
-        },
-        move |p| {
-            if p == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 0),
-                memory_mib: u128::from(stop && mode == 1),
-                signal: match (stop, mode) {
-                    (true, 2) => Some(crate::result::Signal::Int),
-                    (true, 3) => Some(crate::result::Signal::Term),
-                    _ => None,
-                },
-            }
-        },
-    );
+    let c = Control::new(move |p| {
+        if p == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(crate::result::Signal::Int)
+    });
     (c, count)
 }
 #[test]
@@ -185,7 +169,7 @@ fn retained_path_calculation_keeps_only_fully_checked_words_and_actions() {
     let total = count.get();
     assert!(total > 100);
     for at in [1, total / 2, total - 1, total] {
-        let (control, _) = stopping(at, 0, Checkpoint::FiniteIteration);
+        let (control, _) = stopping(at, Checkpoint::FiniteIteration);
         let f = path_compose::compose_retained(a, b, &a.reading, &control, |_, _| {})
             .err()
             .unwrap();
@@ -218,7 +202,7 @@ fn public_path_transfer_stops_keep_completed_values_and_verified_prefixes() {
     let total = count.get();
     assert!(total >= 3);
     // 停止の種類と位置は代表1つ(最初の転記点での time 停止)だけを見る。
-    let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+    let (mut control, _) = stopping(1, Checkpoint::NativeResultNode);
     let prepared = prepare_observed(
         fixture::input(false, "unit-path"),
         &[E, F, C],
@@ -272,7 +256,7 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     evaluate_observed(prepared, &mut probe).unwrap();
     let total = count.get();
     assert!(total >= 5);
-    let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+    let (mut control, _) = stopping(1, Checkpoint::NativeResultNode);
     let prepared = prepare_observed(
         visibility_sources(),
         &VISIBILITY_ASKS,

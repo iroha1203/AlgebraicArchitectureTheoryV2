@@ -3610,12 +3610,11 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn affine_comparison_verified_answer_stop_retains_current_and_prior_results() {
-        affine_comparison_phase_stop(4, 0);
+        affine_comparison_phase_stop(4);
     }
 
-    fn affine_comparison_phase_stop(stage: usize, kind: usize) {
+    fn affine_comparison_phase_stop(stage: usize) {
         use super::super::affine;
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -3650,54 +3649,18 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         for target in [chain[3], chain[4], chain[5], chain[6]] {
             rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=target]).unwrap();
         }
-        let (limits, usage, expected) = match kind {
-            0 => (
-                Limits::default(),
-                Some(Signal::Term),
-                StopReason::Cancelled(Signal::Term),
-            ),
-            1 => (
-                Limits {
-                    time_ms: Some(3),
-                    memory_mib: None,
-                },
-                Usage {
-                    elapsed_ms: 4,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 3,
-                    observed: 4,
-                },
-            ),
-            _ => (
-                Limits {
-                    time_ms: None,
-                    memory_mib: Some(7),
-                },
-                Usage {
-                    memory_mib: 8,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 7,
-                    observed: 8,
-                },
-            ),
-        };
+        let expected = StopReason::Cancelled(Signal::Term);
         let ready = Rc::new(Cell::new(false));
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(limits, move |point| {
+        let mut control = Control::new(move |point| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(point, Checkpoint::FiniteIteration);
                 assert!(freeze.replace(Some(count.get())).is_none());
-                usage
+                Some(Signal::Term)
             } else {
                 None
             }
@@ -3913,12 +3876,11 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn affine_verified_current_post_stop_retains_value_and_unstarted_request() {
-        affine_private_phase_stop("verified", 0);
+        affine_private_phase_stop("verified");
     }
 
-    fn affine_private_phase_stop(phase: &'static str, kind: usize) {
+    fn affine_private_phase_stop(phase: &'static str) {
         use super::super::affine;
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -3949,54 +3911,18 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 .iter()
                 .any(|reason| matches!(reason.kind, ReasonKind::Missing))
         );
-        let (limits, usage, expected) = match kind {
-            0 => (
-                Limits::default(),
-                Some(Signal::Term),
-                StopReason::Cancelled(Signal::Term),
-            ),
-            1 => (
-                Limits {
-                    time_ms: Some(3),
-                    memory_mib: None,
-                },
-                Usage {
-                    elapsed_ms: 4,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 3,
-                    observed: 4,
-                },
-            ),
-            _ => (
-                Limits {
-                    time_ms: None,
-                    memory_mib: Some(7),
-                },
-                Usage {
-                    memory_mib: 8,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 7,
-                    observed: 8,
-                },
-            ),
-        };
+        let expected = StopReason::Cancelled(Signal::Term);
         let armed = Rc::new(Cell::new(false));
         let ready = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(limits, move |point| {
+        let mut control = Control::new(move |point| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(point, Checkpoint::FiniteIteration);
                 assert!(freeze.replace(Some(count.get())).is_none());
-                usage
+                Some(Signal::Term)
             } else {
                 None
             }
@@ -5803,7 +5729,6 @@ reading R {{
 
     #[test]
     fn finite_law_family_actual_domain_product_row_evidence_and_recheck_stops() {
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -5861,12 +5786,12 @@ reading R {{
             unreachable!()
         };
         // 五つの実phaseの一点ずつ。全phase×停止種別×位置の走査はしない。
-        for (phase, position, kind) in [
-            ("family_enum", 1, 0),
-            ("family_product", 1, 2),
-            ("family_row", 1, 1),
-            ("family_exhaustion", 0, 2),
-            ("family_recheck", 1, 0),
+        for (phase, position) in [
+            ("family_enum", 1),
+            ("family_product", 1),
+            ("family_row", 1),
+            ("family_exhaustion", 0),
+            ("family_recheck", 1),
         ] {
             let baseline: Vec<_> = progress
                 .borrow()
@@ -5877,53 +5802,17 @@ reading R {{
             if position == 1 {
                 assert!(baseline.starts_with(&[0, 1]), "{phase}: {baseline:?}");
             }
-            let (limits, usage, expected) = match kind {
-                0 => (
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: None,
-                    },
-                    Usage {
-                        elapsed_ms: 2,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 2,
-                    },
-                ),
-                1 => (
-                    Limits {
-                        time_ms: None,
-                        memory_mib: Some(1),
-                    },
-                    Usage {
-                        memory_mib: 2,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 2,
-                    },
-                ),
-                _ => (
-                    Limits::default(),
-                    Some(Signal::Term),
-                    StopReason::Cancelled(Signal::Term),
-                ),
-            };
+            let expected = StopReason::Cancelled(Signal::Term);
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(limits, move |checkpoint| {
+            let mut control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
                     assert!(freeze.replace(Some(count.get())).is_none());
-                    usage
+                    Some(Signal::Term)
                 } else {
                     None
                 }
@@ -7048,7 +6937,6 @@ reading Calc {{
     }
     #[test]
     fn named_parameter_name_token_checkpoint_preserves_original_stop_through_driver() {
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -7129,156 +7017,117 @@ reading Calc {{
             case: None,
         };
         let mut problems = Vec::new();
-        for kind in 0..3 {
-            let (limits, usage, expected) = match kind {
-                0 => (
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: None,
-                    },
-                    Usage {
-                        elapsed_ms: 1,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                ),
-                1 => (
-                    Limits {
-                        time_ms: None,
-                        memory_mib: Some(1),
-                    },
-                    Usage {
-                        memory_mib: 1,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                ),
-                _ => (
-                    Limits::default(),
-                    Some(Signal::Term),
-                    StopReason::Cancelled(Signal::Term),
-                ),
-            };
-            let armed = Rc::new(Cell::new(false));
-            let probes = Rc::new(Cell::new(0));
-            let frozen = Rc::new(Cell::new(None));
-            let seen = Rc::new(RefCell::new(Vec::new()));
-            let (probe_armed, probe_count, at_stop) =
-                (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(limits, move |point| {
-                probe_count.set(probe_count.get() + 1);
-                if probe_armed.replace(false) {
-                    assert_eq!(point, Checkpoint::FiniteIteration);
-                    assert!(
-                        at_stop.replace(Some(probe_count.get())).is_none(),
-                        "同じ既存tick一箇所だけへ注入する"
-                    );
-                    return usage;
-                }
-                None
-            });
-            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
-            let result = evaluate_observed_with_validator(
-                prepared,
-                &mut control,
-                |environment, graph, request, answer| {
-                    // 元のvalidatorを通した先行欠測Answerの後に、同じEnvironmentを観測する。
-                    environment.validate_answer(graph, request, answer)?;
-                    if request.id == "missing" {
-                        assert!(
-                            answer
-                                .reasons
-                                .iter()
-                                .any(|r| matches!(r.kind, ReasonKind::Missing))
-                        );
-                        let (observed, arm) = (seen.clone(), armed.clone());
-                        environment.observe_optional_name_token(move |span, context| {
-                            if span == parameter_span && context == target_context {
-                                observed.borrow_mut().push((span, context));
-                                arm.set(true);
-                            }
-                        });
-                    }
-                    Ok(())
-                },
-            )
-            .unwrap();
-            assert_eq!(
-                result.nodes.len(),
-                parameter_evaluation,
-                "停止したparameter評価をcommitせず新nodeを追加しない"
-            );
-            assert_eq!(&*seen.borrow(), &[(parameter_span, target_context)]);
-            assert_eq!(control.stop_reason(), Some(expected.clone()));
-            assert_eq!(
-                Some(probes.get()),
-                frozen.get(),
-                "停止後はprobeを再開しない"
-            );
-            let Json::Obj(ref wire) = result.wire() else {
-                unreachable!()
-            };
-            let Json::Arr(answers) = &wire["answers"] else {
-                unreachable!()
-            };
-            assert_eq!(
-                &answers[..2],
-                &normal_answers[..2],
-                "先行確定値と元missing/依存を保持する"
-            );
-            for index in [2, 3] {
-                let answer = &result.answers[index];
-                assert_eq!(answer.status, Decision::Undetermined);
+        let expected = StopReason::Cancelled(Signal::Term);
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let seen = Rc::new(RefCell::new(Vec::new()));
+        let (probe_armed, probe_count, at_stop) = (armed.clone(), probes.clone(), frozen.clone());
+        let mut control = Control::new(move |point| {
+            probe_count.set(probe_count.get() + 1);
+            if probe_armed.replace(false) {
+                assert_eq!(point, Checkpoint::FiniteIteration);
                 assert!(
-                    answer.outputs.is_empty(),
-                    "未完成/未着手を通常値へ昇格しない"
+                    at_stop.replace(Some(probe_count.get())).is_none(),
+                    "同じ既存tick一箇所だけへ注入する"
                 );
-                if !answer
-                    .reasons
-                    .iter()
-                    .any(|r| matches!(&r.kind, ReasonKind::Stop(stop) if stop == &expected))
-                {
-                    problems.push(format!(
-                        "{kind}:{}の元停止理由を失った: {:?}",
-                        answer.id, answer.reasons
-                    ));
-                }
+                return Some(Signal::Term);
             }
-            assert!(
-                result.answers[2]
-                    .reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::Missing)
-                        && r.missing
+            None
+        });
+        let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+        let result = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                // 元のvalidatorを通した先行欠測Answerの後に、同じEnvironmentを観測する。
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "missing" {
+                    assert!(
+                        answer
+                            .reasons
                             .iter()
-                            .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))),
-                "current引数の元missingを保持する"
+                            .any(|r| matches!(r.kind, ReasonKind::Missing))
+                    );
+                    let (observed, arm) = (seen.clone(), armed.clone());
+                    environment.observe_optional_name_token(move |span, context| {
+                        if span == parameter_span && context == target_context {
+                            observed.borrow_mut().push((span, context));
+                            arm.set(true);
+                        }
+                    });
+                }
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            result.nodes.len(),
+            parameter_evaluation,
+            "停止したparameter評価をcommitせず新nodeを追加しない"
+        );
+        assert_eq!(&*seen.borrow(), &[(parameter_span, target_context)]);
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(
+            Some(probes.get()),
+            frozen.get(),
+            "停止後はprobeを再開しない"
+        );
+        let Json::Obj(ref wire) = result.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(answers) = &wire["answers"] else {
+            unreachable!()
+        };
+        assert_eq!(
+            &answers[..2],
+            &normal_answers[..2],
+            "先行確定値と元missing/依存を保持する"
+        );
+        for index in [2, 3] {
+            let answer = &result.answers[index];
+            assert_eq!(answer.status, Decision::Undetermined);
+            assert!(
+                answer.outputs.is_empty(),
+                "未完成/未着手を通常値へ昇格しない"
             );
-            if result.status() != "interrupted" {
-                problems.push(format!("{kind}:status={}", result.status()));
-            }
-            if result
-                .issues
+            if !answer
+                .reasons
                 .iter()
-                .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+                .any(|r| matches!(&r.kind, ReasonKind::Stop(stop) if stop == &expected))
             {
-                problems.push(format!("{kind}:停止をInternalへ変えた"));
+                problems.push(format!(
+                    "{}の元停止理由を失った: {:?}",
+                    answer.id, answer.reasons
+                ));
             }
-            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-            let before = probes.get();
-            assert_eq!(probes.get(), before);
         }
         assert!(
+            result.answers[2]
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing)
+                    && r.missing
+                        .iter()
+                        .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))),
+            "current引数の元missingを保持する"
+        );
+        if result.status() != "interrupted" {
+            problems.push(format!("status={}", result.status()));
+        }
+        if result
+            .issues
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+        {
+            problems.push("停止をInternalへ変えた".into());
+        }
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let before = probes.get();
+        assert_eq!(probes.get(), before);
+        assert!(
             problems.is_empty(),
-            "同じname_token内既存tickで3種類の停止を保持する: {problems:#?}"
+            "同じname_token内既存tickで停止を保持する: {problems:#?}"
         );
     }
     fn data_recheck_example(omitted: &[&str], requests: &[&str]) -> ObservedEvaluation {
@@ -7700,7 +7549,6 @@ reading Calc {{
 
     #[test]
     fn primitive_set_and_sum_iterations_preserve_original_stop_inside_actual_evaluation() {
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -7783,124 +7631,87 @@ reading Calc {{
             let Json::Arr(normal_answers) = &normal_wire["answers"] else {
                 unreachable!()
             };
-            for kind in 0..3 {
-                let (limits, usage, expected) = match kind {
-                    0 => (
-                        Limits {
-                            time_ms: Some(1),
-                            memory_mib: None,
-                        },
-                        Usage {
-                            elapsed_ms: 1,
-                            ..Usage::default()
-                        },
-                        StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                    ),
-                    1 => (
-                        Limits {
-                            time_ms: None,
-                            memory_mib: Some(1),
-                        },
-                        Usage {
-                            memory_mib: 1,
-                            ..Usage::default()
-                        },
-                        StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                    ),
-                    _ => (
-                        Limits::default(),
-                        Some(Signal::Term),
-                        StopReason::Cancelled(Signal::Term),
-                    ),
-                };
-                let armed = Rc::new(Cell::new(false));
-                let probes = Rc::new(Cell::new(0));
-                let frozen = Rc::new(Cell::new(None));
-                let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-                let mut control = Control::new(limits, move |point| {
-                    count.set(count.get() + 1);
-                    if arm.replace(false) {
-                        assert_eq!(point, Checkpoint::FiniteIteration);
-                        assert!(freeze.replace(Some(count.get())).is_none());
-                        usage
-                    } else {
-                        None
-                    }
-                });
-                let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
-                let seen = Rc::new(RefCell::new(Vec::new()));
-                let observed = seen.clone();
-                let result = evaluate_observed_with_validator(
-                    prepared,
-                    &mut control,
-                    |environment, graph, request, answer| {
-                        environment.validate_answer(graph, request, answer)?;
-                        if request.id == "missing" {
-                            let (observed, armed) = (observed.clone(), armed.clone());
-                            data::observe_iterations(move |span, actual, name, index| {
-                                if span == target && actual == context && name == operation {
-                                    observed.borrow_mut().push(index);
-                                    if index == 1 {
-                                        armed.set(true);
-                                    }
-                                }
-                            });
-                        }
-                        Ok(())
-                    },
-                );
-                data::clear_iteration_observer();
-                let result = result.unwrap();
-                assert_eq!(
-                    &*seen.borrow(),
-                    &[0, 1],
-                    "実評価loopの第一要素完了後、第二要素の既存tickで停止する"
-                );
-                assert_eq!(
-                    result.nodes.len(),
-                    scalar,
-                    "未完成のcontainer/sum値をcommitしない"
-                );
-                assert_eq!(control.stop_reason(), Some(expected.clone()));
-                assert_eq!(result.status(), "interrupted", "{:?}", result.issues);
-                assert!(
-                    result
-                        .issues
-                        .iter()
-                        .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
-                );
-                let Json::Obj(ref wire) = result.wire() else {
-                    unreachable!()
-                };
-                let Json::Arr(answers) = &wire["answers"] else {
-                    unreachable!()
-                };
-                assert_eq!(
-                    &answers[..2],
-                    &normal_answers[..2],
-                    "先行値と元missingを保持する"
-                );
-                for answer in &result.answers[2..] {
-                    assert_eq!(answer.status, Decision::Undetermined);
-                    assert!(answer.outputs.is_empty());
-                    assert!(
-                        answer.reasons.iter().any(
-                            |r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected)
-                        )
-                    );
+            let expected = StopReason::Cancelled(Signal::Term);
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(move |point| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(point, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    Some(Signal::Term)
+                } else {
+                    None
                 }
-                rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-                let before = probes.get();
-                assert_eq!(probes.get(), before);
+            });
+            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let observed = seen.clone();
+            let result = evaluate_observed_with_validator(
+                prepared,
+                &mut control,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "missing" {
+                        let (observed, armed) = (observed.clone(), armed.clone());
+                        data::observe_iterations(move |span, actual, name, index| {
+                            if span == target && actual == context && name == operation {
+                                observed.borrow_mut().push(index);
+                                if index == 1 {
+                                    armed.set(true);
+                                }
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            );
+            data::clear_iteration_observer();
+            let result = result.unwrap();
+            assert_eq!(
+                &*seen.borrow(),
+                &[0, 1],
+                "実評価loopの第一要素完了後、第二要素の既存tickで停止する"
+            );
+            assert_eq!(
+                result.nodes.len(),
+                scalar,
+                "未完成のcontainer/sum値をcommitしない"
+            );
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(result.status(), "interrupted", "{:?}", result.issues);
+            assert!(
+                result
+                    .issues
+                    .iter()
+                    .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
+            );
+            let Json::Obj(ref wire) = result.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(answers) = &wire["answers"] else {
+                unreachable!()
+            };
+            assert_eq!(
+                &answers[..2],
+                &normal_answers[..2],
+                "先行値と元missingを保持する"
+            );
+            for answer in &result.answers[2..] {
+                assert_eq!(answer.status, Decision::Undetermined);
+                assert!(answer.outputs.is_empty());
+                assert!(
+                    answer
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                );
             }
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+            let before = probes.get();
+            assert_eq!(probes.get(), before);
         }
     }
     fn comprehension_recheck_example(requests: &[&str]) -> ObservedEvaluation {
@@ -9179,19 +8990,13 @@ reading Calc {{
     }
     #[test]
     fn finite_completion_coverage_stop_keeps_all_cases_without_unfinished_proof() {
-        finite_completion_phase_stop("completion_coverage", 0, 2, None);
+        finite_completion_phase_stop("completion_coverage", 0, None);
     }
     #[test]
     fn finite_completion_enumeration_stop_keeps_verified_law_counterexample() {
-        finite_completion_phase_stop("completion_enum", 1, 2, Some(true));
+        finite_completion_phase_stop("completion_enum", 1, Some(true));
     }
-    fn finite_completion_phase_stop(
-        phase: &'static str,
-        at: usize,
-        kind: usize,
-        known: Option<bool>,
-    ) {
-        use crate::control::{Limits, Resource, Usage};
+    fn finite_completion_phase_stop(phase: &'static str, at: usize, known: Option<bool>) {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -9326,53 +9131,17 @@ reading Calc {{
         } else {
             None
         };
-        let (limits, usage, expected) = match kind {
-            0 => (
-                Limits::default(),
-                Some(Signal::Term),
-                StopReason::Cancelled(Signal::Term),
-            ),
-            1 => (
-                Limits {
-                    time_ms: Some(3),
-                    memory_mib: None,
-                },
-                Usage {
-                    elapsed_ms: 4,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 3,
-                    observed: 4,
-                },
-            ),
-            _ => (
-                Limits {
-                    time_ms: None,
-                    memory_mib: Some(7),
-                },
-                Usage {
-                    memory_mib: 8,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 7,
-                    observed: 8,
-                },
-            ),
-        };
+        let expected = StopReason::Cancelled(Signal::Term);
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(limits, move |checkpoint| {
+        let mut control = Control::new(move |checkpoint| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(checkpoint, Checkpoint::FiniteIteration);
                 assert!(freeze.replace(Some(count.get())).is_none());
-                usage
+                Some(Signal::Term)
             } else {
                 None
             }
@@ -9823,10 +9592,9 @@ reading Calc {{
     }
     #[test]
     fn fp_completion_coverage_stop_keeps_cases_without_unfinished_evidence() {
-        fp_completion_phase_stop("completion_coverage", 0, 2, None);
+        fp_completion_phase_stop("completion_coverage", 0, None);
     }
-    fn fp_completion_phase_stop(phase: &'static str, at: usize, kind: usize, known: Option<bool>) {
-        use crate::control::{Limits, Resource, Usage};
+    fn fp_completion_phase_stop(phase: &'static str, at: usize, known: Option<bool>) {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -9964,53 +9732,17 @@ reading Calc {{
         } else {
             None
         };
-        let (limits, usage, expected) = match kind {
-            0 => (
-                Limits::default(),
-                Some(Signal::Term),
-                StopReason::Cancelled(Signal::Term),
-            ),
-            1 => (
-                Limits {
-                    time_ms: Some(3),
-                    memory_mib: None,
-                },
-                Usage {
-                    elapsed_ms: 4,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 3,
-                    observed: 4,
-                },
-            ),
-            _ => (
-                Limits {
-                    time_ms: None,
-                    memory_mib: Some(7),
-                },
-                Usage {
-                    memory_mib: 8,
-                    ..Usage::default()
-                },
-                StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 7,
-                    observed: 8,
-                },
-            ),
-        };
+        let expected = StopReason::Cancelled(Signal::Term);
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(limits, move |checkpoint| {
+        let mut control = Control::new(move |checkpoint| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(checkpoint, Checkpoint::FiniteIteration);
                 assert!(freeze.replace(Some(count.get())).is_none());
-                usage
+                Some(Signal::Term)
             } else {
                 None
             }
@@ -10311,10 +10043,9 @@ reading Calc {{
     }
     #[test]
     fn bool_completion_actual_coverage_stop_keeps_prefixes() {
-        bool_completion_actual_phase_stop("completion_coverage", 0, 2);
+        bool_completion_actual_phase_stop("completion_coverage", 0);
     }
-    fn bool_completion_actual_phase_stop(phase: &'static str, at: usize, kind: usize) {
-        use crate::control::{Limits, Resource, Usage};
+    fn bool_completion_actual_phase_stop(phase: &'static str, at: usize) {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -10375,53 +10106,17 @@ reading Calc {{
                     &[0, 1][..]
                 }
             );
-            let (limits, usage, expected) = match kind {
-                0 => (
-                    Limits::default(),
-                    Some(Signal::Term),
-                    StopReason::Cancelled(Signal::Term),
-                ),
-                1 => (
-                    Limits {
-                        time_ms: Some(3),
-                        memory_mib: None,
-                    },
-                    Usage {
-                        elapsed_ms: 4,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 3,
-                        observed: 4,
-                    },
-                ),
-                _ => (
-                    Limits {
-                        time_ms: None,
-                        memory_mib: Some(7),
-                    },
-                    Usage {
-                        memory_mib: 8,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 7,
-                        observed: 8,
-                    },
-                ),
-            };
+            let expected = StopReason::Cancelled(Signal::Term);
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(limits, move |checkpoint| {
+            let mut control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
                     assert!(freeze.replace(Some(count.get())).is_none());
-                    usage
+                    Some(Signal::Term)
                 } else {
                     None
                 }
@@ -10523,7 +10218,6 @@ reading Calc {{
         }
     }
     fn quantifier_actual_phases_preserve_stops(typed: bool, plain: bool) {
-        use crate::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -10531,16 +10225,16 @@ reading Calc {{
         };
         let phases = if plain {
             // 停止位置の代表: 候補列挙の途中と、再検査の途中。
-            vec![("ref_roster", "full", 0), ("ref_recheck", "full", 0)]
+            vec![("ref_roster", "full"), ("ref_recheck", "full")]
         } else {
             vec![
-                (if typed { "type_enum" } else { "quant_domain" }, "full", 0),
-                ("quant_body", "early", 1),
-                ("quant_exhaustion", "full", 2),
+                (if typed { "type_enum" } else { "quant_domain" }, "full"),
+                ("quant_body", "early"),
+                ("quant_exhaustion", "full"),
             ]
         };
         let phases_first = phases[0].0;
-        for (operation, view, stop) in phases {
+        for (operation, view) in phases {
             let sources = if plain {
                 plain_ref_fixture(false)
             } else if typed {
@@ -10630,53 +10324,17 @@ reading Calc {{
             let Json::Arr(normal_answers) = &normal_wire["answers"] else {
                 unreachable!()
             };
-            let (limits, usage, expected) = match stop {
-                0 => (
-                    Limits::default(),
-                    Some(Signal::Term),
-                    StopReason::Cancelled(Signal::Term),
-                ),
-                1 => (
-                    Limits {
-                        time_ms: Some(3),
-                        memory_mib: None,
-                    },
-                    Usage {
-                        elapsed_ms: 4,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 3,
-                        observed: 4,
-                    },
-                ),
-                _ => (
-                    Limits {
-                        time_ms: None,
-                        memory_mib: Some(7),
-                    },
-                    Usage {
-                        memory_mib: 8,
-                        ..Usage::default()
-                    },
-                    StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 7,
-                        observed: 8,
-                    },
-                ),
-            };
+            let expected = StopReason::Cancelled(Signal::Term);
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(limits, move |checkpoint| {
+            let mut control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
                     assert!(freeze.replace(Some(count.get())).is_none());
-                    usage
+                    Some(Signal::Term)
                 } else {
                     None
                 }

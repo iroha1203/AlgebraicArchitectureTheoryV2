@@ -4962,7 +4962,6 @@ mod invariant_tests {
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {
         use super::super::request::QuestionKind;
-        use crate::control::Resource;
         use crate::result::Signal;
         let reason = |kind| Reason {
             kind,
@@ -4998,11 +4997,7 @@ mod invariant_tests {
                 operand_types: vec![Type::Z, Type::Bool],
                 method: "method".into(),
             }),
-            reason(ReasonKind::Stop(StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 10,
-                observed: 12,
-            })),
+            reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Int))),
             reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Term))),
             reason(ReasonKind::Internal("recheck".into())),
         ];

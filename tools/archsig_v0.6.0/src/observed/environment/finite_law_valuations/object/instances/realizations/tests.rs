@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
-};
+use crate::construction::{construct, readings::object_reading_instances};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../../../tests/common/primitive_valuation_data.rs");
@@ -451,45 +448,32 @@ fn fixed_stops_publish_only_finished_points_and_keep_the_original_readings() {
     use std::{cell::Cell, rc::Rc};
     let i = fixture::with_body(fixture::MAP, OWNED);
     let r = reading(&i, "root");
-    for mode in 0..3 {
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::FiniteLawRequired {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= 1;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let error = finite_parameter_realizations(&i, &r, &mut c).unwrap_err();
-        assert!(matches!(error.cause, ValidationFailure::Stop(_)));
-        let partial = error.partial.unwrap();
-        assert_eq!(partial.readings(), &r);
-        assert!(!partial.is_complete());
-        assert_eq!(partial.state, ParameterRealizationState::Pending);
-        assert!(partial.domain_complete);
-        assert_eq!(partial.domain.len(), 4);
-        assert_eq!(partial.rows.len(), 1);
-        assert_eq!(partial.rows[0].point, 0);
-        assert_eq!(partial.rows[0].objects.len(), r.objects().len());
-        assert!(
-            partial.rows[0]
-                .objects
-                .iter()
-                .all(ObjectLawInstances::is_complete)
-        );
-        assert!(partial.recheck(&i, &r, &mut quiet()).is_err());
-    }
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::FiniteLawRequired {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= 1).then_some(Signal::Term)
+    });
+    let error = finite_parameter_realizations(&i, &r, &mut c).unwrap_err();
+    assert!(matches!(error.cause, ValidationFailure::Stop(_)));
+    let partial = error.partial.unwrap();
+    assert_eq!(partial.readings(), &r);
+    assert!(!partial.is_complete());
+    assert_eq!(partial.state, ParameterRealizationState::Pending);
+    assert!(partial.domain_complete);
+    assert_eq!(partial.domain.len(), 4);
+    assert_eq!(partial.rows.len(), 1);
+    assert_eq!(partial.rows[0].point, 0);
+    assert_eq!(partial.rows[0].objects.len(), r.objects().len());
+    assert!(
+        partial.rows[0]
+            .objects
+            .iter()
+            .all(ObjectLawInstances::is_complete)
+    );
+    assert!(partial.recheck(&i, &r, &mut quiet()).is_err());
 }
 #[test]
 fn domain_interrupt_keeps_source_and_never_claims_a_finished_empty_domain() {

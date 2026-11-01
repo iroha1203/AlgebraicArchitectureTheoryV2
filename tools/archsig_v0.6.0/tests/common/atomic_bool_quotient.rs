@@ -5,7 +5,7 @@ mod bool_fixture {
 }
 fn bool_result(extra: &str, asks: &[&str]) -> JNode {
     use archsig::{
-        control::{Control, Limits, Usage},
+        control::Control,
         observed::evaluate::evaluate_observed_bytes,
     };
     let result = evaluate_observed_bytes(
@@ -129,7 +129,7 @@ fn compound_bool_observations_preserve_equality_values() {
 #[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
     use archsig::{
-        control::{Control, Limits, Usage},
+        control::Control,
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
@@ -205,50 +205,23 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
 #[test]
 fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
-    for mode in 0..4 {
+    for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
         let active = Rc::new(Cell::new(false));
         let stopped = Rc::new(Cell::new(false));
         let (inside, hit) = (active.clone(), stopped.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::Quotient {
-                    inside.set(true);
-                }
-                if inside.get() && point == Checkpoint::FiniteLawOperand {
-                    hit.set(true);
-                }
-                if hit.get() {
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Usage {
-                            signal: Some(if mode == 2 {
-                                archsig::result::Signal::Int
-                            } else {
-                                archsig::result::Signal::Term
-                            }),
-                            ..Usage::default()
-                        },
-                    }
-                } else {
-                    None
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::Quotient {
+                inside.set(true);
+            }
+            if inside.get() && point == Checkpoint::FiniteLawOperand {
+                hit.set(true);
+            }
+            hit.get().then_some(signal)
+        });
         let result = evaluate_observed_bytes(
             bool_fixture::sources("", "view first(s:State):Bool=s.x;"),
             &[
@@ -265,12 +238,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
         assert_eq!(s(get(&answers[1], "status")), "undetermined");
         assert!(!has(get(&answers[1], "outputs"), "quotient"));
         let reasons = format!("{:?}", get(&answers[1], "reasons"));
-        for expected in match mode {
-            0 => vec!["budget_exhausted", "time_ms"],
-            1 => vec!["budget_exhausted", "memory_mib"],
-            2 => vec!["cancelled", "SIGINT"],
-            _ => vec!["cancelled", "SIGTERM"],
-        } {
+        for expected in ["cancelled", signal.wire()] {
             assert!(reasons.contains(expected), "{reasons}");
         }
     }
@@ -279,7 +247,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
 #[test]
 fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
     use archsig::{
-        control::{Control, Limits, Usage},
+        control::Control,
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
@@ -422,7 +390,7 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
 #[test]
 fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
     use archsig::{
-        control::{Control, Limits, Usage},
+        control::Control,
         observed::{evaluate::evaluate_observed_bytes, result::EvaluationFailure},
     };
     let result = bool_result(

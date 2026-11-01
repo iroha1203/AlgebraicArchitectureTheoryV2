@@ -473,10 +473,7 @@ mod tests {
     };
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
-    use crate::{
-        control::{Limits, Usage},
-        input::{InputSources, check_inputs},
-    };
+    use crate::input::{InputSources, check_inputs};
     pub(super) fn quiet() -> Control {
         Control::unlimited()
     }
@@ -713,7 +710,6 @@ mod stop_tests {
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
-    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
     #[test]
     fn fixed_family_and_expression_stops_retain_completed_rows_and_latch_the_probe() {
@@ -745,32 +741,15 @@ mod stop_tests {
             let total = count.get();
             assert!(total > 1);
             for at in [1, total / 2, total] {
-                for mode in 0..4 {
+                for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
                     let count = Rc::new(Cell::new(0));
                     let seen = count.clone();
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: (mode == 0).then_some(1),
-                            memory_mib: (mode == 1).then_some(1),
-                        },
-                        move |p| {
-                            if p == phase {
-                                seen.set(seen.get() + 1)
-                            }
-                            if seen.get() < at {
-                                return None;
-                            }
-                            Usage {
-                                elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                memory_mib: if mode == 1 { 1 } else { 0 },
-                                signal: match mode {
-                                    2 => Some(crate::result::Signal::Int),
-                                    3 => Some(crate::result::Signal::Term),
-                                    _ => None,
-                                },
-                            }
-                        },
-                    );
+                    let mut c = Control::new(move |p| {
+                        if p == phase {
+                            seen.set(seen.get() + 1)
+                        }
+                        (seen.get() >= at).then_some(signal)
+                    });
                     let Err(error) = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c) else {
                         panic!("fixed stop")
                     };
@@ -1071,7 +1050,6 @@ mod recheck_regression_tests {
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
-    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
 
     #[test]
@@ -1195,38 +1173,19 @@ mod recheck_regression_tests {
                 (before_comparison + total) / 2,
                 total,
             ] {
-                for mode in 0..4 {
+                for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
                     let count = Rc::new(Cell::new(0));
                     let seen = count.clone();
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: Some(1),
-                            memory_mib: Some(1),
-                        },
-                        move |point| {
-                            if point == phase {
-                                seen.set(seen.get() + 1);
-                            }
-                            let stop = seen.get() >= at;
-                            Usage {
-                                elapsed_ms: u128::from(stop && mode == 0),
-                                memory_mib: u128::from(stop && mode == 1),
-                                signal: if stop {
-                                    match mode {
-                                        2 => Some(crate::result::Signal::Int),
-                                        3 => Some(crate::result::Signal::Term),
-                                        _ => None,
-                                    }
-                                } else {
-                                    None
-                                },
-                            }
-                        },
-                    );
+                    let mut c = Control::new(move |point| {
+                        if point == phase {
+                            seen.set(seen.get() + 1);
+                        }
+                        (seen.get() >= at).then_some(signal)
+                    });
                     let error = f.recheck(Arc::clone(&i), &mut c).unwrap_err();
                     let ObjectEvaluationFailure::FiniteView { cause, partial } = error else {
                         panic!(
-                            "comparison stop must keep current input rows: phase={phase:?} at={at} mode={mode}"
+                            "comparison stop must keep current input rows: phase={phase:?} at={at} signal={signal:?}"
                         )
                     };
                     assert!(matches!(

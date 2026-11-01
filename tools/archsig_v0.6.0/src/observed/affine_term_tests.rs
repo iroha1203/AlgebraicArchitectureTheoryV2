@@ -63,7 +63,7 @@ fn affine_term_stop_in_batch(recheck: bool) {
         "later=evaluate(Terms.seed)",
     ];
     let normal = affine_term_result(&asks);
-    let (limits, usage, expected) = reservations_private_stop_usage(if recheck { 2 } else { 0 });
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let in_recheck = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -76,7 +76,7 @@ fn affine_term_stop_in_batch(recheck: bool) {
         probes.clone(),
         frozen.clone(),
     );
-    let mut c = Control::new(limits, move |checkpoint| {
+    let mut c = Control::new(move |checkpoint| {
         p.set(p.get() + 1);
         let stop = if recheck {
             if phase.get() && checkpoint == Checkpoint::Expression {
@@ -90,9 +90,9 @@ fn affine_term_stop_in_batch(recheck: bool) {
         };
         if stop {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(affine_term_inputs("r1"), &asks, &mut c).unwrap();

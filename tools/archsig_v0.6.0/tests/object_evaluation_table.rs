@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure, construct,
         readings::{ObjectReadingInstances, object_reading_instances},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::{
@@ -108,35 +108,16 @@ fn remove(map: &str, id: &str) -> String {
         .join("\n")
         .replace(",\n]", "\n]")
 }
-fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     (
-        Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1)
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        ),
+        Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1)
+            }
+            (seen.get() >= at).then_some(signal)
+        }),
         count,
     )
 }
@@ -275,7 +256,7 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
     let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
     let n = full.rows().len();
     for at in [3, 2 * n + 2] {
-        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, 2);
+        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
         let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
         assert!(
             matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
@@ -311,8 +292,8 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
 fn stopping_inside_a_cell_keeps_its_partial_dag_separate_from_completed_rows() {
     let i = inputs(L, A);
     let p = plan(&i);
-    for mode in 0..4 {
-        let (mut c, probes) = stop_at(Checkpoint::Expression, 5, mode);
+    for signal in [Signal::Int, Signal::Term] {
+        let (mut c, probes) = stop_at(Checkpoint::Expression, 5, signal);
         let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
         assert!(f.position().is_some());
         assert!(!f.partial().unwrap().is_complete());
@@ -339,7 +320,7 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
     // 全行再計算の2n+2 checkpointの後、一行比較ごとと末尾に検査する。
     // 停止の種類は他のテストが網羅するので、ここでは Int 停止だけを比較の途中と末尾で見る。
     for at in [2 * n + 3, 3 * n + 3] {
-        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, 2);
+        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
         let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
         assert!(
             matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())

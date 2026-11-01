@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     result::Signal,
 };
@@ -31,26 +31,17 @@ fn count(body: &str) -> usize {
     seen.get()
 }
 
-fn stop(at: usize, resource: usize) -> Control {
+fn stop(at: usize) -> Control {
     let mut seen = 0;
-    let limits = Limits {
-        time_ms: (resource == 1).then_some(1),
-        memory_mib: (resource == 2).then_some(1),
-    };
-    Control::new(limits, move |point| {
+    Control::new(move |point| {
         if point == Checkpoint::LawChange {
             seen += 1;
         }
-        let stopping = seen == at;
-        Usage {
-            signal: (stopping && resource == 0).then_some(Signal::Term),
-            elapsed_ms: u128::from(stopping && resource == 1),
-            memory_mib: u128::from(stopping && resource == 2),
-        }
+        (seen == at).then_some(Signal::Term)
     })
 }
 
-fn assert_stopped(failure: &InputFailure, control: &Control, resource: usize) {
+fn assert_stopped(failure: &InputFailure, control: &Control) {
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert!(failure.declarations().is_empty());
     assert!(failure.primitives().is_empty());
@@ -63,11 +54,10 @@ fn assert_stopped(failure: &InputFailure, control: &Control, resource: usize) {
     for key in ["requests", "answers", "nodes"] {
         assert_eq!(fields[key], Json::Arr(vec![]));
     }
-    match control.stop_reason().unwrap() {
-        StopReason::Cancelled(Signal::Term) => assert_eq!(resource, 0),
-        StopReason::BudgetExhausted { .. } => assert_ne!(resource, 0),
-        other => panic!("unexpected reason {other:?}"),
-    }
+    assert_eq!(
+        control.stop_reason(),
+        Some(StopReason::Cancelled(Signal::Term))
+    );
 }
 
 #[test]
@@ -77,9 +67,9 @@ fn nested_change_groups_add_internal_stop_boundaries() {
     check_inputs(sources(&nested), &mut Control::unlimited()).unwrap();
     let at = count(flat) + 1;
     assert!(count(&nested) > at + 4);
-    let mut control = stop(at, 0);
+    let mut control = stop(at);
     let failure = check_inputs(sources(&nested), &mut control).unwrap_err();
-    assert_stopped(&failure, &control, 0);
+    assert_stopped(&failure, &control);
 }
 
 #[test]
@@ -90,23 +80,21 @@ fn invalid_grouped_change_cannot_hide_a_stop_at_its_final_boundary() {
     let steps = count(body);
     assert!(steps > 8);
     for at in 1..=steps {
-        let mut control = stop(at, 0);
+        let mut control = stop(at);
         let failure = check_inputs(sources(body), &mut control).unwrap_err();
-        assert_stopped(&failure, &control, 0);
+        assert_stopped(&failure, &control);
     }
 }
 
 #[test]
-fn let_if_and_update_checks_share_cancellation_and_budgets() {
+fn let_if_and_update_checks_share_cancellation() {
     let body = "let n = 1 in if true then ((s with { count = s.count + n })) else ((s with { count = 0 }))";
     check_inputs(sources(body), &mut Control::unlimited()).unwrap();
     let steps = count(body);
     assert!(steps > 10);
     for at in [1, steps / 2, steps] {
-        for resource in 0..3 {
-            let mut control = stop(at, resource);
-            let failure = check_inputs(sources(body), &mut control).unwrap_err();
-            assert_stopped(&failure, &control, resource);
-        }
+        let mut control = stop(at);
+        let failure = check_inputs(sources(body), &mut control).unwrap_err();
+        assert_stopped(&failure, &control);
     }
 }

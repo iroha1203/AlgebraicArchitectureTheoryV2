@@ -4,7 +4,7 @@ use archsig::{
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_law_circuit_transport::{
@@ -690,7 +690,7 @@ fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence(
 #[test]
 fn side_construction_stops_retain_the_already_refuted_original_condition() {
     use archsig::{
-        control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, StopReason},
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
@@ -711,50 +711,19 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
         let count = hits.get();
         assert!(count > 1);
         for nth in [1, count] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let hits = Rc::new(Cell::new(0));
                 let h = hits.clone();
                 let probes = Rc::new(Cell::new(0));
                 let p = probes.clone();
-                let expected = match mode {
-                    0 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    2 => StopReason::Cancelled(Signal::Int),
-                    _ => StopReason::Cancelled(Signal::Term),
-                };
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |at| {
-                        p.set(p.get() + 1);
-                        if at == checkpoint {
-                            h.set(h.get() + 1);
-                        }
-                        if at == checkpoint && h.get() == nth {
-                            Usage {
-                                elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                memory_mib: if mode == 1 { 1 } else { 0 },
-                                signal: match mode {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                },
-                            }
-                        } else {
-                            None
-                        }
-                    },
-                );
+                let expected = StopReason::Cancelled(signal);
+                let mut c = Control::new(move |at| {
+                    p.set(p.get() + 1);
+                    if at == checkpoint {
+                        h.set(h.get() + 1);
+                    }
+                    (at == checkpoint && h.get() == nth).then_some(signal)
+                });
                 let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
                 let ObjectLawCircuitTransportFailure::Reading { cause, partial } = f else {
                     panic!("generation stop")

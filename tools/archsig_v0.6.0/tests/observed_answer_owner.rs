@@ -2,7 +2,7 @@
 use crate::common;
 
 use archsig::{
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::InputSources,
     observed::{
         PrepareFailure, prepare_observed,
@@ -260,7 +260,7 @@ fn dependent_answer_cycles_keep_original_cycle_members_and_request_graph() {
 }
 
 #[test]
-fn owner_type_walk_stops_early_and_preserves_known_mismatch_with_late_budget() {
+fn owner_type_walk_stops_early_and_cancellation_wins_over_known_mismatch() {
     let asks = [
         "c=evaluate(R.belongs,a=@v/B,b=$o.value)",
         "o=evaluate(R.owned,a=@v/A,b=@v/i)",
@@ -278,44 +278,27 @@ fn owner_type_walk_stops_early_and_preserves_known_mismatch_with_late_budget() {
         "c",
     );
     for at in [1, count.get()] {
-        for cancelled in [false, true] {
-            let seen = Rc::new(Cell::new(0usize));
-            let observed = seen.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: None,
-                },
-                move |point| {
-                    if point == Checkpoint::RequestBinding {
-                        observed.set(observed.get() + 1);
-                    }
-                    let stop = observed.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && !cancelled),
-                        signal: (stop && cancelled).then_some(Signal::Term),
-                        ..Usage::default()
-                    }
-                },
-            );
-            let failure = prepare_observed(sources(true), &asks, &mut control).unwrap_err();
-            if at > 1 && !cancelled {
-                assert_owner_error(failure, "c");
-            } else {
-                assert!(matches!(
-                    failure,
-                    PrepareFailure::Requests {
-                        failure: ResolveFailure::Interrupted { .. },
-                        ..
-                    }
-                ));
+        let seen = Rc::new(Cell::new(0usize));
+        let observed = seen.clone();
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::RequestBinding {
+                observed.set(observed.get() + 1);
             }
-            assert_eq!(seen.get(), at);
-            assert!(matches!(
-                control.checkpoint(Checkpoint::Resolve),
-                Err(StopReason::Cancelled(_)) | Err(StopReason::BudgetExhausted { .. })
-            ));
-            assert_eq!(seen.get(), at);
-        }
+            (observed.get() >= at).then_some(Signal::Term)
+        });
+        let failure = prepare_observed(sources(true), &asks, &mut control).unwrap_err();
+        assert!(matches!(
+            failure,
+            PrepareFailure::Requests {
+                failure: ResolveFailure::Interrupted { .. },
+                ..
+            }
+        ));
+        assert_eq!(seen.get(), at);
+        assert!(matches!(
+            control.checkpoint(Checkpoint::Resolve),
+            Err(StopReason::Cancelled(_))
+        ));
+        assert_eq!(seen.get(), at);
     }
 }

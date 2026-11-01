@@ -1,5 +1,4 @@
 use super::*;
-use crate::control::{Limits, Usage};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../tests/common/primitive_valuation_data.rs");
@@ -341,7 +340,7 @@ fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate
 #[test]
 fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_family() {
     use crate::{
-        control::{Resource, StopReason},
+        control::StopReason,
         result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
@@ -350,66 +349,34 @@ fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_
         "law required eq(c:Part):let pair=c.pair in match pair{x=>x=(0,true);};",
     );
     let completed = finite_law_family_valuations(&i, &selected(), &mut quiet()).unwrap();
-    let control = |at: usize, kind: u8| {
+    let control = |at: usize, signal: Signal| {
         let seen = Rc::new(Cell::new(0));
         let visits = seen.clone();
         let calls = Rc::new(Cell::new(0));
         let samples = calls.clone();
         (
-            Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |cp| {
-                    samples.set(samples.get() + 1);
-                    if cp == Checkpoint::FiniteLawOperand {
-                        visits.set(visits.get() + 1);
-                    }
-                    let stop = visits.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                        memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match kind {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            ),
+            Control::new(move |cp| {
+                samples.set(samples.get() + 1);
+                if cp == Checkpoint::FiniteLawOperand {
+                    visits.set(visits.get() + 1);
+                }
+                (visits.get() >= at).then_some(signal)
+            }),
             seen,
             calls,
         )
     };
-    let (mut c, visits, _) = control(usize::MAX, 4);
+    let (mut c, visits, _) = control(usize::MAX, Signal::Int);
     finite_law_family_valuations(&i, &selected(), &mut c).unwrap();
     let total = visits.get();
     assert!(total > 3);
     for at in [1, total / 2, total] {
-        for kind in 0..4 {
-            let (mut c, _, calls) = control(at, kind);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, _, calls) = control(at, signal);
             let f = finite_law_family_valuations(&i, &selected(), &mut c)
                 .err()
                 .expect("停止が成功");
-            let reason = match kind {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
+            let reason = StopReason::Cancelled(signal);
             assert!(matches!(f.cause,ValidationFailure::Stop(ref s) if s==&reason));
             if let Some(partial) = f.partial {
                 assert!(!partial.is_complete());

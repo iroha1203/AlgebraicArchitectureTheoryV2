@@ -1,9 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 
 fn quiet() -> Control {
     Control::unlimited()
@@ -436,36 +432,17 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
     assert!(other_env.recheck_finite_law_diagram(&g, value).is_err());
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: crate::result::Signal, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 {
-                        crate::result::Signal::Int
-                    } else {
-                        crate::result::Signal::Term
-                    })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finished_prefixes() {
+fn signal_stops_on_owned_law_preserve_the_original_family_and_validate_finished_prefixes() {
     let e = example(false, BODY);
     let mut initial = graph(&e);
     let f = family(&e, &mut initial, "a");
@@ -486,7 +463,7 @@ fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finishe
     let total = count.get();
     assert!(total > 20);
     let mut nonempty = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total - 1, total] {
             let mut g = replay(&e, &initial.nodes, &initial.contexts).unwrap();
             assert!(matches!(
@@ -495,7 +472,7 @@ fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finishe
                     e.prepared.shared_inputs(),
                     owned,
                     1,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));

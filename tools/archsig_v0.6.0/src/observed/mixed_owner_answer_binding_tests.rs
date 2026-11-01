@@ -65,19 +65,19 @@ fn mixed_owner_answer_map_domain_budget_keeps_values_refutation_missing_and_pref
         Signature::Law { params, .. } => params[2].span,
         _ => panic!(),
     };
-    let (limits, usage, expected) = reservations_private_stop_usage(1);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(input, STOP_ASK, &mut c).unwrap();
@@ -188,23 +188,23 @@ fn completed_result() -> ObservedEvaluation {
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
-fn completion_stop(phase: &'static str, index: usize, mode: usize) {
+fn completion_stop(phase: &'static str, index: usize) {
     use std::{cell::Cell, rc::Rc};
     let normal = completed_result();
     let target = normal.prepared.inputs().law().declarations["Applications.mxTuple"].span;
-    let (limits, usage, expected) = reservations_private_stop_usage(mode);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(
@@ -257,5 +257,5 @@ fn completion_stop(phase: &'static str, index: usize, mode: usize) {
 }
 #[test]
 fn mixed_completion_coverage_memory_stop_preserves_cases_without_whole_claim() {
-    completion_stop("completion_coverage", 0, 2)
+    completion_stop("completion_coverage", 0)
 }

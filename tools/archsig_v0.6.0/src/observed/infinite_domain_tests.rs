@@ -133,17 +133,17 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
     }
 }
 
-fn committed_reason_stop(kind: usize) {
+fn committed_reason_stop() {
     use std::{cell::Cell, rc::Rc};
     let inputs = fixture::input(SCRIPT, "Z", &[], "r1");
     let phase = Rc::new(Cell::new(false));
     let count = Rc::new(Cell::new(0));
     let (p, c) = (phase.clone(), count.clone());
-    let mut control = Control::new(Default::default(), move |_| {
+    let mut control = Control::new(move |_| {
         if p.get() {
             c.set(c.get() + 1);
         }
-        Default::default()
+        None
     });
     let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
     phase.set(true);
@@ -176,7 +176,7 @@ fn committed_reason_stop(kind: usize) {
     assert!(matches!(original.location, Some(Location::Law { .. })));
     assert_eq!(original.dependencies.len(), 1);
     assert!(original.dependencies[0].0 < target);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let run_at = |position| {
         let phase = Rc::new(Cell::new(false));
         let seen = Rc::new(Cell::new(0));
@@ -190,17 +190,17 @@ fn committed_reason_stop(kind: usize) {
             frozen.clone(),
             point.clone(),
         );
-        let mut control = Control::new(limits, move |checkpoint| {
+        let mut control = Control::new(move |checkpoint| {
             p.set(p.get() + 1);
             if ph.get() {
                 s.set(s.get() + 1);
                 if s.get() == position {
                     assert!(f.replace(Some(p.get())).is_none());
                     at.set(Some(checkpoint));
-                    return usage;
+                    return Some(crate::result::Signal::Term);
                 }
             }
-            Default::default()
+            None
         });
         let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
         phase.set(true);
@@ -261,5 +261,5 @@ fn committed_reason_stop(kind: usize) {
 
 #[test]
 fn infinite_committed_evaluation_post_cancel_retains_original_algorithm_reason() {
-    committed_reason_stop(0)
+    committed_reason_stop()
 }

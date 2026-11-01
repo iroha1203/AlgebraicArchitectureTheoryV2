@@ -1,10 +1,7 @@
 use super::super::law_table;
 use super::*;
 use crate::input::CheckedInputs;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
@@ -472,31 +469,16 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
     assert_eq!(full.data, l.data);
     let total = seen.get();
     assert!(total > 4);
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, total / 2, total - 1, total] {
             let seen = Rc::new(Cell::new(0));
             let counter = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::EquationPresentation {
-                        counter.set(counter.get() + 1)
-                    }
-                    let stop = counter.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
+            let mut c = Control::new(move |point| {
+                if point == Checkpoint::EquationPresentation {
+                    counter.set(counter.get() + 1)
+                }
+                (counter.get() >= at).then_some(signal)
+            });
             let before = g.nodes.clone();
             let contexts = g.contexts.clone();
             let active = g.active;

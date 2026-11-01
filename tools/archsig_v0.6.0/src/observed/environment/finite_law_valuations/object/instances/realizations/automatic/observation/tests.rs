@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -370,34 +369,18 @@ fn fiber_constraints_points_sources_and_foreign_functions_cannot_be_substituted(
     assert!(observation.recheck(f, &i, &wrong, &mut quiet()).is_err());
     observation.recheck(f, &i, &a, &mut quiet()).unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                count.set(count.get() + 1);
-            }
-            let stop = count.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 { Signal::Int } else { Signal::Term })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            count.set(count.get() + 1);
+        }
+        (count.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn cancellation_and_budget_stops_preserve_unfinished_observation_value_and_presentation_boundaries()
-{
+fn cancellation_stops_preserve_unfinished_observation_value_and_presentation_boundaries() {
     let i = fixture::with_body(&missing_q(), "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i);
     let result = run(&i, &a);
@@ -406,27 +389,27 @@ fn cancellation_and_budget_stops_preserve_unfinished_observation_value_and_prese
     let function = f
         .integer_function(column(f, "p"), Some(&[]), &mut quiet())
         .unwrap();
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         for at in [1, 5, 11] {
             assert!(matches!(
-                f.observation(&i, &mut stopping(mode, at)),
+                f.observation(&i, &mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            observation.evaluate(&function, &mut stopping(mode, 8)),
+            observation.evaluate(&function, &mut stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            observation.constant_image(&function, &mut stopping(mode, 8)),
+            observation.constant_image(&function, &mut stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            observation.recheck(f, &i, &a, &mut stopping(mode, 1)),
+            observation.recheck(f, &i, &a, &mut stopping(signal, 1)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            f.object_presentation(&i, 0, &mut stopping(mode, 8)),
+            f.object_presentation(&i, 0, &mut stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
     }

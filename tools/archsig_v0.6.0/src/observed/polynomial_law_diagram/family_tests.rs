@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
@@ -149,16 +146,9 @@ fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
     let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     let armed = Rc::new(Cell::new(false));
     let arm = armed.clone();
-    let mut c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            ..Limits::default()
-        },
-        move |point| Usage {
-            elapsed_ms: u128::from(arm.get() && point == Checkpoint::Configuration),
-            ..Usage::default()
-        },
-    );
+    let mut c = Control::new(move |point| {
+        (arm.get() && point == Checkpoint::Configuration).then_some(crate::result::Signal::Int)
+    });
     let env = Environment::with_prepared(&p, &mut c).unwrap();
     armed.set(true);
     assert!(matches!(

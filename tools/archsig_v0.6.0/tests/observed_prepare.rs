@@ -1,10 +1,11 @@
 use archsig::{
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::InputSources,
     observed::{
         PrepareFailure, prepare_checked_observed, prepare_observed,
         request::{RequestIssueCode, ResolveFailure},
     },
+    result::Signal,
 };
 
 fn inputs() -> InputSources {
@@ -73,31 +74,16 @@ fn request_failure_preserves_checked_input_tables() {
     };
     assert_eq!(checked.sources(), &inputs());
     assert!(checked.law().declarations().contains_key("CountCheck.amount"));
-    let ResolveFailure::Invalid {
-        requests,
-        issues,
-        stop_reason,
-    } = failure
-    else {
+    let ResolveFailure::Invalid { requests, issues } = failure else {
         panic!("束縛不足")
     };
-    assert!(stop_reason.is_none());
     assert!(requests.is_empty());
     assert_eq!(issues[0].code, RequestIssueCode::MissingBinding);
 }
 
 #[test]
 fn the_same_control_reaches_request_resolution() {
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        |point| Usage {
-            elapsed_ms: u128::from(point == Checkpoint::Resolve),
-            ..Usage::default()
-        },
-    );
+    let mut control = Control::new(|point| (point == Checkpoint::Resolve).then_some(Signal::Int));
     let failure =
         prepare_observed(inputs(), &["c=check(CountCheck.nonnegative)"], &mut control).unwrap_err();
     let PrepareFailure::Requests {
@@ -114,7 +100,7 @@ fn the_same_control_reaches_request_resolution() {
             .contains_key("CountCheck.nonnegative")
     );
     assert!(matches!(failure, ResolveFailure::Interrupted { .. }));
-    assert_eq!(control.stop_reason().unwrap().code(), "budget_exhausted");
+    assert_eq!(control.stop_reason().unwrap().code(), "cancelled");
 }
 
 #[test]
@@ -148,18 +134,13 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
     for key in ["answers", "nodes"] {
         assert_eq!(fields[key], archsig::canonical::Json::Arr(vec![]));
     }
-    let ResolveFailure::Invalid {
-        requests,
-        issues,
-        stop_reason,
-    } = (match &failure {
+    let ResolveFailure::Invalid { requests, issues } = (match &failure {
         PrepareFailure::Requests { failure, .. } => failure,
         _ => panic!("要求の循環"),
     })
     else {
         panic!("invalid")
     };
-    assert!(stop_reason.is_none());
     assert_eq!(requests.len(), 3);
     assert_eq!(requests[0].dependencies, ["b"]);
     assert_eq!(requests[2].dependencies, ["a"]);

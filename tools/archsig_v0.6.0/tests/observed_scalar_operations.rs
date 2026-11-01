@@ -1,11 +1,12 @@
 //! AC4段階1: 小さいZ/Bool演算の値・判断・元式・欠測・由来をbyte入口から検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
     observed::evaluate_observed_bytes,
+    result::Signal,
 };
 use std::{
     cell::Cell,
@@ -921,7 +922,7 @@ fn guarded_boolean_binary_laws_use_result_versus_true_as_refutation_evidence() {
 }
 
 #[test]
-fn memory_stop_inside_boolean_operator_keeps_prior_integer_and_original_reason() {
+fn cancellation_inside_boolean_operator_keeps_prior_integer_and_original_reason() {
     let seed = "seed=evaluate(Calc.add,s=@v/sample)";
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
@@ -942,26 +943,17 @@ fn memory_stop_inside_boolean_operator_keeps_prior_integer_and_original_reason()
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(
-        Limits {
-            time_ms: None,
-            memory_mib: Some(1),
-        },
-        move |point| {
-            calls.set(calls.get() + 1);
-            if point == Checkpoint::Expression {
-                seen.set(seen.get() + 1);
-                if seen.get() == target {
-                    stopped.set(Some(calls.get()));
-                    return Usage {
-                        memory_mib: 1,
-                        ..Usage::default()
-                    };
-                }
+    let mut c = Control::new(move |point| {
+        calls.set(calls.get() + 1);
+        if point == Checkpoint::Expression {
+            seen.set(seen.get() + 1);
+            if seen.get() == target {
+                stopped.set(Some(calls.get()));
+                return Some(Signal::Int);
             }
-            None
-        },
-    );
+        }
+        None
+    });
     let result = evaluate_observed_bytes(
         fixture(Some("2"), Some("3"), None, Some(false)),
         &[
@@ -985,15 +977,11 @@ fn memory_stop_inside_boolean_operator_keeps_prior_integer_and_original_reason()
         assert!(obj(f(a, "outputs")).is_empty());
         let reason = arr(f(a, "reasons"))
             .iter()
-            .find(|r| f(r, "code") == &Json::str("budget_exhausted"))
+            .find(|r| f(r, "code") == &Json::str("cancelled"))
             .unwrap();
         assert_eq!(
             f(reason, "details"),
-            &Json::obj([
-                ("resource", Json::str("memory_mib")),
-                ("limit", Json::str("1")),
-                ("observed", Json::str("1"))
-            ])
+            &Json::obj([("signal", Json::str("SIGINT"))])
         );
     }
     assert_eq!(expressions.get(), target);

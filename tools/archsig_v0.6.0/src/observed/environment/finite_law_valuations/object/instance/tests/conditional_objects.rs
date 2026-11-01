@@ -238,39 +238,26 @@ fn a_stop_keeps_one_finished_row_and_no_completed_function_or_quotient() {
     let i = fixture::with_body(&missing_map(), ALL);
     let a = readings(&i);
     let selected = vec![(object(&a, "root"), instance(&a, "all", "p"), bindings("p"))];
-    for mode in 0..3 {
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::FiniteLawEvaluation {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= 3;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let error = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
-            .err()
-            .unwrap();
-        assert!(matches!(error.cause, ValidationFailure::Stop(_)));
-        let partial = error.partial.unwrap();
-        assert!(partial.domain_complete());
-        assert_eq!(partial.domain().len(), 8);
-        assert_eq!(partial.columns()[0].rows().len(), 1);
-        assert_eq!(partial.columns()[0].rows()[0].indicator, Some(0.into()));
-        assert!(partial.columns()[0].rows()[0].support.contains(&owner()));
-        assert!(partial.integer_function(0, None, &mut quiet()).is_err());
-        assert!(partial.required_quotient(&mut quiet()).is_err());
-    }
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::FiniteLawEvaluation {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= 3).then_some(Signal::Term)
+    });
+    let error = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
+        .err()
+        .unwrap();
+    assert!(matches!(error.cause, ValidationFailure::Stop(_)));
+    let partial = error.partial.unwrap();
+    assert!(partial.domain_complete());
+    assert_eq!(partial.domain().len(), 8);
+    assert_eq!(partial.columns()[0].rows().len(), 1);
+    assert_eq!(partial.columns()[0].rows()[0].indicator, Some(0.into()));
+    assert!(partial.columns()[0].rows()[0].support.contains(&owner()));
+    assert!(partial.integer_function(0, None, &mut quiet()).is_err());
+    assert!(partial.required_quotient(&mut quiet()).is_err());
 }
 #[test]
 fn an_explicit_external_owner_keeps_its_whole_fiber_outside_the_partial_object() {

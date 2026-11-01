@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };
@@ -51,29 +51,18 @@ fn count(sources: InputSources, point: Checkpoint) -> usize {
     seen.get()
 }
 
-fn stop(point: Checkpoint, at: usize, resource: usize) -> Control {
+fn stop(point: Checkpoint, at: usize) -> Control {
     let mut seen = 0;
-    Control::new(
-        Limits {
-            time_ms: (resource == 1).then_some(1),
-            memory_mib: (resource == 2).then_some(1),
-        },
-        move |current| {
-            if current == point {
-                seen += 1;
-            }
-            let stopping = seen == at;
-            Usage {
-                signal: (stopping && resource == 0).then_some(Signal::Term),
-                elapsed_ms: u128::from(stopping && resource == 1),
-                memory_mib: u128::from(stopping && resource == 2),
-            }
-        },
-    )
+    Control::new(move |current| {
+        if current == point {
+            seen += 1;
+        }
+        (seen == at).then_some(Signal::Term)
+    })
 }
 
-fn interrupted(sources: InputSources, point: Checkpoint, at: usize, resource: usize) {
-    let mut control = stop(point, at, resource);
+fn interrupted(sources: InputSources, point: Checkpoint, at: usize) {
+    let mut control = stop(point, at);
     let failure = check_inputs(sources, &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert!(!failure.primitives().is_empty());
@@ -85,11 +74,10 @@ fn interrupted(sources: InputSources, point: Checkpoint, at: usize, resource: us
     for key in ["requests", "answers", "nodes"] {
         assert_eq!(wire[key], Json::Arr(vec![]));
     }
-    match control.stop_reason().unwrap() {
-        StopReason::Cancelled(Signal::Term) => assert_eq!(resource, 0),
-        StopReason::BudgetExhausted { .. } => assert_ne!(resource, 0),
-        other => panic!("unexpected stop {other:?}"),
-    }
+    assert_eq!(
+        control.stop_reason(),
+        Some(StopReason::Cancelled(Signal::Term))
+    );
 }
 
 fn invalid(sources: InputSources, code: &str, pointer: &str) {
@@ -109,32 +97,8 @@ fn invalid(sources: InputSources, code: &str, pointer: &str) {
     );
 }
 
-fn invalid_after_budget(sources: InputSources, point: Checkpoint, at: usize, resource: usize) {
-    assert!(resource == 1 || resource == 2);
-    let baseline = check_inputs(sources.clone(), &mut Control::unlimited()).unwrap_err();
-    assert_eq!(baseline.status(), InputStatus::Invalid);
-    let mut control = stop(point, at, resource);
-    let failure = check_inputs(sources, &mut control).unwrap_err();
-    assert_eq!(failure.status(), baseline.status());
-    let mut expected_issues = vec![control.stop_reason().expect("observed budget").wire()];
-    expected_issues.extend_from_slice(baseline.issues());
-    assert_eq!(failure.issues(), expected_issues);
-    assert_eq!(
-        control.stop_reason(),
-        Some(StopReason::BudgetExhausted {
-            resource: if resource == 1 {
-                archsig::control::Resource::TimeMs
-            } else {
-                archsig::control::Resource::MemoryMib
-            },
-            limit: 1,
-            observed: 1,
-        })
-    );
-}
-
 #[test]
-fn model_digest_nested_values_and_string_escaping_observe_all_resources() {
+fn model_digest_nested_values_and_string_escaping_are_interruptible() {
     let make = || {
         input(
             &[("value", r#"["List",["Tuple","Text",["Option","Bool"]]]"#)],
@@ -149,9 +113,7 @@ fn model_digest_nested_values_and_string_escaping_observe_all_resources() {
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 80);
     for at in [1, total / 2, total] {
-        for resource in 0..3 {
-            interrupted(make(), Checkpoint::ArchMapCanonical, at, resource);
-        }
+        interrupted(make(), Checkpoint::ArchMapCanonical, at);
     }
 }
 
@@ -167,14 +129,8 @@ fn set_duplicate_comparison_walks_nested_values_before_rejection() {
     invalid(make(), "syntax", "/snapshots/0/atoms/0/value/1");
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 20);
-    for at in [1, total / 2] {
-        for resource in 0..3 {
-            interrupted(make(), Checkpoint::ArchMapCanonical, at, resource);
-        }
-    }
-    interrupted(make(), Checkpoint::ArchMapCanonical, total, 0);
-    for resource in 1..3 {
-        invalid_after_budget(make(), Checkpoint::ArchMapCanonical, total, resource);
+    for at in [1, total / 2, total] {
+        interrupted(make(), Checkpoint::ArchMapCanonical, at);
     }
 }
 
@@ -200,11 +156,7 @@ fn map_key_duplicate_comparison_is_controlled_inside_the_key() {
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 20);
     for at in [1, total / 2, total] {
-        interrupted(make(), Checkpoint::ArchMapCanonical, at, 0);
-    }
-    for resource in 1..3 {
-        interrupted(make(), Checkpoint::ArchMapCanonical, 1, resource);
-        invalid_after_budget(make(), Checkpoint::ArchMapCanonical, total, resource);
+        interrupted(make(), Checkpoint::ArchMapCanonical, at);
     }
 }
 
@@ -224,7 +176,7 @@ fn required_namespace_type_recursion_adds_internal_schema_boundaries() {
     check_inputs(nested(), &mut Control::unlimited()).unwrap();
     let at = count(flat(), Checkpoint::ArchMapSchema) + 1;
     assert!(count(nested(), Checkpoint::ArchMapSchema) > at + 4);
-    interrupted(nested(), Checkpoint::ArchMapSchema, at, 0);
+    interrupted(nested(), Checkpoint::ArchMapSchema, at);
 }
 
 #[test]
@@ -244,7 +196,7 @@ fn missing_field_slots_and_late_field_lookup_add_per_field_boundaries() {
     };
     let at = count(small(), Checkpoint::ArchMapSchema) + 1;
     assert!(count(wide(), Checkpoint::ArchMapSchema) > at + 4);
-    interrupted(wide(), Checkpoint::ArchMapSchema, at, 0);
+    interrupted(wide(), Checkpoint::ArchMapSchema, at);
     let known = |field| {
         input(
             &[
@@ -272,10 +224,7 @@ fn missing_field_slots_and_late_field_lookup_add_per_field_boundaries() {
     };
     invalid(unknown(), "reference", "/snapshots/0/atoms/0/field");
     let last = count(unknown(), Checkpoint::ArchMapSchema);
-    interrupted(unknown(), Checkpoint::ArchMapSchema, last, 0);
-    for resource in 1..3 {
-        invalid_after_budget(unknown(), Checkpoint::ArchMapSchema, last, resource);
-    }
+    interrupted(unknown(), Checkpoint::ArchMapSchema, last);
 }
 
 #[test]
@@ -307,15 +256,6 @@ fn unknown_constructor_checks_each_candidate_and_post_error_boundary() {
     let total = count(make(4, "Absent"), Checkpoint::ArchMapSchema);
     assert!(total >= first + 12);
     for at in [1, total / 2, total] {
-        interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, at, 0);
-    }
-    for resource in 1..3 {
-        interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, 1, resource);
-        invalid_after_budget(
-            make(4, "Absent"),
-            Checkpoint::ArchMapSchema,
-            total,
-            resource,
-        );
+        interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, at);
     }
 }

@@ -1,6 +1,6 @@
 use archsig::{
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     law::{self, lexer},
     observed::{PrepareFailure, prepare_observed},
@@ -31,28 +31,17 @@ fn steps(law: &str) -> usize {
     seen.get()
 }
 
-fn stop(at: usize, resource: usize) -> Control {
+fn stop(at: usize) -> Control {
     let mut seen = 0;
-    Control::new(
-        Limits {
-            time_ms: (resource == 1).then_some(7),
-            memory_mib: (resource == 2).then_some(11),
-        },
-        move |point| {
-            if point == Checkpoint::LawCanonical {
-                seen += 1;
-            }
-            let stopping = seen == at;
-            Usage {
-                signal: (stopping && resource == 0).then_some(Signal::Term),
-                elapsed_ms: if stopping && resource == 1 { 9 } else { 0 },
-                memory_mib: if stopping && resource == 2 { 13 } else { 0 },
-            }
-        },
-    )
+    Control::new(move |point| {
+        if point == Checkpoint::LawCanonical {
+            seen += 1;
+        }
+        (seen == at).then_some(Signal::Term)
+    })
 }
 
-fn assert_stopped(failure: &InputFailure, control: &Control, resource: usize) {
+fn assert_stopped(failure: &InputFailure, control: &Control) {
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert!(failure.declarations().is_empty());
     assert!(failure.primitives().is_empty());
@@ -62,20 +51,7 @@ fn assert_stopped(failure: &InputFailure, control: &Control, resource: usize) {
         assert!(input.bytes_digest.is_some());
         assert_eq!(input.model_digest.is_some(), input.id == "definition0");
     }
-    let expected = match resource {
-        0 => StopReason::Cancelled(Signal::Term),
-        1 => StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 7,
-            observed: 9,
-        },
-        2 => StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 11,
-            observed: 13,
-        },
-        _ => unreachable!(),
-    };
+    let expected = StopReason::Cancelled(Signal::Term);
     assert_eq!(control.stop_reason(), Some(expected.clone()));
     assert_eq!(failure.issues(), &[expected.wire()]);
     let wire = failure.wire();
@@ -87,18 +63,18 @@ fn assert_stopped(failure: &InputFailure, control: &Control, resource: usize) {
     }
 }
 
-fn exercise(resource: usize) {
+fn exercise() {
     let total = steps(LAW);
     let tokens = lexer::lex(LAW.as_bytes()).unwrap().len();
     // The first range walks tokens; the later range walks their JSON strings,
     // and the final checkpoint follows the model hash.
     assert!(total > 4 * tokens);
     for at in [1, 2 * tokens, total / 2, total] {
-        let mut control = stop(at, resource);
+        let mut control = stop(at);
         let failure = check_inputs(sources(LAW), &mut control).unwrap_err();
-        assert_stopped(&failure, &control, resource);
+        assert_stopped(&failure, &control);
 
-        let mut control = stop(at, resource);
+        let mut control = stop(at);
         let failure = prepare_observed(
             sources(LAW),
             &["a=evaluate(CountCheck.amount,s=@v/s)"],
@@ -108,23 +84,13 @@ fn exercise(resource: usize) {
         let PrepareFailure::Inputs(failure) = failure else {
             panic!("canonical interruption must precede request resolution")
         };
-        assert_stopped(&failure, &control, resource);
+        assert_stopped(&failure, &control);
     }
 }
 
 #[test]
 fn law_canonical_tokens_strings_and_hash_share_cancellation() {
-    exercise(0);
-}
-
-#[test]
-fn law_canonical_tokens_strings_and_hash_share_time_budget() {
-    exercise(1);
-}
-
-#[test]
-fn law_canonical_tokens_strings_and_hash_share_memory_budget() {
-    exercise(2);
+    exercise();
 }
 
 #[test]

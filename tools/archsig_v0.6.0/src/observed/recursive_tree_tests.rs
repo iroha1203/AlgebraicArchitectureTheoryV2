@@ -72,7 +72,7 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
     });
 }
 
-fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
+fn recursive_tree_private_stop(after_answer: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Trees.prior)",
@@ -80,17 +80,17 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
         "later=evaluate(Trees.seed)",
     ];
     let normal = recursive_tree_private_result(&asks);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
             None
         }
@@ -159,5 +159,5 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
 }
 #[test]
 fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
-    recursive_tree_private_stop(0, false);
+    recursive_tree_private_stop(false);
 }

@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     input::InputSources,
     observed::evaluate::evaluate_observed_bytes,
 };
@@ -462,20 +461,9 @@ fn finite_owner_completion_stop_before_owner_agreement_publishes_no_repair() {
         &mut quiet(),
     )
     .unwrap();
-    let mut control = Control::new(
-        Limits {
-            memory_mib: Some(1),
-            ..Limits::default()
-        },
-        |point| Usage {
-            memory_mib: if point == Checkpoint::Completion {
-                2
-            } else {
-                0
-            },
-            ..Usage::default()
-        },
-    );
+    let mut control = Control::new(|point| {
+        (point == Checkpoint::Completion).then_some(crate::result::Signal::Term)
+    });
     let result = crate::observed::evaluate_observed(prepared, &mut control).unwrap();
     assert_eq!(result.answers[0].status, Decision::Undetermined);
     assert!(result.answers[0].outputs.is_empty());

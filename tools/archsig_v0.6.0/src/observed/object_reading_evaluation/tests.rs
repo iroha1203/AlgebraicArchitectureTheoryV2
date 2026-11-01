@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     input::InputSources,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
@@ -468,36 +467,19 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
     let frame_point = native_points.borrow()[1];
     let mut frame_prefix = false;
     let mut body_prefix = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, frame_point, total / 2, total - 2, total - 1, total] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    let hit = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if mode == 0 && hit { 1 } else { 0 },
-                        memory_mib: if mode == 1 && hit { 1 } else { 0 },
-                        signal: if hit && mode == 2 {
-                            Some(crate::result::Signal::Int)
-                        } else if hit && mode == 3 {
-                            Some(crate::result::Signal::Term)
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |_| {
+                seen.set(seen.get() + 1);
+                (seen.get() >= at).then_some(signal)
+            });
             let mut g = copy(&initial, &control);
             let result = evaluate(&env, &mut g, expression, &mut control);
             assert!(
                 matches!(result, Err(ValidationFailure::Stop(_))),
-                "mode {mode}, at {at}: {result:?}"
+                "{signal:?}, at {at}: {result:?}"
             );
             assert_eq!(g.active, initial.active);
             assert!(g.nodes.len() <= full.nodes.len());

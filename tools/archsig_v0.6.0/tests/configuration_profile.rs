@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure,
         profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -353,34 +353,15 @@ fn every_fixed_profile_stop_rejects_unfinished_results_and_latches() {
     let total = count.get();
     assert!(total > 210);
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |p| {
-                    if p == Checkpoint::ConfigurationProfile {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut c = Control::new(move |p| {
+                if p == Checkpoint::ConfigurationProfile {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let failure = construct_profiles(&i, "ProfileRead", "v", "A", &mut c).unwrap_err();
             assert_eq!(
                 failure,

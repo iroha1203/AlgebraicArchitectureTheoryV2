@@ -229,7 +229,7 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
     }
 }
 
-fn owned_private_phase_stop(phase: &'static str, kind: usize) {
+fn owned_private_phase_stop(phase: &'static str) {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; {OWNED_VIEW} law required walk(a:System):forall s in State[a] . s.held>=0;"
@@ -261,18 +261,18 @@ fn owned_private_phase_stop(phase: &'static str, kind: usize) {
             .flat_map(|r| &r.missing)
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Reservations.State.free"))
     );
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |checkpoint| {
+    let mut control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
             None
         }
@@ -402,5 +402,5 @@ fn owned_private_phase_stop(phase: &'static str, kind: usize) {
 }
 #[test]
 fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_answers() {
-    owned_private_phase_stop("owned_family_enum", 0);
+    owned_private_phase_stop("owned_family_enum");
 }

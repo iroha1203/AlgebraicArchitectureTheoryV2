@@ -5,7 +5,7 @@ use archsig::{
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
-    control::{Checkpoint, Control, Limits},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
@@ -492,19 +492,13 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     for at in [count / 2, count] {
         let hits = Rc::new(Cell::new(0));
         let seen = hits.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == Checkpoint::ObjectLawFamily {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = p == Checkpoint::ObjectLawFamily && seen.get() == at;
-                stop.then_some(Signal::Int)
-            },
-        );
+        let mut c = Control::new(move |p| {
+            if p == Checkpoint::ObjectLawFamily {
+                seen.set(seen.get() + 1);
+            }
+            let stop = p == Checkpoint::ObjectLawFamily && seen.get() == at;
+            stop.then_some(Signal::Int)
+        });
         let Error::Stopped {
             reason,
             operation,
@@ -543,19 +537,13 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     let hits = Rc::new(Cell::new(0));
     let seen = hits.clone();
     let last = whole_hits.get();
-    let mut c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        },
-        move |p| {
-            if p == Checkpoint::ObjectLawTransport {
-                seen.set(seen.get() + 1);
-            }
-            let stop = p == Checkpoint::ObjectLawTransport && seen.get() == last;
-            stop.then_some(Signal::Int)
-        },
-    );
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::ObjectLawTransport {
+            seen.set(seen.get() + 1);
+        }
+        let stop = p == Checkpoint::ObjectLawTransport && seen.get() == last;
+        stop.then_some(Signal::Int)
+    });
     let Error::Stopped {
         partial: Some(p), ..
     } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()

@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::*,
-};
+use crate::{observed::*, result::Signal};
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
 mod fixture {
@@ -132,32 +129,15 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
         let total = count.get();
         assert!(total > 0);
         for at in [1, (total / 2).max(1), total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |p| {
-                        if p == phase {
-                            seen.set(seen.get() + 1);
-                        }
-                        if seen.get() < at {
-                            return None;
-                        }
-                        Usage {
-                            elapsed_ms: if mode == 0 { 1 } else { 0 },
-                            memory_mib: if mode == 1 { 1 } else { 0 },
-                            signal: match mode {
-                                2 => Some(crate::result::Signal::Int),
-                                3 => Some(crate::result::Signal::Term),
-                                _ => None,
-                            },
-                        }
-                    },
-                );
+                let mut c = Control::new(move |p| {
+                    if p == phase {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let result = crate::observed::request::resolve_observed_requests_controlled(
                     inputs.law(),
                     inputs.archmap(),
@@ -169,7 +149,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
                         result,
                         Err(crate::observed::request::ResolveFailure::Interrupted { .. })
                     ),
-                    "{phase:?} {at} {mode}: {result:?}"
+                    "{phase:?} {at} {signal:?}: {result:?}"
                 );
                 let stopped = count.get();
                 assert!(c.checkpoint(phase).is_err());
@@ -470,29 +450,14 @@ fn owned_environment_rejects_false_type_origin_edges_inputs_and_future_reference
     assert!(env.select_architecture(&graph, owned).is_err());
 }
 #[test]
-fn all_four_owned_environment_stops_restore_the_previous_context_and_preserve_producers() {
+fn both_signal_owned_environment_stops_restore_the_previous_context_and_preserve_producers() {
     let (result, graph, d, root) = owned_graph();
     let before = graph.nodes.clone();
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let armed = Rc::new(Cell::new(false));
         let a = armed.clone();
-        let limits = Limits {
-            time_ms: (mode == 0).then_some(1),
-            memory_mib: (mode == 1).then_some(1),
-        };
-        let mut c = Control::new(limits, move |phase| {
-            if !a.get() || phase != Checkpoint::ObjectEvaluation {
-                return None;
-            }
-            Usage {
-                elapsed_ms: if mode == 0 { 1 } else { 0 },
-                memory_mib: if mode == 1 { 1 } else { 0 },
-                signal: match mode {
-                    2 => Some(crate::result::Signal::Int),
-                    3 => Some(crate::result::Signal::Term),
-                    _ => None,
-                },
-            }
+        let mut c = Control::new(move |phase| {
+            (a.get() && phase == Checkpoint::ObjectEvaluation).then_some(signal)
         });
         let env = Environment::with_prepared(result.prepared(), &mut c).unwrap();
         let base = env.select_architecture(&graph, root).unwrap().unwrap();
@@ -503,7 +468,7 @@ fn all_four_owned_environment_stops_restore_the_previous_context_and_preserve_pr
                 env.select_architecture(&graph, d.architectures[1]),
                 Err(ValidationFailure::Stop(_))
             ),
-            "mode {mode}"
+            "{signal:?}"
         );
         assert!(c.stop_reason().is_some());
         assert_eq!(env.architecture_ref(), Some(root));

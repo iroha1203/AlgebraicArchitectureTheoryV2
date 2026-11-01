@@ -108,7 +108,7 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
         let total = count.get();
         assert!(total > 10);
         // 停止の種類と位置は代表1つ(計算の途中の time 停止)だけを見る。
-        let (mut c, _) = stopping(total / 2, 0, point);
+        let (mut c, _) = stopping(total / 2, point);
         let mut g = graph();
         let answer = crate::observed::public_compare::evaluate(
             &prepared,

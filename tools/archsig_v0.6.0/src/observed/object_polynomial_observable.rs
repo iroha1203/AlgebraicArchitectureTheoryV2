@@ -456,7 +456,6 @@ pub fn object_polynomial_observable(
 mod tests {
     use super::*;
     use crate::{
-        control::Usage,
         input::{InputSources, check_inputs},
     };
     mod fixture {

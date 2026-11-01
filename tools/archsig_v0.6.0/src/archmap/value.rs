@@ -232,54 +232,34 @@ fn z_encoding<E: InputError>(
 #[cfg(test)]
 mod lexical_priority_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Usage};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
 
     #[test]
     fn each_integer_refusal_is_materialized_before_its_first_post() {
-        for (text, first_post, total) in [
-            ("1x", 5, 5),
-            ("", 2, 2),
-            ("x1", 2, 2),
-            ("00", 2, 2),
-            ("-0", 2, 2),
-            ("12", 7, 6),
+        for (text, total) in [
+            ("1x", 5),
+            ("", 2),
+            ("x1", 2),
+            ("00", 2),
+            ("-0", 2),
+            ("12", 6),
         ] {
             for at in 1..=total {
-                for mode in 0..3 {
-                    let mut visits = 0;
-                    let mut control = Control::new(
-                        Limits {
-                            time_ms: (mode == 1).then_some(1),
-                            memory_mib: (mode == 2).then_some(1),
-                        },
-                        move |point| {
-                            if point == Checkpoint::ArchMapSchema {
-                                visits += 1;
-                            }
-                            let stop = visits == at;
-                            Usage {
-                                signal: (stop && mode == 0).then_some(Signal::Term),
-                                elapsed_ms: u128::from(stop && mode == 1),
-                                memory_mib: u128::from(stop && mode == 2),
-                            }
-                        },
-                    );
-                    let result = z_encoding::<CheckFailure<Box<Issue>>>(text, &mut control, || {
-                        syntax("/value", "original rejection")
-                    });
-                    if mode > 0 && at >= first_post {
-                        assert!(
-                            matches!(result, Err(CheckFailure::Input(ref issue)) if issue == &syntax("/value", "original rejection")),
-                            "{text:?} at {at}"
-                        );
-                    } else {
-                        assert!(
-                            matches!(result, Err(CheckFailure::Stopped(_))),
-                            "{text:?} at {at}"
-                        );
+                let mut visits = 0;
+                let mut control = Control::new(move |point| {
+                    if point == Checkpoint::ArchMapSchema {
+                        visits += 1;
                     }
-                }
+                    (visits == at).then_some(Signal::Term)
+                });
+                let result = z_encoding::<CheckFailure<Box<Issue>>>(text, &mut control, || {
+                    syntax("/value", "original rejection")
+                });
+                assert!(
+                    matches!(result, Err(CheckFailure::Stopped(_))),
+                    "{text:?} at {at}"
+                );
             }
         }
     }

@@ -1,7 +1,7 @@
 //! AC4のlet/if段階: 三入力byteから値、lexicalな出現、欠測と中断を確認する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
@@ -1080,26 +1080,17 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(
-        Limits {
-            time_ms: None,
-            memory_mib: Some(1),
-        },
-        move |point| {
-            calls.set(calls.get() + 1);
-            if point == Checkpoint::Expression {
-                seen.set(seen.get() + 1);
-                if seen.get() == target_count {
-                    stopped.set(Some(calls.get()));
-                    return Usage {
-                        memory_mib: 1,
-                        ..Usage::default()
-                    };
-                }
+    let mut c = Control::new(move |point| {
+        calls.set(calls.get() + 1);
+        if point == Checkpoint::Expression {
+            seen.set(seen.get() + 1);
+            if seen.get() == target_count {
+                stopped.set(Some(calls.get()));
+                return Some(archsig::result::Signal::Int);
             }
-            None
-        },
-    );
+        }
+        None
+    });
     let result = evaluate_observed_bytes(
         fixture(&["p"], body),
         &[
@@ -1127,15 +1118,11 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
         assert!(obj(f(a, "outputs")).is_empty());
         let reason = arr(f(a, "reasons"))
             .iter()
-            .find(|r| f(r, "code") == &Json::str("budget_exhausted"))
+            .find(|r| f(r, "code") == &Json::str("cancelled"))
             .unwrap();
         assert_eq!(
             f(reason, "details"),
-            &Json::obj([
-                ("resource", Json::str("memory_mib")),
-                ("limit", Json::str("1")),
-                ("observed", Json::str("1"))
-            ])
+            &Json::obj([("signal", Json::str("SIGINT"))])
         );
     }
     assert_eq!(expressions.get(), target_count);

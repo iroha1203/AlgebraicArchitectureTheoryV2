@@ -2,7 +2,7 @@
 use archsig::result::Signal;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{InputSources, check_inputs},
     law::model::Signature,
@@ -809,11 +809,7 @@ fn missing_guard_and_body_keep_both_slot_identities_and_source_dependencies() {
     guarded_case(None, None, "undetermined", "undetermined", None);
 }
 
-fn stop_between_guard_body_and_law_completion(
-    expression_offset: usize,
-    limits: Limits,
-    stopped_usage: Usage,
-) {
+fn stop_between_guard_body_and_law_completion(expression_offset: usize, signal: Signal) {
     let prefix = "seed=evaluate(Inspect.value,item=@current/root)";
     let prefix_count = Rc::new(Cell::new(0));
     let seen = prefix_count.clone();
@@ -832,13 +828,13 @@ fn stop_between_guard_body_and_law_completion(
     let calls = Rc::new(Cell::new(0));
     let stopped_calls = Rc::new(Cell::new(None));
     let (seen, probes, frozen) = (expressions.clone(), calls.clone(), stopped_calls.clone());
-    let mut control = Control::new(limits, move |point| {
+    let mut control = Control::new(move |point| {
         probes.set(probes.get() + 1);
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
             if seen.get() == stop_at {
                 frozen.set(Some(probes.get()));
-                return stopped_usage;
+                return Some(signal);
             }
         }
         None
@@ -913,25 +909,11 @@ fn stop_between_guard_body_and_law_completion(
 #[test]
 fn cancellation_after_guard_evaluation_preserves_prior_view_and_pending_law() {
     // guardの式処理前後を終え、bodyの式処理を始める前で停止する。
-    stop_between_guard_body_and_law_completion(
-        2,
-        Limits::default(),
-        Some(Signal::Term),
-    );
+    stop_between_guard_body_and_law_completion(2, Signal::Term);
 }
 
 #[test]
-fn time_stop_after_raw_body_preserves_prior_view_without_promoting_raw_truth() {
+fn cancellation_after_raw_body_preserves_prior_view_without_promoting_raw_truth() {
     // guard/bodyの二つの原式を終え、条件付きの適用評価を構成する前で停止する。
-    stop_between_guard_body_and_law_completion(
-        4,
-        Limits {
-            time_ms: Some(7),
-            memory_mib: None,
-        },
-        Usage {
-            elapsed_ms: 7,
-            ..Usage::default()
-        },
-    );
+    stop_between_guard_body_and_law_completion(4, Signal::Term);
 }

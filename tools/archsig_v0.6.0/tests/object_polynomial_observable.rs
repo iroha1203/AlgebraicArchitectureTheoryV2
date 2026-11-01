@@ -1,6 +1,6 @@
 use archsig::{
     construction::ConstructionFailure,
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_equation_presentation::EquationPresentationStatus as S,
@@ -514,7 +514,7 @@ fn current_inputs_provenance_and_invalid_object_are_checked_again() {
 #[test]
 fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_probes() {
     use archsig::{
-        control::{Checkpoint as C, Resource, StopReason},
+        control::{Checkpoint as C, StopReason},
         result::Signal,
     };
     use std::{cell::RefCell, rc::Rc};
@@ -538,50 +538,19 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
             let count = history.borrow().iter().filter(|&&p| p == at).count();
             assert!(count > 0);
             for nth in [1, count] {
-                for mode in 0..4 {
+                for signal in [Signal::Int, Signal::Term] {
                     let hits = Rc::new(RefCell::new(0));
                     let h = hits.clone();
                     let probes = Rc::new(RefCell::new(0));
                     let p = probes.clone();
-                    let reason = match mode {
-                        0 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        2 => StopReason::Cancelled(Signal::Int),
-                        _ => StopReason::Cancelled(Signal::Term),
-                    };
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: (mode == 0).then_some(1),
-                            memory_mib: (mode == 1).then_some(1),
-                        },
-                        move |point| {
-                            *p.borrow_mut() += 1;
-                            if point == at {
-                                *h.borrow_mut() += 1;
-                            }
-                            if point == at && *h.borrow() == nth {
-                                Usage {
-                                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                                    memory_mib: if mode == 1 { 1 } else { 0 },
-                                    signal: match mode {
-                                        2 => Some(Signal::Int),
-                                        3 => Some(Signal::Term),
-                                        _ => None,
-                                    },
-                                }
-                            } else {
-                                None
-                            }
-                        },
-                    );
+                    let reason = StopReason::Cancelled(signal);
+                    let mut c = Control::new(move |point| {
+                        *p.borrow_mut() += 1;
+                        if point == at {
+                            *h.borrow_mut() += 1;
+                        }
+                        (point == at && *h.borrow() == nth).then_some(signal)
+                    });
                     let failure = if recheck {
                         baseline.recheck(i.clone(), &mut c).unwrap_err()
                     } else {

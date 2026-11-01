@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
     canonical::Json,
-    control::Limits,
     input::check_inputs,
     result::Signal,
 };
@@ -427,20 +426,14 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
         let samples = Rc::new(Cell::new(0));
         let seen = count.clone();
         let calls = samples.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |cp| {
-                calls.set(calls.get() + 1);
-                if cp == Checkpoint::FiniteIteration {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                stop.then_some(Signal::Int)
-            },
-        );
+        let mut c = Control::new(move |cp| {
+            calls.set(calls.get() + 1);
+            if cp == Checkpoint::FiniteIteration {
+                seen.set(seen.get() + 1);
+            }
+            let stop = seen.get() >= at;
+            stop.then_some(Signal::Int)
+        });
         let failure = match congruence(&i, "Walk", &mut c) {
             Err(failure) => failure,
             Ok(_) => panic!("停止しなかった"),

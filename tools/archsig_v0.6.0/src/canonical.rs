@@ -178,7 +178,7 @@ impl PartialEq for Json {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::issue::Issue;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
@@ -220,41 +220,16 @@ mod controlled_tests {
         let total = count.get();
         assert!(total > 30);
         for at in 1..=total {
-            for kind in 0..3 {
-                let mut visits = 0;
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (kind == 1).then_some(1),
-                        memory_mib: (kind == 2).then_some(1),
-                    },
-                    move |_| {
-                        visits += 1;
-                        let hit = visits == at;
-                        Usage {
-                            signal: (hit && kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(hit && kind == 1),
-                            memory_mib: u128::from(hit && kind == 2),
-                        }
-                    },
-                );
-                let expected = match kind {
-                    0 => StopReason::Cancelled(Signal::Term),
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    _ => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                };
-                assert!(
-                    matches!(value.canonical_controlled::<Failure>(&mut control, Checkpoint::Expression), Err(Failure::Stopped(reason)) if reason == expected)
-                );
-                assert_eq!(control.stop_reason(), Some(expected));
-            }
+            let mut visits = 0;
+            let mut control = Control::new(move |_| {
+                visits += 1;
+                (visits == at).then_some(Signal::Term)
+            });
+            let expected = StopReason::Cancelled(Signal::Term);
+            assert!(
+                matches!(value.canonical_controlled::<Failure>(&mut control, Checkpoint::Expression), Err(Failure::Stopped(reason)) if reason == expected)
+            );
+            assert_eq!(control.stop_reason(), Some(expected));
         }
     }
 }

@@ -526,10 +526,10 @@ fn universal_guard_false_retains_body_source_without_body_evaluation() {
 
 #[test]
 fn universal_counterexample_post_stop_retains_completed_evidence() {
-    universal_private_stop(4, 0);
+    universal_private_stop(4);
 }
 
-fn universal_private_stop(stage: usize, kind: usize) {
+fn universal_private_stop(stage: usize) {
     let current = if stage == 4 {
         "law required current(z:Z,s:Sample):z+s.z=z+s.z+1;"
     } else if stage == 6 {
@@ -544,12 +544,11 @@ fn universal_private_stop(stage: usize, kind: usize) {
     } else {
         "current=evaluate(Calc.current,s=@v/sample)"
     };
-    universal_private_stop_with_current(stage, kind, current, request);
+    universal_private_stop_with_current(stage, current, request);
 }
 
-fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str, request: &str) {
+fn universal_private_stop_with_current(stage: usize, current: &str, request: &str) {
     use super::super::affine;
-    use crate::control::{Limits, Resource, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let sources = affine_private_fixture(&format!(
@@ -584,54 +583,18 @@ fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str,
             Decision::Established
         }
     );
-    let (limits, usage, expected) = match kind {
-        0 => (
-            Limits::default(),
-            Some(Signal::Term),
-            StopReason::Cancelled(Signal::Term),
-        ),
-        1 => (
-            Limits {
-                time_ms: Some(3),
-                memory_mib: None,
-            },
-            Usage {
-                elapsed_ms: 4,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 3,
-                observed: 4,
-            },
-        ),
-        _ => (
-            Limits {
-                time_ms: None,
-                memory_mib: Some(7),
-            },
-            Usage {
-                memory_mib: 8,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::MemoryMib,
-                limit: 7,
-                observed: 8,
-            },
-        ),
-    };
+    let expected = StopReason::Cancelled(Signal::Term);
     let ready = Rc::new(Cell::new(false));
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |point| {
+    let mut control = Control::new(move |point| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(point, Checkpoint::FiniteIteration);
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(Signal::Term)
         } else {
             None
         }

@@ -642,7 +642,7 @@ fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() 
     let observed = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-        &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
+        &mut archsig::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(observed.status(), "partial");
@@ -776,44 +776,35 @@ fn assert_module_owners(result: &JNode) {
 #[test]
 fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = input("integer-stop", "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
-    for mode in 0..3 {
-        let seen = Rc::new(Cell::new(0));
-        let count = seen.clone();
-        let mut c = Control::new(Limits {time_ms: Some(1), memory_mib: Some(1)}, move |point| {
-            if point == Checkpoint::ChangeWitness { count.set(count.get() + 1); }
-            if count.get() == 2 {
-                match mode {
-                    0 => Usage {elapsed_ms: 2, ..Usage::default()},
-                    1 => Usage {memory_mib: 2, ..Usage::default()},
-                    _ => Some(archsig::result::Signal::Term),
-                }
-            } else { None }
-        });
-        let source = InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],
-            std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
-        let result = evaluate_observed_bytes(source, &[
-            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
-            "later=check(Pair.total,s=@pair/s)"], &mut c).unwrap();
-        assert_eq!(seen.get(), 2);
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-        let answers = arr(get(&wire, "answers"));
-        let first = &answers[0];
-        assert_eq!(s(get(first,"status")), "undetermined");
-        assert!(!has(get(first,"outputs"), "object"));
-        assert!(!has(get(first,"outputs"), "repair"));
-        assert!(!has(get(first,"outputs"), "proposition"));
-        assert_eq!(s(get(get(output(&wire,0,"existence"),"judgment"),"status")), "established");
-        assert_eq!(s(get(&answers[1],"status")), "undetermined");
-        let code = if mode == 2 {"cancelled"} else {"budget_exhausted"};
-        for answer in answers {
-            assert!(arr(get(answer,"reasons")).iter().any(|r| s(get(r,"code")) == code));
-        }
+    let seen = Rc::new(Cell::new(0));
+    let count = seen.clone();
+    let mut c = Control::new(move |point| {
+        if point == Checkpoint::ChangeWitness { count.set(count.get() + 1); }
+        (count.get() == 2).then_some(archsig::result::Signal::Term)
+    });
+    let source = InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+    let result = evaluate_observed_bytes(source, &[
+        "r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+        "later=check(Pair.total,s=@pair/s)"], &mut c).unwrap();
+    assert_eq!(seen.get(), 2);
+    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let answers = arr(get(&wire, "answers"));
+    let first = &answers[0];
+    assert_eq!(s(get(first,"status")), "undetermined");
+    assert!(!has(get(first,"outputs"), "object"));
+    assert!(!has(get(first,"outputs"), "repair"));
+    assert!(!has(get(first,"outputs"), "proposition"));
+    assert_eq!(s(get(get(output(&wire,0,"existence"),"judgment"),"status")), "established");
+    assert_eq!(s(get(&answers[1],"status")), "undetermined");
+    for answer in answers {
+        assert!(arr(get(answer,"reasons")).iter().any(|r| s(get(r,"code")) == "cancelled"));
     }
 }
 
@@ -1019,26 +1010,24 @@ fn integer_quotient_keeps_repaired_architecture_offset() {
 #[test]
 fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir=input("integer-quotient-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
-    for mode in 0..3 {
-        let seen=Rc::new(Cell::new(0));let count=seen.clone();
-        let mut c=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move|point| {
-            if point==Checkpoint::Quotient {count.set(count.get()+1);}
-            if count.get()==2 {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Some(archsig::result::Signal::Term)}}else{None}
-        });
-        let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
-        let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.first,on=$s.domain,s=@pair/s)"],&mut c).unwrap();
-        let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
-        assert_eq!(seen.get(),2);assert_eq!(s(get(&answers[0],"status")),"established");
-        assert!(has(get(&answers[0],"outputs"),"solutions"));assert!(!has(get(&answers[1],"outputs"),"quotient"));
-        assert_eq!(s(get(&answers[1],"status")),"undetermined");
-        assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
-    }
+    let seen=Rc::new(Cell::new(0));let count=seen.clone();
+    let mut c=Control::new(move|point| {
+        if point==Checkpoint::Quotient {count.set(count.get()+1);}
+        (count.get()==2).then_some(archsig::result::Signal::Term)
+    });
+    let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+    let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.first,on=$s.domain,s=@pair/s)"],&mut c).unwrap();
+    let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
+    assert_eq!(seen.get(),2);assert_eq!(s(get(&answers[0],"status")),"established");
+    assert!(has(get(&answers[0],"outputs"),"solutions"));assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");
+    assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))=="cancelled"));
 }
 
 #[test]
@@ -1108,26 +1097,24 @@ fn integer_law_descent_missing_operands_do_not_become_a_true_constant_family() {
 #[test]
 fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir=input("integer-law-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};view combined(s:State):Z=s.x+s.y;law optional same(s:State):s.x=s.x;");
-    for mode in 0..3 {
-        let armed=Rc::new(Cell::new(false));let seen=Rc::new(Cell::new(false));let active=armed.clone();let stopped=seen.clone();
-        let mut c=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move|point| {
-            if point==Checkpoint::Quotient {active.set(true);}
-            if active.get() && point==Checkpoint::FiniteLawOperand {stopped.set(true);}
-            if stopped.get() {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Some(archsig::result::Signal::Term)}}else{None}
-        });
-        let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
-        let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.same)"],&mut c).unwrap();
-        assert!(seen.get());let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
-        assert_eq!(s(get(&answers[0],"status")),"established");assert!(has(get(&answers[0],"outputs"),"solutions"));
-        assert_eq!(s(get(&answers[1],"status")),"undetermined");assert!(!has(get(&answers[1],"outputs"),"quotient"));assert!(!has(get(&answers[1],"outputs"),"proposition"));
-        assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
-    }
+    let armed=Rc::new(Cell::new(false));let seen=Rc::new(Cell::new(false));let active=armed.clone();let stopped=seen.clone();
+    let mut c=Control::new(move|point| {
+        if point==Checkpoint::Quotient {active.set(true);}
+        if active.get() && point==Checkpoint::FiniteLawOperand {stopped.set(true);}
+        stopped.get().then_some(archsig::result::Signal::Term)
+    });
+    let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+    let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.same)"],&mut c).unwrap();
+    assert!(seen.get());let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
+    assert_eq!(s(get(&answers[0],"status")),"established");assert!(has(get(&answers[0],"outputs"),"solutions"));
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");assert!(!has(get(&answers[1],"outputs"),"quotient"));assert!(!has(get(&answers[1],"outputs"),"proposition"));
+    assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))=="cancelled"));
 }
 
 #[test]
@@ -1446,7 +1433,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let evaluated = archsig::observed::evaluate_observed_bytes(
                 sources,
                 &[query],
-                &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
+                &mut archsig::control::Control::unlimited(),
             )
             .unwrap();
             let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();

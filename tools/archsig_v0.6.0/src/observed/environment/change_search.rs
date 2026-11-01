@@ -22,7 +22,6 @@ pub(in crate::observed) struct Search {
 mod tests {
     use super::*;
     use crate::{
-        control::Usage,
         observed::request::resolve_native_for_test,
     };
     #[allow(dead_code)]

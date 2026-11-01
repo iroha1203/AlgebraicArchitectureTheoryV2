@@ -1,9 +1,9 @@
-//! Path composeの取消・資源停止と、同じ配送経路の既存データ保護。
+//! Path composeの取消と、同じ配送経路の既存データ保護。
 use crate::common;
 #[path = "common/public_path_compose.rs"]
 mod fixture;
 use archsig::{
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     observed::evaluate_observed_bytes,
     result::{Signal, Status},
     run::{CheckArgs, Io, RunArgs, Signals, run_requests},
@@ -94,40 +94,19 @@ impl Io for Files {
 }
 #[test]
 fn path_compose_request_resolution_stops_notify_without_starting_output() {
-    for mode in 0..4 {
-        let (dir, args) = setup(&format!("path-compose-resolver-stop-{mode}"));
-        let mut control = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |point| {
-                let stop = point == Checkpoint::RequestBinding;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+    for signal in [Signal::Int, Signal::Term] {
+        let (dir, args) = setup(&format!("path-compose-resolver-stop-{}", signal.wire()));
+        let mut control =
+            Control::new(move |point| (point == Checkpoint::RequestBinding).then_some(signal));
         let mut io = Files::default();
         let mut signals = Finalize::default();
         let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(
             outcome.exit_code,
-            match mode {
-                2 => 130,
-                3 => 143,
-                _ => 75,
+            match signal {
+                Signal::Int => 130,
+                Signal::Term => 143,
             }
         );
         assert!(outcome.result.is_none());
@@ -156,42 +135,22 @@ fn path_compose_late_stops_publish_only_checked_values_with_consistent_status_an
     assert_eq!(original.status(), "complete");
     let total = count.get();
     assert!(total >= 3);
-    for mode in 0..4 {
-        let (dir, args) = setup(&format!("path-compose-late-stop-{mode}"));
+    for signal in [Signal::Int, Signal::Term] {
+        let (dir, args) = setup(&format!("path-compose-late-stop-{}", signal.wire()));
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::NativeResultNode {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= total;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let mut control = Control::new(move |p| {
+            if p == Checkpoint::NativeResultNode {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= total).then_some(signal)
+        });
         let mut io = Files::default();
         let mut signals = Finalize::default();
         let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
-        let code = match mode {
-            2 => 130,
-            3 => 143,
-            _ => 75,
+        let code = match signal {
+            Signal::Int => 130,
+            Signal::Term => 143,
         };
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(outcome.exit_code, code);

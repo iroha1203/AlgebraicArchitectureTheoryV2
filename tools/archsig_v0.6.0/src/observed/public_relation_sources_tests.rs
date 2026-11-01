@@ -709,7 +709,7 @@ fn public_relation_stops_keep_prior_values_and_only_finished_sealed_comparisons(
     assert!(total > 4);
     // 停止の種類は共通の停止処理を通るので time 停止だけを、停止位置は未完と完了直後の2点を見る。
     for at in [1, total - 3] {
-        let (mut control, _) = stopping(at, 0, Checkpoint::NativeResultNode);
+        let (mut control, _) = stopping(at, Checkpoint::NativeResultNode);
         let prepared =
             crate::observed::prepare_observed(inputs(script), &qs, &mut Control::unlimited())
                 .unwrap();

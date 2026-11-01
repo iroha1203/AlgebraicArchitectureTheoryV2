@@ -1,7 +1,6 @@
 use super::*;
 use crate::types::Type;
 use crate::{
-    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::sync::Arc;

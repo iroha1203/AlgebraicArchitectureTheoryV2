@@ -6,7 +6,7 @@ use archsig::{
         ConstructionFailure,
         maps::{Counterexample, correspondence},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -666,34 +666,15 @@ fn typed_mapping_completion_stops_latch_the_shared_control() {
     assert!(total > 20);
     assert!(original.counterexamples().is_empty());
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::Completion {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |point| {
+                if point == Checkpoint::Completion {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let failure =
                 correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap_err();
             assert_eq!(
@@ -1239,34 +1220,15 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |p| {
-                    if p == Checkpoint::ConfigurationMap {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |p| {
+                if p == Checkpoint::ConfigurationMap {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let failure =
                 correspondence(&inputs, "v", "m", "Reservations", None, &mut control).unwrap_err();
             assert_eq!(
@@ -1314,34 +1276,15 @@ fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_s
     let total = source.family().len() + source.relations().len() + source.identifications().len();
     let at = count.get() - total - 1 + source.family().len() + position + 2;
     assert!(at < count.get());
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::ConfigurationMap {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let mut control = Control::new(move |p| {
+            if p == Checkpoint::ConfigurationMap {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(signal)
+        });
         let failure = correspondence_retained(&input, "v", "m", "Reservations", None, &mut control)
             .unwrap_err();
         assert!(matches!(failure.cause(), ConstructionFailure::Stopped(_)));

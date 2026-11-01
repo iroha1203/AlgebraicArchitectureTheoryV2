@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::object_law_residuals::{
         LawNumericShape, LawResidualOutcome as Outcome, ObjectLawResiduals,
@@ -461,59 +461,29 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     assert!(nth > 0);
     use archsig::{
         construction::ConstructionFailure,
-        control::{Resource, StopReason},
+        control::StopReason,
         result::Signal,
     };
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let calls = Rc::new(RefCell::new(0));
         let calls0 = calls.clone();
         let probes = Rc::new(RefCell::new(0));
         let probes0 = probes.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |p| {
-                *probes0.borrow_mut() += 1;
-                if p == C::ObjectLawResiduals {
-                    *calls0.borrow_mut() += 1
-                }
-                if *calls0.borrow() != nth {
-                    return None;
-                }
-                Usage {
-                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                    memory_mib: if mode == 1 { 1 } else { 0 },
-                    signal: match mode {
-                        2 => Some(Signal::Int),
-                        3 => Some(Signal::Term),
-                        _ => None,
-                    },
-                }
-            },
-        );
-        let expected = match mode {
-            0 => StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 1,
-                observed: 1,
-            },
-            1 => StopReason::BudgetExhausted {
-                resource: Resource::MemoryMib,
-                limit: 1,
-                observed: 1,
-            },
-            2 => StopReason::Cancelled(Signal::Int),
-            _ => StopReason::Cancelled(Signal::Term),
-        };
+        let mut c = Control::new(move |p| {
+            *probes0.borrow_mut() += 1;
+            if p == C::ObjectLawResiduals {
+                *calls0.borrow_mut() += 1
+            }
+            (*calls0.borrow() == nth).then_some(signal)
+        });
+        let expected = StopReason::Cancelled(signal);
         let failure = r.recheck(i.clone(), &mut c).unwrap_err();
         let ObjectLawResidualsFailure::Reading {
             cause: ConstructionFailure::Stopped(reason),
             partial,
         } = failure
         else {
-            panic!("recheck must retain the completed numeric result: mode={mode}");
+            panic!("recheck must retain the completed numeric result: {signal:?}");
         };
         assert_eq!(reason, expected);
         assert_eq!(c.stop_reason(), Some(expected));

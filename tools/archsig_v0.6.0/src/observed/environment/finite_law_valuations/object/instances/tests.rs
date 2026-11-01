@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
-};
+use crate::construction::{construct, readings::object_reading_instances};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../../tests/common/primitive_valuation_data.rs");
@@ -301,40 +298,27 @@ fn fixed_stops_keep_finished_rows_without_completing_the_instance() {
     use std::{cell::Cell, rc::Rc};
     let i = input(GRID);
     let r = reading(&i);
-    for mode in 0..3 {
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::FiniteLawEvaluation {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= 2;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let error = finite_object_law_instances(&i, &r, object(&r, "p"), &mut c).unwrap_err();
-        assert!(matches!(error.cause, ValidationFailure::Stop(_)));
-        let partial = error.partial.unwrap();
-        assert!(!partial.is_complete());
-        assert_eq!(
-            partial.object_identity(),
-            r.objects()[object(&r, "p")].identity()
-        );
-        assert_eq!(partial.entries.len(), 1);
-        assert_eq!(partial.entries[0].state, ParameterFamilyState::Pending);
-        assert_eq!(partial.entries[0].rows.len(), 1);
-        assert_eq!(partial.entries[0].domains.len(), 2);
-        assert!(partial.recheck(&i, &mut quiet()).is_err());
-    }
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::FiniteLawEvaluation {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= 2).then_some(Signal::Term)
+    });
+    let error = finite_object_law_instances(&i, &r, object(&r, "p"), &mut c).unwrap_err();
+    assert!(matches!(error.cause, ValidationFailure::Stop(_)));
+    let partial = error.partial.unwrap();
+    assert!(!partial.is_complete());
+    assert_eq!(
+        partial.object_identity(),
+        r.objects()[object(&r, "p")].identity()
+    );
+    assert_eq!(partial.entries.len(), 1);
+    assert_eq!(partial.entries[0].state, ParameterFamilyState::Pending);
+    assert_eq!(partial.entries[0].rows.len(), 1);
+    assert_eq!(partial.entries[0].domains.len(), 2);
+    assert!(partial.recheck(&i, &mut quiet()).is_err());
 }
 #[test]
 fn domain_cancellation_retains_only_finished_parameter_domains() {

@@ -1,8 +1,8 @@
-//! 必須の字句拒否を確定した直後にも、元診断と共有停止理由を保持する。
+//! 必須の字句拒否を確定した直後にも、観測した停止を共有停止理由として報告する。
 use crate::common;
 use archsig::{
     archmap::check_archmap,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::check_definitions,
     input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
@@ -10,27 +10,16 @@ use archsig::{
 };
 use std::{cell::Cell, rc::Rc};
 
-fn probe(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     (
-        Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |current| {
-                if current == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() == at;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        ),
+        Control::new(move |current| {
+            if current == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() == at).then_some(Signal::Term)
+        }),
         count,
     )
 }
@@ -42,7 +31,7 @@ fn assert_priority(
     after_rejection: usize,
     definition_failure: bool,
 ) {
-    let (mut baseline, count) = probe(point, usize::MAX, 0);
+    let (mut baseline, count) = probe(point, usize::MAX);
     let original = check_inputs(make(), &mut baseline).unwrap_err();
     assert_eq!(original.status(), InputStatus::Invalid);
     assert_eq!(original.issues(), [ResultIssue::Input(issue).wire()]);
@@ -53,33 +42,17 @@ fn assert_priority(
     // Here the offsets are only the source's Result-unwind wrappers, so the
     // first injection is the post of the rejecting operation itself.
     for at in [first_post - 1, first_post, total] {
-        for mode in 0..3 {
-            let (mut control, _) = probe(point, at, mode);
-            let failure = check_inputs(make(), &mut control).unwrap_err();
-            assert_eq!(failure.declarations().is_empty(), definition_failure);
-            assert_eq!(failure.primitives().is_empty(), definition_failure);
-            assert_eq!(failure.vocabularies().is_empty(), definition_failure);
-            let reason = control
-                .stop_reason()
-                .expect("the requested post was sampled");
-            if mode == 0 || at < first_post {
-                assert_eq!(failure.status(), InputStatus::Interrupted, "{at}/{total}");
-                assert_eq!(failure.issues(), [reason.wire()]);
-            } else {
-                assert_eq!(failure.status(), InputStatus::Invalid, "{at}/{total}");
-                assert!(matches!(reason, StopReason::BudgetExhausted { .. }));
-                let mut expected = vec![reason.wire()];
-                expected.extend_from_slice(original.issues());
-                assert_eq!(
-                    failure.issues(),
-                    expected,
-                    "original code/message/pointer/span/details"
-                );
-            }
-            if mode == 0 {
-                assert_eq!(reason, StopReason::Cancelled(Signal::Term));
-            }
-        }
+        let (mut control, _) = probe(point, at);
+        let failure = check_inputs(make(), &mut control).unwrap_err();
+        assert_eq!(failure.declarations().is_empty(), definition_failure);
+        assert_eq!(failure.primitives().is_empty(), definition_failure);
+        assert_eq!(failure.vocabularies().is_empty(), definition_failure);
+        let reason = control
+            .stop_reason()
+            .expect("the requested post was sampled");
+        assert_eq!(failure.status(), InputStatus::Interrupted, "{at}/{total}");
+        assert_eq!(failure.issues(), [reason.wire()]);
+        assert_eq!(reason, StopReason::Cancelled(Signal::Term));
     }
 }
 
@@ -244,7 +217,7 @@ fn constructor_and_field_exhaustion_keep_only_established_lookup_rejections() {
         false,
     );
 
-    let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX, 0);
+    let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
     check_inputs(
         value_sources_from_definition(definition.clone(), absent),
         &mut baseline,
@@ -253,16 +226,14 @@ fn constructor_and_field_exhaustion_keep_only_established_lookup_rejections() {
     // A's post is two points before the rejecting final B post. A matching
     // second constructor remains untried, so the first false cannot be invalid.
     let at = total.get() - 5;
-    for mode in 0..3 {
-        let (mut control, _) = probe(Checkpoint::ArchMapSchema, at, mode);
-        let failure = check_inputs(
-            value_sources_from_definition(definition.clone(), r#"{"tag":"B","args":[]}"#),
-            &mut control,
-        )
-        .unwrap_err();
-        assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
-    }
+    let (mut control, _) = probe(Checkpoint::ArchMapSchema, at);
+    let failure = check_inputs(
+        value_sources_from_definition(definition.clone(), r#"{"tag":"B","args":[]}"#),
+        &mut control,
+    )
+    .unwrap_err();
+    assert_eq!(failure.status(), InputStatus::Interrupted);
+    assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
 
     let make_field = || {
         let source = value_sources("\"Z\"", "\"1\"");

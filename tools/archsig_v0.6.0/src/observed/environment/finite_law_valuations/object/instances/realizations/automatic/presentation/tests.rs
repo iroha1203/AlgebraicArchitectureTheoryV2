@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -380,48 +379,33 @@ fn rechecking_rejects_all_index_value_ideal_origin_and_owner_substitutions() {
     );
     p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                count.set(count.get() + 1);
-            }
-            let stop = count.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 { Signal::Int } else { Signal::Term })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            count.set(count.get() + 1);
+        }
+        (count.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn interruption_and_budgets_never_publish_an_unfinished_presentation() {
+fn interruption_never_publishes_an_unfinished_presentation() {
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
     let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         for at in [1, 10, 35, 65] {
             assert!(matches!(
-                f.object_presentation(&i, o, &mut stopping(mode, at)),
+                f.object_presentation(&i, o, &mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            p.recheck(f, o, &i, &a, &mut stopping(mode, 1)),
+            p.recheck(f, o, &i, &a, &mut stopping(signal, 1)),
             Err(ValidationFailure::Stop(_))
         ));
     }

@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure,
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
@@ -296,34 +296,15 @@ fn fixed_checkpoints_stop_construction_application_and_recheck_without_reentry()
             positions.sort();
             positions.dedup();
             for at in positions {
-                for mode in 0..4 {
+                for signal in [Signal::Int, Signal::Term] {
                     let count = Rc::new(Cell::new(0));
                     let seen = count.clone();
-                    let mut c = Control::new(
-                        Limits {
-                            time_ms: Some(1),
-                            memory_mib: Some(1),
-                        },
-                        move |p| {
-                            if p == point {
-                                seen.set(seen.get() + 1);
-                            }
-                            let stop = seen.get() >= at;
-                            Usage {
-                                elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                                memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                                signal: if stop {
-                                    match mode {
-                                        2 => Some(Signal::Int),
-                                        3 => Some(Signal::Term),
-                                        _ => None,
-                                    }
-                                } else {
-                                    None
-                                },
-                            }
-                        },
-                    );
+                    let mut c = Control::new(move |p| {
+                        if p == point {
+                            seen.set(seen.get() + 1);
+                        }
+                        (seen.get() >= at).then_some(signal)
+                    });
                     let f = invoke(&mut c).unwrap_err();
                     assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
                     assert_eq!(count.get(), at);

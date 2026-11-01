@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     input::{InputSources, check_inputs},
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
@@ -478,29 +477,14 @@ fn four_stops_preserve_every_finished_native_prefix() {
     .unwrap();
     assert!(total.get() > 2);
     for at in [1, total.get() / 2, total.get()] {
-        for mode in 0..4 {
+        for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
             let reached = Rc::new(Cell::new(0));
             let count = reached.clone();
-            let limits = Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            };
-            let mut c = Control::new(limits, move |phase| {
+            let mut c = Control::new(move |phase| {
                 if phase == Checkpoint::NativeResultNode {
                     count.set(count.get() + 1)
                 }
-                if count.get() < at {
-                    return None;
-                }
-                Usage {
-                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                    memory_mib: if mode == 1 { 1 } else { 0 },
-                    signal: match mode {
-                        2 => Some(crate::result::Signal::Int),
-                        3 => Some(crate::result::Signal::Term),
-                        _ => None,
-                    },
-                }
+                (count.get() >= at).then_some(signal)
             });
             let env = Environment::with_prepared(&p, &mut c).unwrap();
             let mut g = empty(&p, &c);
@@ -692,34 +676,17 @@ fn stopped_second_build_keeps_the_previous_request_producer_unchanged() {
         sources(false, BODY),
         &["a=build(R,on=@v/A)", "b=build(R,on=@v/B)"],
     );
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         let armed = Rc::new(Cell::new(false));
         let a = armed.clone();
         let reached = Rc::new(Cell::new(0));
         let count = reached.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |phase| {
-                if a.get() && phase == Checkpoint::NativeResultNode {
-                    count.set(count.get() + 1)
-                }
-                if count.get() == 0 {
-                    return None;
-                }
-                Usage {
-                    elapsed_ms: if mode == 0 { 1 } else { 0 },
-                    memory_mib: if mode == 1 { 1 } else { 0 },
-                    signal: match mode {
-                        2 => Some(crate::result::Signal::Int),
-                        3 => Some(crate::result::Signal::Term),
-                        _ => None,
-                    },
-                }
-            },
-        );
+        let mut c = Control::new(move |phase| {
+            if a.get() && phase == Checkpoint::NativeResultNode {
+                count.set(count.get() + 1)
+            }
+            (count.get() != 0).then_some(signal)
+        });
         let env = Environment::with_prepared(&p, &mut c).unwrap();
         let mut g = empty(&p, &c);
         let first = build(

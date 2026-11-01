@@ -549,14 +549,11 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
         };
         let mut control = if mode >= 3 {
             archsig::control::Control::new(move |_| {
-                archsig::control::Usage {
-                    signal: Some(if mode == 3 {
-                        archsig::result::Signal::Int
-                    } else {
-                        archsig::result::Signal::Term
-                    }),
-                    ..archsig::None
-                }
+                Some(if mode == 3 {
+                    archsig::result::Signal::Int
+                } else {
+                    archsig::result::Signal::Term
+                })
             })
         } else {
             archsig::control::Control::unlimited()

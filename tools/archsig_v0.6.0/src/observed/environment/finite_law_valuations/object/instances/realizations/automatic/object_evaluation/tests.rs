@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
     input::{InputSources, check_inputs},
     result::Signal,
 };
@@ -428,33 +427,18 @@ fn forged_basis_points_families_and_foreign_functions_are_rejected_at_the_consum
     );
     assert!(ev.recheck(f, &changed, &a, &mut quiet()).is_err());
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: Signal, at: usize) -> Control {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 { Signal::Int } else { Signal::Term })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn cancellation_and_budget_stops_do_not_return_partial_maps_values_or_constant_images() {
+fn cancellation_stops_do_not_return_partial_maps_values_or_constant_images() {
     let i = inputs("law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
     let result = run(&i, &a);
@@ -465,17 +449,17 @@ fn cancellation_and_budget_stops_do_not_return_partial_maps_values_or_constant_i
         .unwrap()
         .one(&mut quiet())
         .unwrap();
-    for mode in 0..4 {
-        let mut c = stopping(mode, 3);
+    for signal in [Signal::Int, Signal::Term] {
+        let mut c = stopping(signal, 3);
         let failure = f.object_evaluation(&mut c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(mode, 10);
+        let mut c = stopping(signal, 10);
         let failure = ev.apply(&one, &mut c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(mode, 18);
+        let mut c = stopping(signal, 18);
         let failure = ev.constant_image(&one, &mut c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(mode, 1);
+        let mut c = stopping(signal, 1);
         let failure = ev.recheck(f, &i, &a, &mut c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
     }

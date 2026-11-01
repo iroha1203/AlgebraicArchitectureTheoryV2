@@ -311,7 +311,7 @@ fn rational_guard_and_missing_preserve_original_parameters_and_needed_field() {
 #[test]
 fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
@@ -320,77 +320,50 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
         "rational-stop",
         "change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required pinned(s:State):s.x+s.y=1;",
     );
-    for mode in 0..3 {
-        let seen = Rc::new(Cell::new(0));
-        let count = seen.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::ChangeWitness {
-                    count.set(count.get() + 1);
-                }
-                if count.get() == 2 {
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Some(archsig::result::Signal::Term),
-                    }
-                } else {
-                    None
-                }
-            },
-        );
-        let source = InputSources::from_bytes(
-            vec![std::fs::read(dir.join("d.json")).unwrap()],
-            std::fs::read(dir.join("l.law")).unwrap(),
-            std::fs::read(dir.join("a.json")).unwrap(),
-        );
-        let result = evaluate_observed_bytes(
-            source,
-            &[
-                "r=repair(Pair.pinned,using=Pair.choose,on=@v/s,s=@v/s)",
-                "later=check(Pair.pinned,s=@v/s)",
-            ],
-            &mut c,
-        )
-        .unwrap();
-        assert_eq!(seen.get(), 2);
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-        let answers = arr(get(&wire, "answers"));
-        let first = &answers[0];
-        assert_eq!(s(get(first, "status")), "undetermined");
-        assert!(!has(get(first, "outputs"), "object"));
-        assert!(!has(get(first, "outputs"), "repair"));
-        assert!(!has(get(first, "outputs"), "proposition"));
-        assert_eq!(
-            s(get(
-                get(output(&wire, 0, "existence"), "judgment"),
-                "status"
-            )),
-            "established"
-        );
-        assert_eq!(s(get(&answers[1], "status")), "undetermined");
-        let code = if mode == 2 {
-            "cancelled"
-        } else {
-            "budget_exhausted"
-        };
-        for answer in answers {
-            assert!(
-                arr(get(answer, "reasons"))
-                    .iter()
-                    .any(|r| s(get(r, "code")) == code)
-            );
+    let seen = Rc::new(Cell::new(0));
+    let count = seen.clone();
+    let mut c = Control::new(move |point| {
+        if point == Checkpoint::ChangeWitness {
+            count.set(count.get() + 1);
         }
+        (count.get() == 2).then_some(archsig::result::Signal::Term)
+    });
+    let source = InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let result = evaluate_observed_bytes(
+        source,
+        &[
+            "r=repair(Pair.pinned,using=Pair.choose,on=@v/s,s=@v/s)",
+            "later=check(Pair.pinned,s=@v/s)",
+        ],
+        &mut c,
+    )
+    .unwrap();
+    assert_eq!(seen.get(), 2);
+    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let answers = arr(get(&wire, "answers"));
+    let first = &answers[0];
+    assert_eq!(s(get(first, "status")), "undetermined");
+    assert!(!has(get(first, "outputs"), "object"));
+    assert!(!has(get(first, "outputs"), "repair"));
+    assert!(!has(get(first, "outputs"), "proposition"));
+    assert_eq!(
+        s(get(
+            get(output(&wire, 0, "existence"), "judgment"),
+            "status"
+        )),
+        "established"
+    );
+    assert_eq!(s(get(&answers[1], "status")), "undetermined");
+    for answer in answers {
+        assert!(
+            arr(get(answer, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "cancelled")
+        );
     }
 }
 
@@ -1262,58 +1235,24 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
 fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
     use archsig::result::Signal;
     use archsig::{
-        control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+        control::{Checkpoint, Control, StopReason},
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
-    for (usage, expected) in [
-        (
-            Usage {
-                elapsed_ms: 2,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 1,
-                observed: 2,
-            },
-        ),
-        (
-            Usage {
-                memory_mib: 2,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::MemoryMib,
-                limit: 1,
-                observed: 2,
-            },
-        ),
-        (
-            Some(Signal::Int),
-            StopReason::Cancelled(Signal::Int),
-        ),
-        (
-            Some(Signal::Term),
-            StopReason::Cancelled(Signal::Term),
-        ),
+    for (signal, expected) in [
+        (Signal::Int, StopReason::Cancelled(Signal::Int)),
+        (Signal::Term, StopReason::Cancelled(Signal::Term)),
     ] {
         let hit = Rc::new(Cell::new(false));
         let seen = hit.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::QuotientGuardedInstance {
-                    seen.set(true);
-                    usage
-                } else {
-                    None
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::QuotientGuardedInstance {
+                seen.set(true);
+                Some(signal)
+            } else {
+                None
+            }
+        });
         let sources = input_sources("change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;law optional active(s:State) when s.x=0:s.x=s.x;");
         let evaluated = evaluate_observed_bytes(
             sources,
@@ -1404,7 +1343,7 @@ fn rational_unknown_guard_keeps_its_own_source_bindings_and_free_parameter() {
     let evaluated = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,on=@v/s,using=Pair.choose,c=@v/s)"],
-        &mut archsig::control::Control::new(Default::default(), |_| Default::default()),
+        &mut archsig::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(evaluated.status(), "partial");

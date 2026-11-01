@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    control::Usage,
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
@@ -475,11 +472,7 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
             if arm.get() && point == Checkpoint::FiniteIteration {
                 count.set(count.get() + 1)
             }
-            Usage {
-                elapsed_ms: 0,
-                memory_mib: 0,
-                signal: (arm.get() && count.get() >= 200).then_some(crate::result::Signal::Int),
-            }
+            (arm.get() && count.get() >= 200).then_some(crate::result::Signal::Int)
         });
         let mut bad = copy_graph(&g, &control);
         let Some(Payload::Construction(v)) = &mut bad.nodes[e.0].payload else {

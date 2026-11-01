@@ -1,5 +1,4 @@
 use super::*;
-use crate::control::{Limits, Usage};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
@@ -502,10 +501,7 @@ fn equation_schema_is_rechecked_even_when_there_are_no_candidate_rows() {
 }
 #[test]
 fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() {
-    use crate::{
-        control::{Resource, StopReason},
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let (i, r) = guarded();
     let q = r.required_quotient(&mut quiet()).unwrap();
@@ -515,38 +511,19 @@ fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() 
         .basis(4, &mut quiet())
         .unwrap();
     for point in [Checkpoint::FiniteLawFunction, Checkpoint::FiniteLawQuotient] {
-        let run = |at: usize, kind: u8| {
+        let run = |at: usize, signal: Signal| {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
             let calls = Rc::new(Cell::new(0));
             let sample = calls.clone();
             (
-                Control::new(
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: Some(1),
-                    },
-                    move |p| {
-                        sample.set(sample.get() + 1);
-                        if p == point {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                            memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match kind {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                ),
+                Control::new(move |p| {
+                    sample.set(sample.get() + 1);
+                    if p == point {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                }),
                 count,
                 calls,
             )
@@ -559,28 +536,15 @@ fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() 
             let m = q.ideal_membership(&product, c)?;
             q.recheck_membership(&i, &product, &m, c)
         };
-        let (mut c, total, _) = run(usize::MAX, 4);
+        let (mut c, total, _) = run(usize::MAX, Signal::Int);
         operation(&mut c).unwrap();
         let total = total.get();
         assert!(total > 3);
         for at in [1, total / 2, total] {
-            for kind in 0..4 {
-                let (mut c, _, calls) = run(at, kind);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, _, calls) = run(at, signal);
                 let cause = operation(&mut c).unwrap_err();
-                let expected = match kind {
-                    0 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    2 => StopReason::Cancelled(Signal::Int),
-                    _ => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(signal);
                 assert!(matches!(cause,ValidationFailure::Stop(ref s) if s==&expected));
                 let before = calls.get();
                 assert_eq!(c.checkpoint(point), Err(expected));

@@ -91,7 +91,7 @@ fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
         nodes[d].scope.snapshots.remove("w");
     });
 }
-fn finite_map_private_stop(kind: usize, after_answer: bool) {
+fn finite_map_private_stop(after_answer: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",
@@ -99,17 +99,17 @@ fn finite_map_private_stop(kind: usize, after_answer: bool) {
         "later=evaluate(Maps.seed)",
     ];
     let normal = finite_map_private_result(&asks);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
             None
         }
@@ -178,9 +178,9 @@ fn finite_map_private_stop(kind: usize, after_answer: bool) {
 
 #[test]
 fn finite_map_enumeration_cancel_keeps_verified_prefix_and_prior_refutation() {
-    finite_map_private_stop(0, false);
+    finite_map_private_stop(false);
 }
 #[test]
 fn finite_map_answer_stop_retains_completed_domain_and_verified_answer() {
-    finite_map_private_stop(0, true);
+    finite_map_private_stop(true);
 }

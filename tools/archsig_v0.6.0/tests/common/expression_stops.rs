@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Usage},
+    control::{Checkpoint, Control},
     input::InputSources,
     observed::evaluate_observed_bytes,
     result::Signal,
@@ -15,10 +15,7 @@ pub fn at_checkpoint(inputs: &InputSources, asks: &[&str], position: usize) -> J
             c.set(c.get() + 1);
             if c.get() == position {
                 assert!(!f.replace(true));
-                return Usage {
-                    signal: Some(Signal::Term),
-                    ..Default::default()
-                };
+                return Some(Signal::Term);
             }
         }
         None

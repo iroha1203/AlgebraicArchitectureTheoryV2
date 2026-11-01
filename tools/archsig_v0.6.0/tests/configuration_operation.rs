@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure,
         maps::{ConfigurationOperation, OperationStep, correspondence, identity, internal_arrow},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -425,39 +425,20 @@ fn every_fixed_operation_stop_latches_without_new_probes() {
         let total = count.get();
         assert!(total > 2);
         for at in [1, total / 2, total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0usize));
                 let seen = count.clone();
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |p| {
-                        if p == Checkpoint::ConfigurationOperation {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                            memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match mode {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
+                let mut control = Control::new(move |p| {
+                    if p == Checkpoint::ConfigurationOperation {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let failure = run(kind, &mut control).unwrap_err();
                 assert_eq!(
                     failure,
                     ConstructionFailure::Stopped(control.stop_reason().unwrap()),
-                    "{kind}/{at}/{mode}"
+                    "{kind}/{at}/{signal:?}"
                 );
                 assert_eq!(count.get(), at);
                 assert_eq!(original.recheck(&i, &mut control).unwrap_err(), failure);
@@ -494,36 +475,21 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
         let total = operations.get();
         assert!(total > 5);
         for at in [1, total / 2, total - 2, total - 1, total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let probes = Rc::new(Cell::new(0usize));
                 let operations = Rc::new(Cell::new(0usize));
                 let calls = probes.clone();
                 let seen = operations.clone();
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |point| {
-                        calls.set(calls.get() + 1);
-                        if point == Checkpoint::ConfigurationOperation {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stop && mode == 0),
-                            memory_mib: u128::from(stop && mode == 1),
-                            signal: match (stop, mode) {
-                                (true, 2) => Some(Signal::Int),
-                                (true, 3) => Some(Signal::Term),
-                                _ => None,
-                            },
-                        }
-                    },
-                );
+                let mut control = Control::new(move |point| {
+                    calls.set(calls.get() + 1);
+                    if point == Checkpoint::ConfigurationOperation {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let failure = first.compose_retained(&i, then, &mut control).unwrap_err();
                 let stop = ConstructionFailure::Stopped(control.stop_reason().unwrap());
-                assert_eq!(failure.cause(), &stop, "{at}/{mode}");
+                assert_eq!(failure.cause(), &stop, "{at}/{signal:?}");
                 assert_eq!(operations.get(), at);
                 let frozen = probes.get();
                 if at == total {
@@ -552,7 +518,7 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
                 } else {
                     assert!(
                         failure.partial().is_none(),
-                        "{at}/{mode}: 未完成操作を保持した"
+                        "{at}/{signal:?}: 未完成操作を保持した"
                     );
                 }
                 assert_eq!(first.compose(&i, then, &mut control).unwrap_err(), stop);

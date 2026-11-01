@@ -1,5 +1,5 @@
 use super::*;
-use crate::control::{Limits, Usage};
+use crate::result::Signal;
 fn quiet() -> Control {
     Control::unlimited()
 }
@@ -75,19 +75,10 @@ fn prefix_identity_fast_path_keeps_stop_and_freezes_the_probe() {
     let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
     let calls = std::rc::Rc::new(std::cell::Cell::new(0));
     let observed = calls.clone();
-    let stopped = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        move |_| {
-            observed.set(observed.get() + 1);
-            Usage {
-                elapsed_ms: 1,
-                ..Usage::default()
-            }
-        },
-    );
+    let stopped = Control::new(move |_| {
+        observed.set(observed.get() + 1);
+        Some(Signal::Term)
+    });
     assert!(matches!(
         saved.matches(&g, &stopped),
         Err(ValidationFailure::Stop(_))

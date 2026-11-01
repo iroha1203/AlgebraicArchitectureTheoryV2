@@ -114,7 +114,6 @@ fn dependent_private_body_phase_stop(
     declaration: &str,
     phase: &'static str,
     at: usize,
-    kind: usize,
 ) {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
@@ -143,18 +142,18 @@ fn dependent_private_body_phase_stop(
             .flat_map(|r| &r.missing)
             .any(|f| f.subject == "l" && f.field.as_deref() == Some("Dep.Leaf.ok"))
     );
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |checkpoint| {
+    let mut control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
             None
         }
@@ -237,5 +236,5 @@ fn dependent_private_body_phase_stop(
 const DEPENDENT_NUMERIC_BODY: &str = "law required chain(z:Z,a:Root,b:Child[a],q:Q,c:Leaf[a]):if c.ok then z+1=z+1 and q+1=q+1 else z+1=z+2;";
 #[test]
 fn dependent_numeric_family_domain_cancel_keeps_strict_prefix_and_prior_answers() {
-    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_domain_done", 1, 0);
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_domain_done", 1);
 }

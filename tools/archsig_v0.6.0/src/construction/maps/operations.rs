@@ -674,8 +674,8 @@ pub(super) fn recompute(
 mod tests {
     use super::*;
     use crate::{
-        control::{Limits, Usage},
         input::{InputSources, check_inputs},
+        result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
     fn inputs() -> CheckedInputs {
@@ -821,21 +821,12 @@ mod tests {
         operation.steps = steps;
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: None,
-            },
-            move |point| {
-                if point == Checkpoint::ConfigurationOperation {
-                    seen.set(seen.get() + 1);
-                }
-                Usage {
-                    elapsed_ms: if seen.get() >= 50 { 1 } else { 0 },
-                    ..Usage::default()
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= 50).then_some(Signal::Int)
+        });
         let failure = operation.recheck(&inputs, &mut control).unwrap_err();
         assert_eq!(
             failure,

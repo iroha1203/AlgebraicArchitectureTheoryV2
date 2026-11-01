@@ -116,7 +116,6 @@ mod tests {
     use super::*;
     use crate::{
         construction::{construct, readings::object_reading_instances},
-        control::Usage,
         input::{InputSources, check_inputs},
     };
     fn quiet() -> Control {

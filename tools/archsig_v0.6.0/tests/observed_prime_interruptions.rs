@@ -3,7 +3,7 @@
 mod positions;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
@@ -37,7 +37,7 @@ fn sources(in_law: bool, modulus: &str) -> InputSources {
     )
 }
 
-fn probe(in_law: bool, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn probe(in_law: bool, at: usize) -> (Control, Rc<Cell<usize>>) {
     let target = if in_law {
         Checkpoint::LawSemantics
     } else {
@@ -45,23 +45,12 @@ fn probe(in_law: bool, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
     };
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
-    let control = Control::new(
-        Limits {
-            time_ms: (mode == 1).then_some(1),
-            memory_mib: (mode == 2).then_some(1),
-        },
-        move |point| {
-            if point == target {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() == at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 1),
-                memory_mib: u128::from(stop && mode == 2),
-                signal: (stop && mode == 0).then_some(Signal::Term),
-            }
-        },
-    );
+    let control = Control::new(move |point| {
+        if point == target {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() == at).then_some(Signal::Term)
+    });
     (control, visits)
 }
 
@@ -107,7 +96,7 @@ fn negative_baseline(in_law: bool) -> (Issue, usize) {
         issue
     };
     assert_eq!(issue.code, Code::Syntax);
-    let (mut baseline, total) = probe(in_law, usize::MAX, 0);
+    let (mut baseline, total) = probe(in_law, usize::MAX);
     let failure = check_inputs(source, &mut baseline).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), sources(in_law, "49").law().bytes())]);
@@ -124,51 +113,35 @@ fn fp_internal_iteration_stops_from_bytes_keep_empty_definition_and_law_stages()
         // the small-prime loop. These later visits are inside that loop,
         // before the outer type-checking exits of the successful Fp type.
         for at in [negative_total, negative_total + 4, negative_total + 8] {
-            for mode in 0..3 {
-                let (mut control, seen) = probe(in_law, at, mode);
-                let failure = check_inputs(sources(in_law, "101"), &mut control).unwrap_err();
-                assert_eq!(seen.get(), at, "in_law {in_law} at {at}");
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                empty_stage(&failure);
-                let reason = control.stop_reason().expect("shared stop");
-                assert_eq!(failure.issues(), [reason.wire()]);
-                assert!(matches!(reason, StopReason::Cancelled(Signal::Term)) == (mode == 0));
-            }
+            let (mut control, seen) = probe(in_law, at);
+            let failure = check_inputs(sources(in_law, "101"), &mut control).unwrap_err();
+            assert_eq!(seen.get(), at, "in_law {in_law} at {at}");
+            assert_eq!(failure.status(), InputStatus::Interrupted);
+            empty_stage(&failure);
+            let reason = control.stop_reason().expect("shared stop");
+            assert_eq!(failure.issues(), [reason.wire()]);
+            assert_eq!(reason, StopReason::Cancelled(Signal::Term));
         }
     }
 }
 
 #[test]
-fn completed_composite_checks_keep_the_original_pointer_or_span_above_budget() {
+fn completed_composite_checks_yield_to_a_stop_at_terminal_checks() {
     for in_law in [false, true] {
-        let (issue, total) = negative_baseline(in_law);
+        let (_, total) = negative_baseline(in_law);
         // One primitive type exit, and additionally the Law checker exit,
         // follow the primality function's final (divisor-detected) sample.
         let primality_post = total - if in_law { 2 } else { 1 };
         for at in primality_post..=total {
-            for mode in 0..3 {
-                let (mut control, _) = probe(in_law, at, mode);
-                let failure = check_inputs(sources(in_law, "49"), &mut control).unwrap_err();
-                empty_stage(&failure);
-                let reason = control.stop_reason().expect("terminal stop");
-                if mode == 0 {
-                    assert_eq!(failure.status(), InputStatus::Interrupted);
-                    assert_eq!(failure.issues(), [reason.wire()]);
-                } else {
-                    assert_eq!(
-                        failure.status(),
-                        InputStatus::Invalid,
-                        "in_law {in_law} at {at}/{total}"
-                    );
-                    assert_eq!(
-                        failure.issues(),
-                        [reason.wire(), positions::law_positions(ResultIssue::Input(issue.clone()).wire(), sources(in_law, "49").law().bytes())]
-                    );
-                }
-            }
+            let (mut control, _) = probe(in_law, at);
+            let failure = check_inputs(sources(in_law, "49"), &mut control).unwrap_err();
+            empty_stage(&failure);
+            let reason = control.stop_reason().expect("terminal stop");
+            assert_eq!(failure.status(), InputStatus::Interrupted);
+            assert_eq!(failure.issues(), [reason.wire()]);
         }
         // The previous pre-iteration sample precedes finding divisor 7.
-        let (mut control, _) = probe(in_law, primality_post - 1, 1);
+        let (mut control, _) = probe(in_law, primality_post - 1);
         let failure = check_inputs(sources(in_law, "49"), &mut control).unwrap_err();
         assert_eq!(failure.status(), InputStatus::Interrupted);
         empty_stage(&failure);

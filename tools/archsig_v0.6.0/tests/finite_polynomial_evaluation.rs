@@ -2,7 +2,7 @@
 mod fixture;
 use archsig::{
     construction::ConstructionFailure,
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
     observed::finite_polynomial_evaluation::{
         FiniteIntegerFunction as V, FinitePolynomialEvaluation as E, FinitePolynomialFailure as F,
@@ -336,54 +336,14 @@ fn a_finite_but_uncompiled_branch_does_not_become_a_zero_function() {
     assert_eq!(q.epsilon.as_ref().unwrap().wire().canonical(), "\"0\"");
     assert!(!q.operands.is_empty());
 }
-#[derive(Clone, Copy)]
-enum Stop {
-    Time,
-    Memory,
-    Int,
-    Term,
-}
-fn stopped(at: usize, kind: Stop) -> (Control, Rc<Cell<usize>>) {
+fn stopped(at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let found = count.clone();
-    let limits = Limits {
-        time_ms: if matches!(kind, Stop::Time) {
-            Some(1)
-        } else {
-            None
-        },
-        memory_mib: if matches!(kind, Stop::Memory) {
-            Some(1)
-        } else {
-            None
-        },
-    };
-    let c = Control::new(limits, move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FinitePolynomialTable {
             found.set(found.get() + 1);
         }
-        let stop = found.get() >= at;
-        Usage {
-            elapsed_ms: if stop && matches!(kind, Stop::Time) {
-                1
-            } else {
-                0
-            },
-            memory_mib: if stop && matches!(kind, Stop::Memory) {
-                1
-            } else {
-                0
-            },
-            signal: if stop {
-                match kind {
-                    Stop::Int => Some(Signal::Int),
-                    Stop::Term => Some(Signal::Term),
-                    _ => None,
-                }
-            } else {
-                None
-            },
-        }
+        (found.get() >= at).then_some(signal)
     });
     (c, count)
 }
@@ -391,28 +351,17 @@ fn stopped(at: usize, kind: Stop) -> (Control, Rc<Cell<usize>>) {
 fn table_stops_keep_complete_domain_and_function_prefix_and_freeze_probes() {
     let i = fixture::inputs(fixture::BODY);
     for at in [1, 4] {
-        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
-            let (mut c, count) = stopped(at, kind);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, count) = stopped(at, signal);
             let error = finite_polynomial_evaluation(i.clone(), "Selected", "v", "root", 0, &mut c)
                 .unwrap_err();
             let F::Reading { partial, cause } = error else {
                 panic!("{error:?}")
             };
-            let expected = match kind {
-                Stop::Time => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Memory => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Int => StopReason::Cancelled(Signal::Int),
-                Stop::Term => StopReason::Cancelled(Signal::Term),
-            };
-            assert_eq!(cause, ConstructionFailure::Stopped(expected));
+            assert_eq!(
+                cause,
+                ConstructionFailure::Stopped(StopReason::Cancelled(signal))
+            );
             assert!(partial.base().occurrences().iter().any(|q| {
                 q.epsilon
                     .as_ref()

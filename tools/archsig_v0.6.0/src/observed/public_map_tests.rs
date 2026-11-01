@@ -1,5 +1,4 @@
 use super::*;
-use crate::control::{Limits, Usage};
 use crate::observed::construction_result::ConstructionData as D;
 const D_BYTES: &[u8] = include_bytes!("../../tests/fixtures/reservations.atoms.json");
 const L_BYTES: &[u8] = include_bytes!("../../tests/fixtures/reservations.law");
@@ -97,69 +96,47 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
         assert_eq!(original.status(), "complete");
         let total = count.get();
         assert!(total > 0);
-        // 停止の種類は共通の停止処理を通るので time 停止だけを見る。
+        // 停止の種類は共通の停止処理を通るので SIGINT 停止だけを見る。
         for at in [1, (total / 2).max(1), total] {
-            {
-                let mode = 0;
-                let count = Rc::new(Cell::new(0usize));
-                let seen = count.clone();
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |p| {
-                        if p == point {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stopped = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stopped && mode == 0),
-                            memory_mib: u128::from(stopped && mode == 1),
-                            signal: if stopped {
-                                match mode {
-                                    2 => Some(crate::result::Signal::Int),
-                                    3 => Some(crate::result::Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
-                let result =
-                    evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &mut control).unwrap();
-                assert_eq!(
-                    result.status(),
-                    "interrupted",
-                    "{point:?}/{at}/{mode}: {:?}",
-                    result.issues
-                );
-                assert!(
-                    !result
-                        .issues
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::Internal(_))),
-                    "{:?}",
-                    result.issues
-                );
-                assert!(control.stop_reason().is_some());
-                if at == total {
-                    assert!(
-                        result.answers[0].outputs.contains_key("map"),
-                        "{point:?}: {:?}",
-                        result.answers
-                    );
-                    assert_eq!(result.answers[0].status, Decision::Established);
-                    if matches!(
-                        point,
-                        Checkpoint::NativeResultNode | Checkpoint::ConfigurationOperation
-                    ) {
-                        assert!(result.answers[0].outputs.contains_key("operation"));
-                    }
-                    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+            let count = Rc::new(Cell::new(0usize));
+            let seen = count.clone();
+            let mut control = Control::new(move |p| {
+                if p == point {
+                    seen.set(seen.get() + 1);
                 }
+                (seen.get() >= at).then_some(crate::result::Signal::Int)
+            });
+            let result =
+                evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &mut control).unwrap();
+            assert_eq!(
+                result.status(),
+                "interrupted",
+                "{point:?}/{at}: {:?}",
+                result.issues
+            );
+            assert!(
+                !result
+                    .issues
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::Internal(_))),
+                "{:?}",
+                result.issues
+            );
+            assert!(control.stop_reason().is_some());
+            if at == total {
+                assert!(
+                    result.answers[0].outputs.contains_key("map"),
+                    "{point:?}: {:?}",
+                    result.answers
+                );
+                assert_eq!(result.answers[0].status, Decision::Established);
+                if matches!(
+                    point,
+                    Checkpoint::NativeResultNode | Checkpoint::ConfigurationOperation
+                ) {
+                    assert!(result.answers[0].outputs.contains_key("operation"));
+                }
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
             }
         }
     }

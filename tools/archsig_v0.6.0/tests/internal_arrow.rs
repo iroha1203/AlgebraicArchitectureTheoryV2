@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure,
         maps::{Counterexample, internal_arrow, internal_arrows},
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -517,34 +517,15 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |p| {
-                    if p == Checkpoint::InternalArrow {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |p| {
+                if p == Checkpoint::InternalArrow {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let failure = internal_arrows(&i, "FlowRead", "v", "A", &mut control).unwrap_err();
             assert_eq!(
                 failure.cause(),
@@ -573,34 +554,15 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
     }
 }
 
-fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        },
-        move |p| {
-            if p == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 0),
-                memory_mib: u128::from(stop && mode == 1),
-                signal: if stop {
-                    match mode {
-                        2 => Some(Signal::Int),
-                        3 => Some(Signal::Term),
-                        _ => None,
-                    }
-                } else {
-                    None
-                },
-            }
-        },
-    );
+    let c = Control::new(move |p| {
+        if p == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    });
     (c, count)
 }
 
@@ -617,8 +579,8 @@ fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
         let full = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
         assert!(full.is_complete());
         assert_eq!(full.pending(), Some([].as_slice()));
-        for mode in 0..4 {
-            let (mut c, probes) = stop_at(Checkpoint::InternalArrowRoster, 1, mode);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, probes) = stop_at(Checkpoint::InternalArrowRoster, 1, signal);
             let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
             let p = f.partial().unwrap();
             assert_eq!(p.construction(), full.construction());
@@ -634,7 +596,7 @@ fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
             );
             assert_eq!(probes.get(), 1);
             for at in 1..=full.arrows().len() {
-                let (mut c, probes) = stop_at(Checkpoint::InternalArrowRow, at, mode);
+                let (mut c, probes) = stop_at(Checkpoint::InternalArrowRow, at, signal);
                 let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
                 assert_eq!(
                     f.cause(),

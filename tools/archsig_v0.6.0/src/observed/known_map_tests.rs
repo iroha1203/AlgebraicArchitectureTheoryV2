@@ -73,7 +73,7 @@ fn known_map_row_permutation_is_accepted_as_the_same_original_function() {
     rebuild_for_origin_and_support_recheck(&r, &nodes[..=t]).unwrap();
     rebuild_for_origin_and_support_recheck(&r, &nodes).unwrap();
 }
-fn known_map_private_stop(kind: usize, after_answer: bool) {
+fn known_map_private_stop(after_answer: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",
@@ -81,17 +81,17 @@ fn known_map_private_stop(kind: usize, after_answer: bool) {
         "later=evaluate(Maps.seed)",
     ];
     let normal = known_map_private_result(&asks);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
             None
         }
@@ -160,10 +160,8 @@ fn known_map_private_stop(kind: usize, after_answer: bool) {
 
 #[test]
 fn known_map_stops_preserve_prefix_prior_refutation_and_verified_answer() {
-    for kind in [0, 1, 2] {
-        known_map_private_stop(kind, false);
-    }
-    known_map_private_stop(0, true);
+    known_map_private_stop(false);
+    known_map_private_stop(true);
 }
 
 #[test]

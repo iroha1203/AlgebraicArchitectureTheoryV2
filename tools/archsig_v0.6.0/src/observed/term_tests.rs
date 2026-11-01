@@ -130,19 +130,19 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
         "later=evaluate(Terms.seed)",
     ];
     let normal = term_private_result(&asks);
-    let (limits, usage, expected) = reservations_private_stop_usage(0);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             f.set(Some(p.get()));
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(term_private_inputs("r1"), &asks, &mut c).unwrap();

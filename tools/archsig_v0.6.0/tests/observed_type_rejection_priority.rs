@@ -1,9 +1,9 @@
-//! 拒否が決まった型の元診断を、共有 budget と取消の優先規則に沿って保持する。
+//! 拒否が決まった型の元診断を、取消の優先規則に沿って保持する。
 #[path = "common/positions.rs"]
 mod positions;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
@@ -56,26 +56,15 @@ fn data_source(arguments: &str) -> InputSources {
     )
 }
 
-fn probe(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(
-        Limits {
-            time_ms: (mode == 1).then_some(1),
-            memory_mib: (mode == 2).then_some(1),
-        },
-        move |current| {
-            if current == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() == at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 1),
-                memory_mib: u128::from(stop && mode == 2),
-                signal: (stop && mode == 0).then_some(Signal::Term),
-            }
-        },
-    );
+    let control = Control::new(move |current| {
+        if current == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() == at).then_some(Signal::Term)
+    });
     (control, count)
 }
 
@@ -110,7 +99,7 @@ fn baseline(input: &InputSources, in_law: bool, point: Checkpoint) -> (Issue, us
             .issue
     };
     assert!(matches!(issue.code, Code::Syntax | Code::Type));
-    let (mut control, total) = probe(point, usize::MAX, 0);
+    let (mut control, total) = probe(point, usize::MAX);
     let failure = check_inputs(input.clone(), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), input.law().bytes())]);
@@ -123,35 +112,20 @@ fn terminal_priority(input: InputSources, in_law: bool, point: Checkpoint, unwin
     let post = total.checked_sub(unwind).unwrap();
     assert!(post > 1);
     for at in post..=total {
-        for mode in 0..3 {
-            let (mut control, seen) = probe(point, at, mode);
-            let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-            assert_eq!(seen.get(), at, "{point:?} at {at}/{total}");
-            empty_stage(&failure);
-            let reason = control.stop_reason().expect("shared terminal stop");
-            if mode == 0 {
-                assert_eq!(reason, StopReason::Cancelled(Signal::Term));
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                assert_eq!(failure.issues(), [reason.wire()]);
-            } else {
-                assert!(matches!(reason, StopReason::BudgetExhausted { .. }));
-                assert_eq!(
-                    failure.status(),
-                    InputStatus::Invalid,
-                    "post {post}, at {at}"
-                );
-                assert_eq!(
-                    failure.issues(),
-                    [reason.wire(), positions::law_positions(ResultIssue::Input(issue.clone()).wire(), input.law().bytes())]
-                );
-            }
-        }
+        let (mut control, seen) = probe(point, at);
+        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        assert_eq!(seen.get(), at, "{point:?} at {at}/{total}");
+        empty_stage(&failure);
+        let reason = control.stop_reason().expect("shared terminal stop");
+        assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+        assert_eq!(failure.status(), InputStatus::Interrupted);
+        assert_eq!(failure.issues(), [reason.wire()]);
     }
     issue
 }
 
 #[test]
-fn definition_set_and_term_rejections_keep_original_pointer_and_budget() {
+fn definition_set_and_term_rejections_keep_original_pointer_and_stop() {
     for (ty, ordinal) in [
         (r#"["Set",["Term",[],"Z"]]"#, 9),
         (r#"["Term",[],["Ref","Counter.State"]]"#, 7),
@@ -169,18 +143,16 @@ fn definition_set_and_term_rejections_keep_original_pointer_and_budget() {
             issue
         );
         // The immediately preceding sample is before the forbidden component is read.
-        for mode in 0..3 {
-            let (mut control, _) = probe(Checkpoint::DefinitionData, ordinal - 1, mode);
-            let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-            assert_eq!(failure.status(), InputStatus::Interrupted);
-            empty_stage(&failure);
-            assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
-        }
+        let (mut control, _) = probe(Checkpoint::DefinitionData, ordinal - 1);
+        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        assert_eq!(failure.status(), InputStatus::Interrupted);
+        empty_stage(&failure);
+        assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
     }
 }
 
 #[test]
-fn negative_data_self_occurrence_keeps_constructor_argument_location_above_budget() {
+fn negative_data_self_occurrence_keeps_constructor_argument_location() {
     let input = data_source(r#"[["Set",["Data","Counter.Tree"]]]"#);
     // The leaf rejects, then the enclosing Set check propagates that same Issue.
     let issue = terminal_priority(input.clone(), false, Checkpoint::DefinitionData, 1);
@@ -193,14 +165,14 @@ fn negative_data_self_occurrence_keeps_constructor_argument_location_above_budge
         "data self-reference must be direct or through Tuple, List, or Option"
     );
     let (_, total) = baseline(&input, false, Checkpoint::DefinitionData);
-    let (mut control, _) = probe(Checkpoint::DefinitionData, total - 2, 1);
+    let (mut control, _) = probe(Checkpoint::DefinitionData, total - 2);
     let failure = check_inputs(input, &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     empty_stage(&failure);
 }
 
 #[test]
-fn law_set_term_path_and_reference_free_parameters_keep_original_spans_above_budget() {
+fn law_set_term_path_and_reference_free_parameters_keep_original_spans() {
     for (body, fragment, message) in [
         (
             "view bad(x: Set<Term<()->Z>>): Bool = true;",
@@ -240,7 +212,7 @@ fn law_set_term_path_and_reference_free_parameters_keep_original_spans_above_bud
 }
 
 #[test]
-fn law_expression_set_term_and_numeric_rejections_keep_original_diagnostics_above_budget() {
+fn law_expression_set_term_and_numeric_rejections_keep_original_diagnostics() {
     for (body, message) in [
         (
             "view bad(): Bool = set<Term<()->Z>>{} = set<Term<()->Z>>{};",
@@ -272,7 +244,7 @@ fn law_expression_set_term_and_numeric_rejections_keep_original_diagnostics_abov
 }
 
 #[test]
-fn reference_field_change_rejection_keeps_original_field_span_above_budget() {
+fn reference_field_change_rejection_keeps_original_field_span() {
     let definitions = DEFINITIONS.replace("\"type\": \"Z\"", r#""type": ["Ref","Counter.State"]"#);
     let input = source(
         definitions,
@@ -292,7 +264,7 @@ fn reference_field_change_rejection_keeps_original_field_span_above_budget() {
 }
 
 #[test]
-fn data_property_true_remains_an_intermediate_fact_when_budget_stops_it() {
+fn data_property_true_remains_an_intermediate_fact_when_a_stop_interrupts_it() {
     // A Term inside data is valid. Its containment flag is an intermediate
     // property, so stopping its computation cannot produce a Syntax Issue.
     let input = data_source(r#"[["Term",[],"Bool"]]"#);
@@ -300,12 +272,10 @@ fn data_property_true_remains_an_intermediate_fact_when_budget_stops_it() {
     assert!(ordinary.data_properties()["Counter.Tree"].term_or_path);
     // Initial map (2), iteration/name (2), Leaf pre/post (2), Node/argument
     // entries (2), Term entry/post (2): the true predicate's post is step 10.
-    for mode in 0..3 {
-        let (mut control, seen) = probe(Checkpoint::DefinitionData, 10, mode);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-        assert_eq!(seen.get(), 10);
-        assert_eq!(failure.status(), InputStatus::Interrupted);
-        empty_stage(&failure);
-        assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
-    }
+    let (mut control, seen) = probe(Checkpoint::DefinitionData, 10);
+    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    assert_eq!(seen.get(), 10);
+    assert_eq!(failure.status(), InputStatus::Interrupted);
+    empty_stage(&failure);
+    assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
 }

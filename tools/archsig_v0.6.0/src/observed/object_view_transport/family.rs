@@ -846,7 +846,6 @@ pub(super) fn same(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{
         cell::{Cell, RefCell},
@@ -855,34 +854,15 @@ mod tests {
     fn example() -> (Arc<CheckedInputs>, ObjectViewTransport) {
         super::super::tests::example_named("Before.family")
     }
-    fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let c = Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(signal)
+        });
         (c, count)
     }
     #[test]
@@ -941,7 +921,7 @@ mod tests {
                 "mode={mode}"
             );
         }
-        let (mut c, probes) = stop_at(Checkpoint::ObjectViewTransportFamily, 1, 2);
+        let (mut c, probes) = stop_at(Checkpoint::ObjectViewTransportFamily, 1, Signal::Term);
         assert!(matches!(
             same_type_map(&a, &a, &mut c),
             Err(ConstructionFailure::Stopped(_))
@@ -977,8 +957,8 @@ mod tests {
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
-                for mode in 0..4 {
-                    let (mut c, count) = stop_at(point, at, mode);
+                for signal in [Signal::Int, Signal::Term] {
+                    let (mut c, count) = stop_at(point, at, signal);
                     let Err(ObjectViewTransportFailure::Stopped {
                         reason,
                         operation,
@@ -993,7 +973,7 @@ mod tests {
                         &mut c,
                     )
                     else {
-                        panic!("{point:?}/{at}/{mode}")
+                        panic!("{point:?}/{at}/{signal:?}")
                     };
                     assert_eq!(c.stop_reason(), Some(reason));
                     operation.recheck(&i, &mut Control::unlimited()).unwrap();
@@ -1056,8 +1036,8 @@ mod tests {
         let boundaries = boundaries.borrow().clone();
         assert_eq!(boundaries.len(), 2);
         for (index, at) in boundaries.into_iter().enumerate() {
-            for mode in 0..4 {
-                let (mut c, count) = stop_at(Checkpoint::FiniteIteration, at, mode);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, count) = stop_at(Checkpoint::FiniteIteration, at, signal);
                 let Err(ObjectViewTransportFailure::Stopped {
                     partial: Some(p), ..
                 }) = object_view_transport(
@@ -1068,7 +1048,7 @@ mod tests {
                     &mut c,
                 )
                 else {
-                    panic!("{index}/{at}/{mode}")
+                    panic!("{index}/{at}/{signal:?}")
                 };
                 let f = p.family().unwrap();
                 assert_eq!(f.rows.len(), index + 1);
@@ -1113,17 +1093,17 @@ mod tests {
         .unwrap();
         let calculated = count.get();
         for offset in [1, 2, 3] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let (mut c, count) = stop_at(
                     Checkpoint::ObjectViewTransportFamily,
                     calculated + offset,
-                    mode,
+                    signal,
                 );
                 let Err(ObjectViewTransportFailure::Stopped {
                     partial: Some(p), ..
                 }) = r.recheck(Arc::clone(&i), &mut c)
                 else {
-                    panic!("{offset}/{mode}")
+                    panic!("{offset}/{signal:?}")
                 };
                 assert_eq!(p.outcome(), Some(&ViewTransportOutcome::Preserved));
                 let f = p.family().unwrap();

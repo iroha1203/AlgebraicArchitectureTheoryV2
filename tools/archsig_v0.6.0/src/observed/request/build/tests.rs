@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::Usage,
     input::check_inputs,
 };
 mod fixture {

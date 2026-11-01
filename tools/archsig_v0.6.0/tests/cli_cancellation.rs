@@ -1,7 +1,7 @@
 //! CLI check の固定 checkpoint 取消と、配送を始めない停止。
 
 use crate::common;
-use archsig::control::{Checkpoint, Control, Limits, Usage};
+use archsig::control::{Checkpoint, Control};
 use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, run_check};
 use common::cli::*;
@@ -130,39 +130,6 @@ fn cancellation_without_archmap_also_has_no_artifact() {
         (Status::Interrupted, 143)
     );
     assert_eq!(signals.calls, 1);
-    assert!(!dir.join("out").exists());
-}
-
-#[test]
-fn controlled_budget_stop_is_preserved_without_a_signal() {
-    let (dir, args) = inputs("controlled-budget-stop", true);
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        |point| Usage {
-            elapsed_ms: u128::from(point == Checkpoint::DefinitionSchema),
-            ..Usage::default()
-        },
-    );
-    let mut signals = Finalize::default();
-    let outcome = run_check(
-        &mut NoOutput,
-        &mut signals,
-        &args,
-        &mut control,
-    );
-    assert_eq!(
-        (outcome.status, outcome.exit_code),
-        (Status::Interrupted, 75)
-    );
-    let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
-    let issue = &arr(get(&receipt, "issues"))[0];
-    assert_eq!(s(get(issue, "code")), "budget_exhausted");
-    assert_eq!(s(get(get(issue, "details"), "resource")), "time_ms");
-    assert_eq!(s(get(get(issue, "details"), "limit")), "1");
-    assert_eq!(s(get(get(issue, "details"), "observed")), "1");
     assert!(!dir.join("out").exists());
 }
 

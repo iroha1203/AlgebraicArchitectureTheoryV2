@@ -418,9 +418,10 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
 #[test]
 fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate_observed_bytes,
+        result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
     for reused in [false, true] {
@@ -448,21 +449,12 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         assert!(before > 0);
         let seen = Rc::new(Cell::new(0usize));
         let observed = Rc::clone(&seen);
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: None,
-            },
-            move |point| {
-                if point == Checkpoint::Expression {
-                    observed.set(observed.get() + 1);
-                }
-                Usage {
-                    elapsed_ms: u128::from(observed.get() > before),
-                    ..Usage::default()
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::Expression {
+                observed.set(observed.get() + 1);
+            }
+            (observed.get() > before).then_some(Signal::Int)
+        });
         let dir = inputs("partial-run", Some("12"), L);
         let mut args = run_args(&dir);
         if reused {
@@ -482,7 +474,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
             &args,
             &mut control,
         );
-        assert_eq!(outcome.exit_code, 75);
+        assert_eq!(outcome.exit_code, 130);
         assert_eq!(signals.freezes, 1);
         let res =
             archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
@@ -499,28 +491,20 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         assert!(
             arr(get(&res, "issues"))
                 .iter()
-                .any(|i| s(get(i, "code")) == "budget_exhausted")
+                .any(|i| s(get(i, "code")) == "cancelled")
         );
     }
     let dir = inputs("empty-run-stop", Some("2"), L);
     let args = run_args(&dir);
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        |point| Usage {
-            elapsed_ms: u128::from(point == Checkpoint::BeforeDefinitions),
-            ..Usage::default()
-        },
-    );
+    let mut control =
+        Control::new(|point| (point == Checkpoint::BeforeDefinitions).then_some(Signal::Int));
     let outcome = archsig::run::run_requests(
         &mut TestIo,
         &mut NoSignal::default(),
         &args,
         &mut control,
     );
-    assert_eq!(outcome.exit_code, 75);
+    assert_eq!(outcome.exit_code, 130);
     assert!(outcome.result.is_none());
     assert!(!dir.join("out").exists());
     let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
@@ -592,7 +576,7 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
 
 #[test]
 fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
-    use archsig::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::control::{Checkpoint, Control};
     use archsig::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let dir = inputs("reuse-stop", Some("2"), L);
@@ -627,30 +611,16 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     assert!(total > 10);
     assert!(before_evaluation < total - 1);
     for at in [1, 2, 10, total - 1, total] {
-        for (signal, code) in [
-            (None, 75),
-            (Some(Signal::Int), 130),
-            (Some(Signal::Term), 143),
-        ] {
+        for (signal, code) in [(Signal::Int, 130), (Signal::Term, 143)] {
             args.inputs.out = Some(dir.join(format!("stopped-{at}-{code}")));
             let seen = Rc::new(Cell::new(0usize));
             let count = Rc::clone(&seen);
-            let mut control = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: None,
-                },
-                move |point| {
-                    if point == Checkpoint::Reuse {
-                        count.set(count.get() + 1);
-                    }
-                    Usage {
-                        elapsed_ms: u128::from(count.get() >= at),
-                        signal: if count.get() >= at { signal } else { None },
-                        ..Usage::default()
-                    }
-                },
-            );
+            let mut control = Control::new(move |point| {
+                if point == Checkpoint::Reuse {
+                    count.set(count.get() + 1);
+                }
+                (count.get() >= at).then_some(signal)
+            });
             let mut signals = NoSignal::default();
             let outcome = archsig::run::run_requests(
                 &mut TestIo,

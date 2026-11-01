@@ -1,5 +1,5 @@
 use archsig::{
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         equation_polynomial::EquationPolynomial,
@@ -1158,7 +1158,10 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
-    use archsig::control::{Checkpoint, Resource, StopReason};
+    use archsig::{
+        control::{Checkpoint, StopReason},
+        result::Signal,
+    };
     let i = inputs_with(
         fixture::D,
         "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",
@@ -1176,20 +1179,8 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
     assert!(r.base().evaluations().iter().any(|e| !e.complete));
     r.recheck(i.clone(), &mut quiet()).unwrap();
     for recheck in [false, true] {
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: None,
-            },
-            |p| Usage {
-                elapsed_ms: if p == Checkpoint::EquationPresentationRow {
-                    1
-                } else {
-                    0
-                },
-                ..Usage::default()
-            },
-        );
+        let mut control =
+            Control::new(|p| (p == Checkpoint::EquationPresentationRow).then_some(Signal::Int));
         let failure = if recheck {
             r.recheck(i.clone(), &mut control).unwrap_err()
         } else {
@@ -1201,11 +1192,7 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
         };
         assert_eq!(
             cause,
-            archsig::construction::ConstructionFailure::Stopped(StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 1,
-                observed: 1
-            })
+            archsig::construction::ConstructionFailure::Stopped(StopReason::Cancelled(Signal::Int))
         );
         assert!(!partial.is_complete());
         assert_eq!(partial.status(), S::Undetermined);

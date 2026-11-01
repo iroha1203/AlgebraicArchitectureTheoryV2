@@ -1,9 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 
 fn quiet() -> Control {
     Control::unlimited()
@@ -493,36 +489,17 @@ fn outside_finite_range_and_wrong_producer_never_append_a_completed_diagram() {
     );
     assert_eq!(g.nodes.len(), before);
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: crate::result::Signal, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 {
-                        crate::result::Signal::Int
-                    } else {
-                        crate::result::Signal::Term
-                    })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes() {
+fn signal_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes() {
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
@@ -541,7 +518,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
     let source = data(&g, d.ring).source.clone();
     let total = count.get();
     assert!(total > 20);
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total - 1, total] {
             let mut g = graph(&e);
             let a = architecture(&g, "a");
@@ -551,7 +528,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
                     e.prepared.shared_inputs(),
                     a,
                     0,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -566,7 +543,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
                 e.prepared.inputs(),
                 &source.architecture,
                 0,
-                &mut stopping(mode, 1)
+                &mut stopping(signal, 1)
             ),
             Err(ValidationFailure::Stop(_))
         ));
@@ -994,10 +971,10 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
         canonical_value(&normalized, &mut quiet()).unwrap(),
         normalized
     );
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, 10] {
             assert!(matches!(
-                canonical_value(&value, &mut stopping(mode, at)),
+                canonical_value(&value, &mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(value.wire().canonical(), original);
@@ -1667,7 +1644,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
     let total = count.get();
     assert!(total > 10);
     let before = g.nodes.len();
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total / 2, total] {
             let mut parts = source.parts.clone();
             assert!(matches!(
@@ -1679,7 +1656,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
                     &d.components,
                     &mut parts,
                     source.base,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -1944,7 +1921,7 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
     .unwrap();
     let context = d.context.unwrap();
     let presentation = d.presentation.unwrap();
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [
             2 * (context.0 - before) + 1,
             2 * (context.0 - before + 1),
@@ -1952,31 +1929,12 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
         ] {
             let seen = std::rc::Rc::new(std::cell::Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::NativeResultNode {
-                        count.set(count.get() + 1);
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop && mode >= 2 {
-                            Some(if mode == 2 {
-                                crate::result::Signal::Int
-                            } else {
-                                crate::result::Signal::Term
-                            })
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |point| {
+                if point == Checkpoint::NativeResultNode {
+                    count.set(count.get() + 1);
+                }
+                (count.get() >= at).then_some(signal)
+            });
             let old = graph(&e);
             let mut g = Graph::new(&control);
             g.nodes = old.nodes;

@@ -3,7 +3,7 @@
 use archsig::{
     archmap::check_archmap,
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::check_definitions,
     input::{CheckedInputs, InputBytes, InputSources, InputStatus, check_inputs},
     law::check_law,
@@ -215,78 +215,24 @@ fn from_checked_accepts_matching_tables_and_rejects_mixed_definition_identity() 
 }
 
 #[test]
-fn cloned_controls_share_stop_and_never_resume_after_budget_exhaustion() {
+fn cloned_controls_share_stop_and_never_resume_after_cancellation() {
     let calls = Rc::new(Cell::new(0));
     let calls_probe = calls.clone();
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(2),
-            memory_mib: None,
-        },
-        move |_| {
-            let n = calls_probe.get() + 1;
-            calls_probe.set(n);
-            Usage {
-                elapsed_ms: n,
-                ..Usage::default()
-            }
-        },
-    );
+    let mut control = Control::new(move |_| {
+        let n = calls_probe.get() + 1;
+        calls_probe.set(n);
+        (n >= 2).then_some(Signal::Term)
+    });
     let mut helper = control.clone();
     control.checkpoint(Checkpoint::Resolve).unwrap();
     let stopped = helper.checkpoint(Checkpoint::FiniteIteration).unwrap_err();
-    assert_eq!(
-        stopped,
-        StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 2,
-            observed: 2
-        }
-    );
+    assert_eq!(stopped, StopReason::Cancelled(Signal::Term));
     assert_eq!(
         control.checkpoint(Checkpoint::Expression).unwrap_err(),
         stopped
     );
     assert_eq!(calls.get(), 2);
     assert_eq!(control.stop_reason(), Some(stopped));
-}
-
-#[test]
-fn memory_budget_and_signal_reasons_preserve_typed_details_and_priority() {
-    let limits = Limits {
-        time_ms: None,
-        memory_mib: Some(3),
-    };
-    let mut budget = Control::new(limits, |_| Usage {
-        memory_mib: 4,
-        ..Usage::default()
-    });
-    let reason = budget
-        .checkpoint(Checkpoint::BeforeDefinitions)
-        .unwrap_err();
-    assert_eq!(
-        reason,
-        StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 3,
-            observed: 4
-        }
-    );
-    assert_eq!(
-        field(field(&reason.wire(), "details"), "observed"),
-        &Json::str("4")
-    );
-    let mut cancelled = Control::new(limits, |_| Usage {
-        memory_mib: 4,
-        signal: Some(Signal::Term),
-        ..Usage::default()
-    });
-    assert_eq!(
-        cancelled
-            .checkpoint(Checkpoint::BeforeDefinitions)
-            .unwrap_err(),
-        StopReason::Cancelled(Signal::Term)
-    );
 }
 
 fn changed_definitions() -> archsig::definition::CheckedDefinitions {

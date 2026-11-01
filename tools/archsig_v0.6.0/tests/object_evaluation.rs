@@ -4,7 +4,7 @@ use archsig::{
         ConstructionFailure, construct,
         readings::{ObjectReadingInstances, object_reading_instances},
     },
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         evaluate_observed,
@@ -450,36 +450,15 @@ fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluat
         let total = count.get();
         assert!(total >= 3);
         for target in [1, total / 2, total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let c = Rc::clone(&count);
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |at| {
-                        if at == point {
-                            c.set(c.get() + 1)
-                        }
-                        if c.get() >= target {
-                            match mode {
-                                0 => Usage {
-                                    elapsed_ms: 2,
-                                    ..Usage::default()
-                                },
-                                1 => Usage {
-                                    memory_mib: 2,
-                                    ..Usage::default()
-                                },
-                                2 => Some(Signal::Int),
-                                _ => Some(Signal::Term),
-                            }
-                        } else {
-                            None
-                        }
-                    },
-                );
+                let mut control = Control::new(move |at| {
+                    if at == point {
+                        c.set(c.get() + 1)
+                    }
+                    (c.get() >= target).then_some(signal)
+                });
                 let result = evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut control);
                 assert!(control.stop_reason().is_some());
                 assert_eq!(count.get(), target);

@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
-};
+use crate::construction::{construct, readings::object_reading_instances};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
@@ -284,46 +281,28 @@ fn fixed_stops_keep_completed_rows_and_their_object_origin_without_total_functio
     let inputs = input(ALL);
     let a = readings(&inputs, "root");
     let root = index(&a, "root");
-    for mode in 0..3 {
-        let seen = Rc::new(Cell::new(0));
-        let count = seen.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |point| {
-                if point == Checkpoint::FiniteLawEvaluation {
-                    count.set(count.get() + 1);
-                }
-                let stop = count.get() >= 3;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let err = finite_object_law_family_valuations(
-            &inputs,
-            &a,
-            root,
-            &selected(&["all", "copy"]),
-            &mut c,
-        )
-        .err()
-        .expect("固定停止");
-        assert!(matches!(err.cause, ValidationFailure::Stop(_)));
-        let partial = err.partial.unwrap();
-        assert_eq!(
-            partial.object_identity(),
-            Some(a.objects()[root].identity())
-        );
-        assert!(!partial.is_complete());
-        assert!(!partial.columns()[0].rows().is_empty());
-        assert!(partial.integer_function(0, None, &mut quiet()).is_err());
-        assert!(partial.required_quotient(&mut quiet()).is_err());
-    }
+    let seen = Rc::new(Cell::new(0));
+    let count = seen.clone();
+    let mut c = Control::new(move |point| {
+        if point == Checkpoint::FiniteLawEvaluation {
+            count.set(count.get() + 1);
+        }
+        (count.get() >= 3).then_some(Signal::Term)
+    });
+    let err =
+        finite_object_law_family_valuations(&inputs, &a, root, &selected(&["all", "copy"]), &mut c)
+            .err()
+            .expect("固定停止");
+    assert!(matches!(err.cause, ValidationFailure::Stop(_)));
+    let partial = err.partial.unwrap();
+    assert_eq!(
+        partial.object_identity(),
+        Some(a.objects()[root].identity())
+    );
+    assert!(!partial.is_complete());
+    assert!(!partial.columns()[0].rows().is_empty());
+    assert!(partial.integer_function(0, None, &mut quiet()).is_err());
+    assert!(partial.required_quotient(&mut quiet()).is_err());
 }
 
 #[test]

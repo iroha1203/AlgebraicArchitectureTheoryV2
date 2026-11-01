@@ -1,11 +1,12 @@
 //! AC4数値型段階: Q/Fp/数値Tupleの値・残差・各出現と由来を三入力byteから検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
     observed::evaluate_observed_bytes,
+    result::Signal,
 };
 use std::{
     cell::Cell,
@@ -1017,26 +1018,17 @@ fn injected_stop_inside_numeric_operation_keeps_prior_values_reason_and_unstarte
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(
-        Limits {
-            time_ms: None,
-            memory_mib: Some(1),
-        },
-        move |point| {
-            calls.set(calls.get() + 1);
-            if point == Checkpoint::Expression {
-                seen.set(seen.get() + 1);
-                if seen.get() == target {
-                    stopped.set(Some(calls.get()));
-                    return Usage {
-                        memory_mib: 1,
-                        ..Usage::default()
-                    };
-                }
+    let mut c = Control::new(move |point| {
+        calls.set(calls.get() + 1);
+        if point == Checkpoint::Expression {
+            seen.set(seen.get() + 1);
+            if seen.get() == target {
+                stopped.set(Some(calls.get()));
+                return Some(Signal::Int);
             }
-            None
-        },
-    );
+        }
+        None
+    });
     let result = evaluate_observed_bytes(
         fixture(&["f"], body),
         &[
@@ -1071,15 +1063,11 @@ fn injected_stop_inside_numeric_operation_keeps_prior_values_reason_and_unstarte
         assert!(obj(f(a, "outputs")).is_empty());
         let reason = arr(f(a, "reasons"))
             .iter()
-            .find(|r| f(r, "code") == &Json::str("budget_exhausted"))
+            .find(|r| f(r, "code") == &Json::str("cancelled"))
             .unwrap();
         assert_eq!(
             f(reason, "details"),
-            &Json::obj([
-                ("resource", Json::str("memory_mib")),
-                ("limit", Json::str("1")),
-                ("observed", Json::str("1"))
-            ])
+            &Json::obj([("signal", Json::str("SIGINT"))])
         );
     }
     assert_eq!(expressions.get(), target);

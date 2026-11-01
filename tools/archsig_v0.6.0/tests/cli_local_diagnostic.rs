@@ -220,71 +220,44 @@ fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
     }
 }
 #[test]
-fn localize_budget_and_signal_stop_keep_the_prior_architecture() {
+fn localize_signal_stop_keeps_the_prior_architecture() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = input("local-stop", Some(true));
-    for mode in 0..3 {
-        let seen = Rc::new(Cell::new(false));
-        let active = seen.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::Localize {
-                    active.set(true);
-                }
-                if active.get() {
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Some(archsig::result::Signal::Term),
-                    }
-                } else {
-                    None
-                }
-            },
-        );
-        let sources = InputSources::from_bytes(
-            vec![std::fs::read(dir.join("d.json")).unwrap()],
-            std::fs::read(dir.join("l.law")).unwrap(),
-            std::fs::read(dir.join("a.json")).unwrap(),
-        );
-        let result = evaluate_observed_bytes(
-            sources,
-            &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object)"],
-            &mut control,
-        )
-        .unwrap();
-        assert!(seen.get());
-        let json = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
-        let answers = arr(get(&json, "answers"));
-        assert!(has(get(&answers[0], "outputs"), "object"));
-        assert!(!has(get(&answers[1], "outputs"), "system"));
-        assert_eq!(s(get(&answers[1], "status")), "undetermined");
-        assert!(
-            arr(get(&answers[1], "reasons"))
-                .iter()
-                .any(|r| s(get(r, "code"))
-                    == if mode == 2 {
-                        "cancelled"
-                    } else {
-                        "budget_exhausted"
-                    })
-        );
-    }
+    let seen = Rc::new(Cell::new(false));
+    let active = seen.clone();
+    let mut control = Control::new(move |point| {
+        if point == Checkpoint::Localize {
+            active.set(true);
+        }
+        active.get().then_some(archsig::result::Signal::Term)
+    });
+    let sources = InputSources::from_bytes(
+        vec![std::fs::read(dir.join("d.json")).unwrap()],
+        std::fs::read(dir.join("l.law")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap(),
+    );
+    let result = evaluate_observed_bytes(
+        sources,
+        &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object)"],
+        &mut control,
+    )
+    .unwrap();
+    assert!(seen.get());
+    let json = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let answers = arr(get(&json, "answers"));
+    assert!(has(get(&answers[0], "outputs"), "object"));
+    assert!(!has(get(&answers[1], "outputs"), "system"));
+    assert_eq!(s(get(&answers[1], "status")), "undetermined");
+    assert!(
+        arr(get(&answers[1], "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "cancelled")
+    );
 }
 #[test]
 fn localize_checks_answer_bound_owners_before_using_the_values() {
@@ -1924,14 +1897,14 @@ fn integer_local_vectors_compare_only_in_the_same_module() {
 }
 
 #[test]
-fn integer_local_empty_cover_degree_iteration_observes_budget() {
+fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
-    let dir=integer_local_variant("integer-empty-degree-budget",|s|s
+    let dir=integer_local_variant("integer-empty-degree-stop",|s|s
         .replace("law required aligned(e:Shift):e.to.coordinate-e.from.coordinate=e.shift;","")
         .replace("local Edge(e:Shift) reads e.shift,e.from.coordinate,e.to.coordinate;",""),None);
     let map=std::fs::read_to_string(dir.join("a.json")).unwrap();
@@ -1943,16 +1916,16 @@ fn integer_local_empty_cover_degree_iteration_observes_budget() {
     let mut c=Control::new(move |point|{if point==Checkpoint::Localize {count.set(count.get()+1);}None});
     evaluate_observed_bytes(inputs(),&asks,&mut c).unwrap();
     let stop=total.get()+2;let mut count=0;
-    let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:None},move |point|{
+    let mut c=Control::new(move |point|{
         if point==Checkpoint::Localize {count+=1;}
-        if count>=stop {Usage{elapsed_ms:2,..Usage::default()}}else{None}
+        (count>=stop).then_some(archsig::result::Signal::Term)
     });
     let result=evaluate_observed_bytes(inputs(),&[asks[0],asks[1],"d=diagnose($l.system,degree=20)"],&mut c).unwrap();
     let j=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let d=&arr(get(&j,"answers"))[2];
     assert_eq!(s(get(d,"status")),"undetermined");
     assert!(!has(get(d,"outputs"),"space"));
-    assert!(arr(get(d,"reasons")).iter().any(|r|s(get(r,"code"))=="budget_exhausted"));
+    assert!(arr(get(d,"reasons")).iter().any(|r|s(get(r,"code"))=="cancelled"));
 }
 
 #[test]

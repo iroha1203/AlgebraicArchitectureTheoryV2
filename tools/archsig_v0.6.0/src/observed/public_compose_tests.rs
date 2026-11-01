@@ -1,11 +1,8 @@
 use super::*;
 use crate::observed::PrepareFailure;
-use crate::{
-    control::{Limits, Usage},
-    observed::{
-        construction_result::{ConstructionData as D, Witness},
-        public_compose::Part,
-    },
+use crate::observed::{
+    construction_result::{ConstructionData as D, Witness},
+    public_compose::Part,
 };
 use std::{cell::Cell, rc::Rc};
 const DEFINITIONS: &[u8] = include_bytes!("../../tests/fixtures/reservations.atoms.json");
@@ -64,25 +61,15 @@ fn native_and_transfer_composition_stops_preserve_only_checked_operations() {
         assert_eq!(normal.status(), "complete");
         let total = count.get();
         assert!(total > 10);
-        // 停止の種類は time だけ、位置は完了直前の1点だけを見る。
+        // 停止の位置は完了直前の1点だけを見る。
         let at = total - 1;
         let seen = Rc::new(Cell::new(0usize));
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: None,
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop),
-                    ..Usage::default()
-                }
-            },
-        );
+        let mut c = Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(crate::result::Signal::Int)
+        });
         let prepared = prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
         let stopped = evaluate_observed(prepared, &mut c).unwrap();
         assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);

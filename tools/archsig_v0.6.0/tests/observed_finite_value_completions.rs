@@ -2,7 +2,7 @@
 use crate::common;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
@@ -1765,33 +1765,23 @@ view later(s:Sample): Unit = unit;
         current_span,
         &wanted,
     );
-    for (kind, (&offset, &done)) in offsets.iter().zip(&wanted).enumerate() {
+    for (&offset, &done) in offsets.iter().zip(&wanted) {
         let at = prior_count.get() + offset;
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: (kind == 1).then_some(1),
-                memory_mib: (kind == 2).then_some(1),
-            },
-            move |point| {
-                p.set(p.get() + 1);
-                if point == Checkpoint::Expression {
-                    e.set(e.get() + 1);
-                    if e.get() == at {
-                        s.set(Some(p.get()));
-                        return Usage {
-                            signal: (kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(kind == 1),
-                            memory_mib: u128::from(kind == 2),
-                        };
-                    }
+        let mut control = Control::new(move |point| {
+            p.set(p.get() + 1);
+            if point == Checkpoint::Expression {
+                e.set(e.get() + 1);
+                if e.get() == at {
+                    s.set(Some(p.get()));
+                    return Some(Signal::Term);
                 }
-                None
-            },
-        );
+            }
+            None
+        });
         let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)
             .unwrap()
             .wire();
@@ -1820,27 +1810,11 @@ view later(s:Sample): Unit = unit;
             assert_eq!(f(a, "status"), &Json::str("undetermined"));
             assert!(!obj(a).contains_key("claim"));
             assert!(obj(f(a, "outputs")).is_empty());
-            let code = if kind == 0 {
-                "cancelled"
-            } else {
-                "budget_exhausted"
-            };
             let reason = arr(f(a, "reasons"))
                 .iter()
-                .find(|r| f(r, "code") == &Json::str(code))
+                .find(|r| f(r, "code") == &Json::str("cancelled"))
                 .unwrap();
-            let details = if kind == 0 {
-                Json::obj([("signal", Json::str("SIGTERM"))])
-            } else {
-                Json::obj([
-                    (
-                        "resource",
-                        Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
-                    ),
-                    ("limit", Json::str("1")),
-                    ("observed", Json::str("1")),
-                ])
-            };
+            let details = Json::obj([("signal", Json::str("SIGTERM"))]);
             assert_eq!(f(reason, "details"), &details);
         }
         let all = evaluations_at(&wire, current_span);

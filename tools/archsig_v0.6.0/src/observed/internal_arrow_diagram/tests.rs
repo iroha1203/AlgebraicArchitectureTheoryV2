@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::Usage,
     input::{InputSources, check_inputs},
     observed::{PreparedObserved, architecture_result, request::resolve_native_for_test},
 };

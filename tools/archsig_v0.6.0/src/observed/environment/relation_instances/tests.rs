@@ -1,9 +1,6 @@
 use super::*;
 use crate::result::Signal;
-use crate::{
-    control::{Limits, Resource, Usage},
-    input::{InputSources, check_inputs},
-};
+use crate::input::{InputSources, check_inputs};
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
 mod arrow_fixture {
@@ -424,55 +421,23 @@ fn stops_never_certify_unfinished_relation_instances_and_completed_tables_rechec
     let total = count.get();
     assert!(total > 10);
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0));
             let calls = Rc::new(Cell::new(0));
             let seen = count.clone();
             let samples = calls.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |cp| {
-                    samples.set(samples.get() + 1);
-                    if cp == Checkpoint::FiniteIteration {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut c = Control::new(move |cp| {
+                samples.set(samples.get() + 1);
+                if cp == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let error = match relation_instances(&i, "Walk", &mut c) {
                 Err(error) => error,
                 Ok(_) => panic!("停止しなかった"),
             };
-            let expected = match mode {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
+            let expected = StopReason::Cancelled(signal);
             assert!(matches!(error.cause,ValidationFailure::Stop(ref s)if s==&expected));
             assert!(!error.partial.enumeration_complete());
             assert!(!error.partial.conditions_verified());
