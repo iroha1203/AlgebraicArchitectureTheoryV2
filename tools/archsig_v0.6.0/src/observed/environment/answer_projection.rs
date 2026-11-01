@@ -19,7 +19,7 @@ impl Environment<'_> {
         span: (usize, usize),
     ) -> Result<AnswerBinding, ValidationFailure> {
         self.tick()?;
-        if root.0 >= self.cutoff.get() {
+        if root.0 >= self.state.cutoff.get() {
             return Err("射影の元出力が既出prefixにない".into());
         }
         let original = graph.get(root)?;
@@ -37,7 +37,7 @@ impl Environment<'_> {
             _ => return Err(self.answer_projection_unprovided(span)),
         };
         match resolve_projection_controlled(
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             initial,
             path,
             &mut self.control.clone(),
@@ -55,7 +55,7 @@ impl Environment<'_> {
             && v.projection_type().is_some()
         {
             if let Some(scalar) = v.scalar_projection(path) {
-                data::check(&scalar, self.inputs.law(), &self.control)?;
+                data::check(&scalar, self.indexes.inputs.law(), &self.control)?;
                 return Ok(AnswerBinding::Projection(Node {
                     ty: NodeType::Value(scalar.ty()), payload: Some(Payload::Scalar(scalar)),
                     rule: Rule::Projection(path.to_vec()), arguments: vec![root],
@@ -100,7 +100,7 @@ impl Environment<'_> {
         } else {
             (root, path)
         };
-        if value.0 >= self.cutoff.get() {
+        if value.0 >= self.state.cutoff.get() {
             return Err("射影の元値が既出prefixにない".into());
         }
         let mut scalar = graph.scalar(value)?;
@@ -143,7 +143,7 @@ impl Environment<'_> {
                     return Ok(AnswerBinding::Inapplicable(root));
                 };
                 // 成分表示の各段階で選ばれたPathの元Refから辿る。
-                let prior = &graph.nodes[..self.cutoff.get().min(graph.nodes.len())];
+                let prior = &graph.nodes[..self.state.cutoff.get().min(graph.nodes.len())];
                 let path_reference = represented.ok_or("Pathの表示元Refがない")?;
                 let selected = super::super::path_value::reference(
                     &component,
@@ -189,7 +189,7 @@ impl Environment<'_> {
                 let parent = represented.ok_or("非原始成分の表示元Refがない")?;
                 Some(super::super::path_value::reference(
                     scalar,
-                    &graph.nodes[..self.cutoff.get().min(graph.nodes.len())],
+                    &graph.nodes[..self.state.cutoff.get().min(graph.nodes.len())],
                     &graph.get(parent)?.arguments,
                     &self.control,
                 )?)
@@ -210,7 +210,7 @@ impl Environment<'_> {
         if let Some(reference) = represented {
             return Ok(AnswerBinding::Reference(reference));
         }
-        data::check(scalar, self.inputs.law(), &self.control)?;
+        data::check(scalar, self.indexes.inputs.law(), &self.control)?;
         let node = Node {
             ty: NodeType::Value(scalar.ty()),
             payload: Some(Payload::Scalar(scalar.clone())),
@@ -251,7 +251,7 @@ impl Environment<'_> {
             return Err("射影nodeが元Requestの束縛前contextでない".into());
         }
         let request = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("射影の元Requestがない")?;
         if request.kind == QuestionKind::Build {
@@ -280,7 +280,7 @@ impl Environment<'_> {
             return Err("map射影nodeが元on・型・値・支持・Scopeと違う".into());
         }
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)

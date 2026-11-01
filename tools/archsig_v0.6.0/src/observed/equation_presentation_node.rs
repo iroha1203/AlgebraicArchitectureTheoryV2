@@ -263,7 +263,7 @@ impl Dependencies {
             tick(c)?;
             let field = f.field.as_deref().ok_or("評価省略の元fieldがない")?;
             if matches!(
-                env.field(&f.snapshot, &f.subject, field)?.slot,
+                env.indexes.field(&env.state, &f.snapshot, &f.subject, field)?.slot,
                 crate::archmap::Slot::Missing
             ) {
                 missing.push(Fact {

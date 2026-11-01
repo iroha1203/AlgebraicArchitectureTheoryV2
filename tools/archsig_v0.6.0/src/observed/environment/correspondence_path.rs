@@ -31,7 +31,7 @@ impl Environment<'_> {
         else {
             return Err("correspondence生成元が原始参照でない".into());
         };
-        let original = self.subject(snapshot, subject)?;
+        let original = self.indexes.subject(snapshot, subject)?;
         if original.ty != *entity {
             return Err("correspondenceの元型が違う".into());
         }
@@ -43,16 +43,16 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
-        out.scope.assignments = self.primitive_valuation.is_some();
+        out.scope.assignments = self.indexes.primitive_valuation.is_some();
         let from = self.path_slot(
             original,
-            self.field(snapshot, subject, &format!("{entity}.from"))?,
+            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
             reading,
             &mut out,
         )?;
         let to = self.path_slot(
             original,
-            self.field(snapshot, subject, &format!("{entity}.to"))?,
+            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
             reading,
             &mut out,
         )?;
@@ -82,7 +82,7 @@ impl Environment<'_> {
         for (name, source_type, target_type) in maps {
             self.tick()?;
             by_type.insert(source_type.clone(), target_type.clone());
-            let field = self.field(snapshot, subject, &format!("{entity}.{name}"))?;
+            let field = self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.{name}"))?;
             let Some(value) = self.path_slot(original, field, reading, &mut out)? else {
                 unavailable = true;
                 continue;
@@ -114,10 +114,10 @@ impl Environment<'_> {
         // 共通Uとsourceの全owned族を、現在補完のownerも含めて決める。
         let mut universe = BTreeSet::new();
         let mut members = vec![];
-        for snap in &self.inputs.archmap().snapshots {
+        for snap in &self.indexes.inputs.archmap().snapshots {
             for s in &snap.subjects {
                 self.tick()?;
-                out.scope.merge(&self.scope(s, reading, None)?);
+                out.scope.merge(&self.indexes.scope(s, reading, None)?);
                 universe.insert(Fact {
                     snapshot: s.snapshot.clone(),
                     subject: s.id.clone(),
@@ -127,7 +127,7 @@ impl Environment<'_> {
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
-                        out.scope.merge(&self.scope(s, reading, Some(origin))?);
+                        out.scope.merge(&self.indexes.scope(s, reading, Some(origin))?);
                         universe.insert(Fact {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
@@ -141,7 +141,7 @@ impl Environment<'_> {
                 } else if by_type.contains_key(s.ty.as_str()) {
                     let owner = self.path_slot(
                         s,
-                        self.field(&s.snapshot, &s.id, &format!("{}.owner", s.ty))?,
+                        self.indexes.field(&self.state, &s.snapshot, &s.id, &format!("{}.owner", s.ty))?,
                         reading,
                         &mut out,
                     )?;
@@ -170,7 +170,7 @@ impl Environment<'_> {
             let target_point = moving
                 .get(&sp)
                 .ok_or("correspondenceの全域対応表に元subjectがない")?;
-            let t = self.subject(&target_point.0, &target_point.1)?;
+            let t = self.indexes.subject(&target_point.0, &target_point.1)?;
             let expected_type = if sp == fp {
                 tt
             } else {
@@ -303,9 +303,9 @@ impl Environment<'_> {
             #[cfg(test)]
             data::observe_actual(
                 _span,
-                self.scoped_context
+                self.state.scoped_context
                     .get()
-                    .or(self.context.get())
+                    .or(self.state.context.get())
                     .unwrap_or_default(),
                 "correspondence_action",
                 carrier.len(),

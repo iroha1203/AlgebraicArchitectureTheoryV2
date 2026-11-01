@@ -20,30 +20,16 @@ pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
 }
 impl Drop for ArchitectureGuard<'_, '_> {
     fn drop(&mut self) {
-        self.environment.architecture.replace(self.previous.take());
+        self.environment.state.architecture.replace(self.previous.take());
     }
 }
 impl<'i> Environment<'i> {
-    pub(in crate::observed) fn architecture_ref(&self) -> Option<NodeRef> {
-        self.architecture.borrow().as_ref().map(|c| c.reference)
-    }
-    pub(in crate::observed) fn architecture_value(&self,fact:&Fact)->Option<(NodeRef,Scalar)> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(r,v,_)|(*r,v.clone()))}
-    pub(in crate::observed) fn architecture_scalar_scope(&self,fact:&Fact)->Option<Scope> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(_,_,s)|s.clone())}
-    pub(super) fn architecture_has_value(&self,reference:NodeRef)->bool {self.architecture.borrow().as_ref().is_some_and(|a|a.overrides.values().any(|(r,_,_)|*r==reference))}
-    pub(in crate::observed) fn architecture_values(&self)->Vec<(Fact,Scalar)> {self.architecture.borrow().as_ref().map(|a|a.overrides.iter().map(|(f,(_,v,_))|(f.clone(),v.clone())).collect()).unwrap_or_default()}
-    pub(in crate::observed) fn architecture_scope(&self) -> Scope {
-        self.architecture
-            .borrow()
-            .as_ref()
-            .map(|c| c.scope.clone())
-            .unwrap_or_default()
-    }
     pub(super) fn object_domain(&self) -> Option<Arc<ObjectDomain>> {
-        self.architecture
+        self.state.architecture
             .borrow()
             .as_ref()
             .map(|c| Arc::clone(&c.domain))
-            .or_else(|| self.object.clone())
+            .or_else(|| self.indexes.object.clone())
     }
     pub(in crate::observed) fn enter_architecture(
         &self,
@@ -52,15 +38,15 @@ impl<'i> Environment<'i> {
         let context = self.current_context(graph);
         let selected = (|| {
             if let Some(index) = context.instance {
-                if let Some(reference)=crate::observed::object_reading_evaluation::architecture(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
+                if let Some(reference)=crate::observed::object_reading_evaluation::architecture(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
                     return self.select_architecture(graph,reference);
                 }
-                if let Some(reference)=crate::observed::law_evaluation::architecture(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
+                if let Some(reference)=crate::observed::law_evaluation::architecture(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
                     return self.select_architecture(graph,reference);
                 }
             }
             let Some(request) = self
-                .original_requests
+                .indexes.original_requests
                 .and_then(|rs| rs.get(context.request))
             else {
                 return Ok(None);
@@ -91,7 +77,7 @@ impl<'i> Environment<'i> {
         })()?;
         Ok(ArchitectureGuard {
             environment: self,
-            previous: self.architecture.replace(selected),
+            previous: self.state.architecture.replace(selected),
         })
     }
     pub(super) fn select_architecture(
@@ -99,7 +85,7 @@ impl<'i> Environment<'i> {
         graph: &Graph,
         reference: NodeRef,
     ) -> Result<Option<ArchitectureContext>, ValidationFailure> {
-        if reference.0 >= self.cutoff.get() {
+        if reference.0 >= self.state.cutoff.get() {
             return Err("環境が未出のArchitectureを参照した".into());
         }
         let node = graph.get(reference)?;
@@ -125,7 +111,7 @@ impl<'i> Environment<'i> {
             _ => return Err("環境Architectureの構成が違う".into()),
         };
         let domain =
-            ObjectDomain::from_readings(self.inputs, witness.readings(), object, &self.control)?;
+            ObjectDomain::from_readings(self.indexes.inputs, witness.readings(), object, &self.control)?;
         self.tick()?;
         Ok(Some(ArchitectureContext {
             reference,
@@ -141,7 +127,7 @@ impl<'i> Environment<'i> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Evaluation { environment, .. }) = &node.payload {
-            if *environment != self.architecture_ref() {
+            if *environment != self.state.architecture_ref() {
                 return Err("評価の環境Refが元Requestのonと違う".into());
             }
             if let Some(r) = environment {
@@ -157,3 +143,20 @@ impl<'i> Environment<'i> {
 
 #[cfg(test)]
 mod tests;
+
+impl EvaluationState {
+    pub(in crate::observed) fn architecture_ref(&self) -> Option<NodeRef> {
+        self.architecture.borrow().as_ref().map(|c| c.reference)
+    }
+    pub(in crate::observed) fn architecture_value(&self,fact:&Fact)->Option<(NodeRef,Scalar)> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(r,v,_)|(*r,v.clone()))}
+    pub(in crate::observed) fn architecture_scalar_scope(&self,fact:&Fact)->Option<Scope> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(_,_,s)|s.clone())}
+    pub(super) fn architecture_has_value(&self,reference:NodeRef)->bool {self.architecture.borrow().as_ref().is_some_and(|a|a.overrides.values().any(|(r,_,_)|*r==reference))}
+    pub(in crate::observed) fn architecture_values(&self)->Vec<(Fact,Scalar)> {self.architecture.borrow().as_ref().map(|a|a.overrides.iter().map(|(f,(_,v,_))|(f.clone(),v.clone())).collect()).unwrap_or_default()}
+    pub(in crate::observed) fn architecture_scope(&self) -> Scope {
+        self.architecture
+            .borrow()
+            .as_ref()
+            .map(|c| c.scope.clone())
+            .unwrap_or_default()
+    }
+}

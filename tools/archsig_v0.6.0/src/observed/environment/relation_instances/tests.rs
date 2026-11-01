@@ -679,19 +679,19 @@ fn cached_guard_replays_only_its_own_missing_after_an_untraced_initial_call() {
             .known_value
             .is_none()
     );
-    assert!(e.missing_slot_reads.borrow().is_none());
+    assert!(e.state.missing_slot_reads.borrow().is_none());
     let original = slot("Paths.Node", "p", "mark");
     let unrelated = slot("Paths.Node", "q", "mark");
-    *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::from([unrelated.clone()]));
+    *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::from([unrelated.clone()]));
     e.scoped_ast(guard, &variables, &base, "Walk").unwrap();
     assert_eq!(
-        e.missing_slot_reads.borrow().as_ref().unwrap(),
+        e.state.missing_slot_reads.borrow().as_ref().unwrap(),
         &BTreeSet::from([original.clone(), unrelated])
     );
-    *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+    *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
     e.scoped_ast(guard, &variables, &base, "Walk").unwrap();
     assert_eq!(
-        e.missing_slot_reads.borrow().as_ref().unwrap(),
+        e.state.missing_slot_reads.borrow().as_ref().unwrap(),
         &BTreeSet::from([original])
     );
 }
@@ -841,15 +841,15 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
     base.readings.insert("Walk".into());
     let expected = BTreeSet::from([slot("Paths.Node", "p", "mark")]);
     for _ in 0..2 {
-        *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+        *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
         assert_eq!(
             e.scoped_ast(guard, &variables, &base, "Walk")
                 .unwrap()
                 .known_value,
             Some(Scalar::Bool(true))
         );
-        assert_eq!(e.missing_slot_reads.borrow().as_ref().unwrap(), &expected);
-        *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+        assert_eq!(e.state.missing_slot_reads.borrow().as_ref().unwrap(), &expected);
+        *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
         let (value, _, _, missing) = super::super::local_read::guard_value(
             &e,
             guard,
@@ -859,9 +859,9 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
         .unwrap();
         assert_eq!(value, Some(true));
         assert!(missing.is_empty());
-        assert!(e.missing_slot_reads.borrow().as_ref().unwrap().is_empty());
-        assert!(e.primitive_reads.borrow().is_none());
-        assert!(!e.value_read.get());
+        assert!(e.state.missing_slot_reads.borrow().as_ref().unwrap().is_empty());
+        assert!(e.state.primitive_reads.borrow().is_none());
+        assert!(!e.state.value_read.get());
     }
 }
 

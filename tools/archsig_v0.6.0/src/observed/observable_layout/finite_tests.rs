@@ -441,7 +441,7 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
         assert_eq!(c.checkpoint(Checkpoint::NativeResultNode), Err(expected));
         assert_eq!(probes.get(), frozen);
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
         assert!(g.nodes.len() <= full.nodes.len());
         for (i, n) in g.nodes.iter().enumerate() {

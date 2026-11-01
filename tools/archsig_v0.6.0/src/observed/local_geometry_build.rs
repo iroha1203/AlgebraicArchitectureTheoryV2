@@ -105,7 +105,7 @@ fn state(
     let mut slot_subjects = vec![];
     for position in positions {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
-        let subject = env.subject(&position.snapshot, &position.subject)?;
+        let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
         let reference = change_result::value(
             b,
             &Scalar::Subject {

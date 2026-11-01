@@ -603,7 +603,7 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
                 "{signal:?}/at{at}"
             );
             assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
+            assert!(env.state.architecture_ref().is_none());
             for (i, n) in g.nodes.iter().enumerate() {
                 assert_eq!(
                     n.wire(i, &g.nodes[..i]),

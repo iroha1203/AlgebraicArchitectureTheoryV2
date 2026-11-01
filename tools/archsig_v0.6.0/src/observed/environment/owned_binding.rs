@@ -175,14 +175,14 @@ impl Environment<'_> {
         self.tick()?;
         match selector {
             Selector::Subject { snapshot, subject } => {
-                let s = self.subject(snapshot, subject)?;
+                let s = self.indexes.subject(snapshot, subject)?;
                 Ok(Selected {
                     scalar: Scalar::Subject {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
                         entity: s.ty.to_string(),
                     },
-                    scope: self.scope(s, reading, None)?,
+                    scope: self.indexes.scope(s, reading, None)?,
                     support: vec![Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -234,7 +234,7 @@ impl Environment<'_> {
         else {
             return Err("所属条件の直接入力がsubjectでない".into());
         };
-        let original = self.subject(snapshot, subject)?;
+        let original = self.indexes.subject(snapshot, subject)?;
         Ok(ConditionInput::Subject(Box::new(Node {
             ty: NodeType::Value(selected.scalar.ty()),
             payload: Some(Payload::Scalar(selected.scalar.clone())),
@@ -264,7 +264,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         self.tick()?;
-        let originals = self.original_requests.ok_or("所属束縛の元Requestがない")?;
+        let originals = self.indexes.original_requests.ok_or("所属束縛の元Requestがない")?;
         let context = self.current_context(graph);
         if originals.get(context.request) != Some(request)
             || graph.requests.get(context.request) != Some(request)
@@ -272,7 +272,7 @@ impl Environment<'_> {
             return Err("所属束縛のRequestが元入力と違う".into());
         }
         let d =
-            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元宣言がview/Lawでない".into()),
@@ -482,7 +482,7 @@ impl Environment<'_> {
                 self.answer_binding_matches(graph, selector, original, p.span)?
             }
             Selector::Subject { snapshot, subject } => {
-                let s = self.subject(snapshot, subject)?;
+                let s = self.indexes.subject(snapshot, subject)?;
                 if input.rule
                     != (Rule::Input {
                         kind: "subject",
@@ -537,11 +537,11 @@ impl Environment<'_> {
             return Err("所属束縛が元Requestのrootにない".into());
         }
         let request = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|r| r.get(context.request))
             .ok_or("所属束縛の元Requestがない")?;
         let d =
-            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元署名がない".into()),
@@ -582,7 +582,7 @@ impl Environment<'_> {
             .nodes
             .iter()
             .enumerate()
-            .take(self.cutoff.get().min(graph.nodes.len()))
+            .take(self.state.cutoff.get().min(graph.nodes.len()))
         {
             self.tick()?;
             let at = graph.context_at(i);

@@ -337,7 +337,7 @@ pub(in crate::observed) fn compute(
         return Err(unsupported(request, "商の有限候補全域が未確定"));
     }
     let declaration =
-        &original.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];
+        &original.indexes.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];
     let Signature::View {
         params,
         returns,
@@ -346,7 +346,7 @@ pub(in crate::observed) fn compute(
     else {
         return Err("商のheadがviewでない".into());
     };
-    if !exact_type(returns, original.inputs.law(), c)? {
+    if !exact_type(returns, original.indexes.inputs.law(), c)? {
         return Err(unsupported(request, "このview型の有限商の等値は未実装"));
     }
     let bindings = params
@@ -371,16 +371,16 @@ pub(in crate::observed) fn compute(
             let Selector::Declaration { name } = &a.value else {
                 return Err(ValidationFailure::from("商のLaw名がない"));
             };
-            let Signature::Law { body, .. } = &original.inputs.law().declarations[name].signature
+            let Signature::Law { body, .. } = &original.indexes.inputs.law().declarations[name].signature
             else {
                 return Err(ValidationFailure::from("商のLaw署名がない"));
             };
-            let (ty, _) = observation(original.inputs.law(), *body, None, &[], c)?;
+            let (ty, _) = observation(original.indexes.inputs.law(), *body, None, &[], c)?;
             Ok((name.clone(), ty))
         })
         .transpose()?;
     let domain = Arc::new(ObjectDomain::from_readings(
-        original.inputs,
+        original.indexes.inputs,
         input.witness.readings(),
         0,
         c,
@@ -389,7 +389,7 @@ pub(in crate::observed) fn compute(
     let mut missing = BTreeSet::new();
     let mut scope = Scope::default();
     if let Some((name, _)) = &law {
-        let decl = &original.inputs.law().declarations[name];
+        let decl = &original.indexes.inputs.law().declarations[name];
         scope.readings.insert(decl.reading.clone());
         let Signature::Law { params, .. } = &decl.signature else {
             unreachable!()
@@ -439,10 +439,10 @@ pub(in crate::observed) fn compute(
             .collect::<BTreeMap<_, _>>();
         assignments.extend(candidate.update.values.iter().cloned());
         let assignments = assignments.into_iter().collect::<Vec<_>>();
-        let mut env = Environment::try_primitive_valuation(original.inputs, &assignments, c)?
+        let mut env = Environment::try_primitive_valuation(original.indexes.inputs, &assignments, c)?
             .ok_or("商の候補代入が不適合")?;
-        env.object = Some(domain.clone());
-        env.missing_slot_reads.replace(Some(BTreeSet::new()));
+        env.indexes.object = Some(domain.clone());
+        env.state.missing_slot_reads.replace(Some(BTreeSet::new()));
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
         let mut vars = BTreeMap::new();
@@ -486,7 +486,7 @@ pub(in crate::observed) fn compute(
         scope.merge(&value.scope);
         if value.condition_failed || value.condition_pending || value.known_value.is_none() {
             let reads = env
-                .missing_slot_reads
+                .state.missing_slot_reads
                 .replace(None)
                 .ok_or("商の不足位置収集がない")?;
             if !reads.is_empty() {
@@ -500,7 +500,7 @@ pub(in crate::observed) fn compute(
         }
         let mut laws = vec![];
         if let Some((name, _)) = &law {
-            let law_decl = &original.inputs.law().declarations[name];
+            let law_decl = &original.indexes.inputs.law().declarations[name];
             let Signature::Law {
                 params,
                 body,
@@ -542,7 +542,7 @@ pub(in crate::observed) fn compute(
                 instances = next;
             }
             for bindings in instances {
-                env.evaluation_capture.replace(Some(EvaluationCapture {
+                env.state.evaluation_capture.replace(Some(EvaluationCapture {
                     selected: std::iter::once(*body).chain(*guard).collect(),
                     nodes: vec![],
                     roots: vec![],
@@ -551,7 +551,7 @@ pub(in crate::observed) fn compute(
                 let evaluated =
                     finite_law_valuations::evaluate_point(&env, law_decl, &bindings, index);
                 let capture = env
-                    .evaluation_capture
+                    .state.evaluation_capture
                     .replace(None)
                     .ok_or("商の通常評価出現がない")?;
                 let evaluated = evaluated?;
@@ -568,12 +568,12 @@ pub(in crate::observed) fn compute(
                     None
                 } else {
                     let (_, value) =
-                        observation(env.inputs.law(), *body, body_evaluation, &capture.nodes, c)?;
+                        observation(env.indexes.inputs.law(), *body, body_evaluation, &capture.nodes, c)?;
                     match value {
                         Some(value) => Some(value),
                         _ => {
                             let reads = env
-                                .missing_slot_reads
+                                .state.missing_slot_reads
                                 .borrow()
                                 .as_ref()
                                 .cloned()
@@ -593,7 +593,7 @@ pub(in crate::observed) fn compute(
                     || evaluated.condition_pending
                 {
                     let reads = env
-                        .missing_slot_reads
+                        .state.missing_slot_reads
                         .borrow()
                         .as_ref()
                         .cloned()

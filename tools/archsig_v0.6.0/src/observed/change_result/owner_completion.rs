@@ -48,7 +48,7 @@ pub(super) fn compute(
         return Ok(None);
     }
     let name = request.declaration().ok_or("補完solveのLawがない")?;
-    let declaration = &env.inputs.law().declarations[name];
+    let declaration = &env.indexes.inputs.law().declarations[name];
     let Signature::Law { body, params, .. } = &declaration.signature else {
         return Err("補完solveがLawでない".into());
     };

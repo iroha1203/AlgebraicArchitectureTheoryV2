@@ -23,8 +23,8 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(*reference)?, reference.0)?;
         }
         let span = self.expression_span(graph, *own)?;
-        let law = self.inputs.law();
-        let id = *self.inputs.law().program.expressions.get(&span).ok_or("Term証拠の元ASTがない")?;
+        let law = self.indexes.inputs.law();
+        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("Term証拠の元ASTがない")?;
         let ExprKind::Binary {
             op: BinOp::Eq | BinOp::Ne,
             lhs,
@@ -147,7 +147,7 @@ impl Environment<'_> {
                     )?;
                     values.push(graph.scalar(*reference)?.clone());
                 }
-                let value = term.apply(&values, self.inputs.law(), &self.control)?;
+                let value = term.apply(&values, self.indexes.inputs.law(), &self.control)?;
                 let wanted = if *selected == *l {
                     &point.left
                 } else {
@@ -303,10 +303,10 @@ impl Environment<'_> {
         else {
             return Ok(());
         };
-        let Some(&id) = self.inputs.law().program.expressions.get(span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
             return Ok(());
         };
-        let law = self.inputs.law();
+        let law = self.indexes.inputs.law();
         let ExprKind::Binary {
             op: op @ (BinOp::Eq | BinOp::Ne),
             lhs,

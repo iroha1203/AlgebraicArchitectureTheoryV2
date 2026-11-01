@@ -406,12 +406,12 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression: source,
                 bindings: fixed_bindings,
                 parts: vec![Part {
                     location: Location::Law {
-                        span: self.environment.inputs.law().exprs[body].span,
+                        span: self.environment.indexes.inputs.law().exprs[body].span,
                     },
                     value: scalar,
                     residual: None,

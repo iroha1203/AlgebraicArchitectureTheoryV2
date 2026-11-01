@@ -488,7 +488,7 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
             assert_eq!(g.nodes, before);
             assert_eq!(g.contexts, contexts);
             assert_eq!(g.active, active);
-            assert!(env.architecture_ref().is_none());
+            assert!(env.state.architecture_ref().is_none());
             replay(&p, &g).unwrap();
         }
     }

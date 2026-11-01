@@ -303,7 +303,7 @@ pub(super) fn build(
     control: &mut Control,
 ) -> Result<Architecture, ValidationFailure> {
     tick(control)?;
-    if inputs.sources() != environment.inputs.sources()
+    if inputs.sources() != environment.indexes.inputs.sources()
         || graph.requests.get(graph.active.request) != Some(request)
         || graph.active.frame.is_some()
         || graph.active.iteration.is_some()
@@ -353,7 +353,7 @@ pub(super) fn selected_build(
     graph: &Graph,
     request: &Request,
 ) -> Result<Fact, ValidationFailure> {
-    let reading = request_reading(environment.inputs, request)?;
+    let reading = request_reading(environment.indexes.inputs, request)?;
     let mut on = request.arguments.iter().filter(|a| a.name == "on");
     let argument = on.next().ok_or("buildのonがない")?;
     if on.next().is_some() || (request.kind == QuestionKind::Build && request.arguments.len() != 1) {
@@ -393,15 +393,15 @@ pub(super) fn selected_build(
         }
         _ => return Err("buildのonが原始rootか公開Handleでない".into()),
     };
-    let subject = environment.subject(&root.snapshot, &root.subject)?;
+    let subject = environment.indexes.subject(&root.snapshot, &root.subject)?;
     let declaration = environment
-        .inputs
+        .indexes.inputs
         .definitions()
         .declarations
         .get(subject.ty.as_str())
         .ok_or("buildのroot型がない")?;
     let visible = crate::construction::reading_namespaces(
-        environment.inputs.law(),
+        environment.indexes.inputs.law(),
         reading,
         &mut environment.control.clone(),
     )
@@ -424,7 +424,7 @@ pub(super) fn validate_build_origin(
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     if value.witness.request() != request
-        || value.witness.inputs().sources() != environment.inputs.sources()
+        || value.witness.inputs().sources() != environment.indexes.inputs.sources()
     {
         return Err("build構成が元三入力・Requestに属さない".into());
     }
@@ -432,7 +432,7 @@ pub(super) fn validate_build_origin(
         return Err("build構成の元Architectureがない".into());
     };
     let root = selected_build(environment, graph, request)?;
-    let reading = request_reading(environment.inputs, request)?;
+    let reading = request_reading(environment.indexes.inputs, request)?;
     let on=&request.arguments.iter().find(|a| a.name=="on").ok_or("対象構成の元onがない")?.value;
     if let Selector::Answer { .. } = on {
         let reference = match &value.data {

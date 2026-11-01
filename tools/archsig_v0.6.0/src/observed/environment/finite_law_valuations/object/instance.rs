@@ -35,7 +35,7 @@ pub(in super::super) fn validate_selection(
     for fixed in original.bindings() {
         select_tick(c)?;
         let fact = fixed.subject();
-        let subject = e.subject(&fact.snapshot, &fact.subject)?;
+        let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
         let expected = Scalar::Subject {
             snapshot: fact.snapshot.clone(),
             subject: fact.subject.clone(),
@@ -61,11 +61,11 @@ pub(in super::super) fn zero_indicator(
         return Err("元Lawでない".into());
     };
     row.indicator = Some(0.into());
-    if let Some(eq) = equation(e.inputs, body, &mut e.control.clone())? {
-        let ExprKind::Binary { lhs, .. } = e.inputs.law().exprs[eq].kind else {
+    if let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? {
+        let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs[eq].kind else {
             return Err("元等式がない".into());
         };
-        let ty = e.inputs.law().expr_type(lhs).ok_or("元等式の型がない")?;
+        let ty = e.indexes.inputs.law().expr_type(lhs).ok_or("元等式の型がない")?;
         let mut leaves = components(e, ty, &None, &None, Some(false), false)?;
         for leaf in &mut leaves {
             tick(&e.control)?;
@@ -105,9 +105,9 @@ pub(super) fn initial(
         .chain(original.bindings().iter().map(|binding| binding.subject()))
     {
         tick(&e.control)?;
-        let subject = e.subject(&fact.snapshot, &fact.subject)?;
+        let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
         row.scope
-            .merge(&e.scope(subject, object.identity().reading(), None)?);
+            .merge(&e.indexes.scope(subject, object.identity().reading(), None)?);
         row.support.push(fact.clone());
     }
     match original
@@ -122,14 +122,14 @@ pub(super) fn initial(
             for condition in conditions {
                 tick(&e.control)?;
                 let position = condition.slot();
-                let field = e.field(
+                let field = e.indexes.field(&e.state,
                     &position.snapshot,
                     &position.subject,
                     position.field.as_deref().ok_or("元所属条件のfieldがない")?,
                 )?;
-                let subject = e.subject(&position.snapshot, &position.subject)?;
+                let subject = e.indexes.subject(&position.snapshot, &position.subject)?;
                 let value = if let Some(value) = e
-                    .primitive_valuation
+                    .indexes.primitive_valuation
                     .as_ref()
                     .and_then(|values| values.get(position))
                 {
@@ -144,7 +144,7 @@ pub(super) fn initial(
                             origin,
                             ..
                         } => {
-                            row.scope.merge(&e.scope(
+                            row.scope.merge(&e.indexes.scope(
                                 subject,
                                 object.identity().reading(),
                                 Some(origin),
@@ -152,7 +152,7 @@ pub(super) fn initial(
                             let mut fact = position.clone();
                             fact.atom = Some(atom.clone());
                             row.support.push(fact);
-                            scalar_from(value, &field.ty, e.inputs.law(), &e.control)?
+                            scalar_from(value, &field.ty, e.indexes.inputs.law(), &e.control)?
                         }
                         Slot::Missing => {
                             row.scope.completions = true;
@@ -186,7 +186,7 @@ pub(super) fn initial(
     // 元instanceの適用条件を保存したまま、固定参照の型を同じ既存核で検査する。
     if row.application != Some(false) {
         let declaration = e
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(&original.declaration().name)
@@ -195,7 +195,7 @@ pub(super) fn initial(
         for binding in original.bindings() {
             tick(&e.control)?;
             let fact = binding.subject();
-            let subject = e.subject(&fact.snapshot, &fact.subject)?;
+            let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
             fixed.insert(
                 binding.parameter().name.as_str(),
                 Scalar::Subject {

@@ -421,7 +421,7 @@ pub(super) fn evaluate(
         .ok_or("元view Requestがない")?
         .clone();
     let declaration = env
-        .inputs
+        .indexes.inputs
         .law()
         .declarations
         .get(&o.declaration)

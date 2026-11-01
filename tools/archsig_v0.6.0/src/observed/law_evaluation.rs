@@ -513,7 +513,7 @@ pub(super) fn evaluate(
         .ok_or("元Law評価Requestがない")?
         .clone();
     let declaration = env
-        .inputs
+        .indexes.inputs
         .law()
         .declarations
         .get(&row.declaration)

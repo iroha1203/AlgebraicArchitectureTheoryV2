@@ -250,7 +250,7 @@ pub(super) fn build(
     let mut slot_subjects = vec![];
     for slot in &support.positions {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
-        let subject = env.subject(&slot.snapshot, &slot.subject)?;
+        let subject = env.indexes.subject(&slot.snapshot, &slot.subject)?;
         let r = change_result::value(
             b,
             &Scalar::Subject {
@@ -306,7 +306,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let declaration = &env.inputs.law().declarations[&model.change];
+    let declaration = &env.indexes.inputs.law().declarations[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
         return Err("局所changeの署名がない".into());
     };

@@ -103,7 +103,7 @@ fn populate_realizations(
         loop {
             let mut expanded = positions.clone();
             for p in &positions {
-                let field = template.field(
+                let field = template.indexes.field(&template.state,
                     &p.snapshot,
                     &p.subject,
                     p.field.as_deref().ok_or("parameter依存位置のfieldがない")?,
@@ -119,7 +119,7 @@ fn populate_realizations(
         let Some((types, candidates)) = domains(&template, &result.positions)? else {
             for p in &result.positions {
                 if domains(&template, std::slice::from_ref(p))?.is_none() {
-                    let field = template.field(
+                    let field = template.indexes.field(&template.state,
                         &p.snapshot,
                         &p.subject,
                         p.field.as_deref().ok_or("parameter依存fieldがない")?,
@@ -145,7 +145,7 @@ fn populate_realizations(
                 .zip(candidate.iter().cloned())
                 .collect();
             let mut e = Environment::primitive_dependency_probe(inputs, &values, c)?;
-            *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+            *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let mut evaluated = evaluated_objects(inputs, selections, &values, &e, c);
             if result.law_dependencies {
                 if let Ok(objects) = &evaluated {
@@ -156,7 +156,7 @@ fn populate_realizations(
                     }
                 }
             }
-            if let Some(reads) = e.primitive_reads.borrow().as_ref() {
+            if let Some(reads) = e.state.primitive_reads.borrow().as_ref() {
                 discovered.extend(reads.iter().cloned());
             }
             if let Err(ValidationFailure::Stop(stop)) = evaluated {
@@ -187,7 +187,7 @@ fn populate_realizations(
     let mut all_known = true;
     for p in &result.positions {
         tick(c)?;
-        let field = template.field(
+        let field = template.indexes.field(&template.state,
             &p.snapshot,
             &p.subject,
             p.field.as_deref().ok_or("元parameter依存fieldがない")?,

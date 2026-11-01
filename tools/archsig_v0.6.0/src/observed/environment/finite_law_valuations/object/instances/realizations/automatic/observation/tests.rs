@@ -259,9 +259,8 @@ fn object_presentations_keep_known_independent_components_and_leave_dependent_on
     }
     assert_eq!(f.required_zero(), Some([0].as_slice()));
     assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
-    let field = Environment::new(&i, &mut quiet())
-        .unwrap()
-        .field("v", "q", "Pattern.Part.quantity")
+    let environment = Environment::new(&i, &mut quiet()).unwrap();
+    let field = environment.indexes.field(&environment.state, "v", "q", "Pattern.Part.quantity")
         .unwrap();
     assert!(matches!(field.slot, Slot::Missing));
 }
@@ -286,9 +285,8 @@ fn a_proved_constant_indicator_does_not_turn_the_unknown_operand_into_an_observa
             .iter()
             .any(|p| p.subject == "q" && p.atom.is_none())
     );
-    let field = Environment::new(&i, &mut quiet())
-        .unwrap()
-        .field("v", "q", "Pattern.Part.quantity")
+    let environment = Environment::new(&i, &mut quiet()).unwrap();
+    let field = environment.indexes.field(&environment.state, "v", "q", "Pattern.Part.quantity")
         .unwrap();
     assert!(matches!(field.slot, Slot::Missing));
     p.recheck(f, o, &i, &a, &mut quiet()).unwrap();

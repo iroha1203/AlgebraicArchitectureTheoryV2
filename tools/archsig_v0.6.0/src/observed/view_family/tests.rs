@@ -698,7 +698,7 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
             "at{at}: {result:?}"
         );
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         assert!(g.nodes.len() <= full.nodes.len());
         for (i, n) in g.nodes.iter().enumerate() {
             assert_eq!(

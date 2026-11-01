@@ -402,7 +402,7 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
             "at{at}: {result:?}"
         );
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         for (i, n) in g.nodes.iter().enumerate() {
             assert_eq!(
                 n.wire(i, &g.nodes[..i]),

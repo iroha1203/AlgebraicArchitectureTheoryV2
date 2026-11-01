@@ -164,7 +164,7 @@ pub(in crate::observed) fn law_variables(
             && numeric_width(&p.ty).is_some()
             && !bindings.iter().any(|(name, _)| *name == p.name)
         {
-            for axis in axes(p, e.context.get().unwrap_or_default(), &e.control)? {
+            for axis in axes(p, e.state.context.get().unwrap_or_default(), &e.control)? {
                 flat.push(Param {
                     name: axis.name,
                     ty: axis.kind.ty(),

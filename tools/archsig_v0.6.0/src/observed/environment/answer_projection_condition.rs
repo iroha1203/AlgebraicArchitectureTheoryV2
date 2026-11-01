@@ -30,10 +30,10 @@ impl Environment<'_> {
             return Ok(vec![]);
         }
         let index = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("射影条件のRequestが元入力にない")?;
-        let previous = self.context.scoped(Some(super::super::call::Context {
+        let previous = self.state.context.scoped(Some(super::super::call::Context {
             request: index,
             frame: None,
             iteration: None,
@@ -114,7 +114,7 @@ impl Environment<'_> {
             return Ok(plans);
         }
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -315,7 +315,7 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<(Vec<Reason>, Scope), ValidationFailure> {
         let current = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("射影条件の元Requestがない")?;
         let mut reasons = vec![];
@@ -328,7 +328,7 @@ impl Environment<'_> {
                 .nodes
                 .iter()
                 .enumerate()
-                .take(self.cutoff.get().min(graph.nodes.len()))
+                .take(self.state.cutoff.get().min(graph.nodes.len()))
             {
                 self.tick()?;
                 if graph.context_at(index).request == current
@@ -414,7 +414,7 @@ impl Environment<'_> {
             .nodes
             .iter()
             .enumerate()
-            .take(self.cutoff.get().min(graph.nodes.len()))
+            .take(self.state.cutoff.get().min(graph.nodes.len()))
         {
             self.tick()?;
             if graph.context_at(index) == context && node == expected {
@@ -530,7 +530,7 @@ impl Environment<'_> {
             return Err("射影条件が元Requestの束縛前contextでない".into());
         }
         let request = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|rs| rs.get(context.request))
             .ok_or("射影条件の元Requestがない")?;
         let plan = self

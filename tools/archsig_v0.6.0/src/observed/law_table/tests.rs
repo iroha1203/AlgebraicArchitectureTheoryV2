@@ -448,7 +448,7 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         // 別実行の内部SourceはArc identityが異なる。公開DAGと各由来の再検査を照合する。
         assert_eq!(&g.nodes[..initial.nodes.len()], &initial.nodes);
         assert!(g.nodes.len() <= full.nodes.len());

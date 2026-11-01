@@ -265,8 +265,7 @@ fn state_values(
     context: &ArchitectureContext,
     compound: bool,
 ) -> Vec<String> {
-    let mut domain = env
-        .reference_roster("Reservations.State", &mut |_| {})
+    let mut domain = env.indexes.reference_roster(&env.control, "Reservations.State", &mut |_| {})
         .unwrap();
     let ty = if compound {
         Type::Tuple(vec![Type::Ref("Reservations.State".into()), Type::Bool])
@@ -340,8 +339,7 @@ fn native_owned_environments_keep_the_containing_root_reading_and_exact_subject_
         .select_architecture(&graph, d.architectures[1])
         .unwrap()
         .unwrap();
-    let mut roster = env
-        .reference_roster("Reservations.Migration", &mut |_| {})
+    let mut roster = env.indexes.reference_roster(&env.control, "Reservations.Migration", &mut |_| {})
         .unwrap();
     let original = roster.values.clone();
     let mut values = Some(roster.values);
@@ -380,17 +378,17 @@ fn nested_environment_selection_restores_owned_context_and_rejects_changed_produ
     let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
     let owned = d.architectures[1];
     let selected = env.select_architecture(&graph, owned).unwrap().unwrap();
-    env.architecture.replace(Some(selected));
+    env.state.architecture.replace(Some(selected));
     {
         let _guard = env.enter_architecture(&graph).unwrap();
-        assert_eq!(env.architecture_ref(), Some(root));
+        assert_eq!(env.state.architecture_ref(), Some(root));
         assert_eq!(env.object_domain().unwrap().identity.subject().subject, "A");
     }
-    assert_eq!(env.architecture_ref(), Some(owned));
+    assert_eq!(env.state.architecture_ref(), Some(owned));
     assert_eq!(env.object_domain().unwrap().identity.subject().subject, "p");
     graph.requests[0].text.push(' ');
     assert!(env.select_architecture(&graph, owned).is_err());
-    assert_eq!(env.architecture_ref(), Some(owned));
+    assert_eq!(env.state.architecture_ref(), Some(owned));
 }
 #[test]
 fn owned_environment_rejects_false_type_origin_edges_inputs_and_future_references() {
@@ -433,7 +431,7 @@ fn owned_environment_rejects_false_type_origin_edges_inputs_and_future_reference
         env.select_architecture(&graph, NodeRef(graph.nodes.len()))
             .is_err()
     );
-    env.cutoff.set(owned.0);
+    env.state.cutoff.set(owned.0);
     assert!(env.select_architecture(&graph, owned).is_err());
     let prepared = prepare_observed(
         fixture::input("view added():Bool=true;", None),
@@ -459,7 +457,7 @@ fn both_signal_owned_environment_stops_restore_the_previous_context_and_preserve
         });
         let env = Environment::with_prepared(result.prepared(), &mut c).unwrap();
         let base = env.select_architecture(&graph, root).unwrap().unwrap();
-        env.architecture.replace(Some(base));
+        env.state.architecture.replace(Some(base));
         armed.set(true);
         assert!(
             matches!(
@@ -469,7 +467,7 @@ fn both_signal_owned_environment_stops_restore_the_previous_context_and_preserve
             "{signal:?}"
         );
         assert!(c.stop_reason().is_some());
-        assert_eq!(env.architecture_ref(), Some(root));
+        assert_eq!(env.state.architecture_ref(), Some(root));
         assert_eq!(env.object_domain().unwrap().identity.subject().subject, "A");
         assert_eq!(graph.nodes, before);
     }
@@ -497,8 +495,8 @@ fn equal_field_values_keep_distinct_owned_environment_subjects() {
     let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
     for name in ["Reservations.State.free", "Reservations.State.held"] {
         let (left, right) = (
-            env.field("v", "p", name).unwrap(),
-            env.field("v", "q", name).unwrap(),
+            env.indexes.field(&env.state, "v", "p", name).unwrap(),
+            env.indexes.field(&env.state, "v", "q", name).unwrap(),
         );
         let (
             crate::archmap::Slot::Known { value: a, .. },

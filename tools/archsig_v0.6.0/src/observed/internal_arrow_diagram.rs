@@ -780,7 +780,7 @@ impl Environment<'_> {
             return Err("内部arrowのconsumerが元対象族と違う".into());
         }
         if self
-            .verified_internal_arrows
+            .results.verified_internal_arrows
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
@@ -788,8 +788,8 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(graph, self.inputs, a, &mut self.control.clone())?;
-        self.verified_internal_arrows
+            .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
+        self.results.verified_internal_arrows
             .borrow_mut()
             .push(data.source.clone());
         Ok(())

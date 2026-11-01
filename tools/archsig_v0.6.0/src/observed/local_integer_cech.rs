@@ -611,7 +611,7 @@ fn gluing(
         assignments.insert(diagram.slots[*i].clone(), coefficient_value(v.clone()));
     }
     let mut evaluated = Environment::try_primitive_valuation(
-        env.inputs,
+        env.indexes.inputs,
         &assignments.into_iter().collect::<Vec<_>>(),
         c,
     )?
@@ -620,7 +620,7 @@ fn gluing(
     let mut rechecks = vec![];
     for ((name, bindings), law) in diagram.requirements.iter().zip(&diagram.law_refs) {
         let (row, missing, _) =
-            evaluated.local_point(&env.inputs.law().declarations[name], bindings)?;
+            evaluated.local_point(&env.indexes.inputs.law().declarations[name], bindings)?;
         let holds = row.application == Some(false)
             || (row.application == Some(true)
                 && !row.condition_pending

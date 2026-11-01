@@ -30,7 +30,7 @@ impl Environment<'_> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
             if let Value::Ref { snapshot, subject } = value {
-                self.subject(snapshot, subject)?;
+                self.indexes.subject(snapshot, subject)?;
                 references.insert(Fact {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
@@ -166,9 +166,9 @@ impl Environment<'_> {
         Ok(out)
     }
     pub(super) fn path_reading(&self, id: usize) -> Result<&str, ValidationFailure> {
-        let span = self.inputs.law().exprs[id].span;
+        let span = self.indexes.inputs.law().exprs[id].span;
         let mut reading = None;
-        for d in self.inputs.law().declarations.values() {
+        for d in self.indexes.inputs.law().declarations.values() {
             self.tick()?;
             if d.span.0 <= span.0
                 && span.1 <= d.span.1
@@ -191,7 +191,7 @@ impl Environment<'_> {
                 Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
                 Type::Map(a, b) => pending.extend([a.as_ref(), b.as_ref()]),
                 Type::Data(name) if seen.insert(name.as_str()) => {
-                    for constructor in data::constructors(self.inputs.law(), name)? {
+                    for constructor in data::constructors(self.indexes.inputs.law(), name)? {
                         self.tick()?;
                         pending.extend(&constructor.arguments);
                     }
@@ -208,8 +208,8 @@ impl Environment<'_> {
         name: &str,
     ) -> Result<&crate::archmap::Field, ValidationFailure> {
         self.tick()?;
-        self.inputs.law().resolved_names.get(name)
-            .and_then(|name| self.fields.get(&(owner.snapshot.clone(), owner.id.clone(), name.clone())))
+        self.indexes.inputs.law().resolved_names.get(name)
+            .and_then(|name| self.indexes.fields.get(&(owner.snapshot.clone(), owner.id.clone(), name.clone())))
             .copied()
             .ok_or_else(|| "Path構造の元fieldがない".into())
     }
@@ -233,15 +233,15 @@ impl Environment<'_> {
         };
         match &field.slot {
             Slot::Known { atom, origin, .. } => {
-                out.scope.merge(&self.scope(owner, reading, Some(origin))?);
+                out.scope.merge(&self.indexes.scope(owner, reading, Some(origin))?);
                 let mut fact = position;
                 fact.atom = Some(atom.clone());
                 out.support.push(self.path_atom_support(&fact));
             }
             Slot::Missing => {
-                out.scope.merge(&self.scope(owner, reading, None)?);
+                out.scope.merge(&self.indexes.scope(owner, reading, None)?);
                 out.scope.completions = true;
-                if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
+                if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
                     reads.insert(position.clone());
                 }
                 out.missing.push(position);
@@ -257,7 +257,7 @@ impl Environment<'_> {
         field: &'b crate::archmap::Field,
     ) -> Result<Option<&'b Value>, ValidationFailure> {
         if self.path_reads_value(&field.ty)? {
-            self.field(&owner.snapshot, &owner.id, &field.name)?;
+            self.indexes.field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         }
         let position = Fact {
             snapshot: owner.snapshot.clone(),
@@ -266,7 +266,7 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(value) = self
-            .primitive_input_valuation
+            .indexes.primitive_input_valuation
             .as_ref()
             .and_then(|v| v.get(&position))
         {
@@ -281,7 +281,7 @@ impl Environment<'_> {
         let mut position = fact.clone();
         position.atom = None;
         if self
-            .primitive_valuation
+            .indexes.primitive_valuation
             .as_ref()
             .is_some_and(|v| v.contains_key(&position))
         {
@@ -298,7 +298,7 @@ impl Environment<'_> {
         out: &mut PathResult,
     ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
-        self.field(&owner.snapshot, &owner.id, &field.name)?;
+        self.indexes.field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         let position = Fact {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
@@ -306,11 +306,11 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(value) = self
-            .primitive_valuation
+            .indexes.primitive_valuation
             .as_ref()
             .and_then(|v| v.get(&position))
         {
-            out.scope.merge(&self.scope(owner, reading, None)?);
+            out.scope.merge(&self.indexes.scope(owner, reading, None)?);
             out.scope.assignments = true;
             out.support.push(position.clone());
             if matches!(field.slot, Slot::Missing) {
@@ -326,17 +326,17 @@ impl Environment<'_> {
                 value,
                 ..
             } => {
-                out.scope.merge(&self.scope(owner, reading, Some(origin))?);
+                out.scope.merge(&self.indexes.scope(owner, reading, Some(origin))?);
                 out.support.push(Fact {
                     snapshot: owner.snapshot.clone(),
                     subject: owner.id.clone(),
                     field: Some(field.name.clone()),
                     atom: Some(atom.clone()),
                 });
-                scalar_from(value, &field.ty, self.inputs.law(), &self.control)
+                scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)
             }
             Slot::Missing => {
-                out.scope.merge(&self.scope(owner, reading, None)?);
+                out.scope.merge(&self.indexes.scope(owner, reading, None)?);
                 out.scope.completions = true;
                 let fact = Fact {
                     snapshot: owner.snapshot.clone(),
@@ -346,7 +346,7 @@ impl Environment<'_> {
                 };
                 out.missing.push(fact.clone());
                 Ok(self
-                    .completion_values
+                    .state.completion_values
                     .borrow()
                     .iter()
                     .find(|(f, _, _)| {
@@ -365,7 +365,7 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
         let reading = self.path_reading(id)?;
-        self.generator_path(reading, values, self.inputs.law().exprs[id].span)
+        self.generator_path(reading, values, self.indexes.inputs.law().exprs[id].span)
     }
     pub(in crate::observed) fn generator_path(
         &self,
@@ -377,7 +377,7 @@ impl Environment<'_> {
             return Err("pathの元引数が原始参照1個でない".into());
         };
         let declaration = self
-            .inputs
+            .indexes.inputs
             .definitions()
             .declarations
             .get(entity)
@@ -405,7 +405,7 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
-        out.scope.assignments = self.primitive_valuation.is_some();
+        out.scope.assignments = self.indexes.primitive_valuation.is_some();
         let [
             generator @ Scalar::Subject {
                 snapshot,
@@ -417,7 +417,7 @@ impl Environment<'_> {
             return Err("pathの元引数が原始参照1個でない".into());
         };
         let declaration = self
-            .inputs
+            .indexes.inputs
             .definitions()
             .declarations
             .get(entity)
@@ -425,19 +425,19 @@ impl Environment<'_> {
         let PrimitiveSignature::Arrow { endpoint, .. } = &declaration.signature else {
             return Err("pathの元宣言がarrow/correspondenceでない".into());
         };
-        let arrow = self.subject(snapshot, subject)?;
+        let arrow = self.indexes.subject(snapshot, subject)?;
         if arrow.ty != *entity {
             return Err("pathの元arrow型が違う".into());
         }
         let from = self.path_slot(
             arrow,
-            self.field(snapshot, subject, &format!("{entity}.from"))?,
+            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
             reading,
             &mut out,
         )?;
         let to = self.path_slot(
             arrow,
-            self.field(snapshot, subject, &format!("{entity}.to"))?,
+            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
             reading,
             &mut out,
         )?;
@@ -466,18 +466,18 @@ impl Environment<'_> {
         else {
             unreachable!()
         };
-        let source = self.subject(fs, fp)?;
-        let target = self.subject(ts, tp)?;
+        let source = self.indexes.subject(fs, fp)?;
+        let target = self.indexes.subject(ts, tp)?;
         if source.ty != *fe || target.ty != *te {
             return Err("pathの端点subjectが元入力と違う".into());
         }
         // Uは選択した端点のsnapshotだけへ縮めず、全入力の原始identityで構成する。
         let mut universe = BTreeSet::new();
-        for snapshot in &self.inputs.archmap().snapshots {
+        for snapshot in &self.indexes.inputs.archmap().snapshots {
             self.tick()?;
             for s in &snapshot.subjects {
                 self.tick()?;
-                out.scope.merge(&self.scope(s, reading, None)?);
+                out.scope.merge(&self.indexes.scope(s, reading, None)?);
                 universe.insert(Fact {
                     snapshot: s.snapshot.clone(),
                     subject: s.id.clone(),
@@ -487,7 +487,7 @@ impl Environment<'_> {
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
-                        out.scope.merge(&self.scope(s, reading, Some(origin))?);
+                        out.scope.merge(&self.indexes.scope(s, reading, Some(origin))?);
                         universe.insert(Fact {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
@@ -597,9 +597,9 @@ impl Environment<'_> {
             #[cfg(test)]
             data::observe_actual(
                 _span,
-                self.scoped_context
+                self.state.scoped_context
                     .get()
-                    .or(self.context.get())
+                    .or(self.state.context.get())
                     .unwrap_or_default(),
                 "path_action",
                 carrier.len(),
@@ -638,12 +638,12 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.validation_graph_session(graph, || {
             let actual_context = self.current_context(graph);
-            let context = self.context.scoped(Some(actual_context));
-            let cutoff = self.cutoff.scoped(graph.nodes.len());
-            let old = self.completion_values.scoped(vec![]);
+            let context = self.state.context.scoped(Some(actual_context));
+            let cutoff = self.state.cutoff.scoped(graph.nodes.len());
+            let old = self.state.completion_values.scoped(vec![]);
             let result = (|| {
                 if let Some(case) = actual_context.case {
-                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 self.path_operation(id, values)
             })();
@@ -666,7 +666,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let Some(&id) = self.inputs.law().program.expressions.get(span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
@@ -688,14 +688,14 @@ impl Environment<'_> {
             return Err("元path式の結果値がPathでない".into());
         };
         if node.ty != NodeType::Value(Scalar::Path(path.clone()).ty())
-            || self.inputs.law().expr_type(id) != Some(&Scalar::Path(path.clone()).ty())
+            || self.indexes.inputs.law().expr_type(id) != Some(&Scalar::Path(path.clone()).ty())
             || !node.evidence.is_empty()
             || node.judgment.is_some()
             || !node.reasons.is_empty()
         {
             return Err("Pathの元型・証拠・理由が違う".into());
         }
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
             unreachable!()
         };
         if node.arguments.len() != args.len() + 2 {
@@ -761,18 +761,18 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if self.builtin(id)? != Some("path") {
             return Ok(None);
         }
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
             unreachable!()
         };
         let bindings = self.expression_bindings(graph, source)?;
         let Some(value) = self
-            .analyze_source(graph, self.inputs.law().exprs[args[0]].span, bindings)?
+            .analyze_source(graph, self.indexes.inputs.law().exprs[args[0]].span, bindings)?
             .known_value
         else {
             return Ok(None);
@@ -797,16 +797,16 @@ impl Environment<'_> {
             return Ok(None);
         };
         let span = *span;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
             return Ok(None);
         }
-        let previous = self.context.scoped(Some(graph.context_at(source.0)));
+        let previous = self.state.context.scoped(Some(graph.context_at(source.0)));
         let result = (|| {
             let bindings = self.expression_bindings(graph, source)?;
-            let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+            let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
                 unreachable!()
             };
             if children.len() != args.len() {

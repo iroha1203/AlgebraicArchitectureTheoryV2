@@ -27,13 +27,13 @@ impl Environment<'_> {
         run: impl FnOnce() -> Result<T, ValidationFailure>,
     ) -> Result<T, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.scoped(Some(context));
-            let old_cutoff = self.cutoff.scoped(limit);
-            let previous_universal = self.universal_context.scoped(None);
-            let previous_completion = self.completion_values.scoped(Vec::new());
+            let previous = self.state.context.scoped(Some(context));
+            let old_cutoff = self.state.cutoff.scoped(limit);
+            let previous_universal = self.state.universal_context.scoped(None);
+            let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
-                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 run()
             })();
@@ -86,10 +86,10 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        if !plan.dependent || *span != self.inputs.law().exprs[plan.body].span {
+        if !plan.dependent || *span != self.indexes.inputs.law().exprs[plan.body].span {
             return Ok(None);
         }
-        let limit = self.cutoff.get().min(graph.nodes.len());
+        let limit = self.state.cutoff.get().min(graph.nodes.len());
         self.dependent_completion_context(graph, context, limit, || {
             self.family_request(graph, source)?;
             self.validate_at(graph, graph.get(source)?, source.0)?;
@@ -120,17 +120,17 @@ impl Environment<'_> {
             return Ok(None);
         };
         let declaration =
-            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let mut enumeration = super::super::finite::Enumeration::default();
         match &argument.value {
             Selector::Subject { snapshot, subject } => {
-                let s = self.subject(snapshot, subject)?;
+                let s = self.indexes.subject(snapshot, subject)?;
                 enumeration.values.push(Scalar::Subject {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     entity: s.ty.to_string(),
                 });
-                enumeration.scope = self.scope(s, &declaration.reading, None)?;
+                enumeration.scope = self.indexes.scope(s, &declaration.reading, None)?;
                 enumeration.support.push(Fact {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
@@ -195,10 +195,10 @@ impl Environment<'_> {
             if p.name != *name || p.ty.erase() != value.ty() {
                 return Err("fiberの先行自由束縛型・順が違う".into());
             }
-            data::check(value, self.inputs.law(), &self.control)?;
+            data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         let fixed = self.dependent_fixed_value(graph, request, &p.name)?;
-        let reading = &self.inputs.law().declarations
+        let reading = &self.indexes.inputs.law().declarations
             [request.declaration().ok_or("元要求に宣言がない")?]
         .reading;
         let mut result = DependentStep {
@@ -275,8 +275,8 @@ impl Environment<'_> {
                     result.enumeration.values.clear();
                 }
             }
-        } else if let Some((enumeration, missing)) = if self.object_instance.is_some()
-            && !super::super::finite::supported(&p.ty.erase(), self.inputs.law(), &self.control)?
+        } else if let Some((enumeration, missing)) = if self.indexes.object_instance.is_some()
+            && !super::super::finite::supported(&p.ty.erase(), self.indexes.inputs.law(), &self.control)?
         {
             self.native_law_parameter_domain(p)?
         } else {
@@ -293,10 +293,10 @@ impl Environment<'_> {
             let missing = RefCell::new(Vec::new());
             result.enumeration = super::super::finite::values_with_owned(
                 &p.ty,
-                self.inputs.law(),
+                self.indexes.inputs.law(),
                 &self.control,
                 &mut |entity| {
-                    self.reference_roster(entity, &mut |i| observer.borrow_mut()("ref_roster", i))
+                    self.indexes.reference_roster(&self.control, entity, &mut |i| observer.borrow_mut()("ref_roster", i))
                 },
                 &mut |entity, owner_name| {
                     self.tick()?;
@@ -603,7 +603,7 @@ impl Environment<'_> {
         domains: &[NodeRef],
         plan: &Plan,
     ) -> Result<Scope, ValidationFailure> {
-        let layout = self.dependent_layout(graph, source, plan, self.cutoff.get(), true)?;
+        let layout = self.dependent_layout(graph, source, plan, self.state.cutoff.get(), true)?;
         if layout.domains.iter().map(|(_, r)| *r).collect::<Vec<_>>() != domains {
             return Err("依存族の実prefix域一覧が違う".into());
         }
@@ -660,7 +660,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         self.validate_at(graph, graph.get(source)?, source.0)?;
-        let d = &self.inputs.law().declarations[graph.requests[graph.context_at(source.0).request]
+        let d = &self.indexes.inputs.law().declarations[graph.requests[graph.context_at(source.0).request]
             .declaration()
             .ok_or("元要求に宣言がない")?];
         let context = self.current_context(graph);
@@ -829,7 +829,7 @@ impl Environment<'_> {
         scope: &Scope,
         support: &[Fact],
     ) -> Result<(), ValidationFailure> {
-        data::check(expected, self.inputs.law(), &self.control)?;
+        data::check(expected, self.indexes.inputs.law(), &self.control)?;
         if node.ty != NodeType::Value(expected.ty())
             || !matches!(&node.payload,Some(Payload::Scalar(value)) if value == expected)
             || node.scope != *scope
@@ -892,8 +892,8 @@ impl Environment<'_> {
             .iter()
             .position(|p| p.span == *span)
             .ok_or("未決ownerの元出現が違う")?;
-        let previous = self.context.scoped(Some(context));
-        let old_cutoff = self.cutoff.scoped(graph.nodes.len());
+        let previous = self.state.context.scoped(Some(context));
+        let old_cutoff = self.state.cutoff.scoped(graph.nodes.len());
         let result = (|| -> Result<(), ValidationFailure> {
             self.validate_at(graph, graph.get(source)?, source.0)?;
             let layout = self.dependent_layout(graph, source, plan, graph.nodes.len(), false)?;

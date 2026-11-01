@@ -45,7 +45,7 @@ fn try_expression(
     name: &str,
     guard: bool,
 ) -> Result<SourceValue, ValidationFailure> {
-    let d = &e.inputs.law().declarations[&format!("Selected.{name}")];
+    let d = &e.indexes.inputs.law().declarations[&format!("Selected.{name}")];
     let id = match &d.signature {
         Signature::View { body, .. } => *body,
         Signature::Law { body, guard: g, .. } => {
@@ -355,7 +355,7 @@ fn candidate_environment_cannot_validate_observation_graph_nodes() {
         &mut quiet(),
     )
     .unwrap();
-    assert!(candidate.completion_values.borrow().is_empty());
+    assert!(candidate.state.completion_values.borrow().is_empty());
     let mut g = Graph::new(&c);
     g.requests = r.prepared.requests().requests().to_vec();
     g.checked_answers = r.answers.iter().cloned().enumerate().collect();
@@ -454,7 +454,7 @@ fn subject_value(name: &str, entity: &str) -> Scalar {
     }
 }
 fn family(e: &Environment<'_>, owner: &str) -> Result<SourceValue, ValidationFailure> {
-    let Signature::View { body, .. } = e.inputs.law().declarations["Selected.family"].signature
+    let Signature::View { body, .. } = e.indexes.inputs.law().declarations["Selected.family"].signature
     else {
         panic!()
     };
@@ -687,7 +687,7 @@ fn owned_helper(
     owner: &str,
 ) -> Result<SourceValue, ValidationFailure> {
     let Signature::View { body, .. } =
-        e.inputs.law().declarations[&format!("Selected.{name}")].signature
+        e.indexes.inputs.law().declarations[&format!("Selected.{name}")].signature
     else {
         panic!()
     };

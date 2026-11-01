@@ -540,7 +540,7 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
     let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
-    assert_eq!(env.verified_polynomial_law_diagrams.borrow().len(), 1);
+    assert_eq!(env.results.verified_polynomial_law_diagrams.borrow().len(), 1);
     for mode in 0..4 {
         let mut forged = (**value).clone();
         let D::PolynomialLaw(data) = &mut forged.data else {
@@ -691,7 +691,7 @@ fn identical_polynomial_values_from_different_readings_keep_separate_origins_and
         };
         env.recheck_polynomial_law_diagram(&g, v).unwrap();
     }
-    assert_eq!(env.verified_polynomial_law_diagrams.borrow().len(), 2);
+    assert_eq!(env.results.verified_polynomial_law_diagrams.borrow().len(), 2);
     let Some(Payload::Construction(v)) = &g.nodes[results[0].rings[0].0].payload else {
         panic!("native")
     };

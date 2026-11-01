@@ -153,7 +153,7 @@ fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
         plan.recheck(&env, &g, a, &mut c),
         Err(ValidationFailure::Stop(_))
     ));
-    assert!(env.verified_polynomial_law_diagrams.borrow().is_empty());
+    assert!(env.results.verified_polynomial_law_diagrams.borrow().is_empty());
 }
 
 #[test]

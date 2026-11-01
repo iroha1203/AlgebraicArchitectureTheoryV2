@@ -94,7 +94,7 @@ impl Environment<'_> {
         value: NodeRef,
         span: (usize, usize),
     ) -> Result<(), ValidationFailure> {
-        if value.0 >= self.cutoff.get() {
+        if value.0 >= self.state.cutoff.get() {
             return Err("Answer束縛の値が既出prefixにない".into());
         }
         match self.answer_binding(graph, selector, span)? {
@@ -126,7 +126,7 @@ impl Environment<'_> {
     ) -> Result<&'g Answer, ValidationFailure> {
         self.tick()?;
         let originals = self
-            .original_requests
+            .indexes.original_requests
             .ok_or("Answer束縛の検査済み元Requestがない")?;
         if originals.len() != graph.requests.len() {
             return Err("Answer束縛の元Request列が違う".into());
@@ -181,11 +181,11 @@ impl Environment<'_> {
             self.tick()?;
         }
         let answer = answer.ok_or("元Answerが依存順に検査登録されていない")?;
-        if !self.answer_rechecks.borrow_mut().insert(producer) {
+        if !self.state.answer_rechecks.borrow_mut().insert(producer) {
             return Err("Answer束縛の元入力再検査が循環している".into());
         }
         let checked = self.validate_answer(graph, &graph.requests[producer], answer);
-        self.answer_rechecks.borrow_mut().remove(&producer);
+        self.state.answer_rechecks.borrow_mut().remove(&producer);
         checked?;
         Ok(answer)
     }

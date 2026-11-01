@@ -539,7 +539,7 @@ fn four_stops_keep_completed_body_option_and_whole_evaluation_prefix() {
                     full.nodes[i].wire(i, &full.nodes[..i])
                 );
             }
-            assert!(env.architecture_ref().is_none());
+            assert!(env.state.architecture_ref().is_none());
             assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
             assert_eq!(g.instances, &full.instances[..g.instances.len()]);
             frame_prefix |= g.nodes.len() > initial.nodes.len() && g.instances.is_empty();

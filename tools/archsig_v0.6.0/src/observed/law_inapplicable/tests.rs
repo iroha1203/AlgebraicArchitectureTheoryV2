@@ -437,7 +437,7 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         assert_eq!(g.nodes, &complete.nodes[..g.nodes.len()]);
         assert_eq!(g.contexts, &complete.contexts[..g.nodes.len()]);
         final_retained |= g.nodes.len() == complete.nodes.len();

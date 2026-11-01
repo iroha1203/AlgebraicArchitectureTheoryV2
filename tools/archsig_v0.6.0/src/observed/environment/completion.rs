@@ -130,7 +130,7 @@ impl Environment<'_> {
         &self,
         ty: &Type,
     ) -> Result<bool, ValidationFailure> {
-        super::super::finite::field_completion_supported(ty, self.inputs.law(), &self.control)
+        super::super::finite::field_completion_supported(ty, self.indexes.inputs.law(), &self.control)
     }
 
     fn completion_has_references(&self, types: &[Type]) -> Result<bool, ValidationFailure> {
@@ -143,7 +143,7 @@ impl Environment<'_> {
                 Type::Tuple(items) => pending.extend(items),
                 Type::Option(item) | Type::Set(item) | Type::List(item) => pending.push(item),
                 Type::Data(family) if seen.insert(family.as_str()) => {
-                    for ctor in data::constructors(self.inputs.law(), family)? {
+                    for ctor in data::constructors(self.indexes.inputs.law(), family)? {
                         self.tick()?;
                         pending.extend(&ctor.arguments);
                     }
@@ -167,15 +167,15 @@ impl Environment<'_> {
         }
         // 参照候補の可否は選択したfield以外の既知Map/ownerにも依存する。
         // その元登録族・原始事実と現在の由来を支持へ保持する。
-        for snapshot in &self.inputs.archmap().snapshots {
+        for snapshot in &self.indexes.inputs.archmap().snapshots {
             self.tick()?;
             all.scope.snapshots.insert(snapshot.id.clone());
             all.scope
                 .modes
-                .insert(self.origin_mode(&snapshot.origin)?.into());
+                .insert(self.indexes.origin_mode(&snapshot.origin)?.into());
             for subject in &snapshot.subjects {
                 self.tick()?;
-                all.scope.merge(&self.scope(subject, "", None)?);
+                all.scope.merge(&self.indexes.scope(subject, "", None)?);
                 all.scope.readings.remove("");
                 all.support.push(Fact {
                     snapshot: snapshot.id.clone(),
@@ -186,7 +186,7 @@ impl Environment<'_> {
                 for field in &subject.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &field.slot {
-                        all.scope.modes.insert(self.origin_mode(origin)?.into());
+                        all.scope.modes.insert(self.indexes.origin_mode(origin)?.into());
                         all.support.push(Fact {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
@@ -217,11 +217,11 @@ impl Environment<'_> {
         ValidationFailure,
     > {
         let [fact] = fields else { return Ok(None) };
-        if self.primitive_valuation.is_some() {
+        if self.indexes.primitive_valuation.is_some() {
             return Ok(None);
         }
-        let holder = self.subject(&fact.snapshot, &fact.subject)?;
-        let field = self.field(
+        let holder = self.indexes.subject(&fact.snapshot, &fact.subject)?;
+        let field = self.indexes.field(&self.state,
             &fact.snapshot,
             &fact.subject,
             fact.field.as_deref().ok_or("補完slotに元fieldがない")?,
@@ -235,7 +235,7 @@ impl Environment<'_> {
             let Type::Owned(entity, name) = ty else {
                 return Ok(None);
             };
-            let field = self.field(
+            let field = self.indexes.field(&self.state,
                 &fact.snapshot,
                 &fact.subject,
                 &format!("{}.{name}", holder.ty),
@@ -248,13 +248,12 @@ impl Environment<'_> {
                 return Ok(None);
             };
             // 一時的なcompletion値から、元の未観測所属を確定させない。
-            for member in self.subjects.values() {
+            for member in self.indexes.subjects.values() {
                 self.tick()?;
                 if member.snapshot != *snapshot || member.ty != *entity {
                     continue;
                 }
-                if self
-                    .field(snapshot, &member.id, &format!("{entity}.owner"))?
+                if self.indexes.field(&self.state, snapshot, &member.id, &format!("{entity}.owner"))?
                     .slot
                     == Slot::Missing
                 {
@@ -264,7 +263,7 @@ impl Environment<'_> {
             let owner = Scalar::Subject {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                entity: self.subject(snapshot, subject)?.ty.to_string(),
+                entity: self.indexes.subject(snapshot, subject)?.ty.to_string(),
             };
             let members = self.owned_members(entity, &owner, None, "", observer)?;
             if !members.missing.is_empty() {
@@ -288,10 +287,10 @@ impl Environment<'_> {
         let observer = RefCell::new(observer);
         let mut all = super::super::finite::field_candidates(
             candidate_type,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                self.reference_roster(entity, &mut |index| {
+                self.indexes.reference_roster(&self.control, entity, &mut |index| {
                     observer.borrow_mut()("ref_roster", index)
                 })
             },
@@ -313,7 +312,7 @@ impl Environment<'_> {
         let mut kept = Vec::new();
         for (index, value) in all.values.into_iter().enumerate() {
             self.tick()?;
-            let values = components(&value, &types, self.inputs.law(), &self.control)?;
+            let values = components(&value, &types, self.indexes.inputs.law(), &self.control)?;
             let mut pinned = Vec::new();
             for (fact, value) in fields.iter().zip(values) {
                 self.tick()?;
@@ -329,8 +328,8 @@ impl Environment<'_> {
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
-                &self.inputs.archmap().snapshots,
-                &self.inputs.law().definitions,
+                &self.indexes.inputs.archmap().snapshots,
+                &self.indexes.inputs.law().definitions,
                 &pinned,
                 &mut self.control.clone(),
             ) {
@@ -365,7 +364,7 @@ impl Environment<'_> {
         let mut types = Vec::new();
         for fact in fields {
             self.tick()?;
-            let field = self.field(
+            let field = self.indexes.field(&self.state,
                 &fact.snapshot,
                 &fact.subject,
                 fact.field.as_deref().ok_or("補完slotに元field名がない")?,
@@ -397,7 +396,7 @@ impl Environment<'_> {
         (
             graph as *const Graph as usize,
             self.current_context(graph),
-            self.cutoff.get().min(graph.nodes.len()),
+            self.state.cutoff.get().min(graph.nodes.len()),
             index,
         )
     }
@@ -412,17 +411,17 @@ impl Environment<'_> {
             let key = (
                 graph as *const Graph as usize,
                 self.current_context(graph),
-                self.cutoff.get().min(graph.nodes.len()),
+                self.state.cutoff.get().min(graph.nodes.len()),
                 roots.iter().map(|r| r.0).collect(),
             );
-            let cached = self.cache.borrow().completion_slots.get(&key).cloned();
+            let cached = self.results.cache.borrow().completion_slots.get(&key).cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_slots_uncached(graph, roots)?;
             self.tick()?;
-            self.cache
+            self.results.cache
                 .borrow_mut()
                 .completion_slots
                 .insert(key, value.clone());
@@ -519,7 +518,7 @@ impl Environment<'_> {
                 continue;
             };
             let context = graph.context_at(reference.0);
-            let previous = self.context.scoped(Some(context));
+            let previous = self.state.context.scoped(Some(context));
             let mut missing_span = *span;
             let analysis = (|| -> Result<Vec<Fact>, ValidationFailure> {
                 if let Some(fields) = self.owned_call_missing_slots(graph, reference)? {
@@ -581,7 +580,7 @@ impl Environment<'_> {
                 {
                     continue;
                 }
-                let field = self.field(
+                let field = self.indexes.field(&self.state,
                     &fact.snapshot,
                     &fact.subject,
                     fact.field.as_deref().ok_or("欠測slotにfieldがない")?,
@@ -641,14 +640,14 @@ impl Environment<'_> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let key = self.completion_memo_key(graph, reference.0);
-            let cached = self.cache.borrow().completion_seeds.get(&key).cloned();
+            let cached = self.results.cache.borrow().completion_seeds.get(&key).cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_seed_uncached(graph, reference)?;
             self.tick()?;
-            self.cache
+            self.results.cache
                 .borrow_mut()
                 .completion_seeds
                 .insert(key, value.clone());
@@ -685,7 +684,7 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("補完Seedの元Requestがない")?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -705,10 +704,10 @@ impl Environment<'_> {
             _ => return Err("補完Seedの問いと宣言が違う".into()),
         };
         let body_location = Location::Law {
-            span: self.inputs.law().exprs[body].span,
+            span: self.indexes.inputs.law().exprs[body].span,
         };
         let guard_location = guard.map(|id| Location::Law {
-            span: self.inputs.law().exprs[id].span,
+            span: self.indexes.inputs.law().exprs[id].span,
         });
         if location != &body_location && Some(location) != guard_location.as_ref() {
             return Err("補完Seedが元body/guard出現でない".into());
@@ -742,7 +741,7 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(declaration.reading.clone());
-        scope.merge(&self.architecture_scope());
+        scope.merge(&self.state.architecture_scope());
         let mut support = Vec::new();
         for (p, b) in fixed.iter().zip(bindings) {
             self.completion_seed_binding(graph, request, p, b, context, reference.0)?;
@@ -822,18 +821,18 @@ impl Environment<'_> {
             let key = (
                 graph as *const Graph as usize,
                 self.current_context(graph),
-                self.cutoff.get().min(graph.nodes.len()),
+                self.state.cutoff.get().min(graph.nodes.len()),
                 seed.reference.0,
                 domain.0,
             );
-            let cached = self.cache.borrow().completion_domains.get(&key).cloned();
+            let cached = self.results.cache.borrow().completion_domains.get(&key).cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_domain_uncached(graph, seed, domain)?;
             self.tick()?;
-            self.cache
+            self.results.cache
                 .borrow_mut()
                 .completion_domains
                 .insert(key, value.clone());
@@ -877,7 +876,7 @@ impl Environment<'_> {
             }
             let member = graph.get(*element)?;
             let value = graph.scalar(*element)?;
-            components(value, &seed.types, self.inputs.law(), &self.control)?;
+            components(value, &seed.types, self.indexes.inputs.law(), &self.control)?;
             if member.ty != NodeType::Value(ty.clone())
                 || !clean(member, "domain")
                 || !member.reasons.is_empty()
@@ -902,7 +901,7 @@ impl Environment<'_> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let record = graph.cases.get(case).ok_or("補完case索引がない")?;
-            let limit = self.cutoff.get().min(graph.nodes.len());
+            let limit = self.state.cutoff.get().min(graph.nodes.len());
             let prefix = std::iter::once(record.seed)
                 .chain([record.domain, record.member])
                 .chain(record.values.iter().copied())
@@ -914,19 +913,19 @@ impl Environment<'_> {
             }
             // assignmentの証拠はcase本体より前のcaller prefixだけに属する。
             // 深いcalleeのContext/全称Planを元の欠測slotへ逆流させない。
-            let old_context = self.context.scoped(Some(record.caller));
-            let old_limit = self.cutoff.scoped(prefix + 1);
-            let old_universal = self.universal_context.scoped(None);
+            let old_context = self.state.context.scoped(Some(record.caller));
+            let old_limit = self.state.cutoff.scoped(prefix + 1);
+            let old_universal = self.state.universal_context.scoped(None);
             let result = (|| {
                 let key = self.completion_memo_key(graph, case);
-                let cached = self.cache.borrow().completion_cases.get(&key).cloned();
+                let cached = self.results.cache.borrow().completion_cases.get(&key).cloned();
                 if let Some(value) = cached {
                     self.tick()?;
                     return Ok(value);
                 }
                 let value = self.completion_values_uncached(graph, case)?;
                 self.tick()?;
-                self.cache
+                self.results.cache
                     .borrow_mut()
                     .completion_cases
                     .insert(key, value.clone());
@@ -955,14 +954,14 @@ impl Environment<'_> {
         let values = components(
             graph.scalar(record.member)?,
             &seed.types,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
         )?;
         let mut result = Vec::new();
         for (i, (&reference, value)) in record.values.iter().zip(values).enumerate() {
             self.tick()?;
             let node = graph.get(reference)?;
-            data::check(graph.scalar(reference)?, self.inputs.law(), &self.control)?;
+            data::check(graph.scalar(reference)?, self.indexes.inputs.law(), &self.control)?;
             if reference.0 <= record.domain.0
                 || graph.context_at(reference.0) != seed.context
                 || node.ty != NodeType::Value(seed.types[i].clone())
@@ -1024,7 +1023,7 @@ impl Environment<'_> {
             .find(|b| b.name == parameter.name && b.ty == parameter.ty.erase())
             .ok_or("補完Seedに元固定Answer束縛がない")?;
         let request = self
-            .original_requests
+            .indexes.original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("補完固定Answerの元Requestがない")?;
         if self.object_view_is_bound(parameter) {
@@ -1071,7 +1070,7 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("補完caseの元Requestがない")?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1127,7 +1126,7 @@ impl Environment<'_> {
             let Selector::Subject { snapshot, subject } = &selected.value else {
                 return Err("補完case固定selectorがsubjectでない".into());
             };
-            let subject = self.subject(snapshot, subject)?;
+            let subject = self.indexes.subject(snapshot, subject)?;
             let expected = Scalar::Subject {
                 snapshot: subject.snapshot.clone(),
                 subject: subject.id.clone(),
@@ -1189,7 +1188,7 @@ impl Environment<'_> {
             seen.push(case.member);
             self.recheck_evaluation(graph, evaluation)?;
             let (expression, bindings, v) = self.evaluation(graph, evaluation)?;
-            let declaration = &self.inputs.law().declarations
+            let declaration = &self.indexes.inputs.law().declarations
                 [request.declaration().ok_or("元要求に宣言がない")?];
             let body = match &declaration.signature {
                 Signature::View { body, .. } | Signature::Law { body, .. } => *body,
@@ -1259,7 +1258,7 @@ impl Environment<'_> {
         }
         support.sort();
         support.dedup();
-        let outcome = value_equality::all_cases(&case_values, self.inputs.law(), &self.control)?;
+        let outcome = value_equality::all_cases(&case_values, self.indexes.inputs.law(), &self.control)?;
         if outcome.unsupported {
             reasons.push(value_comparison_reason(
                 request,
@@ -1327,7 +1326,7 @@ impl Environment<'_> {
     ) -> Result<(Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
         let request = &graph.requests[seed.context.request];
         let declaration =
-            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let body = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => return Err("補完producer宣言がない".into()),
@@ -1374,7 +1373,7 @@ impl Environment<'_> {
                     // 数値差などの合成式は、元bodyを返す実Sourceではない。
                     continue;
                 };
-                if *span == self.inputs.law().exprs[body].span {
+                if *span == self.indexes.inputs.law().exprs[body].span {
                     evaluations.push(NodeRef(i));
                 }
             }
@@ -1448,7 +1447,7 @@ impl Environment<'_> {
         {
             let seed = self.completion_seed(graph, *body)?;
             let request = &graph.requests[seed.context.request];
-            let d = &self.inputs.law().declarations
+            let d = &self.indexes.inputs.law().declarations
                 [request.declaration().ok_or("元要求に宣言がない")?];
             let Signature::Law {
                 role: r, guard: g, ..
@@ -1478,7 +1477,7 @@ impl Environment<'_> {
                     let s = self.completion_seed(graph, *actual)?;
                     if s.location
                         != (Location::Law {
-                            span: self.inputs.law().exprs[*id].span,
+                            span: self.indexes.inputs.law().exprs[*id].span,
                         })
                         || s.fields != seed.fields
                         || s.sources != seed.sources
@@ -1777,7 +1776,7 @@ impl Environment<'_> {
                 self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
             }
             Selector::Subject { snapshot, subject } => {
-                let actual = self.subject(snapshot, subject)?;
+                let actual = self.indexes.subject(snapshot, subject)?;
                 if graph.context_at(binding.value.0) != context
                     || graph.scalar(binding.value)?
                         != &(Scalar::Subject {
@@ -1828,7 +1827,7 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("Seed Requestがない")?;
         let d = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1850,12 +1849,12 @@ impl Environment<'_> {
         let is_guard = guard.is_some_and(|g| {
             *location
                 == (Location::Law {
-                    span: self.inputs.law().exprs[g].span,
+                    span: self.indexes.inputs.law().exprs[g].span,
                 })
         });
         if *location
             != (Location::Law {
-                span: self.inputs.law().exprs[body].span,
+                span: self.indexes.inputs.law().exprs[body].span,
             })
             && !is_guard
         {
@@ -1885,7 +1884,7 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
-        scope.merge(&self.architecture_scope());
+        scope.merge(&self.state.architecture_scope());
         for (p, b) in fixed.iter().zip(bindings) {
             self.completion_seed_binding(graph, request, p, b, context, limit)?;
             scope.merge(&graph.get(b.value)?.scope);
@@ -1983,7 +1982,7 @@ impl Environment<'_> {
             return Err("補完代入のScope/支持が違う".into());
         }
         if node.arguments == [seed.reference] {
-            components(value, &seed.types, self.inputs.law(), &self.control)?;
+            components(value, &seed.types, self.indexes.inputs.law(), &self.control)?;
             if self.completion_has_references(&seed.types)? {
                 let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
                 if !data::contains(&all.values, value, &self.control)? {
@@ -1995,7 +1994,7 @@ impl Environment<'_> {
             }
             return Ok(());
         }
-        data::check(value, self.inputs.law(), &self.control)?;
+        data::check(value, self.indexes.inputs.law(), &self.control)?;
         let [actual, domain, member, source] = node.arguments.as_slice() else {
             return Err("補完projectionの元辺が違う".into());
         };
@@ -2014,7 +2013,7 @@ impl Environment<'_> {
         let values = components(
             graph.scalar(*member)?,
             &seed.types,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
         )?;
         let mut matches = data::equal(value, &values[i], &self.control)?
@@ -2053,14 +2052,14 @@ impl Environment<'_> {
                     .0,
             ));
         }
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
-        Ok(match &self.inputs.law().exprs[id].kind {
+        Ok(match &self.indexes.inputs.law().exprs[id].kind {
             ExprKind::Dotted(parts) if parts.len() > 1 => {
                 Some((parts[0].span.0, parts[parts.len() - 2].span.1))
             }
-            ExprKind::Field { base, .. } => Some(self.inputs.law().exprs[*base].span),
+            ExprKind::Field { base, .. } => Some(self.indexes.inputs.law().exprs[*base].span),
             _ => None,
         })
     }
@@ -2149,7 +2148,7 @@ impl Environment<'_> {
         let Some(Payload::Scalar(value)) = &node.payload else {
             return Err("補完field値がない".into());
         };
-        data::check(value, self.inputs.law(), &self.control)?;
+        data::check(value, self.indexes.inputs.law(), &self.control)?;
         if *assignment != expected
             || fact.snapshot != *snapshot
             || fact.subject != *subject
@@ -2214,7 +2213,7 @@ impl Environment<'_> {
         if value_equality::equal(
             graph.scalar(left)?,
             graph.scalar(right)?,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
         )? != Some(false)
             || node.ty != NodeType::Evidence

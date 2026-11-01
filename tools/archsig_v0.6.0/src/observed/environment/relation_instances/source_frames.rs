@@ -13,10 +13,10 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         if let Some(value) = scalar {
-            data::check(value, self.inputs.law(), &self.control)?;
+            data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         if self
-            .verified_relation_families
+            .results.verified_relation_families
             .borrow()
             .iter()
             .any(|known| std::sync::Arc::ptr_eq(known, family))
@@ -25,10 +25,10 @@ impl Environment<'_> {
         }
         family
             .table
-            .recheck(self.inputs, &mut self.control.clone())
+            .recheck(self.indexes.inputs, &mut self.control.clone())
             .map_err(|f| f.cause)?;
         self.tick()?;
-        self.verified_relation_families
+        self.results.verified_relation_families
             .borrow_mut()
             .push(family.clone());
         Ok(())
@@ -55,7 +55,7 @@ impl Environment<'_> {
             .instances
             .get(index)
             .ok_or("relationの元instanceがない")?;
-        let limit = self.cutoff.get().min(graph.nodes.len());
+        let limit = self.state.cutoff.get().min(graph.nodes.len());
         for r in [record.source, record.domain, record.member] {
             if r.0 >= limit {
                 return Err("relation instanceが未出の元域を参照した".into());

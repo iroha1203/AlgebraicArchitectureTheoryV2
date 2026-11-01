@@ -157,7 +157,7 @@ pub(in crate::observed) fn instance_law<'a>(
             Some(plan)
         } else if guard.is_none()
             && matches!(
-                environment.inputs.law().exprs[*body].kind,
+                environment.indexes.inputs.law().exprs[*body].kind,
                 ExprKind::Quant { .. }
             ) {
             environment.universal_quantifier_plan(evaluator.graph, *body, &evaluator.bindings)?
@@ -452,7 +452,7 @@ impl Evaluator<'_, '_> {
             };
             match &argument.value {
                 Selector::Subject { snapshot, subject } => {
-                    let s = self.environment.subject(snapshot, subject)?;
+                    let s = self.environment.indexes.subject(snapshot, subject)?;
                     let scalar = Scalar::Subject {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -473,7 +473,7 @@ impl Evaluator<'_, '_> {
                         }
                         self.tick(Checkpoint::FiniteIteration)?;
                     }
-                    let scope = self.environment.scope(s, &self.declaration.reading, None)?;
+                    let scope = self.environment.indexes.scope(s, &self.declaration.reading, None)?;
                     self.base.merge(&scope);
                     let r = self.value(
                         scalar,
@@ -654,11 +654,11 @@ impl Evaluator<'_, '_> {
     /// 対応済みの式だけを子→親で構成する。各 field は直ちに個別 commit する。
     fn prepare_source(&mut self, id: ExprId) -> Result<SourceHandle, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            let expr = &self.environment.inputs.law().program.nodes[id];
+            let expr = &self.environment.indexes.inputs.law().program.nodes[id];
             let span = expr.span;
             let ty = self
                 .environment
-                .inputs
+                .indexes.inputs
                 .law()
                 .expr_type(id)
                 .ok_or_else(|| Failure::Internal("元式の型がない".into()))?
@@ -673,7 +673,7 @@ impl Evaluator<'_, '_> {
                 ExprKind::Int(_) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {}
                 ExprKind::Bool(_) => {}
                 ExprKind::Dotted(_)
-                    if data::expression(self.environment.inputs.law(), id, self.control)?
+                    if data::expression(self.environment.indexes.inputs.law(), id, self.control)?
                         .is_some() =>
                 {
                     self.environment
@@ -707,7 +707,7 @@ impl Evaluator<'_, '_> {
                         if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
                             && !data::supported(
                                 &prefix_ty,
-                                self.environment.inputs.law(),
+                                self.environment.indexes.inputs.law(),
                                 self.control,
                             )?
                         {
@@ -727,7 +727,7 @@ impl Evaluator<'_, '_> {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
                     if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !data::supported(&ty, self.environment.inputs.law(), self.control)?
+                        && !data::supported(&ty, self.environment.indexes.inputs.law(), self.control)?
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
@@ -739,7 +739,7 @@ impl Evaluator<'_, '_> {
                         .is_none()
                     {
                         let spec = super::quantifier::spec(
-                            self.environment.inputs.law(),
+                            self.environment.indexes.inputs.law(),
                             id,
                             self.control,
                         )?;
@@ -782,11 +782,11 @@ impl Evaluator<'_, '_> {
                 ExprKind::Binary { op, lhs, rhs } => {
                     let input_ty = self
                         .environment
-                        .inputs
+                        .indexes.inputs
                         .law()
                         .expr_type(*lhs)
                         .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                    if !supports_binary(*op, input_ty, self.environment.inputs.law(), self.control)?
+                    if !supports_binary(*op, input_ty, self.environment.indexes.inputs.law(), self.control)?
                     {
                         return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
@@ -949,7 +949,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression,
                 bindings: self.bindings.clone(),
                 parts: vec![Part {
@@ -1001,7 +1001,7 @@ impl Evaluator<'_, '_> {
                 return Ok(result.evaluated);
             }
             if matches!(
-                self.environment.inputs.law().exprs[id].kind,
+                self.environment.indexes.inputs.law().exprs[id].kind,
                 ExprKind::Quant { .. }
             ) && let Some(plan) =
                 self.environment
@@ -1015,7 +1015,7 @@ impl Evaluator<'_, '_> {
             self.prepare_source(id)?;
             #[cfg(test)]
             data::observe_actual(
-                self.environment.inputs.law().exprs[id].span,
+                self.environment.indexes.inputs.law().exprs[id].span,
                 self.graph.active,
                 "expression",
                 0,
@@ -1025,11 +1025,11 @@ impl Evaluator<'_, '_> {
             self.completed.insert(id, value.clone());
             #[cfg(test)]
             if matches!(
-                self.environment.inputs.law().exprs[id].kind,
+                self.environment.indexes.inputs.law().exprs[id].kind,
                 ExprKind::Call { .. }
             ) {
                 data::observe_actual(
-                    self.environment.inputs.law().exprs[id].span,
+                    self.environment.indexes.inputs.law().exprs[id].span,
                     self.graph.active,
                     "call_evaluation_complete",
                     0,
@@ -1040,11 +1040,11 @@ impl Evaluator<'_, '_> {
         })
     }
     fn eval_inner(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
-        let expr = &self.environment.inputs.law().program.nodes[id];
+        let expr = &self.environment.indexes.inputs.law().program.nodes[id];
         let span = expr.span;
         let ty = self
             .environment
-            .inputs
+            .indexes.inputs
             .law()
             .expr_type(id)
             .ok_or_else(|| Failure::Internal("原式の型がない".into()))?
@@ -1077,7 +1077,7 @@ impl Evaluator<'_, '_> {
                 self.finish(span, ty, Some(v), vec![], vec![], None, None, None)
             }
             ExprKind::Dotted(_)
-                if data::expression(self.environment.inputs.law(), id, self.control)?.is_some() =>
+                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?.is_some() =>
             {
                 self.composite(id, span, ty)
             }
@@ -1270,7 +1270,7 @@ impl Evaluator<'_, '_> {
                     condition.value.map(|r| self.graph.scalar(r)).transpose()?,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    self.environment.inputs.law(),
+                    self.environment.indexes.inputs.law(),
                     self.control,
                 )?;
                 self.lexical_result(span, ty, known, vec![condition, left, right])
@@ -1314,11 +1314,11 @@ impl Evaluator<'_, '_> {
             ExprKind::Binary { op, lhs, rhs } => {
                 let input_ty = self
                     .environment
-                    .inputs
+                    .indexes.inputs
                     .law()
                     .expr_type(*lhs)
                     .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                if !supports_binary(*op, input_ty, self.environment.inputs.law(), self.control)? {
+                if !supports_binary(*op, input_ty, self.environment.indexes.inputs.law(), self.control)? {
                     return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                 }
                 let left = self.eval(*lhs)?;
@@ -1351,7 +1351,7 @@ impl Evaluator<'_, '_> {
                     *op,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    self.environment.inputs.law(),
+                    self.environment.indexes.inputs.law(),
                     span,
                     self.control,
                 );
@@ -1493,7 +1493,7 @@ impl Evaluator<'_, '_> {
     }
 
     fn quantification(&mut self, id: usize) -> Result<Evaluated, Failure> {
-        let spec = super::quantifier::spec(self.environment.inputs.law(), id, self.control)?;
+        let spec = super::quantifier::spec(self.environment.indexes.inputs.law(), id, self.control)?;
         let input = spec.domain.map(|domain| self.eval(domain)).transpose()?;
         let source = self
             .sources
@@ -2251,18 +2251,18 @@ impl Evaluator<'_, '_> {
             return Err(self.unsupported(span, "原始 Ref 以外の field 読取り"));
         };
         let (snapshot, subject, entity) = (snapshot.clone(), subject.clone(), entity.clone());
-        let s = self.environment.subject(&snapshot, &subject)?;
+        let s = self.environment.indexes.subject(&snapshot, &subject)?;
         if s.ty != entity {
             return Err(Failure::Internal("field owner 型が合わない".into()));
         }
         if name.owner() != Some(entity.as_str()) {
             return Err(Failure::Internal("field owner 型が合わない".into()));
         }
-        let field = self.environment.field(&s.snapshot, &s.id, name)?;
+        let field = self.environment.indexes.field(&self.environment.state, &s.snapshot, &s.id, name)?;
         if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
             && !data::supported(
                 &field.ty.erase(),
-                self.environment.inputs.law(),
+                self.environment.indexes.inputs.law(),
                 self.control,
             )?
         {
@@ -2274,7 +2274,7 @@ impl Evaluator<'_, '_> {
             field: Some(field.name.clone()),
             atom: None,
         };
-        if let Some((assigned,_))=self.environment.architecture_value(&fact) {
+        if let Some((assigned,_))=self.environment.state.architecture_value(&fact) {
             return self.finish(span,field.ty.erase(),Some(assigned),vec![base],vec![],None,None,None);
         }
         if self.environment.completion_type_supported(&field.ty)?
@@ -2323,7 +2323,7 @@ impl Evaluator<'_, '_> {
                 let value = scalar_from(
                     value,
                     &field.ty,
-                    self.environment.inputs.law(),
+                    self.environment.indexes.inputs.law(),
                     self.control,
                 )?
                 .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
@@ -2332,8 +2332,7 @@ impl Evaluator<'_, '_> {
                 let mut scope = self.base.clone();
                 scope.merge(
                     &self
-                        .environment
-                        .scope(s, &self.declaration.reading, Some(origin))?,
+                        .environment.indexes.scope(s, &self.declaration.reading, Some(origin))?,
                 );
                 let mut arguments = vec![reference];
                 if chain {
@@ -2466,7 +2465,7 @@ impl Evaluator<'_, '_> {
         if self.request.kind == QuestionKind::Check
             && (guard.is_none() || self.graph.active.instance.is_none())
             && matches!(
-                self.environment.inputs.law().exprs[body].kind,
+                self.environment.indexes.inputs.law().exprs[body].kind,
                 ExprKind::Quant { .. }
             )
             && let Some(plan) =
@@ -2601,13 +2600,13 @@ impl Evaluator<'_, '_> {
             self.push_law_evaluation(Node {
                 ty: NodeType::Evaluation(Type::Bool),
                 payload: Some(Payload::Evaluation {
-                    environment: self.environment.architecture_ref(),
+                    environment: self.environment.state.architecture_ref(),
                     expression: law_expression,
                     bindings: self.bindings.clone(),
                     parts: vec![
                         Part {
                             location: Location::Law {
-                                span: self.environment.inputs.law().exprs
+                                span: self.environment.indexes.inputs.law().exprs
                                     [guard_id.expect("明示 guard")]
                                 .span,
                             },
@@ -2617,7 +2616,7 @@ impl Evaluator<'_, '_> {
                         },
                         Part {
                             location: Location::Law {
-                                span: self.environment.inputs.law().exprs[body_id].span,
+                                span: self.environment.indexes.inputs.law().exprs[body_id].span,
                             },
                             value: body.value,
                             residual: body.residual,
@@ -2960,7 +2959,7 @@ fn evaluate_observed_with_validator(
                 Err(failure) => (None, Some(failure)),
             };
             let mut base = base;
-            base.merge(&environment.architecture_scope());
+            base.merge(&environment.state.architecture_scope());
             let mut evaluator = Evaluator {
                 environment,
                 graph: &mut graph,

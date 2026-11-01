@@ -278,13 +278,13 @@ fn compute_inner(
                         .ok_or("非対応方程式の元Lawがない")?;
                     let origin = super::law_evaluation::origin(g, original.reference)?
                         .ok_or("非対応方程式の宣言がない")?;
-                    let declaration = env.inputs.law().declarations.get(&origin.declaration)
+                    let declaration = env.indexes.inputs.law().declarations.get(&origin.declaration)
                         .ok_or("非対応方程式の宣言が現在の入力にない")?;
                     let crate::law::model::Signature::Law { body, .. } = declaration.signature else {
                         return Err("非対応方程式の元宣言がLawでない".into());
                     };
                     let mut body = body;
-                    while let crate::law::ast::ExprKind::Group(inner) = env.inputs.law().exprs[body].kind {
+                    while let crate::law::ast::ExprKind::Group(inner) = env.indexes.inputs.law().exprs[body].kind {
                         tick(c)?;
                         body = inner;
                     }
@@ -292,11 +292,11 @@ fn compute_inner(
                         op: crate::law::ast::BinOp::Lt | crate::law::ast::BinOp::Le
                             | crate::law::ast::BinOp::Gt | crate::law::ast::BinOp::Ge,
                         lhs, rhs,
-                    } = env.inputs.law().exprs[body].kind else { continue; };
+                    } = env.indexes.inputs.law().exprs[body].kind else { continue; };
                     // Z上の順序述語は多項式等式でも全operand有限域でもない。
                     // 有限Bool域の欠測などを算法非対応へ変換しない。
-                    if env.inputs.law().expr_types[lhs].as_ref() != Some(&Type::Z)
-                        || env.inputs.law().expr_types[rhs].as_ref() != Some(&Type::Z) {
+                    if env.indexes.inputs.law().expr_types[lhs].as_ref() != Some(&Type::Z)
+                        || env.indexes.inputs.law().expr_types[rhs].as_ref() != Some(&Type::Z) {
                         continue;
                     }
                     let mut dependencies = vec![original.body];

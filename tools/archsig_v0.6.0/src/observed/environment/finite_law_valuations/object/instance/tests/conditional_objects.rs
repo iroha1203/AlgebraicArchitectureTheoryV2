@@ -67,8 +67,8 @@ fn native_observation_stays_undetermined_without_a_primitive_or_completion_assig
     let a = readings(&i);
     let selected = Selection::compute(&i, &a, object(&a, "root"), &mut quiet()).unwrap();
     let mut e = Environment::new(&i, &mut quiet()).unwrap();
-    e.object = Some(Arc::clone(&selected.domain));
-    *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+    e.indexes.object = Some(Arc::clone(&selected.domain));
+    *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let p = probe_mode(
         &e,
         &i.law().declarations["Selected.all"],
@@ -81,7 +81,7 @@ fn native_observation_stays_undetermined_without_a_primitive_or_completion_assig
     assert_eq!(p.row.predicate, None);
     assert!(p.row.scope.completions);
     assert!(
-        e.primitive_reads
+        e.state.primitive_reads
             .borrow()
             .as_ref()
             .unwrap()
@@ -95,9 +95,9 @@ fn existing_completion_assignments_still_include_and_exclude_the_conditional_mem
     let selected = Selection::compute(&i, &a, object(&a, "root"), &mut quiet()).unwrap();
     for (target, indicator) in [("root", 1u8), ("r2", 0)] {
         let mut e = Environment::new(&i, &mut quiet()).unwrap();
-        e.object = Some(Arc::clone(&selected.domain));
+        e.indexes.object = Some(Arc::clone(&selected.domain));
         // この内部probeはGraph証拠を生成しない。既存補完の値読取りを対照する。
-        *e.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value(target))];
+        *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value(target))];
         let p = probe_mode(
             &e,
             &i.law().declarations["Selected.all"],
@@ -119,8 +119,8 @@ fn primitive_valuation_has_the_same_precedence_as_other_primitive_reads() {
     let mut e =
         Environment::with_primitive_valuation(&i, &[(owner(), root_value("r2"))], &mut quiet())
             .unwrap();
-    e.object = Some(Arc::clone(&selected.domain));
-    *e.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value("root"))];
+    e.indexes.object = Some(Arc::clone(&selected.domain));
+    *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value("root"))];
     let p = probe_mode(
         &e,
         &i.law().declarations["Selected.all"],

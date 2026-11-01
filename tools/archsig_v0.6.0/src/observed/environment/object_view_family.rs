@@ -24,7 +24,7 @@ impl Environment<'_> {
         graph: &Graph,
         p: &crate::law::model::Param,
     ) -> Result<Option<Node>, ValidationFailure> {
-        let Some(assignment) = self.object_values else {
+        let Some(assignment) = self.indexes.object_values else {
             return Ok(None);
         };
         let request = graph
@@ -51,7 +51,7 @@ impl Environment<'_> {
         }))
     }
     pub(in crate::observed) fn object_view_is_bound(&self, p: &crate::law::model::Param) -> bool {
-        self.object_values
+        self.indexes.object_values
             .is_some_and(|assignment| assignment.parameter(p))
     }
     pub(super) fn object_view_binding_matches(
@@ -70,7 +70,7 @@ impl Environment<'_> {
         self.validate_at(graph, node, value.0)
     }
     pub(super) fn object_view_binding_count(&self) -> usize {
-        self.object_values.map_or(0, |values| values.count())
+        self.indexes.object_values.map_or(0, |values| values.count())
     }
     pub(super) fn finite_view_input(
         &self,
@@ -84,7 +84,7 @@ impl Environment<'_> {
                 location: Location::Law { span },
             },
             Some(Payload::Scalar(value)),
-        ) = (self.object_values, &node.rule, &node.payload)
+        ) = (self.indexes.object_values, &node.rule, &node.payload)
         else {
             return Ok(false);
         };
@@ -93,7 +93,7 @@ impl Environment<'_> {
             .get(self.current_context(graph).request)
             .ok_or("有限view producerのRequestがない")?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("有限viewの宣言がない")?)
@@ -110,7 +110,7 @@ impl Environment<'_> {
         {
             return Ok(false);
         }
-        data::check(value, self.inputs.law(), &self.control)?;
+        data::check(value, self.indexes.inputs.law(), &self.control)?;
         let expected = self
             .object_view_binding(graph, p)?
             .ok_or("有限view producerの値がない")?;
@@ -146,7 +146,7 @@ impl Environment<'_> {
         instance: &crate::construction::readings::ObjectInstance,
     ) -> Result<ParameterDomainReading, ValidationFailure> {
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(&instance.declaration().name)
@@ -154,10 +154,10 @@ impl Environment<'_> {
         let reads = RefCell::new(FiniteDomain::default());
         let enumeration = super::super::finite::values_if_finite_with_owned(
             &parameter.ty,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                let domain = self.reference_roster(entity, &mut |_| {})?;
+                let domain = self.indexes.reference_roster(&self.control, entity, &mut |_| {})?;
                 record_domain_reads(&reads, &domain, &[]);
                 Ok(domain)
             },
@@ -168,7 +168,7 @@ impl Environment<'_> {
                     .find(|b| b.parameter().name == owner)
                     .ok_or("複合Owned型の固定owner束縛がない")?;
                 let fact = binding.subject();
-                let subject = self.subject(&fact.snapshot, &fact.subject)?;
+                let subject = self.indexes.subject(&fact.snapshot, &fact.subject)?;
                 let owner = Scalar::Subject {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),

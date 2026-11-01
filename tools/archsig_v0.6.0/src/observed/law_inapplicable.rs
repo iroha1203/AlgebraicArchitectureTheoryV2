@@ -275,7 +275,7 @@ pub(super) fn check(
         bindings: row.bindings.clone(),
         location: Location::Law {
             span: env
-                .inputs
+                .indexes.inputs
                 .law()
                 .exprs
                 .get(row.body)

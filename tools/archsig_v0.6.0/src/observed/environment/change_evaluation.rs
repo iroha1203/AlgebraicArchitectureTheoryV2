@@ -66,19 +66,19 @@ pub(in crate::observed) fn evaluate_on_fields(
     fields: &[String],
 ) -> Result<Update, ValidationFailure> {
     let outer = environment
-        .missing_slot_reads
+        .state.missing_slot_reads
         .scoped(Some(BTreeSet::new()));
     let result = evaluate_inner(environment, declaration, bindings, fields);
     let missing = outer.restore()
         .ok_or("changeの不足位置収集がない")?;
-    if let Some(reads) = environment.missing_slot_reads.borrow_mut().as_mut() {
+    if let Some(reads) = environment.state.missing_slot_reads.borrow_mut().as_mut() {
         reads.extend(missing.iter().cloned());
     }
     let mut result = result?;
     if result.state == State::Undetermined {
         result.missing.extend(missing.into_iter().filter(|f| {
             !environment
-                .primitive_valuation
+                .indexes.primitive_valuation
                 .as_ref()
                 .is_some_and(|v| v.contains_key(f))
         }));
@@ -115,7 +115,7 @@ fn evaluate_inner(
         if parameter.name != *name || parameter.ty.erase() != value.ty() {
             return Err("changeの元parameter名または型が違う".into());
         }
-        data::check(value, environment.inputs.law(), &environment.control)?;
+        data::check(value, environment.indexes.inputs.law(), &environment.control)?;
         environment.owned_call_value_check(
             &parameter.ty,
             &super::super::term::affine::Value::Known(value.clone()),
@@ -166,7 +166,7 @@ fn evaluate_inner(
             .control
             .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
-        match &environment.inputs.law().exprs[current].kind {
+        match &environment.indexes.inputs.law().exprs[current].kind {
             ExprKind::Group(inner) => current = *inner,
             ExprKind::Let { name, value, body } => {
                 let value = environment.scoped_ast(*value, &vars, &base, &declaration.reading)?;
@@ -289,7 +289,7 @@ pub(in crate::observed) fn update_shape(
     let mut base = None;
     while let Some(id) = pending.pop() {
         environment.tick()?;
-        match &environment.inputs.law().exprs[id].kind {
+        match &environment.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(inner) => pending.push(*inner),
             ExprKind::Let { body, .. } => pending.push(*body),
             ExprKind::If {
@@ -354,7 +354,7 @@ pub(in crate::observed) fn candidates(
             for parameter in params.iter().skip(1) {
                 if !super::super::finite::completion_supported(
                     &parameter.ty,
-                    environment.inputs.law(),
+                    environment.indexes.inputs.law(),
                     &environment.control,
                 )? {
                     return Err(ValidationFailure::UnsupportedExpression {
@@ -369,7 +369,7 @@ pub(in crate::observed) fn candidates(
         }
         let domain = super::super::finite::values(
             &Type::Tuple(result.parameter_types.clone()),
-            environment.inputs.law(),
+            environment.indexes.inputs.law(),
             &environment.control,
             &mut |_| Err("change値parameterに参照域がある".into()),
             &mut |_| {},
@@ -523,11 +523,11 @@ pub(in crate::observed) fn solution_row(
         State::Undetermined => return Ok(row),
         State::Ready => {}
     }
-    let mut assignments = environment.primitive_valuation.clone().unwrap_or_default();
+    let mut assignments = environment.indexes.primitive_valuation.clone().unwrap_or_default();
     assignments.extend(candidate.update.values.iter().cloned());
     let assignments = assignments.into_iter().collect::<Vec<_>>();
     let Some(mut updated) = Environment::try_primitive_valuation(
-        environment.inputs,
+        environment.indexes.inputs,
         &assignments,
         &mut environment.control.clone(),
     )?
@@ -535,7 +535,7 @@ pub(in crate::observed) fn solution_row(
         row.member = Some(false);
         return Ok(row);
     };
-    updated.object = environment.object_domain();
+    updated.indexes.object = environment.object_domain();
     let mut member = Some(true);
     for (name, bindings) in requirements {
         environment
@@ -543,17 +543,17 @@ pub(in crate::observed) fn solution_row(
             .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
         let declaration = environment
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(name)
             .ok_or("候補の元Lawがない")?;
-        let outer = updated.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let outer = updated.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
         let evaluated =
             finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point);
         let missing = outer.restore()
             .ok_or("候補Lawの不足位置収集がない")?;
-        if let Some(reads) = updated.missing_slot_reads.borrow_mut().as_mut() {
+        if let Some(reads) = updated.state.missing_slot_reads.borrow_mut().as_mut() {
             reads.extend(missing.iter().cloned());
         }
         let law = evaluated?;

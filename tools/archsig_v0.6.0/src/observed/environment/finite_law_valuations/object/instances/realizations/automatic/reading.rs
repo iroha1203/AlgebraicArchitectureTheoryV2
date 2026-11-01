@@ -25,7 +25,7 @@ impl AutomaticLawValuations {
             return Err("有限Lawの実読取りと元三入力が違う".into());
         }
         let mut env = Environment::new(inputs, c)?;
-        *env.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+        *env.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut env, column)?;
         let row = self.value.probe_column(&env, column, 0)?.row;
         let holds = if row.condition_failed || row.condition_pending {
@@ -43,7 +43,7 @@ impl AutomaticLawValuations {
             row.predicate
         };
         let mut positions = vec![];
-        let tracked = env.primitive_reads.borrow();
+        let tracked = env.state.primitive_reads.borrow();
         for fact in tracked.as_ref().ok_or("有限Lawの実読取り記録がない")? {
             tick(c)?;
             positions.push(fact.clone());

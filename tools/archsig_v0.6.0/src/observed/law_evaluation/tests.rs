@@ -573,7 +573,7 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         assert!(g.nodes.len() >= initial.nodes.len() && g.nodes.len() <= complete.nodes.len());
         assert_eq!(g.nodes.len(), g.contexts.len());
         retained_complete_post_stop |= g.nodes.len() == complete.nodes.len();

@@ -70,7 +70,7 @@ pub(super) fn analyze(
     c: &mut Control,
 ) -> Result<(Option<Model>, Vec<Fact>), ValidationFailure> {
     let reading = witness.construction().reading();
-    let explicit = env.inputs.law().declarations.values().any(|d|
+    let explicit = env.indexes.inputs.law().declarations.values().any(|d|
         d.reading == reading && matches!(d.signature, Signature::Local { .. }));
     let change_name = request
         .arguments
@@ -80,7 +80,7 @@ pub(super) fn analyze(
             _ => None,
         })
         .ok_or("局所系のchange名がない")?;
-    let change = &env.inputs.law().declarations[change_name];
+    let change = &env.indexes.inputs.law().declarations[change_name];
     let Signature::Change { params, .. } = &change.signature else {
         return Err("局所changeの署名がない".into());
     };
@@ -88,7 +88,7 @@ pub(super) fn analyze(
         return Err(unsupported("局所changeと対象readingが異なる"));
     }
     let mut fixed =
-        Environment::try_primitive_valuation(env.inputs, &env.fixed_values(), c)?
+        Environment::try_primitive_valuation(env.indexes.inputs, &env.fixed_values(), c)?
             .ok_or("局所対象の値が不適合")?;
     fixed.select_local_object(witness, c)?;
     let mut missing = vec![];
@@ -141,7 +141,8 @@ pub(super) fn analyze(
     for slot in &slots {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
         let ty = fixed
-            .field(
+            .indexes.field(
+                &fixed.state,
                 &slot.snapshot,
                 &slot.subject,
                 slot.field.as_ref().ok_or("更新fieldがない")?,
@@ -164,12 +165,12 @@ pub(super) fn analyze(
                 missing.extend(row.update.missing.iter().cloned());
             }
             if values.is_empty() {
-                if let Some((_, value)) = fixed.architecture_value(slot) {
+                if let Some((_, value)) = fixed.state.architecture_value(slot) {
                     values.push(value.clone());
                 } else {
-                    let field = fixed.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("fieldがない")?)?;
+                    let field = fixed.indexes.field(&fixed.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("fieldがない")?)?;
                     if let crate::archmap::Slot::Known { value, .. } = &field.slot {
-                        values.push(crate::observed::environment::scalar_from(value, &ty, env.inputs.law(), c)?.ok_or("数値観測値がない")?);
+                        values.push(crate::observed::environment::scalar_from(value, &ty, env.indexes.inputs.law(), c)?.ok_or("数値観測値がない")?);
                     } else { missing.push(slot.clone()); }
                 }
             }
@@ -203,7 +204,7 @@ pub(super) fn analyze(
     let selected = request.declaration();
     let mut requirements = vec![];
     let mut universal = vec![];
-    for law in env.inputs.law().declarations.values().filter(|d| {
+    for law in env.indexes.inputs.law().declarations.values().filter(|d| {
         d.reading == reading
             && match selected {
                 Some(name) => d.name == name,
@@ -316,7 +317,7 @@ pub(super) fn analyze(
             .collect::<BTreeMap<_, _>>();
         assignments.extend(slots.iter().cloned().zip(point.iter().cloned()));
         let mut state = Environment::try_primitive_valuation(
-            env.inputs,
+            env.indexes.inputs,
             &assignments.into_iter().collect::<Vec<_>>(),
             c,
         )?
@@ -324,7 +325,7 @@ pub(super) fn analyze(
         state.select_local_object(witness, c)?;
         let mut row_truth = vec![];
         for (i, (name, bindings)) in requirements.iter().enumerate() {
-            let law = &env.inputs.law().declarations[name];
+            let law = &env.indexes.inputs.law().declarations[name];
             let (row, absent, evaluated) = state.local_point(law, bindings)?;
             missing.extend(absent);
             missing.extend(row.application_missing.iter().cloned());
@@ -361,7 +362,7 @@ pub(super) fn analyze(
                 add_subject(support, value, c)?;
             }
             for fact in row.support.iter().filter(|f| f.field.is_some()) {
-                let subject = env.subject(&fact.snapshot, &fact.subject)?;
+                let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
                 add_subject(
                     support,
                     &Scalar::Subject {
@@ -381,7 +382,7 @@ pub(super) fn analyze(
                 return Err("局所Lawの署名がない".into());
             };
             let parameters = params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name)).cloned().collect::<Vec<_>>();
-            let roots = match env.inputs.law().exprs[body].kind {
+            let roots = match env.indexes.inputs.law().exprs[body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
                     lhs,
@@ -392,7 +393,7 @@ pub(super) fn analyze(
             for read in evaluated.into_iter().filter(|n| {
                 roots.contains(&n.expression)
                     || guard == Some(n.expression)
-                    || match &env.inputs.law().exprs[n.expression].kind {
+                    || match &env.indexes.inputs.law().exprs[n.expression].kind {
                         ExprKind::Field { .. } => true,
                         ExprKind::Dotted(parts) => {
                             parts.len() > 1

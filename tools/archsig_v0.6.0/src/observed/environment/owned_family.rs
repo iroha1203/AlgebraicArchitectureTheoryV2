@@ -42,11 +42,11 @@ impl Environment<'_> {
         else {
             return Err("依存parameterのownerがRefでない".into());
         };
-        let owner_subject_input = self.subject(owner_snapshot, owner_subject)?;
+        let owner_subject_input = self.indexes.subject(owner_snapshot, owner_subject)?;
         result
             .enumeration
             .scope
-            .merge(&self.scope(owner_subject_input, reading, None)?);
+            .merge(&self.indexes.scope(owner_subject_input, reading, None)?);
         result.enumeration.support.push(Fact {
             snapshot: owner_snapshot.clone(),
             subject: owner_subject.clone(),
@@ -54,7 +54,7 @@ impl Environment<'_> {
             atom: None,
         });
         let field_name = format!("{entity}.owner");
-        for (snapshot_index, snapshot) in self.inputs.archmap().snapshots.iter().enumerate() {
+        for (snapshot_index, snapshot) in self.indexes.inputs.archmap().snapshots.iter().enumerate() {
             observer("dependent_snapshot", snapshot_index);
             self.tick()?;
             if snapshot.id != *owner_snapshot {
@@ -69,7 +69,7 @@ impl Environment<'_> {
                 .enumeration
                 .scope
                 .modes
-                .insert(self.origin_mode(&snapshot.origin)?.into());
+                .insert(self.indexes.origin_mode(&snapshot.origin)?.into());
             for (index, subject) in snapshot.subjects.iter().enumerate() {
                 observer("dependent_subject", index);
                 self.tick()?;
@@ -84,14 +84,14 @@ impl Environment<'_> {
                 result
                     .enumeration
                     .scope
-                    .merge(&self.scope(subject, reading, None)?);
+                    .merge(&self.indexes.scope(subject, reading, None)?);
                 result.enumeration.support.push(Fact {
                     snapshot: snapshot.id.clone(),
                     subject: subject.id.clone(),
                     field: None,
                     atom: None,
                 });
-                let field = self.field(&snapshot.id, &subject.id, &field_name)?;
+                let field = self.indexes.field(&self.state, &snapshot.id, &subject.id, &field_name)?;
                 let position = Fact {
                     snapshot: snapshot.id.clone(),
                     subject: subject.id.clone(),
@@ -99,7 +99,7 @@ impl Environment<'_> {
                     atom: None,
                 };
                 if let Some(assigned) = self
-                    .primitive_valuation
+                    .indexes.primitive_valuation
                     .as_ref()
                     .and_then(|values| values.get(&position))
                 {
@@ -130,7 +130,7 @@ impl Environment<'_> {
                         origin,
                         ..
                     } => {
-                        result.enumeration.scope.merge(&self.scope(
+                        result.enumeration.scope.merge(&self.indexes.scope(
                             subject,
                             reading,
                             Some(origin),
@@ -157,7 +157,7 @@ impl Environment<'_> {
                             .and_then(|values| values.get(&fact))
                             .cloned()
                             .or_else(|| {
-                                self.completion_values
+                                self.state.completion_values
                                     .borrow()
                                     .iter()
                                     .find(|(field, _, _)| field == &fact)
@@ -172,7 +172,7 @@ impl Environment<'_> {
                             else {
                                 return Err("所属補完の原始owner値がRefでない".into());
                             };
-                            let target = self.subject(target_snapshot, target_subject)?;
+                            let target = self.indexes.subject(target_snapshot, target_subject)?;
                             if target.ty != *target_entity || completed.ty() != field.ty {
                                 return Err("所属補完の原始owner型が元fieldと違う".into());
                             }
@@ -195,11 +195,11 @@ impl Environment<'_> {
             snapshot, subject, ..
         }) = fixed
         {
-            let s = self.subject(snapshot, subject)?;
+            let s = self.indexes.subject(snapshot, subject)?;
             result
                 .enumeration
                 .scope
-                .merge(&self.scope(s, reading, None)?);
+                .merge(&self.indexes.scope(s, reading, None)?);
             result.enumeration.support.push(Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
@@ -215,7 +215,7 @@ impl Environment<'_> {
         id: usize,
     ) -> Result<(String, usize), ValidationFailure> {
         self.tick()?;
-        let law = self.inputs.law();
+        let law = self.indexes.inputs.law();
         let expression = law.exprs.get(id).ok_or("元Family ASTがない")?;
         let ExprKind::Family { name, owner } = &expression.kind else {
             return Err("元式がFamilyでない".into());
@@ -265,17 +265,17 @@ impl Environment<'_> {
     ) -> Result<OwnedMembers, ValidationFailure> {
         let (entity, owner_id) = self.owned_expression_spec(id)?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
             .find(|d| {
-                d.span.0 <= self.inputs.law().exprs[id].span.0
-                    && self.inputs.law().exprs[id].span.1 <= d.span.1
+                d.span.0 <= self.indexes.inputs.law().exprs[id].span.0
+                    && self.indexes.inputs.law().exprs[id].span.1 <= d.span.1
             })
             .ok_or("元Familyの宣言がない")?;
         let mut result = if let Some(owner) = owner {
-            if Some(owner.ty()) != self.inputs.law().expr_type(owner_id).map(Type::erase) {
+            if Some(owner.ty()) != self.indexes.inputs.law().expr_type(owner_id).map(Type::erase) {
                 return Err("元Family owner値型が違う".into());
             }
             self.owned_members(&entity, owner, None, &declaration.reading, observer)?
@@ -308,13 +308,13 @@ impl Environment<'_> {
         }
         self.validation_graph_session(graph, || {
             let context = graph.active;
-            let previous = self.context.scoped(Some(context));
-            let old_cutoff = self.cutoff.scoped(graph.nodes.len());
-            let previous_universal = self.universal_context.scoped(None);
-            let previous_completion = self.completion_values.scoped(Vec::new());
+            let previous = self.state.context.scoped(Some(context));
+            let old_cutoff = self.state.cutoff.scoped(graph.nodes.len());
+            let previous_universal = self.state.universal_context.scoped(None);
+            let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
-                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 self.owned_expression_members(id, owner, observer)
             })();
@@ -333,16 +333,16 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
-        if !matches!(self.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
+        if !matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
             return Ok(None);
         }
         let (_, owner) = self.owned_expression_spec(id)?;
-        let value = self.analyze_source(graph, self.inputs.law().exprs[owner].span, bindings)?;
+        let value = self.analyze_source(graph, self.indexes.inputs.law().exprs[owner].span, bindings)?;
         // 元slotの読取りを収集する。現在caseの値で元Missing自体を消さない。
-        let previous = self.completion_values.scoped(Vec::new());
+        let previous = self.state.completion_values.scoped(Vec::new());
         let result = self
             .owned_expression_members(id, value.known_value.as_ref(), &mut |_, _| {})
             .map(|members| Some(members.missing));
@@ -398,7 +398,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let (_, owner_id) = self.owned_expression_spec(id)?;
-        let span = self.inputs.law().exprs[id].span;
+        let span = self.indexes.inputs.law().exprs[id].span;
         let context = self.current_context(graph);
         if source.0 >= limit
             || owner_evaluation.0 >= limit
@@ -421,7 +421,7 @@ impl Environment<'_> {
             || own.arguments != self.source_arguments(graph, span, bindings)?
             || own.ty
                 != NodeType::Expression(
-                    self.inputs
+                    self.indexes.inputs
                         .law()
                         .expr_type(id)
                         .ok_or("元Family型がない")?
@@ -432,11 +432,11 @@ impl Environment<'_> {
         }
         self.validate_at(graph, own, source.0)?;
         let (owner_source, owner_bindings, value) = self.evaluation(graph, owner_evaluation)?;
-        if self.expression_span(graph, owner_source)? != self.inputs.law().exprs[owner_id].span
+        if self.expression_span(graph, owner_source)? != self.indexes.inputs.law().exprs[owner_id].span
             || owner_bindings != bindings
             || graph.get(owner_evaluation)?.ty
                 != NodeType::Evaluation(
-                    self.inputs
+                    self.indexes.inputs
                         .law()
                         .expr_type(owner_id)
                         .ok_or("元owner型がない")?
@@ -447,7 +447,7 @@ impl Environment<'_> {
             return Err("Familyの実owner子評価が元AST・producer・束縛と違う".into());
         }
         let original_owner =
-            self.analyze_source(graph, self.inputs.law().exprs[owner_id].span, bindings)?;
+            self.analyze_source(graph, self.indexes.inputs.law().exprs[owner_id].span, bindings)?;
         let actual_owner = value.map(|r| graph.scalar(r)).transpose()?;
         if original_owner.known_value.as_ref() != actual_owner {
             return Err("Familyの実owner値が元入力と違う".into());
@@ -472,7 +472,7 @@ impl Environment<'_> {
         else {
             return Err("Family Scalarに元Law出現がない".into());
         };
-        let id = *self.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program.expressions
             .get(span)
             .ok_or("Family Scalarの元ASTがない")?;
         let [source, owner_evaluation] = node.arguments.as_slice() else {
@@ -484,7 +484,7 @@ impl Environment<'_> {
             || !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
             || node.ty
                 != NodeType::Value(
-                    self.inputs
+                    self.indexes.inputs
                         .law()
                         .expr_type(id)
                         .ok_or("元Family型がない")?
@@ -526,10 +526,10 @@ impl Environment<'_> {
             return Ok(false);
         };
         let span = *span;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(false);
         };
-        if !matches!(&self.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
+        if !matches!(&self.indexes.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
             return Ok(false);
         }
         if parts.len() != 1
@@ -552,7 +552,7 @@ impl Environment<'_> {
             || !matches!(node.rule, Rule::Construction("evaluation"))
             || node.ty
                 != NodeType::Evaluation(
-                    self.inputs
+                    self.indexes.inputs
                         .law()
                         .expr_type(id)
                         .ok_or("元Family型がない")?
@@ -609,7 +609,7 @@ impl Environment<'_> {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: request.kind,
                     operand_types: vec![
-                        self.inputs
+                        self.indexes.inputs
                             .law()
                             .expr_type(id)
                             .ok_or("元Family型がない")?

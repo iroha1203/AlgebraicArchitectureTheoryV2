@@ -283,17 +283,17 @@ fn compute(
         if let Some(name) = request.arguments.iter().find_map(|a| match (&*a.name, &a.value) {
             ("using", Selector::Declaration { name }) => Some(name), _ => None,
         }) {
-            if matches!(&env.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
+            if matches!(&env.indexes.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
                 return integer::compute(env, g, request, target, original, base, witness.clone(), c);
             }
-            if matches!(&env.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Q)) {
+            if matches!(&env.indexes.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Q)) {
                 return rational::compute(env, g, request, target, original, base, witness.clone(), c);
             }
             return finite::compute(env, g, request, target, original, base, witness.clone(), c);
         }
         let reading = witness.construction().reading();
         let locals = env
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
@@ -311,7 +311,7 @@ fn compute(
         let names = if let Some(name) = selected {
             vec![name.to_owned()]
         } else {
-            env.inputs
+            env.indexes.inputs
                 .law()
                 .declarations
                 .values()
@@ -336,12 +336,12 @@ fn compute(
         .into_iter()
         .map(|(f, _, v)| (f, v))
         .collect::<Vec<_>>();
-        let mut fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
+        let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
             .ok_or("固定Architectureの値が不適合")?;
         fixed.select_local_object(witness, c)?;
         let mut evaluations = vec![];
         for name in &names {
-            let declaration = &env.inputs.law().declarations[name];
+            let declaration = &env.indexes.inputs.law().declarations[name];
             if declaration.reading != reading {
                 return Err(unsupported("対象Architectureと局所Lawのreadingが異なる"));
             }
@@ -354,7 +354,7 @@ fn compute(
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
-            let mut reading_roots = match env.inputs.law().exprs[*body].kind {
+            let mut reading_roots = match env.indexes.inputs.law().exprs[*body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
                     lhs,
@@ -406,7 +406,7 @@ fn compute(
                     .collect::<Vec<_>>();
                 let (row, read_missing, evaluated) = fixed.local_point(declaration, &bindings)?;
                 for fact in &row.support {
-                    let subject = env.subject(&fact.snapshot, &fact.subject)?;
+                    let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
                     let v = Scalar::Subject {
                         snapshot: fact.snapshot.clone(),
                         subject: fact.subject.clone(),
@@ -647,7 +647,7 @@ fn compute(
                 .filter(|_| locals.is_empty())
                 .filter(|n| {
                     reading_roots.contains(&n.expression)
-                        || match &env.inputs.law().exprs[n.expression].kind {
+                        || match &env.indexes.inputs.law().exprs[n.expression].kind {
                             ExprKind::Field { .. } => true,
                             ExprKind::Dotted(parts) => {
                                 parts.len() > 1
@@ -1347,7 +1347,7 @@ pub(super) fn validate_origin(
     };
     if &d.source.request != request
         || !Arc::ptr_eq(w, &d.source.witness)
-        || v.witness.inputs().sources() != env.inputs.sources()
+        || v.witness.inputs().sources() != env.indexes.inputs.sources()
     {
         return Err("局所系が現在の入力・Requestに属さない".into());
     }
