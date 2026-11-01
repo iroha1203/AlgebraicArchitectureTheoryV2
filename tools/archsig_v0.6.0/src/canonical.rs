@@ -106,17 +106,37 @@ fn write_string_controlled<E: InputError>(
 ) -> Result<(), E> {
     E::checkpoint(control, point)?;
     out.push('"');
-    for (index, c) in s.chars().enumerate() {
-        if index % 256 == 0 {
-            E::checkpoint(control, point)?;
+    let bytes = s.as_bytes();
+    let (mut start, mut offset, mut scalars) = (0, 0, 0usize);
+    while offset < bytes.len() {
+        let byte = bytes[offset];
+        // A str is valid UTF-8: each non-continuation byte starts a scalar.
+        // Slice only at these boundaries; escapes are single-byte ASCII.
+        if byte & 0xc0 != 0x80 {
+            if scalars % 256 == 0 {
+                out.push_str(&s[start..offset]);
+                start = offset;
+                E::checkpoint(control, point)?;
+            }
+            scalars += 1;
+            if byte == b'"' || byte == b'\\' || byte < 0x20 {
+                out.push_str(&s[start..offset]);
+                match byte {
+                    b'"' => out.push_str("\\\""),
+                    b'\\' => out.push_str("\\\\"),
+                    _ => {
+                        const HEX: &[u8; 16] = b"0123456789abcdef";
+                        out.push_str("\\u00");
+                        out.push(HEX[(byte >> 4) as usize] as char);
+                        out.push(HEX[(byte & 15) as usize] as char);
+                    }
+                }
+                start = offset + 1;
+            }
         }
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
-            c => out.push(c),
-        }
+        offset += 1;
     }
+    out.push_str(&s[start..]);
     out.push('"');
     E::checkpoint(control, point)?;
     Ok(())
@@ -203,6 +223,18 @@ mod controlled_tests {
             .unwrap();
         assert_eq!(result, expected);
         assert_eq!(value.canonical(), expected);
+    }
+
+    #[test]
+    fn string_chunks_preserve_every_control_escape_at_utf8_boundaries() {
+        for count in [0, 255, 256, 257] {
+            let prefix = "雪".repeat(count);
+            for byte in 0u8..0x20 {
+                let text = format!("{prefix}{}\"\\終", char::from(byte));
+                let expected = format!("\"{prefix}\\u{byte:04x}\\\"\\\\終\"");
+                assert_eq!(Json::str(text).canonical(), expected);
+            }
+        }
     }
 
     #[test]

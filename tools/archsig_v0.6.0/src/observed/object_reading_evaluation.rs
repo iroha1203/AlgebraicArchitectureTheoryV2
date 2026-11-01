@@ -187,6 +187,14 @@ impl Data {
         if !metadata_matches(g, &o, &self.source.support, &self.source.scope)? {
             return Err("view frameの支持/Scopeが違う".into());
         }
+        self.checked_kind(g)
+    }
+
+    // この不変Graph借用内でsourceを一度検査する。子は同じArcであることを
+    // 下で確認してから辿るので、元式と支持全体の再構成・比較を繰り返さない。
+    fn checked_kind(&self, g: &Graph) -> Result<(), ValidationFailure> {
+        g.tick()?;
+        let o = &self.source.origin;
         match &self.kind {
             Kind::Parameter { position, value } => {
                 let b = o.bindings.get(*position).ok_or("view parameterがない")?;
@@ -213,7 +221,7 @@ impl Data {
                     {
                         return Err("view memberの束縛順/元由来が違う".into());
                     }
-                    d.checked(g)?;
+                    d.checked_kind(g)?;
                 }
             }
             Kind::Domain { member } => {
@@ -222,7 +230,7 @@ impl Data {
                 if !Arc::ptr_eq(&d.source, &self.source) || !matches!(d.kind, Kind::Member { .. }) {
                     return Err("viewの元memberが違う".into());
                 };
-                d.checked(g)?;
+                d.checked_kind(g)?;
             }
         };
         Ok(())
