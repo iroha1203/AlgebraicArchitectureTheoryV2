@@ -474,37 +474,7 @@ pub(super) fn retain(
     t: Arc<Table>,
     c: &mut Control,
 ) -> Result<Vec<Invariant>, ValidationFailure> {
-    tick(c)?;
-    if g.active != saved_context(g, t.architecture)? {
-        return Err("述語不変量の生成が元Request Contextでない".into());
-    }
-    let base = g.nodes.len();
-    earlier_table_references(&t, base, c)?;
-    t.recheck(env, g, c)?;
-    let (a, components, objects) = components(g, &t)?;
-    let (parts, outputs) = compute(env, g, &a, &t, components, &objects, base, c)?;
-    let source = Arc::new(Source {
-        architecture: a,
-        table: t,
-        components,
-        objects,
-        base,
-        parts,
-        outputs,
-    });
-    for (index, part) in source.parts.iter().enumerate() {
-        tick(c)?;
-        let data = Data {
-            source: source.clone(),
-            index,
-            part: part.clone(),
-        };
-        data.position(g.nodes.len())?;
-        // 元表を再検査し全Partを導出済み。封印済みnative値の通常転記を使う。
-        g.retain_native(data.node())?;
-    }
-    tick(c)?;
-    Ok(source.outputs.clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, t, c,))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -563,6 +533,70 @@ impl Environment<'_> {
         if parts != d.source.parts || outputs != d.source.outputs {
             return Err("述語不変量の元全Law/全域評価/metadataが違う".into());
         }
+        Ok(())
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        Arc<Table>,
+        &'a mut Control,
+    );
+    type Output = Vec<Invariant>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, t, c) = input;
+        tick(c)?;
+        if g.active != saved_context(g, t.architecture)? {
+            return Err("述語不変量の生成が元Request Contextでない".into());
+        }
+        let base = g.nodes.len();
+        earlier_table_references(&t, base, c)?;
+        t.recheck(env, g, c)?;
+        let (a, components, objects) = components(g, &t)?;
+        let (parts, outputs) = compute(env, g, &a, &t, components, &objects, base, c)?;
+        let source = Arc::new(Source {
+            architecture: a,
+            table: t,
+            components,
+            objects,
+            base,
+            parts,
+            outputs,
+        });
+        for (index, part) in source.parts.iter().enumerate() {
+            tick(c)?;
+            let data = Data {
+                source: source.clone(),
+                index,
+                part: part.clone(),
+            };
+            data.position(g.nodes.len())?;
+            // 元表を再検査し全Partを導出済み。封印済みnative値の通常転記を使う。
+            g.retain_native(data.node())?;
+        }
+        tick(c)?;
+        Ok(source.outputs.clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_predicate_invariant(graph, value, limit)?;
         Ok(())
     }
 }

@@ -753,57 +753,115 @@ pub(super) fn evaluate(
     expression: NodeRef,
     c: &mut Control,
 ) -> Result<Outcome, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(expression.0) {
-        return Err("有限view族の生成が元Request Contextでない".into());
-    }
-    env.recheck_node(g, g.get(expression)?, expression.0)?;
-    let (a, o, ps) = parameters(env, g, expression, c)?;
-    if pending_parameters(&ps) {
-        return Ok(Outcome::Pending(Pending {
-            expression,
-            parameters: ps,
-        }));
-    }
-    let source = Arc::new(build_source(g, a, o, ps, g.nodes.len(), c)?);
-    for index in 0..source.parts.len() {
-        tick(c)?;
-        let d = Data {
-            source: source.clone(),
-            index,
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c,))
+}
+
+impl Environment<'_> {
+    pub(super) fn recheck_view_family(
+        &self,
+        g: &Graph,
+        v: &ConstructionValue,
+        at: usize,
+    ) -> Result<(), ValidationFailure> {
+        let D::ViewFamily(d) = &v.data else {
+            return Ok(());
         };
-        d.position(g.nodes.len())?;
-        native::retain(
-            g,
-            ConstructionValue {
-                witness: Witness::Architecture(source.architecture.clone()),
-                data: D::ViewFamily(d),
-            },
-            vec![],
-            vec![],
-            None,
-        )?;
+        d.position(at)?;
+        d.recheck(self, g, &mut self.control.clone())?;
+        for r in d.arguments() {
+            self.tick()?;
+            if r.0 >= at {
+                return Err("有限view族の依存が既出でない".into());
+            }
+            self.validate_at(g, g.get(r)?, r.0)?;
+        }
+        Ok(())
     }
-    let mut evaluations = vec![];
-    for r in &source.rows {
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Outcome;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, expression, c) = input;
         tick(c)?;
-        let whole::Outcome::Evaluation { evaluation, .. } = whole::evaluate(env, g, *r, c)? else {
-            return Err("完全束縛view行にparameterが残る".into());
-        };
-        evaluations.push(evaluation);
+        if g.active != g.context_at(expression.0) {
+            return Err("有限view族の生成が元Request Contextでない".into());
+        }
+        env.recheck_node(g, g.get(expression)?, expression.0)?;
+        let (a, o, ps) = parameters(env, g, expression, c)?;
+        if pending_parameters(&ps) {
+            return Ok(Outcome::Pending(Pending {
+                expression,
+                parameters: ps,
+            }));
+        }
+        let source = Arc::new(build_source(g, a, o, ps, g.nodes.len(), c)?);
+        for index in 0..source.parts.len() {
+            tick(c)?;
+            let d = Data {
+                source: source.clone(),
+                index,
+            };
+            d.position(g.nodes.len())?;
+            native::retain(
+                g,
+                ConstructionValue {
+                    witness: Witness::Architecture(source.architecture.clone()),
+                    data: D::ViewFamily(d),
+                },
+                vec![],
+                vec![],
+                None,
+            )?;
+        }
+        let mut evaluations = vec![];
+        for r in &source.rows {
+            tick(c)?;
+            let whole::Outcome::Evaluation { evaluation, .. } = whole::evaluate(env, g, *r, c)?
+            else {
+                return Err("完全束縛view行にparameterが残る".into());
+            };
+            evaluations.push(evaluation);
+        }
+        tick(c)?;
+        let n = family_node(g, &source, &evaluations)?;
+        env.validate(g, &n)?;
+        let evaluation = g.push(n)?;
+        tick(c)?;
+        Ok(Outcome::Family(Family {
+            domains: source.domains.clone(),
+            product: source.product,
+            expressions: source.rows.clone(),
+            evaluations,
+            evaluation,
+        }))
     }
-    tick(c)?;
-    let n = family_node(g, &source, &evaluations)?;
-    env.validate(g, &n)?;
-    let evaluation = g.push(n)?;
-    tick(c)?;
-    Ok(Outcome::Family(Family {
-        domains: source.domains.clone(),
-        product: source.product,
-        expressions: source.rows.clone(),
-        evaluations,
-        evaluation,
-    }))
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_view_family(graph, value, limit)?;
+        Ok(())
+    }
 }
 #[cfg(test)]
 mod tests;

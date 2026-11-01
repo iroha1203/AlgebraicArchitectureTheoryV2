@@ -1056,72 +1056,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    if let Some(answer) = super::public_map::unavailable(env, g, request)? {
-        return Ok(answer);
-    }
-    let _selected = env.enter_architecture(g)?;
-    let mut architecture =
-        architecture_result::build(prepared.shared_inputs(), env, g, request, c)?;
-    let producer = architecture.reference;
-    if let Some(reference) = env.state.architecture_ref() {
-        architecture.reference = reference;
-    }
-    let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
-    let base = g.nodes.len();
-    let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
-    let source = Arc::new(Source {
-        architecture,
-        boundary,
-        base,
-        parts,
-        answer,
-    });
-    let points = verification.as_ref().and_then(|s| s.candidates.as_ref())
-        .map_or(0, |table| table.rows.len());
-    if points > 0 {
-        change_search::verify_point(env, &source.architecture.witness,
-            verification.as_ref().unwrap(), 0, c)?;
-    }
-    let existence = source.answer.outputs.get("existence")
-        .or_else(|| source.answer.outputs.get("proposition"))
-        .copied().or_else(|| source.answer.reasons.iter().find_map(|r|r.dependencies.first().copied())).ok_or("changeの存在命題・未決の元式がない")?;
-    for index in 0..source.parts.len() {
-        // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
-
-        let part = &source.parts[index];
-        native::retain(
-            g,
-            ConstructionValue {
-                witness: Witness::Architecture(source.architecture.witness.clone()),
-                data: D::Change(Data {
-                    source: source.clone(),
-                    index,
-                }),
-            },
-            part.reasons.clone(),
-            part.evidence.clone(),
-            part.judgment.clone(),
-        )?;
-        if base + index == existence.0 && points > 1 {
-            for point in 1..points {
-                if let Err(failure) = change_search::verify_point(env,
-                    &source.architecture.witness, verification.as_ref().unwrap(), point, c) {
-                    let ValidationFailure::Stop(reason) = failure else {return Err(failure)};
-                    let mut answer = source.answer.clone();
-                    if request.kind == QuestionKind::Repair {
-                        answer.status = Decision::Undetermined;
-                        answer.claim = None;
-                        answer.outputs.retain(|key, _| matches!(key.as_str(), "domain" | "solutions" | "existence"));
-                        answer.reasons.clear();
-                        answer.scope = source.parts[existence.0 - base].scope.clone();
-                    }
-                    answer.reasons.push(Reason::stopped(&request.id, reason));
-                    return Ok(answer);
-                }
-            }
-        }
-    }
-    Ok(source.answer.clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c,))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -1321,4 +1256,131 @@ pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact
             ));
         }
         Ok(result)
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a PreparedObserved,
+        &'a Environment<'input>,
+        &'a mut Graph,
+        &'a Request,
+        &'a mut Control,
+    );
+    type Output = Answer;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (prepared, env, g, request, c) = input;
+        if let Some(answer) = super::public_map::unavailable(env, g, request)? {
+            return Ok(answer);
+        }
+        let _selected = env.enter_architecture(g)?;
+        let mut architecture =
+            architecture_result::build(prepared.shared_inputs(), env, g, request, c)?;
+        let producer = architecture.reference;
+        if let Some(reference) = env.state.architecture_ref() {
+            architecture.reference = reference;
+        }
+        let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
+        let base = g.nodes.len();
+        let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
+        let source = Arc::new(Source {
+            architecture,
+            boundary,
+            base,
+            parts,
+            answer,
+        });
+        let points = verification
+            .as_ref()
+            .and_then(|s| s.candidates.as_ref())
+            .map_or(0, |table| table.rows.len());
+        if points > 0 {
+            change_search::verify_point(
+                env,
+                &source.architecture.witness,
+                verification.as_ref().unwrap(),
+                0,
+                c,
+            )?;
+        }
+        let existence = source
+            .answer
+            .outputs
+            .get("existence")
+            .or_else(|| source.answer.outputs.get("proposition"))
+            .copied()
+            .or_else(|| {
+                source
+                    .answer
+                    .reasons
+                    .iter()
+                    .find_map(|r| r.dependencies.first().copied())
+            })
+            .ok_or("changeの存在命題・未決の元式がない")?;
+        for index in 0..source.parts.len() {
+            // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
+
+            let part = &source.parts[index];
+            native::retain(
+                g,
+                ConstructionValue {
+                    witness: Witness::Architecture(source.architecture.witness.clone()),
+                    data: D::Change(Data {
+                        source: source.clone(),
+                        index,
+                    }),
+                },
+                part.reasons.clone(),
+                part.evidence.clone(),
+                part.judgment.clone(),
+            )?;
+            if base + index == existence.0 && points > 1 {
+                for point in 1..points {
+                    if let Err(failure) = change_search::verify_point(
+                        env,
+                        &source.architecture.witness,
+                        verification.as_ref().unwrap(),
+                        point,
+                        c,
+                    ) {
+                        let ValidationFailure::Stop(reason) = failure else {
+                            return Err(failure);
+                        };
+                        let mut answer = source.answer.clone();
+                        if request.kind == QuestionKind::Repair {
+                            answer.status = Decision::Undetermined;
+                            answer.claim = None;
+                            answer.outputs.retain(|key, _| {
+                                matches!(key.as_str(), "domain" | "solutions" | "existence")
+                            });
+                            answer.reasons.clear();
+                            answer.scope = source.parts[existence.0 - base].scope.clone();
+                        }
+                        answer.reasons.push(Reason::stopped(&request.id, reason));
+                        return Ok(answer);
+                    }
+                }
+            }
+        }
+        Ok(source.answer.clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_change(graph, value, limit)?;
+        Ok(())
+    }
 }

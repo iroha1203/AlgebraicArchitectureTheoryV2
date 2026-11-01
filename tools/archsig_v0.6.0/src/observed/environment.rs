@@ -505,7 +505,7 @@ impl<'a> Environment<'a> {
         .map(|domain| domain.map(|domain| domain.enumeration))
     }
 
-    fn tick(&self) -> Result<(), ValidationFailure> {
+    pub(super) fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
             .clone()
             .checkpoint(Checkpoint::FiniteIteration)
@@ -548,7 +548,7 @@ impl<'a> Environment<'a> {
     }
     // 新規挿入時は prefix の長さ、既存 node はその挿入位置を cutoff とする。
     // 後からできた Source/Evaluation を、先行 Scalar の証人にしない。
-    fn validate_at(
+    pub(super) fn validate_at(
         &self,
         graph: &Graph,
         node: &Node,
@@ -597,73 +597,7 @@ impl<'a> Environment<'a> {
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
                     super::public_compare::validate_position(value, limit)?;
-                    if let super::construction_result::ConstructionData::FiniteLaw(data) =
-                        &value.data
-                    {
-                        data.position(limit)?;
-                    }
-                    self.recheck_finite_law_diagram(graph, value)?;
-                    if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
-                    self.recheck_polynomial_law_diagram(graph, value)?;
-                    self.recheck_law_frame(graph, value)?;
-                    self.recheck_object_reading_frame(graph, value, limit)?;
-                    self.recheck_view_family(graph, value, limit)?;
-                    if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
-                        data.position(limit)?;
-                        graph.expect(data.template, &NodeType::LawInstance)?;
-                        graph.expect(
-                            data.architecture,
-                            &NodeType::Construction(
-                                super::construction_result::ConstructionType::Architecture,
-                            ),
-                        )?;
-                        self.recheck_law_evaluation_inputs(
-                            graph,
-                            data.template,
-                            data.architecture,
-                        )?;
-                    }
-                    if let super::construction_result::ConstructionData::LawInstantiation(data) = &value.data {
-                        data.position(limit)?;
-                        graph.expect(data.base, &NodeType::LawInstance)?;
-                        graph.expect(data.template, &NodeType::LawInstance)?;
-                        graph.expect(data.architecture, &NodeType::Construction(super::construction_result::ConstructionType::Architecture))?;
-                        self.recheck_law_evaluation_inputs(graph, data.base, data.architecture)?;
-                        self.recheck_law_evaluation_inputs(
-                            graph,
-                            data.template,
-                            data.architecture,
-                        )?;
-                    }
-                    if let super::construction_result::ConstructionData::OutsideLaw(data) = &value.data {
-                        data.position(limit)?;
-                        graph.expect(data.origin, &NodeType::LawInstance)?;
-                        graph.expect(data.architecture, &NodeType::Construction(super::construction_result::ConstructionType::Architecture))?;
-                        self.recheck_law_evaluation_inputs(graph, data.origin, data.architecture)?;
-                    }
-                    if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
-                    self.recheck_object_components(graph, value)?;
-                    if let super::construction_result::ConstructionData::InternalArrows(data) =
-                        &value.data
-                    {
-                        data.position(limit)?;
-                    }
-                    self.recheck_internal_arrows(graph, value)?;
-                    if let super::construction_result::ConstructionData::EquationFamily(data) = &value.data { data.position(limit)?; }
-                    self.recheck_equation_family(graph, value)?;
-                    if let super::construction_result::ConstructionData::CircuitPattern(data) =
-                        &value.data
-                    {
-                        data.position(limit)?;
-                    }
-                    self.recheck_circuit_pattern(graph, value)?;
-                    self.recheck_build(graph, value, limit)?;
-                    self.recheck_object_map(graph, value, limit)?;
-                    self.recheck_change(graph, value, limit)?;
-                    self.recheck_quotient(graph, value, limit)?;
-                    self.recheck_local(graph, value, limit)?;
-                    self.recheck_view_invariant(graph, value, limit)?;
-                    self.recheck_predicate_invariant(graph, value, limit)?;
+                    super::result_kind::recheck(self, graph, value, limit)?;
                     for r in node
                         .arguments
                         .iter()

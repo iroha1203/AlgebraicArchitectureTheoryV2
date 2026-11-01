@@ -818,53 +818,7 @@ pub(super) fn retain(
     reference: NodeRef,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    tick(c)?;
-    if graph.active != graph.context_at(reference.0) {
-        return Err("対象族の生成が元ArchitectureのRequestでない".into());
-    }
-    let (a, root, laws) = origin(graph, reference)?;
-    if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
-        return Err("対象族の元三入力が違う".into());
-    }
-    let Some((parts, outputs)) = plan(&inputs, a, reference, root, laws, graph.nodes.len(), c)?
-    else {
-        return Ok(None);
-    };
-    let n = graph.get(reference)?;
-    let (support, scope) = reading_metadata(&inputs, a, n, c)?;
-    let source = Arc::new(Source {
-        inputs,
-        architecture: a.clone(),
-        reference,
-        root,
-        laws: laws.to_vec(),
-        base: graph.nodes.len(),
-        parts,
-        outputs,
-        support,
-        scope,
-    });
-    source.recheck(graph, &source.inputs, &source.architecture, c)?;
-    for index in 0..source.parts.len() {
-        tick(c)?;
-        let data = Data {
-            source: source.clone(),
-            index,
-        };
-        data.position(graph.nodes.len())?;
-        native::retain(
-            graph,
-            ConstructionValue {
-                witness: Witness::Architecture(source.architecture.clone()),
-                data: D::ObjectComponents(data),
-            },
-            vec![],
-            vec![],
-            None,
-        )?;
-    }
-    tick(c)?;
-    Ok(Some(source.outputs.clone()))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, c,))
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let part = data
@@ -940,8 +894,7 @@ impl Environment<'_> {
             return Err("対象族のconsumerが元Architectureと違う".into());
         }
         if self
-            .results.verified_object_components
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::object_component_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -949,9 +902,85 @@ impl Environment<'_> {
         }
         data.source
             .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
-        self.results.verified_object_components
-            .borrow_mut()
-            .push(data.source.clone());
+        self.results.remember(data.source.clone());
+        Ok(())
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (&'a mut Graph, Arc<CheckedInputs>, NodeRef, &'a mut Control);
+    type Output = Option<Diagram>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (graph, inputs, reference, c) = input;
+        tick(c)?;
+        if graph.active != graph.context_at(reference.0) {
+            return Err("対象族の生成が元ArchitectureのRequestでない".into());
+        }
+        let (a, root, laws) = origin(graph, reference)?;
+        if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
+            return Err("対象族の元三入力が違う".into());
+        }
+        let Some((parts, outputs)) = plan(&inputs, a, reference, root, laws, graph.nodes.len(), c)?
+        else {
+            return Ok(None);
+        };
+        let n = graph.get(reference)?;
+        let (support, scope) = reading_metadata(&inputs, a, n, c)?;
+        let source = Arc::new(Source {
+            inputs,
+            architecture: a.clone(),
+            reference,
+            root,
+            laws: laws.to_vec(),
+            base: graph.nodes.len(),
+            parts,
+            outputs,
+            support,
+            scope,
+        });
+        source.recheck(graph, &source.inputs, &source.architecture, c)?;
+        for index in 0..source.parts.len() {
+            tick(c)?;
+            let data = Data {
+                source: source.clone(),
+                index,
+            };
+            data.position(graph.nodes.len())?;
+            native::retain(
+                graph,
+                ConstructionValue {
+                    witness: Witness::Architecture(source.architecture.clone()),
+                    data: D::ObjectComponents(data),
+                },
+                vec![],
+                vec![],
+                None,
+            )?;
+        }
+        tick(c)?;
+        Ok(Some(source.outputs.clone()))
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_object_components(graph, value)?;
         Ok(())
     }
 }

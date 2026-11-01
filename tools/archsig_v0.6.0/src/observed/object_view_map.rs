@@ -35,7 +35,7 @@ fn transport(
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("view保存cacheの元入力が違う".into());
     }
-    for e in env.results.verified_view_transports.borrow().iter() {
+    for e in env.results.verified::<crate::observed::object_view_map::KernelCacheEntry>().iter() {
         tick(c)?;
         if e.object == object && e.instance == instance && e.declarations == *d {
             return Ok(e.result.clone());
@@ -49,9 +49,7 @@ fn transport(
                     .unwrap_or_else(|| format!("view保存検査: {e:?}").into())
             })?,
     );
-    env.results.verified_view_transports
-        .borrow_mut()
-        .push(KernelCacheEntry {
+    env.results.remember(KernelCacheEntry {
             declarations: d.clone(),
             object,
             instance,

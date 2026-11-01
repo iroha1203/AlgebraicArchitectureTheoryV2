@@ -4,6 +4,7 @@ mod affine;
 mod architecture_result;
 mod call;
 mod circuit_pattern;
+mod result_kind;
 pub(crate) mod construction_result;
 mod data;
 mod environment;

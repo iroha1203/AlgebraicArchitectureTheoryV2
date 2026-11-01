@@ -372,55 +372,7 @@ pub(super) fn retain(
     components: Option<NodeRef>,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(reference.0) {
-        return Err("query patternの生成が元ArchitectureのRequestでない".into());
-    }
-    let Some((a, components, objects, universe, support, scope)) =
-        original(env, g, &inputs, reference, components, c)?
-    else {
-        return Ok(None);
-    };
-    let base = g.nodes.len();
-    let Some((profiles, outputs, diagram)) = compute(&inputs, &a, &objects, universe, base, c)?
-    else {
-        return Ok(None);
-    };
-    let source = Arc::new(Source {
-        inputs,
-        architecture: a.clone(),
-        reference,
-        components,
-        objects,
-        universe,
-        profiles,
-        base,
-        outputs,
-        diagram,
-        support,
-        scope,
-    });
-    for (index, output) in source.outputs.iter().enumerate() {
-        tick(c)?;
-        let data = Data {
-            source: source.clone(),
-            index,
-            output: output.clone(),
-        };
-        data.position(g.nodes.len())?;
-        native::retain(
-            g,
-            ConstructionValue {
-                witness: Witness::Architecture(a.clone()),
-                data: D::CircuitPattern(data),
-            },
-            vec![],
-            vec![],
-            None,
-        )?;
-    }
-    tick(c)?;
-    Ok(Some(source.diagram.clone()))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, inputs, reference, components, c,))
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {
@@ -487,8 +439,7 @@ impl Environment<'_> {
             return Err("query patternの元入力/全対象/共通U/metadataが違う".into());
         }
         if self
-            .results.verified_circuit_patterns
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::circuit_pattern::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -511,10 +462,95 @@ impl Environment<'_> {
         {
             return Err("query patternが元の全query/対象identity/対応と違う".into());
         }
-        self.results.verified_circuit_patterns
-            .borrow_mut()
-            .push(data.source.clone());
+        self.results.remember(data.source.clone());
         tick(&mut c)
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        Arc<CheckedInputs>,
+        NodeRef,
+        Option<NodeRef>,
+        &'a mut Control,
+    );
+    type Output = Option<Diagram>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, inputs, reference, components, c) = input;
+        tick(c)?;
+        if g.active != g.context_at(reference.0) {
+            return Err("query patternの生成が元ArchitectureのRequestでない".into());
+        }
+        let Some((a, components, objects, universe, support, scope)) =
+            original(env, g, &inputs, reference, components, c)?
+        else {
+            return Ok(None);
+        };
+        let base = g.nodes.len();
+        let Some((profiles, outputs, diagram)) = compute(&inputs, &a, &objects, universe, base, c)?
+        else {
+            return Ok(None);
+        };
+        let source = Arc::new(Source {
+            inputs,
+            architecture: a.clone(),
+            reference,
+            components,
+            objects,
+            universe,
+            profiles,
+            base,
+            outputs,
+            diagram,
+            support,
+            scope,
+        });
+        for (index, output) in source.outputs.iter().enumerate() {
+            tick(c)?;
+            let data = Data {
+                source: source.clone(),
+                index,
+                output: output.clone(),
+            };
+            data.position(g.nodes.len())?;
+            native::retain(
+                g,
+                ConstructionValue {
+                    witness: Witness::Architecture(a.clone()),
+                    data: D::CircuitPattern(data),
+                },
+                vec![],
+                vec![],
+                None,
+            )?;
+        }
+        tick(c)?;
+        Ok(Some(source.diagram.clone()))
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::CircuitPattern(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_circuit_pattern(graph, value)?;
+        Ok(())
     }
 }
 #[cfg(test)]

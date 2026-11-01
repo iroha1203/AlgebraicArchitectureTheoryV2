@@ -214,36 +214,7 @@ pub(super) fn retain(
     layout: Arc<Layout>,
     c: &mut Control,
 ) -> Result<Option<NodeRef>, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(layout.data.architecture.0) {
-        return Err("EquationFamilyの生成が元ArchitectureのRequestでない".into());
-    }
-    layout.recheck(env, g, c)?;
-    let Some(output) = output(&layout, c)? else {
-        return Ok(None);
-    };
-    let a = native::architecture_origin(g, layout.data.architecture, 0)?.clone();
-    let source = Arc::new(Source {
-        layout,
-        architecture: a.clone(),
-        position: g.nodes.len(),
-        output: output.clone(),
-    });
-    let data = Data { source, output };
-    data.position(g.nodes.len())?;
-    tick(c)?;
-    let reference = native::retain(
-        g,
-        ConstructionValue {
-            witness: Witness::Architecture(a),
-            data: D::EquationFamily(data),
-        },
-        vec![],
-        vec![],
-        None,
-    )?;
-    tick(c)?;
-    Ok(Some(reference))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, layout, c,))
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {
@@ -296,6 +267,72 @@ impl Environment<'_> {
             return Err("EquationFamilyの全添字/対象/座標が元計画と違う".into());
         }
         tick(&mut c)
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        Arc<Layout>,
+        &'a mut Control,
+    );
+    type Output = Option<NodeRef>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, layout, c) = input;
+        tick(c)?;
+        if g.active != g.context_at(layout.data.architecture.0) {
+            return Err("EquationFamilyの生成が元ArchitectureのRequestでない".into());
+        }
+        layout.recheck(env, g, c)?;
+        let Some(output) = output(&layout, c)? else {
+            return Ok(None);
+        };
+        let a = native::architecture_origin(g, layout.data.architecture, 0)?.clone();
+        let source = Arc::new(Source {
+            layout,
+            architecture: a.clone(),
+            position: g.nodes.len(),
+            output: output.clone(),
+        });
+        let data = Data { source, output };
+        data.position(g.nodes.len())?;
+        tick(c)?;
+        let reference = native::retain(
+            g,
+            ConstructionValue {
+                witness: Witness::Architecture(a),
+                data: D::EquationFamily(data),
+            },
+            vec![],
+            vec![],
+            None,
+        )?;
+        tick(c)?;
+        Ok(Some(reference))
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::EquationFamily(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_equation_family(graph, value)?;
+        Ok(())
     }
 }
 #[cfg(test)]

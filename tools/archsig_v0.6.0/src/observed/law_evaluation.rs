@@ -498,65 +498,129 @@ pub(super) fn evaluate(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<Evaluations, ValidationFailure> {
-    let Some((row, instance)) = prepare_instance(env, graph, origin, architecture, c)? else {
-        return Ok(Evaluations {
-            origin,
-            guard: None,
-            body: None,
-            instance: None,
-        });
-    };
-    let caller = graph.instances[instance].caller;
-    let request = graph
-        .requests
-        .get(caller.request)
-        .ok_or("元Law評価Requestがない")?
-        .clone();
-    let declaration = env
-        .indexes.inputs
-        .law()
-        .declarations
-        .get(&row.declaration)
-        .ok_or("元Law宣言がない")?;
-    let guard = row
-        .guard
-        .map(|id| {
-            super::evaluate::instance_expression(env, graph, c, &request, declaration, instance, id)
-                .map(|e| e.evaluation)
-        })
-        .transpose()?;
-    let guard_false = guard
-        .map(|r| -> Result<bool, ValidationFailure> {
-            let Some(Payload::Evaluation { value, .. }) = &graph.get(r)?.payload else {
-                return Err("元guardが通常評価でない".into());
-            };
-            Ok(graph.boolean(*value)? == Some(false))
-        })
-        .transpose()?
-        .unwrap_or(false);
-    let body = if row.body_allowed && !guard_false {
-        Some(
-            super::evaluate::instance_expression(
-                env,
-                graph,
-                c,
-                &request,
-                declaration,
-                instance,
-                row.body,
-            )?
-            .evaluation,
-        )
-    } else {
-        None
-    };
-    Ok(Evaluations {
-        origin,
-        guard,
-        body,
-        instance: Some(instance),
-    })
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, origin, architecture, c,))
 }
 
+
+impl Environment<'_> {
+    pub(super) fn recheck_law_frame(
+        &self,
+        graph: &Graph,
+        value: &ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        let D::LawFrame(data) = &value.data else {
+            return Ok(());
+        };
+        for r in [data.origin, data.architecture] {
+            self.tick()?;
+            self.validate_at(graph, graph.get(r)?, r.0)?;
+        }
+        for r in data.arguments() {
+            self.validate_at(graph, graph.get(r)?, r.0)?;
+        }
+        Ok(())
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Evaluations;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, graph, origin, architecture, c) = input;
+        let Some((row, instance)) = prepare_instance(env, graph, origin, architecture, c)? else {
+            return Ok(Evaluations {
+                origin,
+                guard: None,
+                body: None,
+                instance: None,
+            });
+        };
+        let caller = graph.instances[instance].caller;
+        let request = graph
+            .requests
+            .get(caller.request)
+            .ok_or("元Law評価Requestがない")?
+            .clone();
+        let declaration = env
+            .indexes
+            .inputs
+            .law()
+            .declarations
+            .get(&row.declaration)
+            .ok_or("元Law宣言がない")?;
+        let guard = row
+            .guard
+            .map(|id| {
+                super::evaluate::instance_expression(
+                    env,
+                    graph,
+                    c,
+                    &request,
+                    declaration,
+                    instance,
+                    id,
+                )
+                .map(|e| e.evaluation)
+            })
+            .transpose()?;
+        let guard_false = guard
+            .map(|r| -> Result<bool, ValidationFailure> {
+                let Some(Payload::Evaluation { value, .. }) = &graph.get(r)?.payload else {
+                    return Err("元guardが通常評価でない".into());
+                };
+                Ok(graph.boolean(*value)? == Some(false))
+            })
+            .transpose()?
+            .unwrap_or(false);
+        let body = if row.body_allowed && !guard_false {
+            Some(
+                super::evaluate::instance_expression(
+                    env,
+                    graph,
+                    c,
+                    &request,
+                    declaration,
+                    instance,
+                    row.body,
+                )?
+                .evaluation,
+            )
+        } else {
+            None
+        };
+        Ok(Evaluations {
+            origin,
+            guard,
+            body,
+            instance: Some(instance),
+        })
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        _limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_law_frame(graph, value)?;
+        Ok(())
+    }
+}
 #[cfg(test)]
 mod tests;

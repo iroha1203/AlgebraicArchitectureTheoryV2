@@ -1963,54 +1963,8 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     let Some(Payload::Construction(v)) = &node.payload else {
         return Err("native構成のpayloadがない".into());
     };
-    if let ConstructionData::LawFamily(data) = &v.data {
-        return super::law_family::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::LawInstantiation(data) = &v.data {
-        return super::law_instantiation::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::OutsideLaw(data) = &v.data {
-        return super::law_inapplicable::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::ObjectReadingFrame(data) = &v.data {
-        return super::object_reading_evaluation::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::ViewFamily(data) = &v.data {
-        return super::view_family::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::ViewInvariant(data) = &v.data {
-        return super::view_invariant::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::PredicateInvariant(data) = &v.data {
-        return super::predicate_invariant::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::LawFrame(data) = &v.data {
-        return super::law_evaluation::validate_node(graph, node, v, data);
-    }
-    if let ConstructionData::FiniteLaw(data) = &v.data {
-        return super::finite_law_diagram::validate_node(graph, node, data);
-    }
-    if let ConstructionData::PolynomialLaw(data) = &v.data {
-        return super::polynomial_law_diagram::validate_node(graph, node, data);
-    }
-    if let ConstructionData::ObjectComponents(data) = &v.data {
-        return super::object_component_diagram::validate_node(graph, node, data);
-    }
-    if let ConstructionData::InternalArrows(data) = &v.data {
-        return super::internal_arrow_diagram::validate_node(graph, node, data);
-    }
-    if let ConstructionData::EquationFamily(data) = &v.data {
-        return super::equation_family::validate_node(graph, node, data);
-    }
-    if let ConstructionData::CircuitPattern(data) = &v.data {
-        return super::circuit_pattern::validate_node(graph, node, data);
-    }
-    if let ConstructionData::Change(data) = &v.data { return super::change_result::validate_node(graph, node, v, data); }
-    if let ConstructionData::Quotient(data) = &v.data { return super::quotient_result::validate_node(graph, node, v, data); }
-    if let ConstructionData::Local(data) = &v.data { return super::local_result::validate_node(graph, node, v, data); }
-    if let ConstructionData::ObjectMap(data) = &v.data { return super::object_map_result::validate_node(graph, node, v, data); }
-    if let ConstructionData::Build(data) = &v.data {
-        return super::build_result::validate_node(graph, node, v, data);
+    if let Some(result) = super::result_kind::validate(graph, node, v) {
+        return result;
     }
     if let Witness::Compose(c) = &v.witness {
         return super::public_compose::validate_node(graph, node, c);

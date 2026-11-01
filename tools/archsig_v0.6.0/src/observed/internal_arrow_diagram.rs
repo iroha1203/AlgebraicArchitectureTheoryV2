@@ -640,60 +640,7 @@ pub(super) fn retain(
     universe: NodeRef,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    tick(c)?;
-    if graph.active != graph.context_at(reference.0) {
-        return Err("内部arrowの生成が元Requestでない".into());
-    }
-    let (a, current) = original(graph, reference, objects.base, universe)?;
-    if &current != objects
-        || inputs.sources() != Witness::Architecture(a.clone()).inputs().sources()
-    {
-        return Err("内部arrowの入力または対象表が違う".into());
-    }
-    let core = internal_arrows(
-        &inputs,
-        a.construction().reading(),
-        &a.construction().root().snapshot,
-        &a.construction().root().subject,
-        c,
-    )
-    .map_err(|e| failure(e.cause().clone()))?;
-    let (parts, outputs) = plan(&inputs, a, objects, universe, graph.nodes.len(), &core, c)?;
-    let (support, scope) = metadata(graph, reference, universe)?;
-    let source = Arc::new(Source {
-        inputs,
-        architecture: a.clone(),
-        reference,
-        objects: objects.clone(),
-        universe,
-        base: graph.nodes.len(),
-        core,
-        parts,
-        outputs,
-        support,
-        scope,
-    });
-    source.recheck(graph, &source.inputs, &source.architecture, c)?;
-    for index in 0..source.parts.len() {
-        tick(c)?;
-        let data = Data {
-            source: source.clone(),
-            index,
-        };
-        data.position(graph.nodes.len())?;
-        native::retain(
-            graph,
-            ConstructionValue {
-                witness: Witness::Architecture(source.architecture.clone()),
-                data: D::InternalArrows(data),
-            },
-            vec![],
-            vec![],
-            None,
-        )?;
-    }
-    tick(c)?;
-    Ok(source.outputs.clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, objects, universe, c,))
 }
 pub(super) fn validate_node(
     graph: &Graph,
@@ -780,8 +727,7 @@ impl Environment<'_> {
             return Err("内部arrowのconsumerが元対象族と違う".into());
         }
         if self
-            .results.verified_internal_arrows
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::internal_arrow_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -789,9 +735,99 @@ impl Environment<'_> {
         }
         data.source
             .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
-        self.results.verified_internal_arrows
-            .borrow_mut()
-            .push(data.source.clone());
+        self.results.remember(data.source.clone());
+        Ok(())
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a mut Graph,
+        Arc<CheckedInputs>,
+        NodeRef,
+        &'a Objects,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Diagram;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (graph, inputs, reference, objects, universe, c) = input;
+        tick(c)?;
+        if graph.active != graph.context_at(reference.0) {
+            return Err("内部arrowの生成が元Requestでない".into());
+        }
+        let (a, current) = original(graph, reference, objects.base, universe)?;
+        if &current != objects
+            || inputs.sources() != Witness::Architecture(a.clone()).inputs().sources()
+        {
+            return Err("内部arrowの入力または対象表が違う".into());
+        }
+        let core = internal_arrows(
+            &inputs,
+            a.construction().reading(),
+            &a.construction().root().snapshot,
+            &a.construction().root().subject,
+            c,
+        )
+        .map_err(|e| failure(e.cause().clone()))?;
+        let (parts, outputs) = plan(&inputs, a, objects, universe, graph.nodes.len(), &core, c)?;
+        let (support, scope) = metadata(graph, reference, universe)?;
+        let source = Arc::new(Source {
+            inputs,
+            architecture: a.clone(),
+            reference,
+            objects: objects.clone(),
+            universe,
+            base: graph.nodes.len(),
+            core,
+            parts,
+            outputs,
+            support,
+            scope,
+        });
+        source.recheck(graph, &source.inputs, &source.architecture, c)?;
+        for index in 0..source.parts.len() {
+            tick(c)?;
+            let data = Data {
+                source: source.clone(),
+                index,
+            };
+            data.position(graph.nodes.len())?;
+            native::retain(
+                graph,
+                ConstructionValue {
+                    witness: Witness::Architecture(source.architecture.clone()),
+                    data: D::InternalArrows(data),
+                },
+                vec![],
+                vec![],
+                None,
+            )?;
+        }
+        tick(c)?;
+        Ok(source.outputs.clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_internal_arrows(graph, value)?;
         Ok(())
     }
 }

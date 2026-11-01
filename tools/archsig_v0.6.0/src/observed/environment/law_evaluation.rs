@@ -1,7 +1,6 @@
 //! native Law行の固定値・未束縛数値parameter・対象を通常Sourceの再検査へ渡す。
 use super::*;
 use crate::observed::{
-    construction_result::{ConstructionData as D, ConstructionValue},
     law_evaluation as frames,
 };
 impl Environment<'_> {
@@ -156,23 +155,7 @@ impl Environment<'_> {
             scalar_scope: None,
         }))
     }
-    pub(super) fn recheck_law_frame(
-        &self,
-        graph: &Graph,
-        value: &ConstructionValue,
-    ) -> Result<(), ValidationFailure> {
-        let D::LawFrame(data) = &value.data else {
-            return Ok(());
-        };
-        for r in [data.origin, data.architecture] {
-            self.tick()?;
-            self.validate_at(graph, graph.get(r)?, r.0)?;
-        }
-        for r in data.arguments() {
-            self.validate_at(graph, graph.get(r)?, r.0)?;
-        }
-        Ok(())
-    }
+
     pub(super) fn native_law_source_inputs(
         &self,
         graph: &Graph,

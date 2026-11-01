@@ -177,95 +177,7 @@ pub(super) fn extend(
     configuration: Answer,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    let candidate = configuration.outputs["candidate"];
-    let Some(Payload::Construction(v)) = &g.get(candidate)?.payload else {
-        return Err("元候補がnativeでない".into());
-    };
-    let Witness::Map(witness) = &v.witness else {
-        return Err("元候補のmap検査がない".into());
-    };
-    let witness = witness.clone();
-    let D::MapCandidate { source, target, .. } = v.data else {
-        return Err("元候補が未完成".into());
-    };
-    let declarations = construction::declaration_correspondence(
-        prepared.inputs(),
-        witness.result().map().ok_or("元ConfigurationMapがない")?,
-        c,
-    )
-    .map_err(failure)?;
-    let mut pending = None;
-    let algebras = if declarations.all_signatures_compatible() {
-        // local/change/relationには句の移送配送も必要。
-        // 未対応の宣言を空の表へ置換しない。
-        if declarations
-            .candidates()
-            .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change" | "relation"))
-        {
-            return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
-        }
-        let mut result = vec![];
-        let mut claims = vec![];
-        for endpoint in [source, target] {
-            tick(c)?;
-            let architecture = retained_architecture(g, endpoint)?;
-            let plan = build_plan::prepare_architecture(
-                env,
-                g,
-                prepared.shared_inputs(),
-                architecture,
-                c,
-            )?;
-            let answer = build_result::retain_plan(env, g, plan, request, c)?;
-            claims.push(answer.claim.ok_or("端点buildの構成命題がない")?);
-            result.extend(answer.outputs.get("algebra").copied());
-        }
-        if result.len() == 2 {
-            Some([result[0], result[1]])
-        } else {
-            pending = Some([claims[0], claims[1]]);
-            None
-        }
-    } else {
-        None
-    };
-    let mut dependencies = configuration.outputs.values().copied().collect::<Vec<_>>();
-    dependencies.extend(algebras.into_iter().flatten());
-    dependencies.extend(pending.into_iter().flatten());
-    let boundary = Boundary::capture(env, g, source, dependencies, c)?;
-    let base = g.nodes.len();
-    let (parts, answer) = compute(
-        env, g, &witness, &configuration, algebras, pending, base, request, c,
-    )?;
-    let source = Arc::new(Source {
-        witness,
-        configuration,
-        algebras,
-        pending,
-        boundary,
-        base,
-        parts,
-        answer,
-    });
-    for index in 0..source.parts.len() {
-        tick(c)?;
-        let p = &source.parts[index];
-        native::retain(
-            g,
-            ConstructionValue {
-                witness: Witness::Map(source.witness.clone()),
-                data: D::ObjectMap(Data {
-                    source: source.clone(),
-                    index,
-                }),
-            },
-            p.reasons.clone(),
-            p.evidence.clone(),
-            p.judgment.clone(),
-        )?;
-    }
-    Ok(source.answer.clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, configuration, c,))
 }
 
 fn compute(
@@ -888,4 +800,137 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         return Err("map構成反証の由来が違う".into());
     }
     validate_node(g, n, v, d)
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a PreparedObserved,
+        &'a Environment<'input>,
+        &'a mut Graph,
+        &'a Request,
+        Answer,
+        &'a mut Control,
+    );
+    type Output = Answer;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (prepared, env, g, request, configuration, c) = input;
+        let candidate = configuration.outputs["candidate"];
+        let Some(Payload::Construction(v)) = &g.get(candidate)?.payload else {
+            return Err("元候補がnativeでない".into());
+        };
+        let Witness::Map(witness) = &v.witness else {
+            return Err("元候補のmap検査がない".into());
+        };
+        let witness = witness.clone();
+        let D::MapCandidate { source, target, .. } = v.data else {
+            return Err("元候補が未完成".into());
+        };
+        let declarations = construction::declaration_correspondence(
+            prepared.inputs(),
+            witness.result().map().ok_or("元ConfigurationMapがない")?,
+            c,
+        )
+        .map_err(failure)?;
+        let mut pending = None;
+        let algebras = if declarations.all_signatures_compatible() {
+            // local/change/relationには句の移送配送も必要。
+            // 未対応の宣言を空の表へ置換しない。
+            if declarations.candidates().iter().any(|d| {
+                !matches!(
+                    d.source().kind,
+                    "law" | "view" | "local" | "change" | "relation"
+                )
+            }) {
+                return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
+            }
+            let mut result = vec![];
+            let mut claims = vec![];
+            for endpoint in [source, target] {
+                tick(c)?;
+                let architecture = retained_architecture(g, endpoint)?;
+                let plan = build_plan::prepare_architecture(
+                    env,
+                    g,
+                    prepared.shared_inputs(),
+                    architecture,
+                    c,
+                )?;
+                let answer = build_result::retain_plan(env, g, plan, request, c)?;
+                claims.push(answer.claim.ok_or("端点buildの構成命題がない")?);
+                result.extend(answer.outputs.get("algebra").copied());
+            }
+            if result.len() == 2 {
+                Some([result[0], result[1]])
+            } else {
+                pending = Some([claims[0], claims[1]]);
+                None
+            }
+        } else {
+            None
+        };
+        let mut dependencies = configuration.outputs.values().copied().collect::<Vec<_>>();
+        dependencies.extend(algebras.into_iter().flatten());
+        dependencies.extend(pending.into_iter().flatten());
+        let boundary = Boundary::capture(env, g, source, dependencies, c)?;
+        let base = g.nodes.len();
+        let (parts, answer) = compute(
+            env,
+            g,
+            &witness,
+            &configuration,
+            algebras,
+            pending,
+            base,
+            request,
+            c,
+        )?;
+        let source = Arc::new(Source {
+            witness,
+            configuration,
+            algebras,
+            pending,
+            boundary,
+            base,
+            parts,
+            answer,
+        });
+        for index in 0..source.parts.len() {
+            tick(c)?;
+            let p = &source.parts[index];
+            native::retain(
+                g,
+                ConstructionValue {
+                    witness: Witness::Map(source.witness.clone()),
+                    data: D::ObjectMap(Data {
+                        source: source.clone(),
+                        index,
+                    }),
+                },
+                p.reasons.clone(),
+                p.evidence.clone(),
+                p.judgment.clone(),
+            )?;
+        }
+        Ok(source.answer.clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_object_map(graph, value, limit)?;
+        Ok(())
+    }
 }
