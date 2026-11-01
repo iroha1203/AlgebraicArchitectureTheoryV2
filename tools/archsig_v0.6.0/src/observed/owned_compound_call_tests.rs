@@ -43,7 +43,7 @@ fn compound_calls_recheck_nested_return_members_types_order_support_and_scope() 
     );
 }
 
-fn compound_call_member_stop(recheck: bool) {
+fn compound_call_member_stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Reservations.seed)",
@@ -67,7 +67,6 @@ fn compound_call_member_stop(recheck: bool) {
         .span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let traversing = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
@@ -84,30 +83,18 @@ fn compound_call_member_stop(recheck: bool) {
     });
     let prepared =
         prepare_observed(compound_call_fixture::input(false, "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
-            let (a, ph, t, s) = (
-                armed.clone(),
-                phase.clone(),
-                traversing.clone(),
-                seen.clone(),
-            );
+            let (a, t, s) = (armed.clone(), traversing.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, _| {
                 if at != span {
                     return;
                 }
-                if !recheck && ctx.request == 2 && operation == "call_arguments_complete" {
+                if ctx.request == 2 && operation == "call_arguments_complete" {
                     t.set(true);
                 }
-                if operation == "owned_call_constraint"
-                    && (if recheck {
-                        ph.get() && ctx.request == 2
-                    } else {
-                        t.get()
-                    })
-                {
+                if operation == "owned_call_constraint" && t.get() {
                     let i = s.get();
                     s.set(i + 1);
                     if i == 2 {
@@ -115,13 +102,6 @@ fn compound_call_member_stop(recheck: bool) {
                     }
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::new(normal.prepared.inputs(), &mut cc)?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     });
@@ -136,18 +116,9 @@ fn compound_call_member_stop(recheck: bool) {
     );
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (i, a) in stopped.answers.iter().enumerate().skip(2) {
-        if recheck && i == 2 {
-            // fresh再検査の前に、理由のない確定Answerも独立検査を終えている。
-            assert_eq!(a.status, normal.answers[i].status);
-            assert_eq!(a.outputs, normal.answers[i].outputs);
-            assert_eq!(a.claim, normal.answers[i].claim);
-            assert_eq!(a.evidence, normal.answers[i].evidence);
-            assert_eq!(a.scope, normal.answers[i].scope);
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in stopped.answers.iter().skip(2) {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -164,5 +135,5 @@ fn compound_call_member_stop(recheck: bool) {
 }
 #[test]
 fn compound_call_actual_third_member_stop_keeps_prior_values_refutation_and_prefix() {
-    compound_call_member_stop(false)
+    compound_call_member_stop()
 }

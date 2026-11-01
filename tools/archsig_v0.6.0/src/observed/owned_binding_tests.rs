@@ -43,46 +43,28 @@ fn owned_binding_conditions_recheck_all_inputs_typed_parts_scope_support_and_rea
         ns[condition].judgment.as_mut().unwrap().status = Decision::Established
     });
 }
-fn stop(mode: usize) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
-    let child = if mode == 1 {
-        "child=evaluate(Reservations.obChild,p=@v/r)"
-    } else {
-        "child=evaluate(Reservations.obChild,p=@v/p)"
-    };
     let asks = [
         "seed=evaluate(Reservations.seed)",
         "prior=check(Reservations.prior)",
         "missing=evaluate(Reservations.adMissing,p=@v/p)",
         "owner=evaluate(Reservations.adUniversalOwner,a=@v/A)",
-        child,
-        if mode == 2 {
-            "take=check(Reservations.obEq,a=$owner.value,p=$child.value)"
-        } else {
-            "take=evaluate(Reservations.obUse,a=$owner.value,p=$child.value)"
-        },
+        "child=evaluate(Reservations.obChild,p=@v/p)",
+        "take=evaluate(Reservations.obUse,a=$owner.value,p=$child.value)",
         "later=evaluate(Reservations.seed)",
     ];
     let input = fixture::input(false, false, "r1");
     let normal = run(&asks);
     assert_eq!(normal.status(), "partial");
-    let declaration = if mode == 2 {
-        "Reservations.obEq"
-    } else {
-        "Reservations.obUse"
-    };
-    let params = match &normal.prepared.inputs().law().declarations[declaration].signature {
+    let params = match &normal.prepared.inputs().law().declarations["Reservations.obUse"].signature
+    {
         Signature::View { params, .. } | Signature::Law { params, .. } => params,
         _ => panic!(),
     };
-    if mode == 2 {
-        assert!(normal.answers[5].claim.is_some());
-        assert!(!normal.answers[5].evidence.is_empty());
-    }
     let span = params[1].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -97,33 +79,16 @@ fn stop(mode: usize) {
         }
     });
     let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "child" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
-            data::observe_iterations(move |at, ctx, operation, index| {
-                let target = match mode {
-                    0 => operation == "owned_binding_checked",
-                    1 => operation == "answer_projection_condition" && index == 5,
-                    _ => operation == "owned_binding_checked" && ph.get(),
-                };
-                if at == span && ctx.request == 5 && target {
+            let (a, s) = (armed.clone(), seen.clone());
+            data::observe_iterations(move |at, ctx, operation, _| {
+                if at == span && ctx.request == 5 && operation == "owned_binding_checked" {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
-        }
-        if request.id == "take" && mode == 2 {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     })
@@ -141,23 +106,9 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    for (i, a) in stopped.answers.iter().enumerate().skip(5) {
-        if mode == 2 && i == 5 {
-            let original = &normal.answers[5];
-            assert!(a.claim.is_some());
-            assert!(!a.evidence.is_empty());
-            assert_eq!(a.status, original.status);
-            assert_eq!(a.outputs, original.outputs);
-            assert_eq!(a.claim, original.claim);
-            assert_eq!(a.evidence, original.evidence);
-            assert_eq!(a.scope, original.scope);
-            for r in &original.reasons {
-                assert!(a.reasons.contains(r));
-            }
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in stopped.answers.iter().skip(5) {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -173,7 +124,7 @@ fn stop(mode: usize) {
 }
 #[test]
 fn owned_binding_actual_membership_stop_preserves_prior_values_refutation_missing_and_prefix() {
-    stop(0)
+    stop()
 }
 
 const COMPLETION_ASKS: &[&str] = &[
@@ -237,7 +188,7 @@ fn owned_binding_completion_visits_all_admissible_shared_assignments() {
         ));
     }
 }
-fn completion_stop(mode: usize) {
+fn completion_stop() {
     use std::{cell::Cell, rc::Rc};
     let normal = completion_run("ambiguous");
     let expected = crate::result::Signal::Term;
@@ -266,12 +217,11 @@ fn completion_stop(mode: usize) {
         if request.id == "child" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, operation, index| {
-                let target = if mode == 0 {
-                    operation == "owned_binding_completion_enum"
-                } else {
-                    operation == "owned_binding_completion_case"
-                };
-                if ctx.request == 3 && target && index == 1 && !s.replace(true) {
+                if ctx.request == 3
+                    && operation == "owned_binding_completion_enum"
+                    && index == 1
+                    && !s.replace(true)
+                {
                     a.set(true);
                 }
             });
@@ -298,5 +248,5 @@ fn completion_stop(mode: usize) {
 }
 #[test]
 fn owned_binding_completion_enumeration_cancel_preserves_prefix_and_independent_answers() {
-    completion_stop(0)
+    completion_stop()
 }

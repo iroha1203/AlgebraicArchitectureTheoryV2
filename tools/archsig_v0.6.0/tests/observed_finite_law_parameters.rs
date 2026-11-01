@@ -227,7 +227,7 @@ fn check_claim(wire: &Json, id: &str, status: &str) {
 fn data(tag: &str, args: Vec<Json>) -> Json {
     Json::obj([("tag", Json::str(tag)), ("args", Json::Arr(args))])
 }
-fn fixture(script: &str, known_flag: Option<bool>, reverse: bool, moved: bool) -> InputSources {
+fn fixture(script: &str, known_flag: Option<bool>, moved: bool) -> InputSources {
     use common::{
         constructor_json, data_json, definition_json, entity_json, field_json, vocabulary_json,
     };
@@ -288,12 +288,7 @@ reading Calc {{ use vocabulary Roster version "1" digest "{digest}"; use Roster 
         r#"{{"id":"w","origin":"w_snapshot{suffix}","subjects":[{{"id":"root","type":"Roster.Root","origin":"w_subjects{suffix}"}},{{"id":"item","type":"Roster.E","origin":"w_subjects{suffix}"}}],"atoms":[{atom}]}}"#
     );
     let empty = format!(r#"{{"id":"z","origin":"z_snapshot{suffix}","subjects":[],"atoms":[]}}"#);
-    let snapshots = if reverse {
-        vec![second, first, empty]
-    } else {
-        vec![first, second, empty]
-    }
-    .join(",");
+    let snapshots = [first, second, empty].join(",");
     let origins = origins.join(",");
     let revision = if moved { "r2" } else { "r1" };
     let uri = if moved {
@@ -881,7 +876,7 @@ law required equal_pair(p:E,q:E): p=q;
         "c=check(Calc.cross,r=@v/item)",
         "d=check(Calc.equal_pair,p=@v/item)",
     ];
-    let (wire, checked) = run(fixture(script, Some(false), false, false), &asks);
+    let (wire, checked) = run(fixture(script, Some(false), false), &asks);
     assert_eq!(f(&wire, "status"), &Json::str("complete"));
     let e = ty("Ref", Json::str("Roster.E"));
     let refs = vec![reference("v", "item"), reference("w", "item")];
@@ -1027,7 +1022,7 @@ law required empty_case(r:Empty,b:Bool): false;
         .map(|n| format!("{n}=check(Calc.{n})"))
         .collect::<Vec<_>>();
     let (wire, checked) = run(
-        fixture(script, Some(false), false, false),
+        fixture(script, Some(false), false),
         &asks.iter().map(String::as_str).collect::<Vec<_>>(),
     );
     assert_eq!(f(&wire, "status"), &Json::str("complete"));
@@ -1139,7 +1134,7 @@ law required observed(r:E): r.flag;
         "d=check(Calc.unknown_guard)",
         "e=check(Calc.observed)",
     ];
-    let (wire, checked) = run(fixture(script, Some(false), false, false), &asks);
+    let (wire, checked) = run(fixture(script, Some(false), false), &asks);
     assert_eq!(
         f(&wire, "status"),
         &Json::str("partial"),
@@ -1444,7 +1439,7 @@ view echo(s:E): E = let held=s in match MaybeAt.At(held) { NoRef => s; At(x) => 
 law required nested(s:E,b:Bool): (forall z in list<E>[s] . helper(z,b)) and (forall u:Unit . true);
 law required bound(s:E): helper(s,true);
 "#;
-    fixture(script, Some(false), false, moved)
+    fixture(script, Some(false), moved)
 }
 
 #[test]
@@ -1655,7 +1650,6 @@ law required current(b:Bool): true;
 view later(s:E): Unit = unit;
 "#,
         Some(false),
-        false,
         false,
     );
     let checked = check_inputs(input.clone(), &mut quiet()).unwrap();

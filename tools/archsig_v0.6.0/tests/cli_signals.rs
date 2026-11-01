@@ -33,10 +33,10 @@ fn setup(name: &str) -> PathBuf {
     std::fs::write(dir.join("a.json"), A).unwrap();
     dir
 }
-fn command(dir: &Path, kind: &str, definition: &str) -> Command {
+fn command(dir: &Path, definition: &str) -> Command {
     let mut command = bin();
     command.current_dir(dir).args([
-        kind,
+        "run",
         "--atom-definition",
         definition,
         "--law",
@@ -46,9 +46,7 @@ fn command(dir: &Path, kind: &str, definition: &str) -> Command {
         "--out",
         "out",
     ]);
-    if kind == "run" {
-        command.args(["--ask", "n=evaluate(CountCheck.amount,s=@v/s)"]);
-    }
+    command.args(["--ask", "n=evaluate(CountCheck.amount,s=@v/s)"]);
     command.stderr(Stdio::piped());
     command
 }
@@ -99,7 +97,7 @@ fn signals_after_publication_keep_result_receipt_and_exit_frozen() {
     )
     .unwrap();
     let (mut reader, writer, count) = full_stdout();
-    let mut command = command(&dir, "run", "d.json");
+    let mut command = command(&dir, "d.json");
     command.args(["--ask", "audit=check(CountAudit.bounded,s=@v/s)"]);
     let mut child = Running(command.stdout(Stdio::from(writer)).spawn().unwrap());
     drop(command);
@@ -144,7 +142,7 @@ fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
     let missing = A.replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}", "");
     std::fs::write(dir.join("a.json"), missing).unwrap();
     let mut child = Running(
-        command(&dir, "run", "d.json")
+        command(&dir, "d.json")
             .stdout(Stdio::piped())
             .spawn()
             .unwrap(),

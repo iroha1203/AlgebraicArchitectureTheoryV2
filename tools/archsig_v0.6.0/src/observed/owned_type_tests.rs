@@ -436,7 +436,8 @@ fn owned_type_quantification_missing_body_counterexample_and_checked_are_recheck
     });
 }
 
-fn owned_type_private_phase_stop(phase: &'static str) {
+#[test]
+fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; view wrapped(a:System):Bool=forall bag:Option<Set<State[a]>> . true;";
     let current = "current=evaluate(Reservations.wrapped,a=@v/A)";
@@ -484,20 +485,7 @@ fn owned_type_private_phase_stop(phase: &'static str) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "hole" && phase != "answer" {
-                let (arm, observed) = (armed.clone(), seen.clone());
-                data::observe_iterations(move |_span, context, operation, index| {
-                    if context.request == 3
-                        && context.case.is_none()
-                        && operation == phase
-                        && index == if phase == "quant_body" { 1 } else { 0 }
-                    {
-                        assert!(!observed.replace(true));
-                        arm.set(true);
-                    }
-                });
-            }
-            if request.id == "current" && phase == "answer" {
+            if request.id == "current" {
                 assert!(!seen.replace(true));
                 armed.set(true);
             }
@@ -558,9 +546,8 @@ fn owned_type_private_phase_stop(phase: &'static str) {
     let Json::Arr(stopped_answers) = &stopped_wire["answers"] else {
         unreachable!()
     };
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&stopped_answers[..retained], &normal_answers[..retained]);
-    for answer in &stopped.answers[retained..] {
+    assert_eq!(&stopped_answers[..4], &normal_answers[..4]);
+    for answer in &stopped.answers[4..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.claim.is_none() && answer.evidence.is_empty());
         let reason = answer
@@ -576,39 +563,7 @@ fn owned_type_private_phase_stop(phase: &'static str) {
         };
         assert_eq!(wire["details"], expected_wire["details"]);
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-        if phase == "quant_body" {
-            let domains = owned_type_private_domains(&stopped, 3);
-            assert_eq!(domains.len(), 1);
-            assert_eq!(owned_type_private_elements(&stopped, domains[0]).len(), 5);
-            assert_eq!(stopped.iterations.len(), 1);
-            let finished = stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .filter(|(i, n)| {
-                    stopped.contexts[*i].request == 3
-                        && stopped.contexts[*i].iteration.is_some()
-                        && matches!(n.payload, Some(Payload::Evaluation { .. }))
-                })
-                .count();
-            assert_eq!(finished, 1);
-        }
-    }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-
-#[test]
-fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
-    owned_type_private_phase_stop("answer");
 }
 
 #[test]

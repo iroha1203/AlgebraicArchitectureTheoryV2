@@ -50,7 +50,7 @@ fn dependency_answer_rechecks_ids_status_outputs_scope_and_each_original_reason(
         Err(ValidationFailure::Internal(_))
     ));
 }
-fn dependency_stop(recheck: bool) {
+fn dependency_stop() {
     use std::{cell::Cell, rc::Rc};
     let normal = result();
     let Signature::View { params, .. } =
@@ -61,7 +61,6 @@ fn dependency_stop(recheck: bool) {
     let span = params[0].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -76,17 +75,12 @@ fn dependency_stop(recheck: bool) {
         }
     });
     let prepared = prepare_observed(fixture::input("stop", "r1"), ASK, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "opaque" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, _| {
-                if at == span
-                    && ctx.request == 4
-                    && operation == "answer_binding_scan"
-                    && (!recheck || ph.get())
-                {
+                if at == span && ctx.request == 4 && operation == "answer_binding_scan" {
                     let old = s.get();
                     s.set(old + 1);
                     if old == 1 {
@@ -94,17 +88,6 @@ fn dependency_stop(recheck: bool) {
                     }
                 }
             });
-        }
-        if request.id == "both" && recheck {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let r = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            r?;
         }
         Ok(())
     })
@@ -120,12 +103,6 @@ fn dependency_stop(recheck: bool) {
         let answer = &stopped.answers[index];
         assert_ne!(answer.status, Decision::Established);
         assert!(answer.outputs.is_empty());
-        if recheck && index == 4 {
-            for reason in &normal.answers[4].reasons {
-                assert!(answer.reasons.contains(reason));
-            }
-            assert_eq!(answer.scope, normal.answers[4].scope);
-        }
         let reason = answer
             .reasons
             .iter()
@@ -142,5 +119,5 @@ fn dependency_stop(recheck: bool) {
 }
 #[test]
 fn dependency_answer_actual_scan_stop_keeps_prior_values_refutations_and_reasons() {
-    dependency_stop(false)
+    dependency_stop()
 }

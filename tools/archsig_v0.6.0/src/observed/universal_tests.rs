@@ -10,9 +10,9 @@ fn universal_private_example(body: &str, requests: &[&str]) -> ObservedEvaluatio
     result
 }
 
-fn universal_private_normalization(result: &ObservedEvaluation, request: usize) -> usize {
+fn universal_private_normalization(result: &ObservedEvaluation) -> usize {
     result.nodes.iter().enumerate().find_map(|(index,node)| {
-        (result.contexts[index].request==request && matches!(&node.payload,Some(Payload::Normalization{before,..}) if result.nodes[before.0].scope.assignments)).then_some(index)
+        (result.contexts[index].request==0 && matches!(&node.payload,Some(Payload::Normalization{before,..}) if result.nodes[before.0].scope.assignments)).then_some(index)
     }).unwrap()
 }
 
@@ -211,7 +211,7 @@ fn universal_view_local_nonzero_binder_rechecks_concrete_closed_axis_counterexam
     );
     assert_eq!(result.answers[0].status, Decision::Refuted);
     let whole = result.answers[0].outputs["evaluation"];
-    let normalization = universal_private_normalization(&result, 0);
+    let normalization = universal_private_normalization(&result);
     let Some(Payload::Normalization { steps, after, .. }) = &result.nodes[normalization].payload
     else {
         unreachable!()
@@ -360,7 +360,7 @@ fn universal_concrete_counterexample_rechecks_substitution_and_generated_paramet
     );
     assert_eq!(result.status(), "complete");
     assert_eq!(result.answers[0].status, Decision::Refuted);
-    let normalization = universal_private_normalization(&result, 0);
+    let normalization = universal_private_normalization(&result);
     let Some(Payload::Normalization { steps, .. }) = &result.nodes[normalization].payload else {
         unreachable!()
     };
@@ -438,7 +438,7 @@ fn universal_no_common_assignment_counterexample_rechecks_whole_false() {
     );
     assert_eq!(result.status(), "complete");
     assert_eq!(result.answers[0].status, Decision::Refuted);
-    let normalization = universal_private_normalization(&result, 0);
+    let normalization = universal_private_normalization(&result);
     let Some(Payload::Normalization { steps, .. }) = &result.nodes[normalization].payload else {
         unreachable!()
     };
@@ -501,7 +501,7 @@ fn universal_guard_false_retains_body_source_without_body_evaluation() {
     assert!(parts[1].children.is_empty());
     assert!(parts[1].value.is_none());
     assert!(parts[1].residual.is_none());
-    let normalization = universal_private_normalization(&result, 0);
+    let normalization = universal_private_normalization(&result);
     let Some(Payload::Normalization { steps, .. }) = &result.nodes[normalization].payload else {
         unreachable!()
     };
@@ -526,39 +526,16 @@ fn universal_guard_false_retains_body_source_without_body_evaluation() {
 
 #[test]
 fn universal_counterexample_post_stop_retains_completed_evidence() {
-    universal_private_stop(4);
-}
-
-fn universal_private_stop(stage: usize) {
-    let current = if stage == 4 {
-        "law required current(z:Z,s:Sample):z+s.z=z+s.z+1;"
-    } else if stage == 6 {
-        "view current(s:Sample):Bool=forall z:Z . z+s.z=z;"
-    } else if stage == 8 {
-        "view current(s:Sample):Bool=forall z:Z . 2*s.z+4*s.k=1;"
-    } else {
-        "view current(s:Sample):Bool=forall z:Z . z+s.z=z+s.z;"
-    };
-    let request = if stage == 4 {
-        "current=check(Calc.current,s=@v/sample)"
-    } else {
-        "current=evaluate(Calc.current,s=@v/sample)"
-    };
-    universal_private_stop_with_current(stage, current, request);
-}
-
-fn universal_private_stop_with_current(stage: usize, current: &str, request: &str) {
-    use super::super::affine;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
-    let sources = affine_private_fixture(&format!(
-        "view seed():Z=7;law required prior():1=2;view hole(s:Sample):Z=s.k;{current}view later():Z=19;"
-    ));
+    let sources = affine_private_fixture(
+        "view seed():Z=7;law required prior():1=2;view hole(s:Sample):Z=s.k;law required current(z:Z,s:Sample):z+s.z=z+s.z+1;view later():Z=19;",
+    );
     let asks = [
         "seed=evaluate(Calc.seed)",
         "prior=check(Calc.prior)",
         "hole=evaluate(Calc.hole,s=@v/sample)",
-        request,
+        "current=check(Calc.current,s=@v/sample)",
         "later=evaluate(Calc.later)",
     ];
     let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
@@ -573,18 +550,8 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
             .iter()
             .any(|reason| matches!(reason.kind, ReasonKind::Missing))
     );
-    assert_eq!(
-        normal.answers[3].status,
-        if stage == 4 {
-            Decision::Refuted
-        } else if stage == 6 {
-            Decision::Undetermined
-        } else {
-            Decision::Established
-        }
-    );
+    assert_eq!(normal.answers[3].status, Decision::Refuted);
     let expected = Signal::Term;
-    let ready = Rc::new(Cell::new(false));
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -600,45 +567,20 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
         }
     });
     let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
-    let (observer_ready, observer_arm) = (ready.clone(), armed.clone());
-    let stopped = affine::with_observer(
-        move |point| {
-            if observer_ready.get()
-                && ((stage == 0 && point == affine::TestPoint::Universal)
-                    || (stage == 8 && point == affine::TestPoint::Gcd))
-            {
-                observer_arm.set(true)
-            }
-        },
-        || {
-            evaluate_observed_with_validator(
-                prepared,
-                &mut control,
-                |environment, graph, request, answer| {
-                    environment.validate_answer(graph, request, answer)?;
-                    if request.id == "hole" {
-                        ready.set(true);
-                        if stage != 0 && stage != 7 && stage != 8 {
-                            let armed = armed.clone();
-                            data::observe_iterations(move |_, context, operation, index| {
-                                if context.request == 3
-                                    && ((operation == "universal" && index == stage)
-                                        || (stage == 9 && operation == "family_row" && index == 1)
-                                        || (stage == 10
-                                            && operation == "universal_local"
-                                            && index == 1))
-                                {
-                                    armed.set(true)
-                                }
-                            });
-                        }
-                    }
-                    if request.id == "current" && stage == 7 {
+    let stopped = evaluate_observed_with_validator(
+        prepared,
+        &mut control,
+        |environment, graph, request, answer| {
+            environment.validate_answer(graph, request, answer)?;
+            if request.id == "hole" {
+                let armed = armed.clone();
+                data::observe_iterations(move |_, context, operation, index| {
+                    if context.request == 3 && operation == "universal" && index == 4 {
                         armed.set(true)
                     }
-                    Ok(())
-                },
-            )
+                });
+            }
+            Ok(())
         },
     );
     data::clear_iteration_observer();
@@ -657,15 +599,11 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
         unreachable!()
     };
     assert_eq!(&normal_answers[..3], &stopped_answers[..3]);
-    if stage == 7 {
-        assert_eq!(normal_answers[3], stopped_answers[3]);
-    } else {
-        assert_eq!(stopped.answers[3].status, Decision::Undetermined);
-        assert!(stopped.answers[3].outputs.is_empty());
-        assert!(stopped.answers[3].evidence.is_empty());
-        assert!(stopped.answers[3].claim.is_none());
-    }
-    for answer in &stopped.answers[if stage == 7 { 4 } else { 3 }..] {
+    assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+    assert!(stopped.answers[3].outputs.is_empty());
+    assert!(stopped.answers[3].evidence.is_empty());
+    assert!(stopped.answers[3].claim.is_none());
+    for answer in &stopped.answers[3..] {
         let reason = answer
             .reasons
             .iter()
@@ -681,88 +619,10 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
     }
     assert!(stopped.answers[4].outputs.is_empty());
     assert!(!stopped.contexts.iter().any(|context| context.request == 4));
-    if stage == 2 {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(index, node)| stopped.contexts[index].request == 3
-                    && matches!(&node.payload, Some(Payload::Normalization { .. })))
-        );
-    }
-    if stage == 3 {
-        assert!(matches!(
-            &stopped.nodes.last().unwrap().payload,
-            Some(Payload::Normalization { .. })
-        ));
-    }
-    if stage == 4 {
-        assert!(matches!(
-            &stopped.nodes.last().unwrap().payload,
-            Some(Payload::Counterexample { .. })
-        ));
-    }
-    if stage == 6 {
-        assert!(matches!(
-            &stopped.nodes.last().unwrap().payload,
-            Some(Payload::CompletionPair { .. })
-        ));
-        assert_eq!(stopped.universal_witnesses.len(), 2);
-    }
-    if stage == 9 {
-        assert_eq!(stopped.instances.len(), 1);
-        assert_eq!(stopped.instances[0].caller.request, 3);
-        let rows = stopped
-            .nodes
-            .iter()
-            .enumerate()
-            .filter_map(|(index, node)| {
-                (stopped.contexts[index].request == 3
-                    && stopped.contexts[index].instance == Some(0)
-                    && matches!(
-                        &node.payload,
-                        Some(Payload::Evaluation { value: Some(_), .. })
-                    )
-                    && node.evidence.iter().any(|proof| {
-                        matches!(
-                            &stopped.nodes[proof.0].payload,
-                            Some(Payload::Normalization { .. })
-                        )
-                    }))
-                .then_some(index)
-            })
-            .collect::<Vec<_>>();
-        assert_eq!(rows.len(), 1);
-        assert!(
-            !stopped
-                .contexts
-                .iter()
-                .any(|context| context.request == 3 && context.instance == Some(1))
-        );
-        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
-            stopped.contexts[index].request == 3
-                && matches!(&node.payload, Some(Payload::FiniteExhaustion { .. }))
-        }));
-    }
-    if stage == 10 {
-        let local_domain = stopped.nodes.len() - 1;
-        assert!(matches!(
-            &stopped.nodes[local_domain].payload,
-            Some(Payload::TypeDomain { ty: Type::Z })
-        ));
-        let header = stopped.nodes[local_domain].arguments[0];
-        let context = stopped.contexts[local_domain];
-        assert_eq!(context, stopped.contexts[header.0]);
-        assert!(context.frame.is_some());
-        assert_eq!(stopped.frames[context.frame.unwrap()].arguments.len(), 1);
-        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
-            stopped.contexts[index].request == 3
-                && matches!(&node.payload, Some(Payload::Normalization { .. }))
-        }));
-        assert!(!stopped.nodes.iter().any(|node| matches!(&node.payload,
-            Some(Payload::Evaluation {expression,..}) if *expression==header)));
-    }
+    assert!(matches!(
+        &stopped.nodes.last().unwrap().payload,
+        Some(Payload::Counterexample { .. })
+    ));
     let (Json::Arr(normal_nodes), Json::Arr(stopped_nodes)) =
         (&normal_wire["nodes"], &stopped_wire["nodes"])
     else {

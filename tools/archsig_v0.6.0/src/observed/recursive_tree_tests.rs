@@ -72,7 +72,8 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
     });
 }
 
-fn recursive_tree_private_stop(after_answer: bool) {
+#[test]
+fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Trees.prior)",
@@ -102,7 +103,7 @@ fn recursive_tree_private_stop(after_answer: bool) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "prior" && !after_answer {
+            if request.id == "prior" {
                 let (arm, seen, law) = (armed.clone(), seen.clone(), law.clone());
                 data::observe_iterations(move |span, context, operation, _| {
                     if context.request == 1
@@ -114,10 +115,6 @@ fn recursive_tree_private_stop(after_answer: bool) {
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && after_answer {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -132,14 +129,7 @@ fn recursive_tree_private_stop(after_answer: bool) {
         format!("{:?}", stopped.answers[0]),
         format!("{:?}", normal.answers[0])
     );
-    if after_answer {
-        assert_eq!(stopped.answers[1].status, Decision::Established);
-        assert_eq!(
-            format!("{:?}", stopped.answers[1]),
-            format!("{:?}", normal.answers[1])
-        );
-    }
-    for answer in &stopped.answers[if after_answer { 2 } else { 1 }..] {
+    for answer in &stopped.answers[1..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.evidence.is_empty() && answer.claim.is_none());
         let reason = answer
@@ -156,8 +146,4 @@ fn recursive_tree_private_stop(after_answer: bool) {
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
-    recursive_tree_private_stop(false);
 }

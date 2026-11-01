@@ -42,7 +42,8 @@ fn owned_map_actual_keys_images_types_and_return_body_are_rechecked() {
     });
 }
 
-fn owned_map_member_stop(recheck: bool) {
+#[test]
+fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Applications.mcMissingZero,p=@v/p)",
@@ -63,7 +64,6 @@ fn owned_map_member_stop(recheck: bool) {
         .span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let traversing = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
@@ -79,30 +79,18 @@ fn owned_map_member_stop(recheck: bool) {
         }
     });
     let prepared = prepare_observed(owned_map_fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
-            let (a, ph, t, s) = (
-                armed.clone(),
-                phase.clone(),
-                traversing.clone(),
-                seen.clone(),
-            );
+            let (a, t, s) = (armed.clone(), traversing.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, _| {
                 if at != span {
                     return;
                 }
-                if !recheck && ctx.request == 2 && operation == "call_arguments_complete" {
+                if ctx.request == 2 && operation == "call_arguments_complete" {
                     t.set(true);
                 }
-                if operation == "owned_call_map_domain_roster"
-                    && (if recheck {
-                        ph.get() && ctx.request == 2
-                    } else {
-                        t.get()
-                    })
-                {
+                if operation == "owned_call_map_domain_roster" && t.get() {
                     let i = s.get();
                     s.set(i + 1);
                     if i == 2 {
@@ -110,13 +98,6 @@ fn owned_map_member_stop(recheck: bool) {
                     }
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::new(normal.prepared.inputs(), &mut cc)?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     });
@@ -137,18 +118,9 @@ fn owned_map_member_stop(recheck: bool) {
                 .any(|f| f.field.as_deref() == Some("Reservations.State.free"))
     }));
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (i, a) in stopped.answers.iter().enumerate().skip(2) {
-        if recheck && i == 2 {
-            // 欠測のobserved回答はcomplete_answerで独立検査済み。
-            assert_eq!(a.status, normal.answers[i].status);
-            assert_eq!(a.status, Decision::Established);
-            assert_eq!(a.outputs, normal.answers[i].outputs);
-            assert_eq!(a.claim, normal.answers[i].claim);
-            assert_eq!(a.evidence, normal.answers[i].evidence);
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in stopped.answers.iter().skip(2) {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -162,10 +134,6 @@ fn owned_map_member_stop(recheck: bool) {
         assert_eq!(reason.request, a.id);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
-    owned_map_member_stop(false)
 }
 
 #[test]

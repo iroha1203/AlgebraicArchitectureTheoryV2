@@ -229,21 +229,17 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
     }
 }
 
-fn owned_private_phase_stop(phase: &'static str) {
+#[test]
+fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_answers() {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; {OWNED_VIEW} law required walk(a:System):forall s in State[a] . s.held>=0;"
     );
-    let current = if phase == "quant_body" {
-        "current=check(Reservations.walk,a=@v/A)"
-    } else {
-        "current=evaluate(Reservations.states,a=@v/A)"
-    };
     let asks = [
         "seed=evaluate(Reservations.seed)",
         "prior=check(Reservations.prior)",
         "hole=evaluate(Reservations.hole,s=@v/q)",
-        current,
+        "current=evaluate(Reservations.states,a=@v/A)",
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = owned_private_fixture(&body, Some("q-free"), false);
@@ -283,22 +279,18 @@ fn owned_private_phase_stop(phase: &'static str) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "hole" && phase != "answer" {
+            if request.id == "hole" {
                 let (arm, observed) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |_span, context, operation, index| {
                     if context.request == 3
                         && context.case.is_none()
-                        && operation == phase
-                        && index == if phase == "quant_body" { 1 } else { 0 }
+                        && operation == "owned_family_enum"
+                        && index == 0
                     {
                         assert!(!observed.replace(true));
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && phase == "answer" {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -357,9 +349,8 @@ fn owned_private_phase_stop(phase: &'static str) {
     let Json::Arr(stopped_answers) = &stopped_wire["answers"] else {
         unreachable!()
     };
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&stopped_answers[..retained], &normal_answers[..retained]);
-    for answer in &stopped.answers[retained..] {
+    assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+    for answer in &stopped.answers[3..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.claim.is_none() && answer.evidence.is_empty());
         let reason = answer
@@ -375,32 +366,13 @@ fn owned_private_phase_stop(phase: &'static str) {
         };
         assert_eq!(wire["details"], expected_wire["details"]);
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-        if phase == "owned_family_set" || phase == "quant_body" {
-            assert!(
-                stopped
-                    .nodes
-                    .iter()
-                    .enumerate()
-                    .any(|(i, n)| stopped.contexts[i].request == 3
-                        && matches!(n.payload, Some(Payload::Scalar(Scalar::Set { .. }))))
-            );
-        }
-        if phase == "quant_body" {
-            assert_eq!(stopped.iterations.len(), 1);
-        }
-    }
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, n)| stopped.contexts[i].request == 3
+                && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_answers() {
-    owned_private_phase_stop("owned_family_enum");
 }

@@ -44,7 +44,7 @@ fn answer_family_failed_conditions_recheck_free_partition_parts_and_original_rea
     });
 }
 
-fn stop(mode: usize) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Applications.abSeed)",
@@ -72,7 +72,6 @@ fn stop(mode: usize) {
     };
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -87,33 +86,20 @@ fn stop(mode: usize) {
         }
     });
     let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "opaque" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, index| {
-                let target = if mode == 0 {
-                    operation == "answer_projection_condition" && index == 3
-                } else {
-                    operation == "answer_binding_scan" && index == 2
-                };
-                if at == span && ctx.request == 5 && target && (mode == 0 || ph.get()) {
+                if at == span
+                    && ctx.request == 5
+                    && operation == "answer_projection_condition"
+                    && index == 3
+                {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
-        }
-        if request.id == "take" && mode == 1 {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     })
@@ -131,15 +117,9 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    for (index, a) in stopped.answers.iter().enumerate().skip(5) {
+    for a in stopped.answers.iter().skip(5) {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty());
-        if index == 5 && mode == 1 {
-            for reason in &normal.answers[5].reasons {
-                assert!(a.reasons.contains(reason));
-            }
-            assert_eq!(a.scope, normal.answers[5].scope);
-        }
         let reason = a
             .reasons
             .iter()
@@ -156,5 +136,5 @@ fn stop(mode: usize) {
 }
 #[test]
 fn answer_family_condition_construction_stop_keeps_values_refutation_original_reasons_and_prefix() {
-    stop(0)
+    stop()
 }

@@ -373,7 +373,8 @@ fn dependent_owner_completion_domains_reject_missing_duplicate_and_unregistered_
     mutate(&[0, 1, 9], false)
 }
 
-fn stop(phase: &'static str, at: usize) {
+#[test]
+fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
     use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, Some(true));
@@ -390,16 +391,6 @@ fn stop(phase: &'static str, at: usize) {
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
     let target = normal.prepared.inputs().law().declarations["RefCalc.each"].span;
-    let observed_span = if phase == "dependent_subject" {
-        let crate::law::model::Signature::Law { params, .. } =
-            &normal.prepared.inputs().law().declarations["RefCalc.each"].signature
-        else {
-            panic!()
-        };
-        params[1].span
-    } else {
-        target
-    };
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -418,24 +409,19 @@ fn stop(phase: &'static str, at: usize) {
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &mut control, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
-        if q.id == "hole" && phase != "answer" {
+        if q.id == "hole" {
             let (arm, hit) = (armed.clone(), seen.clone());
             data::observe_iterations(move |span, ctx, op, index| {
-                if span == observed_span
+                if span == target
                     && ctx.request == 3
-                    && ((phase == "dependent_subject" && ctx.case.is_some())
-                        || (phase != "dependent_subject" && ctx.case.is_none()))
-                    && op == phase
-                    && index == at
+                    && ctx.case.is_none()
+                    && op == "completion_coverage"
+                    && index == 0
                 {
                     assert!(!hit.replace(true));
                     arm.set(true);
                 }
             });
-        }
-        if q.id == "current" && phase == "answer" {
-            assert!(!seen.replace(true));
-            armed.set(true);
         }
         Ok(())
     });
@@ -476,9 +462,8 @@ fn stop(phase: &'static str, at: usize) {
     let Json::Arr(sa) = &sw["answers"] else {
         panic!()
     };
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&sa[..retained], &na[..retained]);
-    for a in &stopped.answers[retained..] {
+    assert_eq!(&sa[..3], &na[..3]);
+    for a in &stopped.answers[3..] {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty() && a.claim.is_none() && a.evidence.is_empty());
         assert!(
@@ -487,20 +472,14 @@ fn stop(phase: &'static str, at: usize) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(reason)if reason==&expected))
         );
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && stopped.contexts[i].case.is_none()
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-    }
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, n)| stopped.contexts[i].request == 3
+                && stopped.contexts[i].case.is_none()
+                && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
-    stop("completion_coverage", 0)
 }

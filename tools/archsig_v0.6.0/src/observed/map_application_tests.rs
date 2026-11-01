@@ -8,12 +8,12 @@ fn application_result(asks: &[&str], mode: &str) -> ObservedEvaluation {
     let p = prepare_observed(application_fixture::owned(mode), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }
-fn application_condition(r: &ObservedEvaluation, request: usize) -> usize {
+fn application_condition(r: &ObservedEvaluation) -> usize {
     r.nodes
         .iter()
         .enumerate()
         .find_map(|(i, n)| {
-            (r.contexts[i].request == request
+            (r.contexts[i].request == 0
                 && matches!(n.payload, Some(Payload::MapDomainCondition { .. })))
             .then_some(i)
         })
@@ -74,7 +74,7 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
 fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reason() {
     let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"], "known");
     assert_eq!(r.status(), "partial");
-    let p = application_condition(&r, 0);
+    let p = application_condition(&r);
     let (left, right, evidence) = (
         r.nodes[p].arguments[3],
         r.nodes[p].arguments[4],
@@ -144,7 +144,8 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         });
     }
 }
-fn application_stop(phase: &'static str, at: usize, after_answer: bool) {
+#[test]
+fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Applications.prior)",
@@ -175,22 +176,18 @@ fn application_stop(phase: &'static str, at: usize, after_answer: bool) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "prior" && !after_answer {
+            if request.id == "prior" {
                 let (arm, seen, law) = (armed.clone(), seen.clone(), law.clone());
                 data::observe_iterations(move |span, context, operation, index| {
                     if context.request == 1
-                        && operation == phase
-                        && index == at
+                        && operation == "map_lookup"
+                        && index == 0
                         && &law[span.0..span.1] == b"m.states(x)"
                     {
                         assert!(!seen.replace(true));
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && after_answer {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -205,14 +202,7 @@ fn application_stop(phase: &'static str, at: usize, after_answer: bool) {
         format!("{:?}", stopped.answers[0]),
         format!("{:?}", normal.answers[0])
     );
-    if after_answer {
-        assert_eq!(stopped.answers[1].status, Decision::Undetermined);
-        assert_eq!(
-            format!("{:?}", stopped.answers[1]),
-            format!("{:?}", normal.answers[1])
-        );
-    }
-    for answer in &stopped.answers[if after_answer { 2 } else { 1 }..] {
+    for answer in &stopped.answers[1..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.evidence.is_empty() && answer.claim.is_none());
         let reason = answer
@@ -229,9 +219,4 @@ fn application_stop(phase: &'static str, at: usize, after_answer: bool) {
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-
-#[test]
-fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
-    application_stop("map_lookup", 0, false);
 }

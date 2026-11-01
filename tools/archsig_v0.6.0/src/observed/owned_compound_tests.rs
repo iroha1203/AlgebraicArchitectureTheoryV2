@@ -7,12 +7,12 @@ fn compound_result(asks: &[&str]) -> ObservedEvaluation {
     let p = prepare_observed(compound_fixture::input(false, false, "r1"), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }
-fn compound_domain(r: &ObservedEvaluation, request: usize) -> usize {
+fn compound_domain(r: &ObservedEvaluation) -> usize {
     r.nodes
         .iter()
         .enumerate()
         .find_map(|(i, n)| {
-            (r.contexts[i].request == request
+            (r.contexts[i].request == 0
                 && matches!(
                     n.payload,
                     Some(Payload::Domain {
@@ -34,7 +34,7 @@ fn compound_elements(r: &ObservedEvaluation, d: usize) -> Vec<NodeRef> {
 fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scope() {
     let r = compound_result(&["c=check(Reservations.maps,a=@v/A,b=@v/B)"]);
     assert_eq!(r.status(), "complete");
-    let d = compound_domain(&r, 0);
+    let d = compound_domain(&r);
     let es = compound_elements(&r, d);
     assert_eq!(es.len(), 4);
     rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=d]).unwrap();
@@ -84,7 +84,8 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
         span.0 += 1;
     });
 }
-fn compound_stop(after_answer: bool) {
+#[test]
+fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Reservations.prior)",
@@ -119,7 +120,7 @@ fn compound_stop(after_answer: bool) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "prior" && !after_answer {
+            if request.id == "prior" {
                 let (arm, seen, law) = (armed.clone(), seen.clone(), law.clone());
                 data::observe_iterations(move |span, context, operation, _| {
                     if context.request == 1
@@ -132,10 +133,6 @@ fn compound_stop(after_answer: bool) {
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && after_answer {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -150,14 +147,7 @@ fn compound_stop(after_answer: bool) {
         format!("{:?}", stopped.answers[0]),
         format!("{:?}", normal.answers[0])
     );
-    if after_answer {
-        assert_eq!(stopped.answers[1].status, Decision::Established);
-        assert_eq!(
-            format!("{:?}", stopped.answers[1]),
-            format!("{:?}", normal.answers[1])
-        );
-    }
-    for answer in &stopped.answers[if after_answer { 2 } else { 1 }..] {
+    for answer in &stopped.answers[1..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.evidence.is_empty() && answer.claim.is_none());
         let reason = answer
@@ -174,9 +164,4 @@ fn compound_stop(after_answer: bool) {
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-
-#[test]
-fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation() {
-    compound_stop(false);
 }

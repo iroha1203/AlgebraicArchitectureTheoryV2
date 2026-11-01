@@ -272,7 +272,8 @@ fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evide
     });
 }
 
-fn reservations_private_phase_stop(phase: &'static str, at: usize) {
+#[test]
+fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior(e:Reserve):e.from.free=0; view hole(e:Reserve):Z=e.to.held; view current(e:Reserve):Z=e.to.free;";
     let asks = [
@@ -326,18 +327,18 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "hole" && phase != "answer" {
+            if request.id == "hole" {
                 let (arm, observed) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |span, context, operation, index| {
-                    if context.request == 3 && span == target && operation == phase && index == at {
+                    if context.request == 3
+                        && span == target
+                        && operation == "field_prepare"
+                        && index == 1
+                    {
                         assert!(!observed.replace(true));
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && phase == "answer" {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -384,9 +385,8 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
         assert!(result.cases.is_empty());
         assert!(result.universal_witnesses.is_empty());
     }
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&stopped_answers[..retained], &normal_answers[..retained]);
-    for answer in &stopped.answers[retained..] {
+    assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+    for answer in &stopped.answers[3..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty());
         assert!(answer.evidence.is_empty());
@@ -403,48 +403,39 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
         };
         assert_eq!(reason_wire["details"], expected_wire["details"]);
     }
-    if phase != "answer" {
-        assert!(stopped.nodes.iter().enumerate().any(
-            |(index, node)| stopped.contexts[index].request == 3
+    assert!(
+        stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(index, node)| stopped.contexts[index].request == 3
                 && matches!(&node.payload, Some(Payload::Expression { .. }))
-                && reservations_private_text(&stopped, NodeRef(index)) == "e.to"
-        ));
-        let current_evaluations: Vec<_> = reservations_private_evaluations(&stopped, "e.to")
-            .into_iter()
-            .filter(|i| stopped.contexts[*i].request == 3)
-            .collect();
-        assert_eq!(
-            current_evaluations.len(),
-            usize::from(phase == "field_evaluate")
-        );
-        let final_evaluations: Vec<_> = reservations_private_evaluations(&stopped, "e.to.free")
-            .into_iter()
-            .filter(|i| stopped.contexts[*i].request == 3)
-            .collect();
-        assert_eq!(
-            final_evaluations.len(),
-            usize::from(phase == "field_evaluate" && at == 2)
-        );
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, node)| stopped.contexts[i].request == 3
-                    && matches!(
-                        &node.payload,
-                        Some(
-                            Payload::Counterexample { .. }
-                                | Payload::EvaluationEvidence { .. }
-                                | Payload::FiniteExhaustion { .. }
-                        )
-                    ))
-        );
-    }
+                && reservations_private_text(&stopped, NodeRef(index)) == "e.to")
+    );
+    let current_evaluations: Vec<_> = reservations_private_evaluations(&stopped, "e.to")
+        .into_iter()
+        .filter(|i| stopped.contexts[*i].request == 3)
+        .collect();
+    assert!(current_evaluations.is_empty());
+    let final_evaluations: Vec<_> = reservations_private_evaluations(&stopped, "e.to.free")
+        .into_iter()
+        .filter(|i| stopped.contexts[*i].request == 3)
+        .collect();
+    assert!(final_evaluations.is_empty());
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, node)| stopped.contexts[i].request == 3
+                && matches!(
+                    &node.payload,
+                    Some(
+                        Payload::Counterexample { .. }
+                            | Payload::EvaluationEvidence { .. }
+                            | Payload::FiniteExhaustion { .. }
+                    )
+                ))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-
-#[test]
-fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
-    reservations_private_phase_stop("field_prepare", 1);
 }

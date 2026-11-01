@@ -22,12 +22,12 @@ fn result() -> ObservedEvaluation {
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
-fn evaluation(r: &ObservedEvaluation, request: usize, text: &str) -> usize {
+fn evaluation(r: &ObservedEvaluation, text: &str) -> usize {
     r.nodes
         .iter()
         .enumerate()
         .find_map(|(i, n)| {
-            if r.contexts[i].request != request {
+            if r.contexts[i].request != 2 {
                 return None;
             }
             let Some(Payload::Evaluation { expression, .. }) = &n.payload else {
@@ -84,7 +84,7 @@ fn replace_children(ns: &mut [Node], at: usize, children: Vec<NodeRef>) {
 #[test]
 fn affine_comprehension_rejects_equal_duplicate_iteration_and_incomplete_coverage() {
     let mut r = result();
-    let at = evaluation(&r, 2, "set{x|x in list<Z>[1,1,2]}");
+    let at = evaluation(&r, "set{x|x in list<Z>[1,1,2]}");
     let cs = children(&r.nodes[at]);
     assert_eq!(cs.len(), 4);
     assert_ne!(cs[1], cs[2]);
@@ -128,27 +128,19 @@ fn affine_comprehension_rejects_equal_duplicate_iteration_and_incomplete_coverag
     r.iterations[index].member = saved;
     rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
 }
-fn stop(fresh: bool, quant: bool) {
+#[test]
+fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
     use std::{cell::Cell, rc::Rc};
     let asks = &[
         "seed=evaluate(Walk.seed)",
         "prior=check(Walk.prior)",
-        if quant {
-            "v=evaluate(Walk.quantified,n=@v/p)"
-        } else {
-            "v=evaluate(Walk.current,n=@v/p)"
-        },
+        "v=evaluate(Walk.current,n=@v/p)",
         "later=evaluate(Walk.seed)",
     ];
     let input = fixture::input(SCRIPT, "Z", &[], "r1");
     let normal = evaluate_observed_bytes(input.clone(), asks, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
-    let text = if quant {
-        "forall x in list<Z>[1,2] . x>0"
-    } else {
-        "set{x|x in list<Z>[1,1,2]}"
-    };
-    let at = evaluation(&normal, 2, text);
+    let at = evaluation(&normal, "set{x|x in list<Z>[1,1,2]}");
     let Some(Payload::Evaluation { expression, .. }) = &normal.nodes[at].payload else {
         panic!()
     };
@@ -162,7 +154,6 @@ fn stop(fresh: bool, quant: bool) {
     let span = *span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -177,45 +168,22 @@ fn stop(fresh: bool, quant: bool) {
         }
     });
     let prepared = prepare_observed(input, asks, &mut control).unwrap();
-    let mut copy = control.clone();
     let stopped =
         evaluate_observed_with_validator(prepared, &mut control, |env, graph, request, answer| {
             env.validate_answer(graph, request, answer)?;
             if request.id == "prior" {
-                let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+                let (a, s) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |at, context, operation, index| {
-                    let actual = if quant {
-                        "quant_body"
-                    } else {
-                        "comprehension_iteration"
-                    };
-                    let recheck = if quant {
-                        "universal_quant_recheck"
-                    } else {
-                        "universal_finite_recheck"
-                    };
                     if at == span
                         && context.request == 2
                         && index == 1
-                        && ((!fresh && operation == actual)
-                            || (fresh && ph.get() && operation == recheck))
+                        && operation == "comprehension_iteration"
                     {
                         assert_eq!(s.get(), 0);
                         s.set(1);
                         a.set(true)
                     }
                 });
-            }
-            if fresh && request.id == "v" {
-                let independent = Environment::with_requests(
-                    normal.prepared.inputs(),
-                    normal.prepared.requests().requests(),
-                    &mut copy,
-                )?;
-                phase.set(true);
-                let checked = independent.validate_answer(graph, request, answer);
-                phase.set(false);
-                checked?;
             }
             Ok(())
         })
@@ -228,15 +196,8 @@ fn stop(fresh: bool, quant: bool) {
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     for i in 2..4 {
-        if fresh && i == 2 {
-            assert_eq!(stopped.answers[i].status, normal.answers[i].status);
-            assert_eq!(stopped.answers[i].outputs, normal.answers[i].outputs);
-            assert_eq!(stopped.answers[i].claim, normal.answers[i].claim);
-            assert_eq!(stopped.answers[i].evidence, normal.answers[i].evidence);
-        } else {
-            assert_eq!(stopped.answers[i].status, Decision::Undetermined);
-            assert!(stopped.answers[i].outputs.is_empty());
-        }
+        assert_eq!(stopped.answers[i].status, Decision::Undetermined);
+        assert!(stopped.answers[i].outputs.is_empty());
         let reason = stopped.answers[i]
             .reasons
             .iter()
@@ -249,8 +210,4 @@ fn stop(fresh: bool, quant: bool) {
         assert_eq!(a["details"], b["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
-    stop(false, false)
 }

@@ -231,7 +231,7 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
         Err(ValidationFailure::Internal(_))
     ));
 }
-fn stop(stage: &'static str) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Walk.seed)",
@@ -264,7 +264,7 @@ fn stop(stage: &'static str) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             super::super::super::path_value::observe(move |actual, _| {
-                if actual == stage && !s.replace(true) {
+                if actual == "identity" && !s.replace(true) {
                     a.set(true)
                 }
             });
@@ -293,5 +293,5 @@ fn stop(stage: &'static str) {
 }
 #[test]
 fn identity_value_cancel_preserves_verified_prefix_and_probe_freeze() {
-    stop("identity")
+    stop()
 }

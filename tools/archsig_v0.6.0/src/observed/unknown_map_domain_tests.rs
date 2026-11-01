@@ -75,7 +75,7 @@ fn map_owner_cases_reject_changed_assignment_domain_and_scope() {
     elements.pop();
     reject(&r, domain, bad);
 }
-fn stop(stage: &'static str) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(MapCall.seed)",
@@ -107,7 +107,7 @@ fn stop(stage: &'static str) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             super::super::super::data::observe_iterations(move |_, _, actual, _| {
-                if actual == stage && !s.replace(true) {
+                if actual == "owned_call_map_domain_missing" && !s.replace(true) {
                     a.set(true);
                 }
             });
@@ -154,18 +154,10 @@ fn stop(stage: &'static str) {
             ));
         }
     }
-    if stage != "owned_call_map_domain_missing" {
-        assert!(stopped.answers[2].reasons.iter().any(|r| {
-            matches!(r.kind, ReasonKind::Missing)
-                && r.missing
-                    .iter()
-                    .any(|f| f.subject == "p" && f.field.as_deref() == Some("MapCall.Item.owner"))
-        }));
-    }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
     stopped.wire();
 }
 #[test]
 fn map_domain_missing_cancel_retains_verified_prefix_and_stops_probes() {
-    stop("owned_call_map_domain_missing")
+    stop()
 }

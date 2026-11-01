@@ -235,9 +235,9 @@ fn changed_path(kinds: &[usize]) {
 fn internal_path_recheck_rejects_carrier_image_and_foreign_atom_mutations() {
     changed_path(&[0, 1, 2]);
 }
-fn stopped(stage: &'static str, unknown: bool) {
+fn stopped() {
     use std::{cell::Cell, rc::Rc};
-    let input = fixture::input(if unknown { "missing_to" } else { "normal" }, "r1");
+    let input = fixture::input("normal", "r1");
     let asks = [
         "seed=evaluate(Walk.seed)",
         "prior=check(Walk.prior)",
@@ -267,11 +267,7 @@ fn stopped(stage: &'static str, unknown: bool) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, actual, _| {
-                if ctx.request == 2
-                    && actual == stage
-                    && (!unknown || ctx.case.is_some())
-                    && !s.replace(true)
-                {
+                if ctx.request == 2 && actual == "path_action" && !s.replace(true) {
                     a.set(true)
                 }
             });
@@ -280,7 +276,7 @@ fn stopped(stage: &'static str, unknown: bool) {
     });
     data::clear_iteration_observer();
     let result = result.unwrap();
-    assert!(seen.get(), "{stage}");
+    assert!(seen.get());
     assert_eq!(result.status(), "interrupted");
     assert_eq!(control.stop_reason(), Some(reason));
     assert!(result.nodes.len() < normal.nodes.len());
@@ -311,19 +307,11 @@ fn stopped(stage: &'static str, unknown: bool) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&reason))
         );
     }
-    if unknown {
-        assert!(
-            result.answers[2]
-                .reasons
-                .iter()
-                .any(|r| !r.missing.is_empty())
-        );
-    }
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result.wire();
     assert_eq!(control.checkpoint(Checkpoint::Expression), Err(reason));
 }
 #[test]
 fn internal_path_action_cancel_keeps_all_tables_prior_answers_and_frozen_probe() {
-    stopped("path_action", false);
+    stopped();
 }

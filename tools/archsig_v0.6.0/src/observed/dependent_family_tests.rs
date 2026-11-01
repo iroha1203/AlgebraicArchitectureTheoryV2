@@ -110,7 +110,7 @@ fn dependent_family_missing_body_and_counterexample_remain_distinct_and_rechecke
     });
 }
 
-fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at: usize) {
+fn dependent_private_body_phase_stop(declaration: &str) {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"
@@ -160,23 +160,19 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
-            if request.id == "hole" && phase != "answer" {
+            if request.id == "hole" {
                 let (arm, observed) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |span, context, operation, index| {
                     if span == target
                         && context.request == 3
                         && context.case.is_none()
-                        && operation == phase
-                        && index == at
+                        && operation == "dependent_domain_done"
+                        && index == 1
                     {
                         assert!(!observed.replace(true));
                         arm.set(true);
                     }
                 });
-            }
-            if request.id == "current" && phase == "answer" {
-                assert!(!seen.replace(true));
-                armed.set(true);
             }
             Ok(())
         },
@@ -186,9 +182,8 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
     assert_eq!(control.stop_reason(), Some(expected));
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&stopped.answers[..retained], &normal.answers[..retained]);
-    for answer in &stopped.answers[retained..] {
+    assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
+    for answer in &stopped.answers[3..] {
         assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.outputs.is_empty() && answer.claim.is_none() && answer.evidence.is_empty());
         let reason = answer
@@ -204,33 +199,20 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
         };
         assert_eq!(reason_wire["details"], expected_wire["details"]);
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && stopped.contexts[i].instance.is_none()
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-        if phase == "dependent_aggregate" {
-            assert!(
-                stopped
-                    .nodes
-                    .iter()
-                    .enumerate()
-                    .any(|(i, n)| stopped.contexts[i].request == 3
-                        && stopped.contexts[i].instance.is_some()
-                        && matches!(n.payload, Some(Payload::Counterexample { .. })))
-            );
-        }
-    }
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, n)| stopped.contexts[i].request == 3
+                && stopped.contexts[i].instance.is_none()
+                && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 
 const DEPENDENT_NUMERIC_BODY: &str = "law required chain(z:Z,a:Root,b:Child[a],q:Q,c:Leaf[a]):if c.ok then z+1=z+1 and q+1=q+1 else z+1=z+2;";
 #[test]
 fn dependent_numeric_family_domain_cancel_keeps_strict_prefix_and_prior_answers() {
-    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_domain_done", 1);
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY);
 }

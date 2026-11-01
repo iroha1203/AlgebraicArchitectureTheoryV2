@@ -4,14 +4,10 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/unknown_owned_type.rs");
 }
-fn example(mode: &str, view: &str) -> ObservedEvaluation {
-    let ask = if mode == "lexical" {
-        format!("target=evaluate(MapCall.{view},h=@v/h)")
-    } else {
-        format!("target=evaluate(MapCall.{view},a=@v/A,b=@v/B)")
-    };
+fn example(view: &str) -> ObservedEvaluation {
+    let ask = format!("target=evaluate(MapCall.{view},a=@v/A,b=@v/B)");
     let r = evaluate_observed_bytes(
-        fixture::input(mode, "r1"),
+        fixture::input("two", "r1"),
         &[
             "seed=evaluate(MapCall.seed)",
             "prior=check(MapCall.prior)",
@@ -60,7 +56,7 @@ fn map_domain(r: &ObservedEvaluation) -> usize {
 }
 #[test]
 fn owned_type_domain_rejects_missing_duplicate_foreign_members_and_scope() {
-    let r = example("two", "typeEvery");
+    let r = example("typeEvery");
     let i = map_domain(&r);
     for duplicate in [false, true] {
         let mut bad = r.nodes[i].clone();
@@ -102,7 +98,8 @@ fn owned_type_domain_rejects_missing_duplicate_foreign_members_and_scope() {
     }
     reject(&r, later, bad);
 }
-fn stop(stage: &'static str) {
+#[test]
+fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(MapCall.seed)",
@@ -134,7 +131,7 @@ fn stop(stage: &'static str) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             super::super::super::data::observe_iterations(move |_, _, actual, _| {
-                if actual == stage && !s.replace(true) {
+                if actual == "owned_type_missing" && !s.replace(true) {
                     a.set(true);
                 }
             });
@@ -181,18 +178,6 @@ fn stop(stage: &'static str) {
             ));
         }
     }
-    if stage != "owned_type_missing" {
-        assert!(stopped.answers[2].reasons.iter().any(|r| {
-            matches!(r.kind, ReasonKind::Missing)
-                && r.missing
-                    .iter()
-                    .any(|f| f.subject == "p" && f.field.as_deref() == Some("MapCall.Item.owner"))
-        }));
-    }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
     stopped.wire();
-}
-#[test]
-fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
-    stop("owned_type_missing")
 }
