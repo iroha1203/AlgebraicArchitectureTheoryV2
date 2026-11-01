@@ -38,7 +38,7 @@ MeasurementProfile や RepairPlan の別ファイルを入力に追加しない�
 Law は意味上の設計の出発点として必要な区別を決める。語彙と型の所有者は D であり、
 D を L から生成される従属 artifact としない。複数 L は同じ D を共有できる。
 呼出し時の問いは CLI で宣言・対象・結果を選ぶ。
-計算予算や表示順は実行上の指定であり、判定の真偽を変更しない。
+表示順は実行上の指定であり、判定の真偽を変更しない。
 
 計算核が知るものは、型、項、有限提示、方程式、射とその合成である。
 プログラミング言語、フレームワーク、AST、型検査器、静的解析器、リポジトリ配置は
@@ -164,7 +164,7 @@ Law は module の import とパラメータ化を認める。import を含む�
 | --- | --- |
 | `Established(value, derivation, scope)` | 方程式成立または構成結果を導出した |
 | `Refuted(counterexample, derivation, scope)` | 具体的な反例または不成立証拠を導出した |
-| `Undetermined(reason, missing_observations)` | 入力不足、対応する算法なし、予算中断などで問いを決定していない |
+| `Undetermined(reason, missing_observations)` | 入力不足、対応する算法なし、中断などで問いを決定していない |
 | `InvalidInput(location, reason)` | 型や参照などが入力の提示規則を満たしていない |
 
 未観測を零・空集合・偽へ補完しない。量化域は「提示された有限モデル」と
