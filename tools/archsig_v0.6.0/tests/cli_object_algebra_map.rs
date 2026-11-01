@@ -64,7 +64,7 @@ fn assert_unsupported_map(dir: &Path, method: &str, operand: &str, original: &st
         "n=needed($m)",
     ];
     let run = asks(dir, &requests);
-    assert_eq!(run.code, 2, "{} {}", run.stdout, run.stderr);
+    assert_eq!(run.code, 2, "{}", run.stdout);
     let result = result_json(dir, &run);
     assert_eq!(s(get(&result, "status")), "partial");
     let map = answer(&result, "m");
@@ -703,7 +703,6 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; local
     }
     let normal = without_file_changes(&dir, || cli::run(&dir, &args));
     assert_eq!(normal.code, 0, "{}", normal.stdout);
-    assert!(normal.stderr.is_empty());
     let run = asks(&dir, &requests);
     assert_eq!(run.code, 0, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -2369,7 +2368,6 @@ reading After {{{vocabulary} local here(t:State,keep:Bool) reads {target};}}"#
         ];
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{shape}/{case}: {}", run.stdout);
-        assert!(run.stderr.is_empty());
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -2442,7 +2440,6 @@ reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool) reads
         ];
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{shape}/{case}: {}", run.stdout);
-        assert!(run.stderr.is_empty());
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -2750,7 +2747,6 @@ reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool) reads
         ];
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{shape}/{case}/{general}: {}", run.stdout);
-        assert!(run.stderr.is_empty());
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -2813,7 +2809,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,choice:Bool,j:Z){tg} reads {
             "same=compare($m.operation,to=$m.operation,kind=action)",
         ];
         let run = asks(&dir, &requests);
-        assert_eq!(run.code, code, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, code, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -2881,7 +2877,7 @@ reading After {{{vocabulary} local here(t:State,m:Z){tg} reads {tr};}}"#
             "n=needed($m)",
         ];
         let run = asks(&dir, &requests);
-        assert_eq!(run.code, code, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, code, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -2927,7 +2923,7 @@ reading Before {{{vocabulary} local here(n:Z) reads n;}} reading After {{{vocabu
             "n=needed($m)",
         ],
     );
-    assert_eq!(run.code, 1, "{} {}", run.stdout, run.stderr);
+    assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");
     assert_eq!(s(get(m, "status")), "refuted");
@@ -3002,7 +2998,7 @@ reading After {{{vocabulary} local here(y:Q,t:State,keep:Bool,z:Q){tg} reads {tr
             "same=compare($m.operation,to=$m.operation,kind=action)",
         ];
         let run = asks(&dir, &requests);
-        assert_eq!(run.code, code, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, code, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -3068,7 +3064,7 @@ reading Before {{{vocabulary} local here(q:Q) when 2*q=1 reads q;}} reading Afte
             "n=needed($m)",
         ],
     );
-    assert_eq!(run.code, 1, "{} {}", run.stdout, run.stderr);
+    assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");
     assert_eq!(s(get(m, "status")), "refuted");
@@ -3104,7 +3100,7 @@ reading After {{{vocabulary} local here({params}){target_guard} reads q;}}"#
             &dir,
             &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
         );
-        assert_eq!(run.code, 2, "{params}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, 2, "{params}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(s(get(m, "status")), "undetermined");
@@ -3155,8 +3151,8 @@ reading After {{{vocabulary} local here({tp}) reads {right};}}"#
         ]);
         assert_eq!(
             run.code, code,
-            "{name}/{reverse}: {} {}",
-            run.stdout, run.stderr
+            "{name}/{reverse}: {}",
+            run.stdout
         );
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
@@ -3243,7 +3239,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
             "same=compare($m.operation,to=$m.operation,kind=action)",
             "n=needed($m)",
         ]);
-        assert_eq!(run.code, 2, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, 2, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(s(get(m, "status")), "undetermined");
@@ -3290,7 +3286,7 @@ reading After {{{vocabulary} local here(next:(Z,(Z,Z)),y:Q) reads {right};}}"#
         .unwrap();
         let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
         let run = asks(&dir, &[request]);
-        assert_eq!(run.code, 1, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, 1, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(s(get(m, "status")), "refuted");
@@ -3357,7 +3353,7 @@ reading After {{{vocabulary} local here({tp}) when {target_guard} reads {right};
                 "n=needed($m)",
             ],
         );
-        assert_eq!(run.code, code, "{name}: {} {}", run.stdout, run.stderr);
+        assert_eq!(run.code, code, "{name}: {}", run.stdout);
         let j = result_json(&dir, &run);
         assert_eq!(s(get(&j, "status")), "complete");
         let m = answer(&j, "m");
@@ -3407,7 +3403,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) when {target_guard} rea
         )).unwrap();
         let r = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"]);
-        assert_eq!(r.code, code, "{name}: {} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, code, "{name}: {}", r.stdout);
         let j = result_json(&dir, &r);
         let m = answer(&j, "m");
         assert_eq!(s(get(m, "status")), if code == 0 { "established" } else { "undetermined" });
@@ -3988,7 +3984,6 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n=s.free:n=1;}}"
         ],
     );
     assert_eq!(run.code, 2, "{}", run.stdout);
-    assert!(run.stderr.is_empty());
     let j = result_json(&dir, &run);
     let b = answer(&j, "b");
     assert!(has(get(b, "outputs"), "object"));
@@ -4030,7 +4025,6 @@ reading Before {{{uses} law required equation(s:State,n:Z) when n*n=0:1=0;}}"#
     .unwrap();
     let run = asks(&dir, &["b=build(Before,on=@v/A)", "n=needed($b)"]);
     assert_eq!(run.code, 2, "{}", run.stdout);
-    assert!(run.stderr.is_empty());
     let j = result_json(&dir, &run);
     let b = answer(&j, "b");
     assert_eq!(s(get(b, "status")), "undetermined");
@@ -4080,7 +4074,6 @@ reading Before {{{uses} view plus_one():Z=1; view minus_one():Z=-1; law required
         ],
     );
     assert_eq!(run.code, 2, "{}", run.stdout);
-    assert!(run.stderr.is_empty());
     let j = result_json(&dir, &run);
     let b = answer(&j, "b");
     assert_eq!(s(get(b, "status")), "undetermined");

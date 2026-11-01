@@ -27,7 +27,7 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
         "bad=quotient(Pair.visible,on=$s.domain,s=@v/s,law=Pair.hidden)",
     ];
     let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}", first.stdout);
     let result = result_json(&dir, &first);
     let answers = arr(get(&result, "answers"));
     exact_fibers(
@@ -66,7 +66,7 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
     ];
     assert_eq!(points, [(false, false), (false, true)]);
     let repeated = execute(&dir, "reused", &asks, Some("out"));
-    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
+    assert_eq!(repeated.code, 1, "{}", repeated.stdout);
     let reused = result_json(&dir, &repeated);
     for key in ["answers", "nodes"] {
         assert_eq!(get(&result, key).value, get(&reused, key).value);
@@ -77,7 +77,7 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
     assert_ne!(saved, damaged);
     std::fs::write(path, damaged).unwrap();
     let rejected = execute(&dir, "rejected", &asks, Some("out"));
-    assert_eq!(rejected.code, 1, "{} {}", rejected.stdout, rejected.stderr);
+    assert_eq!(rejected.code, 1, "{}", rejected.stdout);
     let rebuilt = result_json(&dir, &rejected);
     assert!(
         warnings(&rebuilt)

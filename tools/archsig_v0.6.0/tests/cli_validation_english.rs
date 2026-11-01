@@ -30,7 +30,6 @@ fn rejected(label: &str, law: &str, map: &str) -> Run {
     });
     assert_eq!(r.code, 65, "{}", r.stdout);
     assert_eq!(s(get(&r.receipt, "status")), "invalid");
-    assert!(r.stderr.is_empty());
     assert!(!has(&r.receipt, "result"));
     assert_eq!(arr(get(&r.receipt, "issues")).len(), 1);
     r
@@ -205,7 +204,6 @@ fn result_projection_errors_keep_their_usage_details_in_english() {
         }
         let r = without_file_changes(&dir, || run(&dir, &args));
         assert_eq!(r.code, 64, "{}", r.stdout);
-        assert!(r.stderr.is_empty());
         assert!(!has(&r.receipt, "result"));
         let issue = &arr(get(&r.receipt, "issues"))[0];
         assert_eq!(s(get(issue, "code")), "usage");

@@ -2,38 +2,11 @@
 
 use archsig::result::Signal;
 use archsig::run::{
-    Command, Io, Outcome, Signals, VERSION_LINE, parse_args, run_check, usage_outcome,
+    Command, FileIo, Outcome, Signals, VERSION_LINE, parse_args, run_check, usage_outcome,
 };
 use std::io::Write;
-use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-
-/// 実ファイルの操作。
-struct FileIo;
-
-impl Io for FileIo {
-    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::remove_dir_all(path)
-    }
-
-    fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::create_dir(path)
-    }
-
-    fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-        std::fs::File::create_new(path)?.write_all(bytes)
-    }
-
-    fn flush(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::File::open(path)?.sync_all()
-    }
-
-    fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()> {
-        use rustix::fs::{CWD, RenameFlags, renameat_with};
-        renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE).map_err(std::io::Error::from)
-    }
-}
 
 /// handlerで最初のSIGINT/SIGTERMを記録する。finalizeでは呼出しthreadをblockし、
 /// 捕捉済みとpendingを一度だけ含める。CLIはthreadを追加せず、終了までblockを保つ。

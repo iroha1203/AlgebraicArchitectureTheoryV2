@@ -62,7 +62,6 @@ fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
     let before = ["d.json", "l.law", "a.json"].map(|name| std::fs::read(dir.join(name)).unwrap());
     let brief = execute(&dir, &asks, &[]);
     assert_eq!(brief.code, 2);
-    assert!(brief.stderr.is_empty());
     assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
     for (name, bytes) in ["d.json", "l.law", "a.json"].into_iter().zip(before) {
         assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
@@ -93,7 +92,6 @@ fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
     saved_asks.extend(["k=needed($z)", "u=needed($m)"]);
     let full = execute(&dir, &saved_asks, &["--out", "saved"]);
     assert_eq!(full.code, 2);
-    assert!(full.stderr.is_empty());
     let result = result_json(&dir, &full);
     no_saved_proofs(&result);
     let full_answers = arr(get(&result, "answers"));
@@ -128,14 +126,12 @@ fn confirmed_answers_do_not_request_unneeded_observations_in_daily_summary() {
     }
     let reused = execute(&dir, &saved_asks, &["--out", "again", "--reuse", "saved"]);
     assert_eq!(reused.code, 2);
-    assert!(reused.stderr.is_empty());
     let again = result_json(&dir, &reused);
     for field in ["answers", "nodes"] {
         assert_eq!(get(&result, field).value, get(&again, field).value);
     }
     let normal_reuse = execute(&dir, &saved_asks, &["--reuse", "saved"]);
     assert_eq!(normal_reuse.code, 2);
-    assert!(normal_reuse.stderr.is_empty());
     assert!(!has(&normal_reuse.receipt, "warnings"));
     for (original, reused) in answers
         .iter()
@@ -157,7 +153,6 @@ fn confirmed_repair_failure_keeps_its_actionable_reason_in_daily_summary() {
         &[],
     );
     assert_eq!(brief.code, 1, "{}", brief.stdout);
-    assert!(brief.stderr.is_empty());
     let answer = &arr(get(&brief.receipt, "answers"))[0];
     assert_eq!(s(get(answer, "status")), "refuted");
     assert!(
@@ -239,7 +234,6 @@ fn daily_answers_return_values_refutations_and_missing_without_files() {
         assert_eq!(brief.code, code, "{}", brief.stdout);
         assert_eq!(s(get(&brief.receipt, "format")), "archsig.summary/1");
         assert!(!has(&brief.receipt, "save"));
-        assert!(brief.stderr.is_empty());
         assert!(!has(&brief.receipt, "nodes"));
         assert!(!brief.stdout.contains("\"node\":"));
         assert!(brief.stdout.len() < 2000);
@@ -409,7 +403,6 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
     ];
     let brief = execute(&dir, &asks, &[]);
     assert_eq!(brief.code, 0, "{}", brief.stdout);
-    assert!(brief.stderr.is_empty());
     assert!(brief.stdout.len() < 5000, "{} bytes", brief.stdout.len());
     for internal in ["\"nodes\":", "\"evidence\":", "\"rule\":", "\"scope\":"] {
         assert!(!brief.stdout.contains(internal));

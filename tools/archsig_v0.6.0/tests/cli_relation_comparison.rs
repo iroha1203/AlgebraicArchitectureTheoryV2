@@ -153,7 +153,6 @@ fn node<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
 }
 fn saved(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(run.code, code, "{}", run.stdout);
-    assert!(run.stderr.is_empty(), "{}", run.stderr);
     assert_eq!(s(get(&run.receipt, "status")), status);
     assert_eq!(num(get(&run.receipt, "exit_code")), code as u64);
     let result = result_json(dir, run);
@@ -226,7 +225,6 @@ fn malformed_relation_comparison_notifies_stdout_and_preserves_existing_files() 
     ];
     let invalid = asks(&dir, &texts);
     assert_eq!(invalid.code, 64);
-    assert!(invalid.stderr.is_empty());
     assert!(!has(&invalid.receipt, "result"));
     assert!(
         arr(get(&invalid.receipt, "issues"))

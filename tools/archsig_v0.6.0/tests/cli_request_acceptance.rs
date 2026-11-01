@@ -57,7 +57,6 @@ fn value<'a>(w: &'a JNode, id: &str) -> &'a JNode {
 }
 fn saved(d: &Path, r: &Run, code: i32) -> JNode {
     assert_eq!(r.code, code, "{}", r.stdout);
-    assert!(r.stderr.is_empty(), "{}", r.stderr);
     let w = result_json(d, r);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
     assert_eq!(num(get(&w, "exit_code")), code as u64);

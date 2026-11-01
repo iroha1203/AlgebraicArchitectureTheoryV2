@@ -246,7 +246,7 @@ fn finite_owner_completion_cli_preserves_claims_needed_and_unavailable_handles()
         run(&dir, &args)
     };
     let first = call("out");
-    assert_eq!(first.code, 2, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 2, "{}", first.stdout);
     assert!(
         has(&first.receipt, "result"),
         "{} {:?}",
@@ -545,7 +545,7 @@ fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_struct
         run(&dir, &args)
     };
     let first = call("out", false);
-    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 0, "{}", first.stdout);
     let original = result_json(&dir, &first);
     let outputs = get(answer(&original, "r"), "outputs");
     for field in ["repair", "object", "solutions"] {
@@ -566,7 +566,7 @@ fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_struct
             .all(|row| s(get(get(row, "slot"), "field")) == "Pattern.Part.flag")
     );
     let second = call("reuse", true);
-    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
+    assert_eq!(second.code, 0, "{}", second.stdout);
     let reused = result_json(&dir, &second);
     assert!(warnings(&reused).is_empty());
     for field in ["answers", "nodes"] {

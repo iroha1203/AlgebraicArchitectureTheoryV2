@@ -347,10 +347,10 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
         "matched=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.matched)",
     ];
     let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}", first.stdout);
     let result = result_json(&dir, &first);
     let repeated = execute(&dir, "reused", &asks, Some("out"));
-    assert_eq!(repeated.code, 1, "{} {}", repeated.stdout, repeated.stderr);
+    assert_eq!(repeated.code, 1, "{}", repeated.stdout);
     let reused = result_json(&dir, &repeated);
     for key in ["answers", "nodes"] {
         assert_eq!(get(&result, key).value, get(&reused, key).value);
@@ -367,7 +367,7 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
         assert_ne!(saved, changed);
         std::fs::write(&path, changed).unwrap();
         let rejected = execute(&dir, &format!("tampered-{index}"), &asks, Some("out"));
-        assert_eq!(rejected.code, 1, "{} {}", rejected.stdout, rejected.stderr);
+        assert_eq!(rejected.code, 1, "{}", rejected.stdout);
         let rebuilt = result_json(&dir, &rejected);
         for key in ["answers", "nodes"] {
             assert_eq!(get(&result, key).value, get(&rebuilt, key).value);

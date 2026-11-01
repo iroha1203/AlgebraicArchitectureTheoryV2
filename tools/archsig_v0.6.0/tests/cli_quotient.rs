@@ -119,7 +119,7 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions() {
         "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
     ];
     let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 0, "{}", first.stdout);
     let original = result_json(&dir, &first);
     for request in &arr(get(&original, "requests"))[..2] {
         let defaults=arr(get(request,"defaults"));
@@ -143,7 +143,7 @@ fn empty_solution_quotient_keeps_its_type_and_has_no_fibers() {
         ],
         None,
     );
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 1, "{}", r.stdout);
     let result = result_json(&dir, &r);
     assert!(fiber_sizes(&result, 1).is_empty());
     let classes = node(&result, get(quotient(&result, 1), "classes"));
@@ -166,7 +166,7 @@ fn quotient_rejects_wrong_domain_missing_bindings_private_fields_and_cycles() {
     ];
     for (i, asks) in cases.iter().enumerate() {
         let dir=input(&format!("quotient-static-{i}"));let r=execute(&dir,"out",asks,None);
-        assert_eq!(r.code,64,"{} {}",r.stdout,r.stderr);
+        assert_eq!(r.code,64,"{}",r.stdout);
         assert!(!has(&r.receipt,"result"));
     }
 }
@@ -211,7 +211,7 @@ fn quotient_of_new_solutions_reads_the_previous_repaired_state() {
         "r=repair(Pair.pinned,on=@v/s,using=Pair.choose,s=@v/s)",
         "s=solve(Pair.opposite,on=$r.object,using=Pair.toggle,s=@v/s)",
         "q=quotient(Pair.last,on=$s.solutions,s=@v/s)"],None);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let result=result_json(&dir,&r);assert_eq!(fiber_sizes(&result,2),vec![1,1]);
 }
 
@@ -227,7 +227,7 @@ fn missing_view_keeps_quotient_undetermined_and_independent_followup_available()
     let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "q=quotient(Pair.last,on=$s.domain,s=@v/s)","later=check(Pair.empty,s=@v/s)"];
     let first=execute(&dir,"out",&asks,None);
-    assert_eq!(first.code,2,"{} {}",first.stdout,first.stderr);
+    assert_eq!(first.code,2,"{}",first.stdout);
     let result=result_json(&dir,&first);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[0],"status")),"established");
     assert_eq!(s(get(&answers[1],"status")),"undetermined");
@@ -256,7 +256,7 @@ fn unavailable_view_binding_blocks_quotient_without_breaking_independent_request
         "v=evaluate(Pair.last,s=@v/s)","q=quotient(Pair.echo,on=$s.domain,b=$v.value)",
         "later=check(Pair.empty,s=@v/s)"];
     let first=execute(&dir,"out",&asks,None);
-    assert_eq!(first.code,2,"{} {}",first.stdout,first.stderr);
+    assert_eq!(first.code,2,"{}",first.stdout);
     let result=result_json(&dir,&first);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[0],"status")),"established");
     assert_eq!(s(get(&answers[2],"status")),"undetermined");
@@ -269,7 +269,7 @@ fn unavailable_view_binding_blocks_quotient_without_breaking_independent_request
     let mut known=asks;
     known[1]="v=evaluate(Pair.first,s=@v/s)";
     let available=execute(&dir,"known",&known,None);
-    assert_eq!(available.code,1,"{} {}",available.stdout,available.stderr);
+    assert_eq!(available.code,1,"{}",available.stdout);
     let complete=result_json(&dir,&available);
     assert_eq!(s(get(&arr(get(&complete,"answers"))[2],"status")),"established");
     exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
@@ -287,7 +287,7 @@ fn quotient_keeps_view_quantifiers_and_binding_producer_scope() {
         "v=evaluate(Other.flag,s=@v/s)","q=quotient(Pair.echo,on=$s.domain,b=$v.value)",
         "all=quotient(Pair.all,on=$s.domain,s=@v/s)","ev=evaluate(Pair.all,s=@v/s)"],None);
     let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
-    assert_eq!(r.code,0,"{} {} {answers:?}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{} {answers:?}",r.stdout);
     assert!(arr(get(get(&answers[2],"scope"),"readings")).iter().any(|x|s(x)=="Other"));
     assert!(arr(get(get(&answers[2],"scope"),"snapshots")).iter().any(|x|s(x)=="v"));
     let ordinary=arr(get(get(&answers[4],"scope"),"quantifiers"));assert!(!ordinary.is_empty());
@@ -307,7 +307,7 @@ fn inapplicable_view_binding_preserves_projection_condition_and_followup() {
     let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "v=evaluate(Pair.no)","q=quotient(Pair.echo,on=$s.domain,b=$v.value.some)",
         "later=check(Pair.empty,s=@v/s)"],None);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,2,"{}",r.stdout);
     let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[2],"status")),"undetermined");assert!(!has(get(&answers[2],"outputs"),"quotient"));
     assert_eq!(s(get(&answers[3],"status")),"refuted");
@@ -319,7 +319,7 @@ fn inapplicable_view_binding_preserves_projection_condition_and_followup() {
     let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
         "v=evaluate(Pair.no)","q=quotient(Pair.echo,on=$s.domain,b=$v.value.some)"];
     let available=execute(&dir,"known",&asks,None);
-    assert_eq!(available.code,0,"{} {}",available.stdout,available.stderr);
+    assert_eq!(available.code,0,"{}",available.stdout);
     let complete=result_json(&dir,&available);
     exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
 }
@@ -339,7 +339,7 @@ fn law_descent_compares_typed_pairs_instead_of_truth() {
         "good=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.last_eq)",
         "solutions=quotient(Pair.last,on=$s.solutions,s=@v/s,law=Pair.same)"];
     let r=execute(&dir,"out",&asks,None);
-    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,1,"{}",r.stdout);
     let result=result_json(&dir,&r);
     let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[1],"status")),"refuted");
@@ -379,7 +379,7 @@ fn law_descent_preserves_unbound_instance_keys_and_additional_binding() {
         "q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.indexed)",
         "bound=quotient(Pair.last,on=$s.domain,s=@v/s,b=$v.value,law=Pair.indexed)",
         "bad=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.indexed)"];
-    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{}",r.stdout);
     let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[2],"status")),"established");
     assert_eq!(s(get(&answers[3],"status")),"established");
@@ -403,7 +403,7 @@ fn law_descent_distinguishes_guard_and_preserves_empty_domain_type() {
         "good=quotient(Pair.last,on=$s.solutions,s=@v/s,law=Pair.guarded)",
         "empty=solve(Pair.empty,on=@v/s,using=Pair.choose,s=@v/s)",
         "q=quotient(Pair.last,on=$empty.solutions,s=@v/s,law=Pair.guarded)"];
-    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{}",r.stdout);
     let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[1],"status")),"refuted");
     assert_eq!(s(get(&answers[2],"status")),"established");
@@ -430,7 +430,7 @@ fn missing_law_values_remain_missing_and_independent_followup_runs() {
     let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap().replace("with{x=a,y=b}","with{x=a}");std::fs::write(path,law).unwrap();
     let path=dir.join("a.json");let map=std::fs::read_to_string(&path).unwrap().replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":false,"origin":"o"}"#,"");std::fs::write(path,map).unwrap();
     let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.both)","later=check(Pair.valid,s=@v/s)"];
-    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,2,"{}",r.stdout);
     let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
     assert_eq!(s(get(&answers[1],"status")),"undetermined");
     assert!(!has(get(&answers[1],"outputs"),"quotient"));
@@ -442,14 +442,14 @@ fn quotient_law_rejects_wrong_kind_and_shared_parameter_type() {
     let dir=law_input("quotient-law-usage","law optional other(s:Bool):s=s;");
     for ask in ["q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.last)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.other)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.valid,law=Pair.valid)"] {
         let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",ask],None);
-        assert_eq!(r.code,64,"{} {}",r.stdout,r.stderr);
+        assert_eq!(r.code,64,"{}",r.stdout);
     }
 }
 #[test]
 fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
     let dir=law_input("quotient-law-children","law optional composite(s:State) when s.x or s.y:(s.x and s.y)=s.y;");
     let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],None);
-    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,1,"{}",r.stdout);
     let result=result_json(&dir,&r);
     let saved_result = result;
     let result = internal_graph(&dir, &saved_result);
@@ -488,7 +488,7 @@ fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
 fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_descent() {
     let dir=law_input("quotient-law-numeric","law optional numeric(s:State):1=2;law optional tuple(s:State):(1,2)=(3,1);view rational():Q=rat(1,2);view modular():Fp(3)=1;law optional ratio(s:State):rational()=1;law optional prime(s:State):modular()=2;");
     let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.numeric)","t=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.tuple)","qrat=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.ratio)","qfp=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.prime)"],None);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let result=result_json(&dir,&r);
+    assert_eq!(r.code,0,"{}",r.stdout);let result=result_json(&dir,&r);
     let result = internal_graph(&dir, &result);
     for index in 1..=4 {
         assert_eq!(s(get(&arr(get(&result,"answers"))[index],"status")),"established");
@@ -518,7 +518,7 @@ fn option_quotient_keeps_none_fibers_and_typed_laws() {
         "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
     ];
     let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}", first.stdout);
     let result = result_json(&dir, &first);
     let answers = arr(get(&result, "answers"));
     assert_eq!(s(get(&answers[1], "status")), "established");
@@ -666,7 +666,7 @@ fn container_quotient_preserves_list_and_set_fibers() {
         "set_bad=quotient(Pair.unordered,on=$s.domain,s=@v/s,law=Pair.visible)",
     ];
     let first = execute(&dir, "out", &asks, None);
-    assert_eq!(first.code, 1, "{} {}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}", first.stdout);
     let result = result_json(&dir, &first);
     let answers = arr(get(&result, "answers"));
     for index in [1, 3] {

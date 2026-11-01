@@ -356,7 +356,9 @@ fn run_argument_and_input_failures_never_create_failure_files() {
     let dir = inputs("run-read-error", Some("2"), L);
     std::fs::remove_file(dir.join("l.law")).unwrap();
     // 入力の path は呼出し cwd 基準のまま返す。cwd はプロセスの性質なので実バイナリで確かめる。
-    let r = without_file_changes(&dir, || requests_with(&dir, &ASKS, run_binary));
+    let r = without_file_changes(&dir, || {
+        requests_with(&dir, &ASKS, |dir, args| run_binary(dir, args).run)
+    });
     let receipt = notified(&dir, &r, "error", 74);
     assert_eq!(
         s(get(
@@ -774,7 +776,7 @@ fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support()
 #[test]
 fn reuse_path_is_relative_to_the_calling_directory() {
     let dir = inputs("reuse-relative", Some("2"), L);
-    let first = requests_with(&dir, &ASKS, run_binary);
+    let first = requests_with(&dir, &ASKS, |dir, args| run_binary(dir, args).run);
     let mut args = vec![
         "run",
         "--atom-definition",
