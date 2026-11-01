@@ -1,11 +1,13 @@
 //! 検出済みLaw循環と、DFS途中・診断確定後の停止を区別する。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
-    input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
+};
+use archsig_input::{
+    input::{InputSources, InputStatus, check_inputs},
     law::check_law,
     result::ResultIssue,
     result::Signal,
@@ -50,7 +52,7 @@ fn expected_input_issue(law: &str, issue: &Issue) -> Json {
     wire
 }
 
-fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
+fn baseline(law: &str) -> (archsig_common::issue::Issue, usize) {
     let definitions = common::definitions_ok(&[common::COUNTER_DEFINITION]);
     let expected = check_law(law.as_bytes(), &definitions).unwrap_err().issue;
     assert_eq!(expected.code, Code::Cycle);

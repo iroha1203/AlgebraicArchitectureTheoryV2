@@ -1,4 +1,4 @@
-use crate::input::InputSources;
+use archsig_input::input::InputSources;
 mod owner_fixture {
     include!("object_view_compatibility_data.rs");
 }
@@ -15,7 +15,7 @@ pub fn owner_sources(structure_only: bool) -> InputSources {
     } else {
         definitions
     };
-    let checked = crate::definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
+    let checked = archsig_input::definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Pattern"].digest;
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pattern","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"有限owner補完の再検査。","locations":[],"note":"全case。"}}],"snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"root","type":"Pattern.Root","origin":"o"}},{{"id":"other","type":"Pattern.Root","origin":"o"}},{{"id":"p","type":"Pattern.Part","origin":"o"}},{{"id":"q","type":"Pattern.Part","origin":"o"}}],"atoms":[{{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"o"}},{{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"o"}},{{"id":"fq","subject":"q","field":"Pattern.Part.flag","value":false,"origin":"o"}}]}}]}}"#

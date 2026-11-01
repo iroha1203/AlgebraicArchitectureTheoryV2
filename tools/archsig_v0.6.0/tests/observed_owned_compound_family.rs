@@ -2,7 +2,8 @@
 use crate::common::completion_evidence;
 use crate::common::owned_compound_family as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else { panic!("object") };
@@ -41,7 +42,7 @@ fn state_ty() -> Json {
 fn map_ty() -> Json {
     Json::Arr(vec![Json::str("Map"), state_ty(), state_ty()])
 }
-fn run(ask: &str) -> archsig::observed::ObservedEvaluation {
+fn run(ask: &str) -> archsig_computation::observed::ObservedEvaluation {
     let outcome = evaluate_observed_bytes(fixture::input(false, false, "r1"), &[ask], &quiet());
     match outcome {
         Ok(r) => r,
@@ -120,7 +121,7 @@ fn refs(j: &Json, rs: &mut Vec<String>) {
         _ => {}
     }
 }
-fn audit(result: &archsig::observed::ObservedEvaluation) {
+fn audit(result: &archsig_computation::observed::ObservedEvaluation) {
     let w = result.wire();
     let mut seen = BTreeSet::new();
     let checked = result.prepared().inputs();
@@ -161,7 +162,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                     .iter()
                     .find(|f| f.name == text(field))
                     .unwrap();
-                let archsig::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = &f.slot else {
                     panic!("support is known")
                 };
                 assert_eq!(get(fact, "atom"), &Json::str(atom));
@@ -411,7 +412,7 @@ fn owned_compound_map_wrappers_keep_all_elements_and_empty_map_boundaries() {
 #[test]
 fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs() {
     let input = fixture::input(false, true, "r1");
-    let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+    let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
     let r = evaluate_observed_bytes(
         input,
@@ -455,7 +456,7 @@ fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs
                 .fields
                 .iter()
                 .filter(|f| f.name.ends_with(".free"))
-                .all(|f| matches!(f.slot, archsig::archmap::Slot::Missing)))
+                .all(|f| matches!(f.slot, archsig_input::archmap::Slot::Missing)))
     );
     audit(&r);
 }

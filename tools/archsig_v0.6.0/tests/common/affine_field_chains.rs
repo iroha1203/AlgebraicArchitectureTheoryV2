@@ -1,13 +1,11 @@
-use archsig as fixture_archsig;
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    definition::check_definitions,
-    input::InputSources,
     json::{JNode, JValue},
 };
+use archsig_input::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod paths {
-    use super::fixture_archsig as archsig;
+
     include!("internal_paths.rs");
 }
 fn json(n: &JNode) -> Json {
@@ -35,7 +33,8 @@ fn am(j: &mut Json) -> &mut Vec<Json> {
 pub fn input(script: &str, number: &str, omitted: &[&str], revision: &str) -> InputSources {
     assert!(matches!(number, "Z" | "Q"));
     let original = paths::input("normal", revision);
-    let mut definitions = json(&archsig::json::parse(original.definitions()[0].bytes()).unwrap());
+    let mut definitions =
+        json(&archsig_common::json::parse(original.definitions()[0].bytes()).unwrap());
     if number == "Q" {
         let declarations = am(fm(
             &mut am(fm(&mut definitions, "vocabularies"))[0],
@@ -61,7 +60,7 @@ pub fn input(script: &str, number: &str, omitted: &[&str], revision: &str) -> In
     let law = law
         .replace(marker, script)
         .replace(&old.vocabularies()["Paths"].digest, digest);
-    let mut map = json(&archsig::json::parse(original.archmap().bytes()).unwrap());
+    let mut map = json(&archsig_common::json::parse(original.archmap().bytes()).unwrap());
     *fm(&mut am(fm(&mut map, "vocabularies"))[0], "digest") = Json::str(digest);
     for snapshot in am(fm(&mut map, "snapshots")) {
         let selected = f(snapshot, "id") == &Json::str("v");

@@ -1,11 +1,11 @@
 use crate::common::map_scope;
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{Counterexample, correspondence},
+};
+use archsig_input::{
     archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        maps::{Counterexample, correspondence},
-    },
-    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -26,9 +26,9 @@ fn inputs(map: &str) -> CheckedInputs {
 }
 fn reference_inputs(map: &str) -> CheckedInputs {
     let definition = include_bytes!("fixtures/configuration-map.atoms.json");
-    let old = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let old = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let definitions =
-        archsig::definition::check_definitions(&[("definition0", definition)]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition)]).unwrap();
     let digest = &definitions.vocabularies()["Reservations"].digest;
     let law = std::str::from_utf8(L)
         .unwrap()
@@ -77,7 +77,8 @@ fn graph_inputs_with_edit(
         definition.into()
     };
     let definitions =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     let digest = &definitions.vocabularies()["Graph"].digest;
     let map = include_str!("fixtures/configuration-map-graph.archmap.json")
         .replace("@DIGEST@", digest)
@@ -113,7 +114,7 @@ fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
     } else {
         right.into()
     };
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("definition0", left),
         ("definition1", right.as_bytes()),
     ])
@@ -123,7 +124,7 @@ fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", left_digest)
         .replace("@RIGHT_DIGEST@", right_digest);
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("definition0", left),
         ("definition1", right.as_bytes()),
         ("definition2", bridge.as_bytes()),
@@ -435,7 +436,7 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
             &format!(r#""type": ["Option", ["Ref", "{target_ref}"]]"#),
             1,
         );
-        let defs = archsig::definition::check_definitions(&[
+        let defs = archsig_input::definition::check_definitions(&[
             ("definition0", left.as_bytes()),
             ("definition1", right.as_bytes()),
         ])
@@ -443,14 +444,14 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
         let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
             .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest);
-        let result = archsig::definition::check_definitions(&[
+        let result = archsig_input::definition::check_definitions(&[
             ("definition0", left.as_bytes()),
             ("definition1", right.as_bytes()),
             ("definition2", bridge.as_bytes()),
         ]);
         if target_ref == "Right.Root" {
             let failure = result.unwrap_err();
-            assert_eq!(failure.issue.code, archsig::issue::Code::Type);
+            assert_eq!(failure.issue.code, archsig_common::issue::Code::Type);
             assert!(failure.issue.message.contains("Left.Root.count"));
             assert!(failure.issue.message.contains("Right.Root.count"));
         } else {
@@ -668,7 +669,7 @@ fn quantity_only_root_options_do_not_require_equal_value_types() {
         r#""type": ["Option", "Q"]"#,
         1,
     );
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("definition0", left.as_bytes()),
         ("definition1", right.as_bytes()),
     ])
@@ -677,7 +678,7 @@ fn quantity_only_root_options_do_not_require_equal_value_types() {
         .replace("@LEFT_DIGEST@", &defs.vocabularies()["Left"].digest)
         .replace("@RIGHT_DIGEST@", &defs.vocabularies()["Right"].digest);
     assert!(
-        archsig::definition::check_definitions(&[
+        archsig_input::definition::check_definitions(&[
             ("definition0", left.as_bytes()),
             ("definition1", right.as_bytes()),
             ("definition2", bridge.as_bytes())
@@ -1168,7 +1169,7 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
 
 #[test]
 fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_scan() {
-    use archsig::construction::maps::correspondence_retained;
+    use archsig_computation::construction::maps::correspondence_retained;
     let input = inputs(&bad_endpoints());
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();

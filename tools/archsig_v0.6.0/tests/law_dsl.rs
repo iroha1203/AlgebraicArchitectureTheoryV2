@@ -1,8 +1,8 @@
 //! AC2: DSL 全体の検査。両規範例、全構文の正例、各種の負例。
 
 use crate::common;
-use archsig::issue::Code;
-use archsig::types::Type;
+use archsig_common::issue::Code;
+use archsig_common::types::Type;
 use common::law_definitions::*;
 use common::*;
 
@@ -130,7 +130,7 @@ fn rejects(definition: &str, body: &str, code: Code) {
     let src = reading(body);
     let issue = err(definition, &src);
     assert_eq!(issue.code, code, "{body}\n=> {:?}", issue);
-    let archsig::issue::Location::Law { span } = issue.location else {
+    let archsig_common::issue::Location::Law { span } = issue.location else {
         panic!("Law の位置")
     };
     assert!(span.1 <= src.len() && span.0 <= span.1, "{span:?}");

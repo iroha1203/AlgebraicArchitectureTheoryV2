@@ -1,18 +1,20 @@
 //! 小さい byte 入力から要求解決まで、構文・束縛・依存・射影の途中停止を検査する。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     control::{Checkpoint, Control},
-    input::{InputSources, check_inputs},
-    observed::{
-        PrepareFailure, prepare_observed,
-        projection::{
-            ProjectionFailure, ProjectionStep, ProjectionType, resolve_projection_controlled,
-        },
-        request::{RequestIssueCode, ResolveFailure},
-    },
-    result::Signal,
     types::Type,
+};
+use archsig_computation::observed::{
+    PrepareFailure, prepare_observed,
+    projection::{
+        ProjectionFailure, ProjectionStep, ProjectionType, resolve_projection_controlled,
+    },
+    request::{RequestIssueCode, ResolveFailure},
+};
+use archsig_input::{
+    input::{InputSources, check_inputs},
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -102,12 +104,12 @@ fn assert_request_stop(
     reason: &Signal,
 ) {
     let wire_value = failure.wire().expect("中断は内部結果を返す");
-    let archsig::canonical::Json::Obj(fields) = &wire_value else {
+    let archsig_common::canonical::Json::Obj(fields) = &wire_value else {
         panic!("object")
     };
     assert_eq!(
         fields["issues"],
-        archsig::canonical::Json::Arr(vec![reason.issue()])
+        archsig_common::canonical::Json::Arr(vec![reason.issue()])
     );
     let wire = wire_value.canonical();
     for empty in [r#""requests":[]"#, r#""nodes":[]"#, r#""answers":[]"#] {
@@ -258,7 +260,7 @@ fn final_request_cancellation_wins_over_known_type_error() {
 
 #[test]
 fn a_stop_between_two_independent_cycles_is_reported_as_interrupted() {
-    use archsig::observed::request::resolve_observed_requests_controlled;
+    use archsig_computation::observed::request::resolve_observed_requests_controlled;
     let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     let asks = [
         "a=evaluate(R.echo,s=$b.value)",

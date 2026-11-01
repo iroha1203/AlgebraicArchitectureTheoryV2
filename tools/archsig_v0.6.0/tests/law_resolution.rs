@@ -1,9 +1,9 @@
 //! AC3: 解決の追跡。短形と明示形、既定規則、暗黙 align、constructor metadata、Location。
 
 use crate::common;
-use archsig::law::CheckedLaw;
-use archsig::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
-use archsig::types::Type;
+use archsig_common::types::Type;
+use archsig_input::law::CheckedLaw;
+use archsig_input::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use common::law_definitions::*;
 use common::*;
 
@@ -115,7 +115,7 @@ law required l(a: A): a.x = 0;"#,
 
 #[test]
 fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
-    use archsig::definition::PrimitiveSignature;
+    use archsig_input::definition::PrimitiveSignature;
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let m = &c.definitions().declarations()["Reservations.Migration"];
     let PrimitiveSignature::Correspondence { implicit, .. } = &m.signature else {
@@ -135,7 +135,7 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
     assert_eq!(*implicit, expected);
     assert_eq!(
         m.location,
-        archsig::issue::Location::Definition {
+        archsig_common::issue::Location::Definition {
             input: "definition0".into(),
             pointer: "/vocabularies/0/declarations/0".into(),
             span: None
@@ -171,14 +171,14 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
     for a in alignments {
         assert!(matches!(
             a.location,
-            archsig::issue::Location::Definition { .. }
+            archsig_common::issue::Location::Definition { .. }
         ));
     }
 }
 
 #[test]
 fn constructors_have_their_own_metadata() {
-    use archsig::definition::PrimitiveSignature;
+    use archsig_input::definition::PrimitiveSignature;
     let c = ok(ENGINE_DEFINITION, ENGINE);
     let data = &c.definitions().declarations()["Engine.Expr"];
     let PrimitiveSignature::Data { constructors } = &data.signature else {
@@ -189,7 +189,7 @@ fn constructors_have_their_own_metadata() {
     assert_eq!(lit.arguments, vec![Type::Z]);
     assert_eq!(
         lit.location,
-        archsig::issue::Location::Definition {
+        archsig_common::issue::Location::Definition {
             input: "definition0".into(),
             pointer: "/vocabularies/0/declarations/1/constructors/0".into(),
             span: None
@@ -207,14 +207,14 @@ fn constructors_have_their_own_metadata() {
     assert_eq!(data.dependencies, ["Engine.Expr"]);
     assert_eq!(
         data.location,
-        archsig::issue::Location::Definition {
+        archsig_common::issue::Location::Definition {
             input: "definition0".into(),
             pointer: "/vocabularies/0/declarations/1".into(),
             span: None
         }
     );
-    use archsig::canonical::Json;
-    let rows = archsig::result::primitive_declarations_wire(data);
+    use archsig_common::canonical::Json;
+    let rows = archsig_input::result::primitive_declarations_wire(data);
     let obj = |j: &Json| {
         if let Json::Obj(_) = j {
         } else {
@@ -236,7 +236,7 @@ fn constructors_have_their_own_metadata() {
     );
     assert_eq!(
         lit_wire["location"],
-        archsig::result::location_wire(&lit.location)
+        archsig_input::result::location_wire(&lit.location)
     );
     assert_eq!(lit_wire["vocabularies"], Json::Arr(vec![]));
     let Json::Obj(add_wire) = &rows[3] else {
@@ -398,9 +398,9 @@ fn declarations_are_listed_by_full_name_with_expression_types() {
 }
 
 /// 宣言の原式から辿れる式。呼出し先の名前(view・constructor・固定演算の名前)は値ではないので除く。
-fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
-    use archsig::law::ast::{ExprKind, QuantDomain, QuantSplit};
-    use archsig::law::model::Signature;
+fn reachable(c: &CheckedLaw) -> Vec<(archsig_input::law::ast::ExprId, bool)> {
+    use archsig_input::law::ast::{ExprKind, QuantDomain, QuantSplit};
+    use archsig_input::law::model::Signature;
     let mut roots = Vec::new();
     for d in c.declarations().values() {
         match &d.signature {
@@ -518,14 +518,14 @@ law required b(p: A): forall k in p.kids . k.x = p.x;
     }
     // retained の量化は、域 State[m.from] と本体 holdings(m.states(s)) = holdings(s) に分かれる。
     let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
-    let archsig::law::model::Signature::Law { body, .. } =
+    let archsig_input::law::model::Signature::Law { body, .. } =
         &c.declarations()["Reservations.retained"].signature
     else {
         panic!()
     };
-    let archsig::law::ast::ExprKind::Quant {
+    let archsig_input::law::ast::ExprKind::Quant {
         split:
-            archsig::law::ast::QuantSplit::Fixed {
+            archsig_input::law::ast::QuantSplit::Fixed {
                 domain,
                 body: inner,
             },
@@ -534,7 +534,7 @@ law required b(p: A): forall k in p.kids . k.x = p.x;
     else {
         panic!("量化")
     };
-    let archsig::law::ast::QuantDomain::In(d) = domain else {
+    let archsig_input::law::ast::QuantDomain::In(d) = domain else {
         panic!("域は式")
     };
     assert_eq!(span_text(RESERVATIONS, c.exprs()[*d].span), "State[m.from]");
@@ -571,7 +571,7 @@ fn counter_readings_share_one_primitive_type_and_keep_direct_imports() {
         let r = info(&c, n);
         assert_eq!(r.vocabularies.len(), 1);
         assert_eq!(r.vocabularies[0].namespace, "Counter");
-        let archsig::issue::Location::Law { span } = r.vocabularies[0].location else {
+        let archsig_common::issue::Location::Law { span } = r.vocabularies[0].location else {
             panic!()
         };
         assert!(span_text(COUNTER, span).starts_with("use vocabulary Counter"));
@@ -602,7 +602,7 @@ fn direct_import_is_required_for_full_names_but_not_signature_dependencies() {
         let src = reading(&format!("{IMPORT_A} {body}"));
         assert_eq!(
             err(SCOPE_DEFINITION, &src).code,
-            archsig::issue::Code::Reference
+            archsig_common::issue::Code::Reference
         );
         let src = reading(&format!("{IMPORT_A} {IMPORT_B} {body}"));
         ok(SCOPE_DEFINITION, &src);
@@ -614,7 +614,7 @@ fn ambiguous_short_names_require_full_names_and_imports_are_sorted() {
     let src = reading(&format!("{IMPORT_B} {IMPORT_A} view v(s: State): Z = s.x;"));
     assert_eq!(
         err(SCOPE_DEFINITION, &src).code,
-        archsig::issue::Code::Reference
+        archsig_common::issue::Code::Reference
     );
     let src = src.replace("s: State", "s: A.State");
     let c = ok(SCOPE_DEFINITION, &src);
@@ -630,7 +630,7 @@ fn ambiguous_short_names_require_full_names_and_imports_are_sorted() {
     let duplicate = reading(&format!("{IMPORT_A} {IMPORT_A}"));
     assert_eq!(
         err(SCOPE_DEFINITION, &duplicate).code,
-        archsig::issue::Code::DuplicateId
+        archsig_common::issue::Code::DuplicateId
     );
 }
 
@@ -641,7 +641,7 @@ fn namespace_reading_name_is_allowed_but_full_declaration_collision_is_rejected(
     let collision = format!("{HEADER}reading A {{ {IMPORT_A} view State(): Z = 1; }}");
     assert_eq!(
         err(SCOPE_DEFINITION, &collision).code,
-        archsig::issue::Code::DuplicateId
+        archsig_common::issue::Code::DuplicateId
     );
 }
 
@@ -654,24 +654,24 @@ fn unused_imports_are_checked_and_retained() {
         (
             "vocabulary A",
             "vocabulary Missing",
-            archsig::issue::Code::Reference,
+            archsig_common::issue::Code::Reference,
         ),
         (
             "version \"1\"",
             "version \"2\"",
-            archsig::issue::Code::VocabularyMismatch,
+            archsig_common::issue::Code::VocabularyMismatch,
         ),
         (
             "sha256:da3d613a3c0971fa5e60be83a68f5ce8a26864e768b8e789ec4c742cb282415f",
             "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-            archsig::issue::Code::VocabularyMismatch,
+            archsig_common::issue::Code::VocabularyMismatch,
         ),
     ] {
         let bad = src.replacen(from, to, 1);
         assert_ne!(bad, src);
         let issue = err(SCOPE_DEFINITION, &bad);
         assert_eq!(issue.code, code);
-        let archsig::issue::Location::Law { span } = issue.location else {
+        let archsig_common::issue::Location::Law { span } = issue.location else {
             panic!()
         };
         assert!(span_text(&bad, span).contains("use vocabulary"));
@@ -773,7 +773,7 @@ fn full_primitive_names_precede_relative_constructor_candidates() {
     let missing = reading("view v(s: Counter.State): Z = s.count;");
     assert_eq!(
         err(QUALIFIED_PRIMITIVES, &missing).code,
-        archsig::issue::Code::Reference
+        archsig_common::issue::Code::Reference
     );
 }
 
@@ -783,8 +783,8 @@ fn short_primitive_ambiguity_stays_reference_after_full_name_priority() {
         "{QUALIFIED_COUNTER_IMPORT} {QUALIFIED_OTHER_IMPORT} view v(s: State): Z = s.count;"
     ));
     let issue = err(QUALIFIED_PRIMITIVES, &src);
-    assert_eq!(issue.code, archsig::issue::Code::Reference);
-    let archsig::issue::Location::Law { span } = issue.location else {
+    assert_eq!(issue.code, archsig_common::issue::Code::Reference);
+    let archsig_common::issue::Location::Law { span } = issue.location else {
         panic!()
     };
     assert_eq!(span_text(&src, span), "State");
@@ -824,8 +824,8 @@ fn missing_alias_member_does_not_fall_back_to_raw_reading() {
         "{HEADER}reading A {{ view f(): Z = 1; }} reading B {{ view other(): Z = 2; }} reading R {{ use B as A; view g(): Z = A.f(); }}"
     );
     let issue = err(EMPTY_DEFINITION, &src);
-    assert_eq!(issue.code, archsig::issue::Code::Reference);
-    let archsig::issue::Location::Law { span } = issue.location else {
+    assert_eq!(issue.code, archsig_common::issue::Code::Reference);
+    let archsig_common::issue::Location::Law { span } = issue.location else {
         panic!()
     };
     assert_eq!(span_text(&src, span), "A.f");
@@ -857,7 +857,7 @@ fn reading_alias_shadows_primitive_namespace_after_variable_projection() {
     let missing_import = src.replace(QUALIFIED_COUNTER_IMPORT, "");
     assert_eq!(
         err(QUALIFIED_PRIMITIVES, &missing_import).code,
-        archsig::issue::Code::Reference
+        archsig_common::issue::Code::Reference
     );
     // namespaceと同じaliasも展開後の名前だけを解決し、原始完全名へ戻らない。
     for (body, original) in [
@@ -871,8 +871,8 @@ fn reading_alias_shadows_primitive_namespace_after_variable_projection() {
             "{HEADER}reading B {{ }} reading R {{ {QUALIFIED_COUNTER_IMPORT} use B as Counter; {body} }}"
         );
         let issue = err(QUALIFIED_PRIMITIVES, &src);
-        assert_eq!(issue.code, archsig::issue::Code::Reference);
-        let archsig::issue::Location::Law { span } = issue.location else {
+        assert_eq!(issue.code, archsig_common::issue::Code::Reference);
+        let archsig_common::issue::Location::Law { span } = issue.location else {
             panic!()
         };
         assert_eq!(span_text(&src, span), original);

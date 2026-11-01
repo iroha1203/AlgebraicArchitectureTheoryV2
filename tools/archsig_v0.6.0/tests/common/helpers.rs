@@ -2,15 +2,15 @@
 
 use super::cli::*;
 use super::quiet;
-use archsig::canonical::Json;
-use archsig::construction::maps::{
+use archsig_common::canonical::Json;
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::maps::{
     DeclarationCorrespondence, correspondence, declaration_correspondence,
 };
-use archsig::construction::{construct, readings::object_reading_instances};
-use archsig::control::{Checkpoint, Control};
-use archsig::input::CheckedInputs;
-use archsig::law::model::Signature;
-use archsig::result::Signal;
+use archsig_computation::construction::{construct, readings::object_reading_instances};
+use archsig_input::input::CheckedInputs;
+use archsig_input::law::model::Signature;
+use archsig_input::result::Signal;
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;

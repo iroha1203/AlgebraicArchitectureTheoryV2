@@ -1,10 +1,10 @@
 //! 三入力から既知有限木の構造再帰と元由来までを接続する。
 use crate::common::recursive_tree as tree;
-use archsig::{
-    canonical::Json,
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -71,7 +71,7 @@ fn refs(j: &Json, result: &mut Vec<String>) {
         _ => {}
     }
 }
-fn audit(result: &archsig::observed::ObservedEvaluation) {
+fn audit(result: &archsig_computation::observed::ObservedEvaluation) {
     let wire = result.wire();
     let nodes: BTreeMap<_, _> = array(get(&wire, "nodes"))
         .iter()
@@ -106,7 +106,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                     .find(|f| f.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -122,7 +122,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                 &subject.origin
             };
             let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             for location in &origin.locations {
                 let source = map
                     .sources()
@@ -183,7 +183,7 @@ fn recursive_tree_known_branch_calls_compute_from_original_bytes() {
     assert_eq!(get(&wire, "status"), &Json::str("complete"), "{wire:?}");
     assert_eq!(value(&wire, "a", Json::str("Z")), &Json::str("4"));
     let body = match &result.prepared().inputs().law().declarations()["Trees.total"].signature {
-        archsig::law::model::Signature::View { body, .. } => *body,
+        archsig_input::law::model::Signature::View { body, .. } => *body,
         _ => unreachable!(),
     };
     let span = result.prepared().inputs().law().exprs()[body].span;

@@ -1,13 +1,12 @@
-use archsig as fixture_archsig;
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("owned_compound_family.rs");
 }
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    input::InputSources,
     json::{JNode, JValue, parse},
 };
+use archsig_input::input::InputSources;
 
 pub const SCRIPT: &str = r#"
 view accept(a:System,s:State[a]):Bool=true;

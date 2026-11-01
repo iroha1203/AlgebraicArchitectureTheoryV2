@@ -1,4 +1,4 @@
-use archsig::canonical::Json;
+use archsig_common::canonical::Json;
 
 // 元のspanを保った期待値へ、公開結果で必須の1始まり位置を補う。
 pub fn law_positions(mut expected: Json, law: &[u8]) -> Json {

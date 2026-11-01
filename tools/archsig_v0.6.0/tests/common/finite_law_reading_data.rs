@@ -6,7 +6,7 @@ pub fn conditional_inputs(choice: Option<&str>, body: &str) -> Arc<CheckedInputs
         r#""fields":[{"name":"choice","type":["Ref","Family.Root"],"meaning":"選んだ根。"},{"name":"quantity""#,
     );
     let defs =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
     let digest = &defs.vocabularies()["Family"].digest;
     let extra=choice.map(|root|format!(r#"{{"id":"choice","subject":"q","field":"Family.Part.choice","value":["v","{root}"],"origin":"model"}},"#)).unwrap_or_default();
     let map=MAP.replace(r#""atoms":["#,&format!(r#""atoms":[{{"id":"pc","subject":"p","field":"Family.Part.choice","value":["v","root"],"origin":"model"}},{extra}"#));

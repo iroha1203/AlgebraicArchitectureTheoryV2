@@ -1,9 +1,11 @@
 //! 必須の構文・参照・schema拒否が確定した直後にも、取消の停止が優先されることを検査する。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::{PrepareFailure, prepare_observed, request::ResolveFailure};
+use archsig_input::{
     input::{InputSources, InputStatus, check_inputs},
-    observed::{PrepareFailure, prepare_observed, request::ResolveFailure},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

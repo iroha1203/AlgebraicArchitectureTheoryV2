@@ -1,8 +1,8 @@
 //! AC4: 原始値と整合性。欠測と既知値の区別、各型の encoding、参照、由来、補完の存在。
 
 use crate::common;
-use archsig::archmap::{Slot, Value};
-use archsig::issue::Code;
+use archsig_common::issue::Code;
+use archsig_input::archmap::{Slot, Value};
 use common::*;
 
 const DEFINITION: &str = r#"{
@@ -290,7 +290,7 @@ fn missing_zero_empty_and_none_are_kept_apart() {
         .into_iter()
         .find(|m| m.1 == "i" && m.2 == "V.Item.m")
         .unwrap();
-    assert_eq!(*ty, archsig::types::Type::Z);
+    assert_eq!(*ty, archsig_common::types::Type::Z);
 }
 
 #[test]

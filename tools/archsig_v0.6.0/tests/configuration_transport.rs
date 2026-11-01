@@ -1,14 +1,14 @@
 use crate::common::helpers::stop_at;
-use archsig::{
-    archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        maps::{
-            ConfigurationTransport, Naturality, TransportConditionFailure, configuration_transport,
-            correspondence, identity, internal_arrow,
-        },
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{
+        ConfigurationTransport, Naturality, TransportConditionFailure, configuration_transport,
+        correspondence, identity, internal_arrow,
     },
-    control::{Checkpoint, Control},
+};
+use archsig_input::{
+    archmap::Fact as FactPointer,
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -18,7 +18,7 @@ const L: &str = include_str!("fixtures/configuration-operation.law");
 const A: &str = include_str!("fixtures/object-configuration-map.archmap.json");
 const DIGEST: &str = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 fn with_definition(d: &[u8], a: &str) -> CheckedInputs {
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["Reservations"].digest;
     check_inputs(
         InputSources::from_bytes(
@@ -35,7 +35,7 @@ fn inputs(a: &str) -> CheckedInputs {
 }
 fn cross_kind_inputs() -> CheckedInputs {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["V"].digest;
     check_inputs(
         InputSources::from_bytes(

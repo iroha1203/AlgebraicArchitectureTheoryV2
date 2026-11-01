@@ -1,12 +1,13 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
+    control::{Checkpoint, Control},
+};
+use archsig_computation::{
     construction::{
         ConstructionFailure, construct,
         maps::{correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
-    control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
         object_view_transport::{
@@ -15,6 +16,9 @@ use archsig::{
             object_view_transport,
         },
     },
+};
+use archsig_input::{
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
@@ -28,13 +32,14 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
 }
 fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),
@@ -84,7 +89,7 @@ fn finite_view_family_is_preserved_at_every_boolean_argument() {
     assert_eq!(family.parameters().len(), 1);
     assert_eq!(
         family.parameters()[0].position(),
-        archsig::observed::value_transport::DeclarationValuePosition::Parameter(1)
+        archsig_computation::observed::value_transport::DeclarationValuePosition::Parameter(1)
     );
     assert_eq!(family.parameters()[0].forward(), Some([0, 1].as_slice()));
     assert_eq!(family.rows().len(), 2);
@@ -151,7 +156,7 @@ fn reference_and_composite_values_use_value_maps_instead_of_atom_outside_action(
             assert_eq!(
                 r.objects()
                     .action()
-                    .image(&archsig::archmap::Fact {
+                    .image(&archsig_input::archmap::Fact {
                         snapshot: "v".into(),
                         subject: "m".into(),
                         field: None,
@@ -198,7 +203,7 @@ fn unequal_values_keep_both_evaluations_original_support_and_operation() {
         .iter()
         .find(|f| f.name == "Left.Child.count")
         .unwrap();
-    let archsig::archmap::Slot::Known { origin, .. } = &atom.slot else {
+    let archsig_input::archmap::Slot::Known { origin, .. } = &atom.slot else {
         panic!()
     };
     let origin = i
@@ -536,7 +541,7 @@ fn target_expression_stop_keeps_source_and_target_partial_dag_without_a_decision
 #[test]
 fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
     let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let defs = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &defs.vocabularies()["V"].digest;
     let law = "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Read { use vocabulary V version \"1\" digest \"@DIGEST@\"; view probe(s: V.S): Bool = false; }";
     let i = Arc::new(
@@ -749,7 +754,7 @@ fn finite_view_family_follows_reference_images_instead_of_matching_row_numbers()
 }
 #[test]
 fn finite_view_parameter_collision_is_a_type_condition_with_its_whole_domains() {
-    use archsig::observed::object_view_transport::FamilyTypeFailure;
+    use archsig_computation::observed::object_view_transport::FamilyTypeFailure;
     let law = family_law(
         "view family(c:Left.Child,x:Option<Left.Child>):Bool=true;",
         "view family(d:Right.Child,y:Option<Right.Child>):Bool=true;",
@@ -805,7 +810,7 @@ fn outside_box_inputs(source: &str, target: &str) -> Arc<CheckedInputs> {
 
 #[test]
 fn finite_view_parameter_retains_the_collision_of_equal_outside_target_images() {
-    use archsig::observed::object_view_transport::FamilyTypeFailure;
+    use archsig_computation::observed::object_view_transport::FamilyTypeFailure;
     let i = outside_box_inputs(
         "view family(c:Left.Child,x:Left.Box):Bool=true;",
         "view family(d:Right.Child,y:Left.Box):Bool=true;",
@@ -839,7 +844,9 @@ fn finite_view_parameter_retains_the_collision_of_equal_outside_target_images() 
 
 #[test]
 fn finite_view_return_retains_the_collision_of_equal_outside_target_images() {
-    use archsig::observed::object_view_transport::{FamilyTypeFailure, ViewFamilyReturnMap};
+    use archsig_computation::observed::object_view_transport::{
+        FamilyTypeFailure, ViewFamilyReturnMap,
+    };
     let i = outside_box_inputs(
         "view family(c:Left.Child,b:Bool):Option<Left.Box> = none<Left.Box>;",
         "view family(d:Right.Child,q:Bool):Option<Left.Box> = none<Left.Box>;",
@@ -1046,7 +1053,7 @@ fn finite_view_family_keeps_all_data_option_set_and_boolean_product_values() {
 
 #[test]
 fn finite_view_family_preserves_numeric_product_return_maps_without_sampling_the_type() {
-    use archsig::observed::object_view_transport::ViewFamilyReturnMap;
+    use archsig_computation::observed::object_view_transport::ViewFamilyReturnMap;
     let law = family_law(
         "view family(c:Left.Child,b:Bool):(Z,Q)=(if b then c.count+1 else c.count,rat(1,2));",
         "view family(d:Right.Child,q:Bool):(Z,Q)=(if q then 3 else 2,rat(1,2));",
@@ -1088,14 +1095,14 @@ fn finite_view_family_moves_owned_container_types_with_the_original_owner_parame
     assert_eq!(map.target_parameter().name, "y");
     assert_eq!(
         map.source_type(),
-        &archsig::types::Type::Set(Box::new(archsig::types::Type::Owned(
+        &archsig_common::types::Type::Set(Box::new(archsig_common::types::Type::Owned(
             "Left.Child".into(),
             "c".into()
         )))
     );
     assert_eq!(
         map.target_type(),
-        &archsig::types::Type::Set(Box::new(archsig::types::Type::Owned(
+        &archsig_common::types::Type::Set(Box::new(archsig_common::types::Type::Owned(
             "Right.Child".into(),
             "d".into()
         )))
@@ -1118,7 +1125,7 @@ fn finite_view_family_recheck_rejects_changed_input_bytes_body_and_unused_proven
 
 #[test]
 fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
-    use archsig::observed::object_view_transport::FamilyTypeFailure;
+    use archsig_computation::observed::object_view_transport::FamilyTypeFailure;
     let law = family_law(
         "view family(c:Left.Child,x:Option<Left.Child>):Bool=true;",
         "view family(d:Right.Child,y:Option<Right.Child>):Bool=true;",
@@ -1157,7 +1164,7 @@ fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
 
 #[test]
 fn mixed_primitive_products_keep_whole_type_identity_for_closed_and_finite_views() {
-    use archsig::observed::object_view_transport::ViewFamilyReturnMap;
+    use archsig_computation::observed::object_view_transport::ViewFamilyReturnMap;
     for parameter in [false, true] {
         let law = if parameter {
             family_law(
@@ -1211,7 +1218,7 @@ fn mixed_primitive_products_keep_whole_type_identity_for_closed_and_finite_views
 
 #[test]
 fn primitive_containers_preserve_known_empty_values_without_filling_missing_values() {
-    use archsig::observed::object_view_transport::ViewFamilyReturnMap;
+    use archsig_computation::observed::object_view_transport::ViewFamilyReturnMap;
     for parameter in [false, true] {
         let (sp, tp, sc, tc) = if parameter {
             (",b:Bool", ",q:Bool", "b", "q")

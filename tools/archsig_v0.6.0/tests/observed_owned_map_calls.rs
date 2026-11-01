@@ -1,8 +1,8 @@
 //! Mapのkey/image所属と完全なOwned始域を元三入力から計算する。
 use crate::common::owned_map_calls as fixture;
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -19,7 +19,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
-fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run_input(i: InputSources, asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let r = evaluate_observed_bytes(i, asks, &Control::unlimited())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
@@ -27,7 +27,7 @@ fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvalu
 }
 use crate::common::helpers::get;
 use crate::common::quiet;
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     run_input(fixture::input("known", "r1"), asks)
 }
 fn codes(a: &Json) -> Vec<&Json> {
@@ -306,7 +306,7 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let before = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
@@ -390,7 +390,8 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
                         .iter()
                         .find(|field| Json::str(&field.name) == f["field"])
                         .unwrap();
-                    let archsig::archmap::Slot::Known { atom, origin, .. } = &atom.slot else {
+                    let archsig_input::archmap::Slot::Known { atom, origin, .. } = &atom.slot
+                    else {
                         panic!("known")
                     };
                     assert_eq!(&Json::str(atom), &f["atom"]);

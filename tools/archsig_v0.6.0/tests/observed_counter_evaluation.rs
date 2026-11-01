@@ -1,13 +1,15 @@
 //! AC1 の byte → 型付き回答。期待値は I/O の最小の一周と結果 §§1–3,6 による。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::{
+    EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes,
+    prepare_checked_observed,
+};
+use archsig_input::{
     definition::check_definitions,
     input::{InputSources, check_inputs},
-    observed::{
-        EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes,
-        prepare_checked_observed,
-    },
     result::Signal,
 };
 use std::{
@@ -382,7 +384,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
         .find(|f| f.name == "Counter.State.count")
         .unwrap()
         .slot;
-    let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+    let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
         panic!("反例は既知の原始事実を使う")
     };
     assert_eq!(atom, "count");
@@ -391,7 +393,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
             .archmap()
             .origins()
             .iter()
-            .any(|o| &o.id == origin && o.mode == archsig::archmap::Mode::Specification)
+            .any(|o| &o.id == origin && o.mode == archsig_input::archmap::Mode::Specification)
     );
     for node in index.values() {
         if field(node, "type") == &Json::str("Evidence")
@@ -508,15 +510,15 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
                 .find(|d| {
                     matches!(
                         &d.signature,
-                        archsig::law::model::Signature::View { .. }
-                            | archsig::law::model::Signature::Law { .. }
+                        archsig_input::law::model::Signature::View { .. }
+                            | archsig_input::law::model::Signature::Law { .. }
                     ) && d.span.0 <= position.0
                         && position.1 <= d.span.1
                 })
                 .unwrap();
             let params = match &declaration.signature {
-                archsig::law::model::Signature::View { params, .. }
-                | archsig::law::model::Signature::Law { params, .. } => params,
+                archsig_input::law::model::Signature::View { params, .. }
+                | archsig_input::law::model::Signature::Law { params, .. } => params,
                 _ => unreachable!(),
             };
             for binding in arr(field(payload, "bindings")) {
@@ -588,7 +590,7 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
         assert_eq!(field(payload, "role"), &Json::str(role));
         let declaration = &checked.law().declarations()[text(field(payload, "name"))];
         assert_eq!(span(field(payload, "occurrence")), declaration.span);
-        let archsig::law::model::Signature::Law { body, params, .. } = &declaration.signature
+        let archsig_input::law::model::Signature::Law { body, params, .. } = &declaration.signature
         else {
             panic!("Law")
         };
@@ -751,7 +753,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
                     .find(|f| f.name == field_name)
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom: actual,
                     origin,
                     ..
@@ -771,7 +773,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
                 .iter()
                 .find(|o| &o.id == origin)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             assert_eq!(origin.locations[0].path, "counter.model");
             assert_eq!(origin.locations[0].span, Some((3, 8)));
             let source = checked
@@ -1473,7 +1475,7 @@ fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str
             .iter()
             .find(|f| f.name == "Counter.State.enabled")
             .unwrap();
-        let archsig::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
+        let archsig_input::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
             panic!("guardは観測済み")
         };
         assert_eq!(atom, "enabled");
@@ -1486,14 +1488,14 @@ fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str
             .unwrap();
         assert_eq!(origin.locations[0].path, "gate.model");
         assert_eq!(origin.locations[0].span, Some((1, 5)));
-        assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+        assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
         let body_slot = &subject
             .fields
             .iter()
             .find(|f| f.name == "Counter.State.count")
             .unwrap()
             .slot;
-        let archsig::archmap::Slot::Known {
+        let archsig_input::archmap::Slot::Known {
             origin: body_origin,
             ..
         } = body_slot
@@ -1579,7 +1581,7 @@ fn true_field_guard_with_missing_body_keeps_applicability_and_all_completions() 
             .find(|f| f.name == "Counter.State.count")
             .unwrap()
             .slot,
-        archsig::archmap::Slot::Missing
+        archsig_input::archmap::Slot::Missing
     ));
     let result = run(inputs, &["bounded=check(Guarded.bounded,s=@v/s)"]);
     assert_eq!(field(&result, "status"), &Json::str("partial"));
@@ -1835,7 +1837,7 @@ reading Follow {{
             .find(|f| f.name == "Counter.State.count")
             .unwrap()
             .slot,
-        archsig::archmap::Slot::Missing
+        archsig_input::archmap::Slot::Missing
     ));
     let result = run(inputs, &["n=evaluate(Follow.amount,s=@v/s)"]);
     assert_eq!(field(&result, "status"), &Json::str("partial"));

@@ -1,7 +1,8 @@
 //! 元署名の単一Owned参照を実callと原始owner事実へ接続する。
 use crate::common::owned_calls as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else {
         panic!("object {j:?}")
@@ -24,7 +25,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     evaluate_observed_bytes(fixture::input(false, true, "r1"), asks, &quiet()).unwrap()
 }
 #[test]
@@ -173,7 +174,7 @@ fn owned_call_provenance_pair_and_fixed_evidence_keys_preserve_current_sources()
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, true, revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let before = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
@@ -255,7 +256,8 @@ fn owned_call_provenance_pair_and_fixed_evidence_keys_preserve_current_sources()
                         .iter()
                         .find(|field| Json::str(&field.name) == f["field"])
                         .unwrap();
-                    let archsig::archmap::Slot::Known { atom, origin, .. } = &atom.slot else {
+                    let archsig_input::archmap::Slot::Known { atom, origin, .. } = &atom.slot
+                    else {
                         panic!("known")
                     };
                     assert_eq!(&Json::str(atom), &f["atom"]);
@@ -404,7 +406,9 @@ fn failed_call_field_projection_preserves_original_condition_and_batch_answers()
     );
     let r = match result {
         Ok(r) => r,
-        Err(archsig::observed::EvaluationFailure::NotImplemented { feature, .. }) => {
+        Err(archsig_computation::observed::EvaluationFailure::NotImplemented {
+            feature, ..
+        }) => {
             panic!("field projection lost a known failed condition: {feature}")
         }
         Err(_) => panic!("unexpected input/evaluation failure"),

@@ -2,11 +2,11 @@
 use crate::common::helpers::obj;
 use crate::common::known_map as maps;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
 };
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
@@ -259,7 +259,7 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
                         .iter()
                         .find(|f| f.name == text(get(fact, "field")))
                         .unwrap();
-                    let archsig::archmap::Slot::Known {
+                    let archsig_input::archmap::Slot::Known {
                         atom: actual,
                         origin,
                         ..
@@ -269,7 +269,7 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
                     };
                     assert_eq!(atom, &Json::str(actual));
                     let origin = map.origins().iter().find(|o| &o.id == origin).unwrap();
-                    assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+                    assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
                     for loc in &origin.locations {
                         let source = map.sources().iter().find(|s| s.id == loc.source).unwrap();
                         assert_eq!(source.uri, "urn:fixture:known-map");
@@ -406,7 +406,7 @@ fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_sl
             .unwrap()
             .slot;
         assert!(
-            matches!(owner,archsig::archmap::Slot::Known{value:archsig::archmap::Value::Ref{snapshot,subject},..} if snapshot=="v"&&subject=="r")
+            matches!(owner,archsig_input::archmap::Slot::Known{value:archsig_input::archmap::Value::Ref{snapshot,subject},..} if snapshot=="v"&&subject=="r")
         );
     }
     assert!(

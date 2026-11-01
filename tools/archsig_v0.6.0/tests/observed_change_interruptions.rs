@@ -1,6 +1,8 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_input::{
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     result::Signal,
 };

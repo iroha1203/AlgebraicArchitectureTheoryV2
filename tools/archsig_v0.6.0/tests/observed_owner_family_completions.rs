@@ -1,10 +1,8 @@
 use crate::common::owner_completions as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::{InputSources, check_inputs};
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -137,11 +135,11 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
                     .find(|s| s.name == text(field))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, origin, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, origin, .. } => {
                         assert_eq!(f(fact, "atom"), &Json::str(atom));
                         origin
                     }
-                    archsig::archmap::Slot::Missing => {
+                    archsig_input::archmap::Slot::Missing => {
                         assert!(!obj(fact).contains_key("atom"));
                         &subject.origin
                     }
@@ -358,7 +356,7 @@ fn unknown_owner_family_uses_known_map_constraints_and_keeps_the_raw_missing_slo
             .find(|f| f.name == "Reservations.State.owner")
             .unwrap()
             .slot,
-        archsig::archmap::Slot::Missing
+        archsig_input::archmap::Slot::Missing
     );
     let j = run(
         i,

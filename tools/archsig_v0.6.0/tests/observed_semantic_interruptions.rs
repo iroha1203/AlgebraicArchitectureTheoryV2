@@ -1,11 +1,13 @@
 //! 入力の字句・構文検査の後にも、型検査と循環探索へ共有中断制御が届く。
 use crate::common;
 
-use archsig::{
-    archmap::check_archmap_controlled,
+use archsig_common::{
     control::{CheckFailure, Checkpoint, Control},
-    definition::check_definitions,
     issue::Code,
+};
+use archsig_input::{
+    archmap::check_archmap_controlled,
+    definition::check_definitions,
     law::{check_law, check_law_controlled},
     result::Signal,
 };
@@ -97,7 +99,7 @@ fn cancellation_inside_cycle_dfs_stays_distinct_from_a_cycle_input_error() {
     assert_eq!(seen.get(), 4);
 }
 
-fn term_input(body: &str) -> (archsig::definition::CheckedDefinitions, String) {
+fn term_input(body: &str) -> (archsig_input::definition::CheckedDefinitions, String) {
     let declaration = common::entity_json(
         "V.State",
         "[]",
@@ -112,7 +114,7 @@ fn term_input(body: &str) -> (archsig::definition::CheckedDefinitions, String) {
     ));
     let definitions = check_definitions(&[("definition0", source.as_bytes())]).unwrap();
     let digest = &definitions.vocabularies()["V"].digest;
-    let body_json = archsig::canonical::Json::str(body).canonical();
+    let body_json = archsig_common::canonical::Json::str(body).canonical();
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"V","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"test","locations":[],"note":"Term input"}}],"snapshots":[{{"id":"s","origin":"model","subjects":[{{"id":"root","type":"V.State","origin":"model"}}],"atoms":[{{"id":"f","subject":"root","field":"V.State.function","origin":"model","value":{{"params":["x"],"body":{body_json}}}}}]}}]}}"#
     );

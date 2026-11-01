@@ -1,12 +1,11 @@
-use archsig as fixture_archsig;
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    input::InputSources,
     json::{JNode, JValue, parse},
 };
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("unknown_map_domain.rs");
 }
 pub const SCRIPT: &str = r#"
@@ -77,7 +76,7 @@ mod numeric {
     include!("finite_map.rs");
 }
 pub fn numeric_input() -> InputSources {
-    let d = archsig::definition::check_definitions(&[(
+    let d = archsig_input::definition::check_definitions(&[(
         "definition0",
         numeric::OWNED_DEFINITIONS.as_bytes(),
     )])

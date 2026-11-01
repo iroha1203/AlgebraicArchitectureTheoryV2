@@ -1,11 +1,11 @@
 use crate::common::helpers::stop_at;
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{Counterexample, internal_arrow, internal_arrows},
+};
+use archsig_input::{
     archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        maps::{Counterexample, internal_arrow, internal_arrows},
-    },
-    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -14,7 +14,7 @@ const D: &[u8] = include_bytes!("fixtures/internal-arrow.atoms.json");
 const L: &str = include_str!("fixtures/internal-arrow.law");
 const A: &str = include_str!("fixtures/internal-arrow.archmap.json");
 fn inputs(map: &str) -> CheckedInputs {
-    let definitions = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let definitions = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &definitions.vocabularies()["Flow"].digest;
     check_inputs(
         InputSources::from_bytes(
@@ -71,7 +71,10 @@ fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
     assert_eq!(hits, 1);
     result
 }
-fn result(i: &CheckedInputs, arrow: &str) -> archsig::construction::maps::InternalArrowResult {
+fn result(
+    i: &CheckedInputs,
+    arrow: &str,
+) -> archsig_computation::construction::maps::InternalArrowResult {
     internal_arrow(i, "FlowRead", "v", "A", "v", arrow, &Control::unlimited()).unwrap()
 }
 #[test]

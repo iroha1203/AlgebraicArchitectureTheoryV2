@@ -1,6 +1,7 @@
 //! 数値が通常値でない部分Tupleの所属条件を元入力で確かめる。
 use crate::common::owned_partial_calls as fixture;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -42,7 +43,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
@@ -113,7 +114,10 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
                 .iter()
                 .position(|e| e.span == (*start as usize, *end as usize))
                 .unwrap();
-            if matches!(law.expr_type(id), Some(archsig::types::Type::Tuple(_))) {
+            if matches!(
+                law.expr_type(id),
+                Some(archsig_common::types::Type::Tuple(_))
+            ) {
                 let Json::Obj(v) = v else {
                     panic!("evaluation")
                 };
@@ -276,7 +280,7 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
         .find(|f| f.name == "Reservations.Reserve.owner")
         .unwrap();
     assert!(
-        matches!(&owner.slot,archsig::archmap::Slot::Known{value:archsig::archmap::Value::Ref{snapshot,subject},..}if snapshot=="v"&&subject=="A")
+        matches!(&owner.slot,archsig_input::archmap::Slot::Known{value:archsig_input::archmap::Value::Ref{snapshot,subject},..}if snapshot=="v"&&subject=="A")
     );
     let to = e
         .fields
@@ -285,9 +289,9 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
         .unwrap();
     assert_eq!(
         to.ty,
-        archsig::types::Type::Owned("Reservations.State".into(), "owner".into())
+        archsig_common::types::Type::Owned("Reservations.State".into(), "owner".into())
     );
-    assert!(matches!(to.slot, archsig::archmap::Slot::Missing));
+    assert!(matches!(to.slot, archsig_input::archmap::Slot::Missing));
     let evaluation = node(&absent_wire, get(get(a, "outputs"), "evaluation"));
     let domain = node(&absent_wire, &arr(get(evaluation, "arguments"))[1]);
     assert_eq!(get(domain, "type"), &Json::str("Domain"));

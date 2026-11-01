@@ -1,16 +1,17 @@
 //! 未使用情報の保持、選択した問いだけの評価、全入力の静的検査。
 use crate::common::positions;
-use archsig::{
+use archsig_common::{
     canonical::{Json, sha256_digest},
     control::Control,
+    json::{JNode, JValue},
+};
+use archsig_computation::observed::{
+    EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes, prepare_observed,
+};
+use archsig_input::{
     definition::check_definitions,
     input::{CheckedInputs, InputSources, InputStatus},
-    json::{JNode, JValue},
     law::{ast::ExprKind, model::Signature},
-    observed::{
-        EvaluationFailure, PrepareFailure, evaluate_observed, evaluate_observed_bytes,
-        prepare_observed,
-    },
     result::{declaration_wire, location_wire, primitive_declarations_wire},
 };
 use std::collections::BTreeMap;
@@ -77,7 +78,7 @@ fn fixture_json(bytes: &[u8]) -> Json {
             JValue::Null => panic!("この小さい入力に null はない"),
         }
     }
-    convert(&archsig::json::parse(bytes).unwrap())
+    convert(&archsig_common::json::parse(bytes).unwrap())
 }
 fn pointer<'a>(root: &'a Json, path: &str) -> &'a Json {
     path.split('/').skip(1).fold(root, |node, part| match node {

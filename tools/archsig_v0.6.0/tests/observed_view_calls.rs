@@ -1,11 +1,13 @@
 //! AC4の非再帰view呼出し: 三入力byteから実引数、元body、値と停止prefixを確認する。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -136,7 +138,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -158,7 +160,7 @@ fn audit_dag(result: &Json, checked: &CheckedInputs) {
                 .iter()
                 .find(|o| &o.id == origin_id)
                 .unwrap();
-            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
             let location = &origin.locations[0];
             assert_eq!(
                 location.path,
@@ -1119,7 +1121,7 @@ fn one_zero_argument_named_call_retains_original_body_and_typed_derivation() {
 
 #[test]
 fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints() {
-    use archsig::observed::{
+    use archsig_computation::observed::{
         EvaluationFailure, PrepareFailure,
         request::{RequestIssueCode, ResolveFailure},
     };

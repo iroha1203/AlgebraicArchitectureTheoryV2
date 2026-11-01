@@ -1,10 +1,8 @@
 use crate::common::map_field_completions as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::{InputSources, check_inputs};
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -147,11 +145,11 @@ fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json 
                     .find(|s| s.name == text(field))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, origin, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, origin, .. } => {
                         assert_eq!(f(fact, "atom"), &Json::str(atom));
                         origin
                     }
-                    archsig::archmap::Slot::Missing => {
+                    archsig_input::archmap::Slot::Missing => {
                         assert!(!obj(fact).contains_key("atom"));
                         &subject.origin
                     }
@@ -270,18 +268,18 @@ fn map_field_completions_share_tables_keep_independent_slots_and_actual_applicat
         .unwrap();
     assert_eq!(
         field.ty,
-        archsig::types::Type::Map(
-            Box::new(archsig::types::Type::Owned(
+        archsig_common::types::Type::Map(
+            Box::new(archsig_common::types::Type::Owned(
                 "MapFields.Key".into(),
                 "owner".into()
             )),
-            Box::new(archsig::types::Type::Owned(
+            Box::new(archsig_common::types::Type::Owned(
                 "MapFields.Image".into(),
                 "owner".into()
             ))
         )
     );
-    assert_eq!(field.slot, archsig::archmap::Slot::Missing);
+    assert_eq!(field.slot, archsig_input::archmap::Slot::Missing);
     let j = run(
         input,
         &[
@@ -487,7 +485,7 @@ fn map_field_empty_domains_and_inconsistent_nonempty_to_empty_keep_input_stages(
     original_missing(&j, "read", "h", "MapFields.Holder.table");
     original_missing(&j, "empty", "h", "MapFields.Holder.empty");
     let failure = check_inputs(fixture::no_images(), &quiet()).unwrap_err();
-    assert_eq!(failure.status(), archsig::input::InputStatus::Invalid);
+    assert_eq!(failure.status(), archsig_input::input::InputStatus::Invalid);
     assert!(
         failure
             .issues()

@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod references {
-    use super::fixture_archsig as archsig;
+
     include!("reference_completions.rs");
 }
 #[allow(unused_imports)]

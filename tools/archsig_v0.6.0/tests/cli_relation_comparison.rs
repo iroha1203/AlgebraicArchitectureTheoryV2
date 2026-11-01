@@ -1,15 +1,17 @@
 use crate::common::cli;
 use crate::common::public_relation as fixture;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 fn files(name: &str, script: &str, missing: bool) -> PathBuf {
     input_files(name, without_unused_hops(fixture::input(script, missing)))
 }
 // relationの族は Hop の組で展開されるので、試験が使わない Hop(self・different)を外して族を小さくする。
-fn without_unused_hops(sources: archsig::input::InputSources) -> archsig::input::InputSources {
-    use archsig::canonical::Json;
-    use archsig::json::JValue;
+fn without_unused_hops(
+    sources: archsig_input::input::InputSources,
+) -> archsig_input::input::InputSources {
+    use archsig_common::canonical::Json;
+    use archsig_common::json::JValue;
     fn convert(node: &JNode) -> Json {
         match &node.value {
             JValue::Bool(value) => Json::Bool(*value),
@@ -29,7 +31,7 @@ fn without_unused_hops(sources: archsig::input::InputSources) -> archsig::input:
         let Json::Obj(fields) = json else { panic!() };
         fields[key] == Json::str("self") || fields[key] == Json::str("different")
     }
-    let mut map = convert(&archsig::json::parse(sources.archmap().bytes()).unwrap());
+    let mut map = convert(&archsig_common::json::parse(sources.archmap().bytes()).unwrap());
     let Json::Obj(root) = &mut map else { panic!() };
     let Json::Arr(snapshots) = root.get_mut("snapshots").unwrap() else {
         panic!()
@@ -47,7 +49,7 @@ fn without_unused_hops(sources: archsig::input::InputSources) -> archsig::input:
         panic!()
     };
     atoms.retain(|atom| !unused(atom, "subject"));
-    archsig::input::InputSources::from_bytes(
+    archsig_input::input::InputSources::from_bytes(
         sources
             .definitions()
             .iter()
@@ -57,7 +59,7 @@ fn without_unused_hops(sources: archsig::input::InputSources) -> archsig::input:
         map.canonical().into_bytes(),
     )
 }
-fn input_files(name: &str, input: archsig::input::InputSources) -> PathBuf {
+fn input_files(name: &str, input: archsig_input::input::InputSources) -> PathBuf {
     let dir = workdir(name);
     std::fs::write(dir.join("d.json"), input.definitions()[0].bytes()).unwrap();
     std::fs::write(dir.join("l.law"), input.law().bytes()).unwrap();

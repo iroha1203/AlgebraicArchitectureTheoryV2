@@ -14,7 +14,7 @@ fn write(dir: &Path, name: &str, bytes: &[u8]) -> String {
 }
 
 /// 一つの issue の code、input、pointer または span 開始。
-fn only_issue(res: &archsig::json::JNode) -> (String, String, String) {
+fn only_issue(res: &archsig_common::json::JNode) -> (String, String, String) {
     let issues = arr(get(res, "issues"));
     assert_eq!(issues.len(), 1);
     let i = &issues[0];
@@ -32,7 +32,7 @@ fn only_issue(res: &archsig::json::JNode) -> (String, String, String) {
     (code, input, at)
 }
 
-fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run, PathBuf) {
+fn check_map(name: &str, map: &[u8]) -> (archsig_common::json::JNode, Run, PathBuf) {
     let dir = workdir(name);
     write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());

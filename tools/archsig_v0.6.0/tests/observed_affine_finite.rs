@@ -1,5 +1,6 @@
 use crate::common::affine_field_chains as fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(xs) = j else { panic!("object") };
     xs.get(key).unwrap_or_else(|| panic!("{key}"))
@@ -362,7 +363,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
             &Json::Bool(true)
         );
         let input = fixture::input(script, "Z", &[], revision);
-        let checked = archsig::input::check_inputs(input, &Control::unlimited()).unwrap();
+        let checked = archsig_input::input::check_inputs(input, &Control::unlimited()).unwrap();
         let map = checked.archmap();
         let slot = map
             .snapshots()
@@ -377,7 +378,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
             .iter()
             .find(|f| f.name == "Paths.Node.mark")
             .unwrap();
-        let archsig::archmap::Slot::Known { atom, origin, .. } = &slot.slot else {
+        let archsig_input::archmap::Slot::Known { atom, origin, .. } = &slot.slot else {
             panic!()
         };
         assert!(arr(f(&w,"nodes")).iter().flat_map(|n|arr(f(n,"support"))).any(|fact|matches!(fact,Json::Obj(fs)if fs.get("field")==Some(&Json::str("Paths.Node.mark"))&&fs.get("subject")==Some(&Json::str("p"))&&fs.get("atom")==Some(&Json::str(atom)))));

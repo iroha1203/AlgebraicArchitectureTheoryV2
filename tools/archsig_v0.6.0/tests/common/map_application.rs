@@ -1,4 +1,4 @@
-use archsig::{definition::check_definitions, input::InputSources};
+use archsig_input::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod known {
     include!("known_map.rs");
@@ -69,16 +69,16 @@ pub fn owned_revision(mode: &str, revision: &str) -> InputSources {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let source = archsig::canonical::Json::obj([
-        ("id", archsig::canonical::Json::str("src")),
+    let source = archsig_common::canonical::Json::obj([
+        ("id", archsig_common::canonical::Json::str("src")),
         (
             "uri",
-            archsig::canonical::Json::str("urn:fixture:map-application"),
+            archsig_common::canonical::Json::str("urn:fixture:map-application"),
         ),
-        ("revision", archsig::canonical::Json::str(revision)),
+        ("revision", archsig_common::canonical::Json::str(revision)),
         (
             "digest",
-            archsig::canonical::Json::str(format!("sha256:{}", "a".repeat(64))),
+            archsig_common::canonical::Json::str(format!("sha256:{}", "a".repeat(64))),
         ),
     ]);
     map = map.replace(

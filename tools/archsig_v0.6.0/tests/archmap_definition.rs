@@ -1,9 +1,9 @@
 //! AC4・6・7: 独立定義の推移的 binding、未使用語彙、観測 Term の namespace scope。
 
 use crate::common;
-use archsig::archmap::{CheckedArchMap, Slot, Value, check_archmap};
-use archsig::definition::CheckedDefinitions;
-use archsig::issue::{Code, Issue};
+use archsig_common::issue::{Code, Issue};
+use archsig_input::archmap::{CheckedArchMap, Slot, Value, check_archmap};
+use archsig_input::definition::CheckedDefinitions;
 use common::*;
 
 fn binding(d: &CheckedDefinitions, ns: &str) -> String {
@@ -130,7 +130,7 @@ fn extra_bindings_are_checked_and_unused_observations_are_accepted() {
     let d = definitions_ok(&[&lib]);
     // Law は Counter のみ参照する。Extras の観測にも Counter の事実を要求しない。
     let defs = definitions_ok(&[COUNTER_DEFINITION, &lib]);
-    archsig::law::check_law(COUNTER.as_bytes(), &defs).unwrap();
+    archsig_input::law::check_law(COUNTER.as_bytes(), &defs).unwrap();
     let extra = binding(&d, "Extras");
     let count = binding(&defs, "Counter");
     let note = subject("note", "Extras.Note");
@@ -179,7 +179,7 @@ fn observed_terms_use_the_definition_namespace_and_dependency_names() {
     let checked = |body: &str| {
         let val = format!(
             r#"{{"params":[],"body":{}}}"#,
-            archsig::canonical::Json::str(body).canonical()
+            archsig_common::canonical::Json::str(body).canonical()
         );
         document(&abc, &s, &atom("f", "i", "A.Item.f", &val))
     };
@@ -239,5 +239,5 @@ fn counter_known_high_count_and_missing_count_pass_the_static_check() {
     let c = accepted(&d, &missing);
     assert_eq!(missing_slots(&c).len(), 1);
     assert_eq!(field(&c, "s", "c", "count").slot, Slot::Missing);
-    assert_eq!(missing_slots(&c)[0].3, &archsig::types::Type::Z);
+    assert_eq!(missing_slots(&c)[0].3, &archsig_common::types::Type::Z);
 }

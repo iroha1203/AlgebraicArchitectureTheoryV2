@@ -15,7 +15,9 @@ dependencies = [
 name = "archsig"
 version = "0.6.0"
 dependencies = [
+ "archsig-common",
  "archsig-computation",
+ "archsig-input",
  "nix",
  "num-bigint",
  "rustix",

@@ -1,6 +1,6 @@
 //! 公開buildから後続の実評価までを、独立した三入力で検査する。
 use crate::common::cli;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 
@@ -563,7 +563,8 @@ fn files(name: &str, body: &str, missing: bool) -> PathBuf {
 fn files_with_definition(name: &str, body: &str, missing: bool, definition: &str) -> PathBuf {
     let dir = workdir(name);
     let defs =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     let digest = &defs.vocabularies()["Build"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Build version \"1\" digest \"{digest}\";{body}}}"
@@ -732,10 +733,12 @@ fn finite_guarded_law_and_value_parameters_flow_through_public_build() {
         false,
     );
     let old =
-        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
+            .unwrap();
     let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Fp","2"]"#);
     let new =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
@@ -800,8 +803,11 @@ fn tuple_equations_keep_zero_components_out_of_refutation() {
             let evaluation = value(&result, get(case, "refutation"));
             let decision = &value(&result, get(evaluation, "value")).value;
             if num(&component[0]) == 1 {
-                assert!(matches!(decision, archsig::json::JValue::Bool(false)));
-            } else if matches!(decision, archsig::json::JValue::Bool(true)) {
+                assert!(matches!(
+                    decision,
+                    archsig_common::json::JValue::Bool(false)
+                ));
+            } else if matches!(decision, archsig_common::json::JValue::Bool(true)) {
                 refuted_first = true;
             }
         }
@@ -821,9 +827,11 @@ fn owned_arrow_is_published_as_a_checked_generator() {
         arrow
     );
     let old =
-        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
+            .unwrap();
     let new =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
@@ -921,9 +929,11 @@ fn mixed_tuple_fields_and_lexical_aliases_preserve_each_scalar_component() {
     let dir = files("public-build-mixed-tuple", body, false);
     let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
     let old =
-        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
+            .unwrap();
     let new =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name))
@@ -1160,7 +1170,9 @@ fn numeric_tuple_view_families_build_and_evaluate() {
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(
         value(&result, get(get(answer(&result, "w"), "outputs"), "value")).value,
-        archsig::json::parse(br#"[["1","1"],"0"]"#).unwrap().value
+        archsig_common::json::parse(br#"[["1","1"],"0"]"#)
+            .unwrap()
+            .value
     );
 }
 

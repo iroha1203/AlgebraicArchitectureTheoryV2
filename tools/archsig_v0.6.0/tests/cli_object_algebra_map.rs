@@ -1,6 +1,6 @@
 //! 対象族の保存を公開mapと、その後の利用まで検査する。
 use crate::common::cli;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 
@@ -80,7 +80,7 @@ fn assert_unsupported_map(dir: &Path, method: &str, operand: &str, original: &st
                 && s(get(get(r, "details"), "method")) == method
         })
         .unwrap();
-    let expected = archsig::json::parse(operand.as_bytes()).unwrap();
+    let expected = archsig_common::json::parse(operand.as_bytes()).unwrap();
     assert!(
         arr(get(get(reason, "details"), "operand_types"))
             .iter()
@@ -156,7 +156,9 @@ fn assert_reference_pairs(result: &JNode, map: &JNode, expected: &[(&str, &str)]
 fn assert_json(actual: &JNode, expected: &str) {
     assert_eq!(
         actual.value,
-        archsig::json::parse(expected.as_bytes()).unwrap().value
+        archsig_common::json::parse(expected.as_bytes())
+            .unwrap()
+            .value
     );
 }
 fn assert_local_clause(
@@ -192,7 +194,7 @@ fn assert_local_clause(
 fn assert_summary_value(summary: &JNode, saved: &JNode, reference: &JNode) {
     let original = node(saved, reference);
     assert_eq!(get(summary, "type").value, get(original, "type").value);
-    if get(original, "type").value == archsig::json::JValue::Str("Architecture".into()) {
+    if get(original, "type").value == archsig_common::json::JValue::Str("Architecture".into()) {
         assert_eq!(
             num(get(summary, "laws_count")),
             arr(get(get(original, "value"), "laws")).len() as u64
@@ -204,7 +206,7 @@ fn assert_summary_value(summary: &JNode, saved: &JNode, reference: &JNode) {
 
 fn assert_map_summary(normal: &Run, saved: &JNode) {
     let summary = &normal.receipt;
-    let archsig::json::JValue::Obj(fields) = &summary.value else {
+    let archsig_common::json::JValue::Obj(fields) = &summary.value else {
         panic!("summary object");
     };
     assert_eq!(fields.len(), 4);
@@ -234,7 +236,7 @@ fn assert_map_summary(normal: &Run, saved: &JNode) {
         let full = answer(saved, id);
         assert_eq!(s(get(brief, "question")), question);
         assert_eq!(get(brief, "status").value, get(full, "status").value);
-        let archsig::json::JValue::Obj(outputs) = &get(brief, "outputs").value else {
+        let archsig_common::json::JValue::Obj(outputs) = &get(brief, "outputs").value else {
             panic!("summary outputs");
         };
         assert_eq!(
@@ -426,7 +428,7 @@ fn change_transport_uses_explicit_field_alignments_instead_of_same_names() {
         let old = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
         let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1);
         let checked =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = checked.vocabularies()["Reservations"].digest.clone();
         std::fs::write(dir.join("d.json"), definition).unwrap();
         let archmap = std::fs::read_to_string(dir.join("a.json"))
@@ -581,7 +583,7 @@ reading After {{ {vocabulary} change tune(t:State,k:{parameter})={right}; }}"#
             let bindings = arr(get(data, "bindings"));
             assert!(matches!(
                 value(&result, get(&bindings[1], "value")).value,
-                archsig::json::JValue::Bool(true)
+                archsig_common::json::JValue::Bool(true)
             ));
         }
     }
@@ -598,7 +600,8 @@ fn incomplete_endpoint_algebras_keep_configuration_operation_and_original_reason
         if mode == "refuted" {
             let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
             let checked =
-                archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+                archsig_input::definition::check_definitions(&[("d", definition.as_bytes())])
+                    .unwrap();
             let digest = &checked.vocabularies()["Reservations"].digest;
             std::fs::write(dir.join("d.json"), definition).unwrap();
             let mut a = std::fs::read_to_string(dir.join("a.json"))
@@ -860,7 +863,8 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
     let dir = four_state_inputs("local-reference-field-preserved");
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition = old.replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"other","type":["Ref","Reservations.State"],"meaning":"別の参照先。"}, {"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
-    let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let checked =
+        archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Reservations"].digest;
     std::fs::write(dir.join("d.json"), definition).unwrap();
     let old_digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
@@ -1017,7 +1021,7 @@ fn missing_declaration_keeps_the_configuration_operation_after_refutation() {
     assert_eq!(s(get(answer(&result, "plan"), "status")), "established");
     get(get(answer(&result, "m"), "outputs"), "operation");
     let outputs = get(answer(&result, "m"), "outputs");
-    let archsig::json::JValue::Obj(fields) = &outputs.value else {
+    let archsig_common::json::JValue::Obj(fields) = &outputs.value else {
         panic!()
     };
     assert!(!fields.iter().any(|(name, _)| name == "map"));
@@ -1097,12 +1101,10 @@ reading After {{{vocabulary} local here(t:State) reads t.free;}}"#
 
 #[test]
 fn interruption_during_additional_transport_keeps_the_checked_operation() {
-    use archsig::result::Signal;
-    use archsig::{
-        control::{Checkpoint, Control},
-        input::InputSources,
-        observed::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
+    use archsig_input::result::Signal;
     // 停止理由の区別はcontrol層で確かめる。ここでは移送中の停止の1種だけを見る。
     let control = Control::new(|p| {
         let stop = p == Checkpoint::ConfigurationTransportGenerator;
@@ -1119,7 +1121,7 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
     )
     .unwrap();
     assert_eq!(result.status(), "interrupted");
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let a = answer(&wire, "m");
     assert_eq!(s(get(a, "status")), "undetermined");
     assert!(has(get(a, "outputs"), "operation"));
@@ -1202,12 +1204,12 @@ reading After {{{vocabulary} local here(n:Z,r:Q) reads n;}}"#
         "when z=1 reads z",
     );
     let bytes = std::fs::read(dir.join("out/result.json")).unwrap();
-    let result = archsig::json::parse(&bytes).unwrap();
+    let result = archsig_common::json::parse(&bytes).unwrap();
     let reason = arr(get(answer(&result, "m"), "reasons"))
         .iter()
         .find(|r| s(get(r, "code")) == "unsupported_algorithm")
         .unwrap();
-    let rational = archsig::json::parse(br#""Q""#).unwrap();
+    let rational = archsig_common::json::parse(br#""Q""#).unwrap();
     assert!(
         arr(get(get(reason, "details"), "operand_types"))
             .iter()
@@ -1490,7 +1492,7 @@ reading Before {{ {vocabulary} {source} }} reading After {{ {vocabulary} {target
 
 #[test]
 fn heterogeneous_relation_words_use_actual_reachable_generators_and_full_path_witnesses() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     for case in ["preserved", "alias", "cycle", "missing", "endpoints"] {
         let dir = workdir(&format!("heterogeneous-relation-{case}"));
         let mut declarations = vec![];
@@ -1557,7 +1559,7 @@ fn heterogeneous_relation_words_use_actual_reachable_generators_and_full_path_wi
         ])
         .canonical();
         let checked =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = &checked.vocabularies()["Flow"].digest;
         std::fs::write(dir.join("d.json"), definition.as_bytes()).unwrap();
         let mut subjects = vec![];
@@ -1755,7 +1757,7 @@ reading Helpers {{ {vocabulary} view same(a:XY,b:YZ,d:XZ):Bool=then(path(a),path
                     get(get(answer(&result, "action"), "outputs"), "value")
                 )
                 .value,
-                archsig::json::JValue::Bool(true)
+                archsig_common::json::JValue::Bool(true)
             ));
         }
     }
@@ -1848,8 +1850,9 @@ fn finite_local_parameter_inputs(name: &str) -> (PathBuf, String) {
     let dir = four_state_inputs(name);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition=old.replacen("\"declarations\": [",r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"有限選択値","constructors":[{"name":"Empty","arguments":[],"meaning":"空の選択"},{"name":"Full","arguments":["Bool"],"meaning":"真偽値を持つ選択"}]},"#,1);
-    let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
-    let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let before = archsig_input::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let after =
+        archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
     let digest = &after.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
@@ -2225,8 +2228,9 @@ fn finite_local_map_inputs(name: &str) -> (PathBuf, String) {
     let dir = four_state_inputs(name);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition = old.replacen("\"declarations\": [", r#""declarations": [{"kind":"entity","name":"Reservations.Key","meaning":"写像の固定キー","parameters":[],"fields":[],"alignments":[]},"#, 1);
-    let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
-    let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let before = archsig_input::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let after =
+        archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
     let digest = &after.vocabularies()["Reservations"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
@@ -2729,7 +2733,8 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
         let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
         let checked =
-            archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+            archsig_input::definition::check_definitions(&[("left", left), ("right", right)])
+                .unwrap();
         let ld = &checked.vocabularies()["Left"].digest;
         let rd = &checked.vocabularies()["Right"].digest;
         let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
@@ -2740,7 +2745,7 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
         } else {
             bridge
         };
-        let checked = archsig::definition::check_definitions(&[
+        let checked = archsig_input::definition::check_definitions(&[
             ("left", left),
             ("right", right),
             ("bridge", bridge.as_bytes()),
@@ -2858,7 +2863,7 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
                     arr(get(condition, "operands"))
                         .iter()
                         .any(|r| value(&result, r).value
-                            == archsig::json::parse(br#"["v","h"]"#).unwrap().value)
+                            == archsig_common::json::parse(br#"["v","h"]"#).unwrap().value)
                 );
             } else if case.starts_with("data-payload") {
                 let domains: Vec<_> = arr(get(condition, "operands"))
@@ -2867,7 +2872,7 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
                     .filter(|v| has(v, "kind") && s(get(v, "kind")) == "type")
                     .collect();
                 for ty in [r#"["Ref","Left.Child"]"#, r#"["Ref","Right.Child"]"#] {
-                    let expected = archsig::json::parse(ty.as_bytes()).unwrap();
+                    let expected = archsig_common::json::parse(ty.as_bytes()).unwrap();
                     assert!(
                         domains
                             .iter()
@@ -2934,9 +2939,10 @@ fn local_direct_compound_fields_share_evaluation_transport_and_missing() {
         let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
         let definition=old.replace(r#"{"name": "free", "type": "Z""#,
             &format!(r#"{{"name":"box","type":{wire},"meaning":"複合値"}},{{"name":"alternate","type":{wire},"meaning":"別の複合値"}},{{"name": "free", "type": "Z""#));
-        let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let before =
+            archsig_input::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let checked =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+            archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = &checked.vocabularies()["Reservations"].digest;
         let mut map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
@@ -3185,7 +3191,7 @@ reading Before {{{vocabulary} local here(n:Z) reads n;}} reading After {{{vocabu
 
 fn rational_local_parameter_inputs(name: &str, missing: bool) -> (PathBuf, String) {
     use crate::common::architecture_environment as fixture;
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let (dir, _) = finite_local_parameter_inputs(name);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition = old.replace(
@@ -3193,13 +3199,14 @@ fn rational_local_parameter_inputs(name: &str, missing: bool) -> (PathBuf, Strin
         r#""name": "free", "type": "Q""#,
     );
     assert_ne!(old, definition);
-    let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
-    let after = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let before = archsig_input::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+    let after =
+        archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
     let digest = &after.vocabularies()["Reservations"].digest;
     let text = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
         .replace(&before.vocabularies()["Reservations"].digest, digest);
-    let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
+    let mut map = fixture::owned(&archsig_common::json::parse(text.as_bytes()).unwrap());
     let atoms = fixture::atoms(&mut map);
     atoms.retain(|atom| !missing || !matches!(atom,Json::Obj(a) if matches!(a.get("field"),Some(Json::Str(field)) if field=="Reservations.State.free")));
     for atom in atoms {
@@ -3907,7 +3914,7 @@ reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool)=t with {{held=if
     for binding in &bindings[1..] {
         assert_eq!(
             value(&result, get(binding, "value")).value,
-            archsig::json::parse(b"true").unwrap().value
+            archsig_common::json::parse(b"true").unwrap().value
         );
     }
     let left = s(value(&result, get(data, "left"))).parse::<i64>().unwrap();
@@ -4128,14 +4135,14 @@ fn numeric_view_functions_keep_nested_axes_and_exact_cancellation() {
 reading Before {{{uses} view affine(s:State,a:Z,b:Z):(Z,Z)=(a+2*b,a-a);}}
 reading After {{{uses} view affine(s:State,x:Z,y:Z):(Z,Z)=(x+3*y,0);}}"#
     );
-    let result=archsig::observed::evaluate_observed_bytes(
-        archsig::input::InputSources::from_bytes(
+    let result=archsig_computation::observed::evaluate_observed_bytes(
+        archsig_input::input::InputSources::from_bytes(
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
             four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     ).unwrap();
-    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let m = answer(&j, "m");
     assert_eq!(s(get(m, "status")), "refuted");
     assert!(has(get(m, "outputs"), "operation"));
@@ -4209,7 +4216,7 @@ fn finite_reference_view_parameters_use_the_declared_entity_correspondence() {
     let dir = workdir("finite-reference-view-parameter-entities");
     let left = include_bytes!("fixtures/object-law-transport.atoms.json");
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
-    let initial = archsig::definition::check_definitions(&[
+    let initial = archsig_input::definition::check_definitions(&[
         ("left", left.as_slice()),
         ("right", right.as_slice()),
     ])
@@ -4219,7 +4226,7 @@ fn finite_reference_view_parameters_use_the_declared_entity_correspondence() {
     let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("left", left.as_slice()),
         ("right", right.as_slice()),
         ("bridge", bridge.as_bytes()),
@@ -4455,7 +4462,8 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
     let mut holds = 0;
     let mut nonzero = 0;
     for n in arr(get(&graph, "nodes")) {
-        if !matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "Proposition") {
+        if !matches!(&get(n, "type").value, archsig_common::json::JValue::Str(t) if t == "Proposition")
+        {
             continue;
         }
         let predicate = s(get(get(n, "value"), "predicate"));
@@ -4525,14 +4533,14 @@ fn numeric_law_zero_fibers_compare_all_points_and_recheck_actual_counterexamples
 reading Before {{{uses} law required equation(s:State,{a}):{left};}}
 reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
     );
-    let result=archsig::observed::evaluate_observed_bytes(
-        archsig::input::InputSources::from_bytes(
+    let result=archsig_computation::observed::evaluate_observed_bytes(
+        archsig_input::input::InputSources::from_bytes(
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
             four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
-    let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let j = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let m = answer(&j, "m");
     assert_eq!(s(get(m, "status")), expected, "{case}");
     assert!(has(get(m, "outputs"), "operation"), "{case}");

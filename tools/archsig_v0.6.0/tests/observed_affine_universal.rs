@@ -1,12 +1,12 @@
 //! Z/Q 全域parameterと欠測Factの補完を区別し、元式への導出を三入力から検査する。
 use crate::common;
-use archsig::{
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     archmap::Slot,
-    canonical::Json,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -318,7 +318,7 @@ fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_paramete
                     .map(|p| p.ty.wire())
                     .collect::<Vec<_>>();
                 for ast in checked.law().exprs() {
-                    use archsig::law::ast::{Builtin, QuantDomain, QuantSplit, TypeAst};
+                    use archsig_input::law::ast::{Builtin, QuantDomain, QuantSplit, TypeAst};
                     if let ExprKind::Quant {
                         var,
                         split:
@@ -434,7 +434,7 @@ fn audit_fact(support: &Json, node: &Json, checked: &CheckedInputs) {
         .iter()
         .find(|o| &o.id == origin_id)
         .unwrap();
-    assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+    assert_eq!(origin.mode, archsig_input::archmap::Mode::Specification);
     let location = &origin.locations[0];
     let source = checked
         .archmap()
@@ -717,7 +717,7 @@ fn whole<'a>(
     let ExprKind::Binary {
         lhs,
         rhs,
-        op: archsig::law::ast::BinOp::Eq,
+        op: archsig_input::law::ast::BinOp::Eq,
     } = &comparison_ast.kind
     else {
         panic!("元アフィンEq")
@@ -1940,10 +1940,10 @@ fn known_coefficients_and_provenance_relocation_preserve_universal_refutation() 
             .find(|s| s.id == "item")
             .unwrap();
         assert!(
-            matches!(&subject.fields.iter().find(|f|f.name=="Universal.Sample.owner").unwrap().slot,Slot::Known {value:archsig::archmap::Value::Ref {snapshot,subject},..} if snapshot=="v" && subject=="root")
+            matches!(&subject.fields.iter().find(|f|f.name=="Universal.Sample.owner").unwrap().slot,Slot::Known {value:archsig_input::archmap::Value::Ref {snapshot,subject},..} if snapshot=="v" && subject=="root")
         );
         assert!(
-            matches!(&subject.fields.iter().find(|f|f.name=="Universal.Sample.knownz").unwrap().slot,Slot::Known {value:archsig::archmap::Value::Z(value),..} if value.to_string()=="7")
+            matches!(&subject.fields.iter().find(|f|f.name=="Universal.Sample.knownz").unwrap().slot,Slot::Known {value:archsig_input::archmap::Value::Z(value),..} if value.to_string()=="7")
         );
     }
     for key in ["status", "outputs", "evidence", "claim", "scope", "reasons"] {

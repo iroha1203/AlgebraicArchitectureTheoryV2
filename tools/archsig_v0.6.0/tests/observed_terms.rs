@@ -1,10 +1,9 @@
 //! 閉じたTermの元bodyと実引数から値を計算する。
 use crate::common::quiet;
 use crate::common::terms;
-use archsig::{
-    canonical::Json, definition::check_definitions, input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{definition::check_definitions, input::InputSources};
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", terms::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Terms"].digest;
@@ -144,7 +143,7 @@ fn closed_term_body_evaluates_finite_quantification_and_containers() {
     );
 }
 
-fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
+fn audit_inputs(r: &archsig_computation::observed::ObservedEvaluation, revision: &str) {
     let w = r.wire();
     let inputs = r.prepared().inputs();
     let ns = arr(get(&w, "nodes"));
@@ -196,7 +195,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             let sub = snap.subjects.iter().find(|s| s.id == *subject).unwrap();
             let origin = if let Some(Json::Str(field)) = obj(f).get("field") {
                 let slot = &sub.fields.iter().find(|s| s.name == *field).unwrap().slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("support is known")
                 };
                 assert_eq!(get(f, "atom"), &Json::str(atom));
@@ -227,7 +226,7 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
 #[test]
 fn closed_term_missing_callee_and_argument_preserve_the_original_slots() {
     let s = sources("r1");
-    let before = archsig::input::check_inputs(s.clone(), &quiet()).unwrap();
+    let before = archsig_input::input::check_inputs(s.clone(), &quiet()).unwrap();
     let r = evaluate_observed_bytes(
         s,
         &[

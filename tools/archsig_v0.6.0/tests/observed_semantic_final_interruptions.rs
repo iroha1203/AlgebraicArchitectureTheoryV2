@@ -1,10 +1,8 @@
 //! 小さい意味検査の成功・既知不正・表示の末尾へ共有制御が届くことを確認する。
-use archsig::result::Signal;
-use archsig::{
-    control::{Checkpoint, Control},
-    input::{InputSources, InputStatus, check_inputs},
-    observed::{PrepareFailure, prepare_observed},
-};
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::observed::{PrepareFailure, prepare_observed};
+use archsig_input::input::{InputSources, InputStatus, check_inputs};
+use archsig_input::result::Signal;
 use std::{cell::Cell, rc::Rc};
 
 fn sources(body: &str) -> InputSources {

@@ -1,11 +1,10 @@
 //! 実際に保持された補完caseからExpression停止点を特定する。再検査のprobeも数え、固定回数を仮定しない。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-    result::Signal,
 };
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{input::InputSources, result::Signal};
 use std::{
     cell::Cell,
     collections::{BTreeMap, BTreeSet},

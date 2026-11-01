@@ -1,5 +1,5 @@
 // 文書から独立した原始入力と、選択根ごとの評価を比べるLaw。
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 pub const EXTRA: &str = r#"
 view smallStates():Bool=forall s:State . s.free+s.held=2;
 view no():Bool=false;
@@ -25,8 +25,8 @@ pub fn input(extra: &str, map: Option<&str>) -> InputSources {
 pub const MAP: &str = "m=map(Reservations.Migration,on=@v/m,reading=Reservations)";
 
 // 原始事実だけを変える負例・別snapshot。期待値を出力から作らない。
-pub fn owned(node: &archsig::json::JNode) -> archsig::canonical::Json {
-    use archsig::{canonical::Json, json::JValue};
+pub fn owned(node: &archsig_common::json::JNode) -> archsig_common::canonical::Json {
+    use archsig_common::{canonical::Json, json::JValue};
     match &node.value {
         JValue::Bool(b) => Json::Bool(*b),
         JValue::Num(n) => Json::Nat(n.parse().unwrap()),
@@ -37,17 +37,17 @@ pub fn owned(node: &archsig::json::JNode) -> archsig::canonical::Json {
     }
 }
 pub fn field<'a>(
-    j: &'a mut archsig::canonical::Json,
+    j: &'a mut archsig_common::canonical::Json,
     name: &str,
-) -> &'a mut archsig::canonical::Json {
-    let archsig::canonical::Json::Obj(o) = j else {
+) -> &'a mut archsig_common::canonical::Json {
+    let archsig_common::canonical::Json::Obj(o) = j else {
         panic!("object")
     };
     o.get_mut(name).unwrap()
 }
-pub fn changed_map(change: impl FnOnce(&mut archsig::canonical::Json)) -> String {
+pub fn changed_map(change: impl FnOnce(&mut archsig_common::canonical::Json)) -> String {
     let mut j = owned(
-        &archsig::json::parse(include_bytes!(
+        &archsig_common::json::parse(include_bytes!(
             "../fixtures/configuration-operation.archmap.json"
         ))
         .unwrap(),
@@ -55,8 +55,8 @@ pub fn changed_map(change: impl FnOnce(&mut archsig::canonical::Json)) -> String
     change(&mut j);
     j.canonical()
 }
-pub fn atoms(j: &mut archsig::canonical::Json) -> &mut Vec<archsig::canonical::Json> {
-    use archsig::canonical::Json;
+pub fn atoms(j: &mut archsig_common::canonical::Json) -> &mut Vec<archsig_common::canonical::Json> {
+    use archsig_common::canonical::Json;
     let Json::Arr(s) = field(j, "snapshots") else {
         panic!("snapshots")
     };
@@ -67,6 +67,6 @@ pub fn atoms(j: &mut archsig::canonical::Json) -> &mut Vec<archsig::canonical::J
 }
 pub fn remove_atom(id: &str) -> String {
     changed_map(|j| {
-        atoms(j).retain(|a|!matches!(a,archsig::canonical::Json::Obj(o) if o.get("id")==Some(&archsig::canonical::Json::str(id))))
+        atoms(j).retain(|a|!matches!(a,archsig_common::canonical::Json::Obj(o) if o.get("id")==Some(&archsig_common::canonical::Json::str(id))))
     })
 }

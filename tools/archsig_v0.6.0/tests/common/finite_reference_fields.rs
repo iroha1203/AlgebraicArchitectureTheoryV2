@@ -1,8 +1,8 @@
-use archsig as fixture_archsig;
-use archsig::{canonical::Json, definition::check_definitions, input::InputSources};
+use archsig_common::canonical::Json;
+use archsig_input::{definition::check_definitions, input::InputSources};
 #[allow(dead_code)]
 mod references {
-    use super::fixture_archsig as archsig;
+
     include!("reference_completions.rs");
 }
 pub fn reference(snapshot: &str, subject: &str) -> Json {

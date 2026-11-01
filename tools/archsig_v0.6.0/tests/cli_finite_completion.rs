@@ -1,11 +1,11 @@
 //! 有限な欠測値の全補完と、具体的な状態値の確定を区別する。
 use crate::common::cli;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 fn setup(body: &str) -> std::path::PathBuf {
     let dir = workdir(&format!("finite-value-completion-{body}"));
     let d = include_bytes!("fixtures/engine.atoms.json");
-    let checked = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let checked = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &checked.vocabularies()["Engine"].digest;
     let a = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Engine","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"有限二値の欠測。","locations":[],"note":"元Assignmentは空積。"}}],"snapshots":[{{"id":"engine","origin":"model","subjects":[{{"id":"add","type":"Engine.Compiler","origin":"model"}}],"atoms":[{{"id":"source","subject":"add","field":"Engine.Compiler.source","value":{{"tag":"Lit","args":["1"]}},"origin":"model"}}]}}]}}"#
@@ -308,7 +308,7 @@ fn finite_completion_discovers_selected_reads_and_ignores_unselected_missing_slo
     let dir = setup("true");
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let old_checked =
-        archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
     let old_digest = &old_checked.vocabularies()["Engine"].digest;
     let definition = old.replacen(
         "\"fields\": [",
@@ -317,7 +317,8 @@ fn finite_completion_discovers_selected_reads_and_ignores_unselected_missing_slo
     );
     assert_ne!(old, definition);
     let checked =
-        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
     let digest = &checked.vocabularies()["Engine"].digest;
     let map = std::fs::read_to_string(dir.join("a.json"))
         .unwrap()
@@ -439,7 +440,7 @@ fn finite_branch_updates_preserve_unchanged_coordinates_in_each_candidate() {
     for pair in pairs {
         let pair = arr(pair);
         let point = arr(get(node(&j, &pair[0]), "value"));
-        let archsig::json::JValue::Bool(parameter) = point[0].value else {
+        let archsig_common::json::JValue::Bool(parameter) = point[0].value else {
             panic!("Bool parameter")
         };
         parameters.push(parameter);

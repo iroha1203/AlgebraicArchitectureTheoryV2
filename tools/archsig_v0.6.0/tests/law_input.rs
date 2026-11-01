@@ -1,16 +1,16 @@
 //! Law の読込みの順序(UTF-8・字句、版、文法、宣言)と、量化の区切り。
 
 use crate::common;
-use archsig::issue::{Code, Details, Location};
-use archsig::law::check_law;
+use archsig_common::issue::{Code, Details, Location};
+use archsig_input::law::check_law;
 use common::law_definitions::*;
 use common::*;
 
-fn failure(bytes: &[u8]) -> archsig::law::LawFailure {
+fn failure(bytes: &[u8]) -> archsig_input::law::LawFailure {
     check_law(bytes, &definitions_ok(&[EMPTY_DEFINITION])).expect_err("落ちるはず")
 }
 
-fn span_of(issue: &archsig::issue::Issue) -> (usize, usize) {
+fn span_of(issue: &archsig_common::issue::Issue) -> (usize, usize) {
     let Location::Law { span } = issue.location else {
         panic!("Law の位置")
     };
@@ -119,7 +119,7 @@ law optional a(): exists s: S . A[s] = set<A>{};
         ),
     );
     let e = c.infos().iter().find(|i| i.name == "R.e").unwrap();
-    assert_eq!(e.expressions[0].ty, archsig::types::Type::Bool);
+    assert_eq!(e.expressions[0].ty, archsig_common::types::Type::Bool);
     // let の右辺の量化は let の区切りの `in` を越えない。
     ok(
         DEF_33,

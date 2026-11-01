@@ -2,10 +2,9 @@
 use crate::common::helpers::get;
 use crate::common::quiet;
 use crate::common::term_equality as fixture;
-use archsig::{
-    canonical::Json, definition::check_definitions, input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{definition::check_definitions, input::InputSources};
 fn sources(revision: &str) -> InputSources {
     let defs = fixture::definitions();
     let d = check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
@@ -165,7 +164,7 @@ fn evidence<'a>(w: &'a Json, id: &str, kind: &str) -> Vec<&'a Json> {
         .collect()
 }
 
-fn audit(r: &archsig::observed::ObservedEvaluation, revision: &str) {
+fn audit(r: &archsig_computation::observed::ObservedEvaluation, revision: &str) {
     let w = r.wire();
     let ns = arr(get(&w, "nodes"));
     let inputs = r.prepared().inputs();
@@ -218,7 +217,7 @@ fn audit(r: &archsig::observed::ObservedEvaluation, revision: &str) {
             let Json::Obj(f) = fact else { panic!("fact") };
             let origin = if let Some(Json::Str(field)) = f.get("field") {
                 let slot = &sub.fields.iter().find(|s| s.name == *field).unwrap().slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("known support")
                 };
                 assert_eq!(get(fact, "atom"), &Json::str(atom));
@@ -262,13 +261,13 @@ fn finite_term_missing_function_keeps_its_original_slot_and_inputs() {
         good.law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let before = archsig::input::check_inputs(src.clone(), &quiet()).unwrap();
+    let before = archsig_input::input::check_inputs(src.clone(), &quiet()).unwrap();
     let field = before.archmap().snapshots()[0].subjects[0]
         .fields
         .iter()
         .find(|f| f.name == "Terms.Sample.g")
         .unwrap();
-    assert!(matches!(field.slot, archsig::archmap::Slot::Missing));
+    assert!(matches!(field.slot, archsig_input::archmap::Slot::Missing));
     let r = evaluate_observed_bytes(src, &["e=evaluate(Terms.eq,s=@v/s)"], &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let w = r.wire();

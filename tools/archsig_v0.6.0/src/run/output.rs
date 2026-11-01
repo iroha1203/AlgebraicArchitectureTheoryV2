@@ -1,8 +1,8 @@
 //! 出力先の検査と、状態の確定・入力コピー・result.json の公開(実行仕様 §§5–7)。
 
 use super::{Io, Outcome, Signals};
-use crate::canonical::Json;
-use crate::result::{CheckResult, ResultIssue, Status, exit_code};
+use archsig_common::canonical::Json;
+use archsig_input::result::{CheckResult, ResultIssue, Status, exit_code};
 use std::path::{Path, PathBuf};
 
 /// path が(symlink 自体も含めて)存在するか。
@@ -74,7 +74,7 @@ pub(super) fn notify(
     signals: &mut dyn Signals,
     mut status: Status,
     mut code: u8,
-    prior_signal: Option<crate::result::Signal>,
+    prior_signal: Option<archsig_input::result::Signal>,
     mut issues: Vec<Json>,
 ) -> Outcome {
     let frozen = signals.freeze();
@@ -174,7 +174,7 @@ fn input_positions(document: &mut Json, copies: &[(&str, &[u8])]) {
             Some((id, *bytes))
         })
         .collect();
-    crate::result::add_location_positions(
+    archsig_input::result::add_location_positions(
         document,
         sources.iter().map(|(id, bytes)| (id.as_str(), *bytes)),
     );

@@ -1,6 +1,6 @@
 //! 既知の空の有限Law族は、欠測や未実装ではなく恒真の制約族である。
 use crate::common::cli;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 fn node<'a>(j: &'a JNode, r: &JNode) -> &'a JNode {
     arr(get(j, "nodes"))
@@ -13,9 +13,10 @@ fn empty_finite_law_family_localizes_and_diagnoses_without_inventing_instances()
     let dir = workdir("empty-finite-local");
     let definitions=include_str!("fixtures/counter.atoms.json").replace("\"declarations\": [",r#""declarations": [{"kind":"entity","name":"Counter.Empty","meaning":"空の有限対象族。","parameters":[],"fields":[],"alignments":[]},"#);
     let checked =
-        archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
     let digest = &checked.vocabularies()["Counter"].digest;
-    let old = archsig::definition::check_definitions(&[(
+    let old = archsig_input::definition::check_definitions(&[(
         "definition0",
         include_bytes!("fixtures/counter.atoms.json"),
     )])

@@ -4,14 +4,15 @@ mod bool_fixture {
     include!("finite_data_quotient.rs");
 }
 fn bool_result(extra: &str, asks: &[&str]) -> JNode {
-    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     let result = evaluate_observed_bytes(
         bool_fixture::sources("", extra),
         asks,
         &Control::unlimited(),
     )
     .unwrap();
-    archsig::json::parse(result.wire().canonical().as_bytes()).unwrap()
+    archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap()
 }
 #[test]
 fn atomic_bool_law_keeps_false_values_and_actual_separating_witnesses() {
@@ -125,9 +126,9 @@ fn compound_bool_observations_preserve_equality_values() {
 }
 #[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
-    use archsig::{
-        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     let original = bool_fixture::sources(
         "",
         "view fixed(s:State):Bool=false;law optional gated(s:State) when s.y:s.x;",
@@ -169,7 +170,7 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
             &Control::unlimited(),
         )
         .unwrap();
-        let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let result = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&result, "answers"))[1];
         assert_eq!(s(get(answer, "status")), expected);
         if expected == "undetermined" {
@@ -199,12 +200,13 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
 
 #[test]
 fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
-    use archsig::{
-        control::{Checkpoint, Control},
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     use std::{cell::Cell, rc::Rc};
-    for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
+    for signal in [
+        archsig_input::result::Signal::Int,
+        archsig_input::result::Signal::Term,
+    ] {
         let active = Rc::new(Cell::new(false));
         let stopped = Rc::new(Cell::new(false));
         let (inside, hit) = (active.clone(), stopped.clone());
@@ -227,7 +229,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
         )
         .unwrap();
         assert!(stopped.get());
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         assert_eq!(s(get(&answers[0], "status")), "established");
         assert_eq!(s(get(&answers[1], "status")), "undetermined");
@@ -241,9 +243,9 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
 
 #[test]
 fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
-    use archsig::{
-        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
     for (body, expected) in [
         ("if false then s.y else s.x", "established"),
         ("if true then s.x else s.y", "established"),
@@ -292,7 +294,7 @@ fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
             &Control::unlimited(),
         )
         .unwrap();
-        let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let result = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&result, "answers"))[1];
         assert_eq!(s(get(answer, "status")), expected, "{body}");
         if expected == "undetermined" {
@@ -382,9 +384,9 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
 
 #[test]
 fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
-    use archsig::{
-        control::Control,
-        observed::{evaluate::evaluate_observed_bytes, result::EvaluationFailure},
+    use archsig_common::control::Control;
+    use archsig_computation::observed::{
+        evaluate::evaluate_observed_bytes, result::EvaluationFailure,
     };
     let result = bool_result(
         "view first(s:State):Bool=s.x;law optional empty_family(s:State):forall b in list<Bool>[] . b;",

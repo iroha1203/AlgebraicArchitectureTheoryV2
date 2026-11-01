@@ -1,6 +1,6 @@
 //! 反証の日常表示は実値だけを上限付きで返す。
 use crate::common::cli;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 const D: &str = include_str!("fixtures/counter.atoms.json");
@@ -106,7 +106,7 @@ fn established_and_undetermined_summaries_keep_their_previous_fields() {
     let asks = ["ok=check(CountCheck.nonnegative,s=@v/s)"];
     let dir = inputs("summary-held-unchanged", L, A);
     let held = execute(&dir, &asks, false);
-    let expected = archsig::json::parse(br#"{"answers":[{"applicability":"applicable","id":"ok","outputs":{},"question":"check","status":"established"}],"exit_code":0,"format":"archsig.summary/1","status":"complete"}"#).unwrap();
+    let expected = archsig_common::json::parse(br#"{"answers":[{"applicability":"applicable","id":"ok","outputs":{},"question":"check","status":"established"}],"exit_code":0,"format":"archsig.summary/1","status":"complete"}"#).unwrap();
     assert_eq!(held.receipt.value, expected.value);
     let map = A.replace(r#"{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}"#, "");
     let dir = inputs("summary-unknown-unchanged", L, &map);

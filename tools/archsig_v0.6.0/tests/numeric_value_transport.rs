@@ -1,17 +1,21 @@
-use archsig::{
-    archmap::Value,
+use archsig_common::{
+    control::{Checkpoint, Control},
+    types::Type,
+};
+use archsig_computation::{
     construction::{
         ConstructionFailure,
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
     },
-    control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         numeric_transport::{NumericValueTransport, numeric_declaration_value_transport},
         value_transport::DeclarationValuePosition as Position,
     },
+};
+use archsig_input::{
+    archmap::Value,
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
-    types::Type,
 };
 use std::{cell::Cell, rc::Rc};
 const L: &str = include_str!("fixtures/numeric-value-transport.law");
@@ -19,13 +23,14 @@ const A: &str = include_str!("fixtures/reference-type.archmap.json");
 fn inputs(law: &str) -> CheckedInputs {
     let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
+    let defs =
+        archsig_input::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies()["Left"].digest;
     let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
-    let defs = archsig::definition::check_definitions(&[
+    let defs = archsig_input::definition::check_definitions(&[
         ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),

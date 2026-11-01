@@ -11,6 +11,8 @@ default-members = [".", "crates/common", "crates/input", "crates/computation"]
 resolver = "3"
 
 [dependencies]
+archsig-common = { path = "crates/common" }
+archsig-input = { path = "crates/input" }
 archsig-computation = { path = "crates/computation" }
 nix = { version = "0.29", default-features = false, features = ["signal", "process"] }
 rustix = { version = "1", features = ["fs"] }

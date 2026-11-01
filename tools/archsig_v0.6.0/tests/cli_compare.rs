@@ -2,7 +2,7 @@
 use crate::common;
 use crate::common::helpers::asks;
 use crate::common::public_path_compose as fixture;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 fn inputs(name: &str) -> PathBuf {

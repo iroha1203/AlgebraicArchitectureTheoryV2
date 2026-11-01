@@ -1,6 +1,6 @@
 //! 観測計画の独立したslot・依存・理由の期待値。
 use crate::common;
-use archsig::json::{JNode, JValue};
+use archsig_common::json::{JNode, JValue};
 use common::cli::*;
 use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/counter.atoms.json");
@@ -398,7 +398,7 @@ impl archsig::run::Io for TestIo {
 #[derive(Default)]
 struct NoSignal(usize);
 impl archsig::run::Signals for NoSignal {
-    fn freeze(&mut self) -> Option<archsig::result::Signal> {
+    fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
         self.0 += 1;
         None
     }
@@ -420,8 +420,8 @@ fn args(dir: &Path) -> archsig::run::RunArgs {
 }
 #[test]
 fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
-    use archsig::control::{Checkpoint, Control};
-    use archsig::result::Signal;
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
@@ -454,7 +454,8 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
         assert_eq!(signals.0, 1);
         assert_eq!(count.get(), at, "停止後probeなし");
         let result =
-            archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+            archsig_common::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap())
+                .unwrap();
         assert_eq!(num(get(&result, "exit_code")), 130);
         assert_eq!(s(get(&result, "status")), "interrupted");
         assert_eq!(

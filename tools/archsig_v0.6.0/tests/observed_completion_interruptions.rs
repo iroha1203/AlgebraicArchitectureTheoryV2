@@ -1,9 +1,11 @@
 //! 小さい三入力の補完検査で、内部の停止を入力不整合へ読み替えない。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_input::{
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     result::Signal,
 };

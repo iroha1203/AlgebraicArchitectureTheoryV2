@@ -1,5 +1,6 @@
 //! 三入力試験で、整合補完の全件と各補完内のwhole判断を確認する。
-use archsig::{canonical::Json, observed::ObservedEvaluation};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::ObservedEvaluation;
 use std::collections::{BTreeMap, BTreeSet};
 
 fn object(value: &Json) -> &BTreeMap<String, Json> {
@@ -102,5 +103,5 @@ pub fn original_owner_is_missing(result: &ObservedEvaluation, snapshot: &str) {
         .iter()
         .find(|field| field.name == "Reservations.State.owner")
         .unwrap();
-    assert!(matches!(owner.slot, archsig::archmap::Slot::Missing));
+    assert!(matches!(owner.slot, archsig_input::archmap::Slot::Missing));
 }

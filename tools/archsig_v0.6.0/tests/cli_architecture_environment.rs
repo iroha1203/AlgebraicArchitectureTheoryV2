@@ -1,7 +1,7 @@
 //! 公開Architectureの根を選び、同じ共有評価器で値とLawを読む。
 use crate::common;
 use crate::common::architecture_environment as fixture;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};
 fn inputs(name: &str, extra: &str, map: Option<&str>) -> PathBuf {
@@ -18,7 +18,7 @@ fn inputs(name: &str, extra: &str, map: Option<&str>) -> PathBuf {
 }
 // 移行mと状態p,q,r,s・予約操作e,fだけを残した観測。値は元のfixtureと同じ。
 fn small_map() -> String {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     fixture::changed_map(|j| {
         let unused = |value: Option<&Json>| matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()));
         {
@@ -110,7 +110,7 @@ fn public_architecture_on_scopes_root_families_and_retains_the_actual_environmen
     for (id, expected) in [("observed", false), ("source", true), ("target", false)] {
         assert_eq!(
             value(&j, get(get(answer(&j, id), "outputs"), "value")),
-            &archsig::json::parse(if expected { b"true" } else { b"false" }).unwrap(),
+            &archsig_common::json::parse(if expected { b"true" } else { b"false" }).unwrap(),
             "{id}"
         );
     }
@@ -119,7 +119,7 @@ fn public_architecture_on_scopes_root_families_and_retains_the_actual_environmen
     assert_eq!(s(get(answer(&j, "no"), "status")), "established");
     assert_eq!(
         value(&j, get(get(answer(&j, "no"), "outputs"), "value")),
-        &archsig::json::parse(b"false").unwrap()
+        &archsig_common::json::parse(b"false").unwrap()
     );
     for (request, text) in arr(get(&j, "requests")).iter().zip(qs) {
         assert_eq!(s(get(request, "text")), text);
@@ -179,7 +179,7 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
     for (id, expected) in [("a", true), ("external", true), ("composite", false)] {
         assert_eq!(
             value(&j, get(get(answer(&j, id), "outputs"), "value")),
-            &archsig::json::parse(if expected { b"true" } else { b"false" }).unwrap(),
+            &archsig_common::json::parse(if expected { b"true" } else { b"false" }).unwrap(),
             "{id}"
         );
     }
@@ -300,13 +300,13 @@ fn public_architecture_missing_value_and_owner_keep_original_slots_and_allow_ava
 
 #[test]
 fn public_architecture_root_domains_exclude_other_snapshots_and_empty_families_remain_true() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let duplicate = fixture::changed_map(|j| {
         let Json::Arr(snapshots) = fixture::field(j, "snapshots") else {
             panic!("snapshots")
         };
         let mut second = fixture::owned(
-            &archsig::json::parse(
+            &archsig_common::json::parse(
                 snapshots[0]
                     .canonical()
                     .replace("\"v\"", "\"w\"")
@@ -367,7 +367,7 @@ fn public_architecture_root_domains_exclude_other_snapshots_and_empty_families_r
         let j = result_json(&dir, &r);
         assert_eq!(
             value(&j, get(get(answer(&j, "a"), "outputs"), "value")),
-            &archsig::json::parse(b"true").unwrap(),
+            &archsig_common::json::parse(b"true").unwrap(),
             "{name}"
         );
         assert_eq!(s(get(answer(&j, "c"), "status")), "established");
@@ -387,7 +387,7 @@ fn public_architecture_root_domains_exclude_other_snapshots_and_empty_families_r
 
 #[test]
 fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_environment() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let dir = inputs("architecture-on-reuse", "", None);
     let source = [
         fixture::MAP,
@@ -412,11 +412,11 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
         }
         assert_eq!(
             value(&b, get(get(answer(&b, "a"), "outputs"), "value")),
-            &archsig::json::parse(if expected { b"true" } else { b"false" }).unwrap()
+            &archsig_common::json::parse(if expected { b"true" } else { b"false" }).unwrap()
         );
         assert!(!has(&b, "reuse"));
     }
-    let mut forged = fixture::owned(&archsig::json::parse(&previous_bytes).unwrap());
+    let mut forged = fixture::owned(&archsig_common::json::parse(&previous_bytes).unwrap());
     let Json::Arr(nodes) = fixture::field(&mut forged, "answers") else {
         panic!("answers")
     };
@@ -440,7 +440,7 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
     assert!(!warnings(&j).is_empty());
     assert_eq!(
         value(&j, get(get(answer(&j, "a"), "outputs"), "value")),
-        &archsig::json::parse(b"true").unwrap()
+        &archsig_common::json::parse(b"true").unwrap()
     );
     let changed = fixture::changed_map(|j| {
         for a in fixture::atoms(j) {
@@ -456,7 +456,7 @@ fn public_architecture_reuse_recomputes_current_root_value_and_rejects_dangling_
     let j = result_json(&dir, &current);
     assert_eq!(
         value(&j, get(get(answer(&j, "a"), "outputs"), "value")),
-        &archsig::json::parse(b"false").unwrap()
+        &archsig_common::json::parse(b"false").unwrap()
     );
     assert_eq!(
         std::fs::read(dir.join("previous/result.json")).unwrap(),
@@ -521,9 +521,9 @@ impl archsig::run::Io for DeliveryIo {
         std::fs::remove_dir_all(p)
     }
 }
-struct DeliverySignal(Option<archsig::result::Signal>);
+struct DeliverySignal(Option<archsig_input::result::Signal>);
 impl archsig::run::Signals for DeliverySignal {
-    fn freeze(&mut self) -> Option<archsig::result::Signal> {
+    fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
         self.0
     }
 }
@@ -548,20 +548,20 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             reuse: None,
         };
         let signal = match mode {
-            1 => Some(archsig::result::Signal::Int),
-            2 => Some(archsig::result::Signal::Term),
+            1 => Some(archsig_input::result::Signal::Int),
+            2 => Some(archsig_input::result::Signal::Term),
             _ => None,
         };
         let control = if mode >= 3 {
-            archsig::control::Control::new(move |_| {
+            archsig_common::control::Control::new(move |_| {
                 Some(if mode == 3 {
-                    archsig::result::Signal::Int
+                    archsig_input::result::Signal::Int
                 } else {
-                    archsig::result::Signal::Term
+                    archsig_input::result::Signal::Term
                 })
             })
         } else {
-            archsig::control::Control::unlimited()
+            archsig_common::control::Control::unlimited()
         };
         let outcome = archsig::run::run_requests(
             &mut DeliveryIo { fail: mode == 0 },
@@ -586,17 +586,18 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             std::fs::read(dir.join("other-run.tmp/keep")).unwrap(),
             b"untouched"
         );
-        let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+        let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
         if mode == 0 || mode >= 3 {
             assert!(!has(&receipt, "result"));
         } else {
             let saved =
-                archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+                archsig_common::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap())
+                    .unwrap();
             assert_eq!(s(get(&saved, "status")), "interrupted");
             assert_eq!(s(get(answer(&saved, "a"), "status")), "established");
             assert_eq!(
                 value(&saved, get(get(answer(&saved, "a"), "outputs"), "value")),
-                &archsig::json::parse(b"true").unwrap()
+                &archsig_common::json::parse(b"true").unwrap()
             );
             let candidate = value(
                 &saved,
@@ -731,7 +732,7 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
                 );
                 assert_eq!(
                     value(&internal, get(evaluation, "value")),
-                    &archsig::json::parse(b"true").unwrap()
+                    &archsig_common::json::parse(b"true").unwrap()
                 );
                 if id == "family" {
                     assert_eq!(
@@ -771,12 +772,12 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
         Some(&small_map()),
     );
     // 量化の行は内部graphにだけあるので、同じ三入力を一度だけ内部で評価する。
-    let sources = archsig::input::InputSources::from_bytes(
+    let sources = archsig_input::input::InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
     );
-    let result = archsig::observed::evaluate_observed_bytes(
+    let result = archsig_computation::observed::evaluate_observed_bytes(
         sources,
         &[
             fixture::MAP,
@@ -790,11 +791,11 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
             "guard=check(Reservations.guardedOwner,on=$m.candidate.source)",
             "external=check(Reservations.nestedOwner,x=@v/B,on=$m.candidate.source)",
         ],
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
-    let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let internal = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     for (id, status, rows) in [
         ("source", "established", 1),
         ("target", "refuted", 1),

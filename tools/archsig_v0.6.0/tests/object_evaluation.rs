@@ -1,11 +1,9 @@
-use archsig::{
-    canonical::Json,
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::{
     construction::{
         ConstructionFailure, construct,
         readings::{ObjectReadingInstances, object_reading_instances},
     },
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         evaluate_observed,
         object_evaluate::{
@@ -15,13 +13,14 @@ use archsig::{
         prepare_shared_observed,
     },
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 const L: &str = include_str!("fixtures/object-evaluation.law");
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
-    let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &d.vocabularies()["Instances"].digest;
     Arc::new(
         check_inputs(
@@ -273,11 +272,11 @@ fn fixed_argument_names_remain_explicit_parameter_bindings() {
 }
 
 fn foreign_inputs(import: bool) -> Arc<CheckedInputs> {
-    let checked = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let checked = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &checked.vocabularies()["Instances"].digest;
     let d = include_str!("fixtures/object-evaluation-foreign.atoms.json")
         .replace("@INSTANCES_DIGEST@", digest);
-    let checked = archsig::definition::check_definitions(&[
+    let checked = archsig_input::definition::check_definitions(&[
         ("definition0", D),
         ("definition1", d.as_bytes()),
     ])
@@ -370,7 +369,7 @@ fn membership_values_keep_included_and_excluded_owner_atoms_and_their_source_ori
             .find(|f| f.name == "Instances.Part.owner")
             .unwrap()
             .slot;
-        let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+        let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
             panic!("known owner")
         };
         assert_eq!(atom, "r-owner");
@@ -430,7 +429,8 @@ fn current_quantities_optional_law_counterexamples_and_external_binding_identity
 
 #[test]
 fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluations() {
-    use archsig::{control::Checkpoint, result::Signal};
+    use archsig_common::control::Checkpoint;
+    use archsig_input::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = inputs(L, A);
     let p = plan(&i);

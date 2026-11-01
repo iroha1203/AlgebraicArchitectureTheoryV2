@@ -1,12 +1,14 @@
 //! 定義manifestとmodel identityの正規化も、入力検査の同じ中断制御に従う。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     canonical::{Json, sha256_digest},
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::{PrepareFailure, prepare_observed};
+use archsig_input::{
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-    observed::{PrepareFailure, prepare_observed},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};

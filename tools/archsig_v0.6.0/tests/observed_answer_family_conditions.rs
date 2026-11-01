@@ -1,5 +1,6 @@
 use crate::common::answer_family_conditions as fixture;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -68,7 +69,10 @@ fn answer_family_projection_failure_keeps_condition_refutation_without_filling_f
         ];
         let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| match e {
-                archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
+                archsig_computation::observed::EvaluationFailure::NotImplemented {
+                    feature,
+                    ..
+                } => {
                     panic!("NotImplemented: {feature}")
                 }
                 e => panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))),
@@ -380,7 +384,7 @@ fn answer_family_conditions_keep_inputs_original_root_dag_support_and_current_pr
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
@@ -459,7 +463,7 @@ fn answer_family_conditions_keep_inputs_original_root_dag_support_and_current_pr
                 .iter()
                 .find(|s| Json::str(&s.name) == fact["field"])
                 .unwrap();
-            let archsig::archmap::Slot::Known {
+            let archsig_input::archmap::Slot::Known {
                 atom: actual,
                 origin,
                 ..

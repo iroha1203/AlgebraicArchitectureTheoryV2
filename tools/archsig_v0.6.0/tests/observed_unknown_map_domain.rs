@@ -1,6 +1,8 @@
 use crate::common::quiet;
 use crate::common::unknown_map_domain as fixture;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!("object") };
     &o[k]
@@ -16,7 +18,7 @@ fn node<'a>(j: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+    let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
     let result = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap();
     assert_eq!(result.prepared().inputs().sources(), &input);
     assert_eq!(
@@ -292,7 +294,7 @@ fn unknown_owner_map_provenance_pair_preserves_math_and_current_sources() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("varying", revision);
-        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let checked = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.call,a=@v/A,h=@v/h)"]);
         domains(&w, &["A", "B"]);

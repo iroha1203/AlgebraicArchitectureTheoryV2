@@ -2,10 +2,9 @@
 use crate::common::affine_terms as fixture;
 use crate::common::helpers::get;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json, definition::check_definitions, input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{definition::check_definitions, input::InputSources};
 fn sources() -> InputSources {
     sources_at("r1")
 }
@@ -209,7 +208,7 @@ fn nonlinear_terms_keep_typed_algorithm_obligations_and_exact_concrete_or_finite
             .is_some_and(|r| domains.iter().any(|d| get(d, "id") == get(r, "node")))
     }));
 }
-fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &str) {
+fn audit_current_sources(r: &archsig_computation::observed::ObservedEvaluation, revision: &str) {
     let w = r.wire();
     let inputs = r.prepared().inputs();
     let ns = arr(get(&w, "nodes"));
@@ -262,7 +261,7 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
             let Json::Obj(f) = fact else { panic!("fact") };
             let origin = if let Some(Json::Str(field)) = f.get("field") {
                 let slot = &sub.fields.iter().find(|f| f.name == *field).unwrap().slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("known support")
                 };
                 assert_eq!(get(fact, "atom"), &Json::str(atom));
@@ -293,7 +292,7 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
 #[test]
 fn affine_term_missing_callee_keeps_original_slots_without_a_default_program() {
     let src = sources();
-    let before = archsig::input::check_inputs(src.clone(), &quiet()).unwrap();
+    let before = archsig_input::input::check_inputs(src.clone(), &quiet()).unwrap();
     let r =
         evaluate_observed_bytes(src, &["m=evaluate(Terms.needMissing,s=@v/s)"], &quiet()).unwrap();
     assert_eq!(r.status(), "partial");

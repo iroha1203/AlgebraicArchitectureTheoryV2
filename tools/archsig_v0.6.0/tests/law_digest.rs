@@ -1,8 +1,8 @@
 //! AC5(Law 側): bytes_digest・model_digest・語彙 digest の区別と、文字列を正規化しない canonical bytes。
 
 use crate::common;
-use archsig::canonical::sha256_digest;
-use archsig::law::{lexer, model_canonical};
+use archsig_common::canonical::sha256_digest;
+use archsig_input::law::{lexer, model_canonical};
 use common::*;
 
 fn digests(src: &str) -> (String, String, Vec<String>) {
@@ -94,7 +94,7 @@ fn manifest_has_every_field_in_canonical_form() {
 
 #[test]
 fn definition_meaning_and_version_change_vocabulary_identity_and_reject_old_imports() {
-    use archsig::issue::Code;
+    use archsig_common::issue::Code;
     let base = definitions_ok(&[COUNTER_DEFINITION]);
     let changed =
         COUNTER_DEFINITION.replace("実装中の一つのカウンタ状態。", "変更したカウンタ状態。");

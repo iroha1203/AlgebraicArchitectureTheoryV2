@@ -5,13 +5,15 @@ use crate::common::helpers::{
     f, index, member_key, obj, part, reached, reference, refs, source, span, target, text, ty, val,
 };
 use crate::common::quiet;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};
@@ -218,7 +220,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known {
+                let archsig_input::archmap::Slot::Known {
                     atom,
                     origin,
                     pointer,
@@ -244,9 +246,9 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert_eq!(
                 origin.mode,
                 match snapshot.id.as_str() {
-                    "v" => archsig::archmap::Mode::Specification,
-                    "w" => archsig::archmap::Mode::Proposed,
-                    _ => archsig::archmap::Mode::Observed,
+                    "v" => archsig_input::archmap::Mode::Specification,
+                    "w" => archsig_input::archmap::Mode::Proposed,
+                    _ => archsig_input::archmap::Mode::Observed,
                 }
             );
             let source = checked

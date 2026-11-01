@@ -1,6 +1,6 @@
 use super::*;
-use crate::json::{JNode, JValue};
 use crate::run::CheckArgs;
+use archsig_common::json::{JNode, JValue};
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
@@ -78,10 +78,11 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                 ]);
                 let control = Control::unlimited();
                 let prepared = prepare_observed(sources, &asks, &control).unwrap();
-                let evaluation = crate::observed::evaluate_observed_with_rejected_answer(
-                    prepared, &control, "fail",
-                )
-                .unwrap();
+                let evaluation =
+                    archsig_computation::observed::evaluate_observed_with_rejected_answer(
+                        prepared, &control, "fail",
+                    )
+                    .unwrap();
                 assert_eq!(evaluation.status(), "error");
                 assert_eq!(!evaluation.has_nodes(), !prefix);
                 let output = directory.join(format!("out-{prefix}-{save}"));
@@ -127,10 +128,10 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                         io.0[&output.join("inputs/definitions/0.json")],
                         include_bytes!("../../../tests/fixtures/counter.atoms.json")
                     );
-                    crate::json::parse(&io.0[&output.join("result.json")]).unwrap()
+                    archsig_common::json::parse(&io.0[&output.join("result.json")]).unwrap()
                 } else {
                     assert!(io.0.is_empty());
-                    crate::json::parse(outcome.receipt().as_bytes()).unwrap()
+                    archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap()
                 };
                 let answers = array(field(&document, "answers"));
                 assert_eq!(text(field(&answers[0], "status")), "established");

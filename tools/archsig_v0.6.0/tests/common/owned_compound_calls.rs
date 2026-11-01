@@ -1,9 +1,8 @@
-use archsig as fixture_archsig;
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("owned_calls.rs");
 }
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 
 pub const SCRIPT: &str = r#"
 view ccAccept(a:System,b:System,x:(State[a],Option<List<State[b]>>),ys:Set<State[a]>,e:Option<Reserve[a]>):Bool=true;
@@ -46,7 +45,7 @@ pub fn input(unknown: bool, revision: &str) -> InputSources {
 }
 
 pub fn missing_member_input() -> InputSources {
-    use archsig::{
+    use archsig_common::{
         canonical::Json,
         json::{JNode, JValue, parse},
     };

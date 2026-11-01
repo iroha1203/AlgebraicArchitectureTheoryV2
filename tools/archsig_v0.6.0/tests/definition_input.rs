@@ -1,7 +1,5 @@
-use archsig::{
-    definition::{self, CheckedDefinitions, PrimitiveSignature},
-    issue::{Code, Location},
-};
+use archsig_common::issue::{Code, Location};
+use archsig_input::definition::{self, CheckedDefinitions, PrimitiveSignature};
 const COUNTER: &str = include_str!("fixtures/counter.atoms.json");
 const LIBRARY: &str = include_str!("fixtures/counter-library.atoms.json");
 const DIGEST: &str = "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";
@@ -269,7 +267,7 @@ fn meaning_changes_vocabulary_digest() {
 
 #[test]
 fn split_files_preserve_vocabulary_digest_and_original_identity() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let d = check(LIBRARY);
     let wrap = |name: &str| {
         Json::obj([
@@ -393,7 +391,7 @@ fn two_namespace_cycle_precedes_invalid_digest() {
 }
 #[test]
 fn vocabulary_wrapper_order_normalizes_model_digest() {
-    use archsig::canonical::Json;
+    use archsig_common::canonical::Json;
     let original = check(LIBRARY);
     let reverse = Json::obj([
         ("format", Json::str(definition::FORMAT)),
@@ -436,7 +434,7 @@ fn fully_qualified_definition_name_is_not_shadowed_by_local_constructor() {
             .field("value")
             .unwrap()
             .ty,
-        archsig::types::Type::Ref("N.A".into())
+        archsig_common::types::Type::Ref("N.A".into())
     );
     fail(
         &s.replace(r#"["Ref","N.A"]"#, r#"["Ref","N.Absent"]"#),
@@ -493,7 +491,7 @@ fn correspondence_requires_all_target_field_positions() {
 }
 #[test]
 fn missing_semantics_with_string_format_is_unsupported() {
-    use archsig::issue::Details;
+    use archsig_common::issue::Details;
     for format in [definition::FORMAT, "archsig.atom-definition/99"] {
         let s = format!(r#"{{"format":"{format}","future":true}}"#);
         let e = definition::check_definitions(&[("definition0", s.as_bytes())]).unwrap_err();
@@ -515,7 +513,7 @@ fn missing_semantics_with_string_format_is_unsupported() {
 }
 #[test]
 fn root_and_vocabulary_unknown_versions_precede_schema_unknown_fields() {
-    use archsig::issue::Details;
+    use archsig_common::issue::Details;
     fail(
         r#"{"format":"archsig.atom-definition/1","semantics":"archsig/future","future":true}"#,
         Code::UnsupportedVersion,
@@ -573,15 +571,16 @@ fn native_data_properties_follow_transitive_constructor_types() {
         pointer: "/probe".into(),
         span: None,
     };
-    let set =
-        archsig::types::Type::Set(Box::new(archsig::types::Type::Data("N.TermWrapper".into())));
+    let set = archsig_common::types::Type::Set(Box::new(archsig_common::types::Type::Data(
+        "N.TermWrapper".into(),
+    )));
     assert_eq!(
         d.check_primitive_type(&set, &at, &[]).unwrap_err().location,
         at
     );
-    let term = archsig::types::Type::Term(
-        vec![archsig::types::Type::Data("N.Wrapper".into())],
-        Box::new(archsig::types::Type::Z),
+    let term = archsig_common::types::Type::Term(
+        vec![archsig_common::types::Type::Data("N.Wrapper".into())],
+        Box::new(archsig_common::types::Type::Z),
     );
     assert_eq!(
         d.check_primitive_type(&term, &at, &[]).unwrap_err().code,
@@ -590,7 +589,7 @@ fn native_data_properties_follow_transitive_constructor_types() {
 }
 #[test]
 fn native_type_validation_keeps_nested_owned_parameter_position() {
-    use archsig::{issue::Details, types::Type};
+    use archsig_common::{issue::Details, types::Type};
     let d = check(&document(&format!(
         "{},{}",
         entity("Root", "", ""),
@@ -659,13 +658,16 @@ fn readonly_tables_and_detached_copies_preserve_checked_definitions() {
         checked.declarations()["Counter.State"].meaning,
         "実装中の一つのカウンタ状態。"
     );
-    let body = archsig::law::check_definition_term_body(
+    let body = archsig_input::law::check_definition_term_body(
         &checked,
         "Counter",
         &[],
-        &archsig::types::Type::Bool,
+        &archsig_common::types::Type::Bool,
         "true",
     )
     .unwrap();
-    assert_eq!(body.types[body.root], Some(archsig::types::Type::Bool));
+    assert_eq!(
+        body.types[body.root],
+        Some(archsig_common::types::Type::Bool)
+    );
 }

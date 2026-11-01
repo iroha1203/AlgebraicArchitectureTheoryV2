@@ -1,12 +1,9 @@
-use archsig::{
-    control::{Checkpoint, Control},
-    input::InputSources,
-    observed::{
-        PrepareFailure, prepare_checked_observed, prepare_observed,
-        request::{RequestIssueCode, ResolveFailure},
-    },
-    result::Signal,
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::observed::{
+    PrepareFailure, prepare_checked_observed, prepare_observed,
+    request::{RequestIssueCode, ResolveFailure},
 };
+use archsig_input::{input::InputSources, result::Signal};
 
 fn inputs() -> InputSources {
     InputSources::from_bytes(
@@ -31,7 +28,7 @@ fn needed_has_a_request_head_and_no_declaration_in_the_checked_bundle() {
     assert_eq!(requests[0].dependencies, ["n"]);
     assert!(requests[0].arguments.is_empty() && requests[0].defaults.is_empty());
     assert!(
-        matches!(&requests[0].head, archsig::observed::request::Selector::Answer{id,path} if id=="n" && path.is_empty())
+        matches!(&requests[0].head, archsig_computation::observed::request::Selector::Answer{id,path} if id=="n" && path.is_empty())
     );
     assert_eq!(prepared.inputs().sources(), &inputs());
 }
@@ -51,7 +48,7 @@ fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
     );
     assert_eq!(prepared.inputs().sources(), &inputs());
     // 検査済み bundle を所有したまま、別の問いを再解決する入口も同じ元入力を使う。
-    let checked = archsig::input::check_inputs(inputs(), &control).unwrap();
+    let checked = archsig_input::input::check_inputs(inputs(), &control).unwrap();
     let reused = prepare_checked_observed(checked, &texts, &control).unwrap();
     assert_eq!(prepared.requests(), reused.requests());
     assert_eq!(prepared.inputs().inputs(), reused.inputs().inputs());
@@ -132,12 +129,15 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
     )
     .unwrap_err();
     let wire = failure.wire().unwrap();
-    let archsig::canonical::Json::Obj(fields) = &wire else {
+    let archsig_common::canonical::Json::Obj(fields) = &wire else {
         panic!("object")
     };
-    assert_eq!(fields["status"], archsig::canonical::Json::str("invalid"));
+    assert_eq!(
+        fields["status"],
+        archsig_common::canonical::Json::str("invalid")
+    );
     for key in ["answers", "nodes"] {
-        assert_eq!(fields[key], archsig::canonical::Json::Arr(vec![]));
+        assert_eq!(fields[key], archsig_common::canonical::Json::Arr(vec![]));
     }
     let ResolveFailure::Invalid { requests, issues } = (match &failure {
         PrepareFailure::Requests { failure, .. } => failure,
@@ -155,11 +155,11 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
             .collect::<Vec<_>>(),
         ["a", "b"]
     );
-    let archsig::canonical::Json::Arr(issues) = &fields["issues"] else {
+    let archsig_common::canonical::Json::Arr(issues) = &fields["issues"] else {
         panic!("array")
     };
     for issue in issues {
-        let archsig::canonical::Json::Obj(issue) = issue else {
+        let archsig_common::canonical::Json::Obj(issue) = issue else {
             panic!("object")
         };
         assert!(!issue.contains_key("location"));
@@ -195,7 +195,7 @@ fn public_build_is_prepared_with_its_checked_inputs() {
     assert_eq!(p.requests().requests().len(), 1);
     assert_eq!(
         p.requests().requests()[0].kind,
-        archsig::observed::request::QuestionKind::Build
+        archsig_computation::observed::request::QuestionKind::Build
     );
     assert_eq!(p.requests().evaluation_order(), &[0]);
 }

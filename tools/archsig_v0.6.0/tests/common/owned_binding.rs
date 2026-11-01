@@ -1,8 +1,7 @@
-use archsig as fixture_archsig;
-use archsig::input::InputSources;
+use archsig_input::input::InputSources;
 #[allow(dead_code)]
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("answer_dependent_family.rs");
 }
 pub const SCRIPT: &str = r#"
@@ -35,7 +34,7 @@ pub fn input(unknown: bool, second: bool, revision: &str) -> InputSources {
 }
 
 pub fn completion_input(mode: &str, revision: &str) -> InputSources {
-    use archsig::{
+    use archsig_common::{
         canonical::Json,
         json::{JNode, JValue, parse},
     };

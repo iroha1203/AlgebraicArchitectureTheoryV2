@@ -1,12 +1,14 @@
 //! 拒否が決まった型の元診断を、取消の優先規則に沿って保持する。
 use crate::common::helpers::probe;
 use crate::common::positions;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::Checkpoint,
+    issue::{Code, Issue, Location},
+};
+use archsig_input::{
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
-    issue::{Code, Issue, Location},
     law::check_law,
     result::ResultIssue,
     result::Signal,

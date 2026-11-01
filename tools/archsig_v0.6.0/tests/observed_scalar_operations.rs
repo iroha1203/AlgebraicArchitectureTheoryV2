@@ -1,11 +1,13 @@
 //! AC4段階1: 小さいZ/Bool演算の値・判断・元式・欠測・由来をbyte入口から検査する。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -230,16 +232,16 @@ fn audit_completion(result: &Json, checked: &CheckedInputs, request: &Json, orig
             .find(|f| f.name == format!("Measure.Point.{name}"))
             .unwrap();
         match &field.slot {
-            archsig::archmap::Slot::Known {
-                value: archsig::archmap::Value::Bool(v),
+            archsig_input::archmap::Slot::Known {
+                value: archsig_input::archmap::Value::Bool(v),
                 ..
             } => {
                 fixed.insert(name, *v);
             }
-            archsig::archmap::Slot::Missing if text.contains(&format!("s.{name}")) => {
+            archsig_input::archmap::Slot::Missing if text.contains(&format!("s.{name}")) => {
                 fields.push(name)
             }
-            archsig::archmap::Slot::Missing => {}
+            archsig_input::archmap::Slot::Missing => {}
             _ => panic!("fixture Bool field"),
         }
     }
@@ -444,7 +446,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .find(|item| item.name == txt(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("欠測slotを支持Atomへ昇格しない")
                 };
                 assert_eq!(atom, txt(f(support, "atom")));
@@ -454,7 +456,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .iter()
                     .find(|o| &o.id == origin)
                     .unwrap();
-                assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
+                assert_eq!(origin.mode, archsig_input::archmap::Mode::Observed);
                 let source = checked
                     .archmap()
                     .sources()
@@ -570,7 +572,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .find(|field| field.name == format!("Measure.Point.{name}"))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, .. } => {
                         assert!(
                             arr(f(evaluation, "support"))
                                 .iter()
@@ -580,7 +582,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                             "演算の各既知operandの支持を失わない"
                         );
                     }
-                    archsig::archmap::Slot::Missing => has_missing = true,
+                    archsig_input::archmap::Slot::Missing => has_missing = true,
                 }
             }
             assert_eq!(
@@ -618,8 +620,8 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .collect::<Vec<_>>();
                 assert_eq!(actual, expected, "両子評価を元AST順に残す");
             }
-            if checked.law().expr_type(id) == Some(&archsig::types::Type::Bool) {
-                let z_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs)==Some(&archsig::types::Type::Z));
+            if checked.law().expr_type(id) == Some(&archsig_common::types::Type::Bool) {
+                let z_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig_input::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs)==Some(&archsig_common::types::Type::Z));
                 if !z_equality {
                     assert!(
                         !obj(part).contains_key("residual"),

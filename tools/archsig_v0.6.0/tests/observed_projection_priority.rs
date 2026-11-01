@@ -1,20 +1,22 @@
 //! 射影不正の確定後の取消と、動的候補の局所棄却を区別する。
 use crate::common;
 
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
-    input::{InputSources, check_inputs},
-    observed::{
-        PrepareFailure, prepare_observed,
-        projection::{
-            ProjectionFailure, ProjectionStep, ProjectionType, can_bind_controlled,
-            resolve_projection_controlled,
-        },
-        request::{RequestIssueCode, ResolveFailure},
-    },
-    result::Signal,
     types::Type,
+};
+use archsig_computation::observed::{
+    PrepareFailure, prepare_observed,
+    projection::{
+        ProjectionFailure, ProjectionStep, ProjectionType, can_bind_controlled,
+        resolve_projection_controlled,
+    },
+    request::{RequestIssueCode, ResolveFailure},
+};
+use archsig_input::{
+    input::{InputSources, check_inputs},
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 

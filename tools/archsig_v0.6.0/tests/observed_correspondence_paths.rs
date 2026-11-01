@@ -1,6 +1,7 @@
 use crate::common::correspondence_paths as fixture;
 use crate::common::helpers::arr;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
@@ -223,7 +224,7 @@ fn correspondence_missing_target_atom_is_not_created_by_completion() {
 }
 #[test]
 fn correspondence_current_provenance_pair_keeps_math_and_checked_input_tables() {
-    use archsig::input::check_inputs;
+    use archsig_input::input::check_inputs;
     let asks = [
         "x=evaluate(Reservations.step,m=@v/m)",
         "same=evaluate(Reservations.same,m=@v/m,n=@v/alias)",

@@ -145,7 +145,7 @@ fn actual_double_quoted_shell_expansion_gets_the_hint() {
     assert!(output.stderr.is_empty());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert_eq!(stdout.matches('\n').count(), 1);
-    let receipt = archsig::json::parse(stdout.trim_end().as_bytes()).unwrap();
+    let receipt = archsig_common::json::parse(stdout.trim_end().as_bytes()).unwrap();
     let issue = &arr(get(&receipt, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "usage");
     assert_eq!(s(get(get(issue, "details"), "argument")), "n=needed()");

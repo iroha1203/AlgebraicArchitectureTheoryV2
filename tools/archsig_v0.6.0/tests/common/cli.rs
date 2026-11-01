@@ -1,6 +1,6 @@
 //! CLI を実行して receipt と result.json を読む補助。
 
-use archsig::json::{JNode, JValue, parse};
+use archsig_common::json::{JNode, JValue, parse};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
@@ -91,7 +91,7 @@ impl Executed for BinaryRun {
 
 struct NoSignal;
 impl archsig::run::Signals for NoSignal {
-    fn freeze(&mut self) -> Option<archsig::result::Signal> {
+    fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
         None
     }
 }
@@ -101,8 +101,8 @@ const MAIN_THREAD_STACK: usize = 8 * 1024 * 1024;
 
 /// 同じ引数を、プロセスを起動せずに run 層へ渡す。path の引数は `dir` から読む。
 pub fn run(dir: &Path, args: &[&str]) -> Run {
-    use archsig::control::Control;
     use archsig::run::{Command, parse_args, run_check, run_requests, usage_outcome};
+    use archsig_common::control::Control;
     let mut words: Vec<std::ffi::OsString> = Vec::new();
     let mut path_value = false;
     for arg in args {
@@ -305,7 +305,7 @@ pub fn warnings(result: &JNode) -> &[JNode] {
 
 /// 導出の検査は内部APIで行い、利用者用の保存形式に証明データを要求しない。
 pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
-    let sources = archsig::input::InputSources::from_bytes(
+    let sources = archsig_input::input::InputSources::from_bytes(
         vec![std::fs::read(dir.join("d.json")).unwrap()],
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
@@ -314,10 +314,10 @@ pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
         .iter()
         .map(|r| s(get(r, "text")))
         .collect();
-    let result = archsig::observed::evaluate_observed_bytes(
+    let result = archsig_computation::observed::evaluate_observed_bytes(
         sources,
         &asks,
-        &archsig::control::Control::unlimited(),
+        &archsig_common::control::Control::unlimited(),
     )
     .unwrap();
     parse(result.wire().canonical().as_bytes()).unwrap()

@@ -1,22 +1,19 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
-    observed::object_law_residuals::{
-        LawNumericShape, LawResidualOutcome as Outcome, ObjectLawResiduals,
-        ObjectLawResidualsFailure, object_law_residuals,
-    },
-    types::Type,
+use archsig_common::{canonical::Json, control::Control, types::Type};
+use archsig_computation::observed::object_law_residuals::{
+    LawNumericShape, LawResidualOutcome as Outcome, ObjectLawResiduals, ObjectLawResidualsFailure,
+    object_law_residuals,
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
 }
 fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
-        archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
     let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
@@ -44,7 +41,9 @@ fn missing() -> String {
         .join("\n")
         .replace(",\n]", "\n]")
 }
-fn text(v: &Option<archsig::observed::numeric_transport::NumericTransportValue>) -> Option<String> {
+fn text(
+    v: &Option<archsig_computation::observed::numeric_transport::NumericTransportValue>,
+) -> Option<String> {
     v.as_ref().map(|v| v.wire().canonical())
 }
 #[test]
@@ -58,7 +57,7 @@ fn two_false_laws_have_distinct_original_numeric_residuals_with_a_zero_tuple_com
     assert_eq!(r.evaluations().len(), 2);
     assert_eq!(
         r.base().outcome(),
-        Some(&archsig::observed::object_law_compatibility::LawCompatibilityOutcome::Compatible)
+        Some(&archsig_computation::observed::object_law_compatibility::LawCompatibilityOutcome::Compatible)
     );
     assert_eq!(r.outcome(), Some(&Outcome::Refuted { component: vec![0] }));
     for (e, expected) in r.evaluations().iter().zip(["3", "2"]) {
@@ -394,7 +393,8 @@ fn different_complete_patterns_keep_their_own_numeric_laws_without_equality_obli
 }
 #[test]
 fn residual_point_interrupt_keeps_refutation_and_final_completion() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required amount(c:Part,b:Bool):((if (forall a:Root . false) then 2 else 3),c.quantity)=(0,2);",
@@ -449,7 +449,7 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
 }
 #[test]
 fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes() {
-    use archsig::control::Checkpoint as C;
+    use archsig_common::control::Checkpoint as C;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs("law required amount(c:Part):c.quantity=2;", fixture::A);
     let r = run(i.clone());
@@ -464,7 +464,8 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     r.recheck(i.clone(), &trace).unwrap();
     let nth = *count.borrow();
     assert!(nth > 0);
-    use archsig::{construction::ConstructionFailure, result::Signal};
+    use archsig_computation::construction::ConstructionFailure;
+    use archsig_input::result::Signal;
     for signal in [Signal::Int, Signal::Term] {
         let calls = Rc::new(RefCell::new(0));
         let calls0 = calls.clone();
@@ -568,7 +569,7 @@ fn conditional_membership_keeps_unknown_residuals_and_the_original_owner_conditi
             let c = &row.cases[0];
             if matches!(
                 c.reading.application(),
-                archsig::observed::object_law_transport::LawApplication::ConditionalMembership(_)
+                archsig_computation::observed::object_law_transport::LawApplication::ConditionalMembership(_)
             ) {
                 count += 1;
                 assert!(c.components[0].epsilon.is_none());

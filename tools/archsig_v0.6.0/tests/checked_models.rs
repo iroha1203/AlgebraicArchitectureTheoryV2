@@ -1,5 +1,5 @@
 //! 検査済みLawとArchMapの公開読取API。
-use archsig::{archmap::check_archmap, definition::check_definitions, law::check_law};
+use archsig_input::{archmap::check_archmap, definition::check_definitions, law::check_law};
 const DEFINITIONS: &[u8] = include_bytes!("fixtures/counter.atoms.json");
 const LAW: &[u8] = include_bytes!("fixtures/counter.law");
 const MAP: &[u8] = include_bytes!("fixtures/counter.archmap.json");
@@ -8,10 +8,13 @@ const MAP: &[u8] = include_bytes!("fixtures/counter.archmap.json");
 fn checked_law_readers_preserve_arenas_types_declarations_and_identity() {
     let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let law = check_law(LAW, &definitions).unwrap();
-    assert_eq!(law.bytes_digest(), archsig::canonical::sha256_digest(LAW));
+    assert_eq!(
+        law.bytes_digest(),
+        archsig_common::canonical::sha256_digest(LAW)
+    );
     assert_eq!(
         law.model_digest(),
-        archsig::law::model_digest(&archsig::law::lexer::lex(LAW).unwrap())
+        archsig_input::law::model_digest(&archsig_input::law::lexer::lex(LAW).unwrap())
     );
     assert_eq!(law.definitions(), &definitions);
     assert!(law.declarations().contains_key("CountCheck.amount"));
@@ -34,7 +37,10 @@ fn checked_law_readers_preserve_arenas_types_declarations_and_identity() {
 fn checked_archmap_readers_preserve_observations_provenance_and_identity() {
     let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let map = check_archmap(MAP, &definitions).unwrap();
-    assert_eq!(map.bytes_digest(), archsig::canonical::sha256_digest(MAP));
+    assert_eq!(
+        map.bytes_digest(),
+        archsig_common::canonical::sha256_digest(MAP)
+    );
     assert!(map.model_digest().starts_with("sha256:"));
     assert_eq!(
         map.vocabularies()["Counter"].digest,
@@ -51,10 +57,8 @@ fn checked_archmap_readers_preserve_observations_provenance_and_identity() {
 
 #[test]
 fn from_checked_rejects_valid_law_or_archmap_from_different_input_bytes() {
-    use archsig::{
-        control::Control,
-        input::{CheckedInputs, InputSources, InputStatus},
-    };
+    use archsig_common::control::Control;
+    use archsig_input::input::{CheckedInputs, InputSources, InputStatus};
     for change_law in [true, false] {
         let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
         let other_law = String::from_utf8(LAW.to_vec())

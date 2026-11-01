@@ -1,4 +1,5 @@
-use crate::{canonical::Json, control::quiet, observed::evaluate::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::quiet};
+use archsig_computation::observed::evaluate::evaluate_observed_bytes;
 mod owner_delivery_sources {
     include!("../../tests/common/owner_delivery_sources.rs");
 }
@@ -26,9 +27,9 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
             Ok(())
         }
     }
-    struct Freeze(Option<crate::result::Signal>);
+    struct Freeze(Option<archsig_input::result::Signal>);
     impl Signals for Freeze {
-        fn freeze(&mut self) -> Option<crate::result::Signal> {
+        fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
             self.0.take()
         }
     }
@@ -100,8 +101,8 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
     assert!(result.result.is_none());
     assert!(!dir.join("out").exists());
     for (signal, code) in [
-        (crate::result::Signal::Int, 130),
-        (crate::result::Signal::Term, 143),
+        (archsig_input::result::Signal::Int, 130),
+        (archsig_input::result::Signal::Term, 143),
     ] {
         let mut io = RefuseIo(0);
         let result = run_requests(&mut io, &mut Freeze(Some(signal)), &args(None), &quiet());

@@ -1,7 +1,7 @@
 //! 元changeのparameter全域を公開solveで解く。
 use crate::common::cli;
 use crate::common::object_view_compatibility_data as fixture;
-fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
+fn input() -> std::sync::Arc<archsig_input::input::CheckedInputs> {
     let definitions = fixture::D.replace(
         r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,
         r#"{"name":"flag","type":"Bool","meaning":"条件。"}"#,
@@ -13,16 +13,18 @@ fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";change choose(c:Part,b:Bool)=c with {{flag=b}};law required valid(c:Part):c.flag;view flag(c:Part):Bool=c.flag;}}"
     );
-    let sources = archsig::input::InputSources::from_bytes(
+    let sources = archsig_input::input::InputSources::from_bytes(
         vec![definitions.into_bytes()],
         law.into_bytes(),
         map.into_bytes(),
     );
     std::sync::Arc::new(
-        archsig::input::check_inputs(sources, &archsig::control::Control::unlimited()).unwrap(),
+        archsig_input::input::check_inputs(sources, &archsig_common::control::Control::unlimited())
+            .unwrap(),
     )
 }
-pub use archsig::{definition, observed};
+use archsig_computation::observed;
+pub use archsig_input::definition;
 use cli::*;
 
 #[test]
@@ -114,7 +116,7 @@ fn case(
     name: &str,
     effect: &str,
     asks: &[&str],
-) -> (std::path::PathBuf, Run, archsig::json::JNode) {
+) -> (std::path::PathBuf, Run, archsig_common::json::JNode) {
     let input = input();
     let dir = workdir(name);
     let law = String::from_utf8(input.sources().law().bytes().to_vec())
@@ -150,16 +152,19 @@ fn case(
     let result = result_json(&dir, &run);
     (dir, run, result)
 }
-fn answer<'a>(result: &'a archsig::json::JNode, id: &str) -> &'a archsig::json::JNode {
+fn answer<'a>(
+    result: &'a archsig_common::json::JNode,
+    id: &str,
+) -> &'a archsig_common::json::JNode {
     arr(get(result, "answers"))
         .iter()
         .find(|a| s(get(a, "id")) == id)
         .unwrap()
 }
 fn node<'a>(
-    result: &'a archsig::json::JNode,
-    r: &archsig::json::JNode,
-) -> &'a archsig::json::JNode {
+    result: &'a archsig_common::json::JNode,
+    r: &archsig_common::json::JNode,
+) -> &'a archsig_common::json::JNode {
     arr(get(result, "nodes"))
         .iter()
         .find(|n| s(get(n, "id")) == s(get(r, "node")))
@@ -192,7 +197,7 @@ fn empty_and_nonunique_repairs_keep_existence_separate_and_do_not_choose_an_assi
         );
         if effect == "true" {
             assert_eq!(arr(get(representation, "values")).len(), 4);
-            assert!(arr(get(&result,"nodes")).iter().filter(|n|matches!(&get(n,"type").value,archsig::json::JValue::Str(t) if t=="Assignment")).count()>=2);
+            assert!(arr(get(&result,"nodes")).iter().filter(|n|matches!(&get(n,"type").value,archsig_common::json::JValue::Str(t) if t=="Assignment")).count()>=2);
         } else {
             assert_eq!(s(get(representation, "kind")), "empty");
         }
@@ -218,7 +223,7 @@ fn repeated_repair_reads_previous_overrides_and_leaves_original_observations_fix
             node(&result, get(get(answer(&result, id), "outputs"), "value")),
             "value",
         );
-        assert_eq!(v.value, archsig::json::JValue::Bool(id == "e"));
+        assert_eq!(v.value, archsig_common::json::JValue::Bool(id == "e"));
     }
     for id in ["r", "again", "c"] {
         assert_eq!(s(get(answer(&result, id), "status")), "established");
@@ -368,12 +373,12 @@ fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
         } else {
             map
         };
-        let sources = archsig::input::InputSources::from_bytes(
+        let sources = archsig_input::input::InputSources::from_bytes(
             vec![input.sources().definitions()[0].bytes().to_vec()],
             law.into_bytes(),
             map.into_bytes(),
         );
-        let control = archsig::control::Control::unlimited();
+        let control = archsig_common::control::Control::unlimited();
         let prepared = observed::prepare_observed(
             sources,
             &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
@@ -384,7 +389,7 @@ fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
         if missing {
             let evaluated = evaluated.unwrap();
             assert_eq!(evaluated.status(), "partial");
-            let j = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
+            let j = archsig_common::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();
             let a = &arr(get(&j, "answers"))[0];
             assert_eq!(s(get(a, "status")), "undetermined");
             let existence = node(&j, get(get(a, "outputs"), "proposition"));
@@ -552,7 +557,7 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         "",
     );
     assert_ne!(map, missing);
-    let sources = archsig::input::InputSources::from_bytes(
+    let sources = archsig_input::input::InputSources::from_bytes(
         original
             .sources()
             .definitions()
@@ -562,7 +567,7 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         original.sources().law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let control = archsig::control::Control::unlimited();
+    let control = archsig_common::control::Control::unlimited();
     let prepared = observed::prepare_observed(
         sources,
         &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
@@ -583,7 +588,7 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         }
         Err(other) => panic!("予期しない評価失敗: {other:?}"),
     };
-    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let outputs = get(answer(&wire, "s"), "outputs");
     let proposition = node(&wire, get(outputs, "proposition"));
     // 登録Rootはroot一つ。整合するowner補完は一つで、p/q双方をtrueにする解が存在する。
@@ -662,6 +667,6 @@ fn change_projections_expose_the_candidate_base_but_not_state_metadata_or_witnes
         .unwrap();
     assert_eq!(
         get(value, "value").value,
-        archsig::json::JValue::Bool(false)
+        archsig_common::json::JValue::Bool(false)
     );
 }

@@ -1,14 +1,16 @@
 //! 欠測 Z/Q の共有アフィン算術を三入力 byte から検査する。
 use crate::common;
 
-use archsig::{
-    archmap::Slot,
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
+    archmap::Slot,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, InputStatus, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -1351,7 +1353,7 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
             .find(|f| f.name == "Affine.Sample.owner")
             .unwrap();
         assert!(
-            matches!(&owner.slot,Slot::Known {value:archsig::archmap::Value::Ref {snapshot,subject},..} if snapshot == "v" && subject == "root")
+            matches!(&owner.slot,Slot::Known {value:archsig_input::archmap::Value::Ref {snapshot,subject},..} if snapshot == "v" && subject == "root")
         );
     }
     assert!(

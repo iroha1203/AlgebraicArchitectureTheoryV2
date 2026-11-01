@@ -1,5 +1,6 @@
 use crate::common::owned_partial_containers as fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use archsig_common::{canonical::Json, control::Control};
+use archsig_computation::observed::evaluate_observed_bytes;
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = j else {
         panic!("object")
@@ -35,8 +36,9 @@ fn run_revision(unknown: bool, revision: &str, asks: &[&str]) -> Json {
     let inputs = fixture::input(unknown, revision);
     run_input(inputs, revision, asks)
 }
-fn run_input(inputs: archsig::input::InputSources, revision: &str, asks: &[&str]) -> Json {
-    let checked = archsig::input::check_inputs(inputs.clone(), &Control::unlimited()).unwrap();
+fn run_input(inputs: archsig_input::input::InputSources, revision: &str, asks: &[&str]) -> Json {
+    let checked =
+        archsig_input::input::check_inputs(inputs.clone(), &Control::unlimited()).unwrap();
     let result = evaluate_observed_bytes(inputs.clone(), asks, &Control::unlimited()).unwrap();
     assert_eq!(result.prepared().inputs().sources(), &inputs);
     assert_eq!(
@@ -258,8 +260,8 @@ fn absent_owned_container_does_not_read_unrelated_owner_slots() {
     assert!(array(f(a, "reasons")).is_empty());
 }
 
-fn two_owner_input() -> archsig::input::InputSources {
-    use archsig::json::{JNode, JValue, parse};
+fn two_owner_input() -> archsig_input::input::InputSources {
+    use archsig_common::json::{JNode, JValue, parse};
     fn convert(n: &JNode) -> Json {
         match &n.value {
             JValue::Bool(v) => Json::Bool(*v),
@@ -293,7 +295,7 @@ fn two_owner_input() -> archsig::input::InputSources {
         atoms.retain(|a| f(a, "id") != &Json::str("q-owner"));
         assert_eq!(atoms.len() + 1, before);
     }
-    archsig::input::InputSources::from_bytes(
+    archsig_input::input::InputSources::from_bytes(
         input
             .definitions()
             .iter()
@@ -306,7 +308,7 @@ fn two_owner_input() -> archsig::input::InputSources {
 #[test]
 fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let input = two_owner_input();
-    let checked = archsig::input::check_inputs(input.clone(), &Control::unlimited()).unwrap();
+    let checked = archsig_input::input::check_inputs(input.clone(), &Control::unlimited()).unwrap();
     let snapshot = checked
         .archmap()
         .snapshots()
@@ -323,7 +325,7 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
             .iter()
             .find(|f| f.name == "Reservations.State.owner")
             .unwrap();
-        assert!(matches!(owner.slot, archsig::archmap::Slot::Missing));
+        assert!(matches!(owner.slot, archsig_input::archmap::Slot::Missing));
     }
     let w = run_input(
         input,
@@ -392,8 +394,8 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
 }
 
 use crate::common::owned_map_calls as map_fixture;
-fn small_map_input(mode: &str) -> archsig::input::InputSources {
-    use archsig::json::{JNode, JValue, parse};
+fn small_map_input(mode: &str) -> archsig_input::input::InputSources {
+    use archsig_common::json::{JNode, JValue, parse};
     fn convert(n: &JNode) -> Json {
         match &n.value {
             JValue::Bool(v) => Json::Bool(*v),
@@ -413,7 +415,7 @@ fn small_map_input(mode: &str) -> archsig::input::InputSources {
     assert_eq!(snapshots.len(), 2);
     snapshots.retain(|s| f(s, "id") == &Json::str("v"));
     assert_eq!(snapshots.len(), 1);
-    archsig::input::InputSources::from_bytes(
+    archsig_input::input::InputSources::from_bytes(
         input
             .definitions()
             .iter()
@@ -482,7 +484,7 @@ fn small_owned_map_missing_table_keeps_all_four_tables_and_original_conditions()
         .collect();
     assert_eq!(values, expected);
     let i = small_map_input("unknown_owner");
-    archsig::input::check_inputs(i.clone(), &Control::unlimited()).unwrap();
+    archsig_input::input::check_inputs(i.clone(), &Control::unlimited()).unwrap();
     let w = run_input(
         i,
         "r1",

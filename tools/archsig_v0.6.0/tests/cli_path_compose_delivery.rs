@@ -1,12 +1,10 @@
 //! Path composeの取消と、同じ配送経路の既存データ保護。
 use crate::common;
 use crate::common::public_path_compose as fixture;
-use archsig::{
-    control::{Checkpoint, Control},
-    observed::evaluate_observed_bytes,
-    result::{Signal, Status},
-    run::{CheckArgs, Io, RunArgs, Signals, run_requests},
-};
+use archsig::run::{CheckArgs, Io, RunArgs, Signals, run_requests};
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::result::{Signal, Status};
 use common::cli::*;
 use std::{
     cell::Cell,
@@ -112,7 +110,7 @@ fn path_compose_request_resolution_stops_notify_without_starting_output() {
         assert!(io.created.is_empty());
         assert!(io.removed.is_empty());
         assert_eq!(signals.0, 1);
-        let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+        let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
         assert!(!has(&receipt, "result"));
         assert!(!arr(get(&receipt, "issues")).is_empty());
         assert!(!dir.join("out").exists());
@@ -158,7 +156,8 @@ fn path_compose_late_stops_publish_only_checked_values_with_consistent_status_an
         assert!(outcome.result.is_some());
         assert!(io.removed.is_empty());
         let result =
-            archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+            archsig_common::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap())
+                .unwrap();
         assert_eq!(s(get(&result, "status")), "interrupted");
         assert_eq!(num(get(&result, "exit_code")), code as u64);
         let answer = &arr(get(&result, "answers"))[2];
@@ -215,7 +214,7 @@ fn path_compose_write_failures_remove_only_this_runs_temporary_directory() {
         } else {
             assert!(!args.inputs.out.as_ref().unwrap().exists());
         }
-        let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+        let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
         assert!(!has(&receipt, "result"));
         assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "io");
         std::fs::remove_dir_all(dir).unwrap();

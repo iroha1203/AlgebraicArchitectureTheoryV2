@@ -1,9 +1,9 @@
 //! AC7: 入力の読込み、出力の確定、確定時の中断状態。
 
 use crate::common;
-use archsig::control::Control;
-use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, internal_outcome, run_check};
+use archsig_common::control::Control;
+use archsig_input::result::{Signal, Status};
 use common::cli::*;
 use std::path::{Path, PathBuf};
 
@@ -269,7 +269,7 @@ fn unreadable_inputs_are_io_errors() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(74));
-    let receipt = archsig::json::parse(&out.stdout).unwrap();
+    let receipt = archsig_common::json::parse(&out.stdout).unwrap();
     assert_eq!(s(get(&receipt, "status")), "error");
     assert!(!has(&receipt, "result"));
     assert!(!dir.join("o3").exists());
@@ -389,7 +389,7 @@ fn failures_before_publication_leave_the_output_untouched() {
                 .to_string_lossy()
                 .starts_with(".o.archsig-")
         }));
-        let receipt = archsig::json::parse(out.receipt().as_bytes()).unwrap();
+        let receipt = archsig_common::json::parse(out.receipt().as_bytes()).unwrap();
         let issue = &arr(get(&receipt, "issues"))[0];
         assert_eq!(s(get(issue, "code")), "io");
         assert_eq!(s(get(get(issue, "details"), "operation")), fail_word(fail));
@@ -504,7 +504,8 @@ fn signals_decide_the_status_once_at_finalize() {
         let out = run_check(&mut io, &mut signals, &args(&dir), &Control::unlimited());
         assert_eq!(out.exit_code, code);
         assert_eq!(signals.freezes, 1);
-        let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
+        let res = archsig_common::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap())
+            .unwrap();
         assert_eq!(num(get(&res, "exit_code")), u64::from(code));
         if code != 0 {
             assert_eq!(s(get(&res, "status")), "interrupted");
@@ -607,7 +608,7 @@ fn internal_failure_does_not_keep_any_inputs_or_copies() {
     let out = internal_outcome(&mut io, &mut signals, &arguments);
     assert_eq!((out.status, out.exit_code), (Status::Error, 70));
     assert_eq!(signals.freezes, 1);
-    let receipt = archsig::json::parse(out.receipt().as_bytes()).unwrap();
+    let receipt = archsig_common::json::parse(out.receipt().as_bytes()).unwrap();
     assert_eq!(s(get(&receipt, "status")), "error");
     assert_eq!(num(get(&receipt, "exit_code")), 70);
     assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "internal");

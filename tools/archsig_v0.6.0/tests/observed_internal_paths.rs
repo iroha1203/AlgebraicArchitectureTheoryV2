@@ -1,6 +1,8 @@
 use crate::common::finite_map as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::InputSources;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
@@ -12,7 +14,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn input() -> InputSources {
-    let d = archsig::definition::check_definitions(&[(
+    let d = archsig_input::definition::check_definitions(&[(
         "definition0",
         fixture::OWNED_DEFINITIONS.as_bytes(),
     )])
@@ -215,7 +217,7 @@ fn internal_path_provenance_pair_retains_math_and_returns_to_current_inputs() {
     let mut out = vec![];
     for revision in ["r1", "r2"] {
         let inputs = small::input("normal", revision);
-        let checked = archsig::input::check_inputs(inputs.clone(), &quiet()).unwrap();
+        let checked = archsig_input::input::check_inputs(inputs.clone(), &quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r =
             evaluate_observed_bytes(inputs.clone(), &["x=evaluate(Walk.maybe,e=@v/e)"], &quiet())

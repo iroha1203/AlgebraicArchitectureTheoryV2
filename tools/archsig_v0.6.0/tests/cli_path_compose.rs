@@ -1,7 +1,7 @@
 //! 公開Path合成を独立の原始fixtureと明示期待値で検査する。
 use crate::common;
 use crate::common::public_path_compose as fixture;
-use archsig::json::JNode;
+use archsig_common::json::JNode;
 use common::cli::*;
 use fixture::{C, E, F};
 use std::path::{Path, PathBuf};
@@ -127,7 +127,7 @@ fn path_endpoint_refutations_block_dependents_and_needed_keeps_the_condition() {
     let proof = value(&j, &arr(get(bad, "counterexamples"))[0]);
     let data = get(proof, "data");
     assert!(arr(get(data, "facts")).is_empty());
-    let archsig::json::JValue::Obj(fields) = &data.value else {
+    let archsig_common::json::JValue::Obj(fields) = &data.value else {
         panic!()
     };
     let mut keys = fields

@@ -1,13 +1,12 @@
-use archsig as fixture_archsig;
 mod base {
-    use super::fixture_archsig as archsig;
+
     include!("internal_paths.rs");
 }
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    input::InputSources,
     json::{JNode, JValue, parse},
 };
+use archsig_input::input::InputSources;
 pub const SCRIPT: &str = r#"
 view keep(p:Path<Node,Node>):Path<Node,Node> =p;
 view join(e:Hop,f:Hop):Path<Node,Node> =then(path(e),path(f));

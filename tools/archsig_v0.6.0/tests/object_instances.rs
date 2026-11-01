@@ -1,19 +1,21 @@
-use archsig::{
-    construction::{
-        ConstructionFailure, construct,
-        readings::{InstanceApplication, ObjectReadingInstances, object_reading_instances},
-    },
+use archsig_common::{
     control::{Checkpoint, Control},
+    types::Type,
+};
+use archsig_computation::construction::{
+    ConstructionFailure, construct,
+    readings::{InstanceApplication, ObjectReadingInstances, object_reading_instances},
+};
+use archsig_input::{
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
-    types::Type,
 };
 use std::{cell::Cell, rc::Rc};
 const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
 const L: &str = include_str!("fixtures/object-instances.law");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 fn inputs(law: &str, a: &str) -> CheckedInputs {
-    let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let d = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &d.vocabularies()["Instances"].digest;
     check_inputs(
         InputSources::from_bytes(
@@ -32,13 +34,15 @@ fn instances(i: &CheckedInputs) -> ObjectReadingInstances {
 fn rows<'a>(
     r: &'a ObjectReadingInstances,
     name: &str,
-) -> Vec<&'a archsig::construction::readings::ObjectInstance> {
+) -> Vec<&'a archsig_computation::construction::readings::ObjectInstance> {
     r.instances()
         .iter()
         .filter(|i| i.declaration().name == format!("Selected.{name}"))
         .collect()
 }
-fn bindings(r: &archsig::construction::readings::ObjectInstance) -> Vec<(&str, &str, &str)> {
+fn bindings(
+    r: &archsig_computation::construction::readings::ObjectInstance,
+) -> Vec<(&str, &str, &str)> {
     r.bindings()
         .iter()
         .map(|b| {
@@ -179,7 +183,7 @@ fn all_value_parameter_domains_and_original_metadata_remain_symbolic() {
     let bounded = rows(&r, "bounded")[0];
     assert_eq!(
         bounded.declaration().role,
-        Some(archsig::law::ast::Role::Required)
+        Some(archsig_input::law::ast::Role::Required)
     );
     assert_eq!(bounded.parameters().len(), 1);
     assert_eq!(bounded.parameters()[0].ty, Type::Z);

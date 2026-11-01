@@ -1,14 +1,18 @@
-use archsig::{
+use archsig_common::{
     canonical::Json,
-    construction::{construct, readings::object_reading_instances},
     control::{Checkpoint, Control},
-    input::{CheckedInputs, InputSources, check_inputs},
+};
+use archsig_computation::{
+    construction::{construct, readings::object_reading_instances},
     observed::{
         PrepareFailure, PreparedObserved, evaluate_observed, prepare_checked_observed,
         prepare_observed, prepare_shared_observed,
         request::{RequestIssueCode, ResolveFailure},
         result::ObservedEvaluation,
     },
+};
+use archsig_input::{
+    input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
@@ -112,7 +116,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
 #[test]
 fn object_instances_use_the_same_bundle_for_multiple_actual_view_evaluations() {
     let d = include_bytes!("fixtures/object-instances.atoms.json");
-    let definitions = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let definitions = archsig_input::definition::check_definitions(&[("definition0", d)]).unwrap();
     let digest = &definitions.vocabularies()["Instances"].digest;
     let shared = Arc::new(
         check_inputs(

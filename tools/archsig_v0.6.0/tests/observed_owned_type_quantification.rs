@@ -1,13 +1,13 @@
 //! 元Owned TypeAstと実ownerを保つ有限型量化の三入力byte API検査。
 use crate::common;
 use crate::common::quiet;
-use archsig::{
+use archsig_common::canonical::{Json, sha256_digest};
+use archsig_computation::observed::{ObservedEvaluation, evaluate_observed_bytes};
+use archsig_input::{
     archmap::{Mode, Slot},
-    canonical::{Json, sha256_digest},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{Builtin, ExprKind, QuantDomain, QuantSplit, TypeAst},
-    observed::{ObservedEvaluation, evaluate_observed_bytes},
 };
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
@@ -312,7 +312,10 @@ fn original_names(original: &TypeAst, checked: &CheckedInputs) {
 }
 fn owner_leaves<'a>(
     t: &'a TypeAst,
-    out: &mut Vec<(&'a archsig::law::ast::QName, &'a archsig::law::ast::Ident)>,
+    out: &mut Vec<(
+        &'a archsig_input::law::ast::QName,
+        &'a archsig_input::law::ast::Ident,
+    )>,
 ) {
     match t {
         TypeAst::Named {

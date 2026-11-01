@@ -1,6 +1,6 @@
 //! 公開される検査診断の固定文言と入力文字列を区別する。
 use crate::common;
-use archsig::json::JValue;
+use archsig_common::json::JValue;
 use common::cli::*;
 
 const D: &str = include_str!("fixtures/counter.atoms.json");

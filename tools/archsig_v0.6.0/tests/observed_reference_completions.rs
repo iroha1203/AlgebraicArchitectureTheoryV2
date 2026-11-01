@@ -1,10 +1,8 @@
 use crate::common::quiet;
 use crate::common::reference_completions as fixture;
-use archsig::{
-    canonical::Json,
-    input::{InputSources, check_inputs},
-    observed::evaluate_observed_bytes,
-};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::input::{InputSources, check_inputs};
 use std::collections::{BTreeMap, BTreeSet};
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -128,11 +126,11 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
                     .find(|s| s.name == text(field))
                     .unwrap();
                 match &field.slot {
-                    archsig::archmap::Slot::Known { atom, origin, .. } => {
+                    archsig_input::archmap::Slot::Known { atom, origin, .. } => {
                         assert_eq!(f(fact, "atom"), &Json::str(atom));
                         origin
                     }
-                    archsig::archmap::Slot::Missing => {
+                    archsig_input::archmap::Slot::Missing => {
                         assert!(!obj(fact).contains_key("atom"));
                         &subject.origin
                     }
@@ -355,7 +353,7 @@ fn missing_reference_no_consistent_extension_is_rejected_at_original_map_locatio
         .fields
         .iter()
         .find_map(|f| match &f.slot {
-            archsig::archmap::Slot::Known { atom, pointer, .. } if atom == "m-states" => {
+            archsig_input::archmap::Slot::Known { atom, pointer, .. } if atom == "m-states" => {
                 Some(pointer)
             }
             _ => None,

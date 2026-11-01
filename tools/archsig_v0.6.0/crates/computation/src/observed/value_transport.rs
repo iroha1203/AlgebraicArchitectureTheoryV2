@@ -1,0 +1,1336 @@
+//! 宣言の型構造に沿う値移送と、有限域での順逆検査。
+use super::{
+    data, finite,
+    result::{Fact, Scalar, ValidationFailure},
+};
+use crate::construction::{
+    ConstructionFailure,
+    maps::{ConfigurationOperation, DeclarationCorrespondence},
+};
+use archsig_common::control::{Checkpoint, Control};
+use archsig_common::{canonical::Json, types::Type};
+use archsig_input::input::CheckedInputs;
+use std::collections::{BTreeMap, BTreeSet};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DeclarationValuePosition {
+    Parameter(usize),
+    Return,
+    LocalRead(usize),
+}
+/// 型付きの全域値または候補像。像の終域所属は結果の検査で判定する。
+#[derive(Clone, Debug, Eq)]
+pub struct FiniteTransportValue {
+    value: Scalar,
+}
+impl PartialEq for FiniteTransportValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl FiniteTransportValue {
+    pub(super) fn observed(value: Scalar) -> Self {
+        Self { value }
+    }
+    pub(super) fn scalar(&self) -> &Scalar {
+        &self.value
+    }
+    pub fn ty(&self) -> Type {
+        self.value.ty()
+    }
+    pub fn wire(&self) -> Json {
+        self.value.wire()
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FiniteValueConditionFailure {
+    OutsideTarget {
+        source: usize,
+        detail: String,
+    },
+    Collision {
+        image: FiniteTransportValue,
+        target: Option<usize>,
+        sources: Vec<usize>,
+    },
+    Unreached {
+        target: usize,
+    },
+}
+/// source/target の全値順に対応する添字。双方の合成を全域で検査済み。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FiniteValueBijection {
+    forward: Vec<usize>,
+    inverse: Vec<usize>,
+}
+impl FiniteValueBijection {
+    pub fn forward(&self) -> &[usize] {
+        &self.forward
+    }
+    pub fn inverse(&self) -> &[usize] {
+        &self.inverse
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FiniteValueTransport {
+    declarations: DeclarationCorrespondence,
+    declaration: String,
+    position: DeclarationValuePosition,
+    source_type: Type,
+    target_type: Type,
+    source: Vec<FiniteTransportValue>,
+    target: Vec<FiniteTransportValue>,
+    images: Vec<FiniteTransportValue>,
+    support: Vec<Fact>,
+    snapshots: BTreeSet<String>,
+    modes: BTreeSet<String>,
+    failures: Vec<FiniteValueConditionFailure>,
+    bijection: Option<FiniteValueBijection>,
+}
+impl FiniteValueTransport {
+    pub(super) fn transport_scalar(
+        &self,
+        value: &Scalar,
+        control: &Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        tick(control)?;
+        if self.bijection.is_none() {
+            return Err(ConstructionFailure::Inconsistent(
+                "値の順逆対応が未確認".into(),
+            ));
+        }
+        self.forward_scalar(value, control)
+    }
+    /// 全source域で終域所属を確認した前向き作用。単射・全射は要求しない。
+    pub(super) fn forward_scalar(
+        &self,
+        value: &Scalar,
+        control: &Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        tick(control)?;
+        if self
+            .failures
+            .iter()
+            .any(|f| matches!(f, FiniteValueConditionFailure::OutsideTarget { .. }))
+        {
+            return Err(ConstructionFailure::Inconsistent(
+                "値の全域移送が不成立".into(),
+            ));
+        }
+        for (source, image) in self.source.iter().zip(&self.images) {
+            tick(control)?;
+            if same(&source.value, value, control)? {
+                return Ok(image.value.clone());
+            }
+        }
+        Err(ConstructionFailure::Inconsistent(
+            "実評価値が確認済みの全source域にない".into(),
+        ))
+    }
+    pub fn operation(&self) -> &ConfigurationOperation {
+        self.declarations.operation()
+    }
+    pub fn declaration(&self) -> &str {
+        &self.declaration
+    }
+    pub fn position(&self) -> DeclarationValuePosition {
+        self.position
+    }
+    pub fn source_type(&self) -> &Type {
+        &self.source_type
+    }
+    pub fn target_type(&self) -> &Type {
+        &self.target_type
+    }
+    pub fn source(&self) -> &[FiniteTransportValue] {
+        &self.source
+    }
+    pub fn target(&self) -> &[FiniteTransportValue] {
+        &self.target
+    }
+    pub fn images(&self) -> &[FiniteTransportValue] {
+        &self.images
+    }
+    pub fn support(&self) -> &[Fact] {
+        &self.support
+    }
+    pub fn snapshots(&self) -> &BTreeSet<String> {
+        &self.snapshots
+    }
+    pub fn modes(&self) -> &BTreeSet<String> {
+        &self.modes
+    }
+    pub fn failures(&self) -> &[FiniteValueConditionFailure] {
+        &self.failures
+    }
+    pub fn bijection(&self) -> Option<&FiniteValueBijection> {
+        self.bijection.as_ref()
+    }
+    pub fn recheck(
+        &self,
+        inputs: &CheckedInputs,
+        control: &Control,
+    ) -> Result<(), ConstructionFailure> {
+        if self
+            != &finite_declaration_value_transport(
+                inputs,
+                &self.declarations,
+                &self.declaration,
+                self.position,
+                control,
+            )?
+        {
+            return Err(ConstructionFailure::Inconsistent(
+                "有限値域・候補像・順逆検査が現在入力と違う".into(),
+            ));
+        }
+        tick(control)
+    }
+}
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
+    control
+        .checkpoint(Checkpoint::FiniteValueTransport)
+        .map_err(Into::into)
+}
+fn failure(f: ValidationFailure) -> ConstructionFailure {
+    match f {
+        ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
+        f => ConstructionFailure::Inconsistent(format!("有限値計算の不整合: {f:?}")),
+    }
+}
+pub(super) fn selected_types(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    name: &str,
+    position: DeclarationValuePosition,
+    control: &Control,
+) -> Result<(Type, Type), ConstructionFailure> {
+    for c in declarations.candidates() {
+        tick(control)?;
+        if c.source().name != name {
+            continue;
+        }
+        let target = c.target().filter(|_| c.pair().is_some()).ok_or_else(|| {
+            ConstructionFailure::InvalidSelection("値型の選択は署名対応済み宣言を要求する".into())
+        })?;
+        let pair = match position {
+            DeclarationValuePosition::Parameter(p) => c
+                .source()
+                .parameters
+                .get(p)
+                .zip(target.parameters.get(p))
+                .map(|(a, b)| (a.1.clone(), b.1.clone())),
+            DeclarationValuePosition::LocalRead(index) => {
+                let source = &inputs.law().declarations()[&c.source().name];
+                let target = &inputs.law().declarations()[&target.name];
+                let (
+                    archsig_input::law::model::Signature::Local { reads: a, .. },
+                    archsig_input::law::model::Signature::Local { reads: b, .. },
+                ) = (&source.signature, &target.signature)
+                else {
+                    return Err(ConstructionFailure::InvalidSelection(
+                        "local readの型位置でない".into(),
+                    ));
+                };
+                let types = a.get(index).zip(b.get(index)).and_then(|(a, b)| {
+                    inputs
+                        .law()
+                        .expr_type(*a)
+                        .zip(inputs.law().expr_type(*b))
+                        .map(|(a, b)| (a.clone(), b.clone()))
+                });
+                if let Some((a, b)) = &types {
+                    let mu = declarations.types().iter().cloned().collect();
+                    let alpha = c
+                        .pair()
+                        .ok_or_else(|| {
+                            ConstructionFailure::Inconsistent("local readの宣言対応がない".into())
+                        })?
+                        .parameters()
+                        .iter()
+                        .cloned()
+                        .collect();
+                    if moved_type(a, &mu, &alpha, control)? != *b {
+                        return Err(ConstructionFailure::InvalidSelection(
+                            "local readの型対が宣言移送と違う".into(),
+                        ));
+                    }
+                }
+                types
+            }
+            DeclarationValuePosition::Return => c
+                .source()
+                .returns
+                .as_ref()
+                .zip(target.returns.as_ref())
+                .map(|(a, b)| (a.clone(), b.clone())),
+        };
+        return pair.ok_or_else(|| {
+            ConstructionFailure::InvalidSelection("宣言に指定の値型位置がない".into())
+        });
+    }
+    Err(ConstructionFailure::InvalidSelection(format!(
+        "選択readingの宣言候補にない: {name}"
+    )))
+}
+fn domain(
+    inputs: &CheckedInputs,
+    ty: &Type,
+    control: &Control,
+) -> Result<finite::Enumeration, ConstructionFailure> {
+    if !finite::supported(ty, inputs.law(), control).map_err(failure)? {
+        return Err(ConstructionFailure::InvalidSelection(
+            "有限値域APIの適用域でない型".into(),
+        ));
+    }
+    let shared = control.clone();
+    finite::values(
+        ty,
+        inputs.law(),
+        &shared,
+        &mut |name| {
+            let mut result = finite::Enumeration::default();
+            for snapshot in inputs.archmap().snapshots() {
+                control.checkpoint(Checkpoint::FiniteValueTransport)?;
+                result.scope.snapshots.insert(snapshot.id.clone());
+                for origin in inputs.archmap().origins() {
+                    control.checkpoint(Checkpoint::FiniteValueTransport)?;
+                    if origin.id == snapshot.origin {
+                        result.scope.modes.insert(origin.mode.wire().into());
+                    }
+                }
+                for subject in &snapshot.subjects {
+                    control.checkpoint(Checkpoint::FiniteValueTransport)?;
+                    if subject.ty == name {
+                        result.values.push(Scalar::Subject {
+                            snapshot: snapshot.id.clone(),
+                            subject: subject.id.clone(),
+                            entity: name.into(),
+                        });
+                        result.support.push(Fact {
+                            snapshot: snapshot.id.clone(),
+                            subject: subject.id.clone(),
+                            field: None,
+                            atom: None,
+                        });
+                        for origin in inputs.archmap().origins() {
+                            control.checkpoint(Checkpoint::FiniteValueTransport)?;
+                            if origin.id == subject.origin {
+                                result.scope.modes.insert(origin.mode.wire().into());
+                            }
+                        }
+                    }
+                }
+            }
+            // 元入力順によらず同じ有限域順にする。
+            let mut rows: Vec<_> = result.values.into_iter().zip(result.support).collect();
+            rows.sort_by(|a, b| a.1.cmp(&b.1));
+            (result.values, result.support) = rows.into_iter().unzip();
+            Ok(result)
+        },
+        &mut |_| {},
+    )
+    .map_err(failure)
+}
+fn moved_type(
+    ty: &Type,
+    mu: &BTreeMap<String, String>,
+    alpha: &BTreeMap<String, String>,
+    control: &Control,
+) -> Result<Type, ConstructionFailure> {
+    crate::construction::maps::moved_declaration_type(ty, mu, alpha, control)
+}
+fn same(a: &Scalar, b: &Scalar, control: &Control) -> Result<bool, ConstructionFailure> {
+    tick(control)?;
+    if a.ty() != b.ty() {
+        return Ok(false);
+    }
+    data::equal(a, b, control).map_err(failure)
+}
+fn same_candidate(a: &Scalar, b: &Scalar, control: &Control) -> Result<bool, ConstructionFailure> {
+    tick(control)?;
+    data::candidate_equal(a, b, control).map_err(failure)
+}
+
+/// 候補値の型検査の不成立を、計算自身の失敗と分ける。
+fn shape(
+    value: &Scalar,
+    inputs: &CheckedInputs,
+    control: &Control,
+) -> Result<Option<String>, ConstructionFailure> {
+    match data::check(value, inputs.law(), control) {
+        Ok(()) => Ok(None),
+        Err(ValidationFailure::Internal(s)) => Ok(Some(s)),
+        Err(f) => Err(failure(f)),
+    }
+}
+// 通常の有限移送と複合read内の有限成分で、同じ終域所属検査を使う。
+fn target_index(
+    value: &Scalar,
+    target: &[Scalar],
+    inputs: &CheckedInputs,
+    control: &Control,
+) -> Result<(Option<usize>, Option<String>), ConstructionFailure> {
+    let invalid = shape(value, inputs, control)?;
+    if invalid.is_none() {
+        for (index, target) in target.iter().enumerate() {
+            tick(control)?;
+            if same(value, target, control)? {
+                return Ok((Some(index), None));
+            }
+        }
+    }
+    Ok((None, invalid))
+}
+
+/// 有限成分の全元を既存の候補作用で写し、終域に入らない最初の元を返す。
+/// readの観測値やguardを全域性の根拠にしない。
+pub(super) fn finite_type_domain_failure(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    ty: &Type,
+    control: &Control,
+) -> Result<Option<Scalar>, ConstructionFailure> {
+    let mu = declarations.types().iter().cloned().collect();
+    let target_type = moved_type(ty, &mu, &BTreeMap::new(), control)?;
+    let source = domain(inputs, ty, control)?;
+    let target = domain(inputs, &target_type, control)?;
+    for value in source.values {
+        tick(control)?;
+        let moved = candidate_image(inputs, declarations, declaration, &value, control)?;
+        if target_index(&moved, &target.values, inputs, control)?
+            .0
+            .is_none()
+        {
+            return Ok(Some(value));
+        }
+    }
+    Ok(None)
+}
+
+fn image(
+    value: &Scalar,
+    inputs: &CheckedInputs,
+    mu: &BTreeMap<String, String>,
+    action: &BTreeMap<Fact, Fact>,
+    alpha: &BTreeMap<String, String>,
+    control: &Control,
+) -> Result<Scalar, ConstructionFailure> {
+    stacker::maybe_grow(64 * 1024, 4 * 1024 * 1024, || {
+        tick(control)?;
+        Ok(match value {
+            Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => {
+                let original = Fact {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None,
+                };
+                if let Some(to) = action.get(&original) {
+                    let target_type = mu.get(entity).unwrap_or(entity);
+                    // F内の外部参照も原始mapで固定される。実subjectの型を保持する。
+                    let mut actual = None;
+                    for s in inputs.archmap().snapshots() {
+                        tick(control)?;
+                        if s.id == to.snapshot {
+                            for a in &s.subjects {
+                                tick(control)?;
+                                if a.id == to.subject {
+                                    actual = Some(a.ty.clone());
+                                }
+                            }
+                        }
+                    }
+                    Scalar::Subject {
+                        snapshot: to.snapshot.clone(),
+                        subject: to.subject.clone(),
+                        entity: actual
+                            .ok_or_else(|| {
+                                ConstructionFailure::Inconsistent(format!(
+                                    "参照値の像がない: {target_type}"
+                                ))
+                            })?
+                            .to_string(),
+                    }
+                } else {
+                    value.clone()
+                }
+            }
+            Scalar::Tuple(items) => {
+                let mut moved = Vec::new();
+                for a in items {
+                    moved.push(image(a, inputs, mu, action, alpha, control)?);
+                }
+                Scalar::Tuple(moved)
+            }
+            Scalar::List { element, items } => {
+                let mut moved = Vec::new();
+                for item in items {
+                    moved.push(image(item, inputs, mu, action, alpha, control)?);
+                }
+                Scalar::List {
+                    element: moved_type(element, mu, alpha, control)?,
+                    items: moved,
+                }
+            }
+            Scalar::Option { element, value } => Scalar::Option {
+                element: moved_type(element, mu, alpha, control)?,
+                value: match value {
+                    Some(v) => Some(Box::new(image(v, inputs, mu, action, alpha, control)?)),
+                    None => None,
+                },
+            },
+            Scalar::Set { element, items } => {
+                let mut moved = Vec::new();
+                for a in items {
+                    let b = image(a, inputs, mu, action, alpha, control)?;
+                    let mut duplicate = false;
+                    for prior in &moved {
+                        tick(control)?;
+                        if same_candidate(prior, &b, control)? {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+                    if !duplicate {
+                        moved.push(b);
+                    }
+                }
+                Scalar::Set {
+                    element: moved_type(element, mu, alpha, control)?,
+                    items: moved,
+                }
+            }
+            Scalar::Map {
+                domain,
+                codomain,
+                pairs,
+            } => {
+                let mut moved: Vec<(Scalar, Scalar)> = Vec::new();
+                for (a, b) in pairs {
+                    let a = image(a, inputs, mu, action, alpha, control)?;
+                    let b = image(b, inputs, mu, action, alpha, control)?;
+                    let mut duplicate = false;
+                    for (key, value) in &moved {
+                        tick(control)?;
+                        if same_candidate(key, &a, control)? && same_candidate(value, &b, control)?
+                        {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+                    // 同じkey・異なる像は消さずに候補へ残し、型域検査で反証する。
+                    if !duplicate {
+                        moved.push((a, b));
+                    }
+                }
+                Scalar::Map {
+                    domain: moved_type(domain, mu, alpha, control)?,
+                    codomain: moved_type(codomain, mu, alpha, control)?,
+                    pairs: moved,
+                }
+            }
+            Scalar::Data {
+                family,
+                constructor,
+                args,
+            } => {
+                let mut moved = Vec::new();
+                for a in args {
+                    moved.push(image(a, inputs, mu, action, alpha, control)?);
+                }
+                Scalar::Data {
+                    family: family.clone(),
+                    constructor: constructor.clone(),
+                    args: moved,
+                }
+            }
+            Scalar::Unit
+            | Scalar::Bool(_)
+            | Scalar::Fp { .. }
+            | Scalar::Z(_)
+            | Scalar::Q(..)
+            | Scalar::Text(_) => value.clone(),
+            _ => {
+                return Err(ConstructionFailure::Inconsistent(
+                    "有限値域に適用外の値が入った".into(),
+                ));
+            }
+        })
+    })
+}
+pub(super) fn candidate_image(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    value: &Scalar,
+    control: &Control,
+) -> Result<Scalar, ConstructionFailure> {
+    let mu = declarations.types().iter().cloned().collect();
+    let map = declarations.operation().map().candidate();
+    let mut action = BTreeMap::new();
+    for fact in map.source_configuration().family() {
+        tick(control)?;
+        if fact.field.is_none() {
+            action.insert(
+                fact.clone(),
+                map.image(fact)
+                    .ok_or_else(|| {
+                        ConstructionFailure::Inconsistent("参照の候補作用がない".into())
+                    })?
+                    .clone(),
+            );
+        }
+    }
+    let pair = declarations
+        .candidates()
+        .iter()
+        .find(|candidate| candidate.source().name == declaration)
+        .and_then(|candidate| candidate.pair())
+        .ok_or_else(|| ConstructionFailure::Inconsistent("元宣言の値対応がない".into()))?;
+    let alpha = pair.parameters().iter().cloned().collect();
+    image(value, inputs, &mu, &action, &alpha, control)
+}
+/// 対応済み宣言の有限な値型を、既存核で全列挙して順逆対応を検査する。
+/// 適用域外はこのnative有限APIの選択エラーであり、公開問いの算法判定ではない。
+pub fn finite_declaration_value_transport(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    position: DeclarationValuePosition,
+    control: &Control,
+) -> Result<FiniteValueTransport, ConstructionFailure> {
+    tick(control)?;
+    declarations.recheck(inputs, control)?;
+    let (source_type, target_type) =
+        selected_types(inputs, declarations, declaration, position, control)?;
+    let source = domain(inputs, &source_type, control)?;
+    let target = domain(inputs, &target_type, control)?;
+    let mut snapshots = source.scope.snapshots.clone();
+    snapshots.extend(target.scope.snapshots);
+    let mut modes = source.scope.modes.clone();
+    modes.extend(target.scope.modes);
+    let mut support = source.support;
+    support.extend(target.support);
+    support.sort();
+    support.dedup();
+    let mu: BTreeMap<_, _> = declarations.types().iter().cloned().collect();
+    let map = declarations.operation().map().candidate();
+    let mut action = BTreeMap::new();
+    for fact in map.source_configuration().family() {
+        tick(control)?;
+        if fact.field.is_none() {
+            action.insert(
+                fact.clone(),
+                map.image(fact)
+                    .ok_or_else(|| {
+                        ConstructionFailure::Inconsistent("参照の候補作用がない".into())
+                    })?
+                    .clone(),
+            );
+        }
+    }
+    let mut images: Vec<FiniteTransportValue> = Vec::new();
+    let mut failures = Vec::new();
+    let mut forward = Vec::new();
+    let mut fibers: Vec<Vec<usize>> = vec![Vec::new(); target.values.len()];
+    let mut candidate_fibers: Vec<(usize, Option<usize>, Vec<usize>)> = Vec::new();
+    for (index, value) in source.values.iter().enumerate() {
+        tick(control)?;
+        let moved = image(value, inputs, &mu, &action, &BTreeMap::new(), control)?;
+        let (found, invalid) = target_index(&moved, &target.values, inputs, control)?;
+        if let Some(j) = found {
+            fibers[j].push(index);
+            forward.push(j);
+        } else {
+            failures.push(FiniteValueConditionFailure::OutsideTarget {
+                source: index,
+                detail: invalid.unwrap_or_else(|| "候補像が終域の全値に含まれない".into()),
+            });
+        }
+        let mut found_fiber = false;
+        for (representative, _, sources) in &mut candidate_fibers {
+            tick(control)?;
+            if same_candidate(&images[*representative].value, &moved, control)? {
+                sources.push(index);
+                found_fiber = true;
+                break;
+            }
+        }
+        if !found_fiber {
+            candidate_fibers.push((index, found, vec![index]));
+        }
+        images.push(FiniteTransportValue { value: moved });
+    }
+    for (representative, target, sources) in candidate_fibers {
+        tick(control)?;
+        if sources.len() > 1 {
+            failures.push(FiniteValueConditionFailure::Collision {
+                image: images[representative].clone(),
+                target,
+                sources,
+            });
+        }
+    }
+    for (j, sources) in fibers.iter().enumerate() {
+        tick(control)?;
+        if sources.is_empty() {
+            failures.push(FiniteValueConditionFailure::Unreached { target: j });
+        }
+    }
+    let bijection = if failures.is_empty() {
+        let mut inverse = Vec::new();
+        for fiber in &fibers {
+            tick(control)?;
+            inverse.push(fiber[0]);
+        }
+        for (a, b) in forward.iter().enumerate() {
+            tick(control)?;
+            if inverse.get(*b) != Some(&a) {
+                return Err(ConstructionFailure::Inconsistent(
+                    "有限値の逆順合成が恒等でない".into(),
+                ));
+            }
+        }
+        for (b, a) in inverse.iter().enumerate() {
+            tick(control)?;
+            if forward.get(*a) != Some(&b) {
+                return Err(ConstructionFailure::Inconsistent(
+                    "有限値の順合成が恒等でない".into(),
+                ));
+            }
+        }
+        Some(FiniteValueBijection { forward, inverse })
+    } else {
+        None
+    };
+    let result = FiniteValueTransport {
+        declarations: declarations.clone(),
+        declaration: declaration.into(),
+        position,
+        source_type,
+        target_type,
+        source: source
+            .values
+            .into_iter()
+            .map(|value| FiniteTransportValue { value })
+            .collect(),
+        target: target
+            .values
+            .into_iter()
+            .map(|value| FiniteTransportValue { value })
+            .collect(),
+        images,
+        support,
+        snapshots,
+        modes,
+        failures,
+        bijection,
+    };
+    tick(control)?;
+    Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::construction::maps::{correspondence, declaration_correspondence};
+    use archsig_input::input::{InputSources, check_inputs};
+    const L: &str = include_str!("../../../../tests/fixtures/finite-value-transport.law");
+    const A: &str = include_str!("../../../../tests/fixtures/reference-type.archmap.json");
+    fn inputs(a: &str) -> CheckedInputs {
+        with_left(
+            include_bytes!("../../../../tests/fixtures/finite-value-left.atoms.json"),
+            a,
+        )
+    }
+    fn with_left(left: &[u8], a: &str) -> CheckedInputs {
+        with_left_and_law(left, a, L)
+    }
+    #[test]
+    fn structural_type_scan_stops_between_nullary_constructors() {
+        let original = include_str!("../../../../tests/fixtures/finite-value-left.atoms.json");
+        let left = original.replace(
+            "\"arguments\": [\n                \"Bool\"\n              ]",
+            "\"arguments\": []",
+        );
+        assert_ne!(left, original);
+        let inputs = with_left(left.as_bytes(), A);
+        assert!(
+            data::constructors(inputs.law(), "Left.Choice")
+                .unwrap()
+                .iter()
+                .all(|constructor| constructor.arguments.is_empty())
+        );
+        let mut seen = 0;
+        let control = Control::new(move |point| {
+            if point == Checkpoint::FiniteValueTransport {
+                seen += 1;
+            }
+            (seen == 2).then_some(archsig_input::result::Signal::Term)
+        });
+        assert!(matches!(
+            structural_components(&Type::Data("Left.Choice".into()), inputs.law(), &control),
+            Err(ConstructionFailure::Stopped(_))
+        ));
+    }
+    fn with_left_and_law(left: &[u8], a: &str, law: &str) -> CheckedInputs {
+        let right = include_bytes!("../../../../tests/fixtures/configuration-map-right.atoms.json");
+        let defs =
+            archsig_input::definition::check_definitions(&[("left", left), ("right", right)])
+                .unwrap();
+        let ld = &defs.vocabularies()["Left"].digest;
+        let rd = &defs.vocabularies()["Right"].digest;
+        let bridge = include_str!("../../../../tests/fixtures/configuration-map-bridge.atoms.json")
+            .replace("@LEFT_DIGEST@", ld)
+            .replace("@RIGHT_DIGEST@", rd);
+        let defs = archsig_input::definition::check_definitions(&[
+            ("left", left),
+            ("right", right),
+            ("bridge", bridge.as_bytes()),
+        ])
+        .unwrap();
+        let a = a
+            .replace("@LEFT_DIGEST@", ld)
+            .replace("@RIGHT_DIGEST@", rd)
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest);
+        check_inputs(
+            InputSources::from_bytes(
+                vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
+                law.replace("@LEFT_DIGEST@", ld)
+                    .replace("@RIGHT_DIGEST@", rd)
+                    .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
+                    .into_bytes(),
+                a.into_bytes(),
+            ),
+            &Control::unlimited(),
+        )
+        .unwrap_or_else(|f| panic!("{:?}", f.issues()))
+    }
+    fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
+        let r =
+            correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
+        assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
+        assert!(r.missing().is_empty(), "{:?}", r.missing());
+        declaration_correspondence(i, r.map().unwrap(), &Control::unlimited()).unwrap()
+    }
+
+    #[test]
+    fn local_read_positions_recheck_their_own_expression_type_pair() {
+        let left = include_bytes!("../../../../tests/fixtures/finite-value-left.atoms.json");
+        let source = "local returned(value: Left.Child, b: Bool) reads if b then some(value) else none<Left.Child>;";
+        let target = "local returned(value: Right.Child, b: Bool) reads if b then some(value) else none<Right.Child>;";
+        let law = L
+            .replace(
+                "view returned(value: Option<Left.Child>): Option<Left.Child> = value;",
+                source,
+            )
+            .replace(
+                "view returned(value: Option<Right.Child>): Option<Right.Child> = value;",
+                target,
+            );
+        let i = with_left_and_law(left, A, &law);
+        let d = declarations(&i);
+        let c = Control::unlimited();
+        let mut transport = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.returned",
+            DeclarationValuePosition::LocalRead(0),
+            &c,
+        )
+        .unwrap();
+        assert_eq!(
+            transport.source_type(),
+            &Type::Option(Box::new(Type::Ref("Left.Child".into())))
+        );
+        assert_eq!(
+            transport.target_type(),
+            &Type::Option(Box::new(Type::Ref("Right.Child".into())))
+        );
+        transport.recheck(&i, &c).unwrap();
+        transport.position = DeclarationValuePosition::LocalRead(1);
+        assert!(transport.recheck(&i, &c).is_err());
+        let wrong = law.replace(
+            target,
+            "local returned(value: Right.Child, b: Bool) reads (value,b);",
+        );
+        let i = with_left_and_law(left, A, &wrong);
+        let d = declarations(&i);
+        assert!(
+            finite_declaration_value_transport(
+                &i,
+                &d,
+                "Before.returned",
+                DeclarationValuePosition::LocalRead(0),
+                &c
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn reference_products_move_numeric_values_without_extending_the_finite_api() {
+        let law = L
+            .replace(
+                "view returned(value: Option<Left.Child>): Option<Left.Child> = value;",
+                "local returned(value: Left.Child, b: Bool) reads (value,0,rat(3,2),\"fixed\");",
+            )
+            .replace(
+                "view returned(value: Option<Right.Child>): Option<Right.Child> = value;",
+                "local returned(value: Right.Child, b: Bool) reads (value,0,rat(3,2),\"fixed\");",
+            );
+        let i = with_left_and_law(
+            include_bytes!("../../../../tests/fixtures/finite-value-left.atoms.json"),
+            A,
+            &law,
+        );
+        let d = declarations(&i);
+        let c = Control::unlimited();
+        assert!(matches!(
+            finite_declaration_value_transport(
+                &i,
+                &d,
+                "Before.returned",
+                DeclarationValuePosition::LocalRead(0),
+                &c,
+            ),
+            Err(ConstructionFailure::InvalidSelection(_))
+        ));
+        let value = |subject: &str, entity: &str| {
+            Scalar::Tuple(vec![
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: subject.into(),
+                    entity: entity.into(),
+                },
+                Scalar::Z((-17).into()),
+                Scalar::Q(3.into(), 2.into()),
+                Scalar::Text("fixed".into()),
+            ])
+        };
+        let moved =
+            candidate_image(&i, &d, "Before.returned", &value("p", "Left.Child"), &c).unwrap();
+        assert_eq!(moved, value("q", "Right.Child"));
+    }
+
+    #[test]
+    fn list_images_keep_positions_and_set_images_contract_equal_numeric_reference_pairs() {
+        let a = A.replace("\"subjects\": [", r#""subjects": [{"id":"r","type":"Left.Child","origin":"model"},"#)
+            .replace("\"atoms\": [", r#""atoms": [
+    {"id":"r-owner","subject":"r","field":"Left.Child.owner","value":["v","a"],"origin":"model"},
+    {"id":"r-count","subject":"r","field":"Left.Child.count","value":"2","origin":"model"},"#)
+            .replace(r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]]]"#,
+                     r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]]"#);
+        let i = inputs(&a);
+        let d = declarations(&i);
+        let c = Control::unlimited();
+        let element = |entity: &str| Type::Tuple(vec![Type::Ref(entity.into()), Type::Z]);
+        let value = |subject: &str, entity: &str, number: i32| {
+            Scalar::Tuple(vec![
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: subject.into(),
+                    entity: entity.into(),
+                },
+                Scalar::Z(number.into()),
+            ])
+        };
+        let sequence = Scalar::List {
+            element: element("Left.Child"),
+            items: vec![
+                value("p", "Left.Child", 17),
+                value("r", "Left.Child", 18),
+                value("p", "Left.Child", 17),
+            ],
+        };
+        let moved = candidate_image(&i, &d, "Before.returned", &sequence, &c).unwrap();
+        assert_eq!(
+            moved,
+            Scalar::List {
+                element: element("Right.Child"),
+                items: vec![
+                    value("q", "Right.Child", 17),
+                    value("q", "Right.Child", 18),
+                    value("q", "Right.Child", 17)
+                ],
+            }
+        );
+        let set = Scalar::Set {
+            element: element("Left.Child"),
+            items: vec![
+                value("p", "Left.Child", 17),
+                value("r", "Left.Child", 17),
+                value("r", "Left.Child", 18),
+            ],
+        };
+        let moved = candidate_image(&i, &d, "Before.returned", &set, &c).unwrap();
+        data::check(&moved, i.law(), &c).unwrap();
+        let Scalar::Set { items, .. } = &moved else {
+            panic!("Set image");
+        };
+        assert_eq!(items.len(), 2);
+        assert!(
+            data::equal(
+                &moved,
+                &Scalar::Set {
+                    element: element("Right.Child"),
+                    items: vec![value("q", "Right.Child", 18), value("q", "Right.Child", 17)],
+                },
+                &c
+            )
+            .unwrap()
+        );
+    }
+
+    #[test]
+    fn forged_whole_value_domains_images_and_bijections_are_rejected() {
+        let i = inputs(A);
+        let d = declarations(&i);
+        let r = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(5),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let failed = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(10),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let mut cases = Vec::new();
+        let mut v = r.clone();
+        v.source.pop();
+        cases.push(v);
+        let mut v = r.clone();
+        v.target.pop();
+        cases.push(v);
+        let mut v = r.clone();
+        v.images[0].value = Scalar::Bool(false);
+        cases.push(v);
+        let mut v = r.clone();
+        v.source_type = Type::Bool;
+        cases.push(v);
+        let mut v = r.clone();
+        v.target_type = Type::Bool;
+        cases.push(v);
+        let mut v = r.clone();
+        v.position = DeclarationValuePosition::Parameter(1);
+        cases.push(v);
+        let mut v = r.clone();
+        v.support.clear();
+        cases.push(v);
+        let mut v = r.clone();
+        v.snapshots.clear();
+        cases.push(v);
+        let mut v = r.clone();
+        v.modes.clear();
+        cases.push(v);
+        let mut v = r.clone();
+        v.bijection.as_mut().unwrap().forward[0] = 1;
+        cases.push(v);
+        let mut v = r.clone();
+        v.bijection.as_mut().unwrap().inverse[0] = 1;
+        cases.push(v);
+        let mut v = r.clone();
+        v.bijection = None;
+        cases.push(v);
+        let mut v = failed.clone();
+        v.failures.clear();
+        cases.push(v);
+        let mut v = failed.clone();
+        v.bijection = r.bijection.clone();
+        cases.push(v);
+        for v in cases {
+            assert!(matches!(
+                v.recheck(&i, &Control::unlimited()),
+                Err(ConstructionFailure::Inconsistent(_))
+            ));
+        }
+        r.recheck(&i, &Control::unlimited()).unwrap();
+        failed.recheck(&i, &Control::unlimited()).unwrap();
+    }
+    #[test]
+    fn candidate_equality_keeps_partial_type_mismatches_and_conflicting_map_relations() {
+        let i = inputs(A);
+        let d = declarations(&i);
+        let r = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(10),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let invalid = &r.images[0].value;
+        let valid = &r.source[0].value;
+        assert!(data::candidate_equal(invalid, invalid, &Control::unlimited()).unwrap());
+        assert!(!data::candidate_equal(invalid, valid, &Control::unlimited()).unwrap());
+        assert!(matches!(
+            data::equal(invalid, valid, &Control::unlimited()),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let value = |id: &str, ty: &str| Scalar::Subject {
+            snapshot: "v".into(),
+            subject: id.into(),
+            entity: ty.into(),
+        };
+        let map = |reverse: bool| {
+            let mut pairs = vec![
+                (value("q", "Right.Child"), value("p", "Left.Child")),
+                (value("q", "Right.Child"), value("r", "Left.Child")),
+            ];
+            if reverse {
+                pairs.reverse();
+            }
+            Scalar::Map {
+                domain: Type::Ref("Right.Child".into()),
+                codomain: Type::Ref("Left.Child".into()),
+                pairs,
+            }
+        };
+        let a = map(false);
+        let b = map(true);
+        assert!(data::candidate_equal(&a, &a, &Control::unlimited()).unwrap());
+        assert!(data::candidate_equal(&a, &b, &Control::unlimited()).unwrap());
+        assert!(data::candidate_equal(&b, &a, &Control::unlimited()).unwrap());
+        assert!(matches!(
+            data::check(&a, i.law(), &Control::unlimited()),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn duplicate_set_image_forgery_cannot_keep_an_established_bijection() {
+        let base = inputs(A);
+        let sources = base.sources();
+        let law = std::str::from_utf8(sources.law().bytes())
+            .unwrap()
+            .replace("members: Set<Left.Child>", "members: Set<Bool>")
+            .replace("members: Set<Right.Child>", "members: Set<Bool>");
+        let i = check_inputs(
+            InputSources::from_bytes(
+                sources
+                    .definitions()
+                    .iter()
+                    .map(|d| d.bytes().to_vec())
+                    .collect(),
+                law.into_bytes(),
+                sources.archmap().bytes().to_vec(),
+            ),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let d = declarations(&i);
+        let mut r = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(6),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        assert!(r.bijection().is_some());
+        assert_eq!(r.images.len(), 4);
+        if let Scalar::Set { items, .. } = &mut r.images[3].value {
+            assert_eq!(items.len(), 2);
+            items[1] = items[0].clone();
+        } else {
+            panic!("Set fixture");
+        }
+        assert_ne!(r.images[3], r.target[3]);
+        assert!(matches!(
+            r.recheck(&i, &Control::unlimited()),
+            Err(ConstructionFailure::Inconsistent(_))
+        ));
+    }
+    #[test]
+    fn map_key_contraction_keeps_conflicting_values_outside_the_target() {
+        let a = A.replace("\"subjects\": [", r#""subjects": [{"id":"r","type":"Left.Child","origin":"model"},{"id":"n","type":"Bridge.Move","origin":"model"},"#)
+                .replace("\"atoms\": [", r#""atoms": [
+    {"id":"r-owner","subject":"r","field":"Left.Child.owner","value":["v","a"],"origin":"model"},
+    {"id":"r-count","subject":"r","field":"Left.Child.count","value":"2","origin":"model"},
+    {"id":"n-from","subject":"n","field":"Bridge.Move.from","value":["v","a"],"origin":"model"},
+    {"id":"n-to","subject":"n","field":"Bridge.Move.to","value":["v","b"],"origin":"model"},
+    {"id":"n-entries","subject":"n","field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]],"origin":"model"},"#)
+                .replace(r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]]]"#,
+                         r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]]"#);
+        let i = inputs(&a);
+        let d = declarations(&i);
+        let coherent = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(7),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        assert!(
+            finite_type_domain_failure(
+                &i,
+                &d,
+                "Before.returned",
+                coherent.source_type(),
+                &Control::unlimited(),
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(coherent.source().len(), 4);
+        assert_eq!(coherent.target().len(), 1);
+        assert!(coherent.bijection().is_none());
+        assert!(
+            !coherent.failures().iter().any(|failure| matches!(
+                failure,
+                FiniteValueConditionFailure::OutsideTarget { .. }
+            ))
+        );
+        for image in coherent.images() {
+            let Scalar::Map { pairs, .. } = image.scalar() else {
+                panic!("Map image");
+            };
+            assert_eq!(pairs.len(), 1);
+            assert_eq!(image, &coherent.target()[0]);
+        }
+        let result = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(8),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let witness = finite_type_domain_failure(
+            &i,
+            &d,
+            "Before.returned",
+            result.source_type(),
+            &Control::unlimited(),
+        )
+        .unwrap()
+        .expect("全Map域のキー合流反例");
+        let moved =
+            candidate_image(&i, &d, "Before.returned", &witness, &Control::unlimited()).unwrap();
+        let Scalar::Map { pairs, .. } = &moved else {
+            panic!("Map image");
+        };
+        assert_eq!(pairs.len(), 2);
+        assert_eq!(pairs[0].0, pairs[1].0);
+        assert_ne!(pairs[0].1, pairs[1].1);
+        assert_eq!(result.source().len(), 4);
+        assert_eq!(result.target().len(), 2);
+        assert!(result.bijection().is_none());
+        let outside: Vec<_> = result
+            .failures()
+            .iter()
+            .filter_map(|f| match f {
+                FiniteValueConditionFailure::OutsideTarget { source, .. } => Some(*source),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(outside.len(), 2);
+        for (index, image) in result.images().iter().enumerate() {
+            let Scalar::Map { pairs, .. } = image.scalar() else {
+                panic!("Map image");
+            };
+            if outside.contains(&index) {
+                assert_eq!(pairs.len(), 2);
+                assert_eq!(pairs[0].0, pairs[1].0);
+                assert_ne!(pairs[0].1, pairs[1].1);
+                let Scalar::Map { pairs: source, .. } = result.source()[index].scalar() else {
+                    panic!("Map source");
+                };
+                assert_eq!(source.len(), 2);
+                assert_ne!(source[0].0, source[1].0);
+                assert_ne!(source[0].1, source[1].1);
+            } else {
+                assert_eq!(pairs.len(), 1);
+                assert!(result.target().iter().any(|target| target == image));
+            }
+        }
+        result.recheck(&i, &Control::unlimited()).unwrap();
+    }
+}
+
+// 同一の検査済み値型の全元を固定する対応。参照やPathの作用はここで補わない。
+pub(super) fn identity_declarations(
+    ty: &Type,
+    law: &archsig_input::law::CheckedLaw,
+    control: &Control,
+) -> Result<Option<Vec<(String, String)>>, ValidationFailure> {
+    let mut todo = vec![ty];
+    let mut families = BTreeSet::new();
+    let mut names = BTreeSet::new();
+    while let Some(ty) = todo.pop() {
+        control.checkpoint(Checkpoint::ObjectViewTransport)?;
+        match ty {
+            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
+            Type::Tuple(items) => todo.extend(items),
+            Type::List(item) | Type::Set(item) | Type::Option(item) => todo.push(item),
+            Type::Data(family) => {
+                if !families.insert(family.clone()) {
+                    continue;
+                }
+                names.insert(family.clone());
+                for constructor in data::constructors(law, family)? {
+                    control.checkpoint(Checkpoint::ObjectViewTransport)?;
+                    names.insert(format!("{family}.{}", constructor.name));
+                    todo.extend(&constructor.arguments);
+                }
+            }
+            _ => return Ok(None),
+        }
+    }
+    Ok(Some(
+        names.into_iter().map(|name| (name.clone(), name)).collect(),
+    ))
+}
+
+pub(super) struct StructuralComponents {
+    pub references: BTreeSet<String>,
+    pub families: BTreeSet<String>,
+}
+
+// 値の全列挙ではなく、有限な型宣言を一度ずつ読み取る。
+pub(super) fn structural_components(
+    ty: &Type,
+    law: &archsig_input::law::CheckedLaw,
+    control: &Control,
+) -> Result<Option<StructuralComponents>, ConstructionFailure> {
+    let mut out = StructuralComponents {
+        references: BTreeSet::new(),
+        families: BTreeSet::new(),
+    };
+    let mut pending = vec![ty];
+    while let Some(ty) = pending.pop() {
+        tick(control)?;
+        match ty {
+            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
+            Type::Ref(entity) => {
+                out.references.insert(entity.clone());
+            }
+            Type::Tuple(items) => pending.extend(items),
+            Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+            Type::Map(a, z) => pending.extend([a.as_ref(), z.as_ref()]),
+            Type::Data(family) => {
+                if out.families.insert(family.clone()) {
+                    for constructor in data::constructors(law, family).map_err(failure)? {
+                        tick(control)?;
+                        pending.extend(&constructor.arguments);
+                    }
+                }
+            }
+            _ => return Ok(None),
+        }
+    }
+    Ok(Some(out))
+}

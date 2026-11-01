@@ -1,20 +1,19 @@
 use crate::common::object_view_compatibility_data as fixture;
 use crate::common::quiet;
-use archsig::{
-    control::Control,
-    input::{CheckedInputs, InputSources, check_inputs},
-    observed::object_law_circuits::{
-        LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
-        ObjectLawCircuitsFailure, object_law_circuits,
-    },
+use archsig_common::control::Control;
+use archsig_computation::observed::object_law_circuits::{
+    LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
+    ObjectLawCircuitsFailure, object_law_circuits,
 };
+use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
 use std::sync::Arc;
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
 }
 fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
-        archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
     let digest = &d.vocabularies()["Pattern"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
@@ -106,7 +105,7 @@ fn tuple_zero_component_is_reject_and_only_nonzero_component_has_any_and_origina
 }
 #[test]
 fn all_bool_fp_arguments_make_exact_disjunction_with_typed_values() {
-    use archsig::{canonical::Json, types::Type};
+    use archsig_common::{canonical::Json, types::Type};
     let i = inputs(
         "law optional finite(c:Part,b:Bool,f:Fp(3)):(if b then f else 0)=0;",
         fixture::A,
@@ -209,7 +208,9 @@ fn same_pattern_disagreement_retains_candidates_and_refutation_but_no_codes() {
     );
     assert!(matches!(
         r.base().outcome(),
-        Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
+        Some(
+            archsig_computation::observed::object_law_residuals::LawResidualOutcome::Refuted { .. }
+        )
     ));
 }
 #[test]
@@ -259,7 +260,8 @@ fn no_laws_has_no_circuits_and_is_complete() {
 }
 #[test]
 fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
-    use archsig::{control::Checkpoint as C, result::Signal};
+    use archsig_common::control::Checkpoint as C;
+    use archsig_input::result::Signal;
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required numeric(c:Part,b:Bool):(2,if b then 3 else 0)=(0,0);",
@@ -299,7 +301,7 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
         };
         assert_eq!(
             cause,
-            archsig::construction::ConstructionFailure::Stopped(expected)
+            archsig_computation::construction::ConstructionFailure::Stopped(expected)
         );
         assert_eq!(c.stop_reason(), Some(expected));
         assert_eq!(*hits.borrow(), nth);
@@ -397,7 +399,7 @@ fn distinct_patterns_and_q_components_keep_their_own_exact_original_reading() {
             .subject()
             .subject;
         let applies = object == "root" || object == subject;
-        if c.ty == archsig::types::Type::Q {
+        if c.ty == archsig_common::types::Type::Q {
             if !applies {
                 q_reject += 1;
                 assert_eq!(c.detector, Some(Detector::Reject));

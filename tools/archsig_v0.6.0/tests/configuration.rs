@@ -1,7 +1,7 @@
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{ConstructionFailure, construct};
+use archsig_input::{
     archmap::{Fact as FactPointer, Slot, Value},
-    construction::{ConstructionFailure, construct},
-    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -10,7 +10,7 @@ const D: &[u8] = include_bytes!("fixtures/configuration.atoms.json");
 const L: &str = include_str!("fixtures/configuration.law");
 const A: &str = include_str!("fixtures/configuration.archmap.json");
 fn sources(map: &str) -> InputSources {
-    let checked = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let checked = archsig_input::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &checked.vocabularies()["Mesh"].digest;
     InputSources::from_bytes(
         vec![D.to_vec()],
@@ -198,16 +198,19 @@ fn universe_is_canonical_and_keeps_all_known_positions_and_snapshot_identity() {
         .iter()
         .map(|f| {
             let mut items = vec![
-                ("snapshot", archsig::canonical::Json::str(&f.snapshot)),
-                ("subject", archsig::canonical::Json::str(&f.subject)),
+                (
+                    "snapshot",
+                    archsig_common::canonical::Json::str(&f.snapshot),
+                ),
+                ("subject", archsig_common::canonical::Json::str(&f.subject)),
             ];
             if let Some(field) = &f.field {
-                items.push(("field", archsig::canonical::Json::str(field)));
+                items.push(("field", archsig_common::canonical::Json::str(field)));
             }
             if let Some(atom) = &f.atom {
-                items.push(("atom", archsig::canonical::Json::str(atom)));
+                items.push(("atom", archsig_common::canonical::Json::str(atom)));
             }
-            archsig::canonical::Json::Obj(
+            archsig_common::canonical::Json::Obj(
                 items.into_iter().map(|(k, v)| (k.to_owned(), v)).collect(),
             )
             .canonical()
@@ -361,7 +364,8 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
         include_str!("fixtures/configuration-counter.expected.json").trim()
     );
     let definitions =
-        archsig::definition::check_definitions(&[("definition0", CD), ("definition1", D)]).unwrap();
+        archsig_input::definition::check_definitions(&[("definition0", CD), ("definition1", D)])
+            .unwrap();
     let mesh_digest = &definitions.vocabularies()["Mesh"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Select {{use vocabulary Mesh version \"1\" digest \"{mesh_digest}\";}}"
@@ -377,7 +381,7 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
     ));
     let counter_digest = &definitions.vocabularies()["Counter"].digest;
     let mesh=std::str::from_utf8(D).unwrap().replace("\"dependencies\": []",&format!("\"dependencies\": [{{\"namespace\":\"Counter\",\"version\":\"1\",\"digest\":\"{counter_digest}\"}}]"));
-    let definitions = archsig::definition::check_definitions(&[
+    let definitions = archsig_input::definition::check_definitions(&[
         ("definition0", CD),
         ("definition1", mesh.as_bytes()),
     ])

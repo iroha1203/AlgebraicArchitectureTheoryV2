@@ -1,11 +1,13 @@
 //! AC4数値型段階: Q/Fp/数値Tupleの値・残差・各出現と由来を三入力byteから検査する。
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     definition::check_definitions,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::ExprKind,
-    observed::evaluate_observed_bytes,
     result::Signal,
 };
 use std::{
@@ -205,8 +207,8 @@ fn original_evaluation<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> &'a
     original[0]
 }
 
-fn numeric(ty: &archsig::types::Type) -> bool {
-    use archsig::types::Type;
+fn numeric(ty: &archsig_common::types::Type) -> bool {
+    use archsig_common::types::Type;
     match ty {
         Type::Z | Type::Q | Type::Fp(_) => true,
         Type::Tuple(items) => items.iter().all(numeric),
@@ -245,7 +247,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .find(|item| item.name == txt(field))
                     .unwrap()
                     .slot;
-                let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+                let archsig_input::archmap::Slot::Known { atom, origin, .. } = slot else {
                     panic!("欠測slotを支持Atomへ昇格しない")
                 };
                 assert_eq!(atom, txt(f(support, "atom")));
@@ -255,7 +257,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .iter()
                     .find(|o| &o.id == origin)
                     .unwrap();
-                assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
+                assert_eq!(origin.mode, archsig_input::archmap::Mode::Observed);
                 let source = checked
                     .archmap()
                     .sources()
@@ -274,7 +276,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                     .iter()
                     .find(|o| o.id == sample.origin)
                     .unwrap();
-                assert_eq!(origin.mode, archsig::archmap::Mode::Observed);
+                assert_eq!(origin.mode, archsig_input::archmap::Mode::Observed);
                 let source = checked
                     .archmap()
                     .sources()
@@ -415,7 +417,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                         .find(|field| field.name == format!("Numeric.Sample.{name}"))
                         .unwrap();
                     match &field.slot {
-                        archsig::archmap::Slot::Known { atom, .. } => {
+                        archsig_input::archmap::Slot::Known { atom, .. } => {
                             assert!(
                                 arr(f(evaluation, "support"))
                                     .iter()
@@ -425,7 +427,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                                 "演算の各既知operandの支持を失わない"
                             );
                         }
-                        archsig::archmap::Slot::Missing => has_missing = true,
+                        archsig_input::archmap::Slot::Missing => has_missing = true,
                     }
                 }
                 assert_eq!(
@@ -473,7 +475,7 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                 }
                 if let Some(residual) = obj(part).get("residual") {
                     let ExprKind::Binary {
-                        op: archsig::law::ast::BinOp::Eq,
+                        op: archsig_input::law::ast::BinOp::Eq,
                         lhs,
                         ..
                     } = &expr.kind
@@ -485,8 +487,8 @@ fn audit(result: &Json, checked: &CheckedInputs) {
                         &checked.law().expr_type(*lhs).unwrap().wire()
                     );
                 }
-                if checked.law().expr_type(id) == Some(&archsig::types::Type::Bool) {
-                    let numeric_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs).is_some_and(numeric));
+                if checked.law().expr_type(id) == Some(&archsig_common::types::Type::Bool) {
+                    let numeric_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig_input::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs).is_some_and(numeric));
                     if !numeric_equality {
                         assert!(
                             !obj(part).contains_key("residual"),

@@ -1,19 +1,14 @@
 //! byte 入力の既存検査から、観測要求の束縛・依存・公開射影を接続する。
 use crate::common;
-use archsig::{
-    archmap::CheckedArchMap,
-    control::Control,
-    law::CheckedLaw,
-    observed::{
-        projection::{ProjectionStep, ProjectionType},
-        request::{
-            ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure,
-            resolve_observed_requests, resolve_observed_requests_controlled,
-        },
+use archsig_common::{control::Control, types::Type};
+use archsig_computation::observed::{
+    projection::{ProjectionStep, ProjectionType},
+    request::{
+        ArgumentOrigin, RequestDefault, RequestIssueCode, ResolveFailure,
+        resolve_observed_requests, resolve_observed_requests_controlled,
     },
-    result::Signal,
-    types::Type,
 };
+use archsig_input::{archmap::CheckedArchMap, law::CheckedLaw, result::Signal};
 
 fn inputs() -> (CheckedLaw, CheckedArchMap) {
     let definitions = common::definitions_ok(&[common::COUNTER_DEFINITION]);
@@ -40,8 +35,8 @@ fn inputs() -> (CheckedLaw, CheckedArchMap) {
       "snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"s","type":"Counter.State","origin":"o"}}],"atoms":[]}}]}}"#
     );
     (
-        archsig::law::check_law(law.as_bytes(), &definitions).unwrap(),
-        archsig::archmap::check_archmap(map.as_bytes(), &definitions).unwrap(),
+        archsig_input::law::check_law(law.as_bytes(), &definitions).unwrap(),
+        archsig_input::archmap::check_archmap(map.as_bytes(), &definitions).unwrap(),
     )
 }
 
@@ -180,7 +175,7 @@ fn projection_table_rejects_metadata_and_static_bounds_but_keeps_dynamic_conditi
     for i in [1, 3, 5, 7] {
         assert!(resolved.requests()[i].constraints[0].dynamic);
     }
-    let archsig::observed::request::Selector::Answer { path, .. } =
+    let archsig_computation::observed::request::Selector::Answer { path, .. } =
         &resolved.requests()[1].arguments[0].value
     else {
         panic!("answer");
@@ -294,8 +289,8 @@ fn dependent_inputs(known_owner: bool) -> (CheckedLaw, CheckedArchMap) {
       "snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"A","type":"W.Root","origin":"o"}},{{"id":"B","type":"W.Root","origin":"o"}},{{"id":"i","type":"W.Item","origin":"o"}}],"atoms":[{atoms}]}},{{"id":"w","origin":"o","subjects":[{{"id":"B","type":"W.Root","origin":"o"}}],"atoms":[]}}]}}"#
     );
     (
-        archsig::law::check_law(law.as_bytes(), &definitions).unwrap(),
-        archsig::archmap::check_archmap(map.as_bytes(), &definitions).unwrap(),
+        archsig_input::law::check_law(law.as_bytes(), &definitions).unwrap(),
+        archsig_input::archmap::check_archmap(map.as_bytes(), &definitions).unwrap(),
     )
 }
 
@@ -366,7 +361,7 @@ fn unevaluated_owner_answer_projection_remains_a_dynamic_constraint() {
             assert!(constraint.dynamic);
             assert!(matches!(
                 constraint.owner,
-                Some(archsig::observed::request::Selector::Answer { .. })
+                Some(archsig_computation::observed::request::Selector::Answer { .. })
             ));
             assert_eq!(resolved.evaluation_order(), &[1, 0]);
         }
@@ -396,8 +391,8 @@ fn data_constructor_projection_preserves_alternative_types_and_conditions() {
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
       "vocabularies":[{{"namespace":"W","version":"1","digest":"{digest}"}}],"sources":[],"origins":[],"snapshots":[]}}"#
     );
-    let law = archsig::law::check_law(law.as_bytes(), &definitions).unwrap();
-    let map = archsig::archmap::check_archmap(map.as_bytes(), &definitions).unwrap();
+    let law = archsig_input::law::check_law(law.as_bytes(), &definitions).unwrap();
+    let map = archsig_input::archmap::check_archmap(map.as_bytes(), &definitions).unwrap();
     let requests = resolve_observed_requests(
         &law,
         &map,

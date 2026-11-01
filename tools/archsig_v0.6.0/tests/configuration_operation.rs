@@ -1,10 +1,10 @@
-use archsig::{
+use archsig_common::control::{Checkpoint, Control};
+use archsig_computation::construction::{
+    ConstructionFailure,
+    maps::{ConfigurationOperation, OperationStep, correspondence, identity, internal_arrow},
+};
+use archsig_input::{
     archmap::Fact as FactPointer,
-    construction::{
-        ConstructionFailure,
-        maps::{ConfigurationOperation, OperationStep, correspondence, identity, internal_arrow},
-    },
-    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };

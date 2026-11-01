@@ -1,7 +1,8 @@
 //! 複合署名の各実memberを、元ownerと観測された所属事実へ接続する。
 use crate::common::owned_compound_calls as fixture;
 use crate::common::quiet;
-use archsig::{canonical::Json, observed::evaluate_observed_bytes};
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
 fn get<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[key]
@@ -22,7 +23,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| get(n, "id") == get(r, "node"))
         .unwrap()
 }
-fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+fn run(asks: &[&str]) -> archsig_computation::observed::ObservedEvaluation {
     let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &quiet())
         .unwrap_or_else(|e| panic!("input/evaluation: {:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
@@ -198,7 +199,7 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let before = archsig_input::input::check_inputs(input.clone(), &quiet()).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
@@ -280,7 +281,8 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
                         .iter()
                         .find(|field| Json::str(&field.name) == f["field"])
                         .unwrap();
-                    let archsig::archmap::Slot::Known { atom, origin, .. } = &atom.slot else {
+                    let archsig_input::archmap::Slot::Known { atom, origin, .. } = &atom.slot
+                    else {
                         panic!("known")
                     };
                     assert_eq!(&Json::str(atom), &f["atom"]);
@@ -351,7 +353,7 @@ fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
         .find(|f| f.name == "Reservations.Reserve.owner")
         .unwrap();
     assert!(
-        matches!(&owner.slot,archsig::archmap::Slot::Known{value:archsig::archmap::Value::Ref{snapshot,subject},..}if snapshot=="v"&&subject=="A")
+        matches!(&owner.slot,archsig_input::archmap::Slot::Known{value:archsig_input::archmap::Value::Ref{snapshot,subject},..}if snapshot=="v"&&subject=="A")
     );
     let to = e
         .fields
@@ -360,9 +362,9 @@ fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
         .unwrap();
     assert_eq!(
         to.ty,
-        archsig::types::Type::Owned("Reservations.State".into(), "owner".into())
+        archsig_common::types::Type::Owned("Reservations.State".into(), "owner".into())
     );
-    assert!(matches!(to.slot, archsig::archmap::Slot::Missing));
+    assert!(matches!(to.slot, archsig_input::archmap::Slot::Missing));
     let evaluation = node(&w, get(get(a, "outputs"), "evaluation"));
     let domain = node(&w, &arr(get(evaluation, "arguments"))[1]);
     assert_eq!(get(domain, "type"), &Json::str("Domain"));

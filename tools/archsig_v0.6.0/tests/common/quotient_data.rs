@@ -91,7 +91,8 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
 
 #[test]
 fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
-    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
+    use archsig_common::control::Control;
+    use archsig_computation::observed::evaluate::evaluate_observed_bytes;
     let singletons = vec![
         vec![(false, false)],
         vec![(false, true)],
@@ -170,7 +171,7 @@ fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
             &Control::unlimited(),
         )
         .unwrap();
-        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let wire = archsig_common::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&wire, "answers"));
         assert_eq!(s(get(&answers[1], "status")), "established");
         for index in [1, 2] {

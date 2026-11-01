@@ -1,13 +1,13 @@
 //! 欠測 Z/Q を残す元左右と、定数差による Eq/Ne の導出を三入力 byte から検査する。
 use crate::common;
 
-use archsig::{
+use archsig_common::canonical::Json;
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::{
     archmap::Slot,
-    canonical::Json,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, InputStatus, check_inputs},
     law::{ast::ExprKind, model::Signature},
-    observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -605,7 +605,7 @@ fn normalization<'a>(
     };
     assert!(matches!(
         op,
-        archsig::law::ast::BinOp::Eq | archsig::law::ast::BinOp::Ne
+        archsig_input::law::ast::BinOp::Eq | archsig_input::law::ast::BinOp::Ne
     ));
     assert_eq!(
         checked.law().expr_type(id).unwrap().wire(),
@@ -1429,10 +1429,10 @@ fn provenance_relocation_keeps_false_affine_law_and_new_fact_origins() {
             .find(|s| s.id == "item")
             .unwrap();
         assert!(
-            matches!(&subject.fields.iter().find(|f|f.name == "Affine.Sample.owner").unwrap().slot,Slot::Known {value:archsig::archmap::Value::Ref {snapshot,subject},..} if snapshot == "v" && subject == "root")
+            matches!(&subject.fields.iter().find(|f|f.name == "Affine.Sample.owner").unwrap().slot,Slot::Known {value:archsig_input::archmap::Value::Ref {snapshot,subject},..} if snapshot == "v" && subject == "root")
         );
         assert!(
-            matches!(&subject.fields.iter().find(|f|f.name == "Affine.Sample.knownz").unwrap().slot,Slot::Known {value:archsig::archmap::Value::Z(value),..} if value.to_string() == "7")
+            matches!(&subject.fields.iter().find(|f|f.name == "Affine.Sample.knownz").unwrap().slot,Slot::Known {value:archsig_input::archmap::Value::Z(value),..} if value.to_string() == "7")
         );
         assert!(matches!(
             subject

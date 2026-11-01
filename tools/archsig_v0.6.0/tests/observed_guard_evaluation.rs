@@ -1,12 +1,14 @@
 //! AC2: Bool値とLaw判断、guardの適用状態と全補完での成立を三入力から区別する。
-use archsig::result::Signal;
-use archsig::{
+use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
+};
+use archsig_computation::observed::evaluate_observed_bytes;
+use archsig_input::result::Signal;
+use archsig_input::{
     definition::check_definitions,
     input::{InputSources, check_inputs},
     law::model::Signature,
-    observed::evaluate_observed_bytes,
 };
 use std::{
     cell::Cell,
@@ -607,7 +609,7 @@ fn guarded_case(
                 .iter()
                 .find(|field| field.name == text(f(support, "field")))
                 .unwrap();
-            let archsig::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
+            let archsig_input::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
                 panic!("欠測をsupportへ加えない")
             };
             assert_eq!(atom, text(f(support, "atom")));
