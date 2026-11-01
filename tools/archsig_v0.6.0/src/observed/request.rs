@@ -1,6 +1,7 @@
 //! 観測環境のevaluate/checkと、依存理由を読むneeded要求。
 
-use crate::control::{Checkpoint, Control, StopReason};
+use crate::control::{Checkpoint, Control};
+use crate::result::Signal;
 
 use super::projection::{self, ProjectionPlan, ProjectionStep, ProjectionType};
 use crate::{
@@ -284,7 +285,7 @@ pub enum ResolveFailure {
         architecture_environment: bool,
     },
     Interrupted {
-        reason: StopReason,
+        reason: Signal,
     },
 }
 
@@ -871,7 +872,7 @@ fn available(
     Ok(resolved)
 }
 
-fn stopped(reason: StopReason) -> ResolveFailure {
+fn stopped(reason: Signal) -> ResolveFailure {
     ResolveFailure::Interrupted { reason }
 }
 fn phase(control: &mut Control, point: Checkpoint) -> Result<(), ResolveFailure> {

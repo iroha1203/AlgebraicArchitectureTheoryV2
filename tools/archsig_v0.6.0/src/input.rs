@@ -2,7 +2,8 @@
 
 mod comparison;
 
-use crate::control::{CheckFailure, Checkpoint, Control, StopReason};
+use crate::control::{CheckFailure, Checkpoint, Control};
+use crate::result::Signal;
 use crate::{
     archmap::{CheckedArchMap, check_archmap_controlled},
     canonical::{Json, sha256_digest},
@@ -210,9 +211,9 @@ impl InputFailure {
         self.issues.push(wire);
         self
     }
-    fn stopped(mut self, reason: StopReason) -> Self {
+    fn stopped(mut self, reason: Signal) -> Self {
         self.status = InputStatus::Interrupted;
-        self.issues.push(reason.wire());
+        self.issues.push(reason.issue());
         self
     }
     // Law 完了後の失敗表示にだけ、検査済みの表を所有権ごと移す。

@@ -11,8 +11,9 @@ use crate::{
     types::Type,
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 mod object_view_family;
 mod object_reading_environment;
@@ -462,7 +463,7 @@ impl<'a> Environment<'a> {
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
         control: &mut Control,
-    ) -> Result<Self, StopReason> {
+    ) -> Result<Self, Signal> {
         let mut environment =
             Self::with_requests(prepared.inputs(), prepared.requests().requests(), control)?;
         environment.object = prepared
@@ -477,13 +478,13 @@ impl<'a> Environment<'a> {
         inputs: &'a CheckedInputs,
         requests: &'a [Request],
         control: &mut Control,
-    ) -> Result<Self, StopReason> {
+    ) -> Result<Self, Signal> {
         let mut environment = Self::new(inputs, control)?;
         environment.original_requests = Some(requests);
         Ok(environment)
     }
 
-    pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, StopReason> {
+    pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, Signal> {
         let mut subjects = BTreeMap::new();
         let mut fields = BTreeMap::new();
         let mut atoms = BTreeMap::new();

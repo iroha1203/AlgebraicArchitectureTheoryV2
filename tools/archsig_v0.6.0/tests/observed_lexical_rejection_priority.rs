@@ -2,11 +2,12 @@
 use crate::common;
 use archsig::{
     archmap::check_archmap,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
-    result::{ResultIssue, Signal},
+    result::ResultIssue,
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -51,8 +52,8 @@ fn assert_priority(
             .stop_reason()
             .expect("the requested post was sampled");
         assert_eq!(failure.status(), InputStatus::Interrupted, "{at}/{total}");
-        assert_eq!(failure.issues(), [reason.wire()]);
-        assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+        assert_eq!(failure.issues(), [reason.issue()]);
+        assert_eq!(reason, Signal::Term);
     }
 }
 
@@ -233,7 +234,7 @@ fn constructor_and_field_exhaustion_keep_only_established_lookup_rejections() {
     )
     .unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
-    assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
+    assert_eq!(failure.issues(), [control.stop_reason().unwrap().issue()]);
 
     let make_field = || {
         let source = value_sources("\"Z\"", "\"1\"");

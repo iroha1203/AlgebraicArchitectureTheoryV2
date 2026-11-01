@@ -11,8 +11,9 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location};
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 pub(super) mod values;
 pub(in crate::observed) mod relation_sources;
@@ -30,7 +31,7 @@ pub(crate) struct CompareWitness {
     equal: Option<bool>,
     incompatible: Option<(NodeRef, NodeRef)>,
     facts: Vec<Fact>,
-    stopped: Option<StopReason>,
+    stopped: Option<Signal>,
     value_plan: Option<values::Plan>,
     pub(in crate::observed) relation_family: Option<Arc<relation_sources::Family>>,
     pub(in crate::observed) relation_plan: Option<Arc<relations::Plan>>,
@@ -623,7 +624,7 @@ pub(super) fn validate_answer(
     }
     let mut reasons = j.reasons.clone();
     if let Some(stop) = &w.stopped {
-        reasons.push(Reason::stopped(&r.id, stop.clone()));
+        reasons.push(Reason::stopped(&r.id, *stop));
     }
     sort_reasons(&mut reasons);
     if a.id != r.id
@@ -715,7 +716,7 @@ fn path_difference(
 fn completed_operation<T>(
     outcome: Result<T, crate::construction::ConstructionFailure>,
     retained: Option<T>,
-    stopped: &mut Option<StopReason>,
+    stopped: &mut Option<Signal>,
 ) -> Result<T, ValidationFailure> {
     match outcome {
         Ok(v) => Ok(v),
@@ -817,7 +818,7 @@ pub(super) fn evaluate(
             control,
         )?;
         let equal = plan.result.equal;
-        stopped = plan.stopped.clone();
+        stopped = plan.stopped;
         value_plan = Some(plan);
         equal
     } else if kind == "value" {
@@ -1051,7 +1052,7 @@ pub(super) fn evaluate(
         outputs.insert("comparison".into(), c);
     }
     if let Some(s) = &w.stopped {
-        reasons.push(Reason::stopped(&r.id, s.clone()));
+        reasons.push(Reason::stopped(&r.id, *s));
     }
     sort_reasons(&mut reasons);
     Ok(Answer {

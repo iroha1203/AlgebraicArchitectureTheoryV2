@@ -978,7 +978,7 @@ fn interrupted_at_expression(
         .wire();
     assert_eq!(field(&result, "status"), &Json::str("interrupted"));
     assert_eq!(expressions.get(), stop_at, "停止後は新しい式を始めない");
-    let original = control.stop_reason().unwrap().wire();
+    let original = control.stop_reason().unwrap().issue();
     for a in arr(field(&result, "answers"))
         .iter()
         .skip(usize::from(first_complete))
@@ -1144,7 +1144,7 @@ fn missing_scope_survives_at_finite(stop_at: usize, signal: Signal) -> Json {
         probes_at_stop.get(),
         "停止確認後に probe を再実行しない"
     );
-    let stop = control.stop_reason().expect("元の停止理由を保持").wire();
+    let stop = control.stop_reason().expect("元の停止理由を保持").issue();
     assert_eq!(field(&stop, "code"), &Json::str("cancelled"));
     assert_eq!(
         field(field(&stop, "details"), "signal"),

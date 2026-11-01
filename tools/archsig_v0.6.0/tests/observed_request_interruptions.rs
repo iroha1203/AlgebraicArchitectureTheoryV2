@@ -2,7 +2,7 @@
 use crate::common;
 
 use archsig::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, check_inputs},
     observed::{
         PrepareFailure, prepare_observed,
@@ -82,7 +82,7 @@ fn counting(point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     )
 }
 
-fn interrupt(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>, StopReason) {
+fn interrupt(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>, Signal) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let control = Control::new(move |current| {
@@ -91,7 +91,7 @@ fn interrupt(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>, StopRea
         }
         (seen.get() >= at).then_some(Signal::Term)
     });
-    (control, count, StopReason::Cancelled(Signal::Term))
+    (control, count, Signal::Term)
 }
 
 fn assert_request_stop(
@@ -99,7 +99,7 @@ fn assert_request_stop(
     control: &mut Control,
     count: &Cell<usize>,
     at: usize,
-    reason: &StopReason,
+    reason: &Signal,
 ) {
     let wire_value = failure.wire().expect("中断は内部結果を返す");
     let archsig::canonical::Json::Obj(fields) = &wire_value else {
@@ -107,7 +107,7 @@ fn assert_request_stop(
     };
     assert_eq!(
         fields["issues"],
-        archsig::canonical::Json::Arr(vec![reason.wire()])
+        archsig::canonical::Json::Arr(vec![reason.issue()])
     );
     let wire = wire_value.canonical();
     for empty in [r#""requests":[]"#, r#""nodes":[]"#, r#""answers":[]"#] {
@@ -127,7 +127,7 @@ fn assert_request_stop(
     assert!(inputs.law().declarations().contains_key("R.accept"));
     assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
     assert_eq!(count.get(), at);
-    assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason.clone()));
+    assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(*reason));
     assert_eq!(count.get(), at, "停止後にprobeや新たな導出を始めない");
 }
 
@@ -206,7 +206,7 @@ fn failed_projection_candidates_cannot_swallow_cancellation() {
         let (mut control, count, reason) = interrupt(Checkpoint::Projection, at);
         assert_eq!(
             resolve_projection_controlled(checked.law(), candidates(), &path, &mut control),
-            Err(ProjectionFailure::Interrupted(reason.clone()))
+            Err(ProjectionFailure::Interrupted(reason))
         );
         assert_eq!(count.get(), at);
         assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));

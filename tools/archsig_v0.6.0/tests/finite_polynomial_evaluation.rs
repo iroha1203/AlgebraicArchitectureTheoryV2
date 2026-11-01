@@ -2,7 +2,7 @@
 mod fixture;
 use archsig::{
     construction::ConstructionFailure,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
     observed::finite_polynomial_evaluation::{
         FiniteIntegerFunction as V, FinitePolynomialEvaluation as E, FinitePolynomialFailure as F,
@@ -358,10 +358,7 @@ fn table_stops_keep_complete_domain_and_function_prefix_and_freeze_probes() {
             let F::Reading { partial, cause } = error else {
                 panic!("{error:?}")
             };
-            assert_eq!(
-                cause,
-                ConstructionFailure::Stopped(StopReason::Cancelled(signal))
-            );
+            assert_eq!(cause, ConstructionFailure::Stopped(signal));
             assert!(partial.base().occurrences().iter().any(|q| {
                 q.epsilon
                     .as_ref()

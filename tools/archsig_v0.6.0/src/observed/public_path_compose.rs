@@ -9,8 +9,9 @@ use super::{
 };
 use crate::canonical::Json;
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -32,7 +33,7 @@ pub(crate) struct PathWitness {
     value: Option<Scalar>,
     reading: String,
     invisible: Option<NodeRef>,
-    stopped: Option<StopReason>,
+    stopped: Option<Signal>,
 }
 impl PartialEq for PathWitness {
     fn eq(&self, b: &Self) -> bool {
@@ -569,7 +570,7 @@ pub(super) fn validate_answer(
     }
     let mut reasons = j.reasons.clone();
     if let Some(stop) = &w.stopped {
-        reasons.push(Reason::stopped(&r.id, stop.clone()));
+        reasons.push(Reason::stopped(&r.id, *stop));
     }
     sort_reasons(&mut reasons);
     if a.id != r.id
@@ -852,7 +853,7 @@ pub(super) fn evaluate(
         outputs.insert("operation".into(), path);
     }
     if let Some(stop) = &w.stopped {
-        reasons.push(Reason::stopped(&r.id, stop.clone()));
+        reasons.push(Reason::stopped(&r.id, *stop));
     }
     sort_reasons(&mut reasons);
     Ok(Answer {

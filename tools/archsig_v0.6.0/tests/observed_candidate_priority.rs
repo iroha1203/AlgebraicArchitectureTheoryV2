@@ -1,6 +1,6 @@
 //! 最後の構文候補が確定した不正より、取消の停止が優先されることを確認する。
 use archsig::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };
@@ -46,10 +46,7 @@ fn exhausted_syntax_candidates_yield_to_cancellation_from_bytes() {
             assert!(failure.primitives().is_empty());
             assert!(failure.vocabularies().is_empty());
             assert_eq!(failure.status(), InputStatus::Interrupted);
-            assert_eq!(
-                control.stop_reason(),
-                Some(StopReason::Cancelled(Signal::Term))
-            );
+            assert_eq!(control.stop_reason(), Some(Signal::Term));
         }
     }
 }

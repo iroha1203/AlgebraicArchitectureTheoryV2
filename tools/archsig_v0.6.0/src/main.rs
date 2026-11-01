@@ -197,7 +197,7 @@ mod test_watchdog;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use archsig::control::{Checkpoint, StopReason};
+    use archsig::control::Checkpoint;
     use std::time::Instant;
 
     /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
@@ -225,7 +225,7 @@ mod tests {
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
-            Err(StopReason::Cancelled(expected))
+            Err(expected)
         );
         assert_eq!(signals.frozen, None, "checkpointでfinalizeを開始しない");
         assert_eq!(signals.freeze(), Some(expected));
@@ -254,10 +254,7 @@ mod tests {
                 frozen: None,
             };
             let mut control = signals.control();
-            assert_eq!(
-                control.checkpoint(Checkpoint::LawSemantics),
-                Err(StopReason::Cancelled(expected))
-            );
+            assert_eq!(control.checkpoint(Checkpoint::LawSemantics), Err(expected));
             if later_signal == signal_hook::consts::SIGINT {
                 signals.int.store(true, Ordering::SeqCst);
             } else {

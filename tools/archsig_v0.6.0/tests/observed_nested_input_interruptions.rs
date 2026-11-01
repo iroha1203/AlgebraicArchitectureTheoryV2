@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     law::{check_law, check_law_controlled},
@@ -63,7 +63,7 @@ fn probe(point: Checkpoint, at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
 
 fn assert_stopped(
     failure: InputFailure,
-    expected: &StopReason,
+    expected: &Signal,
     control: &mut Control,
     count: &Cell<usize>,
     at: usize,
@@ -72,7 +72,7 @@ fn assert_stopped(
     assert!(failure.declarations().is_empty());
     assert!(failure.primitives().is_empty());
     assert!(failure.vocabularies().is_empty());
-    assert_eq!(failure.issues(), &[expected.wire()]);
+    assert_eq!(failure.issues(), &[expected.issue()]);
     let Json::Obj(ref fields) = failure.wire() else {
         panic!("object")
     };
@@ -86,10 +86,7 @@ fn assert_stopped(
         assert_eq!(fields[field], Json::Arr(vec![]), "{field}");
     }
     assert_eq!(count.get(), at);
-    assert_eq!(
-        control.checkpoint(Checkpoint::Resolve),
-        Err(expected.clone())
-    );
+    assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(*expected));
     assert_eq!(count.get(), at, "停止後はprobeを再開しない");
 }
 
@@ -102,7 +99,7 @@ fn deep_schema_and_multiple_qnames_stop_from_bytes_before_tables_or_requests_are
             prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut complete).unwrap();
         assert_eq!(prepared.requests().evaluation_order(), &[0]);
         assert!(total.get() > 4, "{point:?}");
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         for at in [1, total.get() / 2, total.get()] {
             let (mut control, count) = probe(point, Some(at));
             let failure = check_inputs(source.clone(), &mut control).unwrap_err();

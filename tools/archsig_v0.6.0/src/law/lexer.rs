@@ -257,7 +257,7 @@ fn hex4(src: &[u8], at: usize) -> Option<u32> {
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -277,10 +277,7 @@ mod interruption_tests {
         )
         .unwrap_err();
         assert_eq!(count.get(), 5, "入口・outer・二つのdigitの後にも確認する");
-        assert!(matches!(
-            failure,
-            CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-        ));
+        assert!(matches!(failure, CheckFailure::Stopped(Signal::Term)));
     }
 
     #[test]
@@ -320,7 +317,7 @@ mod interruption_tests {
                     &mut control,
                     Checkpoint::LawIteration
                 ),
-                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Int)))
+                Err(CheckFailure::Stopped(Signal::Int))
             ));
         }
     }

@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed},
@@ -63,9 +63,9 @@ fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
     (control, count)
 }
 
-fn stopped(failure: InputFailure, expected: StopReason, count: &Cell<usize>, at: usize) {
+fn stopped(failure: InputFailure, expected: Signal, count: &Cell<usize>, at: usize) {
     assert_eq!(failure.status(), InputStatus::Interrupted);
-    assert_eq!(failure.issues(), &[expected.wire()]);
+    assert_eq!(failure.issues(), &[expected.issue()]);
     assert!(failure.primitives().is_empty());
     assert!(failure.declarations().is_empty());
     assert!(failure.vocabularies().is_empty());
@@ -85,18 +85,18 @@ fn definition_manifest_and_model_canonicalization_stop_from_bytes_at_internal_bo
     let (mut control, total) = probe(None);
     prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap();
     assert!(total.get() > 20);
-    let expected = StopReason::Cancelled(Signal::Term);
+    let expected = Signal::Term;
     for at in [1, total.get() / 2, total.get()] {
         let (mut control, count) = probe(Some(at));
         let failure = check_inputs(source.clone(), &mut control).unwrap_err();
-        stopped(failure, expected.clone(), &count, at);
+        stopped(failure, expected, &count, at);
         let (mut control, count) = probe(Some(at));
         let PrepareFailure::Inputs(failure) =
             prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap_err()
         else {
             panic!("definition stage")
         };
-        stopped(*failure, expected.clone(), &count, at);
+        stopped(*failure, expected, &count, at);
     }
 }
 
@@ -159,11 +159,6 @@ fn definition_errors_keep_their_stage_and_cannot_hide_final_canonical_stop() {
         assert_eq!(total.get(), 3, "byte digest before/after and error exit");
         let (mut control, count) = probe(Some(total.get()));
         let failure = check_inputs(source.clone(), &mut control).unwrap_err();
-        stopped(
-            failure,
-            StopReason::Cancelled(Signal::Term),
-            &count,
-            total.get(),
-        );
+        stopped(failure, Signal::Term, &count, total.get());
     }
 }

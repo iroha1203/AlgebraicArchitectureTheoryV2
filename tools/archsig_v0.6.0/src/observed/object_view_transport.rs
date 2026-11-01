@@ -28,8 +28,9 @@ use crate::{
     types::Type,
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 use std::sync::Arc;
 mod family;
@@ -56,7 +57,7 @@ pub enum ObjectViewTransportFailure {
     },
     /// 停止理由と、停止前に検査・計算できた成果だけを返す。
     Stopped {
-        reason: StopReason,
+        reason: Signal,
         operation: Box<ConfigurationOperation>,
         partial: Option<Box<ObjectViewTransportPartial>>,
         evaluation: Option<Box<ObjectEvaluationFailure>>,
@@ -581,7 +582,7 @@ fn checked_view_transport(
         configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
             match failure.cause() {
                 ConstructionFailure::Stopped(reason) => {
-                    let reason = reason.clone();
+                    let reason = *reason;
                     let (_, transport) = failure.into_parts();
                     ObjectViewTransportFailure::Stopped {
                         reason,

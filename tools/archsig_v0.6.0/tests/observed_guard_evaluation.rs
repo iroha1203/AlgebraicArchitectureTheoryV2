@@ -860,7 +860,7 @@ fn stop_between_guard_body_and_law_completion(expression_offset: usize, signal: 
         payload(target(&nodes, f(f(prior, "outputs"), "value"), "Bool")),
         &Json::Bool(true)
     );
-    let stop = control.stop_reason().unwrap().wire();
+    let stop = control.stop_reason().unwrap().issue();
     for id in ["g", "later"] {
         let a = answer(&result, id);
         assert_eq!(f(a, "status"), &Json::str("undetermined"));

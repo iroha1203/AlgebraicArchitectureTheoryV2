@@ -262,10 +262,7 @@ fn no_laws_has_no_circuits_and_is_complete() {
 }
 #[test]
 fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
-    use archsig::{
-        control::{Checkpoint as C, StopReason},
-        result::Signal,
-    };
+    use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required numeric(c:Part,b:Bool):(2,if b then 3 else 0)=(0,0);",
@@ -287,7 +284,7 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
         let h = hits.clone();
         let probes = Rc::new(RefCell::new(0));
         let p = probes.clone();
-        let expected = StopReason::Cancelled(Signal::Int);
+        let expected = Signal::Int;
         let mut c = Control::new(move |at| {
             *p.borrow_mut() += 1;
             if at == point {
@@ -305,7 +302,7 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
         };
         assert_eq!(
             cause,
-            archsig::construction::ConstructionFailure::Stopped(expected.clone())
+            archsig::construction::ConstructionFailure::Stopped(expected)
         );
         assert_eq!(c.stop_reason(), Some(expected));
         assert_eq!(*hits.borrow(), nth);

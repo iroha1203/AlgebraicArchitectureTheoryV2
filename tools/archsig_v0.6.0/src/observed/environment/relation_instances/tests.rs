@@ -437,8 +437,7 @@ fn stops_never_certify_unfinished_relation_instances_and_completed_tables_rechec
                 Err(error) => error,
                 Ok(_) => panic!("停止しなかった"),
             };
-            let expected = StopReason::Cancelled(signal);
-            assert!(matches!(error.cause,ValidationFailure::Stop(ref s)if s==&expected));
+            assert!(matches!(error.cause,ValidationFailure::Stop(ref s)if s==&signal));
             assert!(!error.partial.enumeration_complete());
             assert!(!error.partial.conditions_verified());
             let frozen = calls.get();

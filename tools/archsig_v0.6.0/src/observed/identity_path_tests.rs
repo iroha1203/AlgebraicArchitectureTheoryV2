@@ -243,7 +243,7 @@ fn stop(stage: &'static str) {
     let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -275,7 +275,7 @@ fn stop(stage: &'static str) {
     super::super::super::path_value::clear_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert!(stopped.nodes.len() < normal.nodes.len());
     assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
     for answer in &stopped.answers[2..] {

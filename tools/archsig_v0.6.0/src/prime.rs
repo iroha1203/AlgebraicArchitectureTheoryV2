@@ -231,7 +231,7 @@ mod tests {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -290,14 +290,8 @@ mod controlled_tests {
                 let (mut control, seen) = probe(at);
                 let error = accepted_stage(stage, &mut control).unwrap_err();
                 assert_eq!(seen.get(), at, "stage {stage} at {at}");
-                assert!(matches!(
-                    error,
-                    Failure::Stopped(StopReason::Cancelled(Signal::Int))
-                ));
-                assert_eq!(
-                    control.stop_reason(),
-                    Some(StopReason::Cancelled(Signal::Int))
-                );
+                assert!(matches!(error, Failure::Stopped(Signal::Int)));
+                assert_eq!(control.stop_reason(), Some(Signal::Int));
             }
         }
     }
@@ -328,14 +322,8 @@ mod controlled_tests {
             let (mut control, seen) = probe(total.get());
             let result = rejected_stage(stage, &mut control);
             assert_eq!(seen.get(), total.get());
-            assert!(matches!(
-                result,
-                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
-            ));
-            assert_eq!(
-                control.stop_reason(),
-                Some(StopReason::Cancelled(Signal::Int))
-            );
+            assert!(matches!(result, Err(Failure::Stopped(Signal::Int))));
+            assert_eq!(control.stop_reason(), Some(Signal::Int));
             // An unexamined stage never inherits a later composite answer.
             let (mut control, _) = probe(1);
             assert!(matches!(
@@ -354,10 +342,7 @@ mod controlled_tests {
         );
         let (mut control, _) = probe(total.get());
         let result = jacobi::<Failure>(&5.into(), &5.into(), &mut control, POINT);
-        assert!(matches!(
-            result,
-            Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
-        ));
+        assert!(matches!(result, Err(Failure::Stopped(Signal::Int))));
         // A genuinely composite Selfridge result passing its zero through
         // the enclosing loop still reports a stop observed on the way.
         let (mut baseline, total) = probe(usize::MAX);
@@ -366,12 +351,9 @@ mod controlled_tests {
             let (mut control, _) = probe(at);
             assert!(matches!(
                 strong_lucas::<Failure>(&35u32.into(), &mut control, POINT),
-                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+                Err(Failure::Stopped(Signal::Int))
             ));
-            assert_eq!(
-                control.stop_reason(),
-                Some(StopReason::Cancelled(Signal::Int))
-            );
+            assert_eq!(control.stop_reason(), Some(Signal::Int));
         }
     }
 }

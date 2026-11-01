@@ -1,6 +1,6 @@
 use archsig::{
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     law::{self, lexer},
     observed::{PrepareFailure, prepare_observed},
@@ -51,9 +51,9 @@ fn assert_stopped(failure: &InputFailure, control: &Control) {
         assert!(input.bytes_digest.is_some());
         assert_eq!(input.model_digest.is_some(), input.id == "definition0");
     }
-    let expected = StopReason::Cancelled(Signal::Term);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
-    assert_eq!(failure.issues(), &[expected.wire()]);
+    let expected = Signal::Term;
+    assert_eq!(control.stop_reason(), Some(expected));
+    assert_eq!(failure.issues(), &[expected.issue()]);
     let wire = failure.wire();
     let Json::Obj(fields) = &wire else {
         panic!("object")

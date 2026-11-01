@@ -55,7 +55,7 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
         "later=evaluate(Reservations.seed)",
     ];
     let normal = owned_call_result(&asks);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -108,7 +108,7 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -132,7 +132,7 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
             .iter()
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s) if *s==expected))
             .unwrap();
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!("stop details")
         };
@@ -183,7 +183,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
     let body_span = law.exprs[*body].span;
     let inner_span = law.exprs[*lhs].span;
     for stage in 0..3 {
-        let expected = StopReason::Cancelled(crate::result::Signal::Term);
+        let expected = crate::result::Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let seen = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
@@ -225,7 +225,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
         let stopped = stopped.unwrap();
         assert!(seen.get());
         assert_eq!(stopped.status(), "interrupted");
-        assert_eq!(c.stop_reason(), Some(expected.clone()));
+        assert_eq!(c.stop_reason(), Some(expected));
         assert_eq!(
             format!("{:?}", &stopped.answers[..2]),
             format!("{:?}", &normal.answers[..2])
@@ -303,7 +303,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
                 .iter()
                 .find(|r| matches!(&r.kind,ReasonKind::Stop(s) if *s==expected))
                 .unwrap();
-            let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+            let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
             else {
                 panic!("details")
             };

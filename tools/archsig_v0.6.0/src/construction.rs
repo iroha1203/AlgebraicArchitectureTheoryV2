@@ -3,9 +3,10 @@ use crate::archmap::Fact as FactPointer;
 use crate::{
     archmap::{Slot, Subject, Value},
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::model::PrimitiveSignature,
     input::CheckedInputs,
+    result::Signal,
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -196,10 +197,10 @@ impl ConfigurationConstruction {
 pub enum ConstructionFailure {
     InvalidSelection(String),
     Inconsistent(String),
-    Stopped(StopReason),
+    Stopped(Signal),
 }
-impl From<StopReason> for ConstructionFailure {
-    fn from(reason: StopReason) -> Self {
+impl From<Signal> for ConstructionFailure {
+    fn from(reason: Signal) -> Self {
         Self::Stopped(reason)
     }
 }

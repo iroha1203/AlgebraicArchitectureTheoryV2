@@ -123,7 +123,7 @@ impl PrepareFailure {
                         issues.iter().map(request::RequestIssue::wire).collect(),
                     ),
                     ResolveFailure::Interrupted { reason } => {
-                        ("interrupted", vec![], vec![reason.wire()])
+                        ("interrupted", vec![], vec![reason.issue()])
                     }
                     ResolveFailure::NotApplicable { .. } => return None,
                 };

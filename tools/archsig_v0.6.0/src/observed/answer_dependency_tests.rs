@@ -59,7 +59,7 @@ fn dependency_stop(recheck: bool) {
         panic!()
     };
     let span = params[0].span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
@@ -112,7 +112,7 @@ fn dependency_stop(recheck: bool) {
     data::clear_iteration_observer();
     assert_eq!(seen.get(), 2);
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..4], &normal.answers[..4]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -131,7 +131,7 @@ fn dependency_stop(recheck: bool) {
             .iter()
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if *s==expected))
             .unwrap();
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!()
         };

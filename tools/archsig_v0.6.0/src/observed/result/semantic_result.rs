@@ -2,7 +2,8 @@
 use super::{Node, NodeRef, NodeType};
 use crate::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
+    result::Signal,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -46,7 +47,7 @@ fn quotient_maps(
     into: &mut BTreeSet<String>,
     control: &mut Control,
     point: Checkpoint,
-) -> Result<(), StopReason> {
+) -> Result<(), Signal> {
     let Json::Obj(fields) = node else {
         return Ok(());
     };
@@ -244,7 +245,7 @@ pub(super) fn compact(
     native: &[Node],
     control: &mut Control,
     point: Checkpoint,
-) -> Result<(), StopReason> {
+) -> Result<(), Signal> {
     clean_reasons(result);
     let Json::Obj(document) = result else {
         unreachable!()

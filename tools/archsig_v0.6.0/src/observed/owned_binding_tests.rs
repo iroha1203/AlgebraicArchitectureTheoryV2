@@ -80,7 +80,7 @@ fn stop(mode: usize) {
         assert!(!normal.answers[5].evidence.is_empty());
     }
     let span = params[1].span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -131,7 +131,7 @@ fn stop(mode: usize) {
     data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..5], &normal.answers[..5]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -164,7 +164,7 @@ fn stop(mode: usize) {
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&expected))
             .unwrap();
         assert_eq!(reason.request, a.id);
-        let (Json::Obj(actual), Json::Obj(wanted)) = (&reason.wire(), &expected.wire()) else {
+        let (Json::Obj(actual), Json::Obj(wanted)) = (&reason.wire(), &expected.issue()) else {
             panic!()
         };
         assert_eq!(actual["details"], wanted["details"]);
@@ -240,7 +240,7 @@ fn owned_binding_completion_visits_all_admissible_shared_assignments() {
 fn completion_stop(mode: usize) {
     use std::{cell::Cell, rc::Rc};
     let normal = completion_run("ambiguous");
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -282,7 +282,7 @@ fn completion_stop(mode: usize) {
     data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
     for answer in &stopped.answers[3..] {
         assert_eq!(answer.status, Decision::Undetermined);

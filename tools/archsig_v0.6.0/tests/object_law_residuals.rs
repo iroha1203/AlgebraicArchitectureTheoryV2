@@ -459,7 +459,7 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     r.recheck(i.clone(), &mut trace).unwrap();
     let nth = *count.borrow();
     assert!(nth > 0);
-    use archsig::{construction::ConstructionFailure, control::StopReason, result::Signal};
+    use archsig::{construction::ConstructionFailure, result::Signal};
     for signal in [Signal::Int, Signal::Term] {
         let calls = Rc::new(RefCell::new(0));
         let calls0 = calls.clone();
@@ -472,7 +472,6 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
             }
             (*calls0.borrow() == nth).then_some(signal)
         });
-        let expected = StopReason::Cancelled(signal);
         let failure = r.recheck(i.clone(), &mut c).unwrap_err();
         let ObjectLawResidualsFailure::Reading {
             cause: ConstructionFailure::Stopped(reason),
@@ -481,8 +480,8 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
         else {
             panic!("recheck must retain the completed numeric result: {signal:?}");
         };
-        assert_eq!(reason, expected);
-        assert_eq!(c.stop_reason(), Some(expected));
+        assert_eq!(reason, signal);
+        assert_eq!(c.stop_reason(), Some(signal));
         assert!(partial.is_complete());
         assert_eq!(partial.outcome(), Some(&Outcome::Compatible));
         assert!(partial.evaluations().iter().all(|e| e.complete));

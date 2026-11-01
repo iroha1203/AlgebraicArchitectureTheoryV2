@@ -1,11 +1,12 @@
 //! 必須の依存・所属・field・添字探索の終端拒否を、三入力 byte 経路で検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Details, Issue, Location},
-    result::{ResultIssue, Signal},
+    result::ResultIssue,
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -96,8 +97,8 @@ fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
     });
     (control, count)
 }
-fn reason() -> StopReason {
-    StopReason::Cancelled(Signal::Term)
+fn reason() -> Signal {
+    Signal::Term
 }
 fn empty_stage(failure: &InputFailure) {
     assert!(failure.declarations().is_empty());
@@ -169,7 +170,7 @@ fn required_priority(
         assert_eq!(control.stop_reason(), Some(reason()));
         empty_stage(&failure);
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [reason().wire()]);
+        assert_eq!(failure.issues(), [reason().issue()]);
     }
     // Before the final predicate/candidate is examined, no required rejection
     // is known. A speculative local mismatch cannot become an input Issue.
@@ -181,7 +182,7 @@ fn required_priority(
         InputStatus::Interrupted,
         "{message}: before final decision"
     );
-    assert_eq!(failure.issues(), [reason().wire()]);
+    assert_eq!(failure.issues(), [reason().issue()]);
     empty_stage(&failure);
 }
 
@@ -376,7 +377,7 @@ fn optional_absence_and_untried_field_candidates_remain_interrupted() {
             let failure = check_inputs(input.clone(), &mut control).unwrap_err();
             assert_eq!(seen.get(), at);
             assert_eq!(failure.status(), InputStatus::Interrupted);
-            assert_eq!(failure.issues(), [reason().wire()]);
+            assert_eq!(failure.issues(), [reason().issue()]);
             empty_stage(&failure);
         }
     }
@@ -402,7 +403,7 @@ fn an_untried_owner_field_candidate_cannot_be_promoted_to_invalid() {
     let failure = check_inputs(input.clone(), &mut control).unwrap_err();
     assert_eq!(seen.get(), first_mismatch_post);
     assert_eq!(failure.status(), InputStatus::Interrupted);
-    assert_eq!(failure.issues(), [reason().wire()]);
+    assert_eq!(failure.issues(), [reason().issue()]);
     assert_eq!(control.stop_reason(), Some(reason()));
     empty_stage(&failure);
 }

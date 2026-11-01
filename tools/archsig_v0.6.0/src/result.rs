@@ -49,6 +49,11 @@ impl Signal {
             Signal::Term => "SIGTERM",
         }
     }
+
+    /// 取消の Issue。要求固有の request/dependencies は呼出し側が付ける。
+    pub fn issue(self) -> Json {
+        ResultIssue::Cancelled(self).wire()
+    }
 }
 
 /// 入力の不正のほか、CLI・I/O・内部障害・中断の理由。

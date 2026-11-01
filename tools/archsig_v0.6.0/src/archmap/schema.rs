@@ -612,7 +612,7 @@ fn read_location_inner<E: InputError>(
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;
@@ -655,10 +655,7 @@ mod interruption_tests {
                 } else {
                     is_id_controlled::<E>(text, &mut control)
                 };
-                assert!(matches!(
-                    result,
-                    Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
-                ));
+                assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Term))));
             }
         }
     }
@@ -717,7 +714,7 @@ mod interruption_tests {
 #[cfg(test)]
 mod required_identifier_priority_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;
@@ -737,10 +734,7 @@ mod required_identifier_priority_tests {
             let original = || syntax("/snapshots/0/id", format!("`{text}` is not a valid Id"));
             let mut control = probe();
             let result = identifier::<E>(text, true, &mut control, Some(&original));
-            assert!(matches!(
-                result,
-                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
-            ));
+            assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Term))));
             let mut control = probe();
             assert!(matches!(
                 is_id_controlled::<E>(text, &mut control),

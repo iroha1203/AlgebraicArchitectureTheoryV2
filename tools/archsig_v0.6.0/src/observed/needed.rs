@@ -7,7 +7,8 @@ use super::{
         ValidationFailure, sort_reasons,
     },
 };
-use crate::control::{Checkpoint, Control, StopReason};
+use crate::control::{Checkpoint, Control};
+use crate::result::Signal;
 use crate::{canonical::Json, issue::Location, result::location_wire};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -299,7 +300,7 @@ pub(super) fn evaluate(
     environment: &Environment<'_>,
     request: &Request,
     control: &Control,
-) -> Result<(Answer, Option<StopReason>), ValidationFailure> {
+) -> Result<(Answer, Option<Signal>), ValidationFailure> {
     let node = expected(graph, request, graph.nodes.len(), control)?;
     environment.validate(graph, &node)?;
     let scope = node.scope.clone();

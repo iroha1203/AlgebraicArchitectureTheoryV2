@@ -50,7 +50,7 @@ fn stop(fresh: bool) {
         panic!()
     };
     let span = *span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
@@ -105,7 +105,7 @@ fn stop(fresh: bool) {
     data::clear_iteration_observer();
     assert_eq!(seen.get(), 1);
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -125,7 +125,7 @@ fn stop(fresh: bool) {
             .find(|r| matches!(&r.kind,ReasonKind::Stop(actual)if actual==&expected))
             .unwrap();
         assert_eq!(reason.request, stopped.answers[i].id);
-        let (Json::Obj(ref a), Json::Obj(ref b)) = (reason.wire(), expected.wire()) else {
+        let (Json::Obj(ref a), Json::Obj(ref b)) = (reason.wire(), expected.issue()) else {
             panic!()
         };
         assert_eq!(a["details"], b["details"]);

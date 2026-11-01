@@ -2,7 +2,7 @@
 use archsig::{
     archmap::{CheckedArchMap, check_archmap},
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::{CheckedDefinitions, check_definitions},
     input::{CheckedInputs, InputBytes, InputFailure, InputSources, InputStatus, check_inputs},
     law::{CheckedLaw, check_law},
@@ -69,9 +69,9 @@ fn assert_stop(failure: &InputFailure, control: &Control, retained: bool) {
     for name in ["requests", "answers", "nodes"] {
         assert_eq!(field(&failure.wire(), name), &Json::Arr(vec![]));
     }
-    let reason = StopReason::Cancelled(Signal::Term);
-    assert_eq!(control.stop_reason(), Some(reason.clone()));
-    assert_eq!(failure.issues(), &[reason.wire()]);
+    let reason = Signal::Term;
+    assert_eq!(control.stop_reason(), Some(reason));
+    assert_eq!(failure.issues(), &[reason.issue()]);
 }
 
 #[test]

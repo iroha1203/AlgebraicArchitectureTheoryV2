@@ -61,7 +61,7 @@ fn owned_map_member_stop(recheck: bool) {
         .find(|x| &bytes[x.span.0..x.span.1] == b"mcAccept(a,b,m.states)")
         .unwrap()
         .span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let traversing = Rc::new(Cell::new(false));
@@ -124,7 +124,7 @@ fn owned_map_member_stop(recheck: bool) {
     let stopped = stopped.unwrap();
     assert_eq!(seen.get(), 3);
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -154,7 +154,7 @@ fn owned_map_member_stop(recheck: bool) {
             .iter()
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if *s==expected))
             .unwrap();
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!("stop")
         };

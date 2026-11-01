@@ -3,7 +3,8 @@
 use super::{PrepareFailure, PreparedObserved};
 
 pub(crate) use crate::archmap::Fact;
-use crate::control::{Checkpoint, Control, StopReason};
+use crate::control::{Checkpoint, Control};
+use crate::result::Signal;
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
 mod completion_graph;
@@ -657,7 +658,7 @@ pub(crate) enum ReasonKind {
         operand_types: Vec<Type>,
         method: String,
     },
-    Stop(StopReason),
+    Stop(Signal),
     Internal(String),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -669,7 +670,7 @@ pub(crate) struct Reason {
     pub location: Option<Location>,
 }
 impl Reason {
-    pub(crate) fn stopped(request: &str, reason: StopReason) -> Self {
+    pub(crate) fn stopped(request: &str, reason: Signal) -> Self {
         Self {
             kind: ReasonKind::Stop(reason),
             request: request.into(),
@@ -694,7 +695,7 @@ impl Reason {
             ReasonKind::DependencyBlocked { .. } => "dependency_blocked",
             ReasonKind::ConditionFailed { .. } => "condition_failed",
             ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
-            ReasonKind::Stop(r) => r.code(),
+            ReasonKind::Stop(signal) => crate::result::ResultIssue::Cancelled(*signal).code(),
             ReasonKind::Internal(_) => "internal",
         }
     }
@@ -742,7 +743,7 @@ impl Reason {
                 Json::obj([("operation", Json::str(op))]),
             ),
             ReasonKind::Stop(r) => {
-                let mut result = r.wire();
+                let mut result = r.issue();
                 let Json::Obj(wire) = &mut result else {
                     unreachable!()
                 };
@@ -1587,7 +1588,7 @@ impl ObservedEvaluation {
         &self,
         control: &mut Control,
         point: Checkpoint,
-    ) -> Result<Json, StopReason> {
+    ) -> Result<Json, Signal> {
         self.wire_with_metadata(control, point, true)
     }
     /// 保存成果物。内部照合用の支持と静的解決表を複製しない。
@@ -1599,7 +1600,7 @@ impl ObservedEvaluation {
         &self,
         control: &mut Control,
         point: Checkpoint,
-    ) -> Result<Json, StopReason> {
+    ) -> Result<Json, Signal> {
         self.wire_with_metadata(control, point, false)
     }
     fn wire_with_metadata(
@@ -1607,7 +1608,7 @@ impl ObservedEvaluation {
         control: &mut Control,
         point: Checkpoint,
         inspection: bool,
-    ) -> Result<Json, StopReason> {
+    ) -> Result<Json, Signal> {
         control.checkpoint(point)?;
         let mut result = if inspection {
             self.prepared.inputs().metadata_wire()
@@ -1632,7 +1633,7 @@ impl ObservedEvaluation {
                         control.checkpoint(point)?;
                         Ok(r.wire())
                     })
-                    .collect::<Result<_, StopReason>>()?,
+                    .collect::<Result<_, Signal>>()?,
             ),
         );
         wire.insert(
@@ -1644,7 +1645,7 @@ impl ObservedEvaluation {
                         control.checkpoint(point)?;
                         Ok(a.wire())
                     })
-                    .collect::<Result<_, StopReason>>()?,
+                    .collect::<Result<_, Signal>>()?,
             ),
         );
         wire.insert(
@@ -1657,7 +1658,7 @@ impl ObservedEvaluation {
                         control.checkpoint(point)?;
                         Ok(n.wire_with_support(i, &self.nodes[..i], inspection))
                     })
-                    .collect::<Result<_, StopReason>>()?,
+                    .collect::<Result<_, Signal>>()?,
             ),
         );
         wire.insert(
@@ -1768,7 +1769,7 @@ pub(crate) struct Graph {
 #[derive(Debug)]
 pub(crate) enum ValidationFailure {
     Internal(String),
-    Stop(StopReason),
+    Stop(Signal),
     /// 元式の事前分析だけが返す。生成済みnodeの照合ではInternalへ変換する。
     UnsupportedExpression {
         location: Location,
@@ -1785,8 +1786,8 @@ impl From<&str> for ValidationFailure {
         Self::Internal(s.into())
     }
 }
-impl From<StopReason> for ValidationFailure {
-    fn from(s: StopReason) -> Self {
+impl From<Signal> for ValidationFailure {
+    fn from(s: Signal) -> Self {
         Self::Stop(s)
     }
 }
@@ -4994,8 +4995,8 @@ mod invariant_tests {
                 operand_types: vec![Type::Z, Type::Bool],
                 method: "method".into(),
             }),
-            reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Int))),
-            reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Term))),
+            reason(ReasonKind::Stop(Signal::Int)),
+            reason(ReasonKind::Stop(Signal::Term)),
             reason(ReasonKind::Internal("recheck".into())),
         ];
         // The previous complete wire-array comparison is the differential oracle.

@@ -266,7 +266,7 @@ pub struct DataProperties {
 #[cfg(test)]
 mod field_control_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type Failure = CheckFailure<Box<crate::issue::Issue>>;
@@ -310,7 +310,7 @@ mod field_control_tests {
                         &mut control,
                         Checkpoint::DefinitionSemantics
                     ),
-                    Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+                    Err(Failure::Stopped(Signal::Term))
                 ));
             }
         }

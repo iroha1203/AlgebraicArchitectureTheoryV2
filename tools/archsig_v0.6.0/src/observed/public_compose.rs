@@ -14,8 +14,9 @@ use crate::{
     construction::{ConstructionFailure, maps::ConfigurationOperation},
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
@@ -34,7 +35,7 @@ pub(crate) struct ComposeWitness {
     word: Vec<NodeRef>,
     shape: OperationProjection,
     operation: Option<ConfigurationOperation>,
-    stopped: Option<StopReason>,
+    stopped: Option<Signal>,
 }
 impl PartialEq for ComposeWitness {
     fn eq(&self, b: &Self) -> bool {
@@ -716,7 +717,7 @@ pub(super) fn validate_answer(
     }
     let mut reasons = j.reasons.clone();
     if let Some(stop) = &c.stopped {
-        reasons.push(Reason::stopped(&request.id, stop.clone()));
+        reasons.push(Reason::stopped(&request.id, *stop));
     }
     sort_reasons(&mut reasons);
     if answer.id != request.id
@@ -778,9 +779,9 @@ pub(super) fn evaluate(
         Err(f) => match f.cause() {
             ConstructionFailure::Stopped(stop) => {
                 let Some(op) = f.partial() else {
-                    return Err(stop.clone().into());
+                    return Err((*stop).into());
                 };
-                (Some(op.clone()), Some(stop.clone()))
+                (Some(op.clone()), Some(*stop))
             }
             ConstructionFailure::InvalidSelection(_) if first.target() != then.source() => {
                 (None, None)
@@ -916,7 +917,7 @@ pub(super) fn evaluate(
         .map(|r| vec![failed_reason(request, r)])
         .unwrap_or_default();
     if let Some(stop) = &c.stopped {
-        reasons.push(Reason::stopped(&request.id, stop.clone()));
+        reasons.push(Reason::stopped(&request.id, *stop));
     }
     sort_reasons(&mut reasons);
     Ok(Answer {

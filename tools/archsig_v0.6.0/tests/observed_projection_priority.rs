@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, check_inputs},
     observed::{
         PrepareFailure, prepare_observed,
@@ -66,7 +66,7 @@ fn sources_with_empty_constructor(empty_first: Option<bool>) -> InputSources {
     )
 }
 
-fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>, StopReason) {
+fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>, Signal) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let control = Control::new(move |point| {
@@ -76,7 +76,7 @@ fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>, StopReason) {
         at.is_some_and(|at| seen.get() >= at)
             .then_some(Signal::Term)
     });
-    (control, count, StopReason::Cancelled(Signal::Term))
+    (control, count, Signal::Term)
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn known_projection_errors_yield_to_cancellation() {
         assert_eq!(wire["nodes"], Json::Arr(vec![]));
         assert_eq!(wire["answers"], Json::Arr(vec![]));
         assert_eq!(wire["status"], Json::str("interrupted"));
-        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+        assert_eq!(wire["issues"], Json::Arr(vec![reason.issue()]));
         assert!(
             matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
         );
@@ -189,7 +189,7 @@ fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
         let (mut control, count, reason) = probe(Some(total.get()));
         assert_eq!(
             resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut control),
-            Err(ProjectionFailure::Interrupted(reason.clone()))
+            Err(ProjectionFailure::Interrupted(reason))
         );
         assert_eq!(count.get(), total.get());
         assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
@@ -216,9 +216,9 @@ fn final_dynamic_rejection_yields_to_cancellation_at_every_checkpoint() {
         let (mut control, count, reason) = probe(Some(at));
         assert_eq!(
             resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
-            Err(ProjectionFailure::Interrupted(reason.clone()))
+            Err(ProjectionFailure::Interrupted(reason))
         );
-        assert_eq!(control.stop_reason(), Some(reason.clone()));
+        assert_eq!(control.stop_reason(), Some(reason));
         assert_eq!(count.get(), at);
         assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
         assert_eq!(count.get(), at, "latched stop cannot resume candidate work");
@@ -306,14 +306,14 @@ fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_po
         assert_eq!(wire["answers"], Json::Arr(vec![]));
         assert_eq!(wire["nodes"], Json::Arr(vec![]));
         assert_eq!(wire["status"], Json::str("interrupted"));
-        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+        assert_eq!(wire["issues"], Json::Arr(vec![reason.issue()]));
         assert!(matches!(
             &failure,
             PrepareFailure::Requests {
                 failure: ResolveFailure::Interrupted { reason: actual }, ..
             } if actual == &reason
         ));
-        assert_eq!(control.stop_reason(), Some(reason.clone()));
+        assert_eq!(control.stop_reason(), Some(reason));
         assert_eq!(count.get(), at);
         assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
         assert_eq!(count.get(), at);
@@ -356,7 +356,7 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
             let (mut control, count, reason) = probe(Some(at));
             assert_eq!(
                 resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
-                Err(ProjectionFailure::Interrupted(reason.clone()))
+                Err(ProjectionFailure::Interrupted(reason))
             );
             assert_eq!(count.get(), at);
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
@@ -375,7 +375,7 @@ fn assert_binding_priority(asks: &[&str], at: usize) {
     assert_eq!(wire["nodes"], Json::Arr(vec![]));
     assert_eq!(wire["answers"], Json::Arr(vec![]));
     assert_eq!(wire["status"], Json::str("interrupted"));
-    assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+    assert_eq!(wire["issues"], Json::Arr(vec![reason.issue()]));
     assert!(
         matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
     );
@@ -480,7 +480,7 @@ fn every_type_mismatch_shape_yields_to_cancellation() {
             let (mut control, count, reason) = probe(Some(at));
             assert_eq!(
                 can_bind_controlled(&actual, &right, &mut control),
-                Err(reason.clone())
+                Err(reason)
             );
             assert_eq!(count.get(), at);
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));

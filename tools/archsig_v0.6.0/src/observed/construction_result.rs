@@ -8,8 +8,9 @@ use super::{
     },
 };
 use crate::construction::{ConstructionFailure, construct, readings::object_reading_instances};
-use crate::control::{Control, StopReason};
+use crate::control::Control;
 use crate::input::CheckedInputs;
+use crate::result::Signal;
 use crate::{
     canonical::Json,
     construction::{
@@ -167,7 +168,7 @@ pub(crate) struct MapWitness {
     subject: Fact,
     result: CorrespondenceResult,
     operation: Option<ConfigurationOperation>,
-    stopped: Option<StopReason>,
+    stopped: Option<Signal>,
     universe: Vec<Fact>,
     shape: MapProjection,
 }
@@ -1227,7 +1228,7 @@ impl MapWitness {
         subject: Fact,
         universe: Option<&ArchitectureWitness>,
         control: &mut Control,
-    ) -> Result<(Arc<Self>, Option<StopReason>), ConstructionFailure> {
+    ) -> Result<(Arc<Self>, Option<Signal>), ConstructionFailure> {
         let universe = match universe {
             Some(a) if a.inputs.sources() == inputs.sources() => a.construction.universe().to_vec(),
             Some(_) => {
@@ -1296,7 +1297,7 @@ impl MapWitness {
                 result,
                 operation,
                 shape,
-                stopped: stopped.clone(),
+                stopped,
                 universe,
             }),
             stopped,
@@ -1323,7 +1324,7 @@ impl MapWitness {
     pub fn reasons(&self) -> Vec<Reason> {
         let mut reasons = missing(&self.request, self.result.missing().to_vec());
         if let Some(stop) = &self.stopped {
-            reasons.push(Reason::stopped(&self.request.id, stop.clone()));
+            reasons.push(Reason::stopped(&self.request.id, *stop));
         }
         super::result::sort_reasons(&mut reasons);
         reasons

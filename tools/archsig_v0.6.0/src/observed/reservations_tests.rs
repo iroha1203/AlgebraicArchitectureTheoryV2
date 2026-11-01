@@ -304,7 +304,7 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Reservations.State.held"))
     );
     assert_eq!(normal.answers[3].status, Decision::Established);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -346,7 +346,7 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     let Json::Obj(ref normal_wire) = normal.wire() else {
         unreachable!()
     };
@@ -398,7 +398,7 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize) {
         let Json::Obj(ref reason_wire) = reason.wire() else {
             unreachable!()
         };
-        let Json::Obj(ref expected_wire) = expected.wire() else {
+        let Json::Obj(ref expected_wire) = expected.issue() else {
             unreachable!()
         };
         assert_eq!(reason_wire["details"], expected_wire["details"]);

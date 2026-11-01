@@ -178,7 +178,7 @@ impl PartialEq for Json {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::issue::Issue;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
@@ -225,7 +225,7 @@ mod controlled_tests {
                 visits += 1;
                 (visits == at).then_some(Signal::Term)
             });
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             assert!(
                 matches!(value.canonical_controlled::<Failure>(&mut control, Checkpoint::Expression), Err(Failure::Stopped(reason)) if reason == expected)
             );

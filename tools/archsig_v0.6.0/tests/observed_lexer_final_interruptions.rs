@@ -1,7 +1,7 @@
 //! 字句不正を持つ小さい byte bundle でも、終了時の取消と状態順位を保持する。
 use archsig::result::Signal;
 use archsig::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
 };
 use std::{cell::Cell, rc::Rc};
@@ -55,9 +55,6 @@ fn byte_bundle_lexer_error_samples_cancel_at_the_final_checkpoint() {
             sources(suffix).law().bytes()
         );
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert!(matches!(
-            control.stop_reason(),
-            Some(StopReason::Cancelled(Signal::Term))
-        ));
+        assert!(matches!(control.stop_reason(), Some(Signal::Term)));
     }
 }

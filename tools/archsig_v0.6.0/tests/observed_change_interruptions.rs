@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     result::Signal,
 };
@@ -54,10 +54,7 @@ fn assert_stopped(failure: &InputFailure, control: &Control) {
     for key in ["requests", "answers", "nodes"] {
         assert_eq!(fields[key], Json::Arr(vec![]));
     }
-    assert_eq!(
-        control.stop_reason(),
-        Some(StopReason::Cancelled(Signal::Term))
-    );
+    assert_eq!(control.stop_reason(), Some(Signal::Term));
 }
 
 #[test]

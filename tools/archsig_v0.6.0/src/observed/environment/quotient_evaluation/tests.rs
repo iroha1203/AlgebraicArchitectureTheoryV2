@@ -106,7 +106,6 @@ fn finite_data_values_validate_names_arity_payload_and_family_before_equality() 
 
 #[test]
 fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
-    use crate::control::StopReason;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = inputs("");
@@ -141,8 +140,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
             } else {
                 data::equal(&tree, &tree, &c)
             };
-            let expected = StopReason::Cancelled(signal);
-            assert!(matches!(result,Err(ValidationFailure::Stop(reason)) if reason==expected));
+            assert!(matches!(result,Err(ValidationFailure::Stop(reason)) if reason==signal));
             assert_eq!(count.get(), target);
         }
     }

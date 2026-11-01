@@ -462,7 +462,7 @@ fn owned_type_private_phase_stop(phase: &'static str) {
             .flat_map(|r| &r.missing)
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Reservations.State.free"))
     );
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -508,7 +508,7 @@ fn owned_type_private_phase_stop(phase: &'static str) {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     let Json::Obj(ref normal_wire) = normal.wire() else {
         unreachable!()
     };
@@ -571,7 +571,7 @@ fn owned_type_private_phase_stop(phase: &'static str) {
         let Json::Obj(ref wire) = reason.wire() else {
             unreachable!()
         };
-        let Json::Obj(ref expected_wire) = expected.wire() else {
+        let Json::Obj(ref expected_wire) = expected.issue() else {
             unreachable!()
         };
         assert_eq!(wire["details"], expected_wire["details"]);

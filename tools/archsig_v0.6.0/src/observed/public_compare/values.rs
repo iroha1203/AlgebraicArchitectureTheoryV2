@@ -227,7 +227,7 @@ pub(super) struct Plan {
     pub base: usize,
     pub nodes: Vec<Data>,
     pub result: ResultData,
-    pub stopped: Option<StopReason>,
+    pub stopped: Option<Signal>,
     pub finished: bool,
 }
 struct Calculator<'a> {

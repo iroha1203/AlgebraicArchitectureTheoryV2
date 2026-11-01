@@ -1,6 +1,6 @@
 //! 検査・要求解決・評価で共有する、注入可能な協調中断制御。
 
-use crate::{canonical::Json, result::Signal};
+use crate::result::Signal;
 use std::{cell::RefCell, rc::Rc};
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
@@ -101,37 +101,11 @@ pub enum Checkpoint {
     FiniteIteration,
 }
 
-/// 停止の原因。未着手の問いにも同じ原因を渡す。
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum StopReason {
-    Cancelled(Signal),
-}
-
-impl StopReason {
-    pub fn code(&self) -> &'static str {
-        match self {
-            Self::Cancelled(_) => "cancelled",
-        }
-    }
-
-    /// 停止理由の Issue。要求固有の request/dependencies は呼出し側が付ける。
-    pub fn wire(&self) -> Json {
-        let Self::Cancelled(signal) = self;
-        Json::obj([
-            ("code", Json::str(self.code())),
-            ("message", Json::str(format!("interrupted by signal {}", signal.wire()))),
-            ("details", Json::obj([("signal", Json::str(signal.wire()))])),
-            ("dependencies", Json::Arr(vec![])),
-            ("missing", Json::Arr(vec![])),
-        ])
-    }
-}
-
 /// 既存の入力エラーと協調中断を混同せずに伝播する。
 #[derive(Debug)]
 pub enum CheckFailure<F> {
     Input(F),
-    Stopped(StopReason),
+    Stopped(Signal),
 }
 
 /// 一度取消を観測した後は新しい導出を許さない。
@@ -142,7 +116,7 @@ pub struct Control {
 
 struct ControlState {
     probe: Box<dyn FnMut(Checkpoint) -> Option<Signal>>,
-    stopped: Option<StopReason>,
+    stopped: Option<Signal>,
 }
 
 impl std::fmt::Debug for Control {
@@ -175,21 +149,20 @@ impl Control {
         Self::new(|_| None)
     }
 
-    pub fn stop_reason(&self) -> Option<StopReason> {
-        self.state.borrow().stopped.clone()
+    pub fn stop_reason(&self) -> Option<Signal> {
+        self.state.borrow().stopped
     }
 
-    pub fn checkpoint(&mut self, point: Checkpoint) -> Result<(), StopReason> {
+    pub fn checkpoint(&mut self, point: Checkpoint) -> Result<(), Signal> {
         let mut state = self.state.borrow_mut();
-        if let Some(reason) = &state.stopped {
-            return Err(reason.clone());
+        if let Some(signal) = state.stopped {
+            return Err(signal);
         }
         let Some(signal) = (state.probe)(point) else {
             return Ok(());
         };
-        let reason = StopReason::Cancelled(signal);
-        state.stopped = Some(reason.clone());
-        Err(reason)
+        state.stopped = Some(signal);
+        Err(signal)
     }
 }
 
@@ -226,13 +199,12 @@ mod tests {
         let mut shared = control.clone();
         assert_eq!(control.checkpoint(Checkpoint::InputBundle), Ok(()));
         assert_eq!(shared.checkpoint(Checkpoint::Localize), Ok(()));
-        let stopped = StopReason::Cancelled(Signal::Term);
         assert_eq!(
             control.checkpoint(Checkpoint::Expression),
-            Err(stopped.clone())
+            Err(Signal::Term)
         );
-        assert_eq!(shared.checkpoint(Checkpoint::Resolve), Err(stopped.clone()));
-        assert_eq!(shared.stop_reason(), Some(stopped));
+        assert_eq!(shared.checkpoint(Checkpoint::Resolve), Err(Signal::Term));
+        assert_eq!(shared.stop_reason(), Some(Signal::Term));
         assert_eq!(probes.get(), 3, "停止後はprobeを呼ばない");
     }
 }

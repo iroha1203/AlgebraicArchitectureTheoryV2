@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     archmap::check_archmap_controlled,
-    control::{CheckFailure, Checkpoint, Control, StopReason},
+    control::{CheckFailure, Checkpoint, Control},
     definition::check_definitions,
     issue::Code,
     law::{check_law, check_law_controlled},
@@ -53,10 +53,7 @@ fn cancellation_reaches_inside_a_single_law_expression_after_syntax_checking() {
     assert!(full_steps.get() > stop_after + 10);
     let (mut control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
     let failure = check_law_controlled(long.as_bytes(), &definitions, &mut control).unwrap_err();
-    assert!(matches!(
-        failure,
-        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-    ));
+    assert!(matches!(failure, CheckFailure::Stopped(Signal::Term)));
     assert_eq!(seen.get(), stop_after);
 }
 
@@ -72,10 +69,7 @@ fn speculative_quantifier_type_checking_never_swallows_a_stop() {
         let (mut control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
         let failure = check_law_controlled(law.as_bytes(), &definitions, &mut control).unwrap_err();
         assert!(
-            matches!(
-                failure,
-                CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-            ),
+            matches!(failure, CheckFailure::Stopped(Signal::Term)),
             "{stop_after}: {failure:?}"
         );
         assert_eq!(seen.get(), stop_after);
@@ -99,10 +93,7 @@ fn cancellation_inside_cycle_dfs_stays_distinct_from_a_cycle_input_error() {
     // 空のview graphの終端、reading DFSの根、nodeに続くedgeを停止点にする。
     let (mut control, seen) = cancelled(Checkpoint::LawCycle, 4);
     let failure = check_law_controlled(law.as_bytes(), &definitions, &mut control).unwrap_err();
-    assert!(matches!(
-        failure,
-        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-    ));
+    assert!(matches!(failure, CheckFailure::Stopped(Signal::Term)));
     assert_eq!(seen.get(), 4);
 }
 
@@ -140,10 +131,7 @@ fn archmap_term_lexer_parser_and_late_type_check_share_the_control() {
         let failure =
             check_archmap_controlled(map.as_bytes(), &definitions, &mut control).unwrap_err();
         assert!(
-            matches!(
-                failure,
-                CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-            ),
+            matches!(failure, CheckFailure::Stopped(Signal::Term)),
             "{stop_after}: {failure:?}"
         );
         assert_eq!(seen.get(), stop_after);

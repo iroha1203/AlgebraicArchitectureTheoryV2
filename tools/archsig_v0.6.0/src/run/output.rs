@@ -85,7 +85,7 @@ pub(super) fn notify(
         status = Status::Interrupted;
         code = exit_code(status, Some(signal), &[]);
         if prior_signal.is_none() {
-            issues.push(ResultIssue::Cancelled(signal).wire());
+            issues.push(signal.issue());
         }
     }
     sort_issues(&mut issues);

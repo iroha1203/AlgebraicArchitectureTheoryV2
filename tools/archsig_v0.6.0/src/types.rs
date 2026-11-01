@@ -325,7 +325,7 @@ impl PartialEq for Type {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::issue::Issue;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
@@ -372,7 +372,7 @@ mod controlled_tests {
             });
             assert!(matches!(
                 ty.wire_controlled::<Failure>(&mut control, Checkpoint::Expression),
-                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+                Err(Failure::Stopped(Signal::Int))
             ));
         }
     }
@@ -427,7 +427,7 @@ mod controlled_tests {
                         &mut control,
                         Checkpoint::Expression
                     ),
-                    Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+                    Err(Failure::Stopped(Signal::Term))
                 ));
             }
         }
@@ -464,7 +464,7 @@ mod controlled_tests {
             });
             assert!(matches!(
                 ty.erase_controlled::<Failure>(&mut control, Checkpoint::Expression),
-                Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+                Err(Failure::Stopped(Signal::Term))
             ));
         }
     }
