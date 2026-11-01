@@ -1,4 +1,5 @@
 //! 元Family式と原始owner slotからの所属Set。提示された集合・owner値だけで認定しない。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::definition::PrimitiveSignature;
 
@@ -307,20 +308,20 @@ impl Environment<'_> {
         }
         self.validation_graph_session(graph, || {
             let context = graph.active;
-            let previous = self.context.replace(Some(context));
-            let old_cutoff = self.cutoff.replace(graph.nodes.len());
-            let previous_universal = self.universal_context.replace(None);
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous = self.context.scoped(Some(context));
+            let old_cutoff = self.cutoff.scoped(graph.nodes.len());
+            let previous_universal = self.universal_context.scoped(None);
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 self.owned_expression_members(id, owner, observer)
             })();
-            self.completion_values.replace(previous_completion);
-            self.universal_context.replace(previous_universal);
-            self.cutoff.set(old_cutoff);
-            self.context.set(previous);
+            previous_completion.restore();
+            previous_universal.restore();
+            old_cutoff.restore();
+            previous.restore();
             result
         })
     }
@@ -341,11 +342,11 @@ impl Environment<'_> {
         let (_, owner) = self.owned_expression_spec(id)?;
         let value = self.analyze_source(graph, self.inputs.law().exprs[owner].span, bindings)?;
         // 元slotの読取りを収集する。現在caseの値で元Missing自体を消さない。
-        let previous = self.completion_values.replace(Vec::new());
+        let previous = self.completion_values.scoped(Vec::new());
         let result = self
             .owned_expression_members(id, value.known_value.as_ref(), &mut |_, _| {})
             .map(|members| Some(members.missing));
-        self.completion_values.replace(previous);
+        previous.restore();
         result
     }
 

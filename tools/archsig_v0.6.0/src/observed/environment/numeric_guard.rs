@@ -1,4 +1,5 @@
 //! 通常評価の数値guardを正規化し、対応範囲と未決理由を部分表示に残す。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::construction::ConstructionFailure;
 use crate::law::ast::UnOp;
@@ -85,11 +86,11 @@ pub(super) fn analyze(
     base: &Scope,
     reading: &str,
 ) -> Result<Analysis, ValidationFailure> {
-    let outer = env.value_read.replace(true);
+    let outer = env.value_read.scoped(true);
     let captured = change_affine::capture_missing(env, || {
         analyze_inner(env, id, vars, base, reading, &mut Normalized::default())
     });
-    env.value_read.set(outer);
+    outer.restore();
     let (result, missing) = captured?;
     let mut result = result?;
     result.missing = missing;

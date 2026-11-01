@@ -1,4 +1,5 @@
 //! 元の公開selectorが実値に適合しない場合の構成条件。
+use crate::observed::environment::state::ScopedReplace;
 use super::owned_binding::ConditionInput;
 use super::*;
 
@@ -32,7 +33,7 @@ impl Environment<'_> {
             .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("射影条件のRequestが元入力にない")?;
-        let previous = self.context.replace(Some(super::super::call::Context {
+        let previous = self.context.scoped(Some(super::super::call::Context {
             request: index,
             frame: None,
             iteration: None,
@@ -40,7 +41,7 @@ impl Environment<'_> {
             case: None,
         }));
         let result = self.projection_failure_plans_current(graph, request);
-        self.context.set(previous);
+        previous.restore();
         result
     }
     fn projection_failure_plans_current(

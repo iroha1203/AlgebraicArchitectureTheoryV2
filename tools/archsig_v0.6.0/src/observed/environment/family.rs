@@ -1,4 +1,5 @@
 //! 宣言parameter族の元署名・有限全域と、既出DAGからの実instance照合。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{
     ast::{QuantKind, Role},
@@ -951,7 +952,7 @@ impl Environment<'_> {
             if actual != bs {
                 return Err("whole実rowとLawInstanceのbindingsが違う".into());
             }
-            let previous = self.context.replace(Some(context));
+            let previous = self.context.scoped(Some(context));
             let connection = (|| -> Result<(), ValidationFailure> {
                 if !plan.numeric.is_empty() {
                     // 数値rowのLawInstanceは、専用wholeを先行辺として検査済み。
@@ -973,11 +974,11 @@ impl Environment<'_> {
                 }
                 Ok(())
             })();
-            self.context.set(previous);
+            previous.restore();
             connection?;
-            let previous = self.context.replace(Some(context));
+            let previous = self.context.scoped(Some(context));
             let inputs = self.family_instance_inputs(graph, index);
-            self.context.set(previous);
+            previous.restore();
             if inputs?.0 != *bs {
                 return Err("whole row bindingsが元実直積と違う".into());
             }
@@ -1013,15 +1014,15 @@ impl Environment<'_> {
     ) -> Result<bool, ValidationFailure> {
         self.validation_session(|| {
             self.tick()?;
-            let previous = self.context.replace(Some(graph.context_at(row.0)));
-            let previous_cutoff = self.cutoff.replace(row.0);
-            let previous_universal = self.universal_context.replace(None);
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous = self.context.scoped(Some(graph.context_at(row.0)));
+            let previous_cutoff = self.cutoff.scoped(row.0);
+            let previous_universal = self.universal_context.scoped(None);
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = self.family_numeric_counterexample_in_context(graph, evidence, row);
-            self.completion_values.replace(previous_completion);
-            self.universal_context.replace(previous_universal);
-            self.cutoff.set(previous_cutoff);
-            self.context.set(previous);
+            previous_completion.restore();
+            previous_universal.restore();
+            previous_cutoff.restore();
+            previous.restore();
             result
         })
     }

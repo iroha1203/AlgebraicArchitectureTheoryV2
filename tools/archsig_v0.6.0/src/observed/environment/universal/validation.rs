@@ -1,4 +1,5 @@
 //! 全域アフィン導出を、提示された正規形を入力にせず元の三入力から照合する。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 
 /// 元missingの証拠値と、その値を説明する実Source。
@@ -3401,7 +3402,7 @@ impl Environment<'_> {
         source: NodeRef,
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
-        let previous = self.context.replace(Some(graph.context_at(evaluation.0)));
+        let previous = self.context.scoped(Some(graph.context_at(evaluation.0)));
         let result = (|| {
             let span = self.expression_span(graph, source)?;
             if let Some(template) = self.universal_source_root(graph, source)? {
@@ -3416,7 +3417,7 @@ impl Environment<'_> {
                 self.analyze_source(graph, span, bindings)
             }
         })();
-        self.context.set(previous);
+        previous.restore();
         result
     }
 
@@ -3718,13 +3719,13 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.replace(Some(graph.context_at(source.0)));
-            let previous_cutoff = self.cutoff.replace(source.0);
-            let previous_universal = self.universal_context.replace(None);
+            let previous = self.context.scoped(Some(graph.context_at(source.0)));
+            let previous_cutoff = self.cutoff.scoped(source.0);
+            let previous_universal = self.universal_context.scoped(None);
             let result = self.universal_missing_source_analysis_in_context(graph, source);
-            self.universal_context.replace(previous_universal);
-            self.cutoff.set(previous_cutoff);
-            self.context.set(previous);
+            previous_universal.restore();
+            previous_cutoff.restore();
+            previous.restore();
             result
         })
     }
@@ -3808,9 +3809,9 @@ impl Environment<'_> {
         reference: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.replace(Some(graph.context_at(reference.0)));
+            let previous = self.context.scoped(Some(graph.context_at(reference.0)));
             let result = self.universal_internal_root_evaluation_in_context(graph, reference);
-            self.context.set(previous);
+            previous.restore();
             result
         })
     }

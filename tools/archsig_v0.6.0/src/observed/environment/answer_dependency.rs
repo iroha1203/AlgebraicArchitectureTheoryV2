@@ -1,4 +1,5 @@
 //! 未生成の同一batch出力への依存を、元Answerの理由とともに返す。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::observed::projection::ProjectionStep;
 
@@ -148,7 +149,7 @@ impl Environment<'_> {
         // 未観測ownerを通常値の所属確認へ渡さず、元slotを保持して依存を止める。
         for parameter in params {
             self.tick()?;
-            let previous = self.context.replace(Some(super::super::call::Context {
+            let previous = self.context.scoped(Some(super::super::call::Context {
                 request: current,
                 frame: None,
                 iteration: None,
@@ -156,7 +157,7 @@ impl Environment<'_> {
                 case: None,
             }));
             let planned = self.owned_binding_plan(graph, request, parameter);
-            self.context.set(previous);
+            previous.restore();
             let plan = match planned {
                 Ok(plan) => plan,
                 Err(ValidationFailure::UnsupportedExpression { .. }) => continue,

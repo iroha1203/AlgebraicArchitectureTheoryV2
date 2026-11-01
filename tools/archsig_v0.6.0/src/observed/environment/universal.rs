@@ -1,4 +1,5 @@
 //! 元の量化種別・binder・実producerを保つZ/Q全域表示と、全称アフィン等値。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{
     ast::{QuantDomain, QuantKind, QuantSplit},
@@ -719,7 +720,7 @@ impl Environment<'_> {
         let ExprKind::Call { args, .. } = &self.inputs.law().exprs[call].kind else {
             unreachable!()
         };
-        let previous = self.context.replace(Some(frame.caller));
+        let previous = self.context.scoped(Some(frame.caller));
         let result = (|| {
             for ((parameter, arg), reference) in params.iter().zip(args).zip(&frame.arguments) {
                 self.tick()?;
@@ -749,7 +750,7 @@ impl Environment<'_> {
             }
             Ok(Some((bindings, variables, base)))
         })();
-        self.context.set(previous);
+        previous.restore();
         result
     }
     fn universal_completions(&self, template: NodeRef) -> Vec<(Fact, Scalar)> {
@@ -1402,9 +1403,9 @@ impl Environment<'_> {
         run: impl FnOnce() -> Result<T, E>,
     ) -> Result<T, E> {
         self.validation_session(|| {
-            let old = self.universal_context.replace(Some(context));
+            let old = self.universal_context.scoped(Some(context));
             let result = run();
-            self.universal_context.replace(old);
+            old.restore();
             result
         })
     }
@@ -1626,8 +1627,8 @@ impl Environment<'_> {
         forms: Option<&mut Option<Vec<affine::Form>>>,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let context = self.current_context(graph);
-        let previous = self.scoped_context.replace(Some(context));
-        let previous_completion = self.completion_values.replace(Vec::new());
+        let previous = self.scoped_context.scoped(Some(context));
+        let previous_completion = self.completion_values.scoped(Vec::new());
         let result = (|| {
             if let Some(case) = context.case {
                 *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
@@ -1674,8 +1675,8 @@ impl Environment<'_> {
             }
             Ok(analysis)
         })();
-        self.completion_values.replace(previous_completion);
-        self.scoped_context.set(previous);
+        previous_completion.restore();
+        previous.restore();
         result
     }
     pub(in crate::observed) fn universal_analysis(
@@ -1698,7 +1699,7 @@ impl Environment<'_> {
         domains: &[NodeRef],
         bindings: &[Binding],
     ) -> Result<UniversalAnalysis, ValidationFailure> {
-        let previous = self.context.replace(Some(graph.context_at(template.0)));
+        let previous = self.context.scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let plan = self.universal_plan_at(graph, template, bindings)?;
             self.universal_check_domains(graph, template, domains, &plan)?;
@@ -1910,7 +1911,7 @@ impl Environment<'_> {
                 },
             )
         })();
-        self.context.set(previous);
+        previous.restore();
         result
     }
     pub(in crate::observed) fn universal_substitution_analysis(
@@ -1946,7 +1947,7 @@ impl Environment<'_> {
             }
         }
         let span = self.expression_span(graph, original)?;
-        let old_context = self.context.replace(Some(graph.context_at(original.0)));
+        let old_context = self.context.scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2013,7 +2014,7 @@ impl Environment<'_> {
                 Ok(result)
             },
         );
-        self.context.set(old_context);
+        old_context.restore();
         result
     }
     pub(in crate::observed) fn universal_order_counterexample_bindings(
@@ -2079,7 +2080,7 @@ impl Environment<'_> {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
             _ => return Err("具体反例の元署名が違う".into()),
         };
-        let previous = self.context.replace(Some(graph.context_at(original.0)));
+        let previous = self.context.scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2182,7 +2183,7 @@ impl Environment<'_> {
                 Ok(result)
             },
         );
-        self.context.set(previous);
+        previous.restore();
         result
     }
     fn universal_plan_at(
@@ -2191,7 +2192,7 @@ impl Environment<'_> {
         template: NodeRef,
         bindings: &[Binding],
     ) -> Result<UniversalPlan, ValidationFailure> {
-        let previous = self.context.replace(Some(graph.context_at(template.0)));
+        let previous = self.context.scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let raw = self.universal_raw_body(graph, template)?;
             let span = self.expression_span(graph, raw)?;
@@ -2209,7 +2210,7 @@ impl Environment<'_> {
                 .or(self.universal_quantifier_plan(graph, id, bindings)?);
             plan.ok_or_else(|| "全域templateに元全称binderがない".into())
         })();
-        self.context.set(previous);
+        previous.restore();
         result
     }
     fn universal_check_domains(

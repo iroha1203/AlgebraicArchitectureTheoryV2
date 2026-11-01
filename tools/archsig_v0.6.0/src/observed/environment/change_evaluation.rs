@@ -1,4 +1,5 @@
 //! 元changeの束縛と同時更新。右辺はすべて変更前の同じ環境で評価する。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::model::{Declaration, Signature};
 
@@ -66,11 +67,9 @@ pub(in crate::observed) fn evaluate_on_fields(
 ) -> Result<Update, ValidationFailure> {
     let outer = environment
         .missing_slot_reads
-        .replace(Some(BTreeSet::new()));
+        .scoped(Some(BTreeSet::new()));
     let result = evaluate_inner(environment, declaration, bindings, fields);
-    let missing = environment
-        .missing_slot_reads
-        .replace(outer)
+    let missing = outer.restore()
         .ok_or("changeの不足位置収集がない")?;
     if let Some(reads) = environment.missing_slot_reads.borrow_mut().as_mut() {
         reads.extend(missing.iter().cloned());
@@ -549,12 +548,10 @@ pub(in crate::observed) fn solution_row(
             .declarations
             .get(name)
             .ok_or("候補の元Lawがない")?;
-        let outer = updated.missing_slot_reads.replace(Some(BTreeSet::new()));
+        let outer = updated.missing_slot_reads.scoped(Some(BTreeSet::new()));
         let evaluated =
             finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point);
-        let missing = updated
-            .missing_slot_reads
-            .replace(outer)
+        let missing = outer.restore()
             .ok_or("候補Lawの不足位置収集がない")?;
         if let Some(reads) = updated.missing_slot_reads.borrow_mut().as_mut() {
             reads.extend(missing.iter().cloned());
