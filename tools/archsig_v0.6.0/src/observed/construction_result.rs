@@ -1574,7 +1574,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         match &value.witness {
             Witness::Architecture(a) => {
                 scope.readings.insert(a.construction.reading().into());
-                if let Some(owner_scope) = a.construction.owner_scope() { scope.merge(owner_scope); }
+                if let Some(owner_scope) = a.construction.owner_scope() { scope.snapshots.extend(owner_scope.snapshots.iter().cloned()); scope.modes.extend(owner_scope.modes.iter().cloned()); scope.completions = true; }
             }
             Witness::Map(m) => {
                 scope.readings.insert(m.result.reading().into());

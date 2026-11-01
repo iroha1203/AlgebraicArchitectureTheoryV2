@@ -1,7 +1,21 @@
 //! 検査・要求解決・評価で共有する、注入可能な協調中断制御。
 
-use crate::result::Signal;
 use std::{cell::RefCell, rc::Rc};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Signal {
+    Int,
+    Term,
+}
+
+impl Signal {
+    pub fn wire(self) -> &'static str {
+        match self {
+            Signal::Int => "SIGINT",
+            Signal::Term => "SIGTERM",
+        }
+    }
+}
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

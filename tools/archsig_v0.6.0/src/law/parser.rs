@@ -9,11 +9,7 @@ use crate::issue::{Code, Issue};
 use crate::json::InputError;
 use std::collections::HashMap;
 
-pub use crate::names::RESERVED;
-
-pub fn is_reserved(name: &str) -> bool {
-    RESERVED.contains(&name)
-}
+pub use crate::names::{RESERVED, is_reserved};
 
 const RED_ZONE: usize = 128 * 1024;
 const STACK_STEP: usize = 4 * 1024 * 1024;

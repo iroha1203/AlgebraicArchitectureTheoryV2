@@ -402,7 +402,7 @@ fn read_document_inner<'a, E: InputError>(
             control,
             Some(&|| syntax(&format!("{pointer}/namespace"), "namespace must be a name")),
         )?;
-        if crate::law::parser::is_reserved(&namespace) {
+        if crate::names::is_reserved(&namespace) {
             return Err((syntax(&format!("{pointer}/namespace"), "namespace must be a name")).into());
         }
         let version = o.string("version")?;

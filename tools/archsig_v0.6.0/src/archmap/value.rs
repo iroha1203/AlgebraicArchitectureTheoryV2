@@ -623,7 +623,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         };
                         E::finish(checked, &mut self.control, Checkpoint::ArchMapSchema)?;
                     }
-                    if crate::law::parser::is_reserved(&name) {
+                    if crate::names::is_reserved(&name) {
                         return Err(invalid().into());
                     }
                     if !seen.insert(name.clone()) {

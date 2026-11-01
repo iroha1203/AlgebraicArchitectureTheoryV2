@@ -13,6 +13,7 @@ pub mod issue;
 pub mod json;
 pub mod law;
 pub(crate) mod names;
+mod owner_completion;
 pub use names::QualifiedName;
 pub mod observed;
 pub mod prime;

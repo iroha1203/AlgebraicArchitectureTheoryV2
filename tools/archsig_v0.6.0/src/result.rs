@@ -36,20 +36,9 @@ impl Status {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Signal {
-    Int,
-    Term,
-}
+pub use crate::control::Signal;
 
 impl Signal {
-    pub fn wire(self) -> &'static str {
-        match self {
-            Signal::Int => "SIGINT",
-            Signal::Term => "SIGTERM",
-        }
-    }
-
     /// 取消の Issue。要求固有の request/dependencies は呼出し側が付ける。
     pub fn issue(self) -> Json {
         ResultIssue::Cancelled(self).wire()

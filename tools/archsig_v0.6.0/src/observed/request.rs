@@ -1748,7 +1748,7 @@ impl<'a> Parser<'a> {
     fn user_name(&mut self) -> Result<String, ResolveFailure> {
         self.tick()?;
         let name = self.name(false)?;
-        let is_reserved = crate::law::parser::is_reserved(&name);
+        let is_reserved = crate::names::is_reserved(&name);
         if is_reserved {
             return Err(self.error("reserved word cannot be used as an identifier"));
         }
