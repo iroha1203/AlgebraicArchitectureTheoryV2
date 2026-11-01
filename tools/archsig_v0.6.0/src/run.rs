@@ -6,8 +6,7 @@ mod output;
 mod reuse;
 pub use evaluate::{run_internal_outcome, run_requests};
 
-pub use args::{Budget, parse_args};
-pub use output::peak_rss_bytes;
+pub use args::parse_args;
 
 use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
@@ -18,7 +17,6 @@ use crate::law::check_law_controlled;
 use crate::result::*;
 use output::{finalize, out_ok, usage_without_result};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
 
 pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
@@ -49,24 +47,12 @@ pub struct CheckArgs {
     pub out: Option<PathBuf>,
 }
 
-/// 実行要求。予算はCLI・直接APIともBudgetの生成時に検証する。
+/// 実行要求。
 #[derive(Debug, PartialEq, Eq)]
 pub struct RunArgs {
     pub inputs: CheckArgs,
     pub asks: Vec<String>,
     pub reuse: Option<PathBuf>,
-    pub time_ms: Option<Budget>,
-    pub memory_mib: Option<Budget>,
-}
-
-impl RunArgs {
-    pub fn limits(&self) -> crate::control::Limits {
-        // 実測値はu128。これを超える正の予算を切り詰めず、到達不能な上限として扱う。
-        crate::control::Limits {
-            time_ms: self.time_ms.and_then(Budget::measured_limit),
-            memory_mib: self.memory_mib.and_then(Budget::measured_limit),
-        }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -131,7 +117,6 @@ pub fn usage_outcome(
     _io: &mut dyn Io,
     signals: &mut dyn Signals,
     err: UsageError,
-    _started: Instant,
 ) -> Outcome {
     usage_without_result(
         signals,
@@ -151,7 +136,6 @@ pub fn internal_outcome(
     _io: &mut dyn Io,
     signals: &mut dyn Signals,
     _args: &CheckArgs,
-    _started: Instant,
 ) -> Outcome {
     output::without_result(
         signals,
@@ -168,7 +152,6 @@ pub fn run_check(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &CheckArgs,
-    started: Instant,
     control: &mut Control,
 ) -> Outcome {
     if args.atom_definitions.is_empty() {
@@ -179,7 +162,6 @@ pub fn run_check(
                 argument: "--atom-definition".to_owned(),
                 message: "at least one --atom-definition is required".to_owned(),
             },
-            started,
         );
     }
     let Some(out) = &args.out else {
@@ -304,8 +286,6 @@ pub fn run_check(
         primitives,
         vocabularies,
         issues,
-        elapsed_ms: 0,
-        peak_bytes: 0,
     };
     let mut owned_copies = Vec::new();
     for (i, bytes) in definition_bytes.iter().enumerate() {
@@ -320,7 +300,7 @@ pub fn run_check(
         owned_copies.push(("inputs/archmap.json".to_owned(), bytes.as_slice()));
     }
     let copies: Vec<_> = owned_copies.iter().map(|(p, b)| (p.as_str(), *b)).collect();
-    finalize(io, signals, out, result, &copies, started)
+    finalize(io, signals, out, result, &copies)
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {

@@ -130,7 +130,7 @@ ArchMap の不正は[実行 §5](execution.md#5-ファイル操作と出力)の�
 参照先 namespace が未登録なら reference、登録済みだが版・digest が異なるなら
 vocabulary_mismatch、循環は cycle、重複は duplicate_id。型不一致は type、
 不正な欄・型表記・空 meaning/version は syntax、未知 format/semantics は unsupported_version。
-位置は誤った宣言・binding の入力位置へ戻す。状態・終了コードは [実行仕様](execution.md#6-状態終了コード予算)に従う。
+位置は誤った宣言・binding の入力位置へ戻す。状態・終了コードは [実行仕様](execution.md#6-状態終了コード中断)に従う。
 
 観測者は、定義の意味と選択した Law の読みを理解し、コードを正しく観測して ArchMap を作る。
 同じ定義を使うことは語彙と型の適合を固定する。観測対象の選択、抽出方法、欠測、誤記によって

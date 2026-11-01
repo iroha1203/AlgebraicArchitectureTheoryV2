@@ -22,7 +22,6 @@ use std::{
     cell::Cell,
     path::{Path, PathBuf},
     rc::Rc,
-    time::Instant,
 };
 const ASKS: [&str; 5] = [
     fixture::E,
@@ -62,8 +61,6 @@ fn setup(name: &str, kind: usize) -> (PathBuf, RunArgs) {
             ASKS.iter().map(|s| (*s).into()).collect()
         },
         reuse: None,
-        time_ms: None,
-        memory_mib: None,
     };
     (dir, args)
 }
@@ -132,9 +129,7 @@ fn value_comparison_request_resolution_stops_notify_without_starting_output() {
 }
 fn comparison_request_resolution_stops_notify_without_starting_output_case(kind: usize) {
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{kind}-{mode}"), kind);
-        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
-        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
+        let (dir, args) = setup(&format!("comparison-resolver-stop-{kind}-{mode}"), kind);
         let mut control = Control::new(
             Limits {
                 time_ms: (mode == 0).then_some(1),
@@ -159,7 +154,7 @@ fn comparison_request_resolution_stops_notify_without_starting_output_case(kind:
         );
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, Instant::now(), &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(
             outcome.exit_code,
@@ -236,9 +231,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     let total = count.get();
     assert!(total >= 2);
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-late-stop-{kind}-{mode}"), kind);
-        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
-        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
+        let (dir, args) = setup(&format!("comparison-late-stop-{kind}-{mode}"), kind);
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
         let mut control = Control::new(
@@ -268,7 +261,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         );
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, Instant::now(), &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
         let code = match mode {
             2 => 130,
             3 => 143,
@@ -350,7 +343,6 @@ fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(kind
             &mut io,
             &mut signals,
             &args,
-            Instant::now(),
             &mut Control::unlimited(),
         );
         assert_eq!(outcome.status, Status::Error);

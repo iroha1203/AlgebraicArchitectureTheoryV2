@@ -107,13 +107,8 @@ fn normative_examples_complete_both_checks() {
         );
         assert!(!arr(get(&res, "declarations")).is_empty());
         assert!(arr(get(&res, "issues")).is_empty());
-        for k in ["elapsed_ms", "peak_bytes"] {
-            assert!(
-                s(get(get(&res, "usage"), k))
-                    .bytes()
-                    .all(|b| b.is_ascii_digit())
-            );
-        }
+        assert!(!has(&res, "usage"));
+        assert!(!has(&res, "limits"));
         if stem == "counter" {
             assert_eq!(
                 digest,

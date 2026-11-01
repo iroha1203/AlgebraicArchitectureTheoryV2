@@ -8,8 +8,7 @@ use std::time::Duration;
 #[path = "watchdog.rs"]
 mod watchdog;
 
-// 通常の120秒の製品予算に、起動・保存・負荷の余裕を加えた独立した上限。
-// 製品の予算引数から延長せず、超過はテスト失敗にする。
+// 実バイナリの起動・計算・保存・負荷を見込んだ監視上限。超過はテスト失敗にする。
 pub const CHILD_DEADLINE: Duration = Duration::from_secs(180);
 
 pub fn bin() -> Command {
@@ -90,7 +89,7 @@ const MAIN_THREAD_STACK: usize = 8 * 1024 * 1024;
 
 /// 同じ引数を、プロセスを起動せずに run 層へ渡す。path の引数は `dir` から読む。
 pub fn run(dir: &Path, args: &[&str]) -> Run {
-    use archsig::control::{Control, Limits, Usage};
+    use archsig::control::Control;
     use archsig::run::{Command, parse_args, run_check, run_requests, usage_outcome};
     let mut words: Vec<std::ffi::OsString> = Vec::new();
     let mut path_value = false;
@@ -107,31 +106,14 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         );
     }
     let execute = move || {
-        let started = std::time::Instant::now();
-        let control = |limits: Limits| {
-            Control::new(limits, move |_| Usage {
-                elapsed_ms: started.elapsed().as_millis(),
-                ..Usage::default()
-            })
-        };
         let (io, signals) = (&mut FileIo, &mut NoSignal);
         let outcome = match parse_args(&words) {
-            Ok(Command::Check(check)) => run_check(
-                io,
-                signals,
-                &check,
-                started,
-                &mut control(Limits::default()),
-            ),
-            Ok(Command::Run(request)) => run_requests(
-                io,
-                signals,
-                &request,
-                started,
-                &mut control(request.limits()),
-            ),
+            Ok(Command::Check(check)) => run_check(io, signals, &check, &mut Control::unlimited()),
+            Ok(Command::Run(request)) => {
+                run_requests(io, signals, &request, &mut Control::unlimited())
+            }
             Ok(Command::Version) => panic!("version は run_binary で確かめる"),
-            Err(error) => usage_outcome(io, signals, error, started),
+            Err(error) => usage_outcome(io, signals, error),
         };
         (outcome.exit_code, outcome.receipt())
     };
@@ -156,7 +138,7 @@ pub fn run_binary(dir: &Path, args: &[&str]) -> Run {
     run_binary_with_deadline(dir, args, CHILD_DEADLINE)
 }
 
-/// 長時間テストは製品予算と独立した監視時間を呼出箇所で明示する。
+/// 長時間テストは監視時間を呼出箇所で明示する。
 pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> Run {
     let captured = watchdog::output(bin().current_dir(dir).args(args), deadline)
         .expect("CLIテストの子プロセスを実行");

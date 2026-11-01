@@ -25,9 +25,6 @@ fn inputs(name: &str) -> PathBuf {
     dir
 }
 fn asks(dir: &Path, requests: &[&str]) -> Run {
-    asks_with_limits(dir, requests, "120000")
-}
-fn asks_with_limits(dir: &Path, requests: &[&str], time: &str) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -38,8 +35,6 @@ fn asks_with_limits(dir: &Path, requests: &[&str], time: &str) -> Run {
         "l.law",
         "--out",
         "out",
-        "--time-ms",
-        time,
     ];
     for request in requests {
         args.extend(["--ask", request]);
@@ -857,8 +852,6 @@ reading After {{{vocabulary} local here(t:State) reads t.free;}}"#)).unwrap();
                 out,
                 "--reuse",
                 "out",
-                "--time-ms",
-                "120000",
                 "--ask",
                 request,
             ],
@@ -2581,8 +2574,6 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
             "a.json",
             "--out",
             "out",
-            "--time-ms",
-            "120000",
         ];
         for request in &requests {
             args.extend(["--ask", request]);
@@ -4139,12 +4130,11 @@ reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
         ),
     )
     .unwrap();
-    let run = asks_with_limits(
+    let run = asks(
         &dir,
         &[
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
         ],
-        "360000"
     );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
@@ -4184,11 +4174,11 @@ reading Alternative {
 use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 view holdings(s: State): (Z, Z) = (s.free,s.held);
 }"#).unwrap();
-    let run = asks_with_limits(&dir, &[
+    let run = asks(&dir, &[
         "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
         "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
         "same=compare($m.operation,to=$base.operation,kind=action)",
-    ], "360000");
+    ]);
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");

@@ -276,8 +276,6 @@ fn finite_owner_completion_cli_preserves_claims_needed_and_unavailable_handles()
             "a.json",
             "--out",
             out,
-            "--time-ms",
-            "120000",
         ];
         for ask in &asks {
             args.extend(["--ask", ask]);
@@ -466,8 +464,6 @@ fn finite_owner_completion_partial_save_is_explicit_and_reuse_rejects_case_and_r
         "a.json",
         "--ask",
         ask,
-        "--time-ms",
-        "120000",
     ];
     let no_out = run(&dir, &args);
     assert_eq!(no_out.code, 2, "{}", no_out.stdout);
@@ -579,8 +575,6 @@ fn finite_owner_completion_single_root_delivers_repair_and_reuses_checked_struct
             "applied=check(Selected.valid,on=$r.object,c=@v/q)",
             "--out",
             out,
-            "--time-ms",
-            "120000",
         ];
         if reuse {
             args.extend(["--reuse", "out"]);

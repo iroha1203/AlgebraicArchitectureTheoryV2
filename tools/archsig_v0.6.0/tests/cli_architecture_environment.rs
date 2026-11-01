@@ -541,8 +541,6 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
                 "a=evaluate(Reservations.smallStates,on=$m.candidate.source)".into(),
             ],
             reuse: None,
-            time_ms: None,
-            memory_mib: None,
         };
         let signal = match mode {
             1 => Some(archsig::result::Signal::Int),
@@ -567,7 +565,6 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             &mut DeliveryIo { fail: mode == 0 },
             &mut DeliverySignal(signal),
             &args,
-            std::time::Instant::now(),
             &mut control,
         );
         assert_eq!(

@@ -8,7 +8,6 @@ use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-use std::time::Instant;
 
 /// 実ファイルの操作。
 struct FileIo;
@@ -91,43 +90,15 @@ impl ProcessSignals {
         }
     }
 
-    fn usage_for_limits(
-        limits: archsig::control::Limits,
-        elapsed: impl FnOnce() -> u128,
-        memory: impl FnOnce() -> u128,
-        signal: impl FnOnce() -> Option<Signal>,
-    ) -> archsig::control::Usage {
-        archsig::control::Usage {
-            elapsed_ms: if limits.time_ms.is_some() {
-                elapsed()
-            } else {
-                0
-            },
-            memory_mib: if limits.memory_mib.is_some() {
-                memory()
-            } else {
-                0
-            },
-            signal: signal(),
-        }
-    }
-
-    fn control(
-        &self,
-        started: Instant,
-        limits: archsig::control::Limits,
-    ) -> archsig::control::Control {
-        use archsig::control::Control;
+    /// checkpointでsignalだけを確かめる。時計とpeak RSSは読まない。
+    fn control(&self) -> archsig::control::Control {
+        use archsig::control::{Control, Limits, Usage};
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        Control::new(limits, move |_| {
-            Self::usage_for_limits(
-                limits,
-                || started.elapsed().as_millis(),
-                || u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
-                || Self::observed_signal(&first, &int, &term),
-            )
+        Control::new(Limits::default(), move |_| Usage {
+            signal: Self::observed_signal(&first, &int, &term),
+            ..Usage::default()
         })
     }
 }
@@ -167,10 +138,9 @@ impl Signals for ProcessSignals {
 fn main() {
     // 捕捉した内部障害は receipt で通知する。panic の既定表示を重複させない。
     std::panic::set_hook(Box::new(|_| {}));
-    let started = Instant::now();
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
     let mut signals = ProcessSignals::new();
-    let (outcome, version) = execute(&args, &mut signals, started);
+    let (outcome, version) = execute(&args, &mut signals);
     finish(outcome, version);
 }
 
@@ -192,40 +162,34 @@ fn finish(outcome: Option<Outcome>, version: &str) -> ! {
 fn execute(
     args: &[std::ffi::OsString],
     signals: &mut ProcessSignals,
-    started: Instant,
 ) -> (Option<Outcome>, &'static str) {
     let mut io = FileIo;
     match parse_args(args) {
         Ok(Command::Version) => (None, VERSION_LINE),
         Ok(Command::Check(check)) => {
-            let mut control = signals.control(started, archsig::control::Limits::default());
+            let mut control = signals.control();
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                run_check(&mut io, &mut *signals, &check, started, &mut control)
+                run_check(&mut io, &mut *signals, &check, &mut control)
             }));
             match outcome {
                 Ok(o) => (Some(o), ""),
                 Err(_) => (
-                    Some(archsig::run::internal_outcome(
-                        &mut io,
-                        &mut *signals,
-                        &check,
-                        started,
-                    )),
+                    Some(archsig::run::internal_outcome(&mut io, &mut *signals, &check)),
                     "",
                 ),
             }
         }
         Ok(Command::Run(run)) => {
-            let mut control = signals.control(started, run.limits());
+            let mut control = signals.control();
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                archsig::run::run_requests(&mut io, &mut *signals, &run, started, &mut control)
+                archsig::run::run_requests(&mut io, &mut *signals, &run, &mut control)
             }));
             (
                 Some(outcome.unwrap_or_else(|_| archsig::run::run_internal_outcome(&mut *signals))),
                 "",
             )
         }
-        Err(e) => (Some(usage_outcome(&mut io, signals, e, started)), ""),
+        Err(e) => (Some(usage_outcome(&mut io, signals, e)), ""),
     }
 }
 
@@ -238,71 +202,7 @@ mod test_watchdog;
 mod tests {
     use super::*;
     use archsig::control::{Checkpoint, StopReason};
-
-    #[test]
-    fn resource_probes_follow_requested_limits_and_always_observe_signals() {
-        use archsig::control::{Control, Limits, Resource};
-        use std::{cell::RefCell, rc::Rc};
-        for (time, memory) in [(false, false), (true, false), (false, true), (true, true)] {
-            for signal in [None, Some(Signal::Int), Some(Signal::Term)] {
-                let limits = Limits {
-                    time_ms: time.then_some(5),
-                    memory_mib: memory.then_some(7),
-                };
-                let calls = Rc::new(RefCell::new(vec![]));
-                let observed = calls.clone();
-                let mut control = Control::new(limits, move |_| {
-                    ProcessSignals::usage_for_limits(
-                        limits,
-                        || {
-                            observed.borrow_mut().push("time");
-                            11
-                        },
-                        || {
-                            observed.borrow_mut().push("memory");
-                            13
-                        },
-                        || {
-                            observed.borrow_mut().push("signal");
-                            signal
-                        },
-                    )
-                });
-                let expected = if let Some(signal) = signal {
-                    Err(StopReason::Cancelled(signal))
-                } else if time {
-                    Err(StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 5,
-                        observed: 11,
-                    })
-                } else if memory {
-                    Err(StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 7,
-                        observed: 13,
-                    })
-                } else {
-                    Ok(())
-                };
-                assert_eq!(control.checkpoint(Checkpoint::Expression), expected);
-                let mut requested = vec![];
-                if time {
-                    requested.push("time");
-                }
-                if memory {
-                    requested.push("memory");
-                }
-                requested.push("signal");
-                assert_eq!(*calls.borrow(), requested);
-                assert_eq!(control.checkpoint(Checkpoint::FiniteIteration), expected);
-                if expected.is_ok() {
-                    requested.push("signal");
-                }
-                assert_eq!(*calls.borrow(), requested);
-            }
-        }
-    }
+    use std::time::Instant;
 
     /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
     fn isolated_signal_test(name: &str) -> bool {
@@ -325,7 +225,7 @@ mod tests {
 
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
-        let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
+        let mut control = signals.control();
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
@@ -357,7 +257,7 @@ mod tests {
                 )),
                 frozen: None,
             };
-            let mut control = signals.control(Instant::now(), archsig::control::Limits::default());
+            let mut control = signals.control();
             assert_eq!(
                 control.checkpoint(Checkpoint::LawSemantics),
                 Err(StopReason::Cancelled(expected))
@@ -474,7 +374,7 @@ mod tests {
             args.extend(["--ask", "n=evaluate(CountCheck.amount,s=@v/s)"]);
         }
         let args: Vec<_> = args.into_iter().map(std::ffi::OsString::from).collect();
-        let (outcome, version) = execute(&args, &mut signals, Instant::now());
+        let (outcome, version) = execute(&args, &mut signals);
         finish(outcome, version);
     }
 

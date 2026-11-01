@@ -233,8 +233,6 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                             fields.insert(name.into(), Json::Arr(vec![]));
                         }
                         fields.insert("producer".into(), Json::obj([("version", Json::str("0.6.0")), ("build", Json::str("legacy"))]));
-                        fields.insert("usage".into(), Json::obj([("elapsed_ms", Json::str("0")), ("peak_bytes", Json::str("0"))]));
-                        fields.insert("limits".into(), Json::obj([] as [(&str, Json); 0]));
                         fields.insert("reuse".into(), Json::obj([("requested", Json::Bool(false)), ("accepted_nodes", Json::Nat(0)), ("recomputed_nodes", Json::Nat(0)), ("rejected", Json::Arr(vec![]))]));
                     }
                     "nat_exit" => {

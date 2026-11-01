@@ -4,7 +4,6 @@ use super::{Io, Outcome, Signals};
 use crate::canonical::Json;
 use crate::result::{CheckResult, ResultIssue, Status, exit_code};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
 
 /// path が(symlink 自体も含めて)存在するか。
 fn exists(path: &Path) -> bool {
@@ -129,14 +128,12 @@ pub(super) fn sort_issues(issues: &mut [Json]) {
 }
 
 /// finalize: signal を確定してから結果を一時 directory に書き、置き換えない rename で公開する。
-#[allow(clippy::too_many_arguments)]
 pub(super) fn finalize(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     out: &Path,
     mut result: CheckResult,
     copies: &[(&str, &[u8])],
-    started: Instant,
 ) -> Outcome {
     if result.status != Status::Complete {
         let mut outcome = without_result(signals, result.status, result.issues);
@@ -152,8 +149,6 @@ pub(super) fn finalize(
     } else {
         result.exit_code = exit_code(result.status, None, &result.issues);
     }
-    result.elapsed_ms = started.elapsed().as_millis();
-    result.peak_bytes = peak_rss_bytes();
     let outcome = Outcome {
         status: result.status,
         exit_code: result.exit_code,
@@ -273,19 +268,5 @@ fn temp_dir(out: &Path) -> PathBuf {
     match out.parent() {
         Some(p) if !p.as_os_str().is_empty() => p.join(tmp),
         _ => PathBuf::from(tmp),
-    }
-}
-
-/// process の peak RSS(byte)。
-pub fn peak_rss_bytes() -> u64 {
-    use nix::sys::resource::{UsageWho, getrusage};
-    let Ok(usage) = getrusage(UsageWho::RUSAGE_SELF) else {
-        return 0;
-    };
-    let max = usage.max_rss().max(0) as u64;
-    if cfg!(target_os = "macos") {
-        max
-    } else {
-        max * 1024
     }
 }

@@ -34,8 +34,6 @@ fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
         "l.law",
         "--out",
         out,
-        "--time-ms",
-        "120000",
     ];
     for ask in asks {
         args.extend(["--ask", *ask]);
@@ -575,8 +573,6 @@ fn integer_repair_reuse_rechecks_the_same_full_solution() {
             "out2",
             "--reuse",
             "out",
-            "--time-ms",
-            "120000",
             "--ask",
             asks[0],
             "--ask",

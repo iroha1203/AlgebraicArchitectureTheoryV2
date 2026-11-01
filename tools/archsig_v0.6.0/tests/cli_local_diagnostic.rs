@@ -35,8 +35,6 @@ fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
         "l.law",
         "--out",
         out,
-        "--time-ms",
-        "120000",
     ];
     for ask in asks {
         args.extend(["--ask", *ask]);

@@ -27,8 +27,6 @@ fn execute(dir: &std::path::Path, out: &str, asks: &[&str], reuse: Option<&str>)
         "l.law",
         "--out",
         out,
-        "--time-ms",
-        "120000",
     ];
     if let Some(reuse) = reuse {
         args.extend(["--reuse", reuse]);

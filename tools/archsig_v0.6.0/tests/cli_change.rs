@@ -56,8 +56,6 @@ fn finite_solve_returns_original_assignments_for_all_local_subjects() {
             "l.law",
             "--out",
             "out",
-            "--time-ms",
-            "120000",
             "--ask",
             "s=solve(Selected.valid,on=@v/root,using=Selected.choose)",
         ],
@@ -109,8 +107,6 @@ fn unique_repair_is_consumed_by_evaluate_and_check() {
             "l.law",
             "--out",
             "out",
-            "--time-ms",
-            "120000",
             "--ask",
             "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
             "--ask",
@@ -163,8 +159,6 @@ fn case(
         "l.law",
         "--out",
         "out",
-        "--time-ms",
-        "120000",
     ];
     for ask in asks {
         args.extend(["--ask", ask]);
@@ -304,8 +298,6 @@ fn saved_finite_repair_is_rechecked_with_its_followup_request() {
         "out2",
         "--reuse",
         "out",
-        "--time-ms",
-        "120000",
     ];
     for ask in &asks {
         args.extend(["--ask", ask]);
@@ -368,8 +360,6 @@ fn change_dependency_cycles_are_rejected_before_output_type_resolution() {
             "l.law",
             "--out",
             "out",
-            "--time-ms",
-            "100",
         ];
         for ask in asks {
             args.extend(["--ask", ask]);
@@ -481,8 +471,6 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
                 "l.law",
                 "--out",
                 "out",
-                "--time-ms",
-                "120000",
                 "--ask",
                 "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
             ],
@@ -563,8 +551,6 @@ fn explicitly_bound_external_owner_keeps_its_dependent_law_family() {
                 "l.law",
                 "--out",
                 &out,
-                "--time-ms",
-                "120000",
                 "--ask",
                 ask,
             ],

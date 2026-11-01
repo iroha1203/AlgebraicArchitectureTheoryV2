@@ -490,7 +490,7 @@ fn finite_owner_completion_stop_before_owner_agreement_publishes_no_repair() {
 #[test]
 fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
     use crate::run::{CheckArgs, Io, RunArgs, Signals, run_requests};
-    use std::{io, path::Path, time::Instant};
+    use std::{io, path::Path};
     struct RefuseIo(usize);
     impl Io for RefuseIo {
         fn create_dir(&mut self, _: &Path) -> io::Result<()> {
@@ -550,15 +550,12 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
         },
         asks: vec!["r=repair(Selected.valid,on=@v/root,using=Selected.choose)".into()],
         reuse: None,
-        time_ms: None,
-        memory_mib: None,
     };
     let mut io = RefuseIo(0);
     let result = run_requests(
         &mut io,
         &mut Freeze(None),
         &args(Some(dir.join("out"))),
-        Instant::now(),
         &mut quiet(),
     );
     assert!(
@@ -577,7 +574,6 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
             &mut io,
             &mut Freeze(Some(signal)),
             &args(None),
-            Instant::now(),
             &mut quiet(),
         );
         assert_eq!(result.exit_code, code);

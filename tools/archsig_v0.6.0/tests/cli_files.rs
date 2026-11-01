@@ -6,7 +6,6 @@ use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, internal_outcome, run_check};
 use common::cli::*;
 use std::path::{Path, PathBuf};
-use std::time::Instant;
 
 const DEFINITION: &str = include_str!("fixtures/reservations.atoms.json");
 const LAW: &str = include_str!("fixtures/reservations.law");
@@ -373,7 +372,6 @@ fn failures_before_publication_leave_the_output_untouched() {
             &mut io,
             &mut signals,
             &args(&dir),
-            Instant::now(),
             &mut Control::unlimited(),
         );
         assert_eq!((out.status, out.exit_code), (Status::Error, 74), "{fail}");
@@ -408,7 +406,6 @@ fn failures_before_publication_leave_the_output_untouched() {
         &mut io,
         &mut signals,
         &args(&dir),
-        Instant::now(),
         &mut Control::unlimited(),
     );
     assert_eq!((out.status, out.exit_code), (Status::Error, 74));
@@ -427,7 +424,6 @@ fn failures_before_publication_leave_the_output_untouched() {
         &mut io,
         &mut signals,
         &args(&dir),
-        Instant::now(),
         &mut Control::unlimited(),
     );
     assert_eq!((out.status, out.exit_code), (Status::Error, 74));
@@ -472,7 +468,6 @@ fn cleanup_preserves_unowned_paths_and_reports_remnants() {
             &mut io,
             &mut signals,
             &args(&dir),
-            Instant::now(),
             &mut Control::unlimited(),
         );
         assert_eq!((outcome.status, outcome.exit_code), (Status::Error, 74));
@@ -520,7 +515,6 @@ fn signals_decide_the_status_once_at_finalize() {
             &mut io,
             &mut signals,
             &args(&dir),
-            Instant::now(),
             &mut Control::unlimited(),
         );
         assert_eq!(out.exit_code, code);
@@ -621,7 +615,7 @@ fn internal_failure_does_not_keep_any_inputs_or_copies() {
         freezes: 0,
     };
     let arguments = args(&dir);
-    let out = internal_outcome(&mut io, &mut signals, &arguments, Instant::now());
+    let out = internal_outcome(&mut io, &mut signals, &arguments);
     assert_eq!((out.status, out.exit_code), (Status::Error, 70));
     assert_eq!(signals.freezes, 1);
     let receipt = archsig::json::parse(out.receipt().as_bytes()).unwrap();
