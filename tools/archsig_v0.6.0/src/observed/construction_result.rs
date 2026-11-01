@@ -78,7 +78,6 @@ pub(crate) enum ConstructionType {
     Overlap,
     EquationSpace,
     EquationSolutionSet,
-
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -135,7 +134,6 @@ impl ConstructionType {
             Self::Overlap => "Overlap",
             Self::EquationSpace => "EquationSpace",
             Self::EquationSolutionSet => "EquationSolutionSet",
-
         }
     }
 }
@@ -483,13 +481,17 @@ impl ConstructionValue {
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
                 let mut arguments = part.arguments();
-                if matches!(part, super::public_compare::Part::Comparison { .. } | super::public_compare::Part::Claim { .. })
-                    && let Witness::Compare(w) = &self.witness
-                    && let Some(plan) = &w.relation_plan {
+                if matches!(
+                    part,
+                    super::public_compare::Part::Comparison { .. }
+                        | super::public_compare::Part::Claim { .. }
+                ) && let Witness::Compare(w) = &self.witness
+                    && let Some(plan) = &w.relation_plan
+                {
                     arguments.extend(plan.dependencies.iter().copied());
                 }
                 arguments
-            },
+            }
             D::Subject { .. } | D::Atom(_) | D::ConstructionLabel(_) => vec![],
             D::CandidateCondition {
                 name,
@@ -743,14 +745,25 @@ impl ConstructionValue {
         }
     }
     pub(super) fn scalar_projection(&self, path: &[ProjectionStep]) -> Option<Scalar> {
-        match &self.data { ConstructionData::Local(data) => data.scalar_projection(path), _ => None }
+        match &self.data {
+            ConstructionData::Local(data) => data.scalar_projection(path),
+            _ => None,
+        }
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
-        if let D::Change(data) = &self.data { return data.project(path); }
-        if let D::Quotient(data) = &self.data { return data.project(path); }
-        if let D::Local(data) = &self.data { return data.project(path); }
-        if let D::ObjectMap(data) = &self.data { return data.project(path); }
+        if let D::Change(data) = &self.data {
+            return data.project(path);
+        }
+        if let D::Quotient(data) = &self.data {
+            return data.project(path);
+        }
+        if let D::Local(data) = &self.data {
+            return data.project(path);
+        }
+        if let D::ObjectMap(data) = &self.data {
+            return data.project(path);
+        }
         if let D::Build(data) = &self.data {
             return match path.first()? {
                 ProjectionStep::Field(f) if f == "base" => data.algebra_base().map(|r| (r, 1)),
@@ -775,9 +788,15 @@ impl ConstructionValue {
                 _ => None,
             };
         }
-        if let D::Composition(part) = &self.data { return part.project(path); }
-        if let D::PathComposition(part) = &self.data { return part.project(path); }
-        if let D::Comparison(part) = &self.data { return part.project(path); }
+        if let D::Composition(part) = &self.data {
+            return part.project(path);
+        }
+        if let D::PathComposition(part) = &self.data {
+            return part.project(path);
+        }
+        if let D::Comparison(part) = &self.data {
+            return part.project(path);
+        }
         let ProjectionStep::Field(field) = path.first()? else {
             return None;
         };
@@ -830,7 +849,10 @@ impl ConstructionValue {
             D::ObjectMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
-            D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
+            D::Comparison(part) => match &self.witness {
+                Witness::Compare(w) => part.wire(w),
+                _ => unreachable!("比較は元検査を持つ"),
+            },
             D::Subject { value, .. } => value.wire(),
             D::Atom(a) => a.value.wire(),
             D::Pending { .. } | D::PendingPreservation { .. } | D::PendingLawInstance { .. } => {
@@ -1443,10 +1465,18 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    if let ConstructionData::Change(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::Quotient(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::Local(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::ObjectMap(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::Change(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::Quotient(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::Local(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::ObjectMap(data) = &value.data {
+        return Ok(data.metadata());
+    }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
     }
@@ -1504,14 +1534,22 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         let _ = w;
         return Ok((data.support.clone(), data.scope.clone()));
     }
-    if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationDerived { index, .. })) = (&value.witness, &value.data) {
+    if let (
+        Witness::Compare(w),
+        ConstructionData::Comparison(super::public_compare::Part::RelationDerived {
+            index, ..
+        }),
+    ) = (&value.witness, &value.data)
+    {
         let plan = w.relation_plan.as_ref().ok_or("relationの元証拠がない")?;
         return Ok((
             w.support.clone(),
             super::public_compare::relations::scope_at(plan, Some(plan.base + index)),
         ));
     }
-    if let Witness::Compare(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
+    if let Witness::Compare(c) = &value.witness {
+        return Ok((c.support.clone(), c.scope.clone()));
+    }
     if let Witness::Compose(c) = &value.witness {
         return Ok((c.support.clone(), c.scope.clone()));
     }
@@ -1574,7 +1612,13 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         match &value.witness {
             Witness::Architecture(a) => {
                 scope.readings.insert(a.construction.reading().into());
-                if let Some(owner_scope) = a.construction.owner_scope() { scope.snapshots.extend(owner_scope.snapshots.iter().cloned()); scope.modes.extend(owner_scope.modes.iter().cloned()); scope.completions = true; }
+                if let Some(owner_scope) = a.construction.owner_scope() {
+                    scope
+                        .snapshots
+                        .extend(owner_scope.snapshots.iter().cloned());
+                    scope.modes.extend(owner_scope.modes.iter().cloned());
+                    scope.completions = true;
+                }
             }
             Witness::Map(m) => {
                 scope.readings.insert(m.result.reading().into());
@@ -1619,7 +1663,10 @@ pub(super) fn architecture_origin(
         return Err("有限Lawの元Architectureがない".into());
     };
     match (&v.witness, &v.data) {
-        (Witness::Architecture(a), ConstructionData::Architecture { .. } | ConstructionData::Change(_)) if v.ty()==NodeType::Construction(ConstructionType::Architecture) => {
+        (
+            Witness::Architecture(a),
+            ConstructionData::Architecture { .. } | ConstructionData::Change(_),
+        ) if v.ty() == NodeType::Construction(ConstructionType::Architecture) => {
             let context = graph.context_at(reference.0);
             if context.frame.is_some()
                 || context.iteration.is_some()
@@ -1632,10 +1679,16 @@ pub(super) fn architecture_origin(
             }
             Ok(a)
         }
-        (Witness::Architecture(a), ConstructionData::Quotient(d)) if v.ty()==NodeType::Construction(ConstructionType::Architecture) => {
+        (Witness::Architecture(a), ConstructionData::Quotient(d))
+            if v.ty() == NodeType::Construction(ConstructionType::Architecture) =>
+        {
             let context = graph.context_at(reference.0);
-            if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() || context.case.is_some()
-                || graph.requests.get(context.request) != Some(d.request()) {
+            if context.frame.is_some()
+                || context.iteration.is_some()
+                || context.instance.is_some()
+                || context.case.is_some()
+                || graph.requests.get(context.request) != Some(d.request())
+            {
                 return Err("商の候補Architectureの元Requestが違う".into());
             }
             Ok(a)
@@ -1883,10 +1936,7 @@ fn validate_partial(
                             ..
                         },
                     ..
-                }) = holder
-                    .fields
-                    .iter()
-                    .find(|f| f.name.short() == endpoint)
+                }) = holder.fields.iter().find(|f| f.name.short() == endpoint)
                 {
                     let r = part(parts, name, None)?;
                     let av = value(graph, r)?;

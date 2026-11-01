@@ -81,7 +81,8 @@ fn native_observation_stays_undetermined_without_a_primitive_or_completion_assig
     assert_eq!(p.row.predicate, None);
     assert!(p.row.scope.completions);
     assert!(
-        e.state.primitive_reads
+        e.state
+            .primitive_reads
             .borrow()
             .as_ref()
             .unwrap()

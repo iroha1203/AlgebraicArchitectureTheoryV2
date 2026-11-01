@@ -15,7 +15,11 @@ pub(super) fn resolve(
         QuestionKind::Diagnose
     };
     let Selector::Answer { id, path } = &raw.head else {
-        return Err(err(&raw.id, "head", "target must be a public result Handle"));
+        return Err(err(
+            &raw.id,
+            "head",
+            "target must be a public result Handle",
+        ));
     };
     if path.is_empty() {
         return Err(err(&raw.id, "head", "specify an output field"));
@@ -67,12 +71,22 @@ pub(super) fn resolve(
                 ("degree", Selector::Degree { .. }) => {}
                 ("side", Selector::Enum { value })
                     if matches!(value.as_str(), "equation" | "semantic") => {}
-                _ => return Err(err(&raw.id, &key, "diagnose arguments must be degree and side")),
+                _ => {
+                    return Err(err(
+                        &raw.id,
+                        &key,
+                        "diagnose arguments must be degree and side",
+                    ));
+                }
             }
             key.clone()
         } else {
             let Some(name) = &selected else {
-                return Err(err(&raw.id, &key, "bindings cannot be specified when law is omitted"));
+                return Err(err(
+                    &raw.id,
+                    &key,
+                    "bindings cannot be specified when law is omitted",
+                ));
             };
             let Signature::Law { params, .. } = &law.declarations()[name].signature else {
                 unreachable!()
@@ -178,7 +192,13 @@ pub(super) fn output_type(r: &Request, field: &str) -> Result<ProjectionType, Re
         (QuestionKind::Localize, "system") => Ok(ProjectionType::LocalSystem),
         (QuestionKind::Diagnose, "diagnostic") => Ok(ProjectionType::Diagnostic),
         (QuestionKind::Diagnose, "space") => Ok(ProjectionType::Cohomology),
-        (QuestionKind::Diagnose, "class") if r.arguments.iter().any(|a| a.name == "degree" && a.value == Selector::Degree { value: 1 }) => Ok(ProjectionType::Class),
+        (QuestionKind::Diagnose, "class")
+            if r.arguments
+                .iter()
+                .any(|a| a.name == "degree" && a.value == Selector::Degree { value: 1 }) =>
+        {
+            Ok(ProjectionType::Class)
+        }
         (QuestionKind::Localize, "proposition") => Ok(ProjectionType::Proposition),
         (QuestionKind::Diagnose, "proposition")
             if r.arguments
@@ -187,6 +207,10 @@ pub(super) fn output_type(r: &Request, field: &str) -> Result<ProjectionType, Re
         {
             Ok(ProjectionType::Proposition)
         }
-        _ => Err(err(&r.id, field, "localization or diagnostic output is not public")),
+        _ => Err(err(
+            &r.id,
+            field,
+            "localization or diagnostic output is not public",
+        )),
     }
 }

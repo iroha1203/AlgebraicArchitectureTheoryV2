@@ -158,7 +158,13 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                 .find(|o| &o.id == origin)
                 .unwrap();
             for loc in &origin.locations {
-                assert!(checked.archmap().sources().iter().any(|s| s.id == loc.source));
+                assert!(
+                    checked
+                        .archmap()
+                        .sources()
+                        .iter()
+                        .any(|s| s.id == loc.source)
+                );
             }
         }
         if get(n, "type") == &Json::str("Domain")

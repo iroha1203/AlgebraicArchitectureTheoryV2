@@ -90,7 +90,13 @@ fn baseline(input: &InputSources, in_law: bool, point: Checkpoint) -> (Issue, us
     let (mut control, total) = probe(point, usize::MAX);
     let failure = check_inputs(input.clone(), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
-    assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), input.law().bytes())]);
+    assert_eq!(
+        failure.issues(),
+        [positions::law_positions(
+            ResultIssue::Input(issue.clone()).wire(),
+            input.law().bytes()
+        )]
+    );
     empty_stage(&failure);
     (issue, total.get())
 }

@@ -1,11 +1,11 @@
 //! 元の量化種別・binder・実producerを保つZ/Q全域表示と、全称アフィン等値。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{
     ast::{QuantDomain, QuantKind, QuantSplit},
     model::Signature,
 };
 use crate::observed::affine::{self, NumberType, Parameter};
+use crate::observed::environment::state::ScopedReplace;
 mod finite_decision;
 pub(super) mod validation;
 
@@ -150,10 +150,7 @@ impl Environment<'_> {
     > {
         if !plan.family
             || self.universal_has_exists(plan)?
-            || plan
-                .parameters
-                .iter()
-                .any(|p| !p.numeric())
+            || plan.parameters.iter().any(|p| !p.numeric())
         {
             return Ok(None);
         }
@@ -184,7 +181,8 @@ impl Environment<'_> {
             }
             let name = request.declaration().ok_or("欠測係数の元宣言がない")?;
             let declaration = self
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .declarations()
                 .get(name)
@@ -231,7 +229,13 @@ impl Environment<'_> {
                 }
                 if !matches!(
                     parameter.ty,
-                    Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) | Type::Set(_)
+                    Type::Unit
+                        | Type::Bool
+                        | Type::Fp(_)
+                        | Type::Tuple(_)
+                        | Type::Option(_)
+                        | Type::Data(_)
+                        | Type::Set(_)
                 ) || !crate::observed::finite::completion_supported(
                     &parameter.ty,
                     self.indexes.inputs.law(),
@@ -292,21 +296,15 @@ impl Environment<'_> {
         plan: &UniversalPlan,
         guard_value: Option<bool>,
     ) -> Result<&'static str, ValidationFailure> {
-        Ok(
-            if plan
-                .parameters
-                .iter()
-                .any(|p| !p.numeric())
-            {
-                "non-numeric infinite quantified decision"
-            } else if self.universal_has_exists(plan)? {
-                "Z/Q existential quantified decision"
-            } else if plan.guard.is_some() && guard_value.is_none() {
-                "parameter-dependent conditional affine equality"
-            } else {
-                "non-affine universal equality"
-            },
-        )
+        Ok(if plan.parameters.iter().any(|p| !p.numeric()) {
+            "non-numeric infinite quantified decision"
+        } else if self.universal_has_exists(plan)? {
+            "Z/Q existential quantified decision"
+        } else if plan.guard.is_some() && guard_value.is_none() {
+            "parameter-dependent conditional affine equality"
+        } else {
+            "non-affine universal equality"
+        })
     }
     fn universal_closed_parameters(
         &self,
@@ -327,11 +325,13 @@ impl Environment<'_> {
     }
     pub(super) fn universal_call_context(&self, id: usize) -> Option<super::super::call::Context> {
         let caller = self
-            .state.scoped_context
+            .state
+            .scoped_context
             .get()
             .or(self.state.context.get())
             .unwrap_or_default();
-        self.state.universal_context
+        self.state
+            .universal_context
             .borrow()
             .as_ref()
             .and_then(|context| {
@@ -372,7 +372,12 @@ impl Environment<'_> {
                 continue;
             }
             let span = self.expression_span(graph, frame.source)?;
-            let id = *self.indexes.inputs.law().program().expressions
+            let id = *self
+                .indexes
+                .inputs
+                .law()
+                .program()
+                .expressions
                 .get(&span)
                 .ok_or("局所全称callの元ASTがない")?;
             if self.named_view(id)?.is_none() || graph.context_at(frame.source.0) != frame.caller {
@@ -498,7 +503,12 @@ impl Environment<'_> {
         else {
             return Err("局所型Domainのheaderが元Sourceでない".into());
         };
-        let id = *self.indexes.inputs.law().program().expressions
+        let id = *self
+            .indexes
+            .inputs
+            .law()
+            .program()
+            .expressions
             .get(span)
             .ok_or("局所型Domainの元量化がない")?;
         let ExprKind::Quant {
@@ -597,7 +607,8 @@ impl Environment<'_> {
                 let LexicalOrigin::Universal(id) = binding else {
                     continue;
                 };
-                let ExprKind::Quant { var, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
+                let ExprKind::Quant { var, .. } = &self.indexes.inputs.law().exprs()[id].kind
+                else {
                     unreachable!()
                 };
                 let binder_context = self.universal_binder_context(&registry, var.span, context)?;
@@ -707,7 +718,12 @@ impl Environment<'_> {
         let (bindings, mut variables, base) =
             self.with_universal_graph(graph, original, || self.frame_arguments(graph, index))?;
         let frame = graph.frames.get(index).ok_or("全域補完の元frameがない")?;
-        let call = *self.indexes.inputs.law().program().expressions
+        let call = *self
+            .indexes
+            .inputs
+            .law()
+            .program()
+            .expressions
             .get(&self.expression_span(graph, frame.source)?)
             .ok_or("全域補完の元callがない")?;
         let declaration = self.named_view(call)?.ok_or("全域補完の元viewがない")?;
@@ -722,8 +738,11 @@ impl Environment<'_> {
             for ((parameter, arg), reference) in params.iter().zip(args).zip(&frame.arguments) {
                 self.tick()?;
                 let (_, actual, _) = self.evaluation(graph, *reference)?;
-                let analysis =
-                    self.analyze_source(graph, self.indexes.inputs.law().exprs()[*arg].span, actual)?;
+                let analysis = self.analyze_source(
+                    graph,
+                    self.indexes.inputs.law().exprs()[*arg].span,
+                    actual,
+                )?;
                 let mut scope = analysis.scope;
                 scope.merge(&base);
                 variables.insert(
@@ -751,7 +770,8 @@ impl Environment<'_> {
         result
     }
     fn universal_completions(&self, template: NodeRef) -> Vec<(Fact, Scalar)> {
-        self.state.universal_context
+        self.state
+            .universal_context
             .borrow()
             .as_ref()
             .filter(|context| context.template == Some(template))
@@ -794,7 +814,8 @@ impl Environment<'_> {
             if fact.atom.is_some() || values[..index].iter().any(|(previous, _)| previous == fact) {
                 return Err("全域補完Factが観測済み・重複である".into());
             }
-            let field = self.indexes.field(&self.state,
+            let field = self.indexes.field(
+                &self.state,
                 &fact.snapshot,
                 &fact.subject,
                 fact.field.as_deref().ok_or("全域数値補完にfieldがない")?,
@@ -906,7 +927,10 @@ impl Environment<'_> {
                 },
                 || {
                     let mut scope = base.clone();
-                    self.universal_extend_scope(&mut scope, self.indexes.inputs.law().exprs()[id].span)?;
+                    self.universal_extend_scope(
+                        &mut scope,
+                        self.indexes.inputs.law().exprs()[id].span,
+                    )?;
                     let mut local = self.copy_variables(variables)?;
                     for parameter in &plan.parameters {
                         local.insert(
@@ -926,10 +950,7 @@ impl Environment<'_> {
                         Some(predicate)
                             if predicate.op == BinOp::Eq
                                 && !self.universal_has_exists(&plan)?
-                                && plan
-                                    .parameters
-                                    .iter()
-                                    .all(|p| p.numeric()) =>
+                                && plan.parameters.iter().all(|p| p.numeric()) =>
                         {
                             affine::universal_equality(
                                 Some(&predicate.left),
@@ -942,12 +963,7 @@ impl Environment<'_> {
                         }
                         _ => value.known_value,
                     };
-                    for parameter in plan
-                        .parameters
-                        .iter()
-                        .rev()
-                        .filter(|p| !p.numeric())
-                    {
+                    for parameter in plan.parameters.iter().rev().filter(|p| !p.numeric()) {
                         value.known_value = self.universal_opaque_constant(
                             self.universal_parameter_quantifier_kind(parameter)?,
                             &parameter.ty,
@@ -975,7 +991,8 @@ impl Environment<'_> {
             );
         }
         let active = self
-            .state.universal_context
+            .state
+            .universal_context
             .borrow()
             .clone()
             .ok_or("全域分析contextがない")?;
@@ -1023,7 +1040,8 @@ impl Environment<'_> {
             .as_ref()
             .ok_or("局所全称型がない")?;
         let mut context = self
-            .state.universal_context
+            .state
+            .universal_context
             .borrow()
             .clone()
             .ok_or("局所全称のcaller Planがない")?;
@@ -1120,7 +1138,8 @@ impl Environment<'_> {
         let origin = self.universal_binder_context(
             context,
             binder,
-            self.state.scoped_context
+            self.state
+                .scoped_context
                 .get()
                 .or(self.state.context.get())
                 .unwrap_or_default(),
@@ -1214,7 +1233,8 @@ impl Environment<'_> {
                 });
             }
             let origin = self
-                .state.scoped_context
+                .state
+                .scoped_context
                 .get()
                 .or(self.state.context.get())
                 .unwrap_or_default();
@@ -1249,11 +1269,23 @@ impl Environment<'_> {
         bindings: &[Binding],
     ) -> Result<Option<UniversalPlan>, ValidationFailure> {
         let native = if let Some(index) = self.current_context(graph).instance {
-            crate::observed::law_evaluation::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
-        } else { None };
+            crate::observed::law_evaluation::instance_inputs(
+                graph,
+                index,
+                self.state.cutoff.get().min(graph.nodes.len()),
+            )?
+        } else {
+            None
+        };
         let view = if let Some(index) = self.current_context(graph).instance {
-            crate::observed::object_reading_evaluation::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
-        } else { None };
+            crate::observed::object_reading_evaluation::instance_inputs(
+                graph,
+                index,
+                self.state.cutoff.get().min(graph.nodes.len()),
+            )?
+        } else {
+            None
+        };
         let name = if let Some(inputs) = &native {
             inputs.origin.declaration.as_str()
         } else if let Some(inputs) = &view {
@@ -1264,13 +1296,19 @@ impl Environment<'_> {
             return Ok(None);
         };
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(name)
             .ok_or("全域の元Lawがない")?;
         let (params, guard, body) = match &declaration.signature {
-            Signature::Law { params, guard, body, .. } => (params, *guard, *body),
+            Signature::Law {
+                params,
+                guard,
+                body,
+                ..
+            } => (params, *guard, *body),
             Signature::View { params, body, .. } if view.is_some() => (params, None, *body),
             _ => return Ok(None),
         };
@@ -1323,7 +1361,8 @@ impl Environment<'_> {
         if let Some(request) = graph.requests.get(self.current_context(graph).request)
             && request.kind == QuestionKind::Check
             && let Some(declaration) = self
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .declarations()
                 .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1333,7 +1372,14 @@ impl Environment<'_> {
             // 有限族の実rowは、通常の適用wrapperがguardを先に評価する。
             // 内側bodyの全称評価へ同じguardを取り込み直さない。
             plan.guard = match guard {
-                Some(g) if self.finite_family_guard_source(graph,self.indexes.inputs.law().exprs()[*g].span)? => None,
+                Some(g)
+                    if self.finite_family_guard_source(
+                        graph,
+                        self.indexes.inputs.law().exprs()[*g].span,
+                    )? =>
+                {
+                    None
+                }
                 _ => *guard,
             };
         }
@@ -1367,7 +1413,8 @@ impl Environment<'_> {
                 break;
             };
             let ty = self
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .quantifier_types()
                 .get(plan.body)
@@ -1578,12 +1625,14 @@ impl Environment<'_> {
             let context = self.current_context(graph);
             let cutoff = self.state.cutoff.get().min(graph.nodes.len());
             let active = self
-                .state.universal_context
+                .state
+                .universal_context
                 .borrow()
                 .clone()
                 .ok_or("全域sourceの分析Contextがない")?;
             let cached = self
-                .results.cache
+                .results
+                .cache
                 .borrow()
                 .universal_sources
                 .iter()
@@ -1634,7 +1683,8 @@ impl Environment<'_> {
             // 同じslotの相関を既存族で消去できた場合だけ元bodyの値を確定する。
             // 元の読取り・欠測・Scopeは保持し、観測値は補わない。
             let plan = self
-                .state.universal_context
+                .state
+                .universal_context
                 .borrow()
                 .as_ref()
                 .map(|c| c.plan.clone());
@@ -1696,7 +1746,10 @@ impl Environment<'_> {
         domains: &[NodeRef],
         bindings: &[Binding],
     ) -> Result<UniversalAnalysis, ValidationFailure> {
-        let previous = self.state.context.scoped(Some(graph.context_at(template.0)));
+        let previous = self
+            .state
+            .context
+            .scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let plan = self.universal_plan_at(graph, template, bindings)?;
             self.universal_check_domains(graph, template, domains, &plan)?;
@@ -1765,10 +1818,7 @@ impl Environment<'_> {
                         Some(predicate)
                             if predicate.op == BinOp::Eq
                                 && !self.universal_has_exists(&plan)?
-                                && plan
-                                    .parameters
-                                    .iter()
-                                    .all(|p| p.numeric()) =>
+                                && plan.parameters.iter().all(|p| p.numeric()) =>
                         {
                             let parameters = self.universal_closed_parameters(&plan, predicate)?;
                             affine::universal_equality(
@@ -1819,12 +1869,7 @@ impl Environment<'_> {
                         }
                     }
                     // 有限bodyの実caseによる判断も、元の外側型域を通してから使う。
-                    for parameter in plan
-                        .parameters
-                        .iter()
-                        .rev()
-                        .filter(|p| !p.numeric())
-                    {
+                    for parameter in plan.parameters.iter().rev().filter(|p| !p.numeric()) {
                         body_value = self
                             .universal_opaque_constant(
                                 self.universal_parameter_quantifier_kind(parameter)?,
@@ -1849,9 +1894,11 @@ impl Environment<'_> {
                         && !analysis.condition_pending
                     {
                         match (guard_forms.as_ref(), difference.as_ref()) {
-                            (Some(guard), Some(body)) => {
-                                numeric_law_function::universal_on_guards(guard, body, &self.control)?
-                            }
+                            (Some(guard), Some(body)) => numeric_law_function::universal_on_guards(
+                                guard,
+                                body,
+                                &self.control,
+                            )?,
                             _ => None,
                         }
                     } else {
@@ -1944,7 +1991,10 @@ impl Environment<'_> {
             }
         }
         let span = self.expression_span(graph, original)?;
-        let old_context = self.state.context.scoped(Some(graph.context_at(original.0)));
+        let old_context = self
+            .state
+            .context
+            .scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2022,7 +2072,8 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         let span = self.expression_span(graph, original)?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .values()
@@ -2067,7 +2118,8 @@ impl Environment<'_> {
         };
         let span = self.expression_span(graph, original)?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .values()
@@ -2077,7 +2129,10 @@ impl Environment<'_> {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
             _ => return Err("具体反例の元署名が違う".into()),
         };
-        let previous = self.state.context.scoped(Some(graph.context_at(original.0)));
+        let previous = self
+            .state
+            .context
+            .scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2189,11 +2244,19 @@ impl Environment<'_> {
         template: NodeRef,
         bindings: &[Binding],
     ) -> Result<UniversalPlan, ValidationFailure> {
-        let previous = self.state.context.scoped(Some(graph.context_at(template.0)));
+        let previous = self
+            .state
+            .context
+            .scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let raw = self.universal_raw_body(graph, template)?;
             let span = self.expression_span(graph, raw)?;
-            let id = *self.indexes.inputs.law().program().expressions
+            let id = *self
+                .indexes
+                .inputs
+                .law()
+                .program()
+                .expressions
                 .get(&span)
                 .ok_or("全域templateの元ASTがない")?;
             let request = graph

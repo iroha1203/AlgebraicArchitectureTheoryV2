@@ -16,8 +16,8 @@ use super::{
 use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
-pub(super) mod linear_result;
 pub(super) mod field_linear_result;
+pub(super) mod linear_result;
 
 mod owner_completion;
 
@@ -126,11 +126,15 @@ impl Data {
             .ty
             .clone();
         match self.ty() {
-            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::CandidateSpace(ty.into())),
+            NodeType::Construction(T::CandidateSpace) => {
+                Some(ProjectionType::CandidateSpace(ty.into()))
+            }
             NodeType::Construction(T::SolutionSet) => Some(ProjectionType::SolutionSet(ty.into())),
             NodeType::Construction(T::StateSpace) => Some(ProjectionType::StateSpace(ty.into())),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
-            NodeType::Construction(T::Architecture) => Some(ProjectionType::ArchitectureRoot(ty.into())),
+            NodeType::Construction(T::Architecture) => {
+                Some(ProjectionType::ArchitectureRoot(ty.into()))
+            }
             NodeType::Construction(T::Repair) => Some(ProjectionType::Repair(ty.into())),
             NodeType::Construction(T::Assignment) => Some(ProjectionType::Assignment(ty.into())),
             NodeType::Domain => Some(ProjectionType::Domain),
@@ -173,7 +177,9 @@ fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
 }
 pub(super) fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFailure> {
-    if let Some(reference) = b.g.retained_path_binding(scalar)? { return Ok(reference); }
+    if let Some(reference) = b.g.retained_path_binding(scalar)? {
+        return Ok(reference);
+    }
     for (index, part) in b.parts.iter().enumerate() {
         b.g.tick()?;
         if part.scalar.as_ref() == Some(scalar) {
@@ -197,13 +203,15 @@ pub(super) fn source_expression(
     parameters: &[(String, Type)],
 ) -> Result<NodeRef, ValidationFailure> {
     let ast = environment
-        .indexes.inputs
+        .indexes
+        .inputs
         .law()
         .exprs()
         .get(expression)
         .ok_or("changeの元式がない")?;
     let ty = environment
-        .indexes.inputs
+        .indexes
+        .inputs
         .law()
         .expr_type(expression)
         .ok_or("changeの元式型がない")?
@@ -264,7 +272,9 @@ fn compute_inner(
     c: &mut Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
-        if let Some(result) = owner_completion::compute(env, g, architecture, base, request, c, &[])? {
+        if let Some(result) =
+            owner_completion::compute(env, g, architecture, base, request, c, &[])?
+        {
             return Ok(result);
         }
         return Err(ValidationFailure::UnsupportedExpression {
@@ -277,13 +287,23 @@ fn compute_inner(
         Err(failure) => {
             if let Some(pending) = &failure.partial.pending_integer {
                 if let ValidationFailure::UnsupportedExpression { location, .. } = failure.cause {
-                    let mut b = Builder { g, base, parts: vec![] };
-                    let bindings = pending.bindings.iter()
+                    let mut b = Builder {
+                        g,
+                        base,
+                        parts: vec![],
+                    };
+                    let bindings = pending
+                        .bindings
+                        .iter()
                         .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
                         .collect::<Result<Vec<_>, ValidationFailure>>()?;
-                    let expression = source_expression(&mut b, env,
+                    let expression = source_expression(
+                        &mut b,
+                        env,
                         pending.expression.ok_or("整数欠測の元式がない")?,
-                        &bindings, &pending.parameters)?;
+                        &bindings,
+                        &pending.parameters,
+                    )?;
                     let part = &mut b.parts[expression.0 - base];
                     part.arguments.push(architecture.reference);
                     part.scope.merge(&g.get(architecture.reference)?.scope);
@@ -301,7 +321,9 @@ fn compute_inner(
                     reasons.push(Reason {
                         kind: ReasonKind::UnsupportedAlgorithm {
                             question: request.kind,
-                            operand_types: vec![pending.coefficient_type.clone().unwrap_or(Type::Z)],
+                            operand_types: vec![
+                                pending.coefficient_type.clone().unwrap_or(Type::Z),
+                            ],
                             method: pending.unsupported.map(str::to_owned).unwrap_or_else(|| {
                                 if pending.coefficient_type == Some(Type::Q) {
                                     "rational_change".into()
@@ -315,7 +337,19 @@ fn compute_inner(
                         missing: vec![],
                         location: Some(location.clone()),
                     });
-                    return Ok((b.parts,Answer {id:request.id.clone(),status:Decision::Undetermined,outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons,scope},None));
+                    return Ok((
+                        b.parts,
+                        Answer {
+                            id: request.id.clone(),
+                            status: Decision::Undetermined,
+                            outputs: BTreeMap::new(),
+                            claim: None,
+                            evidence: vec![],
+                            reasons,
+                            scope,
+                        },
+                        None,
+                    ));
                 }
             }
             return Err(failure.cause);
@@ -412,7 +446,10 @@ pub(super) fn render_search(
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
         let law = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law {
-            role, body, guard, params: law_params,
+            role,
+            body,
+            guard,
+            params: law_params,
         } = &law.signature
         else {
             return Err("候補の元Lawがない".into());
@@ -421,14 +458,23 @@ pub(super) fn render_search(
             .iter()
             .map(|(name, v)| Ok((name.clone(), value(&mut b, v)?)))
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
-        let unbound = law_params.iter().filter(|p| !bindings.iter().any(|(name,_)| *name == p.name)).collect::<Vec<_>>();
-        let parameters = unbound.iter().map(|p| (p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
+        let unbound = law_params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+            .collect::<Vec<_>>();
+        let parameters = unbound
+            .iter()
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect::<Vec<_>>();
         let body = source_expression(&mut b, env, *body, &bindings, &parameters)?;
         for parameter in unbound {
             b.parts[body.0 - base].scope.quantifiers.push(Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
-                name: parameter.name.clone(), ty: parameter.ty.erase(), domain: None,
-                occurrence: parameter.span, context: Some(env.current_context(g)),
+                name: parameter.name.clone(),
+                ty: parameter.ty.erase(),
+                domain: None,
+                occurrence: parameter.span,
+                context: Some(env.current_context(g)),
             });
         }
         let guard = guard
@@ -516,8 +562,21 @@ pub(super) fn render_search(
         }
     }
     slots.sort();
-    if search.linear.as_ref().is_some_and(|linear|linear.slots!=slots) || search.rational.as_ref().is_some_and(|linear|linear.slots!=slots) {
-        return Err(ValidationFailure::UnsupportedExpression { location:Location::Law {span:declaration.span}, feature:"整数changeの実更新先と公開slot集合が異なる".into() });
+    if search
+        .linear
+        .as_ref()
+        .is_some_and(|linear| linear.slots != slots)
+        || search
+            .rational
+            .as_ref()
+            .is_some_and(|linear| linear.slots != slots)
+    {
+        return Err(ValidationFailure::UnsupportedExpression {
+            location: Location::Law {
+                span: declaration.span,
+            },
+            feature: "整数changeの実更新先と公開slot集合が異なる".into(),
+        });
     }
     for (index, row) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -555,19 +614,36 @@ pub(super) fn render_search(
         }
     }
     let parameter_type = Type::Tuple(candidates.parameter_types.clone());
-    let linear_parts=if let Some(linear)=&search.rational {Some(field_linear_result::build(&mut b,linear,&requirements,c)?)}else{search.linear.as_ref().map(|linear|linear_result::build(&mut b,linear,&requirements,c)).transpose()?};
-    let parameters = if let Some(linear)=&linear_parts {linear.parameters} else { b.push(
-        NodeType::Domain,
-        "domain",
-        Json::obj([
-            ("kind", Json::str("finite")),
-            ("type", parameter_type.wire()),
-            ("elements", refs(&points)),
-        ]),
-        points.clone(),
-        None,
-        None,
-    )? };
+    let linear_parts = if let Some(linear) = &search.rational {
+        Some(field_linear_result::build(
+            &mut b,
+            linear,
+            &requirements,
+            c,
+        )?)
+    } else {
+        search
+            .linear
+            .as_ref()
+            .map(|linear| linear_result::build(&mut b, linear, &requirements, c))
+            .transpose()?
+    };
+    let parameters = if let Some(linear) = &linear_parts {
+        linear.parameters
+    } else {
+        b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("finite")),
+                ("type", parameter_type.wire()),
+                ("elements", refs(&points)),
+            ]),
+            points.clone(),
+            None,
+            None,
+        )?
+    };
     let mut slot_values = vec![];
     let mut state_types = vec![];
     let mut state_args = vec![architecture.reference];
@@ -583,7 +659,12 @@ pub(super) fn render_search(
         )?;
         state_args.push(r);
         let field = slot.field.as_ref().ok_or("更新slotのfieldがない")?;
-        state_types.push(env.indexes.field(&env.state, &slot.snapshot, &slot.subject, field)?.ty.erase());
+        state_types.push(
+            env.indexes
+                .field(&env.state, &slot.snapshot, &slot.subject, field)?
+                .ty
+                .erase(),
+        );
         slot_values.push(Json::obj([
             ("subject", r.wire()),
             ("field", Json::str(field)),
@@ -608,34 +689,42 @@ pub(super) fn render_search(
         state_order.insert(b.parts[state.0 - base].wire.canonical(), state);
     }
     let states = state_order.into_values().collect::<Vec<_>>();
-    let state_domain = if let Some(linear)=&linear_parts {linear.states} else { b.push(
-        NodeType::Domain,
-        "domain",
-        Json::obj([
-            ("kind", Json::str("finite")),
-            ("type", state_type.wire()),
-            ("elements", refs(&states)),
-        ]),
-        states.clone(),
-        None,
-        None,
-    )? };
+    let state_domain = if let Some(linear) = &linear_parts {
+        linear.states
+    } else {
+        b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("finite")),
+                ("type", state_type.wire()),
+                ("elements", refs(&states)),
+            ]),
+            states.clone(),
+            None,
+            None,
+        )?
+    };
     let mut action_args = vec![parameters, state_domain];
     action_args.extend(&points);
     action_args.extend(&states);
-    let action = if let Some(linear)=&linear_parts {linear.action} else { b.push(
-        NodeType::Construction(T::StateMap),
-        "state_map",
-        Json::obj([
-            ("source", parameters.wire()),
-            ("target", state_domain.wire()),
-            ("kind", Json::str("finite")),
-            ("pairs", Json::Arr(pairs)),
-        ]),
-        action_args,
-        None,
-        None,
-    )? };
+    let action = if let Some(linear) = &linear_parts {
+        linear.action
+    } else {
+        b.push(
+            NodeType::Construction(T::StateMap),
+            "state_map",
+            Json::obj([
+                ("source", parameters.wire()),
+                ("target", state_domain.wire()),
+                ("kind", Json::str("finite")),
+                ("pairs", Json::Arr(pairs)),
+            ]),
+            action_args,
+            None,
+            None,
+        )?
+    };
     let mut domain_args = vec![architecture.reference, parameters, state_space, action];
     domain_args.extend(&subjects);
     domain_args.extend(&requirements);
@@ -679,25 +768,31 @@ pub(super) fn render_search(
         None,
     )?;
     // 検査済み全候補表の再計算が全域性を担う。出力に各試行のtraceを複製しない。
-    let certificate = if let Some(linear)=&linear_parts {linear.certificate} else { b.push(
-        NodeType::Evidence,
-        "evidence",
-        Json::obj([
-            ("kind", Json::str("finite_exhaustion")),
-            (
-                "data",
-                Json::obj([
-                    ("domain", parameters.wire()),
-                    ("checked", Json::Nat(points.len() as u64)),
-                    ("instances", refs(&requirements)),
-                ]),
-            ),
-        ]),
-        vec![domain, parameters],
-        None,
-        None,
-    )? };
-    let representation = if let Some(linear)=&linear_parts {linear.representation.clone()} else if solutions.is_empty() {
+    let certificate = if let Some(linear) = &linear_parts {
+        linear.certificate
+    } else {
+        b.push(
+            NodeType::Evidence,
+            "evidence",
+            Json::obj([
+                ("kind", Json::str("finite_exhaustion")),
+                (
+                    "data",
+                    Json::obj([
+                        ("domain", parameters.wire()),
+                        ("checked", Json::Nat(points.len() as u64)),
+                        ("instances", refs(&requirements)),
+                    ]),
+                ),
+            ]),
+            vec![domain, parameters],
+            None,
+            None,
+        )?
+    };
+    let representation = if let Some(linear) = &linear_parts {
+        linear.representation.clone()
+    } else if solutions.is_empty() {
         Json::obj([
             ("kind", Json::str("empty")),
             ("certificate", certificate.wire()),
@@ -706,7 +801,9 @@ pub(super) fn render_search(
         Json::obj([("kind", Json::str("finite")), ("values", refs(&solutions))])
     };
     let mut solution_args = vec![domain, certificate];
-    if let Some(linear)=&linear_parts {solution_args.extend(&linear.representation_args);}
+    if let Some(linear) = &linear_parts {
+        solution_args.extend(&linear.representation_args);
+    }
     solution_args.extend(&requirements);
     solution_args.extend(&solutions);
     let set = b.push(
@@ -1056,7 +1153,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -1117,8 +1214,18 @@ impl Environment<'_> {
             &mut c,
         )?;
         if let Some(search) = verification {
-            for point in 0..search.candidates.as_ref().map_or(0, |table| table.rows.len()) {
-                change_search::verify_point(self, &d.source.architecture.witness, &search, point, &mut c)?;
+            for point in 0..search
+                .candidates
+                .as_ref()
+                .map_or(0, |table| table.rows.len())
+            {
+                change_search::verify_point(
+                    self,
+                    &d.source.architecture.witness,
+                    &search,
+                    point,
+                    &mut c,
+                )?;
             }
         }
         if parts != d.source.parts || answer != d.source.answer {
@@ -1141,7 +1248,15 @@ pub(super) fn validate_answer(
             Err("change依存停止が違う".into())
         };
     }
-    let r = answer.claim.or_else(|| answer.reasons.iter().find_map(|r|r.dependencies.first().copied())).ok_or("solveの存在命題・未決の元式がない")?;
+    let r = answer
+        .claim
+        .or_else(|| {
+            answer
+                .reasons
+                .iter()
+                .find_map(|r| r.dependencies.first().copied())
+        })
+        .ok_or("solveの存在命題・未決の元式がない")?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
         return Err("solveの存在命題がnativeでない".into());
     };
@@ -1181,7 +1296,6 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
     validate_node(g, n, v, d)
 }
 
-
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
@@ -1189,73 +1303,94 @@ pub(super) struct CandidateInput {
     pub search: change_search::Search,
     pub domain_type: ProjectionType,
 }
-pub(super) fn candidate_input(env: &Environment<'_>, g: &Graph, reference: NodeRef,
-    c: &mut Control) -> Result<CandidateInput, ValidationFailure> {
-    let node=g.get(reference)?;
-    let Some(Payload::Construction(v))=&node.payload else {return Err("商の候補域がnativeでない".into())};
-    let D::Change(d)=&v.data else {return Err("商の候補域がchange由来でない".into())};
-    if !matches!(d.ty(),NodeType::Construction(T::CandidateSpace|T::SolutionSet)) {return Err("商の候補域の型が違う".into())}
-    env.recheck_node(g,node,reference.0)?;
-    let origin=Witness::Architecture(d.source.architecture.witness.clone());
-    let request=origin.request();
-    env.with_request_context(g,request,|| {
-        let _selected=env.enter_architecture(g)?;
-        let assignments=env.state.architecture_values();
-        let search=change_search::search(env,g,&d.source.architecture.witness,request,c).map_err(|f|f.cause)?;
-        Ok(CandidateInput {architecture:d.source.architecture.reference,witness:d.source.architecture.witness.clone(),assignments,search,
-            domain_type:d.projection_type().ok_or("商の候補域の公開型がない")?})
+pub(super) fn candidate_input(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+    c: &mut Control,
+) -> Result<CandidateInput, ValidationFailure> {
+    let node = g.get(reference)?;
+    let Some(Payload::Construction(v)) = &node.payload else {
+        return Err("商の候補域がnativeでない".into());
+    };
+    let D::Change(d) = &v.data else {
+        return Err("商の候補域がchange由来でない".into());
+    };
+    if !matches!(
+        d.ty(),
+        NodeType::Construction(T::CandidateSpace | T::SolutionSet)
+    ) {
+        return Err("商の候補域の型が違う".into());
+    }
+    env.recheck_node(g, node, reference.0)?;
+    let origin = Witness::Architecture(d.source.architecture.witness.clone());
+    let request = origin.request();
+    env.with_request_context(g, request, || {
+        let _selected = env.enter_architecture(g)?;
+        let assignments = env.state.architecture_values();
+        let search = change_search::search(env, g, &d.source.architecture.witness, request, c)
+            .map_err(|f| f.cause)?;
+        Ok(CandidateInput {
+            architecture: d.source.architecture.reference,
+            witness: d.source.architecture.witness.clone(),
+            assignments,
+            search,
+            domain_type: d.projection_type().ok_or("商の候補域の公開型がない")?,
+        })
     })
 }
 
-pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
-        if part.ty != NodeType::Construction(T::Architecture) {
-            return Err("修復対象がArchitectureでない".into());
-        }
-        let Json::Obj(wire) = &part.wire else {
-            return Err("修復対象のrecordがない".into());
+pub(super) fn architecture_overrides(
+    g: &Graph,
+    part: &Part,
+) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
+    if part.ty != NodeType::Construction(T::Architecture) {
+        return Err("修復対象がArchitectureでない".into());
+    }
+    let Json::Obj(wire) = &part.wire else {
+        return Err("修復対象のrecordがない".into());
+    };
+    let Some(Json::Arr(rows)) = wire.get("overrides") else {
+        return Err("修復対象の更新表がない".into());
+    };
+    let reference = |wire: &Json| {
+        part.arguments
+            .iter()
+            .copied()
+            .find(|r| r.wire() == *wire)
+            .ok_or_else(|| ValidationFailure::Internal("更新の型付き辺がない".into()))
+    };
+    let mut result = vec![];
+    for row in rows {
+        let Json::Obj(row) = row else {
+            return Err("更新recordがない".into());
         };
-        let Some(Json::Arr(rows)) = wire.get("overrides") else {
-            return Err("修復対象の更新表がない".into());
+        let Some(Json::Obj(slot)) = row.get("slot") else {
+            return Err("更新slotがない".into());
         };
-        let reference = |wire: &Json| {
-            part
-                .arguments
-                .iter()
-                .copied()
-                .find(|r| r.wire() == *wire)
-                .ok_or_else(|| ValidationFailure::Internal("更新の型付き辺がない".into()))
+        let subject = reference(slot.get("subject").ok_or("更新subjectがない")?)?;
+        let Some(Json::Str(field)) = slot.get("field") else {
+            return Err("更新fieldがない".into());
         };
-        let mut result = vec![];
-        for row in rows {
-            let Json::Obj(row) = row else {
-                return Err("更新recordがない".into());
-            };
-            let Some(Json::Obj(slot)) = row.get("slot") else {
-                return Err("更新slotがない".into());
-            };
-            let subject = reference(slot.get("subject").ok_or("更新subjectがない")?)?;
-            let Some(Json::Str(field)) = slot.get("field") else {
-                return Err("更新fieldがない".into());
-            };
-            let Scalar::Subject {
-                snapshot, subject, ..
-            } = g.scalar(subject)?
-            else {
-                return Err("更新subjectが参照でない".into());
-            };
-            let updated = reference(row.get("value").ok_or("更新値がない")?)?;
-            result.push((
-                Fact {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    field: Some(field.clone().into()),
-                    atom: None,
-                },
-                updated,
-                g.scalar(updated)?.clone(),
-            ));
-        }
-        Ok(result)
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = g.scalar(subject)?
+        else {
+            return Err("更新subjectが参照でない".into());
+        };
+        let updated = reference(row.get("value").ok_or("更新値がない")?)?;
+        result.push((
+            Fact {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                field: Some(field.clone().into()),
+                atom: None,
+            },
+            updated,
+            g.scalar(updated)?.clone(),
+        ));
+    }
+    Ok(result)
 }
 
 impl super::result_kind::ResultKind for Data {

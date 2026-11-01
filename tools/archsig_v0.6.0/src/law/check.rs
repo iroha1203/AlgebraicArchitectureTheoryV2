@@ -208,10 +208,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             self.cooperate()?;
             E::checkpoint(control, Checkpoint::LawIteration)?;
             if self.reading_index.insert(r.name.name.clone(), ri).is_some() {
-                return duplicate(
-                    r.name.span,
-                    format!("duplicate reading `{}`", r.name.name),
-                );
+                return duplicate(r.name.span, format!("duplicate reading `{}`", r.name.name));
             }
         }
         for (ri, r) in ast.iter().enumerate() {
@@ -224,10 +221,7 @@ impl<'d, E: InputError> Checker<'d, E> {
                 self.cooperate()?;
                 E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !scope.insert(u.alias.name.clone()) {
-                    return duplicate(
-                        u.alias.span,
-                        format!("duplicate name `{}`", u.alias.name),
-                    );
+                    return duplicate(u.alias.span, format!("duplicate name `{}`", u.alias.name));
                 }
                 let Some(&target) = self.reading_index.get(&u.reading.name) else {
                     return reference(
@@ -261,17 +255,16 @@ impl<'d, E: InputError> Checker<'d, E> {
                 E::checkpoint(control, Checkpoint::LawIteration)?;
                 check_decl_name::<E>(&d.name)?;
                 if !scope.insert(d.name.name.clone()) {
-                    return duplicate(
-                        d.name.span,
-                        format!("duplicate name `{}`", d.name.name),
-                    );
+                    return duplicate(d.name.span, format!("duplicate name `{}`", d.name.name));
                 }
                 shorts.insert(d.name.name.clone());
                 let name = full(&r.name.name, &[&d.name.name]);
                 if self.primitive_identifier_exists(&name)? {
                     return duplicate(
                         d.name.span,
-                        format!("fully qualified name `{name}` conflicts with a primitive definition"),
+                        format!(
+                            "fully qualified name `{name}` conflicts with a primitive definition"
+                        ),
                     );
                 }
                 self.decl_index.insert(name.clone(), (ri, di));
@@ -451,7 +444,10 @@ impl<'d, E: InputError> Checker<'d, E> {
                 .join(".");
             if !aliased && let Some(target) = self.target(&written) {
                 if !self.target_visible(reading, &target)? {
-                    return reference(span, format!("fully qualified name `{written}` is not available in this scope"));
+                    return reference(
+                        span,
+                        format!("fully qualified name `{written}` is not available in this scope"),
+                    );
                 }
                 self.note_reading_edge(reading, &written, span);
                 return Ok(Some((target, k)));
@@ -621,7 +617,10 @@ impl<'d, E: InputError> Checker<'d, E> {
             }
             TypeAst::Path(a, b, span) => {
                 if ctx.validate && !ctx.allow_path {
-                    return syntax(*span, "Path cannot be used as a primitive field, data, or Term type");
+                    return syntax(
+                        *span,
+                        "Path cannot be used as a primitive field, data, or Term type",
+                    );
                 }
                 let a = self.resolve_entity_name(a, ctx.reading)?;
                 let b = self.resolve_entity_name(b, ctx.reading)?;
@@ -634,7 +633,10 @@ impl<'d, E: InputError> Checker<'d, E> {
         match self.resolve_prefix(reading, &q.parts)? {
             Some((Target::Decl(n), k)) if k == q.parts.len() => {
                 if self.decl_kind(&n) != Some("entity") {
-                    return syntax(q.span(), format!("Path endpoint `{}` must be an entity", q.text()));
+                    return syntax(
+                        q.span(),
+                        format!("Path endpoint `{}` must be an entity", q.text()),
+                    );
                 }
                 self.record(q.span(), n.clone());
                 Ok(n)
@@ -820,7 +822,10 @@ pub fn check_decl_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
-            format!("built-in operation name `{}` cannot be used as a declaration name", id.name),
+            format!(
+                "built-in operation name `{}` cannot be used as a declaration name",
+                id.name
+            ),
         );
     }
     Ok(())
@@ -830,7 +835,10 @@ pub fn check_binding_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
-            format!("built-in operation name `{}` cannot be used as a binding name", id.name),
+            format!(
+                "built-in operation name `{}` cannot be used as a binding name",
+                id.name
+            ),
         );
     }
     Ok(())

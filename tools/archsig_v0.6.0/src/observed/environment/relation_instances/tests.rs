@@ -381,8 +381,12 @@ fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
             10 => forged.instances[0].left_checked = false,
             11 => forged.instances[0].right_checked = false,
             _ => {
-                let Signature::Relation { params, .. } = &forged.declarations[0].signature else { panic!() };
-                forged.instances[0].numeric_parameters.push(params[0].clone());
+                let Signature::Relation { params, .. } = &forged.declarations[0].signature else {
+                    panic!()
+                };
+                forged.instances[0]
+                    .numeric_parameters
+                    .push(params[0].clone());
             }
         }
         assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
@@ -754,7 +758,9 @@ fn numeric_transport_families_keep_missing_guard_slots() {
 #[test]
 fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coordinates() {
     fn z(value: &Scalar) -> &num_bigint::BigInt {
-        let Scalar::Z(value) = value else { panic!("integer relation coordinate expected") };
+        let Scalar::Z(value) = value else {
+            panic!("integer relation coordinate expected")
+        };
         value
     }
     for (guard, body, state) in [
@@ -797,7 +803,8 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
         }
         r.recheck(&i, &mut quiet()).unwrap();
         let mut forged = r.clone();
-        let Scalar::Z(rhs) = &mut forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0] else {
+        let Scalar::Z(rhs) = &mut forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0]
+        else {
             panic!("integer relation equation expected")
         };
         *rhs += 1;
@@ -848,7 +855,10 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
                 .known_value,
             Some(Scalar::Bool(true))
         );
-        assert_eq!(e.state.missing_slot_reads.borrow().as_ref().unwrap(), &expected);
+        assert_eq!(
+            e.state.missing_slot_reads.borrow().as_ref().unwrap(),
+            &expected
+        );
         *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
         let (value, _, _, missing) = super::super::local_read::guard_value(
             &e,
@@ -859,7 +869,14 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
         .unwrap();
         assert_eq!(value, Some(true));
         assert!(missing.is_empty());
-        assert!(e.state.missing_slot_reads.borrow().as_ref().unwrap().is_empty());
+        assert!(
+            e.state
+                .missing_slot_reads
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .is_empty()
+        );
         assert!(e.state.primitive_reads.borrow().is_none());
         assert!(!e.state.value_read.get());
     }
@@ -911,11 +928,18 @@ fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
             assert!(forged.recheck(&i, &mut quiet()).is_err());
         }
     }
-    let i = inputs("normal", "relation keep(pair:((Z,Z),Z),e:Hop):path(e)=path(e);");
+    let i = inputs(
+        "normal",
+        "relation keep(pair:((Z,Z),Z),e:Hop):path(e)=path(e);",
+    );
     let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
     assert_eq!(r.instances.len(), 4);
     assert!(r.outside_finite.is_empty());
-    assert!(r.instances.iter().all(|row| row.state == RelationState::Established));
+    assert!(
+        r.instances
+            .iter()
+            .all(|row| row.state == RelationState::Established)
+    );
     r.recheck(&i, &mut quiet()).unwrap();
     for ty in ["(Z,Q)", "(Z,Bool)"] {
         let i = inputs(

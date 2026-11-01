@@ -13,7 +13,9 @@ pub(in crate::observed::local_result) struct Fiber {
     pub kernel: Matrix,
     pub obstruction: Option<usize>,
 }
-pub(in crate::observed::local_result) fn scalars(a: &Matrix) -> crate::observed::field_fiber::Matrix {
+pub(in crate::observed::local_result) fn scalars(
+    a: &Matrix,
+) -> crate::observed::field_fiber::Matrix {
     a.iter()
         .map(|r| r.iter().map(Z::scalar).collect())
         .collect()

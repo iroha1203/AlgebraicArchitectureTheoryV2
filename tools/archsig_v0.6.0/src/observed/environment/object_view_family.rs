@@ -51,7 +51,8 @@ impl Environment<'_> {
         }))
     }
     pub(in crate::observed) fn object_view_is_bound(&self, p: &crate::law::model::Param) -> bool {
-        self.indexes.object_values
+        self.indexes
+            .object_values
             .is_some_and(|assignment| assignment.parameter(p))
     }
     pub(super) fn object_view_binding_matches(
@@ -70,7 +71,9 @@ impl Environment<'_> {
         self.validate_at(graph, node, value.0)
     }
     pub(super) fn object_view_binding_count(&self) -> usize {
-        self.indexes.object_values.map_or(0, |values| values.count())
+        self.indexes
+            .object_values
+            .map_or(0, |values| values.count())
     }
     pub(super) fn finite_view_input(
         &self,
@@ -93,7 +96,8 @@ impl Environment<'_> {
             .get(self.current_context(graph).request)
             .ok_or("有限view producerのRequestがない")?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("有限viewの宣言がない")?)
@@ -146,7 +150,8 @@ impl Environment<'_> {
         instance: &crate::construction::readings::ObjectInstance,
     ) -> Result<ParameterDomainReading, ValidationFailure> {
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(&instance.declaration().name)
@@ -157,7 +162,9 @@ impl Environment<'_> {
             self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                let domain = self.indexes.reference_roster(&self.control, entity, &mut |_| {})?;
+                let domain = self
+                    .indexes
+                    .reference_roster(&self.control, entity, &mut |_| {})?;
                 record_domain_reads(&reads, &domain, &[]);
                 Ok(domain)
             },

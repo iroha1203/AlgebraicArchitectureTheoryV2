@@ -70,7 +70,11 @@ impl ObjectDomain {
                     .ok_or("条件付きsubjectがない")?
                     .ty
                     .clone();
-                conditional.push((ty.into(), member.subject().clone(), member.owner_slot().clone()));
+                conditional.push((
+                    ty.into(),
+                    member.subject().clone(),
+                    member.owner_slot().clone(),
+                ));
             }
         }
         Ok(Self {
@@ -307,7 +311,9 @@ pub fn evaluate_object_instance(
                     inputs, readings, object, instance, control,
                 )?;
                 return Ok(ObjectEvaluation {
-                    readings: readings.clone(), object, instance,
+                    readings: readings.clone(),
+                    object,
+                    instance,
                     outcome: ObjectEvaluationOutcome::FiniteView(Box::new(family)),
                 });
             }

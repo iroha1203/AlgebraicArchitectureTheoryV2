@@ -1,6 +1,8 @@
 use super::*;
 use crate::observed::change_result::field_linear_result as field;
-pub(in crate::observed::local_result) use crate::observed::change_result::linear_result::{domain, module};
+pub(in crate::observed::local_result) use crate::observed::change_result::linear_result::{
+    domain, module,
+};
 pub(in crate::observed::local_result) fn map(
     b: &mut Builder<'_>,
     source: NodeRef,

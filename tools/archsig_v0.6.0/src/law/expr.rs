@@ -124,7 +124,14 @@ impl<E: InputError> Checker<'_, E> {
         self.parser.exprs[id].span
     }
 
-    pub fn bind(&mut self, env: &mut Env, id: &Ident, ty: Type, origin: Origin, source: super::ir::BindingSource) -> CResult<(), E> {
+    pub fn bind(
+        &mut self,
+        env: &mut Env,
+        id: &Ident,
+        ty: Type,
+        origin: Origin,
+        source: super::ir::BindingSource,
+    ) -> CResult<(), E> {
         check_binding_name::<E>(id)?;
         if !matches!(self.lookup(env, &id.name)?, Lookup::Missing) {
             return duplicate(
@@ -281,25 +288,26 @@ impl<E: InputError> Checker<'_, E> {
         let span = self.span(id);
         let kind = self.parser.exprs[id].kind.clone();
         match kind {
-            ExprKind::Int(text) => match expected
-                .map(|ty| self.erase_type(ty))
-                .transpose()?
-                .as_ref()
-            {
-                None | Some(Type::Z) => Ok(Type::Z),
-                Some(Type::Q) => Ok(Type::Q),
-                Some(Type::Fp(p)) => {
-                    let v: BigUint = text.parse().expect("10進整数");
-                    let p_val: BigUint = p.parse().expect("10進整数");
-                    if v >= p_val {
-                        return syntax(span, format!("integer {text} is outside the Fp({p}) range 0..{p}"));
+            ExprKind::Int(text) => {
+                match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
+                    None | Some(Type::Z) => Ok(Type::Z),
+                    Some(Type::Q) => Ok(Type::Q),
+                    Some(Type::Fp(p)) => {
+                        let v: BigUint = text.parse().expect("10進整数");
+                        let p_val: BigUint = p.parse().expect("10進整数");
+                        if v >= p_val {
+                            return syntax(
+                                span,
+                                format!("integer {text} is outside the Fp({p}) range 0..{p}"),
+                            );
+                        }
+                        Ok(Type::Fp(p.clone()))
                     }
-                    Ok(Type::Fp(p.clone()))
+                    Some(other) => {
+                        self.type_error(span, other, &Type::Z, "integer literal type mismatch")
+                    }
                 }
-                Some(other) => {
-                    self.type_error(span, other, &Type::Z, "integer literal type mismatch")
-                }
-            },
+            }
             ExprKind::Str(_) => Ok(Type::Text),
             ExprKind::Bool(_) => Ok(Type::Bool),
             ExprKind::Unit => Ok(Type::Unit),
@@ -330,7 +338,13 @@ impl<E: InputError> Checker<'_, E> {
                 operand,
             } => {
                 let t = self.check(operand, expected, env, ctx)?;
-                self.require_numeric(&t, span, &Type::Z, &t, "unary - requires Z, Q, Fp, or tuples of these types")?;
+                self.require_numeric(
+                    &t,
+                    span,
+                    &Type::Z,
+                    &t,
+                    "unary - requires Z, Q, Fp, or tuples of these types",
+                )?;
                 Ok(t)
             }
             ExprKind::Binary { op, lhs, rhs } => {
@@ -373,9 +387,13 @@ impl<E: InputError> Checker<'_, E> {
                 let t = self.check(base, None, env, ctx)?;
                 let result = self.project_field(&t, &name, ctx)?;
                 let Some(owner) = t.ref_target() else {
-                    return syntax(name.span, format!("field `{}` must be read from a reference value", name.name));
+                    return syntax(
+                        name.span,
+                        format!("field `{}` must be read from a reference value", name.name),
+                    );
                 };
-                self.resolved_fields.push((id, full(owner, &[&name.name]).into()));
+                self.resolved_fields
+                    .push((id, full(owner, &[&name.name]).into()));
                 Ok(result)
             }
             ExprKind::Index {
@@ -434,7 +452,13 @@ impl<E: InputError> Checker<'_, E> {
                     );
                 };
                 let mark = env.vars.len();
-                self.bind(env, &var, e, Origin::Other, super::ir::BindingSource::Iteration)?;
+                self.bind(
+                    env,
+                    &var,
+                    e,
+                    Origin::Other,
+                    super::ir::BindingSource::Iteration,
+                )?;
                 if let Some(f) = filter {
                     self.check_bool(f, env, ctx)?;
                 }
@@ -469,7 +493,10 @@ impl<E: InputError> Checker<'_, E> {
                     }
                 };
                 if !matches!(self.decl_kind(&target), Some("entity" | "arrow")) {
-                    return syntax(name.span(), "observed family must name an owned entity or arrow");
+                    return syntax(
+                        name.span(),
+                        "observed family must name an owned entity or arrow",
+                    );
                 }
                 let Some(root) = self.owner_root(&target) else {
                     return syntax(name.span(), format!("`{}` has no owner", name.text()));
@@ -505,7 +532,13 @@ impl<E: InputError> Checker<'_, E> {
                 } else {
                     self.pair_type(lhs, rhs, env, ctx)?
                 };
-                self.require_numeric(&t, span, &Type::Z, &t, "arithmetic requires Z, Q, Fp, or tuples of these types")?;
+                self.require_numeric(
+                    &t,
+                    span,
+                    &Type::Z,
+                    &t,
+                    "arithmetic requires Z, Q, Fp, or tuples of these types",
+                )?;
                 Ok(t)
             }
             BinOp::Eq | BinOp::Ne => {
@@ -550,10 +583,7 @@ impl<E: InputError> Checker<'_, E> {
             None => None,
         };
         let Some(field) = field else {
-            return reference(
-                name.span,
-                format!("`{decl}` has no field `{}`", name.name),
-            );
+            return reference(name.span, format!("`{decl}` has no field `{}`", name.name));
         };
         self.record(name.span, full(&decl, &[&name.name]));
         self.erase_type(&field.ty)
@@ -572,7 +602,10 @@ impl<E: InputError> Checker<'_, E> {
             Lookup::Found(b) => {
                 let mut t = b.ty.clone();
                 let mut lexical = super::ir::Lexical {
-                    source: b.source, name: b.name.clone(), ty: t.clone(), projections: vec![],
+                    source: b.source,
+                    name: b.name.clone(),
+                    ty: t.clone(),
+                    projections: vec![],
                 };
                 for p in &parts[1..] {
                     self.cooperate()?;
@@ -580,10 +613,15 @@ impl<E: InputError> Checker<'_, E> {
                     t = self.project_field(&t, p, ctx)?;
                     // project_field has established the reference owner and field.
                     let Some(owner) = owner else {
-                        return syntax(p.span, format!("field `{}` must be read from a reference value", p.name));
+                        return syntax(
+                            p.span,
+                            format!("field `{}` must be read from a reference value", p.name),
+                        );
                     };
                     lexical.projections.push(super::ir::Projection {
-                        name: full(&owner, &[&p.name]).into(), span: p.span, ty: t.clone(),
+                        name: full(&owner, &[&p.name]).into(),
+                        span: p.span,
+                        ty: t.clone(),
                     });
                 }
                 self.lexical.push((id, lexical));
@@ -607,7 +645,10 @@ impl<E: InputError> Checker<'_, E> {
             if BUILTIN_OPS.contains(&head.name.as_str()) {
                 return syntax(
                     head.span,
-                    format!("built-in operation `{}` must be applied to arguments", head.name),
+                    format!(
+                        "built-in operation `{}` must be applied to arguments",
+                        head.name
+                    ),
                 );
             }
         }
@@ -631,7 +672,10 @@ impl<E: InputError> Checker<'_, E> {
                         format!("cannot resolve `{}` after `{shown}`", parts[k].name),
                     )
                 } else {
-                    reference(whole, format!("declaration `{shown}` cannot be used as a value"))
+                    reference(
+                        whole,
+                        format!("declaration `{shown}` cannot be used as a value"),
+                    )
                 }
             }
             None => reference(
@@ -698,7 +742,11 @@ impl<E: InputError> Checker<'_, E> {
         if c.args.len() != args.len() {
             return syntax(
                 span,
-                format!("constructor `{}` requires {} arguments", c.name, c.args.len()),
+                format!(
+                    "constructor `{}` requires {} arguments",
+                    c.name,
+                    c.args.len()
+                ),
             );
         }
         self.record(span, full(data, &[&c.name]));
@@ -870,7 +918,10 @@ impl<E: InputError> Checker<'_, E> {
     ) -> CResult<(), E> {
         let rec = ctx.rec.clone();
         let Some((index, data)) = rec else {
-            return cycle(span, "view self-recursion requires a data parameter in the first position");
+            return cycle(
+                span,
+                "view self-recursion requires a data parameter in the first position",
+            );
         };
         let arg = self.strip_groups(args[index])?;
         if let ExprKind::Dotted(parts) = &self.parser.exprs[arg].kind
@@ -909,7 +960,10 @@ impl<E: InputError> Checker<'_, E> {
                 let n_ok = matches!(&self.parser.exprs[args[0]].kind, ExprKind::Int(_));
                 let d_ok = matches!(&self.parser.exprs[args[1]].kind, ExprKind::Int(t) if t != "0");
                 if !n_ok || !d_ok {
-                    return syntax(span, "rat requires integer literals and a positive denominator");
+                    return syntax(
+                        span,
+                        "rat requires integer literals and a positive denominator",
+                    );
                 }
                 self.check(args[0], Some(&Type::Z), env, ctx)?;
                 self.check(args[1], Some(&Type::Z), env, ctx)?;
@@ -1020,7 +1074,13 @@ impl<E: InputError> Checker<'_, E> {
             for p in params {
                 self.cooperate()?;
                 let t = self.resolve_type_in(&p.ty, env, &term_ctx)?;
-                self.bind(env, &p.name, t.clone(), Origin::Other, super::ir::BindingSource::Parameter)?;
+                self.bind(
+                    env,
+                    &p.name,
+                    t.clone(),
+                    Origin::Other,
+                    super::ir::BindingSource::Parameter,
+                )?;
                 types.push(t);
             }
             let ret_expected = match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
@@ -1095,7 +1155,10 @@ impl<E: InputError> Checker<'_, E> {
                     plain,
                 }) => {
                     if !seen.insert(index) {
-                        return syntax(arm.pattern.span(), "duplicate branch for the same constructor");
+                        return syntax(
+                            arm.pattern.span(),
+                            "duplicate branch for the same constructor",
+                        );
                     }
                     if covers {
                         covered.insert(index);
@@ -1171,7 +1234,13 @@ impl<E: InputError> Checker<'_, E> {
                 } else {
                     Origin::Other
                 };
-                self.bind(env, id, ty.clone(), origin, super::ir::BindingSource::Pattern)?;
+                self.bind(
+                    env,
+                    id,
+                    ty.clone(),
+                    origin,
+                    super::ir::BindingSource::Pattern,
+                )?;
                 Ok(None)
             }
             Pattern::Ctor { name, args, .. } => {
@@ -1265,7 +1334,11 @@ impl<E: InputError> Checker<'_, E> {
         if c.args.len() != args.len() {
             return syntax(
                 span,
-                format!("constructor `{}` requires {} arguments", c.name, c.args.len()),
+                format!(
+                    "constructor `{}` requires {} arguments",
+                    c.name,
+                    c.args.len()
+                ),
             );
         }
         let name = full(data, &[&c.name]);
@@ -1314,7 +1387,10 @@ impl<E: InputError> Checker<'_, E> {
                         if let Some(error) = first_error {
                             return Err(error);
                         }
-                        return syntax(span, "cannot determine the separator between quantifier domain and body");
+                        return syntax(
+                            span,
+                            "cannot determine the separator between quantifier domain and body",
+                        );
                     }
                     _ => valid.pop().expect("一つ以上の候補"),
                 }
@@ -1325,7 +1401,17 @@ impl<E: InputError> Checker<'_, E> {
             QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx)?,
         };
         let mark = env.vars.len();
-        self.bind(env, var, elem.clone(), Origin::Other, if matches!(domain, QuantDomain::Type(_)) {super::ir::BindingSource::TypeQuantifier} else {super::ir::BindingSource::Iteration})?;
+        self.bind(
+            env,
+            var,
+            elem.clone(),
+            Origin::Other,
+            if matches!(domain, QuantDomain::Type(_)) {
+                super::ir::BindingSource::TypeQuantifier
+            } else {
+                super::ir::BindingSource::Iteration
+            },
+        )?;
         self.check_bool(body, env, ctx)?;
         env.vars.truncate(mark);
         self.quantifier_types.resize(self.parser.exprs.len(), None);

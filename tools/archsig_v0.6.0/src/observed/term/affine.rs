@@ -9,7 +9,11 @@ use std::sync::Arc;
 pub(in crate::observed) enum Value {
     Known(Scalar),
     // constructorが既知でpayloadは記号値の中間値。係数表示として公開しない。
-    Data { family: String, constructor: crate::names::QualifiedName, args: Arc<Vec<Value>> },
+    Data {
+        family: String,
+        constructor: crate::names::QualifiedName,
+        args: Arc<Vec<Value>>,
+    },
     Number(forms::Form),
     Tuple(Vec<Value>),
     List {
@@ -31,7 +35,15 @@ impl Clone for Value {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Known(v) => Self::Known(v.clone()),
-            Self::Data { family, constructor, args } => Self::Data { family: family.clone(), constructor: constructor.clone(), args: args.clone() },
+            Self::Data {
+                family,
+                constructor,
+                args,
+            } => Self::Data {
+                family: family.clone(),
+                constructor: constructor.clone(),
+                args: args.clone(),
+            },
             Self::Number(v) => Self::Number(v.clone()),
             Self::Tuple(v) => Self::Tuple(v.clone()),
             Self::List { element, items } => Self::List {
@@ -54,7 +66,18 @@ impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
             (Self::Known(a), Self::Known(b)) => a == b,
-            (Self::Data { family: a, constructor: ac, args: av }, Self::Data { family: b, constructor: bc, args: bv }) => a == b && ac == bc && av == bv,
+            (
+                Self::Data {
+                    family: a,
+                    constructor: ac,
+                    args: av,
+                },
+                Self::Data {
+                    family: b,
+                    constructor: bc,
+                    args: bv,
+                },
+            ) => a == b && ac == bc && av == bv,
             (Self::Number(a), Self::Number(b)) => a == b,
             (Self::Tuple(a), Self::Tuple(b)) => a == b,
             (
@@ -99,7 +122,10 @@ impl Drop for Value {
             Self::Tuple(v) | Self::List { items: v, .. } | Self::SetLiteral { items: v, .. } => {
                 std::mem::take(v)
             }
-            Self::Data { args, .. } => match Arc::get_mut(args) { Some(args) => std::mem::take(args), None => return },
+            Self::Data { args, .. } => match Arc::get_mut(args) {
+                Some(args) => std::mem::take(args),
+                None => return,
+            },
             Self::Option { value, .. } => value.take().map(|v| vec![*v]).unwrap_or_default(),
             _ => return,
         };
@@ -108,7 +134,11 @@ impl Drop for Value {
                 Self::Tuple(v)
                 | Self::List { items: v, .. }
                 | Self::SetLiteral { items: v, .. } => pending.append(v),
-                Self::Data { args, .. } => { if let Some(args) = Arc::get_mut(args) { pending.append(args); } },
+                Self::Data { args, .. } => {
+                    if let Some(args) = Arc::get_mut(args) {
+                        pending.append(args);
+                    }
+                }
                 Self::Option { value, .. } => {
                     if let Some(v) = value.take() {
                         pending.push(*v);
@@ -120,11 +150,21 @@ impl Drop for Value {
     }
 }
 impl Value {
-    pub(in crate::observed) fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
+    pub(in crate::observed) fn data_parts(
+        &self,
+        c: &Control,
+    ) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
         tick(c)?;
         Ok(match self {
-            Self::Data { constructor, args, .. } => Some((constructor.to_string(), args.as_ref().clone())),
-            Self::Known(Scalar::Data { constructor, args, .. }) => Some((constructor.to_string(), args.iter().cloned().map(Self::Known).collect())),
+            Self::Data {
+                constructor, args, ..
+            } => Some((constructor.to_string(), args.as_ref().clone())),
+            Self::Known(Scalar::Data {
+                constructor, args, ..
+            }) => Some((
+                constructor.to_string(),
+                args.iter().cloned().map(Self::Known).collect(),
+            )),
             _ => None,
         })
     }
@@ -1149,7 +1189,11 @@ impl Term {
                 }
                 Scalar::Data {
                     family: family.clone(),
-                    constructor: law.resolved_names().get(reference).ok_or("constructorの検査済み名がない")?.clone(),
+                    constructor: law
+                        .resolved_names()
+                        .get(reference)
+                        .ok_or("constructorの検査済み名がない")?
+                        .clone(),
                     args: values,
                 }
             }

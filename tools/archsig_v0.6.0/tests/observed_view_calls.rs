@@ -1190,7 +1190,10 @@ fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints()
     assert_eq!(issues[0].code, RequestIssueCode::Type);
     assert_eq!(issues[0].request, "bad");
     assert_eq!(issues[0].argument, "bind.s");
-    assert_eq!(issues[0].message, "dependent parameter owner does not match");
+    assert_eq!(
+        issues[0].message,
+        "dependent parameter owner does not match"
+    );
     assert_eq!(f(&direct_invalid, "status"), &Json::str("invalid"));
     let direct_issue = &arr(f(&direct_invalid, "issues"))[0];
     assert_eq!(f(direct_issue, "request"), &Json::str("bad"));

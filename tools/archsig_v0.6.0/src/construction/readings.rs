@@ -195,10 +195,21 @@ fn owner_condition(
                 value: Value::Ref { snapshot, subject },
                 ..
             } => Ok((snapshot == &owner.snapshot && subject == &owner.subject).then(Vec::new)),
-            Slot::Missing if construction.resolved_owners().iter().any(|(fact, actual)|
-                *fact == slot(candidate, &field.name) && actual == owner) => Ok(Some(vec![])),
-            Slot::Missing if construction.resolved_owners().iter().any(|(fact, _)|
-                *fact == slot(candidate, &field.name)) => Ok(None),
+            Slot::Missing
+                if construction.resolved_owners().iter().any(|(fact, actual)| {
+                    *fact == slot(candidate, &field.name) && actual == owner
+                }) =>
+            {
+                Ok(Some(vec![]))
+            }
+            Slot::Missing
+                if construction
+                    .resolved_owners()
+                    .iter()
+                    .any(|(fact, _)| *fact == slot(candidate, &field.name)) =>
+            {
+                Ok(None)
+            }
             Slot::Missing => Ok(Some(vec![MembershipCondition {
                 slot: slot(candidate, &field.name),
                 owner: owner.clone(),

@@ -44,10 +44,7 @@ pub(super) fn out_ok(out: &Path) -> Result<(), String> {
 }
 
 /// 出力先のない usage を、捕捉済み signal とともに一度だけ確定する。
-pub(super) fn usage_without_result(
-    signals: &mut dyn Signals,
-    issue: ResultIssue,
-) -> Outcome {
+pub(super) fn usage_without_result(signals: &mut dyn Signals, issue: ResultIssue) -> Outcome {
     without_result(signals, Status::Invalid, vec![issue])
 }
 

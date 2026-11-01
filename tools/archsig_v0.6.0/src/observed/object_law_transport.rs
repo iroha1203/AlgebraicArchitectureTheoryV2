@@ -1017,7 +1017,9 @@ mod tests {
 
     #[test]
     fn affine_guard_fiber_truth_rechecks_original_applications_and_counterexamples() {
-        for (target_guard, target_body, preserved) in [("x=0", "x-x=0", true), ("true", "x=0", false)] {
+        for (target_guard, target_body, preserved) in
+            [("x=0", "x-x=0", true), ("true", "x=0", false)]
+        {
             let law = include_str!("../../tests/fixtures/object-law-transport.law")
                 .replace(
                     "bounded(c: Left.Child): c.count = 2",

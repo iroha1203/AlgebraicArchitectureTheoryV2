@@ -190,12 +190,17 @@ pub(in crate::observed) type NumericParameterTerms = (Scalar, Vec<(TermArgument,
 
 impl Form {
     /// 元のparameter軸だけを持つ数値関数を、値へ潰さず取り出す。
-    pub(in crate::observed) fn parameter_coordinates(&self, c: &Control) -> Result<Option<(Scalar, Vec<(Parameter, Scalar)>)>, ValidationFailure> {
+    pub(in crate::observed) fn parameter_coordinates(
+        &self,
+        c: &Control,
+    ) -> Result<Option<(Scalar, Vec<(Parameter, Scalar)>)>, ValidationFailure> {
         self.check(c)?;
         let mut coefficients = Vec::new();
         for (symbol, coefficient) in &self.coefficients {
             tick(c)?;
-            let Symbol::Parameter(parameter) = symbol else { return Ok(None) };
+            let Symbol::Parameter(parameter) = symbol else {
+                return Ok(None);
+            };
             coefficients.push((parameter.clone(), coefficient.clone()));
         }
         Ok(Some((self.constant.clone(), coefficients)))
@@ -217,34 +222,62 @@ impl Form {
         Ok(Some((self.constant.clone(), coefficients)))
     }
     /// 正規化後に全称parameterの非零係数が残れば、全域での等式は成立しない。
-    pub(in crate::observed) fn varies_over(&self, parameters: &[Parameter], c: &Control) -> Result<bool, ValidationFailure> {
+    pub(in crate::observed) fn varies_over(
+        &self,
+        parameters: &[Parameter],
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
         self.check(c)?;
         for parameter in parameters {
             tick(c)?;
-            if self.coefficients.contains_key(&Symbol::Parameter(parameter.clone())) {
+            if self
+                .coefficients
+                .contains_key(&Symbol::Parameter(parameter.clone()))
+            {
                 return Ok(true);
             }
         }
         Ok(false)
     }
-    pub(in crate::observed) fn state(position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
+    pub(in crate::observed) fn state(
+        position: &Fact,
+        c: &Control,
+    ) -> Result<Self, ValidationFailure> {
         Self::typed_state(&Type::Z, position, c)
     }
-    pub(in crate::observed) fn typed_state(ty: &Type, position: &Fact, c: &Control) -> Result<Self, ValidationFailure> {
+    pub(in crate::observed) fn typed_state(
+        ty: &Type,
+        position: &Fact,
+        c: &Control,
+    ) -> Result<Self, ValidationFailure> {
         fact_check(position)?;
         tick(c)?;
-        if !matches!(ty, Type::Z | Type::Q) { return Err("自由状態の係数型がZ/Qでない".into()); }
-        Ok(Self { ty: ty.clone(), constant: numeric::zero(ty, c)?,
-            coefficients: BTreeMap::from([(Symbol::State(position.clone()), numeric::literal("1", ty, c)?)]) })
+        if !matches!(ty, Type::Z | Type::Q) {
+            return Err("自由状態の係数型がZ/Qでない".into());
+        }
+        Ok(Self {
+            ty: ty.clone(),
+            constant: numeric::zero(ty, c)?,
+            coefficients: BTreeMap::from([(
+                Symbol::State(position.clone()),
+                numeric::literal("1", ty, c)?,
+            )]),
+        })
     }
-    pub(in crate::observed) fn state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(Option<BigInt>, Vec<BigInt>)>, ValidationFailure> {
+    pub(in crate::observed) fn state_coordinates(
+        &self,
+        positions: &[Fact],
+        c: &Control,
+    ) -> Result<Option<(Option<BigInt>, Vec<BigInt>)>, ValidationFailure> {
         self.check(c)?;
-        let Scalar::Z(constant) = &self.constant else { return Ok(None); };
+        let Scalar::Z(constant) = &self.constant else {
+            return Ok(None);
+        };
         let mut known = true;
         for key in self.coefficients.keys() {
             tick(c)?;
             match key {
-                Symbol::State(position) if positions.contains(position) => {},
+                Symbol::State(position) if positions.contains(position) => {}
                 Symbol::Missing(_) => known = false,
                 _ => return Ok(None),
             }
@@ -252,21 +285,30 @@ impl Form {
         let mut row = vec![];
         for position in positions {
             tick(c)?;
-            row.push(match self.coefficients.get(&Symbol::State(position.clone())) {
-                Some(Scalar::Z(value)) => value.clone(), None => BigInt::zero(),
-                _ => return Err("整数自由状態の係数がZでない".into()),
-            });
+            row.push(
+                match self.coefficients.get(&Symbol::State(position.clone())) {
+                    Some(Scalar::Z(value)) => value.clone(),
+                    None => BigInt::zero(),
+                    _ => return Err("整数自由状態の係数がZでない".into()),
+                },
+            );
         }
-        Ok(Some((known.then(||constant.clone()), row)))
+        Ok(Some((known.then(|| constant.clone()), row)))
     }
-    pub(in crate::observed) fn rational_state_coordinates(&self, positions: &[Fact], c: &Control) -> Result<Option<(Option<Scalar>, Vec<Scalar>)>, ValidationFailure> {
+    pub(in crate::observed) fn rational_state_coordinates(
+        &self,
+        positions: &[Fact],
+        c: &Control,
+    ) -> Result<Option<(Option<Scalar>, Vec<Scalar>)>, ValidationFailure> {
         self.check(c)?;
-        if self.ty != Type::Q { return Ok(None); }
+        if self.ty != Type::Q {
+            return Ok(None);
+        }
         let mut known = true;
         for key in self.coefficients.keys() {
             tick(c)?;
             match key {
-                Symbol::State(position) if positions.contains(position) => {},
+                Symbol::State(position) if positions.contains(position) => {}
                 Symbol::Missing(_) => known = false,
                 _ => return Ok(None),
             }
@@ -274,23 +316,35 @@ impl Form {
         let mut row = vec![];
         for position in positions {
             tick(c)?;
-            row.push(self.coefficients.get(&Symbol::State(position.clone())).cloned().unwrap_or(numeric::zero(&Type::Q, c)?));
+            row.push(
+                self.coefficients
+                    .get(&Symbol::State(position.clone()))
+                    .cloned()
+                    .unwrap_or(numeric::zero(&Type::Q, c)?),
+            );
         }
-        Ok(Some((known.then(||self.constant.clone()), row)))
+        Ok(Some((known.then(|| self.constant.clone()), row)))
     }
     pub(in crate::observed) fn missing_facts(&self) -> Vec<Fact> {
-        self.coefficients.keys().filter_map(|key| match key {
-            Symbol::Missing(key) => Some(key.fact.clone()),
-            _ => None,
-        }).collect()
+        self.coefficients
+            .keys()
+            .filter_map(|key| match key {
+                Symbol::Missing(key) => Some(key.fact.clone()),
+                _ => None,
+            })
+            .collect()
     }
     /// 元changeの全parameter軸だけを持つ整数式を係数列へ移す。
     /// 欠測や別binderを候補の自由軸へ取り込まない。
     pub(in crate::observed) fn integer_coordinates(
-        &self, axes: &[Parameter], c: &Control,
+        &self,
+        axes: &[Parameter],
+        c: &Control,
     ) -> Result<Option<(BigInt, Vec<BigInt>)>, ValidationFailure> {
         self.check(c)?;
-        let Scalar::Z(constant) = &self.constant else { return Ok(None) };
+        let Scalar::Z(constant) = &self.constant else {
+            return Ok(None);
+        };
         for key in self.coefficients.keys() {
             tick(c)?;
             if !matches!(key, Symbol::Parameter(axis) if axes.contains(axis)) {
@@ -300,31 +354,43 @@ impl Form {
         let mut coefficients = vec![];
         for axis in axes {
             tick(c)?;
-            coefficients.push(match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
-                Some(Scalar::Z(value)) => value.clone(),
-                None => BigInt::zero(),
-                _ => return Err("整数式の係数がZでない".into()),
-            });
+            coefficients.push(
+                match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
+                    Some(Scalar::Z(value)) => value.clone(),
+                    None => BigInt::zero(),
+                    _ => return Err("整数式の係数がZでない".into()),
+                },
+            );
         }
         Ok(Some((constant.clone(), coefficients)))
     }
-    pub(in crate::observed) fn rational_coordinates(&self, axes:&[Parameter], c:&Control)->Result<Option<(Scalar,Vec<Scalar>)>,ValidationFailure> {
+    pub(in crate::observed) fn rational_coordinates(
+        &self,
+        axes: &[Parameter],
+        c: &Control,
+    ) -> Result<Option<(Scalar, Vec<Scalar>)>, ValidationFailure> {
         self.check(c)?;
-        if !matches!(self.constant,Scalar::Q(_, _)) {return Ok(None);}
+        if !matches!(self.constant, Scalar::Q(_, _)) {
+            return Ok(None);
+        }
         for key in self.coefficients.keys() {
             tick(c)?;
-            if !matches!(key,Symbol::Parameter(axis) if axes.contains(axis)) {return Ok(None);}
+            if !matches!(key,Symbol::Parameter(axis) if axes.contains(axis)) {
+                return Ok(None);
+            }
         }
-        let mut row=vec![];
+        let mut row = vec![];
         for axis in axes {
             tick(c)?;
-            row.push(match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
-                Some(value @ Scalar::Q(_, _))=>value.clone(),
-                None=>numeric::zero(&Type::Q,c)?,
-                _=>return Err("有理式の係数がQでない".into()),
-            });
+            row.push(
+                match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
+                    Some(value @ Scalar::Q(_, _)) => value.clone(),
+                    None => numeric::zero(&Type::Q, c)?,
+                    _ => return Err("有理式の係数がQでない".into()),
+                },
+            );
         }
-        Ok(Some((self.constant.clone(),row)))
+        Ok(Some((self.constant.clone(), row)))
     }
     /// 元引数・Tuple成分の辞書式順で、定数項と全係数を型付き表示する。
     pub(in crate::observed) fn term_coordinates(
@@ -379,7 +445,9 @@ impl Form {
                     }
                     Symbol::State(position) => {
                         fact_check(position)?;
-                        if !matches!(self.ty, Type::Z | Type::Q) { return Err("自由状態の係数型がZ/Qでない".into()); }
+                        if !matches!(self.ty, Type::Z | Type::Q) {
+                            return Err("自由状態の係数型がZ/Qでない".into());
+                        }
                     }
                     Symbol::TermArgument(argument) => {
                         if argument.kind.ty() != self.ty {
@@ -653,7 +721,9 @@ pub(crate) fn equality(
     right: Option<&Form>,
     control: &Control,
 ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
-    if !matches!(op, BinOp::Eq | BinOp::Ne) { return Ok(None) }
+    if !matches!(op, BinOp::Eq | BinOp::Ne) {
+        return Ok(None);
+    }
     comparison(op, left, right, control)
 }
 pub(crate) fn comparison(
@@ -663,7 +733,10 @@ pub(crate) fn comparison(
     control: &Control,
 ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
     controlled(control, || {
-        if !matches!(op, BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge) {
+        if !matches!(
+            op,
+            BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
+        ) {
             return Ok(None);
         }
         let Some(difference) = binary(BinOp::Sub, left, right, control)? else {
@@ -1370,10 +1443,26 @@ mod tests {
             let k = missing(&ty, &slot("k"), &control).unwrap().unwrap();
             for base in [&p, &h] {
                 let shifted = add(base, &c(offset.clone(), &control), &control);
-                for (op, expected) in [(BinOp::Lt, false), (BinOp::Le, false), (BinOp::Gt, true), (BinOp::Ge, true)] {
-                    assert_eq!(comparison(op, Some(&shifted), Some(base), &control).unwrap(), Some((Scalar::Bool(expected), offset.clone())));
-                    assert!(comparison(op, Some(&p), Some(&h), &control).unwrap().is_none());
-                    assert!(comparison(op, Some(&h), Some(&k), &control).unwrap().is_none());
+                for (op, expected) in [
+                    (BinOp::Lt, false),
+                    (BinOp::Le, false),
+                    (BinOp::Gt, true),
+                    (BinOp::Ge, true),
+                ] {
+                    assert_eq!(
+                        comparison(op, Some(&shifted), Some(base), &control).unwrap(),
+                        Some((Scalar::Bool(expected), offset.clone()))
+                    );
+                    assert!(
+                        comparison(op, Some(&p), Some(&h), &control)
+                            .unwrap()
+                            .is_none()
+                    );
+                    assert!(
+                        comparison(op, Some(&h), Some(&k), &control)
+                            .unwrap()
+                            .is_none()
+                    );
                 }
             }
         }

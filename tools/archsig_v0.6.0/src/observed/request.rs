@@ -14,10 +14,10 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
+mod build;
 pub(super) mod comparison;
 pub(super) mod composition;
 mod configuration_map;
-mod build;
 mod local;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -56,7 +56,9 @@ impl QuestionKind {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Selector {
-    Degree { value: u64 },
+    Degree {
+        value: u64,
+    },
     Enum {
         value: String,
     },
@@ -75,7 +77,9 @@ pub enum Selector {
 impl Selector {
     pub fn wire(&self) -> Json {
         match self {
-            Self::Degree { value } => Json::obj([("kind",Json::str("degree")),("value",Json::Nat(*value))]),
+            Self::Degree { value } => {
+                Json::obj([("kind", Json::str("degree")), ("value", Json::Nat(*value))])
+            }
             Self::Enum { value } => {
                 Json::obj([("kind", Json::str("enum")), ("value", Json::str(value))])
             }
@@ -135,8 +139,8 @@ pub enum RequestDefault {
 impl RequestDefault {
     pub fn wire(&self) -> Json {
         match self {
-            Self::RequiredLaws => Json::obj([("rule",Json::str("required_laws"))]),
-            Self::IdentityChange => Json::obj([("rule",Json::str("identity_change"))]),
+            Self::RequiredLaws => Json::obj([("rule", Json::str("required_laws"))]),
+            Self::IdentityChange => Json::obj([("rule", Json::str("identity_change"))]),
             Self::NoLawCheck => Json::obj([("rule", Json::str("no_law_check"))]),
             Self::ObservedEnvironment => Json::obj([("rule", Json::str("observed_environment"))]),
             Self::UniversalParameters {
@@ -185,8 +189,15 @@ pub struct Request {
 impl Request {
     /// Law/view宣言を選ぶ問いの名前。reading・原始correspondence・問いIDは含めない。
     pub fn declaration(&self) -> Option<&str> {
-        if self.kind==QuestionKind::Localize {
-            return self.arguments.iter().find(|a|a.name=="law").and_then(|a|match &a.value{Selector::Declaration{name}=>Some(name.as_str()),_=>None});
+        if self.kind == QuestionKind::Localize {
+            return self
+                .arguments
+                .iter()
+                .find(|a| a.name == "law")
+                .and_then(|a| match &a.value {
+                    Selector::Declaration { name } => Some(name.as_str()),
+                    _ => None,
+                });
         }
         if matches!(self.kind, QuestionKind::Map | QuestionKind::Build) {
             return None;
@@ -253,11 +264,14 @@ impl RequestIssue {
         Json::obj([
             ("code", Json::str(if cycle { "cycle" } else { "usage" })),
             ("request", Json::str(&self.request)),
-            ("message", Json::str(if cycle || self.argument.is_empty() {
-                self.message.clone()
-            } else {
-                format!("{}: {}", self.message, self.argument)
-            })),
+            (
+                "message",
+                Json::str(if cycle || self.argument.is_empty() {
+                    self.message.clone()
+                } else {
+                    format!("{}: {}", self.message, self.argument)
+                }),
+            ),
             ("dependencies", Json::Arr(vec![])),
             ("missing", Json::Arr(vec![])),
             (
@@ -471,24 +485,47 @@ fn resolve_inner(
         })?;
         let view_params = params;
         let selected_law = if kind == QuestionKind::Quotient {
-            raw.arguments.iter().find(|(key, _)| key == "law").map(|(_, value)| {
-                let Selector::Declaration { name } = value else {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "law must specify a Law declaration name")));
-                };
-                declaration(law, name, control, &raw.id)
-            }).transpose()?
-        } else { None };
+            raw.arguments
+                .iter()
+                .find(|(key, _)| key == "law")
+                .map(|(_, value)| {
+                    let Selector::Declaration { name } = value else {
+                        return Err(invalid(problem(
+                            RequestIssueCode::Type,
+                            &raw.id,
+                            "law",
+                            "law must specify a Law declaration name",
+                        )));
+                    };
+                    declaration(law, name, control, &raw.id)
+                })
+                .transpose()?
+        } else {
+            None
+        };
         let mut all_params = params.to_vec();
         if let Some(name) = &selected_law {
             let Signature::Law { params, .. } = &law.declarations()[name].signature else {
-                return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "law must specify a Law declaration")));
+                return Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    &raw.id,
+                    "law",
+                    "law must specify a Law declaration",
+                )));
             };
             for param in params {
                 if let Some(shared) = all_params.iter().find(|p| p.name == param.name) {
                     if shared.ty != param.ty {
-                        return Err(invalid(problem(RequestIssueCode::Type, &raw.id, &param.name, "view and Law parameter types with the same name do not match")));
+                        return Err(invalid(problem(
+                            RequestIssueCode::Type,
+                            &raw.id,
+                            &param.name,
+                            "view and Law parameter types with the same name do not match",
+                        )));
                     }
-                } else { all_params.push(param.clone()); }
+                } else {
+                    all_params.push(param.clone());
+                }
             }
         }
         let params = all_params.as_slice();
@@ -497,29 +534,79 @@ fn resolve_inner(
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
             if key == "law" && kind == QuestionKind::Quotient {
-                if arguments.insert("law".into(), RequestArgument {
-                    name: "law".into(), value: Selector::Declaration { name: selected_law.clone().ok_or_else(|| invalid(problem(RequestIssueCode::Reference, &raw.id, "law", "missing Law")))? },
-                    origin: ArgumentOrigin::Explicit,
-                }).is_some() {
-                    return Err(invalid(problem(RequestIssueCode::DuplicateArgument, &raw.id, "law", "duplicate law")));
+                if arguments
+                    .insert(
+                        "law".into(),
+                        RequestArgument {
+                            name: "law".into(),
+                            value: Selector::Declaration {
+                                name: selected_law.clone().ok_or_else(|| {
+                                    invalid(problem(
+                                        RequestIssueCode::Reference,
+                                        &raw.id,
+                                        "law",
+                                        "missing Law",
+                                    ))
+                                })?,
+                            },
+                            origin: ArgumentOrigin::Explicit,
+                        },
+                    )
+                    .is_some()
+                {
+                    return Err(invalid(problem(
+                        RequestIssueCode::DuplicateArgument,
+                        &raw.id,
+                        "law",
+                        "duplicate law",
+                    )));
                 }
                 continue;
             }
             if key == "using" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair) {
                 let Selector::Declaration { name } = &value else {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "using must be a fully qualified change name")));
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        "using",
+                        "using must be a fully qualified change name",
+                    )));
                 };
                 let change = declaration(law, name, control, &raw.id)?;
-                if !matches!(law.declarations()[&change].signature, Signature::Change { .. })
-                    || law.declarations()[&change].reading != law.declarations()[&full].reading {
-                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "specify a change from the same reading")));
+                if !matches!(
+                    law.declarations()[&change].signature,
+                    Signature::Change { .. }
+                ) || law.declarations()[&change].reading != law.declarations()[&full].reading
+                {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        "using",
+                        "specify a change from the same reading",
+                    )));
                 }
-                arguments.insert("using".into(), RequestArgument {name:"using".into(), value:Selector::Declaration {name:change}, origin:ArgumentOrigin::Explicit});
+                arguments.insert(
+                    "using".into(),
+                    RequestArgument {
+                        name: "using".into(),
+                        value: Selector::Declaration { name: change },
+                        origin: ArgumentOrigin::Explicit,
+                    },
+                );
                 continue;
             }
-            if key == "on" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
-                && matches!(value, Selector::Subject { .. }) {
-                arguments.insert("on".into(),RequestArgument {name:"on".into(),value,origin:ArgumentOrigin::Explicit});
+            if key == "on"
+                && matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
+                && matches!(value, Selector::Subject { .. })
+            {
+                arguments.insert(
+                    "on".into(),
+                    RequestArgument {
+                        name: "on".into(),
+                        value,
+                        origin: ArgumentOrigin::Explicit,
+                    },
+                );
                 continue;
             }
             if key == "on" {
@@ -528,7 +615,11 @@ fn resolve_inner(
                         RequestIssueCode::Type,
                         &raw.id,
                         "on",
-                        if kind == QuestionKind::Quotient { "on must specify a public CandidateSpace/SolutionSet Handle" } else { "on must specify a public Architecture Handle" },
+                        if kind == QuestionKind::Quotient {
+                            "on must specify a public CandidateSpace/SolutionSet Handle"
+                        } else {
+                            "on must specify a public Architecture Handle"
+                        },
                     )));
                 };
                 if path.is_empty() {
@@ -536,7 +627,11 @@ fn resolve_inner(
                         RequestIssueCode::Projection,
                         &raw.id,
                         "on",
-                        if kind == QuestionKind::Quotient { "on must specify a CandidateSpace/SolutionSet output field" } else { "on must specify an Architecture output field" },
+                        if kind == QuestionKind::Quotient {
+                            "on must specify a CandidateSpace/SolutionSet output field"
+                        } else {
+                            "on must specify an Architecture output field"
+                        },
                     )));
                 }
                 dependencies.insert(id.clone());
@@ -620,17 +715,30 @@ fn resolve_inner(
             finish_request(result, control, Checkpoint::RequestBinding)?;
         }
         if matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
-            && (!arguments.contains_key("on") || !arguments.contains_key("using")) {
-            return Err(invalid(problem(RequestIssueCode::MissingBinding, &raw.id, "on/using", "solve/repair requires on and using")));
+            && (!arguments.contains_key("on") || !arguments.contains_key("using"))
+        {
+            return Err(invalid(problem(
+                RequestIssueCode::MissingBinding,
+                &raw.id,
+                "on/using",
+                "solve/repair requires on and using",
+            )));
         }
         if kind == QuestionKind::Quotient && !arguments.contains_key("on") {
-            return Err(invalid(problem(RequestIssueCode::MissingBinding,&raw.id,"on","quotient requires on")));
+            return Err(invalid(problem(
+                RequestIssueCode::MissingBinding,
+                &raw.id,
+                "on",
+                "quotient requires on",
+            )));
         }
         let mut unbound = Vec::new();
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
             if !arguments.contains_key(&format!("bind.{}", param.name)) {
-                if ((kind == QuestionKind::Quotient && view_params.iter().any(|p| p.name == param.name)) || kind == QuestionKind::Evaluate)
+                if ((kind == QuestionKind::Quotient
+                    && view_params.iter().any(|p| p.name == param.name))
+                    || kind == QuestionKind::Evaluate)
                     && !object_view.is_some_and(|instance| {
                         instance.declaration().kind == "view"
                             && instance.declaration().name == full
@@ -694,16 +802,19 @@ fn resolve_inner(
         checkpoint(control)?;
     }
     // 合成の出力型は元Operationの型へ再帰するため、先に依存を検査する。
-    let composition_order = if requests
-        .iter()
-        .any(|r| {
-            matches!(
-                r.kind,
-                QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
-                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
-            )
-        })
-    {
+    let composition_order = if requests.iter().any(|r| {
+        matches!(
+            r.kind,
+            QuestionKind::Build
+                | QuestionKind::Compose
+                | QuestionKind::Compare
+                | QuestionKind::Solve
+                | QuestionKind::Repair
+                | QuestionKind::Quotient
+                | QuestionKind::Localize
+                | QuestionKind::Diagnose
+        )
+    }) {
         for request in &requests {
             for dependency in &request.dependencies {
                 phase(control, Checkpoint::RequestDependency)?;
@@ -734,7 +845,7 @@ fn resolve_inner(
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
         if matches!(req.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
-            requests[i].constraints=local::check(law, map, &requests, &names, req, control)?;
+            requests[i].constraints = local::check(law, map, &requests, &names, req, control)?;
             continue;
         }
         if req.kind == QuestionKind::Build {
@@ -777,10 +888,16 @@ fn resolve_inner(
         .unwrap();
         let mut all_params = params.to_vec();
         if req.kind == QuestionKind::Quotient {
-            if let Some(RequestArgument { value: Selector::Declaration { name }, .. }) = req.arguments.iter().find(|a| a.name == "law") {
+            if let Some(RequestArgument {
+                value: Selector::Declaration { name },
+                ..
+            }) = req.arguments.iter().find(|a| a.name == "law")
+            {
                 if let Signature::Law { params, .. } = &law.declarations()[name].signature {
                     for param in params {
-                        if !all_params.iter().any(|p| p.name == param.name) { all_params.push(param.clone()); }
+                        if !all_params.iter().any(|p| p.name == param.name) {
+                            all_params.push(param.clone());
+                        }
                     }
                 }
             }
@@ -817,16 +934,31 @@ fn resolve_inner(
                 }
             }
             let change_root = if matches!(req.kind, QuestionKind::Solve | QuestionKind::Repair)
-                && !architecture(&plan.ty, control)? {
-                let declaration=&law.declarations()[req.declaration().expect("Lawのhead")];
-                let mut root_request=req.clone();
-                root_request.head=Selector::Declaration {name:declaration.reading.clone()};
-                build::check_on(law,map,&requests,&names,&root_request,control)?;
+                && !architecture(&plan.ty, control)?
+            {
+                let declaration = &law.declarations()[req.declaration().expect("Lawのhead")];
+                let mut root_request = req.clone();
+                root_request.head = Selector::Declaration {
+                    name: declaration.reading.clone(),
+                };
+                build::check_on(law, map, &requests, &names, &root_request, control)?;
                 true
-            } else {false};
+            } else {
+                false
+            };
             let quotient = req.kind == QuestionKind::Quotient;
-            if quotient && !matches!(plan.ty, ProjectionType::CandidateSpace(_) | ProjectionType::SolutionSet(_)) {
-                return Err(invalid(problem(RequestIssueCode::Type,&req.id,"on","quotient on must be a CandidateSpace or SolutionSet")));
+            if quotient
+                && !matches!(
+                    plan.ty,
+                    ProjectionType::CandidateSpace(_) | ProjectionType::SolutionSet(_)
+                )
+            {
+                return Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    &req.id,
+                    "on",
+                    "quotient on must be a CandidateSpace or SolutionSet",
+                )));
             }
             if !quotient && !change_root && !architecture(&plan.ty, control)? {
                 return Err(invalid(problem(
@@ -837,7 +969,8 @@ fn resolve_inner(
                 )));
             }
         }
-        requests[i].constraints = binding_constraints(law,map,&requests,&names,req,params,control)?;
+        requests[i].constraints =
+            binding_constraints(law, map, &requests, &names, req, params, control)?;
         phase(control, Checkpoint::RequestBinding)?;
         checkpoint(control)?;
     }
@@ -969,7 +1102,10 @@ fn declaration(
     let mut found = None;
     for (index, candidate) in law.declarations().keys().enumerate() {
         phase(control, Checkpoint::RequestBinding)?;
-        let matches = law.resolved_names().get(candidate).is_some_and(|name_parts| name_parts.short() == name);
+        let matches = law
+            .resolved_names()
+            .get(candidate)
+            .is_some_and(|name_parts| name_parts.short() == name);
         if matches {
             if found.is_some() {
                 return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
@@ -987,7 +1123,15 @@ fn declaration(
     }
     finish_request(Err(missing()), control, Checkpoint::RequestBinding)
 }
-fn binding_constraints(law:&CheckedLaw,map:&CheckedArchMap,requests:&[Request],names:&BTreeMap<String,usize>,req:&Request,params:&[Param],control:&mut Control)->Result<Vec<BindingConstraint>,ResolveFailure>{
+fn binding_constraints(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    requests: &[Request],
+    names: &BTreeMap<String, usize>,
+    req: &Request,
+    params: &[Param],
+    control: &mut Control,
+) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let mut constraints = Vec::new();
     let expected_owners = owner_bindings(req, control)?;
     for param in params {
@@ -1088,7 +1232,10 @@ fn binding_constraints(law:&CheckedLaw,map:&CheckedArchMap,requests:&[Request],n
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
         (Signature::View { params, .. }, QuestionKind::Evaluate | QuestionKind::Quotient)
-        | (Signature::Law { params, .. }, QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair) => Some(params),
+        | (
+            Signature::Law { params, .. },
+            QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair,
+        ) => Some(params),
         _ => None,
     }
 }
@@ -1149,9 +1296,9 @@ fn selector_type(
         }
         Selector::Answer { id, path } => {
             phase(control, Checkpoint::RequestDependency)?;
-            let r = &requests[*names
-                .get(id)
-                .ok_or_else(|| failure(RequestIssueCode::Reference, "request ID does not exist"))?];
+            let r = &requests[*names.get(id).ok_or_else(|| {
+                failure(RequestIssueCode::Reference, "request ID does not exist")
+            })?];
             if r.kind == QuestionKind::Needed {
                 return Err(failure(
                     RequestIssueCode::Projection,
@@ -1170,28 +1317,64 @@ fn selector_type(
             owners = owner_bindings(r, control)?;
             let initial = if r.kind == QuestionKind::Build {
                 build::output_type(law, map, requests, names, r, field, control)?
-            } else if matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair) {
-                if field=="proposition" || (field=="existence" && r.kind==QuestionKind::Repair) {ProjectionType::Proposition} else {
-                    let mut root_request=r.clone();
-                    root_request.head=Selector::Declaration{name:law.declarations()[r.declaration().expect("changeのLaw")].reading.clone()};
-                    let root_types=build::root_types(law,map,requests,names,&root_request,control)?;
-                    let types=root_types.into_iter().map(|root|match field.as_str() {
-                        "domain"=>Ok(ProjectionType::CandidateSpace(root)),
-                        "solutions"=>Ok(ProjectionType::SolutionSet(root)),
-                        "object" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::ArchitectureRoot(root)),
-                        "repair" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::Repair(root)),
-                        _=>Err(failure(RequestIssueCode::Projection,"output of this change request is not public")),
-                    }).collect::<Result<Vec<_>,_>>()?;
-                    if types.len()==1 {types.into_iter().next().expect("一件")}else{ProjectionType::Dynamic(types)}
+            } else if matches!(r.kind, QuestionKind::Solve | QuestionKind::Repair) {
+                if field == "proposition"
+                    || (field == "existence" && r.kind == QuestionKind::Repair)
+                {
+                    ProjectionType::Proposition
+                } else {
+                    let mut root_request = r.clone();
+                    root_request.head = Selector::Declaration {
+                        name: law.declarations()[r.declaration().expect("changeのLaw")]
+                            .reading
+                            .clone(),
+                    };
+                    let root_types =
+                        build::root_types(law, map, requests, names, &root_request, control)?;
+                    let types = root_types
+                        .into_iter()
+                        .map(|root| match field.as_str() {
+                            "domain" => Ok(ProjectionType::CandidateSpace(root)),
+                            "solutions" => Ok(ProjectionType::SolutionSet(root)),
+                            "object" if r.kind == QuestionKind::Repair => {
+                                Ok(ProjectionType::ArchitectureRoot(root))
+                            }
+                            "repair" if r.kind == QuestionKind::Repair => {
+                                Ok(ProjectionType::Repair(root))
+                            }
+                            _ => Err(failure(
+                                RequestIssueCode::Projection,
+                                "output of this change request is not public",
+                            )),
+                        })
+                        .collect::<Result<Vec<_>, _>>()?;
+                    if types.len() == 1 {
+                        types.into_iter().next().expect("一件")
+                    } else {
+                        ProjectionType::Dynamic(types)
+                    }
                 }
             } else if r.kind == QuestionKind::Quotient {
                 if field == "proposition" && r.arguments.iter().any(|a| a.name == "law") {
                     ProjectionType::Proposition
                 } else {
-                if field != "quotient" { return Err(failure(RequestIssueCode::Projection,"quotient output is not public")); }
-                let on=&r.arguments.iter().find(|a|a.name=="on").ok_or_else(||failure(RequestIssueCode::MissingBinding,"missing quotient on"))?.value;
-                let (plan,_)=selector_type(law,map,requests,names,on,control,(request,"on"))?;
-                ProjectionType::Quotient(Box::new(plan.ty))
+                    if field != "quotient" {
+                        return Err(failure(
+                            RequestIssueCode::Projection,
+                            "quotient output is not public",
+                        ));
+                    }
+                    let on = &r
+                        .arguments
+                        .iter()
+                        .find(|a| a.name == "on")
+                        .ok_or_else(|| {
+                            failure(RequestIssueCode::MissingBinding, "missing quotient on")
+                        })?
+                        .value;
+                    let (plan, _) =
+                        selector_type(law, map, requests, names, on, control, (request, "on"))?;
+                    ProjectionType::Quotient(Box::new(plan.ty))
                 }
             } else if matches!(r.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
                 local::output_type(r, field)?
@@ -1808,7 +1991,10 @@ impl<'a> Parser<'a> {
             return Ok(Selector::Answer { id, path });
         }
         let missing_handle = expects_handle
-            && matches!(self.src.as_bytes().get(self.at), None | Some(b')' | b',' | b'.' | b'['));
+            && matches!(
+                self.src.as_bytes().get(self.at),
+                None | Some(b')' | b',' | b'.' | b'[')
+            );
         let mut name = self.user_name().map_err(|mut failure| {
             if missing_handle && let ResolveFailure::Invalid { issues, .. } = &mut failure {
                 for issue in issues {
@@ -1832,13 +2018,24 @@ impl<'a> Parser<'a> {
         self.ws()?;
         let start = self.at;
         let mut value = 0u64;
-        while let Some(digit) = self.src.as_bytes().get(self.at).copied().filter(u8::is_ascii_digit) {
+        while let Some(digit) = self
+            .src
+            .as_bytes()
+            .get(self.at)
+            .copied()
+            .filter(u8::is_ascii_digit)
+        {
             self.tick()?;
-            value = value.checked_mul(10).and_then(|n| n.checked_add(u64::from(digit-b'0')))
-                .filter(|n| *n <= 9_007_199_254_740_991).ok_or_else(||self.error("degree exceeds the Nat limit"))?;
+            value = value
+                .checked_mul(10)
+                .and_then(|n| n.checked_add(u64::from(digit - b'0')))
+                .filter(|n| *n <= 9_007_199_254_740_991)
+                .ok_or_else(|| self.error("degree exceeds the Nat limit"))?;
             self.at += 1;
         }
-        if start == self.at || (self.at-start>1 && self.src.as_bytes()[start]==b'0') {return Err(self.error("degree must be a normalized nonnegative integer"));}
+        if start == self.at || (self.at - start > 1 && self.src.as_bytes()[start] == b'0') {
+            return Err(self.error("degree must be a normalized nonnegative integer"));
+        }
         Ok(value)
     }
     fn parse(mut self) -> Result<RawRequest, ResolveFailure> {
@@ -1848,7 +2045,8 @@ impl<'a> Parser<'a> {
         let kind = self.name(false)?;
         self.expect(b'(')?;
         let head = self.selector(matches!(
-            kind.as_str(), "needed" | "compose" | "compare" | "localize" | "diagnose"
+            kind.as_str(),
+            "needed" | "compose" | "compare" | "localize" | "diagnose"
         ))?;
         let mut arguments = Vec::new();
         let mut keys = BTreeSet::new();
@@ -1876,12 +2074,18 @@ impl<'a> Parser<'a> {
             finish_request(result, &mut self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
             let value = if kind == "diagnose" && key == "degree" {
-                Selector::Degree { value: self.degree()? }
+                Selector::Degree {
+                    value: self.degree()?,
+                }
             } else if kind == "diagnose" && key == "side" {
-                Selector::Enum { value: self.name(false)? }
+                Selector::Enum {
+                    value: self.name(false)?,
+                }
             } else if kind == "compare" && key == "kind" {
                 // relationはLawの予約語でも、ここでは比較kindの固定語である。
-                Selector::Declaration { name: self.name(false)? }
+                Selector::Declaration {
+                    name: self.name(false)?,
+                }
             } else {
                 let expects_handle = match kind.as_str() {
                     "build" | "map" => key == "on",

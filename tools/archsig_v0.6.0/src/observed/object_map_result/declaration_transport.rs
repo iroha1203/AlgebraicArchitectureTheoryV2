@@ -5,13 +5,13 @@ use crate::{
         ast::ExprKind,
         model::{Param, Signature},
     },
-    types::Type,
     observed::environment::numeric_parameters,
+    types::Type,
 };
 use std::collections::BTreeSet;
+mod change;
 mod field;
 mod numeric_read;
-mod change;
 mod relation;
 struct ParameterMap {
     source: String,
@@ -23,7 +23,9 @@ struct ParameterMap {
 // localの各引数位置を保ち、既存の参照写像または有限全域の候補像を読む。
 enum LocalParameter {
     // One symbolic coordinate in the finite-row index, never a sampled value.
-    Numeric { values: NodeRef },
+    Numeric {
+        values: NodeRef,
+    },
     Reference(Arc<ParameterMap>),
     Finite {
         transport: super::super::value_transport::FiniteValueTransport,
@@ -766,11 +768,21 @@ pub(super) fn retain(
     'declarations: for candidate in declarations.candidates() {
         tick(c)?;
         if candidate.source().kind == "change" {
-            let out = change::retain(env, b, inputs, declarations, candidate, dependencies, request, c)?;
+            let out = change::retain(
+                env,
+                b,
+                inputs,
+                declarations,
+                candidate,
+                dependencies,
+                request,
+                c,
+            )?;
             result.transports.extend(out.transports);
             result.failed_arguments.extend(out.failed_arguments);
             result.status = merge_status(result.status, out.status);
-            result.reasons.extend(out.reasons); result.evidence.extend(out.evidence);
+            result.reasons.extend(out.reasons);
+            result.evidence.extend(out.evidence);
             continue;
         }
         if candidate.source().kind != "local" {
@@ -852,20 +864,20 @@ pub(super) fn retain(
             }
             let read_type = inputs.law().expr_type(s).map(|ty| ty.erase());
             let expression_read = match &read_type {
-                Some(ty) => {
-                    super::super::finite::supported(ty, inputs.law(), c)?
-                        || (!sp.is_empty()
-                            && super::super::environment::local_read::value_type_supported(
-                                ty,
-                                inputs.law(),
-                                c,
-                            )?
-                            && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type)
-                        || (!sp.is_empty()
-                            && super::super::environment::local_read::reference_value_type_supported(
-                                ty, inputs.law(), c,
-                            )?)
-                }
+                Some(ty) => super::super::finite::supported(ty, inputs.law(), c)?
+                    || (!sp.is_empty()
+                        && super::super::environment::local_read::value_type_supported(
+                            ty,
+                            inputs.law(),
+                            c,
+                        )?
+                        && inputs.law().expr_type(t).map(|ty| ty.erase()) == read_type)
+                    || (!sp.is_empty()
+                        && super::super::environment::local_read::reference_value_type_supported(
+                            ty,
+                            inputs.law(),
+                            c,
+                        )?),
                 None => false,
             };
             if let Some(position) = read_parameter(inputs, s, sp, c)? {
@@ -927,7 +939,8 @@ pub(super) fn retain(
                     dependencies,
                     &mut result.failed_arguments,
                     c,
-                )? else {
+                )?
+                else {
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 };
@@ -960,7 +973,8 @@ pub(super) fn retain(
                     &candidate.source().name,
                     super::super::value_transport::DeclarationValuePosition::Parameter(position),
                     c,
-                ).map_err(failure)?;
+                )
+                .map_err(failure)?;
                 let values = value_map(b, [&source.ty, &target.ty], &[], &[], dependencies)?;
                 parameter_maps.push(LocalParameter::Numeric { values });
                 continue;
@@ -980,7 +994,9 @@ pub(super) fn retain(
             type_maps.push(map.clone());
             parameter_maps.push(LocalParameter::Reference(map));
         }
-        let infinite = parameter_maps.iter().any(|p| matches!(p, LocalParameter::Numeric { .. }));
+        let infinite = parameter_maps
+            .iter()
+            .any(|p| matches!(p, LocalParameter::Numeric { .. }));
         let mut guard_expressions = vec![];
         for (guard, params) in [(*sg, sp), (*tg, tp)] {
             if let Some(id) = guard {
@@ -1013,7 +1029,11 @@ pub(super) fn retain(
                 .erase();
             let finite = super::super::finite::supported(&ty, inputs.law(), c)?;
             let structural = !sp.is_empty()
-                && super::super::environment::local_read::reference_value_type_supported(&ty, inputs.law(), c)?;
+                && super::super::environment::local_read::reference_value_type_supported(
+                    &ty,
+                    inputs.law(),
+                    c,
+                )?;
             if !matches!(read, Read::Projection(_)) && (finite || structural) {
                 let expected = construction::moved_declaration_type(
                     inputs
@@ -1045,7 +1065,8 @@ pub(super) fn retain(
                         dependencies,
                         &mut result.failed_arguments,
                         c,
-                    )? else {
+                    )?
+                    else {
                         result.status = Decision::Refuted;
                         continue 'declarations;
                     };
@@ -1075,7 +1096,8 @@ pub(super) fn retain(
                     dependencies,
                     &mut result.failed_arguments,
                     c,
-                )? else {
+                )?
+                else {
                     result.status = Decision::Refuted;
                     continue 'declarations;
                 };
@@ -1087,7 +1109,15 @@ pub(super) fn retain(
         let applicable = if infinite {
             None
         } else {
-            applicable(b, env, [source, target], &parameter_maps, &guard_expressions, request, c)?
+            applicable(
+                b,
+                env,
+                [source, target],
+                &parameter_maps,
+                &guard_expressions,
+                request,
+                c,
+            )?
         };
         let mut clauses = vec![];
         let mut all = dependencies.to_vec();
@@ -1097,36 +1127,60 @@ pub(super) fn retain(
             let se = expression(b, inputs, s, sp, dependencies)?;
             let te = expression(b, inputs, t, tp, dependencies)?;
             let mut comparison = if infinite {
-                let read_type = inputs.law().expr_type(s).ok_or("local read type missing")?.erase();
+                let read_type = inputs
+                    .law()
+                    .expr_type(s)
+                    .ok_or("local read type missing")?
+                    .erase();
                 let ty = &read_type;
                 let values = value_map(b, [ty, ty], &[], &[], dependencies)?;
                 numeric_read::compare(
-                    b, env, [source, target], &parameter_maps, [s, t], ty, values,
-                    &[se, te], request, c,
+                    b,
+                    env,
+                    [source, target],
+                    &parameter_maps,
+                    [s, t],
+                    ty,
+                    values,
+                    &[se, te],
+                    request,
+                    c,
                 )?
-            } else { match read {
-                Read::Projection(position) => field::Comparison {
-                    values: parameter_maps[position].values(),
-                    status: Decision::Established,
-                    arguments: vec![],
-                    reasons: vec![],
-                    evidence: vec![],
-                    support: vec![],
-                    scope: Scope::default(),
-                },
-                read @ (Read::Expression | Read::Field { .. }) => {
-                    let direct = match &read {
-                        Read::Field { position, names } => Some((*position, names)),
-                        _ => None,
-                    };
-                    field::compare_expression(
-                        b, env, inputs, [source, target], declarations, &parameter_maps,
-                        read_map.as_ref(), direct,
-                        applicable.as_ref().map(|domain| domain.rows.as_slice()),
-                        [s, t], [se, te], dependencies, request, c,
-                    )?
-                },
-            } };
+            } else {
+                match read {
+                    Read::Projection(position) => field::Comparison {
+                        values: parameter_maps[position].values(),
+                        status: Decision::Established,
+                        arguments: vec![],
+                        reasons: vec![],
+                        evidence: vec![],
+                        support: vec![],
+                        scope: Scope::default(),
+                    },
+                    read @ (Read::Expression | Read::Field { .. }) => {
+                        let direct = match &read {
+                            Read::Field { position, names } => Some((*position, names)),
+                            _ => None,
+                        };
+                        field::compare_expression(
+                            b,
+                            env,
+                            inputs,
+                            [source, target],
+                            declarations,
+                            &parameter_maps,
+                            read_map.as_ref(),
+                            direct,
+                            applicable.as_ref().map(|domain| domain.rows.as_slice()),
+                            [s, t],
+                            [se, te],
+                            dependencies,
+                            request,
+                            c,
+                        )?
+                    }
+                }
+            };
             if let Some(domain) = &applicable {
                 comparison.status = merge_status(comparison.status, domain.status);
                 comparison.support.extend(domain.support.iter().cloned());

@@ -49,7 +49,12 @@ fn subjects<E: InputError>(
         qname::<E>(
             &ty,
             c,
-            Some(&|| syntax(&format!("{p}/type"), "type must be a fully qualified declaration name")),
+            Some(&|| {
+                syntax(
+                    &format!("{p}/type"),
+                    "type must be a fully qualified declaration name",
+                )
+            }),
         )?;
         result.push(RawSubject {
             id,
@@ -90,7 +95,12 @@ fn atoms<'a, E: InputError>(
         qname::<E>(
             &field,
             c,
-            Some(&|| syntax(&format!("{p}/field"), "field must be a fully qualified name")),
+            Some(&|| {
+                syntax(
+                    &format!("{p}/field"),
+                    "field must be a fully qualified name",
+                )
+            }),
         )?;
         result.push(RawAtom {
             id,
@@ -135,9 +145,19 @@ fn patch<'a, T, E: InputError>(
             E::checkpoint(c, Checkpoint::ArchMapIteration)?;
             let p = format!("{ptr}/{i}");
             let name = as_string(node, &p)?;
-            identifier::<E>(&name, true, c, Some(&|| syntax(&p, "deletion target must be an Id")))?;
+            identifier::<E>(
+                &name,
+                true,
+                c,
+                Some(&|| syntax(&p, "deletion target must be an Id")),
+            )?;
             if !seen.insert(name.clone()) {
-                return Err(issue(Code::DuplicateId, &p, "cannot modify or delete the same ID more than once").into());
+                return Err(issue(
+                    Code::DuplicateId,
+                    &p,
+                    "cannot modify or delete the same ID more than once",
+                )
+                .into());
             }
             remove.push(name);
         }

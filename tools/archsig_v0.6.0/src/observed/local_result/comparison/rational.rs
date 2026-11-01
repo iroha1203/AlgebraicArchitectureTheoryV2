@@ -1,6 +1,6 @@
 //! Q係数の局所診断比較。
 use crate::observed::local_result::rational::{
-    integer_fiber, linear, read_coefficient, wire, Diagram, Z,
+    Diagram, Z, integer_fiber, linear, read_coefficient, wire,
 };
 fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
     v.scalar()

@@ -85,11 +85,17 @@ pub(super) fn compute(
         });
     };
     if model.rational_equations {
-        return super::rational_finite::compute_model(env,g,request,target,base,witness,fixed,model,c);
+        return super::rational_finite::compute_model(
+            env, g, request, target, base, witness, fixed, model, c,
+        );
     }
-    compute_model(env,g,request,target,base,witness,fixed,model,c)
+    compute_model(env, g, request, target, base, witness, fixed, model, c)
 }
-fn split_diagram(d: Option<integer::Diagram>) -> (Option<integer::Diagram>,Option<rational::Diagram>) { (d,None) }
+fn split_diagram(
+    d: Option<integer::Diagram>,
+) -> (Option<integer::Diagram>, Option<rational::Diagram>) {
+    (d, None)
+}
 include!("../local_finite_build.rs");
 #[allow(clippy::too_many_arguments)]
 pub(super) fn diagnose(

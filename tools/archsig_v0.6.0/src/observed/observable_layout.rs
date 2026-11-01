@@ -224,7 +224,11 @@ fn compute_polynomial(
             let index = base
                 .originals
                 .iter()
-                .find(|o| o.row.is_none() && o.instance == original.instance && o.finite == original.finite)
+                .find(|o| {
+                    o.row.is_none()
+                        && o.instance == original.instance
+                        && o.finite == original.finite
+                })
                 .ok_or("Observableの共通Law添字がない")?;
             if !table.indices.contains(&index.reference) {
                 return Err("Observableの座標が共通Law表にない".into());

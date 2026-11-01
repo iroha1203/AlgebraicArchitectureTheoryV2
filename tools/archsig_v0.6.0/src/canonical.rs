@@ -179,8 +179,8 @@ impl PartialEq for Json {
 mod controlled_tests {
     use super::*;
     use crate::control::CheckFailure;
-    use crate::issue::Issue;
     use crate::control::Signal;
+    use crate::issue::Issue;
     use std::{cell::Cell, rc::Rc};
 
     type Failure = CheckFailure<Box<Issue>>;

@@ -97,7 +97,10 @@ impl<E: InputError> Checker<'_, E> {
                     Some("entity")
                 )
             {
-                return syntax(f.ty.span(), "the first change argument must be an entity reference");
+                return syntax(
+                    f.ty.span(),
+                    "the first change argument must be an entity reference",
+                );
             }
             ps.push(Param {
                 name: f.name.name.clone(),
@@ -117,7 +120,13 @@ impl<E: InputError> Checker<'_, E> {
                 span: p.span,
                 tok: 0,
             };
-            self.bind(&mut env, &id, p.ty.clone(), Origin::Param(i), super::ir::BindingSource::Parameter)?;
+            self.bind(
+                &mut env,
+                &id,
+                p.ty.clone(),
+                Origin::Param(i),
+                super::ir::BindingSource::Parameter,
+            )?;
         }
         Ok(env)
     }
@@ -218,7 +227,10 @@ impl<E: InputError> Checker<'_, E> {
                 body,
             } => {
                 if params.is_empty() {
-                    return syntax(d.name.span, "change requires an entity reference as its first argument");
+                    return syntax(
+                        d.name.span,
+                        "change requires an entity reference as its first argument",
+                    );
                 }
                 let params = self.params(ri, params, true)?;
                 let mut env = self.env_for(&params)?;
@@ -260,7 +272,10 @@ impl<E: InputError> Checker<'_, E> {
                 };
                 let lt = self.check(left, None, &mut env, &ctx)?;
                 if !matches!(lt, Type::Path(..)) {
-                    return syntax(self.parser.exprs[left].span, "both sides of a relation must be Path values");
+                    return syntax(
+                        self.parser.exprs[left].span,
+                        "both sides of a relation must be Path values",
+                    );
                 }
                 let rt = self.check(right, Some(&lt), &mut env, &ctx)?;
                 record(self, ExpressionKind::RelationLeft, left, lt);
@@ -339,7 +354,10 @@ impl<E: InputError> Checker<'_, E> {
             return Ok(t);
         }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
-            return syntax(span, "change body must return a `with` update of its first argument");
+            return syntax(
+                span,
+                "change body must return a `with` update of its first argument",
+            );
         };
         let first = &params[0];
         let mut target = base;

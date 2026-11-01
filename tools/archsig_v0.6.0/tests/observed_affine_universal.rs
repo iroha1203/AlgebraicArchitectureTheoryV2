@@ -190,8 +190,14 @@ fn run_parameter_types(
         checked.archmap().snapshots(),
         "代入値・補完値で観測、owner、既知値を変更しない"
     );
-    assert_eq!(after.archmap().bytes_digest(), checked.archmap().bytes_digest());
-    assert_eq!(after.archmap().model_digest(), checked.archmap().model_digest());
+    assert_eq!(
+        after.archmap().bytes_digest(),
+        checked.archmap().bytes_digest()
+    );
+    assert_eq!(
+        after.archmap().model_digest(),
+        checked.archmap().model_digest()
+    );
     assert_eq!(
         after.definitions().vocabularies(),
         checked.definitions().vocabularies()

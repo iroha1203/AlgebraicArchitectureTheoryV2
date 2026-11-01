@@ -2,7 +2,7 @@
 use super::*;
 use crate::observed::{
     change_result::field_linear_result as scalar_wire,
-    change_result::{linear_result as linear, CandidateInput},
+    change_result::{CandidateInput, linear_result as linear},
     environment::quotient_affine,
     environment::quotient_affine::coefficients,
     numeric,
@@ -19,8 +19,8 @@ pub(super) fn compute(
 ) -> Result<Source, ValidationFailure> {
     let image = quotient_affine::compute(env, g, &input, request, c)?;
     let ty = &image.ty;
-    let declaration =
-        &env.indexes.inputs.law().declarations()[request.declaration().ok_or("アフィン商のViewがない")?];
+    let declaration = &env.indexes.inputs.law().declarations()
+        [request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View { body, .. } = &declaration.signature else {
         return Err("アフィン商のView署名が違う".into());
     };
@@ -619,7 +619,8 @@ fn law_descent(
     let mut arguments = vec![expression];
     // 不適用のinstanceも族の固定成分であり、キーを落として空族へ変えない。
     if law.instances.iter().any(|i| i.guard.never()) {
-        let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations()[&law.name].signature
+        let Signature::Law { params, .. } =
+            &env.indexes.inputs.law().declarations()[&law.name].signature
         else {
             return Err("商のLaw署名がない".into());
         };

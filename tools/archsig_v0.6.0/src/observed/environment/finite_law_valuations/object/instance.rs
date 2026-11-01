@@ -65,7 +65,12 @@ pub(in super::super) fn zero_indicator(
         let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
             return Err("元等式がない".into());
         };
-        let ty = e.indexes.inputs.law().expr_type(lhs).ok_or("元等式の型がない")?;
+        let ty = e
+            .indexes
+            .inputs
+            .law()
+            .expr_type(lhs)
+            .ok_or("元等式の型がない")?;
         let mut leaves = components(e, ty, &None, &None, Some(false), false)?;
         for leaf in &mut leaves {
             tick(&e.control)?;
@@ -106,8 +111,10 @@ pub(super) fn initial(
     {
         tick(&e.control)?;
         let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
-        row.scope
-            .merge(&e.indexes.scope(subject, object.identity().reading(), None)?);
+        row.scope.merge(
+            &e.indexes
+                .scope(subject, object.identity().reading(), None)?,
+        );
         row.support.push(fact.clone());
     }
     match original
@@ -122,14 +129,16 @@ pub(super) fn initial(
             for condition in conditions {
                 tick(&e.control)?;
                 let position = condition.slot();
-                let field = e.indexes.field(&e.state,
+                let field = e.indexes.field(
+                    &e.state,
                     &position.snapshot,
                     &position.subject,
                     position.field.as_deref().ok_or("元所属条件のfieldがない")?,
                 )?;
                 let subject = e.indexes.subject(&position.snapshot, &position.subject)?;
                 let value = if let Some(value) = e
-                    .indexes.primitive_valuation
+                    .indexes
+                    .primitive_valuation
                     .as_ref()
                     .and_then(|values| values.get(position))
                 {
@@ -186,7 +195,8 @@ pub(super) fn initial(
     // 元instanceの適用条件を保存したまま、固定参照の型を同じ既存核で検査する。
     if row.application != Some(false) {
         let declaration = e
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(&original.declaration().name)

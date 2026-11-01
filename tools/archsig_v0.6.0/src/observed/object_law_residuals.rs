@@ -37,23 +37,56 @@ fn invalid(f: ValidationFailure) -> ConstructionFailure {
         f => bad(&format!("数値Lawの元値: {f:?}")),
     }
 }
-pub(in crate::observed) fn predicate_call(inputs: &CheckedInputs, id: usize) -> Option<(&[crate::law::model::Param], usize, &[usize])> {
-    let ExprKind::Call { callee, args } = &inputs.law().exprs()[id].kind else { return None };
+pub(in crate::observed) fn predicate_call(
+    inputs: &CheckedInputs,
+    id: usize,
+) -> Option<(&[crate::law::model::Param], usize, &[usize])> {
+    let ExprKind::Call { callee, args } = &inputs.law().exprs()[id].kind else {
+        return None;
+    };
     let mut callee = *callee;
-    while let ExprKind::Group(child) = inputs.law().exprs()[callee].kind { callee = child; }
+    while let ExprKind::Group(child) = inputs.law().exprs()[callee].kind {
+        callee = child;
+    }
     let span = inputs.law().exprs()[callee].span;
-    let target = inputs.law().infos().iter().find_map(|info| info.references.iter().find_map(|(at,name)| (*at == span).then_some(name)))?;
-    let Signature::View { params, body, .. } = &inputs.law().declarations().get(target)?.signature else { return None };
-    if params.len() != args.len() || params.iter().any(|p| matches!(p.ty, Type::Owned(..))) || inputs.law().expr_type(*body) != Some(&Type::Bool) { return None; }
+    let target = inputs.law().infos().iter().find_map(|info| {
+        info.references
+            .iter()
+            .find_map(|(at, name)| (*at == span).then_some(name))
+    })?;
+    let Signature::View { params, body, .. } = &inputs.law().declarations().get(target)?.signature
+    else {
+        return None;
+    };
+    if params.len() != args.len()
+        || params.iter().any(|p| matches!(p.ty, Type::Owned(..)))
+        || inputs.law().expr_type(*body) != Some(&Type::Bool)
+    {
+        return None;
+    }
     Some((params, *body, args))
 }
-pub(in crate::observed) fn predicate_equation(inputs: &CheckedInputs, mut id: usize, c: &mut Control) -> Result<Option<usize>, ConstructionFailure> {
+pub(in crate::observed) fn predicate_equation(
+    inputs: &CheckedInputs,
+    mut id: usize,
+    c: &mut Control,
+) -> Result<Option<usize>, ConstructionFailure> {
     loop {
         tick(c)?;
         match &inputs.law().exprs()[id].kind {
             ExprKind::Group(child) | ExprKind::Let { body: child, .. } => id = *child,
-            ExprKind::Call { .. } => { let Some((_, body, _)) = predicate_call(inputs,id) else { return Ok(None) }; id = body; }
-            ExprKind::Match { scrutinee, arms } => { let Some(body) = binding_match_body(inputs,*scrutinee,arms,c)? else { return Ok(None) }; id = body; }
+            ExprKind::Call { .. } => {
+                let Some((_, body, _)) = predicate_call(inputs, id) else {
+                    return Ok(None);
+                };
+                id = body;
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                let Some(body) = binding_match_body(inputs, *scrutinee, arms, c)? else {
+                    return Ok(None);
+                };
+                id = body;
+            }
             ExprKind::Binary { op: BinOp::Eq, .. } => return Ok(Some(id)),
             _ => return Ok(None),
         }
@@ -84,7 +117,9 @@ pub enum LawNumericShape {
 impl LawNumericShape {
     pub(super) fn ty(&self) -> &Type {
         match self {
-            Self::Equality { ty, .. } | Self::Conjunction { ty, .. } | Self::Unsupported { ty, .. } => ty,
+            Self::Equality { ty, .. }
+            | Self::Conjunction { ty, .. }
+            | Self::Unsupported { ty, .. } => ty,
         }
     }
     pub(super) fn component<'a>(&'a self, path: &'a [usize]) -> Option<(&'a Self, &'a [usize])> {
@@ -249,28 +284,50 @@ pub(super) fn binding_match_body(
     }
 }
 fn numeric_terms(
-    inputs: &CheckedInputs, body: usize, expression: usize, explicit_guard: bool,
-    terms: &mut Vec<LawNumericShape>, c: &mut Control,
+    inputs: &CheckedInputs,
+    body: usize,
+    expression: usize,
+    explicit_guard: bool,
+    terms: &mut Vec<LawNumericShape>,
+    c: &mut Control,
 ) -> Result<bool, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
         match &inputs.law().exprs()[expression].kind {
-            ExprKind::Group(child) | ExprKind::Let { body: child, .. } =>
-                numeric_terms(inputs, body, *child, explicit_guard, terms, c),
+            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => {
+                numeric_terms(inputs, body, *child, explicit_guard, terms, c)
+            }
             ExprKind::Match { scrutinee, arms } => {
-                let Some(child) = binding_match_body(inputs, *scrutinee, arms, c)? else { return Ok(false) };
+                let Some(child) = binding_match_body(inputs, *scrutinee, arms, c)? else {
+                    return Ok(false);
+                };
                 numeric_terms(inputs, body, child, explicit_guard, terms, c)
             }
-            ExprKind::Binary { op: BinOp::And, lhs, rhs } => {
-                Ok(numeric_terms(inputs, body, *lhs, explicit_guard, terms, c)?
-                    && numeric_terms(inputs, body, *rhs, explicit_guard, terms, c)?)
-            }
-            ExprKind::Binary { op: BinOp::Eq, lhs, rhs } => {
-                let ty = inputs.law().expr_type(*lhs).ok_or_else(|| bad("元等式の左右型がない"))?;
-                if !numeric::is_numeric_type(ty, c).map_err(invalid)? { return Ok(false) }
+            ExprKind::Binary {
+                op: BinOp::And,
+                lhs,
+                rhs,
+            } => Ok(numeric_terms(inputs, body, *lhs, explicit_guard, terms, c)?
+                && numeric_terms(inputs, body, *rhs, explicit_guard, terms, c)?),
+            ExprKind::Binary {
+                op: BinOp::Eq,
+                lhs,
+                rhs,
+            } => {
+                let ty = inputs
+                    .law()
+                    .expr_type(*lhs)
+                    .ok_or_else(|| bad("元等式の左右型がない"))?;
+                if !numeric::is_numeric_type(ty, c).map_err(invalid)? {
+                    return Ok(false);
+                }
                 terms.push(LawNumericShape::Equality {
-                    body, equality: expression, left: *lhs, right: *rhs,
-                    ty: ty.clone(), explicit_guard,
+                    body,
+                    equality: expression,
+                    left: *lhs,
+                    right: *rhs,
+                    ty: ty.clone(),
+                    explicit_guard,
                 });
                 Ok(true)
             }
@@ -279,32 +336,64 @@ fn numeric_terms(
     })
 }
 fn shape(
-    inputs: &CheckedInputs, name: &str, c: &mut Control,
+    inputs: &CheckedInputs,
+    name: &str,
+    c: &mut Control,
 ) -> Result<LawNumericShape, ConstructionFailure> {
     tick(c)?;
-    let Signature::Law { body, guard, .. } = inputs.law().declarations()
-        .get(name).ok_or_else(|| bad("元Law宣言がない"))?.signature else {
+    let Signature::Law { body, guard, .. } = inputs
+        .law()
+        .declarations()
+        .get(name)
+        .ok_or_else(|| bad("元Law宣言がない"))?
+        .signature
+    else {
         return Err(bad("元Law署名がない"));
     };
     let mut terms = vec![];
     if numeric_terms(inputs, body, body, guard.is_some(), &mut terms, c)? {
-        if terms.len() == 1 { return Ok(terms.remove(0)) }
+        if terms.len() == 1 {
+            return Ok(terms.remove(0));
+        }
         let ty = Type::Tuple(terms.iter().map(|term| term.ty().clone()).collect());
-        return Ok(LawNumericShape::Conjunction { terms, ty, explicit_guard: guard.is_some() });
+        return Ok(LawNumericShape::Conjunction {
+            terms,
+            ty,
+            explicit_guard: guard.is_some(),
+        });
     }
     Ok(LawNumericShape::Unsupported {
-        body, explicit_guard: guard.is_some(),
-        ty: inputs.law().expr_type(body).ok_or_else(|| bad("元body型がない"))?.clone(),
+        body,
+        explicit_guard: guard.is_some(),
+        ty: inputs
+            .law()
+            .expr_type(body)
+            .ok_or_else(|| bad("元body型がない"))?
+            .clone(),
     })
 }
 /// 元の連言内で、指定された等式を含む側を選ぶ。
-pub(super) fn conjunction_child(inputs: &CheckedInputs, expression: usize, equality: usize) -> Option<(usize, usize)> {
-    let ExprKind::Binary { op: BinOp::And, lhs, rhs } = inputs.law().exprs()[expression].kind else { return None };
+pub(super) fn conjunction_child(
+    inputs: &CheckedInputs,
+    expression: usize,
+    equality: usize,
+) -> Option<(usize, usize)> {
+    let ExprKind::Binary {
+        op: BinOp::And,
+        lhs,
+        rhs,
+    } = inputs.law().exprs()[expression].kind
+    else {
+        return None;
+    };
     let at = inputs.law().exprs()[equality].span;
-    [lhs, rhs].into_iter().enumerate().find_map(|(index, child)| {
-        let span = inputs.law().exprs()[child].span;
-        (span.0 <= at.0 && at.1 <= span.1).then_some((child, index))
-    })
+    [lhs, rhs]
+        .into_iter()
+        .enumerate()
+        .find_map(|(index, child)| {
+            let span = inputs.law().exprs()[child].span;
+            (span.0 <= at.0 && at.1 <= span.1).then_some((child, index))
+        })
 }
 fn graph(e: &super::object_evaluate::ObjectEvaluation) -> Option<&ObservedEvaluation> {
     match e.outcome() {
@@ -389,8 +478,11 @@ pub(in crate::observed) fn observed_epsilon(
     component: &[usize],
     c: &mut Control,
 ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
-    if row.is_none() && component.is_empty()
-        && let Some((_, _, value)) = super::object_law_transport::constant_numeric_family(source.evaluation(), c)? {
+    if row.is_none()
+        && component.is_empty()
+        && let Some((_, _, value)) =
+            super::object_law_transport::constant_numeric_family(source.evaluation(), c)?
+    {
         return Ok(Some(NumericTransportValue::observed(value)));
     }
     let refs = source
@@ -480,9 +572,15 @@ fn read_case(
         for (index, term) in terms.iter().enumerate() {
             tick(c)?;
             let mut case = LawResidualCase {
-                evaluation: r.evaluation, body_evaluation: None,
-                operand_evaluations: vec![], operand_values: vec![], epsilon_producer: None,
-                reading: r.reading.clone(), components: vec![], complete: false, conjuncts: vec![],
+                evaluation: r.evaluation,
+                body_evaluation: None,
+                operand_evaluations: vec![],
+                operand_values: vec![],
+                epsilon_producer: None,
+                reading: r.reading.clone(),
+                components: vec![],
+                complete: false,
+                conjuncts: vec![],
             };
             read_case(&mut case, term, inputs, g, c)?;
             for component in &case.components {
@@ -537,9 +635,10 @@ fn read_case(
                             .ok_or_else(|| bad("元数値等式のmatchが全体束縛でない"))?,
                         1,
                     ),
-                    ExprKind::Binary { op: BinOp::And, .. } =>
+                    ExprKind::Binary { op: BinOp::And, .. } => {
                         conjunction_child(inputs, expression, *equality)
-                            .ok_or_else(|| bad("元連言に等式がない"))?,
+                            .ok_or_else(|| bad("元連言に等式がない"))?
+                    }
                     _ => return Err(bad("元数値等式の外側導出が違う")),
                 };
                 let p = eval_parts(g, at)?
@@ -547,8 +646,10 @@ fn read_case(
                     .ok_or_else(|| bad("元数値等式の外側partがない"))?;
                 if let Some(&next) = p.children.get(index) {
                     at = next;
-                } else if matches!(inputs.law().exprs()[expression].kind, ExprKind::Match { .. })
-                    && p.children.len() == 1
+                } else if matches!(
+                    inputs.law().exprs()[expression].kind,
+                    ExprKind::Match { .. }
+                ) && p.children.len() == 1
                     && p.value.is_none()
                 {
                     // 未観測scrutineeでは元Evaluatorがbodyを実行しない。式・支持を残し値は作らない。
@@ -726,13 +827,21 @@ fn extract(
                 .ok_or_else(|| bad("一様残差読取りがない"))?;
             read_case(&mut row.cases[0], &out.shape, inputs, g, c)?;
             if reading.application().value() == Some(false) {
-                row.cases[0].evaluation = g.and_then(|graph| graph.answers.first())
-                    .and_then(|answer| answer.outputs.get("evaluation")).map(|root| root.0);
+                row.cases[0].evaluation = g
+                    .and_then(|graph| graph.answers.first())
+                    .and_then(|answer| answer.outputs.get("evaluation"))
+                    .map(|root| root.0);
             }
-            if let Some((root, producer, value)) = super::object_law_transport::constant_numeric_family(src.evaluation(), c)? {
+            if let Some((root, producer, value)) =
+                super::object_law_transport::constant_numeric_family(src.evaluation(), c)?
+            {
                 let case = &mut row.cases[0];
-                let [component] = case.components.as_mut_slice() else { return Err(bad("一様数値差の成分数が違う")) };
-                if !component.path.is_empty() || component.ty != value.ty() { return Err(bad("一様数値差の型が違う")) }
+                let [component] = case.components.as_mut_slice() else {
+                    return Err(bad("一様数値差の成分数が違う"));
+                };
+                if !component.path.is_empty() || component.ty != value.ty() {
+                    return Err(bad("一様数値差の型が違う"));
+                }
                 case.evaluation = Some(root.0);
                 case.epsilon_producer = Some(producer.0);
                 component.epsilon = Some(NumericTransportValue::observed(value.clone()));
@@ -844,10 +953,11 @@ fn point(
         .last_mut()
         .ok_or_else(|| bad("数値Law比較点がない"))?;
     match (&a.shape, &b.shape) {
-        (LawNumericShape::Equality { ty, .. } | LawNumericShape::Conjunction { ty, .. },
-         LawNumericShape::Equality { ty: other, .. } | LawNumericShape::Conjunction { ty: other, .. })
-            if ty == other =>
-        {
+        (
+            LawNumericShape::Equality { ty, .. } | LawNumericShape::Conjunction { ty, .. },
+            LawNumericShape::Equality { ty: other, .. }
+            | LawNumericShape::Conjunction { ty: other, .. },
+        ) if ty == other => {
             let mut coords = vec![];
             leaves(ty, &mut vec![], &mut coords, c)?;
             for (i, (path, _)) in coords.iter().enumerate() {

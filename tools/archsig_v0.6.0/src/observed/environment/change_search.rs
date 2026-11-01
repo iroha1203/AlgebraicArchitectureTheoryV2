@@ -238,7 +238,8 @@ pub(in crate::observed) fn domain(
     // 明示された外部ownerの族を消す。ownerを持たないroot型も全登録族を使う。
     let directly_owned = match ty {
         Type::Ref(entity) => environment
-            .indexes.inputs
+            .indexes
+            .inputs
             .definitions()
             .declarations()
             .get(entity)
@@ -320,12 +321,29 @@ pub(in crate::observed) fn search_with_completions(
         missing: vec![],
         complete: false,
         valuation: original
-            .state.architecture_values()
+            .state
+            .architecture_values()
             .into_iter()
-            .chain(witness.construction().resolved_owners().iter().map(|(field, owner)| {
-                let subject = original.indexes.subject(&owner.snapshot, &owner.subject).expect("検査済みowner参照");
-                (field.clone(), Scalar::Subject { snapshot: owner.snapshot.clone(), subject: owner.subject.clone(), entity: subject.ty.to_string() })
-            }))
+            .chain(
+                witness
+                    .construction()
+                    .resolved_owners()
+                    .iter()
+                    .map(|(field, owner)| {
+                        let subject = original
+                            .indexes
+                            .subject(&owner.snapshot, &owner.subject)
+                            .expect("検査済みowner参照");
+                        (
+                            field.clone(),
+                            Scalar::Subject {
+                                snapshot: owner.snapshot.clone(),
+                                subject: owner.subject.clone(),
+                                entity: subject.ty.to_string(),
+                            },
+                        )
+                    }),
+            )
             .chain(completions.iter().cloned())
             .collect(),
     };
@@ -435,57 +453,114 @@ pub(in crate::observed) fn search_with_completions(
             rows = next;
         }
         result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
-        if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
+        if change_params.iter().skip(1).any(|p| p.ty == Type::Z) {
             let mut pending = change_affine::Pending::default();
-            let computed = change_affine::compute(&environment,change,&subjects,&result.requirements,&mut pending);
+            let computed = change_affine::compute(
+                &environment,
+                change,
+                &subjects,
+                &result.requirements,
+                &mut pending,
+            );
             if !pending.facts.is_empty() || pending.unsupported.is_some() {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer = Some(pending);
             }
             let linear = computed?;
-            let mut points=vec![];
-            if let Some(particular)=&linear.particular {
+            let mut points = vec![];
+            if let Some(particular) = &linear.particular {
                 points.push(particular.clone());
                 if linear.fiber.rank < linear.fiber.right.len() {
-                    points.push(particular.iter().zip(&linear.kernel).map(|(p,k)|p+&k[0]).collect());
+                    points.push(
+                        particular
+                            .iter()
+                            .zip(&linear.kernel)
+                            .map(|(p, k)| p + &k[0])
+                            .collect(),
+                    );
                 }
             }
-            let mut candidates=Candidates { parameter_types: vec![Type::Z;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true };
-            for (i,point) in points.into_iter().enumerate() {
+            let mut candidates = Candidates {
+                parameter_types: vec![Type::Z; subjects.len() * (change_params.len() - 1)],
+                subjects,
+                rows: vec![],
+                complete: true,
+            };
+            for (i, point) in points.into_iter().enumerate() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                let parameters=point.into_iter().map(Scalar::Z).collect::<Vec<_>>();
-                let candidate=change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?;
+                let parameters = point.into_iter().map(Scalar::Z).collect::<Vec<_>>();
+                let candidate = change_evaluation::candidate(
+                    &environment,
+                    change,
+                    &candidates.subjects,
+                    &parameters,
+                )?;
                 // この段階は線形系の全解表示を準備する。具体点の通常Law再検査と
                 // その確定直後の公開はchange_resultが順に行う。
-                candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true),missing:vec![]});
+                candidates.rows.push(candidate);
+                result.solutions.push(SolutionRow {
+                    candidate: i,
+                    member: Some(true),
+                    missing: vec![],
+                });
             }
-            result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
+            result.candidates = Some(candidates);
+            result.linear = Some(linear);
+            result.complete = true;
             return Ok(());
         }
-        if change_params.iter().skip(1).any(|p|p.ty==Type::Q) {
-            let mut pending=change_affine::Pending::default();
-            let computed=field_change::compute(&environment,change,&subjects,&result.requirements,&mut pending);
+        if change_params.iter().skip(1).any(|p| p.ty == Type::Q) {
+            let mut pending = change_affine::Pending::default();
+            let computed = field_change::compute(
+                &environment,
+                change,
+                &subjects,
+                &result.requirements,
+                &mut pending,
+            );
             if !pending.facts.is_empty() || pending.unsupported.is_some() {
                 result.missing.extend(pending.facts.iter().cloned());
-                result.pending_integer=Some(pending);
+                result.pending_integer = Some(pending);
             }
-            let linear=computed?;
-            let mut points=vec![];
-            if let Some(particular)=&linear.particular {
+            let linear = computed?;
+            let mut points = vec![];
+            if let Some(particular) = &linear.particular {
                 points.push(particular.clone());
-                if linear.fiber.pivots.len()<linear.parameter_count {
-                    points.push(particular.iter().zip(&linear.kernel).map(|(p,k)|
-                        crate::observed::numeric::binary(BinOp::Add,p,&k[0],control)
-                    ).collect::<Result<Vec<_>,_>>()?);
+                if linear.fiber.pivots.len() < linear.parameter_count {
+                    points.push(
+                        particular
+                            .iter()
+                            .zip(&linear.kernel)
+                            .map(|(p, k)| {
+                                crate::observed::numeric::binary(BinOp::Add, p, &k[0], control)
+                            })
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
                 }
             }
-            let mut candidates=Candidates{parameter_types:vec![Type::Q;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true};
-            for (i,parameters) in points.into_iter().enumerate() {
+            let mut candidates = Candidates {
+                parameter_types: vec![Type::Q; subjects.len() * (change_params.len() - 1)],
+                subjects,
+                rows: vec![],
+                complete: true,
+            };
+            for (i, parameters) in points.into_iter().enumerate() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                candidates.rows.push(change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?);
-                result.solutions.push(SolutionRow{candidate:i,member:Some(true),missing:vec![]});
+                candidates.rows.push(change_evaluation::candidate(
+                    &environment,
+                    change,
+                    &candidates.subjects,
+                    &parameters,
+                )?);
+                result.solutions.push(SolutionRow {
+                    candidate: i,
+                    member: Some(true),
+                    missing: vec![],
+                });
             }
-            result.candidates=Some(candidates);result.rational=Some(linear);result.complete=true;
+            result.candidates = Some(candidates);
+            result.rational = Some(linear);
+            result.complete = true;
             return Ok(());
         }
         let table = match change_evaluation::candidates(&environment, change, &subjects) {
@@ -506,7 +581,10 @@ pub(in crate::observed) fn search_with_completions(
         {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
             let row = change_evaluation::solution_row(
-                &environment, candidate, point, &result.requirements,
+                &environment,
+                candidate,
+                point,
+                &result.requirements,
             )?;
             result.missing.extend(row.missing.iter().cloned());
             result.solutions.push(row);

@@ -40,7 +40,12 @@ fn full(id: &str, quantity: Option<&str>, q: bool) -> J {
     let mut atoms = vec![
         atom("op", "p", "Pattern.Part.owner", pair(id, "root")),
         atom("lp", "p", "Pattern.Part.label", pair("v", "root")),
-        atom("rp", "p", "Pattern.Part.related", J::Arr(vec![pair(id, "root")])),
+        atom(
+            "rp",
+            "p",
+            "Pattern.Part.related",
+            J::Arr(vec![pair(id, "root")]),
+        ),
     ];
     if let Some(n) = quantity {
         atoms.push(atom("xp", "p", "Pattern.Part.quantity", J::str(n)));

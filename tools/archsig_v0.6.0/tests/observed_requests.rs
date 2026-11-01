@@ -198,7 +198,10 @@ fn projection_table_rejects_metadata_and_static_bounds_but_keeps_dynamic_conditi
 fn architecture_and_local_system_selectors_require_existing_handles() {
     let (law, map) = inputs();
     assert!(resolve_observed_requests(&law, &map, &["a=build(R,on=@v/s)"]).is_ok());
-    rejects(&["a=diagnose($d.system,degree=1)"], RequestIssueCode::Reference);
+    rejects(
+        &["a=diagnose($d.system,degree=1)"],
+        RequestIssueCode::Reference,
+    );
     rejects(
         &["a=evaluate(R.number,on=$b.object,s=@v/s)"],
         RequestIssueCode::Reference,
@@ -452,11 +455,34 @@ fn path_endpoints_keep_reference_types_and_generator_lists_are_not_exposed() {
 
 #[test]
 fn localize_checks_owned_bindings_and_keeps_dynamic_constraints() {
-    let (law,map)=dependent_inputs(true);
-    let error=resolve_observed_requests(&law,&map,&["x=build(R,on=@v/B)","l=localize($x.object,law=R.present,a=@v/B,b=@v/i)"]).unwrap_err();
-    assert!(matches!(error,ResolveFailure::Invalid{issues,..} if issues[0].code==RequestIssueCode::Type));
-    let (law,map)=dependent_inputs(false);
-    let result=resolve_observed_requests(&law,&map,&["x=build(R,on=@v/A)","l=localize($x.object,law=R.present,a=@v/A,b=@v/i)"]).unwrap();
-    let constraint=result.requests()[1].constraints.iter().find(|c|c.parameter=="b").unwrap();
-    assert!(constraint.dynamic);assert!(constraint.owner.is_some());
+    let (law, map) = dependent_inputs(true);
+    let error = resolve_observed_requests(
+        &law,
+        &map,
+        &[
+            "x=build(R,on=@v/B)",
+            "l=localize($x.object,law=R.present,a=@v/B,b=@v/i)",
+        ],
+    )
+    .unwrap_err();
+    assert!(
+        matches!(error,ResolveFailure::Invalid{issues,..} if issues[0].code==RequestIssueCode::Type)
+    );
+    let (law, map) = dependent_inputs(false);
+    let result = resolve_observed_requests(
+        &law,
+        &map,
+        &[
+            "x=build(R,on=@v/A)",
+            "l=localize($x.object,law=R.present,a=@v/A,b=@v/i)",
+        ],
+    )
+    .unwrap();
+    let constraint = result.requests()[1]
+        .constraints
+        .iter()
+        .find(|c| c.parameter == "b")
+        .unwrap();
+    assert!(constraint.dynamic);
+    assert!(constraint.owner.is_some());
 }

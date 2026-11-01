@@ -152,7 +152,9 @@ fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_obj
                 assert!(!row.ready);
                 assert!(!row.body_allowed);
                 assert_eq!(row.bindings.len(), 1);
-                assert!(matches!(g.scalar(row.bindings[0].value).unwrap(), Scalar::Subject { subject, .. } if subject == if object == 1 { "q" } else { "p" }));
+                assert!(
+                    matches!(g.scalar(row.bindings[0].value).unwrap(), Scalar::Subject { subject, .. } if subject == if object == 1 { "q" } else { "p" })
+                );
                 assert_outside(&g, &answer, o.reference, objects[object]);
                 assert_eq!(g.nodes.len(), before + 3);
                 if o.row.is_some() {
@@ -522,13 +524,19 @@ fn unbound_integer_parameter_keeps_its_quantifier_in_outside_propositions() {
         for o in &d.originals {
             assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
             assert!(o.row.is_none(), "無限域を有限の代入行にしない");
-            let outside = crate::observed::law_evaluation::origin(&g, o.reference).unwrap().unwrap().outside;
+            let outside = crate::observed::law_evaluation::origin(&g, o.reference)
+                .unwrap()
+                .unwrap()
+                .outside;
             let before = g.nodes.len();
             let answer = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
             assert_eq!(answer.is_some(), outside);
             if let Some(answer) = answer {
                 assert_outside(&g, &answer, o.reference, objects[object]);
-                assert_eq!(g.nodes[answer.claim.unwrap().0].scope.quantifiers, g.nodes[o.reference.0].scope.quantifiers);
+                assert_eq!(
+                    g.nodes[answer.claim.unwrap().0].scope.quantifiers,
+                    g.nodes[o.reference.0].scope.quantifiers
+                );
             } else {
                 assert_eq!(g.nodes.len(), before);
             }

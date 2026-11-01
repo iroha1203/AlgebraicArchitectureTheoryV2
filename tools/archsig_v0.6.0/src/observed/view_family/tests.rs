@@ -4,7 +4,8 @@ use crate::{
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::sync::Arc;
-const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
+const DEFINITION: &[u8] =
+    include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 use crate::control::quiet;
@@ -487,7 +488,11 @@ fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fak
 #[test]
 fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
     for (ty, tuple) in [("Q", false), ("Z", true)] {
-        let parameter_ty = if tuple { format!("({ty},({ty},{ty}))") } else { ty.to_owned() };
+        let parameter_ty = if tuple {
+            format!("({ty},({ty},{ty}))")
+        } else {
+            ty.to_owned()
+        };
         let term = if tuple { "n.0+n.1.1" } else { "n" };
         let offset = if ty == "Z" { "amount(p)" } else { "rat(1,2)" };
         let law = LAW.replace("view root(r: Root): Bool = true;", &format!(
@@ -501,16 +506,46 @@ fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
         assert_eq!(f.evaluations.len(), 2);
         for (index, expression) in f.expressions.iter().enumerate() {
             let (_, origin) = reading::origin(&g, *expression).unwrap();
-            assert_eq!(origin.parameters.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>(), ["n", "m"]);
+            assert_eq!(
+                origin
+                    .parameters
+                    .iter()
+                    .map(|(n, _)| n.as_str())
+                    .collect::<Vec<_>>(),
+                ["n", "m"]
+            );
             let coefficient = if ty == "Z" { Type::Z } else { Type::Q };
-            let expected = if tuple { Type::Tuple(vec![coefficient.clone(), Type::Tuple(vec![coefficient.clone(), coefficient.clone()])]) } else { coefficient.clone() };
+            let expected = if tuple {
+                Type::Tuple(vec![
+                    coefficient.clone(),
+                    Type::Tuple(vec![coefficient.clone(), coefficient.clone()]),
+                ])
+            } else {
+                coefficient.clone()
+            };
             assert_eq!(origin.parameters[0].1, expected);
             assert_eq!(origin.parameters[1].1, coefficient);
-            assert_eq!(g.scalar(origin.bindings.iter().find(|b| b.name == "b").unwrap().value).unwrap(), &Scalar::Bool(index == 1));
-            assert!(matches!(&g.get(f.evaluations[index]).unwrap().payload, Some(Payload::Evaluation { value: None, .. })));
+            assert_eq!(
+                g.scalar(
+                    origin
+                        .bindings
+                        .iter()
+                        .find(|b| b.name == "b")
+                        .unwrap()
+                        .value
+                )
+                .unwrap(),
+                &Scalar::Bool(index == 1)
+            );
+            assert!(matches!(
+                &g.get(f.evaluations[index]).unwrap().payload,
+                Some(Payload::Evaluation { value: None, .. })
+            ));
         }
         let mut bad = g.get(f.evaluation).unwrap().clone();
-        let Some(Payload::Evaluation { parts, .. }) = &mut bad.payload else { panic!() };
+        let Some(Payload::Evaluation { parts, .. }) = &mut bad.payload else {
+            panic!()
+        };
         parts[0].children.reverse();
         assert!(validate_family(&g, &bad, f.evaluation.0).is_err());
         replay(&p, &g);

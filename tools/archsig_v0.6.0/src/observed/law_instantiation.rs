@@ -165,7 +165,14 @@ pub(super) fn instantiate(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, base, template, architecture, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        env,
+        graph,
+        base,
+        template,
+        architecture,
+        c,
+    ))
 }
 
 impl super::result_kind::ResultKind for Data {

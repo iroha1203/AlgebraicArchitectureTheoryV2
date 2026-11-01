@@ -23,7 +23,8 @@ fn evaluation(
 ) -> Result<NodeRef, ValidationFailure> {
     let source = change_result::source_expression(b, env, expression, bindings, &[])?;
     let ty = env
-        .indexes.inputs
+        .indexes
+        .inputs
         .law()
         .expr_type(expression)
         .ok_or("商のLaw式型がない")?
@@ -85,7 +86,8 @@ pub(super) fn family_type(
     name: &str,
     ty: &Type,
 ) -> Result<Type, ValidationFailure> {
-    let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations()[name].signature else {
+    let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations()[name].signature
+    else {
         return Err("Lawがない".into());
     };
     Ok(Type::Set(Box::new(Type::Tuple(vec![
@@ -147,7 +149,9 @@ pub(super) fn row(
         None,
         None,
     )?;
-    let Signature::Law { body, guard, .. } = &env.indexes.inputs.law().declarations()[name].signature else {
+    let Signature::Law { body, guard, .. } =
+        &env.indexes.inputs.law().declarations()[name].signature
+    else {
         return Err("Lawがない".into());
     };
     let mut evaluations = vec![];
@@ -204,7 +208,17 @@ pub(super) fn row(
             let index = body_evaluation.ok_or("通常Law body評価がない")?;
             *nodes.get(index).ok_or("通常Law body評価の位置が違う")?
         } else {
-            evaluation(b, env, *body, &bindings, architecture, None, None, &[], false)?
+            evaluation(
+                b,
+                env,
+                *body,
+                &bindings,
+                architecture,
+                None,
+                None,
+                &[],
+                false,
+            )?
         };
         if let (Some(guard), Some(guard_evaluation)) = (guard, guard_evaluation) {
             let guard_value = guard_value.ok_or("商のguard値がない")?;

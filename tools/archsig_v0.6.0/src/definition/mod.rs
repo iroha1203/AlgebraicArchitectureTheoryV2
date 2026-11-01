@@ -133,17 +133,27 @@ impl CheckedDefinitions {
                 },
             ),
             vocabulary => {
-                let available: Vec<_> = self.vocabularies.values()
+                let available: Vec<_> = self
+                    .vocabularies
+                    .values()
                     .map(|v| (v.namespace.clone(), v.version.clone()))
                     .collect();
-                let names = available.iter()
+                let names = available
+                    .iter()
                     .map(|(namespace, version)| format!("{namespace}@{version}"))
-                    .collect::<Vec<_>>().join(", ");
+                    .collect::<Vec<_>>()
+                    .join(", ");
                 (
-                    if vocabulary.is_some() { Code::VocabularyMismatch } else { Code::Reference },
+                    if vocabulary.is_some() {
+                        Code::VocabularyMismatch
+                    } else {
+                        Code::Reference
+                    },
                     format!(
                         "vocabulary `{}` version `{}` is not defined; available: {}",
-                        binding.namespace, binding.version, if names.is_empty() { "none" } else { &names }
+                        binding.namespace,
+                        binding.version,
+                        if names.is_empty() { "none" } else { &names }
                     ),
                     Details::VocabularyUnavailable {
                         namespace: binding.namespace.clone(),

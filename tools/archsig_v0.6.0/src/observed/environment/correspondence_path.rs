@@ -46,13 +46,15 @@ impl Environment<'_> {
         out.scope.assignments = self.indexes.primitive_valuation.is_some();
         let from = self.path_slot(
             original,
-            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
+            self.indexes
+                .field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
             reading,
             &mut out,
         )?;
         let to = self.path_slot(
             original,
-            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
+            self.indexes
+                .field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
             reading,
             &mut out,
         )?;
@@ -82,7 +84,9 @@ impl Environment<'_> {
         for (name, source_type, target_type) in maps {
             self.tick()?;
             by_type.insert(source_type.clone(), target_type.clone());
-            let field = self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.{name}"))?;
+            let field =
+                self.indexes
+                    .field(&self.state, snapshot, subject, &format!("{entity}.{name}"))?;
             let Some(value) = self.path_slot(original, field, reading, &mut out)? else {
                 unavailable = true;
                 continue;
@@ -127,7 +131,8 @@ impl Environment<'_> {
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
-                        out.scope.merge(&self.indexes.scope(s, reading, Some(origin))?);
+                        out.scope
+                            .merge(&self.indexes.scope(s, reading, Some(origin))?);
                         universe.insert(Fact {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
@@ -141,7 +146,12 @@ impl Environment<'_> {
                 } else if by_type.contains_key(s.ty.as_str()) {
                     let owner = self.path_slot(
                         s,
-                        self.indexes.field(&self.state, &s.snapshot, &s.id, &format!("{}.owner", s.ty))?,
+                        self.indexes.field(
+                            &self.state,
+                            &s.snapshot,
+                            &s.id,
+                            &format!("{}.owner", s.ty),
+                        )?,
                         reading,
                         &mut out,
                     )?;
@@ -200,11 +210,7 @@ impl Environment<'_> {
                     continue;
                 }
                 let target_name = if sp == fp {
-                    format!(
-                        "{}.{}",
-                        t.ty,
-                        f.name.short()
-                    )
+                    format!("{}.{}", t.ty, f.name.short())
                 } else {
                     fields
                         .get(f.name.as_str())
@@ -303,7 +309,8 @@ impl Environment<'_> {
             #[cfg(test)]
             data::observe_actual(
                 _span,
-                self.state.scoped_context
+                self.state
+                    .scoped_context
                     .get()
                     .or(self.state.context.get())
                     .unwrap_or_default(),

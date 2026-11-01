@@ -653,7 +653,13 @@ fn check_valuation_inner<E: InputError>(
     };
     for assignment in pinned {
         m.checkpoint()?;
-        let fail = || issue(Code::Reference, "", "completion value does not match the original missing slot");
+        let fail = || {
+            issue(
+                Code::Reference,
+                "",
+                "completion value does not match the original missing slot",
+            )
+        };
         let Some(&g) = m
             .index
             .get(&(assignment.snapshot.as_str(), assignment.subject.as_str()))

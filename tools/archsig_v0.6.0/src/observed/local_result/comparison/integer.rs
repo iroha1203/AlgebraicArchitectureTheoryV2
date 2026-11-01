@@ -1,5 +1,5 @@
 //! 整数係数の局所診断比較。
-use crate::observed::local_result::integer::{linear, read_coefficient, Diagram};
+use crate::observed::local_result::integer::{Diagram, linear, read_coefficient};
 use crate::observed::{change_result::linear_result as wire, integer_fiber};
 use num_bigint::BigInt as Z;
 fn coefficient_value(v: Z) -> crate::observed::result::Scalar {

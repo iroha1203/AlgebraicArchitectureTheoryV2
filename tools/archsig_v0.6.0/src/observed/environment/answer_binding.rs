@@ -126,7 +126,8 @@ impl Environment<'_> {
     ) -> Result<&'g Answer, ValidationFailure> {
         self.tick()?;
         let originals = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .ok_or("Answer束縛の検査済み元Requestがない")?;
         if originals.len() != graph.requests.len() {
             return Err("Answer束縛の元Request列が違う".into());

@@ -158,10 +158,7 @@ fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() 
 #[test]
 fn finite_fields_and_finite_parameter_families_use_real_domain_evaluations() {
     let p = prepared(
-        finite_fixture::inputs(
-            false,
-            "law optional every(c:Part,n:Fp(2)):c.quantity*n=0;",
-        ),
+        finite_fixture::inputs(false, "law optional every(c:Part,n:Fp(2)):c.quantity*n=0;"),
         "root",
     );
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -316,12 +313,25 @@ fn numeric_family_table_uses_full_domain_and_preserves_object_applicability() {
     );
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let table = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet()).unwrap().unwrap();
+    let table = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
     for row in &table.objects {
         for (i, origin) in row.origins.iter().enumerate() {
             let origin = frames::origin(&g, *origin).unwrap().unwrap();
-            assert_eq!(g.get(row.holds[i]).unwrap().judgment.as_ref().unwrap().status,
-                if origin.outside { Decision::Established } else { Decision::Refuted });
+            assert_eq!(
+                g.get(row.holds[i])
+                    .unwrap()
+                    .judgment
+                    .as_ref()
+                    .unwrap()
+                    .status,
+                if origin.outside {
+                    Decision::Established
+                } else {
+                    Decision::Refuted
+                }
+            );
         }
     }
     table.recheck(&env, &g, &mut quiet()).unwrap();

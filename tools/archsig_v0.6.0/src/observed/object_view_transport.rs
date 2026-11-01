@@ -134,7 +134,9 @@ impl PrimitiveValueIdentity {
             return Ok(None);
         }
         if super::value_transport::identity_declarations(&source, inputs.law(), c)
-            .map_err(invalid)?.is_none() {
+            .map_err(invalid)?
+            .is_none()
+        {
             return Ok(None);
         }
         Ok(Some(Self { ty: source }))
@@ -737,7 +739,9 @@ fn checked_view_transport(
                 c,
             )?;
             r.outcome = match (&a, &z) {
-                (Reading::Unknown(_), _) | (_, Reading::Unknown(_)) => ViewTransportOutcome::Undetermined,
+                (Reading::Unknown(_), _) | (_, Reading::Unknown(_)) => {
+                    ViewTransportOutcome::Undetermined
+                }
                 (Reading::Outside, Reading::Outside) => ViewTransportOutcome::Preserved,
                 (Reading::Value(a), Reading::Value(z)) => {
                     use super::term::affine::{Comparison, compare};

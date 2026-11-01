@@ -85,7 +85,14 @@ impl Environment<'_> {
         let Scalar::Map { domain, pairs, .. } = &values[0] else {
             return Err("Map条件の実calleeがMap値でない".into());
         };
-        if data::map_apply(&values[0], &values[1], self.indexes.inputs.law(), &self.control)?.is_some() {
+        if data::map_apply(
+            &values[0],
+            &values[1],
+            self.indexes.inputs.law(),
+            &self.control,
+        )?
+        .is_some()
+        {
             return Ok(None);
         }
         let mut keys = Vec::new();

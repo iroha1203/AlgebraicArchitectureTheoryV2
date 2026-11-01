@@ -436,7 +436,8 @@ impl Data {
             guarded_family: false,
             body_allowed: reading.reading.guard != Some(false),
             outside: reading.reading.application == Some(false)
-                && !reading.reading.condition_failed && !reading.reading.condition_pending,
+                && !reading.reading.condition_failed
+                && !reading.reading.condition_pending,
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))
     }
@@ -1088,7 +1089,8 @@ fn metadata(
     let env = Environment::new(inputs, c)?;
     for position in f.positions() {
         tick(c)?;
-        let field = env.indexes.field(&env.state,
+        let field = env.indexes.field(
+            &env.state,
             &position.snapshot,
             &position.subject,
             position.field.as_deref().ok_or("有限Lawの元fieldがない")?,
@@ -1260,7 +1262,13 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, architecture, object, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        graph,
+        inputs,
+        architecture,
+        object,
+        c,
+    ))
 }
 #[derive(Clone, Debug)]
 pub(super) struct FamilyPlan(Arc<Source>);
@@ -1461,7 +1469,8 @@ impl Environment<'_> {
         self.recheck_object_components(graph, consumer)?;
         // immutable Arcを保持し、別のreading/根の検査成功を再利用しない。
         if self
-            .results.verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -1485,7 +1494,6 @@ mod owned_tests;
 
 #[cfg(test)]
 mod family_tests;
-
 
 impl super::result_kind::ResultKind for Data {
     type Input<'a, 'input: 'a> = (

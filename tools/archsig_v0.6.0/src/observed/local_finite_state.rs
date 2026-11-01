@@ -1,16 +1,50 @@
 //! 有限状態の射影、matching family、各側の完全な局所fiber。
 use super::*;
-fn project(value: &Scalar, from: &State, to: &State, c: &Control) -> Result<Scalar, ValidationFailure> {
+fn project(
+    value: &Scalar,
+    from: &State,
+    to: &State,
+    c: &Control,
+) -> Result<Scalar, ValidationFailure> {
     if let (Some(a), Some(z)) = (&from.reading, &to.reading) {
-        let Scalar::Tuple(values) = value else { return Err("整数読取り状態がTupleでない".into()); };
-        if values.len() != a.map.len() { return Err("整数読取り状態の次元が違う".into()); }
-        let values = values.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
-        return Ok(Scalar::Tuple(integer::linear::apply(&a.restriction(z,c)?, &values,c)?.into_iter().map(integer::coefficient_value).collect()));
+        let Scalar::Tuple(values) = value else {
+            return Err("整数読取り状態がTupleでない".into());
+        };
+        if values.len() != a.map.len() {
+            return Err("整数読取り状態の次元が違う".into());
+        }
+        let values = values
+            .iter()
+            .map(integer::read_coefficient)
+            .collect::<Result<Vec<_>, _>>()?;
+        return Ok(Scalar::Tuple(
+            integer::linear::apply(&a.restriction(z, c)?, &values, c)?
+                .into_iter()
+                .map(integer::coefficient_value)
+                .collect(),
+        ));
     }
-    if matches!(value, Scalar::Unit) && from.free.is_empty() && to.free.is_empty() { return Ok(Scalar::Unit); }
-    let Scalar::Tuple(values) = value else { return Err("有限状態がTupleでない".into()); };
-    if values.len() != from.free.len() { return Err("有限状態の座標数が違う".into()); }
-    Ok(Scalar::Tuple(to.free.iter().map(|f| from.free.iter().position(|x|x==f).map(|i|values[i].clone()).ok_or_else(||ValidationFailure::from("制限先の自由位置がない"))).collect::<Result<Vec<_>,_>>()?))
+    if matches!(value, Scalar::Unit) && from.free.is_empty() && to.free.is_empty() {
+        return Ok(Scalar::Unit);
+    }
+    let Scalar::Tuple(values) = value else {
+        return Err("有限状態がTupleでない".into());
+    };
+    if values.len() != from.free.len() {
+        return Err("有限状態の座標数が違う".into());
+    }
+    Ok(Scalar::Tuple(
+        to.free
+            .iter()
+            .map(|f| {
+                from.free
+                    .iter()
+                    .position(|x| x == f)
+                    .map(|i| values[i].clone())
+                    .ok_or_else(|| ValidationFailure::from("制限先の自由位置がない"))
+            })
+            .collect::<Result<Vec<_>, _>>()?,
+    ))
 }
 fn values(state: &State, equation: bool) -> &[(Scalar, NodeRef)] {
     if equation {
@@ -130,9 +164,9 @@ pub(super) fn summary(
     })
 }
 pub(super) fn bijective(summary: &FiniteSide, c: &mut Control) -> Result<bool, ValidationFailure> {
-    let key = |value: &Scalar| Json::obj([
-        ("type", value.ty().wire()), ("value", value.wire())
-    ]).canonical();
+    let key = |value: &Scalar| {
+        Json::obj([("type", value.ty().wire()), ("value", value.wire())]).canonical()
+    };
     let mut counts = BTreeMap::<String, usize>::new();
     for (_, value) in &summary.restriction {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
@@ -181,15 +215,28 @@ pub(super) fn build(
         .slots
         .iter()
         .enumerate()
-        .filter(|(_, s)| if reading.is_some() {support.positions.contains(s)} else {support.visible.contains(s)})
+        .filter(|(_, s)| {
+            if reading.is_some() {
+                support.positions.contains(s)
+            } else {
+                support.visible.contains(s)
+            }
+        })
         .map(|(i, _)| i)
         .collect::<Vec<_>>();
     let free = indexes
         .iter()
         .map(|i| model.slots[*i].clone())
         .collect::<Vec<_>>();
-    let ty = if let Some(reading) = reading { Type::Tuple(vec![integer::coefficient_type(); reading.map.len()]) } else {
-        Type::Tuple(indexes.iter().map(|i| model.slot_types[*i].clone()).collect())
+    let ty = if let Some(reading) = reading {
+        Type::Tuple(vec![integer::coefficient_type(); reading.map.len()])
+    } else {
+        Type::Tuple(
+            indexes
+                .iter()
+                .map(|i| model.slot_types[*i].clone())
+                .collect(),
+        )
     };
     let mut projected = vec![];
     let mut equation_values = vec![];
@@ -197,17 +244,37 @@ pub(super) fn build(
     for (i, point) in model.points.iter().enumerate() {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
         let value = if let Some(reading) = reading {
-            let values = point.iter().map(integer::read_coefficient).collect::<Result<Vec<_>,_>>()?;
-            Scalar::Tuple(integer::linear::apply(&reading.map, &values,c)?.into_iter().map(integer::coefficient_value).collect())
-        } else { Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect()) };
+            let values = point
+                .iter()
+                .map(integer::read_coefficient)
+                .collect::<Result<Vec<_>, _>>()?;
+            Scalar::Tuple(
+                integer::linear::apply(&reading.map, &values, c)?
+                    .into_iter()
+                    .map(integer::coefficient_value)
+                    .collect(),
+            )
+        } else {
+            Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect())
+        };
         if holds(i) {
             equation_values.push(value.clone());
         }
         projected.push(value);
     }
-    let ambient = integer_ring.map(|ring| mixed_equation::ambient(b, ring, free.len())).transpose()?;
-    let equation_parameters = if let Some((_, domain)) = ambient { domain } else { scalar_domain(b, &ty, &projected, c)?.0 };
-    let finite_equation = if ambient.is_none() { Some(scalar_domain(b, &ty, &equation_values, c)?) } else { None };
+    let ambient = integer_ring
+        .map(|ring| mixed_equation::ambient(b, ring, free.len()))
+        .transpose()?;
+    let equation_parameters = if let Some((_, domain)) = ambient {
+        domain
+    } else {
+        scalar_domain(b, &ty, &projected, c)?.0
+    };
+    let finite_equation = if ambient.is_none() {
+        Some(scalar_domain(b, &ty, &equation_values, c)?)
+    } else {
+        None
+    };
     let mut all_parameters = vec![];
     let mut all_images = vec![];
     let mut solution_parameters = vec![];
@@ -269,7 +336,9 @@ pub(super) fn build(
         ]);
         slot_values.push(wire.clone());
         if let Some(i) = model.slots.iter().position(|f| f == slot) {
-            if !free.contains(slot) { continue; }
+            if !free.contains(slot) {
+                continue;
+            }
             variables.push(Json::obj([
                 (
                     "position",
@@ -450,42 +519,54 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let (equation, equation_domain, equation_values, integer) = if let (Some(ring), Some((ambient, _))) = (integer_ring, ambient) {
-        let (solution, domain, state) = mixed_equation::solve(env, b, ring, ambient, equations, model, &indexes, selected, laws, reading, c)?;
-        (solution, domain, vec![], Some(state))
-    } else {
-        let (equation_domain, equation_values) = finite_equation.ok_or("有限方程式の列挙がない")?;
-    let equation = b.push(
-        NodeType::Construction(T::EquationSolutionSet),
-        "equation_solutions",
-        Json::obj([
-            ("domain", equations.wire()),
-            (
-                "representation",
+    let (equation, equation_domain, equation_values, integer) =
+        if let (Some(ring), Some((ambient, _))) = (integer_ring, ambient) {
+            let (solution, domain, state) = mixed_equation::solve(
+                env, b, ring, ambient, equations, model, &indexes, selected, laws, reading, c,
+            )?;
+            (solution, domain, vec![], Some(state))
+        } else {
+            let (equation_domain, equation_values) =
+                finite_equation.ok_or("有限方程式の列挙がない")?;
+            let equation = b.push(
+                NodeType::Construction(T::EquationSolutionSet),
+                "equation_solutions",
                 Json::obj([
-                    ("kind", Json::str("finite")),
+                    ("domain", equations.wire()),
                     (
-                        "values",
-                        refs(&equation_values.iter().map(|(_, r)| *r).collect::<Vec<_>>()),
+                        "representation",
+                        Json::obj([
+                            ("kind", Json::str("finite")),
+                            (
+                                "values",
+                                refs(&equation_values.iter().map(|(_, r)| *r).collect::<Vec<_>>()),
+                            ),
+                        ]),
                     ),
                 ]),
-            ),
-        ]),
-        std::iter::once(equations)
-            .chain(equation_values.iter().map(|(_, r)| *r))
-            .collect(),
-        None,
-        None,
-    )?;
-        (equation, equation_domain, equation_values, None)
-    };
-    let comparison_pairs = semantic_values.iter().map(|(v, r)| {
-        let image = if let Some(state) = &integer { mixed_equation::vector(b, state, v, c)? } else {
-            equation_values.iter().find(|(w, _)| w == v).map(|(_, s)| *s)
-                .ok_or("許可作用の解が方程式解にない")?
+                std::iter::once(equations)
+                    .chain(equation_values.iter().map(|(_, r)| *r))
+                    .collect(),
+                None,
+                None,
+            )?;
+            (equation, equation_domain, equation_values, None)
         };
-        Ok((*r, image))
-    }).collect::<Result<Vec<_>, ValidationFailure>>()?;
+    let comparison_pairs = semantic_values
+        .iter()
+        .map(|(v, r)| {
+            let image = if let Some(state) = &integer {
+                mixed_equation::vector(b, state, v, c)?
+            } else {
+                equation_values
+                    .iter()
+                    .find(|(w, _)| w == v)
+                    .map(|(_, s)| *s)
+                    .ok_or("許可作用の解が方程式解にない")?
+            };
+            Ok((*r, image))
+        })
+        .collect::<Result<Vec<_>, ValidationFailure>>()?;
     let identity = state_map(b, states, equation_domain, &comparison_pairs)?;
     Ok(State {
         reading: reading.cloned(),

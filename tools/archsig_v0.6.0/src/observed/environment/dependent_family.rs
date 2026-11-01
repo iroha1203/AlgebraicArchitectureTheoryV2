@@ -1,8 +1,8 @@
 //! 元署名を左から束縛した実fiber。検査は提示された行でなく元観測から域を再構成する。
-use crate::observed::environment::state::ScopedReplace;
 use super::family::{Plan, family_items, family_type};
 use super::*;
 use crate::law::ast::QuantKind;
+use crate::observed::environment::state::ScopedReplace;
 
 pub(in crate::observed) struct DependentStep {
     pub enumeration: super::super::finite::Enumeration,
@@ -33,7 +33,8 @@ impl Environment<'_> {
             let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
-                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() =
+                        self.completion_values(graph, case)?;
                 }
                 run()
             })();
@@ -119,8 +120,8 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let declaration =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let declaration = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         let mut enumeration = super::super::finite::Enumeration::default();
         match &argument.value {
             Selector::Subject { snapshot, subject } => {
@@ -276,8 +277,11 @@ impl Environment<'_> {
                 }
             }
         } else if let Some((enumeration, missing)) = if self.indexes.object_instance.is_some()
-            && !super::super::finite::supported(&p.ty.erase(), self.indexes.inputs.law(), &self.control)?
-        {
+            && !super::super::finite::supported(
+                &p.ty.erase(),
+                self.indexes.inputs.law(),
+                &self.control,
+            )? {
             self.native_law_parameter_domain(p)?
         } else {
             None
@@ -296,7 +300,10 @@ impl Environment<'_> {
                 self.indexes.inputs.law(),
                 &self.control,
                 &mut |entity| {
-                    self.indexes.reference_roster(&self.control, entity, &mut |i| observer.borrow_mut()("ref_roster", i))
+                    self.indexes
+                        .reference_roster(&self.control, entity, &mut |i| {
+                            observer.borrow_mut()("ref_roster", i)
+                        })
                 },
                 &mut |entity, owner_name| {
                     self.tick()?;
@@ -660,7 +667,8 @@ impl Environment<'_> {
             return Ok(false);
         };
         self.validate_at(graph, graph.get(source)?, source.0)?;
-        let d = &self.indexes.inputs.law().declarations()[graph.requests[graph.context_at(source.0).request]
+        let d = &self.indexes.inputs.law().declarations()[graph.requests
+            [graph.context_at(source.0).request]
             .declaration()
             .ok_or("元要求に宣言がない")?];
         let context = self.current_context(graph);

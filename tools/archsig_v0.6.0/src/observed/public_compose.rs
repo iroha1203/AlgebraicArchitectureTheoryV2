@@ -299,9 +299,9 @@ fn value(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFail
 pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFailure> {
     let v = value(graph, r)?;
     match (&v.data, &v.witness) {
-        (D::InternalArrows(data), Witness::Architecture(_)) => {
-            data.operation().ok_or("内部arrowが保存確認済みOperationでない".into())
-        }
+        (D::InternalArrows(data), Witness::Architecture(_)) => data
+            .operation()
+            .ok_or("内部arrowが保存確認済みOperationでない".into()),
         (D::Operation { .. }, Witness::Map(m)) => {
             m.operation().ok_or("元mapのOperationがない".into())
         }
@@ -316,7 +316,9 @@ pub(super) fn components(
     r: NodeRef,
 ) -> Result<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>), ValidationFailure> {
     match &value(graph, r)?.data {
-        D::InternalArrows(data) => data.components().ok_or("内部arrowのOperation実体がない".into()),
+        D::InternalArrows(data) => data
+            .components()
+            .ok_or("内部arrowのOperation実体がない".into()),
         D::Operation {
             source,
             target,
@@ -664,7 +666,9 @@ pub(super) fn validate_failure(graph: &Graph, reason: &Reason) -> Result<(), Val
         return Err("合成条件の理由でない".into());
     };
     let v = value(graph, condition)?;
-    if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_failure(graph,reason,c); }
+    if let Witness::PathCompose(c) = &v.witness {
+        return super::public_path_compose::validate_failure(graph, reason, c);
+    }
     let Witness::Compose(c) = &v.witness else {
         return Err("合成の元証拠がない".into());
     };
@@ -692,7 +696,9 @@ pub(super) fn validate_answer(
     }
     let p = answer.claim.ok_or("合成の構成命題がない")?;
     let v = value(graph, p)?;
-    if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_answer(environment,graph,request,answer,c); }
+    if let Witness::PathCompose(c) = &v.witness {
+        return super::public_path_compose::validate_answer(environment, graph, request, answer, c);
+    }
     let Witness::Compose(c) = &v.witness else {
         return Err("合成の元検査がない".into());
     };
@@ -738,8 +744,18 @@ pub(super) fn evaluate(
     request: &Request,
     control: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    if request.constraints.iter().any(|c| matches!(c.expected, crate::types::Type::Path(..))) {
-        return super::public_path_compose::evaluate(prepared,environment,graph,request,control);
+    if request
+        .constraints
+        .iter()
+        .any(|c| matches!(c.expected, crate::types::Type::Path(..)))
+    {
+        return super::public_path_compose::evaluate(
+            prepared,
+            environment,
+            graph,
+            request,
+            control,
+        );
     }
     control.checkpoint(Checkpoint::ConfigurationOperation)?;
     if let Some(answer) = super::public_map::unavailable(environment, graph, request)? {

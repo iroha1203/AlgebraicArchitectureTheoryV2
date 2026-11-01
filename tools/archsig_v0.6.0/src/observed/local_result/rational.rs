@@ -12,10 +12,14 @@ pub(in crate::observed::local_result) fn coefficient_type() -> crate::types::Typ
 pub(in crate::observed::local_result) fn coefficient_name() -> &'static str {
     "Q"
 }
-pub(in crate::observed::local_result) fn coefficient_value(v: Z) -> crate::observed::result::Scalar {
+pub(in crate::observed::local_result) fn coefficient_value(
+    v: Z,
+) -> crate::observed::result::Scalar {
     v.scalar()
 }
-pub(in crate::observed::local_result) fn read_coefficient(v: &crate::observed::result::Scalar) -> Result<Z,crate::observed::result::ValidationFailure> {
+pub(in crate::observed::local_result) fn read_coefficient(
+    v: &crate::observed::result::Scalar,
+) -> Result<Z, crate::observed::result::ValidationFailure> {
     Z::from_scalar(v)
 }
 fn reduce_torsion(_: &mut Z, _: &Z) {

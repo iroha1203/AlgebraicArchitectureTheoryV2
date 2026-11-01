@@ -454,7 +454,8 @@ fn subject_value(name: &str, entity: &str) -> Scalar {
     }
 }
 fn family(e: &Environment<'_>, owner: &str) -> Result<SourceValue, ValidationFailure> {
-    let Signature::View { body, .. } = e.indexes.inputs.law().declarations()["Selected.family"].signature
+    let Signature::View { body, .. } =
+        e.indexes.inputs.law().declarations()["Selected.family"].signature
     else {
         panic!()
     };

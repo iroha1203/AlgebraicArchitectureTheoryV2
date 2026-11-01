@@ -72,8 +72,10 @@ impl NodeType {
     pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(ty) => Json::str(ty.name()),
-            Self::Vector(module) => Json::Arr(vec![Json::str("Vector"),module.wire()]),
-            Self::ModuleMap(source,target) => Json::Arr(vec![Json::str("ModuleMap"),source.wire(),target.wire()]),
+            Self::Vector(module) => Json::Arr(vec![Json::str("Vector"), module.wire()]),
+            Self::ModuleMap(source, target) => {
+                Json::Arr(vec![Json::str("ModuleMap"), source.wire(), target.wire()])
+            }
             Self::Value(t) => t.wire(),
             Self::Expression(_) => Json::str("Expression"),
             Self::Evaluation(_) => Json::str("Evaluation"),
@@ -174,10 +176,7 @@ impl Scalar {
             Self::Data {
                 constructor, args, ..
             } => Json::obj([
-                (
-                    "tag",
-                    Json::str(constructor.short()),
-                ),
+                ("tag", Json::str(constructor.short())),
                 ("args", Json::Arr(args.iter().map(Scalar::wire).collect())),
             ]),
             Self::Bool(b) => Json::Bool(*b),
@@ -701,9 +700,19 @@ impl Reason {
     }
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
-            ReasonKind::Missing => ("observation of a primitive slot is required".to_owned(), Json::obj([])),
-            ReasonKind::VisibilityInsufficient { locals, coordinates } => (
-                format!("insufficient local read permissions: locals {}, coordinates {}", Json::Arr(locals.iter().map(Json::str).collect()).canonical(), refs(coordinates).canonical()),
+            ReasonKind::Missing => (
+                "observation of a primitive slot is required".to_owned(),
+                Json::obj([]),
+            ),
+            ReasonKind::VisibilityInsufficient {
+                locals,
+                coordinates,
+            } => (
+                format!(
+                    "insufficient local read permissions: locals {}, coordinates {}",
+                    Json::Arr(locals.iter().map(Json::str).collect()).canonical(),
+                    refs(coordinates).canonical()
+                ),
                 Json::obj([
                     ("locals", Json::Arr(locals.iter().map(Json::str).collect())),
                     ("coordinates", refs(coordinates)),
@@ -728,7 +737,11 @@ impl Reason {
                 operand_types,
                 method,
             } => (
-                format!("unsupported algorithm {method} for {} with operand types {}", question.wire(), Json::Arr(operand_types.iter().map(Type::wire).collect()).canonical()),
+                format!(
+                    "unsupported algorithm {method} for {} with operand types {}",
+                    question.wire(),
+                    Json::Arr(operand_types.iter().map(Type::wire).collect()).canonical()
+                ),
                 Json::obj([
                     ("question", Json::str(question.wire())),
                     (
@@ -1697,7 +1710,10 @@ impl ObservedEvaluation {
         if !inspection {
             semantic_result::compact(&mut result, &self.nodes, control, point)?;
         }
-        self.prepared.inputs().sources().add_location_positions(&mut result);
+        self.prepared
+            .inputs()
+            .sources()
+            .add_location_positions(&mut result);
         Ok(result)
     }
 }
@@ -1971,7 +1987,10 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
-                if construction == "repair" {super::change_result::validate_failure(self,reason)?;continue;}
+                if construction == "repair" {
+                    super::change_result::validate_failure(self, reason)?;
+                    continue;
+                }
                 if construction == "object_algebra_map" {
                     super::object_map_result::validate_failure(self, reason)?;
                     continue;
@@ -1985,7 +2004,7 @@ impl Graph {
                     continue;
                 }
                 if construction == "comparison" {
-                    super::public_compare::validate_failure(self,reason)?;
+                    super::public_compare::validate_failure(self, reason)?;
                     continue;
                 }
                 if construction == "projection" {
@@ -2569,7 +2588,9 @@ impl Graph {
     ) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
         self.tick()?;
         let node = self.get(template)?;
-        if matches!(&node.ty, NodeType::Expression(_)) && matches!(&node.payload, Some(Payload::Expression { .. })) {
+        if matches!(&node.ty, NodeType::Expression(_))
+            && matches!(&node.payload, Some(Payload::Expression { .. }))
+        {
             return Ok((template, None));
         }
         self.expect(template, &NodeType::Expression(Type::Bool))?;
@@ -3152,7 +3173,12 @@ impl Graph {
     }
 
     fn universal_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
-        if node.arguments.first().is_some_and(|r|matches!(self.get(*r).map(|n|&n.payload),Ok(Some(Payload::LawInstance {..})))) {
+        if node.arguments.first().is_some_and(|r| {
+            matches!(
+                self.get(*r).map(|n| &n.payload),
+                Ok(Some(Payload::LawInstance { .. }))
+            )
+        }) {
             return Ok(false);
         }
         let Some(Payload::Evaluation {
@@ -4206,12 +4232,16 @@ impl Graph {
 
     /// Path を含む束縛は、この要求が依存する既出の型付き値を使う。
     pub(super) fn retained_path_binding(
-        &self, value: &Scalar,
+        &self,
+        value: &Scalar,
     ) -> Result<Option<NodeRef>, ValidationFailure> {
         if !super::path_value::contains_path(&value.ty(), &self.control)? {
             return Ok(None);
         }
-        let request = self.requests.get(self.active.request).ok_or("Path束縛の要求がない")?;
+        let request = self
+            .requests
+            .get(self.active.request)
+            .ok_or("Path束縛の要求がない")?;
         let mut roots = vec![];
         for (_, answer) in &self.checked_answers {
             self.tick()?;
@@ -4270,19 +4300,21 @@ impl Graph {
                 let domain_type = match &self.get(domain)?.payload {
                     Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
                     Some(Payload::Construction(value)) => match &value.data {
-                        super::construction_result::ConstructionData::PolynomialLaw(data) => {
-                            data.scope_domain_type().ok_or("Scopeの多項式読取り参照がDomainでない")?
-                        },
-                        super::construction_result::ConstructionData::ViewFamily(data) => {
-                            data.scope_domain_type().ok_or("Scopeの有限view参照がDomainでない")?
-                        },
-                        super::construction_result::ConstructionData::Local(data) => {
-                            data.scope_domain_type().ok_or("Scopeの局所参照が量化Domainでない")?
-                        },
-                        super::construction_result::ConstructionData::ObjectMap(data) => {
-                            data.scope_domain_type().ok_or("Scopeの写像参照が量化Domainでない")?
-                        },
-                        super::construction_result::ConstructionData::Comparison(super::public_compare::Part::RelationDerived { data, .. }) => match data.as_ref() {
+                        super::construction_result::ConstructionData::PolynomialLaw(data) => data
+                            .scope_domain_type()
+                            .ok_or("Scopeの多項式読取り参照がDomainでない")?,
+                        super::construction_result::ConstructionData::ViewFamily(data) => data
+                            .scope_domain_type()
+                            .ok_or("Scopeの有限view参照がDomainでない")?,
+                        super::construction_result::ConstructionData::Local(data) => data
+                            .scope_domain_type()
+                            .ok_or("Scopeの局所参照が量化Domainでない")?,
+                        super::construction_result::ConstructionData::ObjectMap(data) => data
+                            .scope_domain_type()
+                            .ok_or("Scopeの写像参照が量化Domainでない")?,
+                        super::construction_result::ConstructionData::Comparison(
+                            super::public_compare::Part::RelationDerived { data, .. },
+                        ) => match data.as_ref() {
                             super::public_compare::relations::Data::Domain { ty, .. } => ty,
                             _ => return Err("Scopeのnative参照が有限Domainでない".into()),
                         },

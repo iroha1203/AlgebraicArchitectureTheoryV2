@@ -498,9 +498,14 @@ pub(super) fn evaluate(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<Evaluations, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, origin, architecture, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        env,
+        graph,
+        origin,
+        architecture,
+        c,
+    ))
 }
-
 
 impl Environment<'_> {
     pub(super) fn recheck_law_frame(

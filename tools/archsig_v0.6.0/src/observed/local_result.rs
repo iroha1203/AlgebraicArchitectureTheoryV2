@@ -23,14 +23,14 @@ use crate::{
     types::Type,
 };
 use std::{collections::BTreeMap, sync::Arc};
-mod integer;
-mod rational;
 mod comparison;
-mod rational_finite;
-mod rational_geometry;
 mod finite;
 mod finite_model;
 pub(super) mod geometry;
+mod integer;
+mod rational;
+mod rational_finite;
+mod rational_geometry;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -127,21 +127,37 @@ impl Data {
         }
     }
     pub(super) fn scalar_projection(&self, path: &[ProjectionStep]) -> Option<Scalar> {
-        if self.ty() != NodeType::Construction(T::Module) { return None; }
-        let Json::Obj(fields) = &self.part().wire else { return None; };
+        if self.ty() != NodeType::Construction(T::Module) {
+            return None;
+        }
+        let Json::Obj(fields) = &self.part().wire else {
+            return None;
+        };
         match path {
             [ProjectionStep::Field(field)] if field == "free_rank" => {
-                let Json::Nat(rank) = fields.get(field)? else { return None; };
+                let Json::Nat(rank) = fields.get(field)? else {
+                    return None;
+                };
                 Some(Scalar::Z((*rank).into()))
             }
             [ProjectionStep::Field(field), rest @ ..] if field == "torsion" => {
-                let Json::Arr(values) = fields.get(field)? else { return None; };
-                let values = values.iter().map(|v| {
-                    let Json::Str(value) = v else { return None; };
-                    Some(Scalar::Z(value.parse().ok()?))
-                }).collect::<Option<Vec<_>>>()?;
+                let Json::Arr(values) = fields.get(field)? else {
+                    return None;
+                };
+                let values = values
+                    .iter()
+                    .map(|v| {
+                        let Json::Str(value) = v else {
+                            return None;
+                        };
+                        Some(Scalar::Z(value.parse().ok()?))
+                    })
+                    .collect::<Option<Vec<_>>>()?;
                 match rest {
-                    [] => Some(Scalar::List { element: Type::Z, items: values }),
+                    [] => Some(Scalar::List {
+                        element: Type::Z,
+                        items: values,
+                    }),
                     [ProjectionStep::Index(i)] => values.get(usize::try_from(*i).ok()?).cloned(),
                     _ => None,
                 }
@@ -171,9 +187,14 @@ impl Data {
             NodeType::Construction(T::Module) => field == "ring",
             NodeType::Vector(_) => field == "module",
             NodeType::Construction(T::Cohomology) => field == "module",
-            NodeType::Construction(T::Class) => matches!(field.as_str(), "cohomology" | "coordinates"),
-            NodeType::Construction(T::Comparison) => matches!(field.as_str(), "finite_map"|"cohomology_map"|"kernel"|"cokernel"|"class_transport"),
-            NodeType::ModuleMap(_, _) => matches!(field.as_str(), "source"|"target"),
+            NodeType::Construction(T::Class) => {
+                matches!(field.as_str(), "cohomology" | "coordinates")
+            }
+            NodeType::Construction(T::Comparison) => matches!(
+                field.as_str(),
+                "finite_map" | "cohomology_map" | "kernel" | "cokernel" | "class_transport"
+            ),
+            NodeType::ModuleMap(_, _) => matches!(field.as_str(), "source" | "target"),
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             _ => false,
         };
@@ -961,12 +982,20 @@ fn diagnose(
         })
         .ok_or("診断次数がない")?;
     if let Some(diagram) = &system.integer {
-        let semantic=request.arguments.iter().any(|a|a.name=="side"&&matches!(&a.value,Selector::Enum{value} if value=="semantic"));
-        if !diagram.equation_only || !semantic { return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
+        let semantic = request.arguments.iter().any(|a| {
+            a.name == "side" && matches!(&a.value,Selector::Enum{value} if value=="semantic")
+        });
+        if !diagram.equation_only || !semantic {
+            return integer::diagnose(env, g, request, target, base, witness, diagram, degree, c);
+        }
     }
     if let Some(diagram) = &system.rational {
-        let semantic=request.arguments.iter().any(|a|a.name=="side"&&matches!(&a.value,Selector::Enum{value} if value=="semantic"));
-        if !diagram.equation_only || !semantic { return rational::diagnose(env, g, request, target, base, witness, diagram, degree, c); }
+        let semantic = request.arguments.iter().any(|a| {
+            a.name == "side" && matches!(&a.value,Selector::Enum{value} if value=="semantic")
+        });
+        if !diagram.equation_only || !semantic {
+            return rational::diagnose(env, g, request, target, base, witness, diagram, degree, c);
+        }
     }
     if degree > 1 {
         let mut b = Builder {
@@ -977,8 +1006,12 @@ fn diagnose(
         let (dependencies, scope) = if let Some(expression) = system.expression {
             let original = &data.source.parts[expression.0 - data.source.base];
             let expression = b.push(
-                original.ty.clone(), original.construction, original.wire.clone(),
-                original.arguments.iter().copied().chain([target]).collect(), None, None,
+                original.ty.clone(),
+                original.construction,
+                original.wire.clone(),
+                original.arguments.iter().copied().chain([target]).collect(),
+                None,
+                None,
             )?;
             (vec![expression], b.parts[0].scope.clone())
         } else {
@@ -995,7 +1028,9 @@ fn diagnose(
             missing: vec![],
             location: None,
         };
-        if let Some(part) = b.parts.first_mut() { part.reasons.push(reason.clone()); }
+        if let Some(part) = b.parts.first_mut() {
+            part.reasons.push(reason.clone());
+        }
         let answer = Answer {
             id: request.id.clone(),
             status: Decision::Undetermined,
@@ -1016,7 +1051,17 @@ fn diagnose(
         });
     }
     if let Some(finite) = &system.finite {
-        return finite::diagnose(g, request, target, base, witness, finite, &system.laws, degree, c);
+        return finite::diagnose(
+            g,
+            request,
+            target,
+            base,
+            witness,
+            finite,
+            &system.laws,
+            degree,
+            c,
+        );
     }
     let side = request
         .arguments
@@ -1044,7 +1089,10 @@ fn diagnose(
         parts: vec![],
     };
     let unit = change_result::value(&mut b, &Scalar::Unit)?;
-    let tuple = change_result::value(&mut b, &Scalar::Tuple(vec![Scalar::Unit; system.patch_count]))?;
+    let tuple = change_result::value(
+        &mut b,
+        &Scalar::Tuple(vec![Scalar::Unit; system.patch_count]),
+    )?;
     let matching = domain(
         &mut b,
         &Type::Tuple(vec![Type::Unit; system.patch_count]),
@@ -1164,7 +1212,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -1222,18 +1270,29 @@ impl Environment<'_> {
             )
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
-            if let ReasonKind::Stop(stop) = &r.kind { Some(*stop) } else { None }
+            if let ReasonKind::Stop(stop) = &r.kind {
+                Some(*stop)
+            } else {
+                None
+            }
         }) {
             return Err(ValidationFailure::Stop(stop));
         }
-        if d.source.answer.reasons.iter().any(|r|matches!(r.kind,ReasonKind::Stop(_))) {
+        if d.source
+            .answer
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Stop(_)))
+        {
             if rebuilt.scope_domains != d.source.scope_domains
                 || !rebuilt.parts.starts_with(&d.source.parts)
                 || d.source.system.is_some()
                 || d.source.answer.status != Decision::Undetermined
                 || !d.source.answer.outputs.is_empty()
                 || d.source.answer.claim.is_some()
-            { return Err("局所系の停止断片の再構成が違う".into()); }
+            {
+                return Err("局所系の停止断片の再構成が違う".into());
+            }
             self.remember_local_source(d.source.clone());
             return Ok(());
         }
@@ -1273,7 +1332,10 @@ pub(super) fn validate_answer(
                 .find(|r| {
                     matches!(
                         r.kind,
-                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. } | ReasonKind::VisibilityInsufficient { .. } | ReasonKind::Stop(_)
+                        ReasonKind::Missing
+                            | ReasonKind::UnsupportedAlgorithm { .. }
+                            | ReasonKind::VisibilityInsufficient { .. }
+                            | ReasonKind::Stop(_)
                     )
                 })
                 .and_then(|r| r.dependencies.first())
@@ -1290,8 +1352,14 @@ pub(super) fn validate_answer(
             compute(env, g, request, g.nodes.len(), &mut env.control.clone())
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
-            if let ReasonKind::Stop(stop) = &r.kind { Some(*stop) } else { None }
-        }) { return Err(ValidationFailure::Stop(stop)); }
+            if let ReasonKind::Stop(stop) = &r.kind {
+                Some(*stop)
+            } else {
+                None
+            }
+        }) {
+            return Err(ValidationFailure::Stop(stop));
+        }
         return if rebuilt.parts.is_empty() && rebuilt.answer == *answer {
             Ok(())
         } else {

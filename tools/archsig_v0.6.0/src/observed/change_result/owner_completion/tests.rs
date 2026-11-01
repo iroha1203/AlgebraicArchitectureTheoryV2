@@ -1,6 +1,6 @@
 use super::*;
-use crate::{input::InputSources, observed::evaluate::evaluate_observed_bytes};
 use crate::control::quiet;
+use crate::{input::InputSources, observed::evaluate::evaluate_observed_bytes};
 fn completed() -> ObservedEvaluation {
     completed_with_structure_only_owner(false)
 }
@@ -20,7 +20,9 @@ fn completed_with_structure_only_owner(structure_only: bool) -> ObservedEvaluati
     );
     result
 }
-mod owner_delivery_sources { include!("../../../../tests/common/owner_delivery_sources.rs"); }
+mod owner_delivery_sources {
+    include!("../../../../tests/common/owner_delivery_sources.rs");
+}
 use owner_delivery_sources::owner_sources;
 fn rebuild(result: &ObservedEvaluation, nodes: &[Node]) -> Result<Graph, ValidationFailure> {
     let mut c = quiet();

@@ -372,7 +372,9 @@ pub(super) fn retain(
     components: Option<NodeRef>,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, inputs, reference, components, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        env, g, inputs, reference, components, c,
+    ))
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {
@@ -439,7 +441,8 @@ impl Environment<'_> {
             return Err("query patternの元入力/全対象/共通U/metadataが違う".into());
         }
         if self
-            .results.verified::<std::sync::Arc<crate::observed::circuit_pattern::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::circuit_pattern::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {

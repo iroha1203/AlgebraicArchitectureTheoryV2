@@ -197,12 +197,7 @@ fn map_write_failures_remove_only_this_runs_temporary_directory() {
             ..Files::default()
         };
         let mut signals = Finalize::default();
-        let outcome = run_requests(
-            &mut io,
-            &mut signals,
-            &args,
-            &mut Control::unlimited(),
-        );
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut Control::unlimited());
         assert_eq!(outcome.status, Status::Error);
         assert_eq!(outcome.exit_code, 74);
         assert!(outcome.result.is_none());

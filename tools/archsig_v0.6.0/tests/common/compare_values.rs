@@ -55,7 +55,9 @@ pub fn input(missing: bool, extra: &str) -> InputSources {
         .map(|(n, _, t, _)| format!("view {n}(s:Sample):{t} = s.{n};"))
         .collect::<Vec<_>>()
         .join("\n");
-    let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Values{{use vocabulary Values version \"1\" digest \"{digest}\";{views}{extra}}}");
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Values{{use vocabulary Values version \"1\" digest \"{digest}\";{views}{extra}}}"
+    );
     let mut atoms = vec![];
     for id in ["a", "b"] {
         for (n, _, _, v) in FIELDS {

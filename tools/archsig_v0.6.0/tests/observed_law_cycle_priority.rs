@@ -76,10 +76,7 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     });
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
-    assert_eq!(
-        failure.issues(),
-        [expected_input_issue(law, &expected)]
-    );
+    assert_eq!(failure.issues(), [expected_input_issue(law, &expected)]);
     assert!(total.get() > 2);
     (expected, total.get())
 }

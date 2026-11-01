@@ -306,7 +306,11 @@ impl Data {
     }
     pub(super) fn root_type(&self) -> Option<String> {
         let root = self.root()?;
-        let Part::Subject(Scalar::Subject { entity, .. }) = self.source.parts.get(root.0.checked_sub(self.source.base)?)? else {
+        let Part::Subject(Scalar::Subject { entity, .. }) = self
+            .source
+            .parts
+            .get(root.0.checked_sub(self.source.base)?)?
+        else {
             return None;
         };
         Some(entity.clone())
@@ -734,15 +738,21 @@ pub(super) fn original_family(
         return Err("内部arrowの対象表のbaseが違う".into());
     }
     let source = &data.source;
-    let end = source.base.checked_add(source.parts.len())
+    let end = source
+        .base
+        .checked_add(source.parts.len())
         .ok_or("内部arrowの対象表の完了位置が範囲外")?;
     if graph.nodes.len() < end {
         return Err("内部arrowの標準対象族が保持途中".into());
     }
-    let context = *graph.contexts.get(source.reference.0)
+    let context = *graph
+        .contexts
+        .get(source.reference.0)
         .ok_or("内部arrowの元Architectureのcontextがない")?;
     for index in 0..source.parts.len() {
-        let at = source.base.checked_add(index)
+        let at = source
+            .base
+            .checked_add(index)
             .ok_or("内部arrowの対象表の位置が範囲外")?;
         let node = graph.get(NodeRef(at))?;
         let Some(Payload::Construction(value)) = &node.payload else {
@@ -752,7 +762,8 @@ pub(super) fn original_family(
             return Err("内部arrowの対象表が別由来に置換された".into());
         };
         current.position(at)?;
-        if !Arc::ptr_eq(source, &current.source) || current.index != index
+        if !Arc::ptr_eq(source, &current.source)
+            || current.index != index
             || graph.contexts.get(at) != Some(&context)
         {
             return Err("内部arrowの対象表の位置・由来・contextが違う".into());
@@ -818,7 +829,7 @@ pub(super) fn retain(
     reference: NodeRef,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, c))
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let part = data
@@ -894,7 +905,8 @@ impl Environment<'_> {
             return Err("対象族のconsumerが元Architectureと違う".into());
         }
         if self
-            .results.verified::<std::sync::Arc<crate::observed::object_component_diagram::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::object_component_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {

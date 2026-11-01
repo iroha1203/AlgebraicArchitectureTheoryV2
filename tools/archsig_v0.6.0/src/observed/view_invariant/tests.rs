@@ -4,7 +4,8 @@ use crate::{
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::sync::Arc;
-const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
+const DEFINITION: &[u8] =
+    include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 use crate::control::quiet;
@@ -107,31 +108,81 @@ fn numeric_view_families_keep_domains_objects_and_missing_values() {
         for missing in [false, true] {
             let law = LAW.replace("view amount(p: Part): Z = p.quantity;", &format!(
                 "view amount(p:Part,x:{ty},y:{ty}):{ty}=let a=x+y in a+p.quantity;view outside(r:Root,x:{ty}):{ty}=x+1;"));
-            let mut map = MAP.lines().filter(|line| !missing || !line.contains("p-quantity")).collect::<Vec<_>>().join("\n");
-            let definition = std::str::from_utf8(DEFINITION).unwrap().replace("\"type\": \"Z\"", &format!("\"type\": \"{ty}\""));
+            let mut map = MAP
+                .lines()
+                .filter(|line| !missing || !line.contains("p-quantity"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            let definition = std::str::from_utf8(DEFINITION)
+                .unwrap()
+                .replace("\"type\": \"Z\"", &format!("\"type\": \"{ty}\""));
             if ty == "Q" {
-                for z in [2, 7, 11] { map = map.replace(&format!("\"value\":\"{z}\""), &format!("\"value\":[\"{z}\",\"1\"]")); }
+                for z in [2, 7, 11] {
+                    map = map.replace(
+                        &format!("\"value\":\"{z}\""),
+                        &format!("\"value\":[\"{z}\",\"1\"]"),
+                    );
+                }
             }
             let p = prepared_with_definition(&law, &map, definition.as_bytes());
             let (g, d) = complete(&p);
             assert!(d.pending.is_empty());
-            let axis = d.axes.iter().find(|axis| data(&g, axis.invariant).output.declaration.ends_with(".amount")).unwrap();
+            let axis = d
+                .axes
+                .iter()
+                .find(|axis| {
+                    data(&g, axis.invariant)
+                        .output
+                        .declaration
+                        .ends_with(".amount")
+                })
+                .unwrap();
             let output = &data(&g, axis.invariant).output;
             assert_eq!(output.parameters.len(), 2);
-            assert_eq!(output.reasons.iter().any(|r| !r.missing.is_empty()), missing);
+            assert_eq!(
+                output.reasons.iter().any(|r| !r.missing.is_empty()),
+                missing
+            );
             for v in &output.values {
                 let n = g.get(v.evaluation).unwrap();
-                let Some(Payload::Evaluation { value: None, parts, .. }) = &n.payload else { panic!() };
+                let Some(Payload::Evaluation {
+                    value: None, parts, ..
+                }) = &n.payload
+                else {
+                    panic!()
+                };
                 assert_eq!(parts[0].children.len(), 1);
                 let body = g.get(parts[0].children[0]).unwrap();
-                let Some(Payload::Evaluation { expression, value: None, .. }) = &body.payload else { panic!() };
-                let Some(Payload::Expression { parameters, .. }) = &g.get(*expression).unwrap().payload else { panic!() };
+                let Some(Payload::Evaluation {
+                    expression,
+                    value: None,
+                    ..
+                }) = &body.payload
+                else {
+                    panic!()
+                };
+                let Some(Payload::Expression { parameters, .. }) =
+                    &g.get(*expression).unwrap().payload
+                else {
+                    panic!()
+                };
                 assert_eq!(parameters, &output.parameters);
                 let mut changed = n.clone();
                 changed.reasons.clear();
-                if missing { assert!(whole::validate(&g, &changed, v.evaluation.0).is_err()); }
+                if missing {
+                    assert!(whole::validate(&g, &changed, v.evaluation.0).is_err());
+                }
             }
-            let outside = d.axes.iter().find(|axis| data(&g, axis.invariant).output.declaration.ends_with(".outside")).unwrap();
+            let outside = d
+                .axes
+                .iter()
+                .find(|axis| {
+                    data(&g, axis.invariant)
+                        .output
+                        .declaration
+                        .ends_with(".outside")
+                })
+                .unwrap();
             assert!(data(&g, outside.invariant).output.values.iter().any(|v| {
                 matches!(&g.get(v.evaluation).unwrap().payload, Some(Payload::Evaluation { applicability: "not_applicable", parts, .. }) if parts[0].children.is_empty())
             }));

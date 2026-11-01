@@ -80,7 +80,12 @@ fn evaluation(
             return Ok(Some(false));
         }
         if let (Some(lv), Some(rv)) = (lv, rv) {
-            return value_equality::equal(g.scalar(lv)?, g.scalar(rv)?, env.indexes.inputs.law(), c);
+            return value_equality::equal(
+                g.scalar(lv)?,
+                g.scalar(rv)?,
+                env.indexes.inputs.law(),
+                c,
+            );
         }
         if !l.reasons.is_empty() || !r.reasons.is_empty() {
             return Ok(None);

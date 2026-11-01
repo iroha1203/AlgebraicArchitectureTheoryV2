@@ -1,6 +1,6 @@
 //! 未生成の同一batch出力への依存を、元Answerの理由とともに返す。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
+use crate::observed::environment::state::ScopedReplace;
 use crate::observed::projection::ProjectionStep;
 
 impl Environment<'_> {
@@ -21,7 +21,8 @@ impl Environment<'_> {
         }
         self.tick()?;
         let originals = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .ok_or("依存停止の元Request列がない")?;
         let mut current = None;
         for (index, original) in originals.iter().enumerate() {
@@ -32,7 +33,8 @@ impl Environment<'_> {
         }
         let current = current.ok_or("依存停止のRequestが元入力にない")?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)

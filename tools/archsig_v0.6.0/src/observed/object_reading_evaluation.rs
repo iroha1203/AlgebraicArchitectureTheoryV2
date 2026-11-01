@@ -25,7 +25,9 @@ pub(super) fn origin(
         return Err("元view式がnativeでない".into());
     };
     if let D::ViewFamily(d) = &v.data {
-        return d.view_origin(r)?.ok_or_else(|| "有限view行が元読取り式でない".into());
+        return d
+            .view_origin(r)?
+            .ok_or_else(|| "有限view行が元読取り式でない".into());
     }
     let D::ObjectComponents(d) = &v.data else {
         return Err("元view式が元対象表にない".into());
@@ -355,9 +357,9 @@ fn put(g: &mut Graph, source: Arc<Source>, kind: Kind) -> Result<NodeRef, Valida
 }
 pub(super) fn numeric_parameters(o: &ViewOrigin) -> bool {
     !o.parameters.is_empty()
-        && o.parameters.iter().all(|(_, ty)| {
-            super::environment::numeric_parameters::numeric_width(ty).is_some()
-        })
+        && o.parameters
+            .iter()
+            .all(|(_, ty)| super::environment::numeric_parameters::numeric_width(ty).is_some())
 }
 pub(super) fn evaluate(
     env: &Environment<'_>,
@@ -365,7 +367,7 @@ pub(super) fn evaluate(
     expression: NodeRef,
     c: &mut Control,
 ) -> Result<Outcome, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c))
 }
 
 impl Environment<'_> {

@@ -506,7 +506,9 @@ fn native_unanchored_helpers_stay_out_of_axes_and_symbolic_parameters_keep_their
             assert_eq!(e.instance.is_some(), applies);
             assert_eq!(e.body.is_some(), applies);
             assert!(e.guard.is_none());
-            if !applies { assert_eq!(g.nodes.len(), before); }
+            if !applies {
+                assert_eq!(g.nodes.len(), before);
+            }
         }
     }
     replay(&p, &g, &g.nodes).unwrap();
@@ -514,7 +516,9 @@ fn native_unanchored_helpers_stay_out_of_axes_and_symbolic_parameters_keep_their
 #[test]
 fn native_numeric_law_frames_evaluate_the_requested_guard_and_body() {
     for guard in ["true", "false", "k=k"] {
-        let p = prepared(&format!("law required family(c:Part,k:Z) when {guard}:k=k;"));
+        let p = prepared(&format!(
+            "law required family(c:Part,k:Z) when {guard}:k=k;"
+        ));
         let (mut g, a, objects) = initial(&p);
         let rows = polynomial_origins(&mut g, &p, a);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -525,7 +529,9 @@ fn native_numeric_law_frames_evaluate_the_requested_guard_and_body() {
                 if let Some(actual) = e.guard {
                     assert_eq!(truth(&g, actual), Some(guard != "false"));
                     assert_eq!(e.body.is_some(), guard != "false");
-                    if let Some(body) = e.body { assert_eq!(truth(&g, body), Some(true)); }
+                    if let Some(body) = e.body {
+                        assert_eq!(truth(&g, body), Some(true));
+                    }
                     checked += 1;
                 }
             }

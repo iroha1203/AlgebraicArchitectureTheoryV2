@@ -67,9 +67,7 @@ impl Evaluator<'_, '_> {
             .collect::<Vec<_>>();
         let mut all_symbolic = !numeric.is_empty();
         for parameter in &numeric {
-            all_symbolic &= self
-                .environment
-                .law_parameter_symbolic_type(parameter)?;
+            all_symbolic &= self.environment.law_parameter_symbolic_type(parameter)?;
         }
         if all_symbolic {
             return self.universal_family_answer(_params, role);

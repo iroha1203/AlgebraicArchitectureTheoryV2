@@ -214,7 +214,7 @@ pub(super) fn retain(
     layout: Arc<Layout>,
     c: &mut Control,
 ) -> Result<Option<NodeRef>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, layout, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, layout, c))
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {

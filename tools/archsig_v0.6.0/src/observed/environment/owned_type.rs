@@ -1,6 +1,6 @@
 //! 元TypeAstの添字出現を、現在の実束縛producerと原始所属族へ結ぶ。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
+use crate::observed::environment::state::ScopedReplace;
 
 pub(in crate::observed) struct TypeDomain {
     pub values: Option<Vec<Scalar>>,
@@ -62,7 +62,10 @@ impl Environment<'_> {
             self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                self.indexes.reference_roster(&self.control, entity, &mut |i| observer.borrow_mut()("ref_roster", i))
+                self.indexes
+                    .reference_roster(&self.control, entity, &mut |i| {
+                        observer.borrow_mut()("ref_roster", i)
+                    })
             },
             &mut |entity, name| {
                 let leaf = spec
@@ -139,7 +142,8 @@ impl Environment<'_> {
         {
             // 所属条件だけが読むfieldも、同じ原始Dの依存位置へ入れる。
             for slot in object.conditional_positions(ty, &self.control)? {
-                self.indexes.field(&self.state,
+                self.indexes.field(
+                    &self.state,
                     &slot.snapshot,
                     &slot.subject,
                     slot.field.as_deref().ok_or("対象所属条件のfieldがない")?,
@@ -166,7 +170,8 @@ impl Environment<'_> {
                 }
                 use crate::definition::PrimitiveSignature;
                 if !matches!(
-                    self.indexes.inputs
+                    self.indexes
+                        .inputs
                         .definitions()
                         .declarations()
                         .get(subject.ty.as_str())
@@ -384,7 +389,8 @@ impl Environment<'_> {
         }
         let (owners, variables, missing) = self.owned_type_producers(graph, &spec, bindings)?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .values()
@@ -416,7 +422,8 @@ impl Environment<'_> {
             let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
-                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() =
+                        self.completion_values(graph, case)?;
                 }
                 #[cfg(test)]
                 data::observe_actual(

@@ -37,20 +37,22 @@ fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run, PathBuf) {
     write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
     write(&dir, "a.json", map);
-    let r = without_file_changes(&dir, || run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "o",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "o",
+            ],
+        )
+    });
     let res = notified(
         &dir,
         &r,
@@ -202,20 +204,22 @@ fn law_rejections_report_locations_without_files() {
         write(&dir, "d.json", DEFINITION.as_bytes());
         write(&dir, "l.law", &law);
         write(&dir, "a.json", MAP.as_bytes());
-        let r = without_file_changes(&dir, || run(
-            &dir,
-            &[
-                "check",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--out",
-                "o",
-            ],
-        ));
+        let r = without_file_changes(&dir, || {
+            run(
+                &dir,
+                &[
+                    "check",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--out",
+                    "o",
+                ],
+            )
+        });
         let status = if exit == 69 { "unsupported" } else { "invalid" };
         let res = notified(&dir, &r, status, exit);
         let (c, i, at) = only_issue(&res);
@@ -323,19 +327,21 @@ fn cli_misuse_is_usage() {
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o7").exists());
     // 未知の flag があれば、後の --out に失敗ファイルを保存しない。
-    let r = without_file_changes(&dir, || run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--bogus",
-            "--out",
-            "o10",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--bogus",
+                "--out",
+                "o10",
+            ],
+        )
+    });
     notified(&dir, &r, "invalid", 64);
     // --out が二つあれば出力先を決めず、出力を作らない。
     let r = run(
@@ -356,20 +362,22 @@ fn cli_misuse_is_usage() {
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o8").exists() && !dir.join("o9").exists());
     // 出力先の指定があっても、usage は stdout の issue に返す。
-    let r = without_file_changes(&dir, || run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "o6",
-            "--unknown",
-            "x",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "o6",
+                "--unknown",
+                "x",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "invalid", 64);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "--unknown");
@@ -382,20 +390,22 @@ fn definition_failure_precedes_law_and_archmap_without_files() {
     write(&dir, "d.json", definition.as_bytes());
     write(&dir, "l.law", b"invalid law");
     write(&dir, "a.json", b"invalid JSON");
-    let r = without_file_changes(&dir, || run(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "o",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "o",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "invalid", 65);
     assert_eq!(
         only_issue(&res),
@@ -450,20 +460,22 @@ fn unsupported_json_versions_precede_unknown_fields() {
                     MAP.as_bytes()
                 },
             );
-            let r = without_file_changes(&dir, || run(
-                &dir,
-                &[
-                    "check",
-                    "--atom-definition",
-                    "d.json",
-                    "--law",
-                    "l.law",
-                    "--archmap",
-                    "a.json",
-                    "--out",
-                    "o",
-                ],
-            ));
+            let r = without_file_changes(&dir, || {
+                run(
+                    &dir,
+                    &[
+                        "check",
+                        "--atom-definition",
+                        "d.json",
+                        "--law",
+                        "l.law",
+                        "--archmap",
+                        "a.json",
+                        "--out",
+                        "o",
+                    ],
+                )
+            });
             let res = notified(&dir, &r, "unsupported", 69);
             assert_eq!(
                 only_issue(&res),
@@ -501,18 +513,20 @@ fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
         let dir = workdir(name);
         write(&dir, "d.json", DEFINITION.as_bytes());
         write(&dir, "l.law", law.as_bytes());
-        let r = without_file_changes(&dir, || run(
-            &dir,
-            &[
-                "check",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--out",
-                "o",
-            ],
-        ));
+        let r = without_file_changes(&dir, || {
+            run(
+                &dir,
+                &[
+                    "check",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--out",
+                    "o",
+                ],
+            )
+        });
         let res = notified(
             &dir,
             &r,

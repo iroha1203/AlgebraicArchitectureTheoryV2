@@ -336,7 +336,7 @@ pub(super) fn retain(
     components: NodeRef,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, components, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, components, c))
 }
 pub(super) fn validate_node(
     g: &Graph,

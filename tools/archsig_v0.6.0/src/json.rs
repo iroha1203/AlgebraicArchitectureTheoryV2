@@ -142,7 +142,9 @@ pub fn parse_inner<E: InputError>(
         let v = p.value("")?;
         p.ws()?;
         if p.i != p.s.len() {
-            return Err((syntax((p.i, p.s.len()), "unexpected characters after JSON value")).into());
+            return Err(
+                (syntax((p.i, p.s.len()), "unexpected characters after JSON value")).into(),
+            );
         }
         Ok(v)
     })();
@@ -378,9 +380,11 @@ impl<E: InputError> P<'_, '_, E> {
                     }
                 }
                 c if c < 0x20 => {
-                    return Err(
-                        (syntax((self.i, self.i + 1), "control characters in strings must be escaped")).into(),
-                    );
+                    return Err((syntax(
+                        (self.i, self.i + 1),
+                        "control characters in strings must be escaped",
+                    ))
+                    .into());
                 }
                 _ => {
                     let ch = self.text[self.i..].chars().next().expect("UTF-8 確認済み");

@@ -1,10 +1,10 @@
 //! 宣言parameter族の元署名・有限全域と、既出DAGからの実instance照合。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{
     ast::{QuantKind, Role},
     model::{Param, Signature},
 };
+use crate::observed::environment::state::ScopedReplace;
 
 pub(in crate::observed) struct Plan {
     pub dependent: bool,
@@ -22,7 +22,8 @@ impl Environment<'_> {
         parameter: &Param,
     ) -> Result<Option<(super::super::finite::Enumeration, Vec<Fact>)>, ValidationFailure> {
         let Some(instance) = self
-            .indexes.object_instance
+            .indexes
+            .object_instance
             .filter(|i| i.declaration().kind == "law")
         else {
             return Ok(None);
@@ -53,7 +54,8 @@ impl Environment<'_> {
             return Ok(None);
         }
         let d = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -222,7 +224,10 @@ impl Environment<'_> {
             return Ok(false);
         };
         Ok((*span == self.indexes.inputs.law().exprs()[plan.body].span
-            || Some(*span) == plan.guard.map(|g| self.indexes.inputs.law().exprs()[g].span))
+            || Some(*span)
+                == plan
+                    .guard
+                    .map(|g| self.indexes.inputs.law().exprs()[g].span))
             && *parameters
                 == plan
                     .free
@@ -271,13 +276,16 @@ impl Environment<'_> {
         else {
             return Err("族の元Sourceがない".into());
         };
-        let d =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         if context.frame.is_some()
             || context.iteration.is_some()
             || context.instance.is_some()
             || (*span != self.indexes.inputs.law().exprs()[plan.body].span
-                && Some(*span) != plan.guard.map(|g| self.indexes.inputs.law().exprs()[g].span))
+                && Some(*span)
+                    != plan
+                        .guard
+                        .map(|g| self.indexes.inputs.law().exprs()[g].span))
             || parameters
                 != &plan
                     .free
@@ -402,13 +410,13 @@ impl Environment<'_> {
         ty: &Type,
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
-        let enumeration = if super::super::finite::supported(ty, self.indexes.inputs.law(), &self.control)?
-        {
-            self.finite_values(ty, observer)?
-        } else {
-            self.dynamic_finite_values(ty, observer)?
-                .ok_or("Law parameter域が有限でない")?
-        };
+        let enumeration =
+            if super::super::finite::supported(ty, self.indexes.inputs.law(), &self.control)? {
+                self.finite_values(ty, observer)?
+            } else {
+                self.dynamic_finite_values(ty, observer)?
+                    .ok_or("Law parameter域が有限でない")?
+            };
         let mut domain = super::owned_type::TypeDomain {
             values: Some(enumeration.values),
             scope: enumeration.scope,
@@ -481,8 +489,12 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<FrameInputs, ValidationFailure> {
-        if let Some(inputs) = self.native_view_source_inputs(graph,index)? { return Ok(inputs); }
-        if let Some(inputs) = self.native_law_source_inputs(graph,index)? { return Ok(inputs); }
+        if let Some(inputs) = self.native_view_source_inputs(graph, index)? {
+            return Ok(inputs);
+        }
+        if let Some(inputs) = self.native_law_source_inputs(graph, index)? {
+            return Ok(inputs);
+        }
         if let Some(inputs) = self.relation_source_inputs(graph, index)? {
             return Ok(inputs);
         }
@@ -834,8 +846,8 @@ impl Environment<'_> {
             return Err("族LawInstanceがない".into());
         };
         let (request, plan) = self.family_request(graph, *body)?;
-        let d =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         let Signature::Law {
             role: expected_role,
             ..
@@ -1101,13 +1113,34 @@ impl Environment<'_> {
             .ok_or("非適用rowのRequestがない")?;
         let (expected_bindings, body_id, id) = if let Some(index) = context.instance {
             let expected = self.family_instance_inputs(graph, index)?;
-            if let Some(inputs)=crate::observed::law_evaluation::instance_inputs(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
-                let declaration=self.indexes.inputs.law().declarations().get(&inputs.origin.declaration).ok_or("元native Law宣言がない")?;
-                let Signature::Law {body,guard:Some(guard),..}=&declaration.signature else{return Err("元native Law/guardがない".into())};
-                (expected.0,*body,*guard)
+            if let Some(inputs) = crate::observed::law_evaluation::instance_inputs(
+                graph,
+                index,
+                self.state.cutoff.get().min(graph.nodes.len()),
+            )? {
+                let declaration = self
+                    .indexes
+                    .inputs
+                    .law()
+                    .declarations()
+                    .get(&inputs.origin.declaration)
+                    .ok_or("元native Law宣言がない")?;
+                let Signature::Law {
+                    body,
+                    guard: Some(guard),
+                    ..
+                } = &declaration.signature
+                else {
+                    return Err("元native Law/guardがない".into());
+                };
+                (expected.0, *body, *guard)
             } else {
                 let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
-                (expected.0,plan.body,plan.guard.ok_or("非適用rowに元guardがない")?)
+                (
+                    expected.0,
+                    plan.body,
+                    plan.guard.ok_or("非適用rowに元guardがない")?,
+                )
             }
         } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
             let declaration = &self.indexes.inputs.law().declarations()
@@ -1188,9 +1221,20 @@ impl Environment<'_> {
         {
             return Err("非適用rowが元guardfalse/実bindingsと違う".into());
         }
-        let declaration=context.instance.map(|index|self.instance_source_declaration(graph,index)).transpose()?.flatten()
-            .or_else(||request.declaration().map(str::to_owned)).ok_or("元要求に宣言がない")?;
-        let d=self.indexes.inputs.law().declarations().get(&declaration).ok_or("元Law宣言がない")?;
+        let declaration = context
+            .instance
+            .map(|index| self.instance_source_declaration(graph, index))
+            .transpose()?
+            .flatten()
+            .or_else(|| request.declaration().map(str::to_owned))
+            .ok_or("元要求に宣言がない")?;
+        let d = self
+            .indexes
+            .inputs
+            .law()
+            .declarations()
+            .get(&declaration)
+            .ok_or("元Law宣言がない")?;
         let Some(Payload::LawInstance {
             name,
             role,

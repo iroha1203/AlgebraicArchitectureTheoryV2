@@ -104,7 +104,10 @@ impl ResultIssue {
                         Json::obj([("expected", expected.wire()), ("actual", actual.wire())])
                     }
                     Details::Vocabulary {
-                        namespace, version, found_digest, expected_digest,
+                        namespace,
+                        version,
+                        found_digest,
+                        expected_digest,
                     } => {
                         let mut details = BTreeMap::from([
                             ("namespace".into(), Json::str(namespace)),
@@ -116,15 +119,27 @@ impl ResultIssue {
                         }
                         Json::Obj(details)
                     }
-                    Details::VocabularyUnavailable { namespace, version, available } => Json::obj([
+                    Details::VocabularyUnavailable {
+                        namespace,
+                        version,
+                        available,
+                    } => Json::obj([
                         ("namespace", Json::str(namespace)),
                         ("version", Json::str(version)),
-                        ("available", Json::Arr(available.iter().map(|(namespace, version)| {
-                            Json::obj([
-                                ("namespace", Json::str(namespace)),
-                                ("version", Json::str(version)),
-                            ])
-                        }).collect())),
+                        (
+                            "available",
+                            Json::Arr(
+                                available
+                                    .iter()
+                                    .map(|(namespace, version)| {
+                                        Json::obj([
+                                            ("namespace", Json::str(namespace)),
+                                            ("version", Json::str(version)),
+                                        ])
+                                    })
+                                    .collect(),
+                            ),
+                        ),
                     ]),
                     Details::Version {
                         found_format,
@@ -139,13 +154,23 @@ impl ResultIssue {
                     }
                 };
                 let message = match &i.details {
-                    Details::Empty | Details::Vocabulary { .. } | Details::VocabularyUnavailable { .. } => i.message.clone(),
+                    Details::Empty
+                    | Details::Vocabulary { .. }
+                    | Details::VocabularyUnavailable { .. } => i.message.clone(),
                     Details::Type { expected, actual } => format!(
-                        "{}: expected {}, found {}", i.message,
-                        expected.wire().canonical(), actual.wire().canonical()
+                        "{}: expected {}, found {}",
+                        i.message,
+                        expected.wire().canonical(),
+                        actual.wire().canonical()
                     ),
-                    Details::Version { found_format, found_semantics } => match found_semantics {
-                        Some(semantics) => format!("{}: format {found_format}, semantics {semantics}", i.message),
+                    Details::Version {
+                        found_format,
+                        found_semantics,
+                    } => match found_semantics {
+                        Some(semantics) => format!(
+                            "{}: format {found_format}, semantics {semantics}",
+                            i.message
+                        ),
                         None => format!("{}: format {found_format}", i.message),
                     },
                 };

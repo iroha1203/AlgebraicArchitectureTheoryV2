@@ -336,8 +336,8 @@ pub(in crate::observed) fn compute(
     if !input.search.complete || !candidates.complete {
         return Err(unsupported(request, "商の有限候補全域が未確定"));
     }
-    let declaration =
-        &original.indexes.inputs.law().declarations()[request.declaration().ok_or("商のviewがない")?];
+    let declaration = &original.indexes.inputs.law().declarations()
+        [request.declaration().ok_or("商のviewがない")?];
     let Signature::View {
         params,
         returns,
@@ -371,7 +371,8 @@ pub(in crate::observed) fn compute(
             let Selector::Declaration { name } = &a.value else {
                 return Err(ValidationFailure::from("商のLaw名がない"));
             };
-            let Signature::Law { body, .. } = &original.indexes.inputs.law().declarations()[name].signature
+            let Signature::Law { body, .. } =
+                &original.indexes.inputs.law().declarations()[name].signature
             else {
                 return Err(ValidationFailure::from("商のLaw署名がない"));
             };
@@ -439,8 +440,9 @@ pub(in crate::observed) fn compute(
             .collect::<BTreeMap<_, _>>();
         assignments.extend(candidate.update.values.iter().cloned());
         let assignments = assignments.into_iter().collect::<Vec<_>>();
-        let mut env = Environment::try_primitive_valuation(original.indexes.inputs, &assignments, c)?
-            .ok_or("商の候補代入が不適合")?;
+        let mut env =
+            Environment::try_primitive_valuation(original.indexes.inputs, &assignments, c)?
+                .ok_or("商の候補代入が不適合")?;
         env.indexes.object = Some(domain.clone());
         env.state.missing_slot_reads.replace(Some(BTreeSet::new()));
         let mut checked = BTreeMap::new();
@@ -486,7 +488,8 @@ pub(in crate::observed) fn compute(
         scope.merge(&value.scope);
         if value.condition_failed || value.condition_pending || value.known_value.is_none() {
             let reads = env
-                .state.missing_slot_reads
+                .state
+                .missing_slot_reads
                 .replace(None)
                 .ok_or("商の不足位置収集がない")?;
             if !reads.is_empty() {
@@ -542,16 +545,19 @@ pub(in crate::observed) fn compute(
                 instances = next;
             }
             for bindings in instances {
-                env.state.evaluation_capture.replace(Some(EvaluationCapture {
-                    selected: std::iter::once(*body).chain(*guard).collect(),
-                    nodes: vec![],
-                    roots: vec![],
-                    stack: vec![],
-                }));
+                env.state
+                    .evaluation_capture
+                    .replace(Some(EvaluationCapture {
+                        selected: std::iter::once(*body).chain(*guard).collect(),
+                        nodes: vec![],
+                        roots: vec![],
+                        stack: vec![],
+                    }));
                 let evaluated =
                     finite_law_valuations::evaluate_point(&env, law_decl, &bindings, index);
                 let capture = env
-                    .state.evaluation_capture
+                    .state
+                    .evaluation_capture
                     .replace(None)
                     .ok_or("商の通常評価出現がない")?;
                 let evaluated = evaluated?;
@@ -567,13 +573,19 @@ pub(in crate::observed) fn compute(
                 let values = if evaluated.guard == Some(false) {
                     None
                 } else {
-                    let (_, value) =
-                        observation(env.indexes.inputs.law(), *body, body_evaluation, &capture.nodes, c)?;
+                    let (_, value) = observation(
+                        env.indexes.inputs.law(),
+                        *body,
+                        body_evaluation,
+                        &capture.nodes,
+                        c,
+                    )?;
                     match value {
                         Some(value) => Some(value),
                         _ => {
                             let reads = env
-                                .state.missing_slot_reads
+                                .state
+                                .missing_slot_reads
                                 .borrow()
                                 .as_ref()
                                 .cloned()
@@ -593,7 +605,8 @@ pub(in crate::observed) fn compute(
                     || evaluated.condition_pending
                 {
                     let reads = env
-                        .state.missing_slot_reads
+                        .state
+                        .missing_slot_reads
                         .borrow()
                         .as_ref()
                         .cloned()

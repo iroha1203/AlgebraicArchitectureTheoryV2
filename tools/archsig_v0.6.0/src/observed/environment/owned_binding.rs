@@ -264,15 +264,18 @@ impl Environment<'_> {
             return Ok(None);
         }
         self.tick()?;
-        let originals = self.indexes.original_requests.ok_or("所属束縛の元Requestがない")?;
+        let originals = self
+            .indexes
+            .original_requests
+            .ok_or("所属束縛の元Requestがない")?;
         let context = self.current_context(graph);
         if originals.get(context.request) != Some(request)
             || graph.requests.get(context.request) != Some(request)
         {
             return Err("所属束縛のRequestが元入力と違う".into());
         }
-        let d =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元宣言がview/Lawでない".into()),
@@ -537,11 +540,12 @@ impl Environment<'_> {
             return Err("所属束縛が元Requestのrootにない".into());
         }
         let request = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|r| r.get(context.request))
             .ok_or("所属束縛の元Requestがない")?;
-        let d =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元署名がない".into()),

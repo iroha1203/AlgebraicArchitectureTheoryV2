@@ -349,9 +349,7 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
         .replace("\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"3\"", "\"id\":\"s-free\",\"subject\":\"s\",\"field\":\"Reservations.State.free\",\"value\":\"1\"");
     let mut map = fixture::owned(&archsig::json::parse(text.as_bytes()).unwrap());
     // 診断の比較に使うのは移行mと状態p,q,r,sだけなので、他の移行と予約操作を外す。
-    let unused = |value: Option<&Json>| {
-        matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
-    };
+    let unused = |value: Option<&Json>| matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()));
     {
         let Json::Arr(snapshots) = fixture::field(&mut map, "snapshots") else {
             panic!("snapshots")
@@ -361,7 +359,8 @@ fn daily_local_diagnostics_keep_the_pipeline_without_exporting_its_calculation()
         };
         subjects.retain(|subject| !matches!(subject, Json::Obj(o) if unused(o.get("id"))));
     }
-    fixture::atoms(&mut map).retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
+    fixture::atoms(&mut map)
+        .retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
     for atom in fixture::atoms(&mut map) {
         let Json::Obj(atom) = atom else {
             panic!("atom")

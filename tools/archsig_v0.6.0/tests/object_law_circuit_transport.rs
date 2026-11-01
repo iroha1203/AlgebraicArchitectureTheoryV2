@@ -457,12 +457,15 @@ fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_ima
             let circuit = &side.circuits()[circuit];
             assert!(circuit.uniform.is_none());
             assert_eq!(circuit.points.len(), 2);
-            assert_eq!(circuit.points[j].arguments[0].wire(), archsig::canonical::Json::Bool(b));
+            assert_eq!(
+                circuit.points[j].arguments[0].wire(),
+                archsig::canonical::Json::Bool(b)
+            );
             assert_eq!(circuit.points[j].when, Some(false));
             assert!(!circuit.points[j].witnesses.is_empty());
-            assert!(circuit.points[j].witnesses.iter().all(|w|
-                w.row == Some(j) && w.original_evaluation.is_none() && w.epsilon_producer.is_none()
-            ));
+            assert!(circuit.points[j].witnesses.iter().all(|w| w.row == Some(j)
+                && w.original_evaluation.is_none()
+                && w.epsilon_producer.is_none()));
         }
     }
     r.recheck(i, &mut quiet()).unwrap();

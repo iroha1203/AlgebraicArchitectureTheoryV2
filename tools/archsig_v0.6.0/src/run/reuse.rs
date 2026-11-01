@@ -169,7 +169,9 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     if text(field(document, "format")?)? != crate::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != crate::law::SEMANTICS
     {
-        return Err(invalid("format/semantics does not match the supported version"));
+        return Err(invalid(
+            "format/semantics does not match the supported version",
+        ));
     }
     if text(field(document, "command")?)? != "run" {
         return Err(invalid("reuse candidate must be a saved run result"));
@@ -192,7 +194,9 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     )?;
     nat(field(document, "exit_code")?)?;
     if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
-        for issue in array(warnings)? { issue_shape(issue, control)?; }
+        for issue in array(warnings)? {
+            issue_shape(issue, control)?;
+        }
     }
     Ok(())
 }
@@ -212,7 +216,9 @@ fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
     // 旧候補の補助通知は意味上の入力にしない。現行の候補拒否通知はusageだけを生成する。
     // それ以外の旧通知を含む候補は採用対象へ広げず、全再計算する。
     if text(field(issue, "code")?)? != "usage" {
-        return Err(invalid("cannot verify the candidate's previous rejection notice"));
+        return Err(invalid(
+            "cannot verify the candidate's previous rejection notice",
+        ));
     }
     record(details, &["argument"], &[])?;
     text(field(details, "argument")?)?;
@@ -246,9 +252,11 @@ fn normalized_candidate(
         control.checkpoint(Checkpoint::Reuse)?;
         Ok(match &node.value {
             JValue::Bool(b) => Json::Bool(*b),
-            JValue::Num(s) => Json::Nat(
-                crate::archmap::nat_value(s).ok_or_else(|| invalid("value is outside the Nat range or is not an integer"))?,
-            ),
+            JValue::Num(s) => {
+                Json::Nat(crate::archmap::nat_value(s).ok_or_else(|| {
+                    invalid("value is outside the Nat range or is not an integer")
+                })?)
+            }
             JValue::Str(s) => Json::str(s),
             JValue::Arr(items) => Json::Arr(
                 items
@@ -368,7 +376,9 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     for name in ["requests", "status"] {
         let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
         if candidate != *wire_field(&replay, name)? {
-            return Err(invalid(format!("cannot verify {name} against the current checked result")));
+            return Err(invalid(format!(
+                "cannot verify {name} against the current checked result"
+            )));
         }
     }
     let mut native_ids = BTreeMap::new();
@@ -405,11 +415,15 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
     let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
     if answers != normalized_wire(wire_field(&replay, "answers")?, &native_ids, control)? {
-        return Err(invalid("cannot verify answers against the current checked derivation"));
+        return Err(invalid(
+            "cannot verify answers against the current checked derivation",
+        ));
     }
     let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
     if issues != normalized_wire(wire_field(&replay, "issues")?, &native_ids, control)? {
-        return Err(invalid("cannot verify issues against the current checked derivation"));
+        return Err(invalid(
+            "cannot verify issues against the current checked derivation",
+        ));
     }
     let code = match evaluation.status() {
         "partial" => 2,
@@ -417,7 +431,9 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
         _ => return Err(invalid("candidate verification is not finalized")),
     };
     if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {
-        return Err(invalid("cannot verify exit_code against the computation result"));
+        return Err(invalid(
+            "cannot verify exit_code against the computation result",
+        ));
     }
     control.checkpoint(Checkpoint::Reuse)?;
     Ok(())

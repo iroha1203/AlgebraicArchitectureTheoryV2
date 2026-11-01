@@ -478,11 +478,19 @@ pub(crate) fn construct_resolving_owners(
     if fields.is_empty() {
         return Ok(observed);
     }
-    let Some(resolution) = crate::owner_completion::determined_owners(inputs, &fields, control).map_err(|failure| match failure {
-        crate::owner_completion::Failure::Invalid(message) => ConstructionFailure::Inconsistent(message),
-        crate::owner_completion::Failure::Kernel(message) => ConstructionFailure::Inconsistent(format!("owner補完の構成検査: Internal({message:?})")),
-        crate::owner_completion::Failure::Stopped(reason) => ConstructionFailure::Stopped(reason),
-    })? else {
+    let Some(resolution) = crate::owner_completion::determined_owners(inputs, &fields, control)
+        .map_err(|failure| match failure {
+            crate::owner_completion::Failure::Invalid(message) => {
+                ConstructionFailure::Inconsistent(message)
+            }
+            crate::owner_completion::Failure::Kernel(message) => ConstructionFailure::Inconsistent(
+                format!("owner補完の構成検査: Internal({message:?})"),
+            ),
+            crate::owner_completion::Failure::Stopped(reason) => {
+                ConstructionFailure::Stopped(reason)
+            }
+        })?
+    else {
         return Ok(observed);
     };
     let owners = resolution.owners();

@@ -640,7 +640,9 @@ pub(super) fn retain(
     universe: NodeRef,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, objects, universe, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        graph, inputs, reference, objects, universe, c,
+    ))
 }
 pub(super) fn validate_node(
     graph: &Graph,
@@ -727,7 +729,8 @@ impl Environment<'_> {
             return Err("内部arrowのconsumerが元対象族と違う".into());
         }
         if self
-            .results.verified::<std::sync::Arc<crate::observed::internal_arrow_diagram::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::internal_arrow_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {

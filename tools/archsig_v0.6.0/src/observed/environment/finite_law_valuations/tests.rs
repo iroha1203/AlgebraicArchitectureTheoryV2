@@ -272,10 +272,18 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
         &mut quiet(),
     )
     .unwrap();
-    assert_eq!(r.state(), &FiniteLawState::OutsideFinite {
-        position: Fact { snapshot: "v".into(), subject: "p".into(), field: Some("Paths.Node.links".into()), atom: None },
-        ty: Type::List(Box::new(Type::Ref("Paths.Node".into()))),
-    });
+    assert_eq!(
+        r.state(),
+        &FiniteLawState::OutsideFinite {
+            position: Fact {
+                snapshot: "v".into(),
+                subject: "p".into(),
+                field: Some("Paths.Node.links".into()),
+                atom: None
+            },
+            ty: Type::List(Box::new(Type::Ref("Paths.Node".into()))),
+        }
+    );
     assert!(!r.is_complete());
     assert!(!r.domain_complete());
     assert!(r.domain().is_empty());

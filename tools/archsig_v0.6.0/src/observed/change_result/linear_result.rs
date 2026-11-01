@@ -109,7 +109,10 @@ pub(in crate::observed) fn vector(
         None,
     )
 }
-pub(in crate::observed) fn domain(b: &mut Builder<'_>, module: NodeRef) -> Result<NodeRef, ValidationFailure> {
+pub(in crate::observed) fn domain(
+    b: &mut Builder<'_>,
+    module: NodeRef,
+) -> Result<NodeRef, ValidationFailure> {
     b.push(
         NodeType::Domain,
         "domain",

@@ -154,12 +154,19 @@ fn evidence<'a>(
     id: &str,
     kind: &str,
 ) -> Vec<&'a archsig::json::JNode> {
-    let a = answer(j,id);
-    arr(get(a, if has(a,"evidence") { "evidence" } else { "counterexamples" }))
-        .iter()
-        .map(|r| node(j, r))
-        .filter(|n| s(get(get(n, "value"), "kind")) == kind)
-        .collect()
+    let a = answer(j, id);
+    arr(get(
+        a,
+        if has(a, "evidence") {
+            "evidence"
+        } else {
+            "counterexamples"
+        },
+    ))
+    .iter()
+    .map(|r| node(j, r))
+    .filter(|n| s(get(get(n, "value"), "kind")) == kind)
+    .collect()
 }
 
 #[test]
@@ -190,8 +197,11 @@ fn nested_term_values_and_term_returning_terms_use_extensional_equality() {
         ("higher_other", "refuted"),
     ] {
         assert_eq!(s(get(answer(&j, id), "status")), status, "{id}");
-        if status == "refuted" { assert!(!arr(get(answer(&j, id), "counterexamples")).is_empty()); }
-        else { assert!(!has(answer(&j,id),"counterexamples")); }
+        if status == "refuted" {
+            assert!(!arr(get(answer(&j, id), "counterexamples")).is_empty());
+        } else {
+            assert!(!has(answer(&j, id), "counterexamples"));
+        }
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
@@ -229,19 +239,26 @@ fn unsupported_nonlinear_equality_missing_terms_and_a_structural_refutation_rema
         assert_eq!(s(get(answer(&j, id), "status")), status, "{id}");
     }
     let reasons = arr(get(answer(&j, "opaque"), "reasons"));
-    assert!(reasons
+    assert!(
+        reasons
+            .iter()
+            .any(|r| s(get(r, "code")) == "unsupported_algorithm")
+    );
+    let reason = reasons
         .iter()
-        .any(|r| s(get(r, "code")) == "unsupported_algorithm"));
-    let reason = reasons.iter().find(|reason| s(get(reason, "code")) == "unsupported_algorithm").unwrap();
+        .find(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+        .unwrap();
     let method = s(get(get(reason, "details"), "method"));
     assert_eq!(method, "term_extensional_equality");
     assert!(s(get(reason, "message")).contains(method));
     assert!(s(get(reason, "message")).is_ascii());
     assert!(has(get(answer(&j, "opaque"), "outputs"), "comparison"));
     assert!(arr(get(answer(&j, "known_difference"), "reasons")).is_empty());
-    assert!(arr(get(answer(&j, "missing"), "reasons"))
-        .iter()
-        .any(|r| s(get(r, "code")) == "missing_observation"));
+    assert!(
+        arr(get(answer(&j, "missing"), "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation")
+    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
@@ -349,7 +366,9 @@ view bigRight():Term<(Z)->Z> = fn(y:Z)=>y*12345678901234567890123456789012345678
         ("big", "established"),
     ] {
         assert_eq!(s(get(answer(&j, id), "status")), status, "{id}");
-        if status == "established" { assert!(!has(answer(&j,id),"counterexamples")); }
+        if status == "established" {
+            assert!(!has(answer(&j, id), "counterexamples"));
+        }
     }
     let e = evidence(&j, "q_difference", "counterexample");
     let data = get(get(e[0], "value"), "data");
@@ -373,7 +392,11 @@ view bigRight():Term<(Z)->Z> = fn(y:Z)=>y*12345678901234567890123456789012345678
 }
 #[test]
 fn term_dynamic_projections_keep_actual_types_conditions_and_needed_separate() {
-    let dir=setup("compare-terms-dynamic","view dynamic():FnBox=Wrap(fn(b:Bool)=>if b then 4 else 9); view plain():FnBox=Plain(false); view vacant():FnBox=Vacant; view dynNo():Bool=false;",false);
+    let dir = setup(
+        "compare-terms-dynamic",
+        "view dynamic():FnBox=Wrap(fn(b:Bool)=>if b then 4 else 9); view plain():FnBox=Plain(false); view vacant():FnBox=Vacant; view dynNo():Bool=false;",
+        false,
+    );
     let r = asks(
         &dir,
         &[

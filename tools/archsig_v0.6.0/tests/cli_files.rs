@@ -72,18 +72,20 @@ fn source_uris_and_law_references_are_not_read() {
         ),
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--out",
-            "o1",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "o1",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "invalid", 65);
     assert_eq!(s(get(&arr(get(&res, "issues"))[0], "code")), "reference");
     // 存在しない uri の source を指す observed の由来でも、ArchMap を検査できる。
@@ -196,55 +198,61 @@ fn unreadable_inputs_are_io_errors() {
     let dir = input_dir("unreadable");
     std::fs::create_dir(dir.join("adir")).unwrap();
     std::fs::write(dir.join("a.json"), MAP).unwrap();
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "adir",
-            "--archmap",
-            "a.json",
-            "--out",
-            "o",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "adir",
+                "--archmap",
+                "a.json",
+                "--out",
+                "o",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "error", 74);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "io");
     assert_eq!(s(get(get(issue, "details"), "operation")), "read");
     assert_eq!(s(get(get(issue, "details"), "path")), "adir");
     assert!(!dir.join("o").exists());
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "nothing.law",
-            "--out",
-            "o2",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "nothing.law",
+                "--out",
+                "o2",
+            ],
+        )
+    });
     notified(&dir, &r, "error", 74);
     // ArchMap だけが読めなくても、検査を始めない。
     std::fs::write(dir.join("l.law"), LAW).unwrap();
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "adir",
-            "--out",
-            "o4",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "adir",
+                "--out",
+                "o4",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "error", 74);
     assert_eq!(s(get(&arr(get(&res, "issues"))[0], "code")), "io");
     assert!(!dir.join("o4").exists());
@@ -491,7 +499,9 @@ fn cleanup_preserves_unowned_paths_and_reports_remnants() {
         } else {
             assert!(
                 outcome.receipt().contains("cannot clean up")
-                    && outcome.receipt().contains(&temporary[0].display().to_string())
+                    && outcome
+                        .receipt()
+                        .contains(&temporary[0].display().to_string())
             );
         }
         std::fs::remove_dir_all(&temporary[0]).unwrap();
@@ -538,22 +548,24 @@ fn unread_second_definition_reports_io_without_files() {
     let dir = input_dir("unread-second-definition");
     std::fs::write(dir.join("l.law"), b"invalid law").unwrap();
     std::fs::write(dir.join("a.json"), b"invalid JSON").unwrap();
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "d.json",
-            "--atom-definition",
-            "missing.json",
-            "--law",
-            "l.law",
-            "--archmap",
-            "a.json",
-            "--out",
-            "o",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--atom-definition",
+                "missing.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "o",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "error", 74);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "io");
@@ -580,18 +592,20 @@ fn definition_dependencies_are_not_loaded_from_neighbor_files() {
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Empty {}\n",
     )
     .unwrap();
-    let r = without_file_changes(&dir, || run_binary(
-        &dir,
-        &[
-            "check",
-            "--atom-definition",
-            "extras.json",
-            "--law",
-            "l.law",
-            "--out",
-            "o",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "extras.json",
+                "--law",
+                "l.law",
+                "--out",
+                "o",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "invalid", 65);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "reference");
@@ -627,17 +641,25 @@ fn internal_failure_does_not_keep_any_inputs_or_copies() {
 
 #[test]
 fn failure_snapshot_rejects_files_directories_and_input_changes() {
-    for defect in ["result.json", "out", "out/inputs", "unexpected-error.txt", "input"] {
+    for defect in [
+        "result.json",
+        "out",
+        "out/inputs",
+        "unexpected-error.txt",
+        "input",
+    ] {
         let dir = workdir(&format!("failure-snapshot-{defect}").replace('/', "-"));
         std::fs::write(dir.join("input"), "original").unwrap();
-        let rejected = std::panic::catch_unwind(|| without_file_changes(&dir, || {
-            let r = run(&dir, &["run"]);
-            match defect {
-                "out" | "out/inputs" => std::fs::create_dir_all(dir.join(defect)).unwrap(),
-                _ => std::fs::write(dir.join(defect), "unexpected").unwrap(),
-            }
-            r
-        }));
+        let rejected = std::panic::catch_unwind(|| {
+            without_file_changes(&dir, || {
+                let r = run(&dir, &["run"]);
+                match defect {
+                    "out" | "out/inputs" => std::fs::create_dir_all(dir.join(defect)).unwrap(),
+                    _ => std::fs::write(dir.join(defect), "unexpected").unwrap(),
+                }
+                r
+            })
+        });
         assert!(rejected.is_err(), "取り逃した変更: {defect}");
         std::fs::remove_dir_all(dir).unwrap();
     }

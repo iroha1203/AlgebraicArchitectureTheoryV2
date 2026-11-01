@@ -70,8 +70,13 @@ pub(super) fn analyze(
     c: &mut Control,
 ) -> Result<(Option<Model>, Vec<Fact>), ValidationFailure> {
     let reading = witness.construction().reading();
-    let explicit = env.indexes.inputs.law().declarations().values().any(|d|
-        d.reading == reading && matches!(d.signature, Signature::Local { .. }));
+    let explicit = env
+        .indexes
+        .inputs
+        .law()
+        .declarations()
+        .values()
+        .any(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }));
     let change_name = request
         .arguments
         .iter()
@@ -141,7 +146,8 @@ pub(super) fn analyze(
     for slot in &slots {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
         let ty = fixed
-            .indexes.field(
+            .indexes
+            .field(
                 &fixed.state,
                 &slot.snapshot,
                 &slot.subject,
@@ -149,7 +155,7 @@ pub(super) fn analyze(
             )?
             .ty
             .erase();
-        let values = if matches!(ty,Type::Z|Type::Q) {
+        let values = if matches!(ty, Type::Z | Type::Q) {
             rational_equations |= ty == Type::Q;
             affine_equations = true;
             // 無限域の列挙ではなく、有限作用を評価するための値だけを集める。
@@ -159,7 +165,9 @@ pub(super) fn analyze(
                 c.checkpoint(crate::control::Checkpoint::Localize)?;
                 if row.update.state == State::Ready {
                     for (field, value) in &row.update.values {
-                        if field == slot && !values.contains(value) { values.push(value.clone()); }
+                        if field == slot && !values.contains(value) {
+                            values.push(value.clone());
+                        }
                     }
                 }
                 missing.extend(row.update.missing.iter().cloned());
@@ -168,10 +176,25 @@ pub(super) fn analyze(
                 if let Some((_, value)) = fixed.state.architecture_value(slot) {
                     values.push(value.clone());
                 } else {
-                    let field = fixed.indexes.field(&fixed.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("fieldがない")?)?;
+                    let field = fixed.indexes.field(
+                        &fixed.state,
+                        &slot.snapshot,
+                        &slot.subject,
+                        slot.field.as_ref().ok_or("fieldがない")?,
+                    )?;
                     if let crate::archmap::Slot::Known { value, .. } = &field.slot {
-                        values.push(crate::observed::environment::scalar_from(value, &ty, env.indexes.inputs.law(), c)?.ok_or("数値観測値がない")?);
-                    } else { missing.push(slot.clone()); }
+                        values.push(
+                            crate::observed::environment::scalar_from(
+                                value,
+                                &ty,
+                                env.indexes.inputs.law(),
+                                c,
+                            )?
+                            .ok_or("数値観測値がない")?,
+                        );
+                    } else {
+                        missing.push(slot.clone());
+                    }
                 }
             }
             values
@@ -179,7 +202,9 @@ pub(super) fn analyze(
             change_search::domain(&fixed, &ty, change.span, &mut missing)?
                 .ok_or_else(|| unsupported("自由状態の有限域が未確定"))?
         };
-        if !missing.is_empty() { return Ok((None, missing)); }
+        if !missing.is_empty() {
+            return Ok((None, missing));
+        }
         let mut next = vec![];
         for prefix in points {
             for value in &values {
@@ -192,31 +217,47 @@ pub(super) fn analyze(
         points = next;
         slot_types.push(ty);
     }
-    if affine_equations && slot_types.iter().any(|ty| *ty != if rational_equations {Type::Q}else{Type::Z}) {
+    if affine_equations
+        && slot_types
+            .iter()
+            .any(|ty| *ty != if rational_equations { Type::Q } else { Type::Z })
+    {
         return Err(unsupported("有限作用のアフィン方程式側に混合型がある"));
     }
     let bindings = request
         .arguments
         .iter()
         .filter_map(|a| a.name.strip_prefix("bind.").map(|name| (name, a)))
-        .map(|(name, a)| Ok((name.to_owned(), change_search::selector(original, g, &a.value)?)))
+        .map(|(name, a)| {
+            Ok((
+                name.to_owned(),
+                change_search::selector(original, g, &a.value)?,
+            ))
+        })
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
     let selected = request.declaration();
     let mut requirements = vec![];
     let mut universal = vec![];
-    for law in env.indexes.inputs.law().declarations().values().filter(|d| {
-        d.reading == reading
-            && match selected {
-                Some(name) => d.name == name,
-                None => matches!(
-                    d.signature,
-                    Signature::Law {
-                        role: crate::law::ast::Role::Required,
-                        ..
-                    }
-                ),
-            }
-    }) {
+    for law in env
+        .indexes
+        .inputs
+        .law()
+        .declarations()
+        .values()
+        .filter(|d| {
+            d.reading == reading
+                && match selected {
+                    Some(name) => d.name == name,
+                    None => matches!(
+                        d.signature,
+                        Signature::Law {
+                            role: crate::law::ast::Role::Required,
+                            ..
+                        }
+                    ),
+                }
+        })
+    {
         let Signature::Law { params, .. } = &law.signature else {
             return Err("局所Lawの署名がない".into());
         };
@@ -256,9 +297,25 @@ pub(super) fn analyze(
     }
     if affine_equations {
         let mut pending = crate::observed::environment::change_affine::Pending::default();
-        if rational_equations { crate::observed::environment::field_change::state_equations(&fixed, &slots, &requirements, &mut pending)?; } else { crate::observed::environment::change_affine::state_equations(&fixed, &slots, &requirements, &mut pending)?; }
+        if rational_equations {
+            crate::observed::environment::field_change::state_equations(
+                &fixed,
+                &slots,
+                &requirements,
+                &mut pending,
+            )?;
+        } else {
+            crate::observed::environment::change_affine::state_equations(
+                &fixed,
+                &slots,
+                &requirements,
+                &mut pending,
+            )?;
+        }
         missing.extend(pending.facts);
-        if !missing.is_empty() { return Ok((None, missing)); }
+        if !missing.is_empty() {
+            return Ok((None, missing));
+        }
     }
     let mut candidate_points = vec![];
     for candidate in &candidates.rows {
@@ -311,10 +368,7 @@ pub(super) fn analyze(
     let mut scope = Scope::default();
     for point in &points {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
-        let mut assignments = env
-            .fixed_values()
-            .into_iter()
-            .collect::<BTreeMap<_, _>>();
+        let mut assignments = env.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
         assignments.extend(slots.iter().cloned().zip(point.iter().cloned()));
         let mut state = Environment::try_primitive_valuation(
             env.indexes.inputs,
@@ -377,11 +431,23 @@ pub(super) fn analyze(
                     ..fact.clone()
                 });
             }
-            if explicit { continue; }
-            let Signature::Law { body, guard, ref params, .. } = law.signature else {
+            if explicit {
+                continue;
+            }
+            let Signature::Law {
+                body,
+                guard,
+                ref params,
+                ..
+            } = law.signature
+            else {
                 return Err("局所Lawの署名がない".into());
             };
-            let parameters = params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name)).cloned().collect::<Vec<_>>();
+            let parameters = params
+                .iter()
+                .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
+                .cloned()
+                .collect::<Vec<_>>();
             let roots = match env.indexes.inputs.law().exprs()[body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
@@ -404,16 +470,20 @@ pub(super) fn analyze(
             }) {
                 let Some(value) = read.value else { continue };
                 let bindings = super::super::environment::local_read::read_bindings(
-                    &state, read.expression, &read.bindings, c,
-                )?;
-                let (carrier, positions) = super::super::environment::local_read::implicit_support_with_parameters(
                     &state,
                     read.expression,
-                    &bindings,
-                    &parameters,
-                    reading,
+                    &read.bindings,
                     c,
                 )?;
+                let (carrier, positions) =
+                    super::super::environment::local_read::implicit_support_with_parameters(
+                        &state,
+                        read.expression,
+                        &bindings,
+                        &parameters,
+                        reading,
+                        c,
+                    )?;
                 let at = readings
                     .iter()
                     .position(|r| r.expression == read.expression && r.bindings == bindings);
