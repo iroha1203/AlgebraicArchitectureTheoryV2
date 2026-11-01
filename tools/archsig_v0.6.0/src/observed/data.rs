@@ -174,27 +174,18 @@ pub(super) fn resolved(
     control: &Control,
 ) -> Result<Option<crate::names::QualifiedName>, ValidationFailure> {
     let mut found = None;
-    for info in &law.infos {
+    for target in law.program.references.get(&span).into_iter().flatten() {
         tick(control)?;
-        for (at, target) in &info.references {
-            tick(control)?;
-            if *at == span
-                && let Some(family) = law.resolved_names.get(target).and_then(|name| name.owner())
-                && matches!(
-                    law.definitions
-                        .declarations
-                        .get(family)
-                        .map(|d| &d.signature),
-                    Some(PrimitiveSignature::Data { .. })
-                )
-            {
-                constructor(law, family, target, control)?;
-                if found.as_ref().is_some_and(|previous| previous != target) {
-                    return Err("constructor静的解決が一意でない".into());
-                }
-                found = law.resolved_names.get(target).cloned();
+        if let Some(family) = target.owner()
+            && matches!(law.definitions.declarations.get(family).map(|d| &d.signature),
+                Some(PrimitiveSignature::Data { .. })) {
+            constructor(law, family, target, control)?;
+            if found.as_ref().is_some_and(|previous| previous != target) {
+                return Err("constructor静的解決が一意でない".into());
             }
+            found = Some(target.clone());
         }
+        tick(control)?;
     }
     Ok(found)
 }
@@ -203,17 +194,23 @@ pub(super) fn expression(
     id: usize,
     control: &Control,
 ) -> Result<Option<(crate::names::QualifiedName, Vec<usize>)>, ValidationFailure> {
-    let (mut name, args) = match &law.exprs[id].kind {
-        ExprKind::Call { callee, args } => (*callee, args.clone()),
-        ExprKind::Dotted(_) => (id, vec![]),
+    let (target, args) = match &law.program.nodes[id].kind {
+        ExprKind::Call { callee, args } => {
+            let Some(crate::law::ir::Callee::Ctor(family, index)) = law.program.callees.get(callee) else {
+                return Ok(None);
+            };
+            let ctor = constructors(law, family)?.get(*index).ok_or("constructor元indexがない")?;
+            let full = format!("{family}.{}", ctor.name);
+            let target = law.resolved_names.get(&full).ok_or("constructor検査済み名がない")?.clone();
+            (target, args.clone())
+        }
+        ExprKind::Dotted(_) => {
+            let Some(target) = resolved(law, law.program.nodes[id].span, control)? else {
+                return Ok(None);
+            };
+            (target, vec![])
+        }
         _ => return Ok(None),
-    };
-    while let ExprKind::Group(inner) = law.exprs[name].kind {
-        tick(control)?;
-        name = inner;
-    }
-    let Some(target) = resolved(law, law.exprs[name].span, control)? else {
-        return Ok(None);
     };
     let Type::Data(family) = law.expr_type(id).ok_or("constructor元型がない")? else {
         return Err("constructor元型がDataでない".into());

@@ -402,25 +402,28 @@ fn projections(
     }
     Ok(())
 }
-fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a str, Vec<&'a str>)>, ValidationFailure> {
+fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a str, Vec<&'a crate::names::QualifiedName>)>, ValidationFailure> {
     let mut fields = vec![];
     loop {
         env.control.clone().checkpoint(Checkpoint::Localize)?;
-        match &env.inputs.law().exprs[id].kind {
+        let expression = &env.inputs.law().program.nodes[id];
+        match &expression.kind {
             ExprKind::Group(child) => id = *child,
-            ExprKind::Field { base, name } => {
-                fields.push(name.name.as_str());
+            ExprKind::Field { base, .. } => {
+                fields.push(expression.field.as_ref().ok_or("局所fieldの静的解決がない")?);
                 id = *base;
             }
-            ExprKind::Dotted(parts) if !parts.is_empty() => {
-                fields.extend(parts[1..].iter().rev().map(|p| p.name.as_str()));
+            ExprKind::Dotted(_) => {
+                let Some(lexical) = &expression.lexical else { return Ok(None); };
+                fields.extend(lexical.projections.iter().rev().map(|p| &p.name));
                 fields.reverse();
-                return Ok(Some((parts[0].name.as_str(), fields)));
+                return Ok(Some((lexical.name.as_str(), fields)));
             }
             _ => return Ok(None),
         }
     }
 }
+
 fn visible_slots(
     env: &Environment<'_>,
     id: usize,
@@ -451,7 +454,8 @@ fn visible_slots(
         let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
             return Err(unsupported(expr.span, "明示localのfield読取り元が確定した参照でない"));
         };
-        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some(env.input_name(&format!("{entity}.{last}"))?), atom: None });
+        if last.owner() != Some(entity.as_str()) { return Err("局所fieldのowner型が違う".into()); }
+        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some((*last).clone()), atom: None });
     }
     visible.sort();
     visible.dedup();
@@ -1056,7 +1060,7 @@ pub(in crate::observed) fn materialize_positions(
         out.arguments.push(expression);
         let read = env.scoped_field(
             known(subject.clone()),
-            &field.name,
+            name,
             &Scope::default(),
             reading,
             (0, 0),
@@ -1541,7 +1545,7 @@ fn materialize_instance(
                 let value = env
                     .scoped_field(
                         known(subject.clone()),
-                        &field.name,
+                        name,
                         &scope,
                         &declaration.reading,
                         declaration.span,

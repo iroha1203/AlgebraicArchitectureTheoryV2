@@ -654,7 +654,7 @@ impl Evaluator<'_, '_> {
     /// 対応済みの式だけを子→親で構成する。各 field は直ちに個別 commit する。
     fn prepare_source(&mut self, id: ExprId) -> Result<SourceHandle, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            let expr = &self.environment.inputs.law().exprs[id];
+            let expr = &self.environment.inputs.law().program.nodes[id];
             let span = expr.span;
             let ty = self
                 .environment
@@ -684,54 +684,10 @@ impl Evaluator<'_, '_> {
                     let first = parts
                         .first()
                         .ok_or_else(|| Failure::Internal("空のドット式".into()))?;
-                    let mut parameter = None;
-                    for binding in &self.bindings {
-                        self.control.checkpoint(Checkpoint::FiniteIteration)?;
-                        if binding.name == first.name {
-                            parameter = Some(binding.ty.clone());
-                        }
-                        self.control.checkpoint(Checkpoint::FiniteIteration)?;
-                    }
-                    if parameter.is_none()
-                        && let Some(argument) = self.formal.get(&first.name)
-                        && let NodeType::Evaluation(ty) = &self.graph.get(argument.evaluation)?.ty
-                    {
-                        parameter = Some(ty.clone());
-                    }
-                    if parameter.is_none()
-                        && let Some((_, value)) = self.environment.iteration_argument(
-                            self.graph,
-                            first.span,
-                            &first.name,
-                            &self.bindings,
-                        )?
-                    {
-                        parameter = Some(value.ty());
-                    }
-                    if parameter.is_none()
-                        && let Some((_, value)) = self.environment.type_iteration_argument(
-                            self.graph,
-                            first.span,
-                            &first.name,
-                            &self.bindings,
-                        )?
-                    {
-                        parameter = Some(value.ty());
-                    }
-                    if parameter.is_none()
-                        && let Some((_, _, binder)) =
-                            self.environment.pattern_binding(first.span, &first.name)?
-                    {
-                        parameter = Some(binder.ty);
-                    }
-                    if parameter.is_none()
-                        && let Some(rhs) = self.environment.lexical_rhs(first.span, &first.name)?
-                    {
-                        parameter = self.environment.inputs.law().expr_type(rhs).cloned();
-                    }
-                    let parameter = parameter.ok_or_else(|| {
+                    let lexical = expr.lexical.as_ref().ok_or_else(|| {
                         self.unsupported(span, "束縛変数以外を先頭とするドット式")
                     })?;
+                    let parameter = lexical.ty.clone();
                     let mut owner = self.source(first.span, parameter)?;
                     // 元の各 token prefix を、その prefix 自身の検査済み型と範囲で
                     // commit する。最終型を中間 Ref の型として流用しない。
@@ -1084,7 +1040,7 @@ impl Evaluator<'_, '_> {
         })
     }
     fn eval_inner(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
-        let expr = &self.environment.inputs.law().exprs[id];
+        let expr = &self.environment.inputs.law().program.nodes[id];
         let span = expr.span;
         let ty = self
             .environment
@@ -1129,19 +1085,30 @@ impl Evaluator<'_, '_> {
                 let Some(first) = parts.first() else {
                     return Err(Failure::Internal("空のドット式".into()));
                 };
+                let lexical = expr.lexical.as_ref().ok_or_else(|| {
+                    self.unsupported(span, "束縛変数以外を先頭とするドット式")
+                })?;
+                let parameter = matches!(lexical.source, crate::law::ir::BindingSource::Parameter);
                 let mut found = None;
                 for binding in &self.bindings {
                     self.control.checkpoint(Checkpoint::FiniteIteration)?;
-                    if binding.name == first.name {
+                    if parameter && binding.name == lexical.name {
                         found = Some(binding.clone());
                     }
                     self.control.checkpoint(Checkpoint::FiniteIteration)?;
                 }
                 // 宣言parameter と lexical alias を区別する。欠測の alias は
                 // RHS Evaluation を指し、通常の Binding.value を捏造しない。
-                let mut current = if let Some((domain, known)) = self
-                    .environment
-                    .type_iteration_argument(self.graph, first.span, &first.name, &self.bindings)?
+                let type_iteration = if matches!(lexical.source, crate::law::ir::BindingSource::TypeQuantifier) {
+                    self.environment.type_iteration_argument(self.graph, first.span, &lexical.name, &self.bindings)?
+                } else { None };
+                let iteration = if matches!(lexical.source, crate::law::ir::BindingSource::Iteration) {
+                    self.environment.iteration_argument(self.graph, first.span, &lexical.name, &self.bindings)?
+                } else { None };
+                let pattern = if matches!(lexical.source, crate::law::ir::BindingSource::Pattern) {
+                    self.environment.pattern_argument(self.graph, first.span, &lexical.name, &self.bindings)?
+                } else { None };
+                let mut current = if let Some((domain, known)) = type_iteration
                 {
                     let scope = self
                         .sources
@@ -1171,23 +1138,13 @@ impl Evaluator<'_, '_> {
                         None,
                         None,
                     )?
-                } else if let Some((input, known)) = self.environment.iteration_argument(
-                    self.graph,
-                    first.span,
-                    &first.name,
-                    &self.bindings,
-                )? {
+                } else if let Some((input, known)) = iteration {
                     let child = self.evaluated_reference(input)?;
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
-                } else if let Some((input, known)) = self.environment.pattern_argument(
-                    self.graph,
-                    first.span,
-                    &first.name,
-                    &self.bindings,
-                )? {
+                } else if let Some((input, known)) = pattern {
                     let child = self.evaluated_reference(input)?;
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
-                } else if let Some(argument) = self.formal.get(&first.name).cloned() {
+                } else if parameter && let Some(argument) = self.formal.get(&lexical.name).cloned() {
                     let NodeType::Evaluation(parameter_ty) =
                         &self.graph.get(argument.evaluation)?.ty
                     else {
@@ -1214,20 +1171,8 @@ impl Evaluator<'_, '_> {
                         None,
                         None,
                     )?
-                } else if let Some(rhs) = self.lexical.get(&first.name).cloned() {
-                    let ty = self
-                        .environment
-                        .inputs
-                        .law()
-                        .expr_type(
-                            self.environment
-                                .lexical_rhs(first.span, &first.name)?
-                                .ok_or_else(|| {
-                                    Failure::Internal("alias の元binderがない".into())
-                                })?,
-                        )
-                        .ok_or_else(|| Failure::Internal("alias の元型がない".into()))?
-                        .clone();
+                } else if matches!(lexical.source, crate::law::ir::BindingSource::Let) && let Some(rhs) = self.lexical.get(&lexical.name).cloned() {
+                    let ty = lexical.ty.clone();
                     self.finish(
                         first.span,
                         ty,
@@ -1241,7 +1186,7 @@ impl Evaluator<'_, '_> {
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
-                for part in parts.iter().skip(1) {
+                for part in &lexical.projections {
                     self.tick(Checkpoint::FiniteIteration)?;
                     current = self.field(
                         current,
@@ -1260,9 +1205,9 @@ impl Evaluator<'_, '_> {
                     Ok(current)
                 }
             }
-            ExprKind::Field { base, name } => {
+            ExprKind::Field { base, .. } => {
                 let base = self.eval(*base)?;
-                self.field(base, &name.name, span, false)
+                self.field(base, expr.field.as_ref().ok_or_else(|| Failure::Internal("元fieldの静的解決がない".into()))?, span, false)
             }
             ExprKind::Family { owner, .. } => self.owned_family(id, *owner, span, ty),
             ExprKind::Quant { .. } => self.quantification(id),
@@ -2272,7 +2217,7 @@ impl Evaluator<'_, '_> {
     fn field(
         &mut self,
         base: Evaluated,
-        name: &str,
+        name: &crate::names::QualifiedName,
         span: (usize, usize),
         chain: bool,
     ) -> Result<Evaluated, Failure> {
@@ -2310,8 +2255,10 @@ impl Evaluator<'_, '_> {
         if s.ty != entity {
             return Err(Failure::Internal("field owner 型が合わない".into()));
         }
-        let fullname = format!("{entity}.{name}");
-        let field = self.environment.field(&s.snapshot, &s.id, &fullname)?;
+        if name.owner() != Some(entity.as_str()) {
+            return Err(Failure::Internal("field owner 型が合わない".into()));
+        }
+        let field = self.environment.field(&s.snapshot, &s.id, name)?;
         if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
             && !data::supported(
                 &field.ty.erase(),

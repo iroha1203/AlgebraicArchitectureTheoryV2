@@ -6,6 +6,7 @@ mod body;
 pub(crate) mod check;
 mod expr;
 pub mod lexer;
+pub(crate) mod ir;
 mod metadata;
 pub mod model;
 pub mod parser;
@@ -58,6 +59,7 @@ pub const SEMANTICS: &str = "archsig/0.6.0";
 /// ```
 #[derive(Debug)]
 pub struct CheckedLaw {
+    pub(crate) program: ir::Program,
     pub(crate) resolved_names: BTreeMap<String, crate::names::QualifiedName>,
     pub(crate) bytes_digest: String,
     pub(crate) model_digest: String,
@@ -105,7 +107,7 @@ impl CheckedLaw {
         &self.definitions
     }
     pub fn expr_type(&self, id: ExprId) -> Option<&Type> {
-        self.expr_types.get(id).and_then(Option::as_ref)
+        self.program.nodes.get(id).and_then(|expr| expr.ty.as_ref())
     }
 }
 
@@ -170,7 +172,7 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
     }
     let ctx = expr::Ctx {
         reading: 0,
@@ -236,7 +238,7 @@ pub(crate) fn check_reading_term_body<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
     }
     let ctx = expr::Ctx {
         reading: index,
@@ -430,7 +432,10 @@ fn check_law_processing<E: InputError>(
     expr_types.resize(checker.parser.exprs.len(), None);
     let resolved_names = resolve_names::<E>(definitions, &declarations, &infos, control)
         .map_err(|i| fail(i, Some(digest.clone())))?;
+    let program = ir::Program::build::<E>(&checker.parser.exprs, &expr_types, &infos, &checker.lexical, &checker.callees, &checker.resolved_fields, control)
+        .map_err(|i| fail(i, Some(digest.clone())))?;
     Ok(CheckedLaw {
+        program,
         resolved_names,
         bytes_digest,
         model_digest: digest,

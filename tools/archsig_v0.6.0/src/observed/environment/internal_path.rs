@@ -666,7 +666,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let Some(&id) = self.expressions.get(span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
@@ -761,7 +761,7 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if self.builtin(id)? != Some("path") {
@@ -797,7 +797,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         let span = *span;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {

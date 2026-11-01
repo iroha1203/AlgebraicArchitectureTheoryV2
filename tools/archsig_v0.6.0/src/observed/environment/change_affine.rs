@@ -367,11 +367,9 @@ fn parameter_coefficient_forms(
             return Ok(None);
         }
         let subject = env.subject(&slot.snapshot, &slot.subject)?;
-        let prefix = format!("{}.", subject.ty);
-        let field = slot
-            .field
-            .strip_prefix(&prefix)
-            .ok_or("係数のfieldが元subject型と違う")?;
+        if slot.field.owner() != Some(subject.ty.as_str()) {
+            return Err("係数のfieldが元subject型と違う".into());
+        }
         let base = value(
             env,
             Scalar::Subject {
@@ -382,7 +380,7 @@ fn parameter_coefficient_forms(
         )?;
         let source = env.scoped_field(
             base,
-            field,
+            &slot.field,
             &Scope::default(),
             reading,
             env.inputs.law().exprs[id].span,
@@ -626,7 +624,9 @@ pub(in crate::observed) fn compute_update(
     } else {
         // The selected coordinate is unchanged by the original simultaneous update.
         let source = env.scoped_field(
-            value(env, subject.clone())?, field, &Scope::default(), &change.reading, change.span,
+            value(env, subject.clone())?,
+            &env.input_name(&format!("{}.{}", params[0].ty.ref_target().ok_or("更新対象型がRefでない")?, field))?,
+            &Scope::default(), &change.reading, change.span,
         )?;
         missing.support.extend(source.support.iter().cloned());
         missing.scope.merge(&source.scope);

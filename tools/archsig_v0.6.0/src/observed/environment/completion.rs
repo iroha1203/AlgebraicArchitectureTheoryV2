@@ -2053,7 +2053,7 @@ impl Environment<'_> {
                     .0,
             ));
         }
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         Ok(match &self.inputs.law().exprs[id].kind {

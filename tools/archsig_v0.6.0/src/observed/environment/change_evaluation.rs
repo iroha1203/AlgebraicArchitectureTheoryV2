@@ -235,7 +235,7 @@ fn evaluate_inner(
                         continue;
                     }
                     let value = environment.scoped_field(
-                        target.clone(), name, &base, &declaration.reading, declaration.span,
+                        target.clone(), &environment.input_name(&format!("{entity}.{name}"))?, &base, &declaration.reading, declaration.span,
                     )?;
                     result.retain(&value);
                     if let Some(value) = value.known_value {
@@ -472,7 +472,7 @@ pub(in crate::observed) fn candidate(
                 }
                 let old = environment.scoped_field(
                     known(subject.clone()),
-                    name,
+                    fact.field.as_ref().ok_or("変更元fieldがない")?,
                     &Scope::default(),
                     &declaration.reading,
                     declaration.span,

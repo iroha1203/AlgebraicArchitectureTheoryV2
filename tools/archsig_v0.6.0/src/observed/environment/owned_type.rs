@@ -442,7 +442,7 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<(Vec<Fact>, (usize, usize))>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let ExprKind::Quant {
