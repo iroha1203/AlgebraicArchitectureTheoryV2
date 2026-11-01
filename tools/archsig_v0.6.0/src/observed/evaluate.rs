@@ -315,8 +315,6 @@ impl Evaluator<'_, '_> {
             support,
             scope,
         )?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_scalar", 1);
         self.tick(Checkpoint::FiniteIteration)?;
         Ok(Some(value))
     }
@@ -371,8 +369,6 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 0);
         self.tick(Checkpoint::FiniteIteration)?;
         let residual = self.value(
             residual,
@@ -381,8 +377,6 @@ impl Evaluator<'_, '_> {
             support.clone(),
             scope.clone(),
         )?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 1);
         self.tick(Checkpoint::FiniteIteration)?;
         let normalization = self.push(Node {
             ty: NodeType::Evidence,
@@ -399,8 +393,6 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 2);
         self.tick(Checkpoint::FiniteIteration)?;
         let value = self.push(Node {
             ty: NodeType::Value(Type::Bool),
@@ -423,8 +415,6 @@ impl Evaluator<'_, '_> {
             scope,
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 3);
         self.tick(Checkpoint::FiniteIteration)?;
         Ok(Some((value, residual)))
     }
@@ -1251,7 +1241,7 @@ impl Evaluator<'_, '_> {
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
-                for (_index, part) in parts.iter().enumerate().skip(1) {
+                for part in parts.iter().skip(1) {
                     self.tick(Checkpoint::FiniteIteration)?;
                     current = self.field(
                         current,
@@ -1259,8 +1249,6 @@ impl Evaluator<'_, '_> {
                         (first.span.0, part.span.1),
                         parts.len() > 2,
                     )?;
-                    #[cfg(test)]
-                    data::observe_actual(span, self.graph.active, "field_evaluate", _index);
                     self.tick(Checkpoint::FiniteIteration)?;
                 }
                 if parts.len() == 1 {
@@ -1630,8 +1618,6 @@ impl Evaluator<'_, '_> {
         if let Some(items) = members {
             let mut elements = Vec::new();
             for item in &items {
-                #[cfg(test)]
-                data::observe_actual(spec.span, self.graph.active, "quant_domain", elements.len());
                 self.tick(Checkpoint::FiniteIteration)?;
                 elements.push(
                     self.value(
@@ -1675,8 +1661,6 @@ impl Evaluator<'_, '_> {
             for item in &items {
                 #[cfg(test)]
                 let position = results.len();
-                #[cfg(test)]
-                data::observe_actual(spec.span, self.graph.active, "quant_body", position);
                 self.tick(Checkpoint::FiniteIteration)?;
                 let caller = self.graph.active;
                 let index = self.graph.iterations.len();
@@ -1777,17 +1761,8 @@ impl Evaluator<'_, '_> {
         ) {
             let domain = finite.expect("既知量化域");
             let mut instances = Vec::new();
-            #[cfg(test)]
-            data::observe_actual(spec.span, self.graph.active, "quant_exhaustion", 0);
             self.tick(Checkpoint::FiniteIteration)?;
             for body in &children[usize::from(input.is_some())..] {
-                #[cfg(test)]
-                data::observe_actual(
-                    spec.span,
-                    self.graph.active,
-                    "quant_exhaustion",
-                    instances.len() + 1,
-                );
                 self.tick(Checkpoint::FiniteIteration)?;
                 instances.push(body.evaluation);
                 self.tick(Checkpoint::FiniteIteration)?;
@@ -2318,8 +2293,6 @@ impl Evaluator<'_, '_> {
                     return Err(Failure::Internal("失敗fieldの元Source型がない".into()));
                 };
                 let ty = ty.clone();
-                #[cfg(test)]
-                data::observe_actual(span, self.graph.active, "failed_field", 0);
                 return self.lexical_result(span, ty, None, vec![base]);
             }
             return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
@@ -3440,26 +3413,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         result
     }
 
-    fn affine_private_scalars(result: &ObservedEvaluation) -> Vec<usize> {
-        result
-            .nodes
-            .iter()
-            .enumerate()
-            .filter_map(|(index, node)| {
-                (matches!(
-                    &node.payload,
-                    Some(Payload::Scalar(Scalar::Z(_) | Scalar::Q(..)))
-                ) && matches!(&node.rule, Rule::Input { kind: "law", .. })
-                    && node
-                        .arguments
-                        .first()
-                        .is_some_and(|r| matches!(result.nodes[r.0].ty, NodeType::Expression(_)))
-                    && node.arguments.len() > 1)
-                    .then_some(index)
-            })
-            .collect()
-    }
-
     // own Source, 実左右、差Expression、残差、正規化、比較Bool。
     fn affine_comparison_chain(result: &ObservedEvaluation, normalization: usize) -> [usize; 7] {
         let node = &result.nodes[normalization];
@@ -3609,11 +3562,10 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn affine_comparison_verified_answer_stop_retains_current_and_prior_results() {
-        affine_comparison_phase_stop(4);
+        affine_comparison_phase_stop();
     }
 
-    fn affine_comparison_phase_stop(stage: usize) {
-        use super::super::affine;
+    fn affine_comparison_phase_stop() {
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -3649,7 +3601,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=target]).unwrap();
         }
         let expected = Signal::Term;
-        let ready = Rc::new(Cell::new(false));
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
@@ -3665,42 +3616,17 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             }
         });
         let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
-        let (observer_arm, observer_ready) = (armed.clone(), ready.clone());
-        let stopped = affine::with_observer(
-            move |point| {
-                if stage == 0 && observer_ready.get() && point == affine::TestPoint::Coefficient {
-                    observer_arm.set(true)
+        let stopped = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "current" {
+                    armed.set(true)
                 }
-            },
-            || {
-                evaluate_observed_with_validator(
-                    prepared,
-                    &mut control,
-                    |environment, graph, request, answer| {
-                        environment.validate_answer(graph, request, answer)?;
-                        if request.id == "hole" {
-                            ready.set(true);
-                            if (1..=3).contains(&stage) {
-                                let armed = armed.clone();
-                                data::observe_iterations(move |_, context, operation, index| {
-                                    if context.request == 3
-                                        && operation == "affine_comparison"
-                                        && index == stage
-                                    {
-                                        armed.set(true)
-                                    }
-                                });
-                            }
-                        }
-                        if request.id == "current" && stage == 4 {
-                            armed.set(true)
-                        }
-                        Ok(())
-                    },
-                )
+                Ok(())
             },
         );
-        data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         assert_eq!(control.stop_reason(), Some(expected));
@@ -3716,21 +3642,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             unreachable!()
         };
         assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
-        if stage == 4 {
-            assert_eq!(stopped_answers[3], normal_answers[3]);
-        } else {
-            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
-            assert!(stopped.answers[3].outputs.is_empty());
-            assert!(stopped.answers[3].claim.is_none());
-            assert!(stopped.answers[3].evidence.is_empty());
-            assert!(
-                stopped.answers[3]
-                    .reasons
-                    .iter()
-                    .any(|reason| matches!(reason.kind, ReasonKind::Missing))
-            );
-        }
-        for answer in &stopped.answers[if stage == 4 { 4 } else { 3 }..] {
+        assert_eq!(stopped_answers[3], normal_answers[3]);
+        for answer in &stopped.answers[4..] {
             let reason = answer
                 .reasons
                 .iter()
@@ -3746,17 +3659,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         }
         assert!(stopped.answers[4].outputs.is_empty());
         assert!(!stopped.contexts.iter().any(|context| context.request == 4));
-        if (1..=3).contains(&stage) {
-            let last = chain[stage + 3];
-            assert_eq!(stopped.nodes.len(), last + 1);
-            assert!(
-                !stopped
-                    .nodes
-                    .iter()
-                    .any(|node| matches!(&node.payload, Some(Payload::Normalization { .. })))
-                    || stage >= 2
-            );
-        }
         assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
             stopped.contexts[index].request == 3
                 && matches!(
@@ -3875,11 +3777,10 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn affine_verified_current_post_stop_retains_value_and_unstarted_request() {
-        affine_private_phase_stop("verified");
+        affine_private_phase_stop();
     }
 
-    fn affine_private_phase_stop(phase: &'static str) {
-        use super::super::affine;
+    fn affine_private_phase_stop() {
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
         let sources = affine_private_fixture(
@@ -3912,7 +3813,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         );
         let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
-        let ready = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
@@ -3927,45 +3827,17 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             }
         });
         let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
-        let (observer_arm, observer_ready) = (armed.clone(), ready.clone());
-        let stopped = affine::with_observer(
-            move |point| {
-                if observer_ready.get()
-                    && ((phase == "coefficient" && point == affine::TestPoint::Coefficient)
-                        || (phase == "constant" && point == affine::TestPoint::Constant))
-                {
-                    observer_arm.set(true);
+        let stopped = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "current" {
+                    armed.set(true)
                 }
-            },
-            || {
-                evaluate_observed_with_validator(
-                    prepared,
-                    &mut control,
-                    |environment, graph, request, answer| {
-                        environment.validate_answer(graph, request, answer)?;
-                        if request.id == "hole" {
-                            ready.set(true);
-                            if phase == "scalar" {
-                                let armed = armed.clone();
-                                data::observe_iterations(move |_, context, operation, index| {
-                                    if context.request == 3
-                                        && operation == "affine_scalar"
-                                        && index == 1
-                                    {
-                                        armed.set(true)
-                                    }
-                                });
-                            }
-                        }
-                        if request.id == "current" && phase == "verified" {
-                            armed.set(true)
-                        }
-                        Ok(())
-                    },
-                )
+                Ok(())
             },
         );
-        data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         assert_eq!(control.stop_reason(), Some(expected));
@@ -3981,22 +3853,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             unreachable!()
         };
         assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
-        if phase == "verified" {
-            assert_eq!(stopped_answers[3], normal_answers[3]);
-        } else {
-            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
-            assert!(stopped.answers[3].outputs.is_empty());
-            assert!(stopped.answers[3].evidence.is_empty());
-            assert!(stopped.answers[3].claim.is_none());
-            assert!(
-                stopped.answers[3]
-                    .reasons
-                    .iter()
-                    .any(|reason| matches!(reason.kind, ReasonKind::Missing))
-            );
-        }
-        let first_unfinished = if phase == "verified" { 4 } else { 3 };
-        for answer in &stopped.answers[first_unfinished..] {
+        assert_eq!(stopped_answers[3], normal_answers[3]);
+        for answer in &stopped.answers[4..] {
             let reason = answer
                 .reasons
                 .iter()
@@ -4013,17 +3871,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert_eq!(stopped.answers[4].status, Decision::Undetermined);
         assert!(stopped.answers[4].outputs.is_empty());
         assert!(!stopped.contexts.iter().any(|context| context.request == 4));
-        let scalars = affine_private_scalars(&stopped);
-        if phase == "scalar" {
-            assert_eq!(scalars.len(), 1);
-            assert_eq!(scalars[0] + 1, stopped.nodes.len());
-            assert_eq!(
-                data_scalar_at(&stopped, scalars[0]),
-                &Scalar::Q(0.into(), 1.into())
-            );
-        } else if phase != "verified" {
-            assert!(scalars.is_empty())
-        }
         assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
             stopped.contexts[index].request == 3
                 && matches!(
@@ -5266,7 +5113,7 @@ reading R {{
             ));
         }
     }
-    fn scalar_operation_private_example(p: Option<bool>, q: Option<bool>) -> ObservedEvaluation {
+    fn scalar_operation_private_example() -> ObservedEvaluation {
         let definitions=include_str!("../../tests/fixtures/counter.atoms.json").replace("\"fields\": [",
         "\"fields\": [{\"name\":\"other\",\"type\":\"Z\",\"meaning\":\"第二整数。\"},{\"name\":\"p\",\"type\":\"Bool\",\"meaning\":\"第一条件。\"},{\"name\":\"q\",\"type\":\"Bool\",\"meaning\":\"第二条件。\"},");
         let checked =
@@ -5296,10 +5143,8 @@ reading R {{
           law required computed(s: State): s.count + s.other = 10;"#,
             );
         let mut additions=vec![r#"{"id":"other","subject":"s","field":"Counter.State.other","value":"3","origin":"model"}"#.to_owned()];
-        for (field, value) in [("p", p), ("q", q)] {
-            if let Some(value) = value {
-                additions.push(format!(r#"{{"id":"{field}","subject":"s","field":"Counter.State.{field}","value":{value},"origin":"model"}}"#));
-            }
+        for (field, value) in [("p", false), ("q", true)] {
+            additions.push(format!(r#"{{"id":"{field}","subject":"s","field":"Counter.State.{field}","value":{value},"origin":"model"}}"#));
         }
         let additions = additions.join(",");
         let map = include_str!("../../tests/fixtures/counter.archmap.json")
@@ -5339,7 +5184,7 @@ reading R {{
 
     #[test]
     fn rejects_arithmetic_value_and_commutative_argument_substitution() {
-        let result = scalar_operation_private_example(Some(false), Some(true));
+        let result = scalar_operation_private_example();
         assert_eq!(result.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
             .expect("正常な整数演算DAGを元順で再buildする");
@@ -6348,10 +6193,10 @@ reading Calc {{
             Err(ValidationFailure::Internal(_))
         ));
     }
-    fn named_call_private_example(omitted: &[&str]) -> ObservedEvaluation {
+    fn named_call_private_example() -> ObservedEvaluation {
         evaluate_observed_bytes(
             numeric_recheck_fixture(
-                omitted,
+                &["q"],
                 r#"
  view combine(x: Q, y: Q): Q = x + y;
  view retain(x: Q): Q = x;
@@ -6363,18 +6208,10 @@ reading Calc {{
  view constant(s: Sample): Q = unused(s.q);
 "#,
             ),
-            if omitted.is_empty() {
-                &[
-                    "first=evaluate(Calc.caller,s=@v/sample)",
-                    "again=evaluate(Calc.caller,s=@v/sample)",
-                    "field=evaluate(Calc.field,s=@v/sample)",
-                ]
-            } else {
-                &[
-                    "unknown=evaluate(Calc.unknown,s=@v/sample)",
-                    "constant=evaluate(Calc.constant,s=@v/sample)",
-                ]
-            },
+            &[
+                "unknown=evaluate(Calc.unknown,s=@v/sample)",
+                "constant=evaluate(Calc.constant,s=@v/sample)",
+            ],
             &mut named_call_quiet(),
         )
         .unwrap()
@@ -6399,7 +6236,7 @@ reading Calc {{
     }
     #[test]
     fn named_calls_keep_missing_formals_as_argument_evaluations_in_prefixes() {
-        let result = named_call_private_example(&["q"]);
+        let result = named_call_private_example();
         assert_eq!(result.status(), "partial");
         assert!(!result.answers[0].outputs.contains_key("value"));
         assert!(result.answers[1].outputs.contains_key("value"));
@@ -7180,13 +7017,13 @@ reading Calc {{
         )
         .unwrap()
     }
-    fn data_rule_scalar(result: &ObservedEvaluation, source: &str, request: usize) -> usize {
+    fn data_rule_scalar(result: &ObservedEvaluation, source: &str) -> usize {
         result
             .nodes
             .iter()
             .enumerate()
             .find_map(|(index, node)| {
-                if result.contexts[index].request != request
+                if result.contexts[index].request != 0
                     || !matches!(node.payload, Some(Payload::Scalar(_)))
                 {
                     return None;
@@ -7221,7 +7058,7 @@ reading Calc {{
         let result = data_recheck_example(&[], &["value=evaluate(Calc.make)"]);
         assert_eq!(result.status(), "complete");
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let value = data_rule_scalar(&result, "Pair(1,2)", 0);
+        let value = data_rule_scalar(&result, "Pair(1,2)");
         let prefix = &result.nodes[..=value];
         rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
         for mutation in 0..4 {
@@ -7263,10 +7100,10 @@ reading Calc {{
         );
         assert_eq!(result.status(), "complete");
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let binder = data_rule_scalar(&result, "left", 0);
+        let binder = data_rule_scalar(&result, "left");
         let prefix = &result.nodes[..=binder];
         rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
-        let right = data_rule_scalar(&result, "right", 0);
+        let right = data_rule_scalar(&result, "right");
         assert!(right < binder);
         assert_eq!(
             data_scalar_at(&result, binder),
@@ -7410,7 +7247,7 @@ reading Calc {{
         );
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let list = data_rule_scalar(&result, "list<Z>[2,1,2]", 0);
+        let list = data_rule_scalar(&result, "list<Z>[2,1,2]");
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=list]).unwrap();
         let mut changed = result.nodes[..=list].to_vec();
         let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut changed[list].payload else {
@@ -7728,9 +7565,9 @@ reading Calc {{
         )
         .unwrap()
     }
-    fn iteration_binder_scalar(result: &ObservedEvaluation, iteration: usize) -> usize {
+    fn iteration_binder_scalar(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)| {
-            (result.contexts[index].iteration==Some(iteration) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
         }).unwrap()
     }
     #[test]
@@ -7738,7 +7575,7 @@ reading Calc {{
         let mut result = comprehension_recheck_example(&["value=evaluate(Calc.list_case)"]);
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let binder = iteration_binder_scalar(&result, 0);
+        let binder = iteration_binder_scalar(&result);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
         let original = result.iterations[0].clone();
         result.iterations[0].member = super::super::call::Member::ListPosition(1);
@@ -7818,7 +7655,7 @@ reading Calc {{
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &display[..=output]).unwrap();
         rebuild_for_origin_and_support_recheck(&result, &display).unwrap();
-        let binder = iteration_binder_scalar(&result, 0);
+        let binder = iteration_binder_scalar(&result);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
         let original = result.iterations[0].member.clone();
         result.iterations[0].member = super::super::call::Member::SetElement(Scalar::Z(9.into()));
@@ -7913,7 +7750,7 @@ reading Calc {{
             NodeType::Value(Type::Set(Box::new(Type::Z)))
         );
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let rhs = data_rule_scalar(&result, "10", 0);
+        let rhs = data_rule_scalar(&result, "10");
         assert_eq!(result.contexts[rhs].iteration, None);
         let rhs_evaluation = result.nodes.iter().enumerate().find_map(|(index, node)| matches!(&node.payload, Some(Payload::Evaluation { value: Some(value), .. }) if value.0 == rhs).then_some(NodeRef(index))).unwrap();
         assert_eq!(result.contexts[rhs_evaluation.0].iteration, None);
@@ -8009,7 +7846,7 @@ reading Calc {{
         }
         assert!(result.answers[1].evidence.iter().any(|r|matches!(&result.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
     }
-    fn plain_ref_fixture(changed_provenance: bool) -> InputSources {
+    fn plain_ref_fixture() -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Roster","version":"1","dependencies":[],"declarations":[
 {"kind":"entity","name":"Roster.Root","meaning":"所属先。","parameters":[],"fields":[],"alignments":[]},
 {"kind":"entity","name":"Roster.E","meaning":"登録対象。","parameters":[{"name":"owner","type":["Ref","Roster.Root"],"meaning":"所属先。"}],"fields":[{"name":"flag","type":"Bool","meaning":"条件。"}],"alignments":[]},
@@ -8037,20 +7874,13 @@ reading Calc {{
 }}
 "#
         );
-        let modes = if changed_provenance {
-            ["specification", "specification", "specification"]
-        } else {
-            ["specification", "proposed", "observed"]
-        };
-        let revision = if changed_provenance { "r2" } else { "r1" };
         let map = format!(
             r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Roster","version":"1","digest":"{digest}"}}],
-"sources":[{{"id":"scan","uri":"urn:fixture:plain-ref-roster","revision":"{revision}","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
-"origins":[{{"id":"ov","mode":"{}","method":"最初の登録表。","locations":[{{"source":"scan","path":"v.model","span":[0,1]}}]}},{{"id":"ow","mode":"{}","method":"次の登録表。","locations":[{{"source":"scan","path":"w.model","span":[2,3]}}]}},{{"id":"oz","mode":"{}","method":"空の登録表。","locations":[{{"source":"scan","path":"z.model","span":[4,5]}}]}}],
+"sources":[{{"id":"scan","uri":"urn:fixture:plain-ref-roster","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+"origins":[{{"id":"ov","mode":"specification","method":"最初の登録表。","locations":[{{"source":"scan","path":"v.model","span":[0,1]}}]}},{{"id":"ow","mode":"proposed","method":"次の登録表。","locations":[{{"source":"scan","path":"w.model","span":[2,3]}}]}},{{"id":"oz","mode":"observed","method":"空の登録表。","locations":[{{"source":"scan","path":"z.model","span":[4,5]}}]}}],
 "snapshots":[{{"id":"v","origin":"ov","subjects":[{{"id":"root","type":"Roster.Root","origin":"ov"}},{{"id":"item","type":"Roster.E","origin":"ov"}},{{"id":"other","type":"Roster.Other","origin":"ov"}}],"atoms":[]}},
 {{"id":"w","origin":"ow","subjects":[{{"id":"root","type":"Roster.Root","origin":"ow"}},{{"id":"item","type":"Roster.E","origin":"ow"}}],"atoms":[{{"id":"flag","subject":"item","field":"Roster.E.flag","value":false,"origin":"ow"}}]}},
-{{"id":"z","origin":"oz","subjects":[],"atoms":[]}}]}}"#,
-            modes[0], modes[1], modes[2]
+{{"id":"z","origin":"oz","subjects":[],"atoms":[]}}]}}"#
         );
         InputSources::from_bytes(
             vec![definitions.as_bytes().to_vec()],
@@ -8059,11 +7889,11 @@ reading Calc {{
         )
     }
     fn plain_ref_example(asks: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(plain_ref_fixture(false), asks, &mut named_call_quiet()).unwrap()
+        evaluate_observed_bytes(plain_ref_fixture(), asks, &mut named_call_quiet()).unwrap()
     }
     #[test]
     fn plain_ref_owned_type_syntax_stays_distinct_from_plain_roster() {
-        let sources = plain_ref_fixture(false);
+        let sources = plain_ref_fixture();
         let law = String::from_utf8(sources.law().bytes().to_vec())
             .unwrap()
             .replace(
@@ -8213,9 +8043,9 @@ reading Calc {{
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     }
-    fn type_quantifier_fixture(omitted: &[&str]) -> InputSources {
+    fn type_quantifier_fixture() -> InputSources {
         numeric_recheck_fixture(
-            omitted,
+            &[],
             r#"
  view all(): Bool = forall bit: Bool . bit=bit;
  view unused(): Bool = forall item: Option<Bool> . true;
@@ -8232,12 +8062,8 @@ reading Calc {{
         )
     }
     fn type_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(
-            type_quantifier_fixture(&[]),
-            requests,
-            &mut named_call_quiet(),
-        )
-        .unwrap()
+        evaluate_observed_bytes(type_quantifier_fixture(), requests, &mut named_call_quiet())
+            .unwrap()
     }
     #[test]
     fn type_quantifier_exhaustion_rechecks_coverage_binder_body_and_evidence() {
@@ -8280,7 +8106,7 @@ reading Calc {{
             }
             rejects_named_prefix(&result, &changed);
         }
-        let binder = iteration_binder_scalar_for_name(&result, 0, b"bit");
+        let binder = iteration_binder_scalar_for_name(&result);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
         let old = result.iterations[0].member.clone();
         result.iterations[0].member = super::super::call::Member::SetElement(Scalar::Bool(true));
@@ -8327,9 +8153,9 @@ reading Calc {{
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     }
-    fn in_quantifier_fixture(omitted: &[&str]) -> InputSources {
+    fn in_quantifier_fixture() -> InputSources {
         numeric_recheck_fixture(
-            omitted,
+            &[],
             r#"
  view all(): Bool = forall n in list<Z>[1,1,2] . n>0;
  view empty(): Bool = exists q in list<Q>[] . q>rat(0,1);
@@ -8347,12 +8173,7 @@ reading Calc {{
         )
     }
     fn in_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(
-            in_quantifier_fixture(&[]),
-            requests,
-            &mut named_call_quiet(),
-        )
-        .unwrap()
+        evaluate_observed_bytes(in_quantifier_fixture(), requests, &mut named_call_quiet()).unwrap()
     }
     fn in_domain(result: &ObservedEvaluation, request: usize) -> usize {
         result
@@ -8405,13 +8226,9 @@ reading Calc {{
         finite_instances(&mut changed, proof, bodies);
         rejects_named_prefix(&result, &changed);
     }
-    fn iteration_binder_scalar_for_name(
-        result: &ObservedEvaluation,
-        iteration: usize,
-        name: &[u8],
-    ) -> usize {
+    fn iteration_binder_scalar_for_name(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)|{
-            (result.contexts[index].iteration==Some(iteration) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(name))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"bit".as_slice()))).then_some(index)
         }).unwrap()
     }
     #[test]
@@ -8460,7 +8277,7 @@ reading Calc {{
     }
     #[test]
     fn plain_ref_actual_roster_construction_domain_and_recheck_stops() {
-        quantifier_actual_phases_preserve_stops(true, true);
+        quantifier_actual_phases_preserve_stops();
     }
     fn finite_completion_fixture(body: &str, missing_q: bool) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"ClosedValue","version":"1","dependencies":[],"declarations":[
@@ -9591,33 +9408,23 @@ reading Calc {{
     }
     #[test]
     fn fp_completion_coverage_stop_keeps_cases_without_unfinished_evidence() {
-        fp_completion_phase_stop("completion_coverage", 0, None);
+        fp_completion_phase_stop();
     }
-    fn fp_completion_phase_stop(phase: &'static str, at: usize, known: Option<bool>) {
+    fn fp_completion_phase_stop() {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        let current = match known {
-            Some(true) => "law required current(s:Sample):false and s.f=0;",
-            Some(false) => "view current(s:Sample):Fp(2)=if s.f=0 then 1 else 1;",
-            None => "view current(s:Sample):Fp(2)=s.f-s.f;",
-        };
-        let body = format!(
-            "view seed():Unit=unit; law required prior(s:Sample):false; view hole(s:Sample):Q=s.q; {current}"
+        let inputs = fp_completion_fixture(
+            "view seed():Unit=unit; law required prior(s:Sample):false; view hole(s:Sample):Q=s.q; view current(s:Sample):Fp(2)=s.f-s.f;",
+            true,
         );
-        let inputs = fp_completion_fixture(&body, true);
-        let ask = if known == Some(true) {
-            "current=check(Calc.current,s=@v/sample)"
-        } else {
-            "current=evaluate(Calc.current,s=@v/sample)"
-        };
         let asks = [
             "seed=evaluate(Calc.seed)",
             "prior=check(Calc.prior,s=@v/sample)",
             "hole=evaluate(Calc.hole,s=@v/sample)",
-            ask,
+            "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.seed)",
         ];
         let mut quiet = named_call_quiet();
@@ -9642,7 +9449,7 @@ reading Calc {{
                         if span == target
                             && context.request == 3
                             && context.case.is_none()
-                            && operation == phase
+                            && operation == "completion_coverage"
                         {
                             observed.borrow_mut().push(index);
                         }
@@ -9659,78 +9466,8 @@ reading Calc {{
             &normal.nodes[r.0].payload,
             Some(Payload::Counterexample { .. })
         )));
-        assert_eq!(
-            normal.answers[3].status,
-            if known == Some(true) {
-                Decision::Refuted
-            } else {
-                Decision::Established
-            }
-        );
-        assert_eq!(
-            &*progress.borrow(),
-            if phase == "completion_coverage" {
-                &[0][..]
-            } else {
-                &[0, 1][..]
-            }
-        );
-        let original = if let Some(check) = known {
-            let roots:Vec<_>=normal.nodes.iter().enumerate().filter_map(|(index,node)| {
-                let context=normal.contexts[index];
-                (context.request==3 && context.case.is_none() && context.frame.is_none() && context.iteration.is_none() && context.instance.is_none()
-                    && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&normal.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).then_some(NodeRef(index))
-            }).collect();
-            assert_eq!(roots.len(), 1);
-            let root = roots[0];
-            let Some(Payload::Evaluation {
-                value: Some(value), ..
-            }) = &normal.nodes[root.0].payload
-            else {
-                panic!("verified known observed root")
-            };
-            let value = *value;
-            assert_eq!(
-                data_scalar_at(&normal, value.0),
-                &if check {
-                    Scalar::Bool(false)
-                } else {
-                    Scalar::Fp {
-                        modulus: "2".into(),
-                        value: 1.into(),
-                    }
-                }
-            );
-            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=value.0]).unwrap();
-            let proposition = if check {
-                let props: Vec<_> = normal
-                    .nodes
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, node)| {
-                        (normal.contexts[i].request == 3
-                            && normal.contexts[i].case.is_none()
-                            && matches!(&node.payload, Some(Payload::Proposition { .. }))
-                            && node.arguments.get(1) == Some(&root))
-                        .then_some(NodeRef(i))
-                    })
-                    .collect();
-                assert_eq!(props.len(), 1);
-                let reference = props[0];
-                assert!(normal.nodes[reference.0].evidence.iter().any(|r| matches!(
-                    &normal.nodes[r.0].payload,
-                    Some(Payload::Counterexample { .. })
-                )));
-                rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=reference.0])
-                    .unwrap();
-                Some(reference)
-            } else {
-                None
-            };
-            Some((root, value, proposition))
-        } else {
-            None
-        };
+        assert_eq!(normal.answers[3].status, Decision::Established);
+        assert_eq!(&*progress.borrow(), &[0][..]);
         let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
@@ -9760,10 +9497,10 @@ reading Calc {{
                         if span == target
                             && context.request == 3
                             && context.case.is_none()
-                            && operation == phase
+                            && operation == "completion_coverage"
                         {
                             observed.borrow_mut().push(index);
-                            if index == at {
+                            if index == 0 {
                                 armed.set(true);
                             }
                         }
@@ -9774,7 +9511,7 @@ reading Calc {{
         );
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
-        assert_eq!(seen.borrow().last(), Some(&at));
+        assert_eq!(seen.borrow().last(), Some(&0));
         assert_eq!(control.stop_reason(), Some(expected));
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         let Json::Obj(ref normal_wire) = normal.wire() else {
@@ -9790,27 +9527,9 @@ reading Calc {{
             unreachable!()
         };
         assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
-        if let Some((root, value, proposition)) = original {
-            assert_eq!(stopped.answers[3].status, normal.answers[3].status);
-            assert_eq!(stopped.answers[3].outputs.get("evaluation"), Some(&root));
-            assert_eq!(stopped.answers[3].claim, proposition);
-            if let Some(proposition) = proposition {
-                assert_eq!(
-                    stopped.answers[3].evidence,
-                    normal.nodes[proposition.0].evidence
-                );
-                assert!(stopped.answers[3].evidence.iter().any(|r| matches!(
-                    &stopped.nodes[r.0].payload,
-                    Some(Payload::Counterexample { .. })
-                )));
-            } else {
-                assert_eq!(stopped.answers[3].outputs.get("value"), Some(&value));
-            }
-        } else {
-            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
-            assert!(stopped.answers[3].outputs.is_empty());
-            assert!(stopped.answers[3].evidence.is_empty());
-        }
+        assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+        assert!(stopped.answers[3].outputs.is_empty());
+        assert!(stopped.answers[3].evidence.is_empty());
         assert!(
             stopped.answers[3]
                 .reasons
@@ -9836,16 +9555,7 @@ reading Calc {{
         }
         let completed=stopped.nodes.iter().enumerate().filter(|(i,node)|stopped.contexts[*i].request==3 && stopped.contexts[*i].case.is_some() && stopped.contexts[*i].frame.is_none() && stopped.contexts[*i].iteration.is_none() && stopped.contexts[*i].instance.is_none()
             && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&stopped.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).count();
-        assert_eq!(
-            completed,
-            if phase == "completion_enum" {
-                0
-            } else if phase == "completion_case" {
-                1
-            } else {
-                2
-            }
-        );
+        assert_eq!(completed, 2);
         assert!(
             !stopped
                 .nodes
@@ -10042,9 +9752,9 @@ reading Calc {{
     }
     #[test]
     fn bool_completion_actual_coverage_stop_keeps_prefixes() {
-        bool_completion_actual_phase_stop("completion_coverage", 0);
+        bool_completion_actual_phase_stop();
     }
-    fn bool_completion_actual_phase_stop(phase: &'static str, at: usize) {
+    fn bool_completion_actual_phase_stop() {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
@@ -10083,7 +9793,7 @@ reading Calc {{
                             if span == target
                                 && context.request == 3
                                 && context.case.is_none()
-                                && operation == phase
+                                && operation == "completion_coverage"
                             {
                                 observed.borrow_mut().push(index);
                             }
@@ -10097,14 +9807,7 @@ reading Calc {{
             assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
             assert_eq!(normal.answers[1].status, Decision::Refuted);
             assert_eq!(normal.answers[3].status, Decision::Established);
-            assert_eq!(
-                &*progress.borrow(),
-                if phase == "completion_coverage" {
-                    &[0][..]
-                } else {
-                    &[0, 1][..]
-                }
-            );
+            assert_eq!(&*progress.borrow(), &[0][..]);
             let expected = Signal::Term;
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
@@ -10134,10 +9837,10 @@ reading Calc {{
                             if span == target
                                 && context.request == 3
                                 && context.case.is_none()
-                                && operation == phase
+                                && operation == "completion_coverage"
                             {
                                 observed.borrow_mut().push(index);
-                                if index == at {
+                                if index == 0 {
                                     armed.set(true);
                                 }
                             }
@@ -10148,7 +9851,7 @@ reading Calc {{
             );
             data::clear_iteration_observer();
             let stopped = stopped.unwrap();
-            assert_eq!(seen.borrow().last(), Some(&at));
+            assert_eq!(seen.borrow().last(), Some(&0));
             assert_eq!(control.stop_reason(), Some(expected));
             assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
             let Json::Obj(ref normal_wire) = normal.wire() else {
@@ -10187,19 +9890,12 @@ reading Calc {{
                     .flat_map(|r| &r.missing)
                     .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))
             );
-            let expected_cases = if phase == "completion_enum" {
-                0
-            } else if phase == "completion_case" {
-                1
-            } else {
-                2
-            };
             let completed=stopped.nodes.iter().enumerate().filter(|(i,node)| {
                 stopped.contexts[*i].request==3 && stopped.contexts[*i].case.is_some()
                     && matches!(&node.payload,Some(Payload::Evaluation {expression,..})
                         if matches!(&stopped.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))
             }).count();
-            assert_eq!(completed, expected_cases);
+            assert_eq!(completed, 2);
             assert!(
                 !stopped
                     .nodes
@@ -10216,44 +9912,22 @@ reading Calc {{
             assert_eq!(probes.get(), before);
         }
     }
-    fn quantifier_actual_phases_preserve_stops(typed: bool, plain: bool) {
+    fn quantifier_actual_phases_preserve_stops() {
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        let phases = if plain {
-            // 停止位置の代表: 候補列挙の途中と、再検査の途中。
-            vec![("ref_roster", "full"), ("ref_recheck", "full")]
-        } else {
-            vec![
-                (if typed { "type_enum" } else { "quant_domain" }, "full"),
-                ("quant_body", "early"),
-                ("quant_exhaustion", "full"),
-            ]
-        };
+        // 停止位置の代表: 候補列挙の途中と、再検査の途中。
+        let phases = vec![("ref_roster", "full"), ("ref_recheck", "full")];
         let phases_first = phases[0].0;
         for (operation, view) in phases {
-            let sources = if plain {
-                plain_ref_fixture(false)
-            } else if typed {
-                type_quantifier_fixture(&["q"])
-            } else {
-                in_quantifier_fixture(&["q"])
-            };
+            let sources = plain_ref_fixture();
             let current = format!("current=evaluate(Calc.{view})");
             let asks = [
                 "seed=evaluate(Calc.later)",
-                if plain {
-                    "prior=check(Calc.called)"
-                } else {
-                    "prior=check(Calc.called,x=@v/sample)"
-                },
-                if plain {
-                    "hole=evaluate(Calc.observe,s=@v/item)"
-                } else {
-                    "hole=evaluate(Calc.observe,s=@v/sample)"
-                },
+                "prior=check(Calc.called)",
+                "hole=evaluate(Calc.observe,s=@v/item)",
                 current.as_str(),
                 "later=evaluate(Calc.later)",
             ];
@@ -10295,27 +9969,14 @@ reading Calc {{
             assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
             assert_eq!(normal.answers[1].status, Decision::Refuted);
             assert_eq!(normal.answers[3].status, Decision::Established);
-            if plain {
-                let progress = progress.borrow();
-                match operation {
-                    "ref_roster" => assert_eq!(&*progress, &[0, 1, 2]),
-                    "type_enum" => assert_eq!(&*progress, &[0, 1, 2, 3]),
-                    "quant_domain" => assert_eq!(&*progress, &[0, 1]),
-                    "ref_recheck" => {
-                        assert!(progress.starts_with(&[0, 1]));
-                        assert!(progress.iter().all(|index| *index < 2));
-                    }
-                    _ => unreachable!(),
+            let progress = progress.borrow();
+            match operation {
+                "ref_roster" => assert_eq!(&*progress, &[0, 1, 2]),
+                "ref_recheck" => {
+                    assert!(progress.starts_with(&[0, 1]));
+                    assert!(progress.iter().all(|index| *index < 2));
                 }
-            } else {
-                assert_eq!(
-                    &*progress.borrow(),
-                    if operation == "quant_exhaustion" {
-                        &[0, 1, 2][..]
-                    } else {
-                        &[0, 1][..]
-                    }
-                );
+                _ => unreachable!(),
             }
             let Json::Obj(ref normal_wire) = normal.wire() else {
                 unreachable!()
@@ -10372,16 +10033,14 @@ reading Calc {{
                 unreachable!()
             };
             assert_eq!(&answers[..3], &normal_answers[..3]);
-            if plain {
-                assert!(
-                    !stopped
-                        .nodes
-                        .iter()
-                        .enumerate()
-                        .any(|(index, node)| stopped.contexts[index].request == 3
-                            && node.ty == NodeType::Domain)
-                );
-            }
+            assert!(
+                !stopped
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .any(|(index, node)| stopped.contexts[index].request == 3
+                        && node.ty == NodeType::Domain)
+            );
             for answer in &stopped.answers[3..] {
                 assert_eq!(answer.status, Decision::Undetermined);
                 assert!(answer.outputs.is_empty());
@@ -10405,16 +10064,6 @@ reading Calc {{
                     .any(|(index, node)| stopped.contexts[index].request == 3
                         && matches!(&node.payload, Some(Payload::FiniteExhaustion { .. })))
             );
-            if operation == "quant_body" {
-                assert!(
-                    stopped
-                        .nodes
-                        .iter()
-                        .enumerate()
-                        .any(|(index, node)| stopped.contexts[index].request == 3
-                            && matches!(&node.payload, Some(Payload::Counterexample { .. })))
-                );
-            }
             if operation == phases_first {
                 rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
             }

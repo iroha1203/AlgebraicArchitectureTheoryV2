@@ -91,8 +91,6 @@ impl Evaluator<'_, '_> {
             )?)
         };
         if value.is_some() {
-            #[cfg(test)]
-            data::observe_actual(span, self.graph.active, "owned_family_set", 0);
             self.tick(Checkpoint::FiniteIteration)?;
         }
         self.finish_with_reasons(

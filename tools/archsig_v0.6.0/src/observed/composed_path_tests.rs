@@ -198,18 +198,13 @@ fn then_typed_endpoint_counterexample_recheck_rejects_fabricated_values_and_evid
     bad.ty = NodeType::Value(Type::Bool);
     reject(&r, i, bad);
 }
-fn stop(stage: &'static str, unknown: bool) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
-    let input = fixture::input(unknown, "r1");
-    let current = if unknown {
-        "current=evaluate(Walk.right_unit,e=@v/e)"
-    } else {
-        "current=evaluate(Walk.triple,s=@v/self,e=@v/e,f=@v/next)"
-    };
+    let input = fixture::input(false, "r1");
     let asks = [
         "seed=evaluate(Walk.seed)",
         "prior=check(Walk.prior)",
-        current,
+        "current=evaluate(Walk.triple,s=@v/self,e=@v/e,f=@v/next)",
         "later=evaluate(Walk.seed)",
     ];
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
@@ -235,11 +230,7 @@ fn stop(stage: &'static str, unknown: bool) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, op, _| {
-                if ctx.request == 2
-                    && op == stage
-                    && (!unknown || ctx.case.is_some())
-                    && !s.replace(true)
-                {
+                if ctx.request == 2 && op == "path_compose" && !s.replace(true) {
                     a.set(true)
                 }
             });
@@ -276,13 +267,10 @@ fn stop(stage: &'static str, unknown: bool) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&reason))
         );
     }
-    if unknown {
-        assert!(r.answers[2].reasons.iter().any(|r| !r.missing.is_empty()));
-    }
     r.wire();
     assert_eq!(c.checkpoint(Checkpoint::Expression), Err(reason));
 }
 #[test]
 fn then_actual_composition_cancel_keeps_all_tables_and_prior_answers() {
-    stop("path_compose", false);
+    stop();
 }

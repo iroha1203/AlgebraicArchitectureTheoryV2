@@ -17,12 +17,12 @@ fn finite_map_private_result(asks: &[&str]) -> ObservedEvaluation {
     let p = prepare_observed(finite_map_private_inputs(), asks, &mut control).unwrap();
     evaluate_observed(p, &mut control).unwrap()
 }
-fn finite_map_private_domain(r: &ObservedEvaluation, request: usize) -> usize {
+fn finite_map_private_domain(r: &ObservedEvaluation) -> usize {
     r.nodes
         .iter()
         .enumerate()
         .find_map(|(i, n)| {
-            (r.contexts[i].request == request
+            (r.contexts[i].request == 0
                 && matches!(
                     n.payload,
                     Some(Payload::Domain {
@@ -44,7 +44,7 @@ fn finite_map_private_members(r: &ObservedEvaluation, d: usize) -> Vec<NodeRef> 
 fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
     let r = finite_map_private_result(&["a=evaluate(Maps.every)"]);
     assert_eq!(r.status(), "complete");
-    let d = finite_map_private_domain(&r, 0);
+    let d = finite_map_private_domain(&r);
     let es = finite_map_private_members(&r, d);
     assert_eq!(es.len(), 4);
     rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=d]).unwrap();

@@ -369,7 +369,8 @@ fn infinite_exists_preserves_mathematics_and_current_observation_provenance() {
     assert_eq!(wires[0].2, wires[1].2);
 }
 
-fn stop(fresh_recheck: bool) {
+#[test]
+fn infinite_exists_actual_domain_stop_keeps_verified_prefix_and_prior_answers() {
     use std::{cell::Cell, rc::Rc};
     let body = "view caller(s:Sample):Bool=exists item:Z.item*item=0;";
     let inputs = input(&[], body);
@@ -385,7 +386,6 @@ fn stop(fresh_recheck: bool) {
     };
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -400,36 +400,21 @@ fn stop(fresh_recheck: bool) {
         }
     });
     let prepared = prepare_observed(inputs, ASKS, &mut control).unwrap();
-    let mut copy = control.clone();
     let stopped = evaluate_observed_with_validator(
         prepared,
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "prior" {
-                let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+                let (a, s) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |at, context, operation, index| {
-                    if at == span
-                        && context.request == 2
-                        && ((!fresh_recheck && operation == "universal" && index == 0)
-                            || (fresh_recheck && ph.get() && operation == "quantifier_kind"))
+                    if at == span && context.request == 2 && operation == "universal" && index == 0
                     {
                         assert_eq!(s.get(), 0);
                         s.set(1);
                         a.set(true);
                     }
                 });
-            }
-            if fresh_recheck && request.id == "v" {
-                let fresh = Environment::with_requests(
-                    normal.prepared.inputs(),
-                    normal.prepared.requests().requests(),
-                    &mut copy,
-                )?;
-                phase.set(true);
-                let result = fresh.validate_answer(graph, request, answer);
-                phase.set(false);
-                result?;
             }
             Ok(())
         },
@@ -444,19 +429,7 @@ fn stop(fresh_recheck: bool) {
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     assert!(stopped.answers[1].claim.is_some() && !stopped.answers[1].evidence.is_empty());
     for index in 2..4 {
-        if fresh_recheck && index == 2 {
-            assert_eq!(
-                stopped.answers[index].outputs,
-                normal.answers[index].outputs
-            );
-            assert_eq!(stopped.answers[index].claim, normal.answers[index].claim);
-            assert_eq!(
-                stopped.answers[index].evidence,
-                normal.answers[index].evidence
-            );
-        } else {
-            assert!(stopped.answers[index].outputs.is_empty());
-        }
+        assert!(stopped.answers[index].outputs.is_empty());
         assert_eq!(stopped.answers[index].status, Decision::Undetermined);
         let reason = stopped.answers[index]
             .reasons
@@ -471,8 +444,4 @@ fn stop(fresh_recheck: bool) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn infinite_exists_actual_domain_stop_keeps_verified_prefix_and_prior_answers() {
-    stop(false)
 }

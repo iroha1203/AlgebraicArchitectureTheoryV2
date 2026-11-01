@@ -12,8 +12,8 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     )
     .unwrap()
 }
-fn example(stable: bool) -> ObservedEvaluation {
-    let name = if stable { "total" } else { "pair" };
+fn example() -> ObservedEvaluation {
+    let name = "pair";
     let asks = [
         format!("first=evaluate(RefCalc.{name},a=@v/A,b=@v/B)"),
         format!("target=evaluate(RefCalc.{name},a=@v/A,b=@v/B)"),
@@ -29,8 +29,8 @@ fn example(stable: bool) -> ObservedEvaluation {
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
-fn mutate(kinds: &[usize], stable: bool) {
-    let r = example(stable);
+fn mutate() {
+    let r = example();
     let root = r.answers[1].outputs["evaluation"].0;
     let domain = r.nodes[root].arguments[1].0;
     let seed = r.nodes[domain].arguments[0].0;
@@ -69,31 +69,6 @@ fn mutate(kinds: &[usize], stable: bool) {
     };
     let foreign_source = foreign_sources[0];
     assert_ne!(foreign_source, sources[0]);
-    let proof = r.answers[1].evidence[0].0;
-    let case = r
-        .cases
-        .iter()
-        .position(|c| {
-            c.domain == NodeRef(domain)
-                && r.nodes[c.values[0].0].payload != r.nodes[c.values[1].0].payload
-        })
-        .unwrap();
-    let projection = r.cases[case].values[0].0;
-    let set=r.nodes.iter().enumerate().find_map(|(i,n)|(r.contexts[i].request==1&&r.contexts[i].case.is_some()&&matches!(&n.rule,Rule::Input{kind:"law",..})&&matches!(&n.payload,Some(Payload::Scalar(Scalar::Set{items,..}))if !items.is_empty())).then_some(i)).unwrap();
-    let original_missing = r
-        .nodes
-        .iter()
-        .enumerate()
-        .find_map(|(i, n)| {
-            (r.contexts[i].request == 1
-                && r.contexts[i].case.is_none()
-                && matches!(n.payload, Some(Payload::Evaluation { .. }))
-                && n.reasons.iter().any(|reason| {
-                    matches!(reason.kind, ReasonKind::Missing) && !reason.missing.is_empty()
-                }))
-            .then_some(i)
-        })
-        .unwrap();
     let cut = r.contexts.iter().position(|c| c.request == 2).unwrap();
     let request = &r.prepared.requests().requests()[1];
     let answer = &r.answers[1];
@@ -104,7 +79,7 @@ fn mutate(kinds: &[usize], stable: bool) {
         let original_nodes = g.nodes.clone();
         let original_cases = g.cases.clone();
         let original_request = g.requests[1].clone();
-        for &kind in kinds {
+        for kind in [0, 1, 9] {
             match kind {
                 0 => {
                     let Some(Payload::Domain { elements, .. }) = &mut g.nodes[domain].payload
@@ -122,43 +97,6 @@ fn mutate(kinds: &[usize], stable: bool) {
                     elements[1] = elements[0];
                     g.nodes[domain].arguments[2] = NodeRef(first);
                 }
-                2 => {
-                    let Some(Payload::CompletionSeed { fields, .. }) = &mut g.nodes[seed].payload
-                    else {
-                        panic!()
-                    };
-                    fields.swap(0, 1);
-                }
-                3 => {
-                    let Some(Payload::CompletionSeed { sources, .. }) = &mut g.nodes[seed].payload
-                    else {
-                        panic!()
-                    };
-                    sources[0] = foreign_source;
-                }
-                4 => {
-                    assert!(!g.nodes[domain].support.is_empty());
-                    g.nodes[domain].support.clear();
-                }
-                5 => g.nodes[domain].scope.snapshots.clear(),
-                6 => {
-                    assert_ne!(
-                        g.nodes[g.cases[case].values[0].0].payload,
-                        g.nodes[g.cases[case].values[1].0].payload
-                    );
-                    g.cases[case].values.swap(0, 1);
-                }
-                7 => {
-                    assert!(!g.requests[1].defaults.is_empty());
-                    g.requests[1].defaults.clear();
-                }
-                8 => {
-                    let Some(Payload::CompletionPair { fields, .. }) = &mut g.nodes[proof].payload
-                    else {
-                        panic!()
-                    };
-                    fields.swap(0, 1);
-                }
                 9 => {
                     let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
                     else {
@@ -169,90 +107,6 @@ fn mutate(kinds: &[usize], stable: bool) {
                         subject: "ghost".into(),
                         entity: "Refs.Root".into(),
                     };
-                }
-                10 => g.nodes[root].arguments[1] = foreign_domain,
-                11 => {
-                    let Some(Payload::FiniteExhaustion { checked, .. }) =
-                        &mut g.nodes[proof].payload
-                    else {
-                        panic!()
-                    };
-                    *checked += 1;
-                }
-                12 => {
-                    let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
-                    else {
-                        panic!()
-                    };
-                    assert_eq!(values[0].ty(), Type::Ref("Refs.Root".into()));
-                    values[0] = Scalar::Subject {
-                        snapshot: "v".into(),
-                        subject: "item".into(),
-                        entity: "Refs.Sample".into(),
-                    };
-                    g.nodes[first].ty = NodeType::Value(Type::Tuple(vec![
-                        Type::Ref("Refs.Sample".into()),
-                        Type::Ref("Refs.Root".into()),
-                    ]));
-                }
-                13 => {
-                    let Some(Payload::Domain { ty, .. }) = &mut g.nodes[domain].payload else {
-                        panic!()
-                    };
-                    assert_eq!(
-                        *ty,
-                        Type::Tuple(vec![
-                            Type::Ref("Refs.Root".into()),
-                            Type::Ref("Refs.Root".into())
-                        ])
-                    );
-                    *ty = Type::Tuple(vec![
-                        Type::Ref("Refs.Sample".into()),
-                        Type::Ref("Refs.Root".into()),
-                    ]);
-                }
-                14 => {
-                    assert_eq!(
-                        g.nodes[projection].ty,
-                        NodeType::Value(Type::Ref("Refs.Root".into()))
-                    );
-                    g.nodes[projection].ty = NodeType::Value(Type::Ref("Refs.Sample".into()));
-                    g.nodes[projection].payload = Some(Payload::Scalar(Scalar::Subject {
-                        snapshot: "v".into(),
-                        subject: "item".into(),
-                        entity: "Refs.Sample".into(),
-                    }));
-                }
-                15 => {
-                    let Some(Payload::CompletionSeed { fields, .. }) = &mut g.nodes[seed].payload
-                    else {
-                        panic!()
-                    };
-                    assert_eq!(fields[0].field.as_deref(), Some("Refs.Sample.owner"));
-                    fields[0].field = Some("Refs.Sample.left".into());
-                }
-                16 => {
-                    let Some(Payload::Scalar(Scalar::Set { items, .. })) =
-                        &mut g.nodes[set].payload
-                    else {
-                        panic!()
-                    };
-                    assert!(!items.is_empty());
-                    items.pop();
-                }
-                17 => {
-                    let reason = g.nodes[original_missing]
-                        .reasons
-                        .iter_mut()
-                        .find(|reason| {
-                            matches!(reason.kind, ReasonKind::Missing) && !reason.missing.is_empty()
-                        })
-                        .unwrap();
-                    assert_eq!(
-                        reason.missing[0].field.as_deref(),
-                        Some("Refs.Sample.owner")
-                    );
-                    reason.missing[0].field = Some("Refs.Sample.left".into());
                 }
                 _ => panic!(),
             }
@@ -288,10 +142,11 @@ fn mutate(kinds: &[usize], stable: bool) {
 }
 #[test]
 fn owner_completion_domains_reject_missing_duplicate_and_unregistered_members() {
-    mutate(&[0, 1, 9], false)
+    mutate()
 }
 
-fn stop(phase: &'static str, at: usize) {
+#[test]
+fn owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
     use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, false);
@@ -308,23 +163,6 @@ fn stop(phase: &'static str, at: usize) {
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
     let target = normal.prepared.inputs().law().declarations["RefCalc.nonnegative"].span;
-    let observed_span = if phase == "owned_family_enum" {
-        normal
-            .prepared
-            .inputs()
-            .law()
-            .exprs
-            .iter()
-            .find(|e| {
-                e.span.0 >= target.0
-                    && e.span.1 <= target.1
-                    && matches!(e.kind, ExprKind::Family { .. })
-            })
-            .unwrap()
-            .span
-    } else {
-        target
-    };
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -343,24 +181,19 @@ fn stop(phase: &'static str, at: usize) {
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &mut control, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
-        if q.id == "hole" && phase != "answer" {
+        if q.id == "hole" {
             let (arm, hit) = (armed.clone(), seen.clone());
             data::observe_iterations(move |span, ctx, op, index| {
-                if span == observed_span
+                if span == target
                     && ctx.request == 3
-                    && ((phase == "owned_family_enum" && ctx.case.is_some())
-                        || (phase != "owned_family_enum" && ctx.case.is_none()))
-                    && op == phase
-                    && index == at
+                    && ctx.case.is_none()
+                    && op == "completion_coverage"
+                    && index == 0
                 {
                     assert!(!hit.replace(true));
                     arm.set(true);
                 }
             });
-        }
-        if q.id == "current" && phase == "answer" {
-            assert!(!seen.replace(true));
-            armed.set(true);
         }
         Ok(())
     });
@@ -401,9 +234,8 @@ fn stop(phase: &'static str, at: usize) {
     let Json::Arr(sa) = &sw["answers"] else {
         panic!()
     };
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&sa[..retained], &na[..retained]);
-    for a in &stopped.answers[retained..] {
+    assert_eq!(&sa[..3], &na[..3]);
+    for a in &stopped.answers[3..] {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty() && a.claim.is_none() && a.evidence.is_empty());
         assert!(
@@ -412,20 +244,14 @@ fn stop(phase: &'static str, at: usize) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(reason)if reason==&expected))
         );
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && stopped.contexts[i].case.is_none()
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-    }
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, n)| stopped.contexts[i].request == 3
+                && stopped.contexts[i].case.is_none()
+                && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
-    stop("completion_coverage", 0)
 }

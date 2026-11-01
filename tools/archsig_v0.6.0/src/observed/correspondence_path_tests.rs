@@ -192,25 +192,14 @@ fn correspondence_condition_counterexample_recheck_rejects_changed_operands_and_
         reject(&r, i, bad);
     }
 }
-fn stop(stage: &'static str, unknown: bool) {
+#[test]
+fn correspondence_actual_action_cancel_preserves_all_tables_and_prior_answers() {
     use std::{cell::Cell, rc::Rc};
-    let input = fixture::input(
-        if unknown {
-            "missing_arrow_map"
-        } else {
-            "normal"
-        },
-        "r1",
-    );
-    let current = if unknown {
-        "current=evaluate(Reservations.right,m=@v/m)"
-    } else {
-        "current=evaluate(Reservations.step,m=@v/m)"
-    };
+    let input = fixture::input("normal", "r1");
     let asks = [
         "seed=evaluate(Reservations.seed)",
         "prior=check(Reservations.prior)",
-        current,
+        "current=evaluate(Reservations.step,m=@v/m)",
         "later=evaluate(Reservations.seed)",
     ];
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
@@ -236,11 +225,7 @@ fn stop(stage: &'static str, unknown: bool) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, op, _| {
-                if ctx.request == 2
-                    && op == stage
-                    && (!unknown || ctx.case.is_some())
-                    && !s.replace(true)
-                {
+                if ctx.request == 2 && op == "correspondence_action" && !s.replace(true) {
                     a.set(true)
                 }
             });
@@ -277,15 +262,8 @@ fn stop(stage: &'static str, unknown: bool) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&reason))
         );
     }
-    if unknown {
-        assert!(r.answers[2].reasons.iter().any(|r| !r.missing.is_empty()));
-    }
     r.wire();
     assert_eq!(c.checkpoint(Checkpoint::Expression), Err(reason));
-}
-#[test]
-fn correspondence_actual_action_cancel_preserves_all_tables_and_prior_answers() {
-    stop("correspondence_action", false);
 }
 #[allow(dead_code)]
 mod aligned {

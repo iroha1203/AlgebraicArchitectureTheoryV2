@@ -4,7 +4,8 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/owned_partial_containers.rs");
 }
-fn stop(stage: &'static str) {
+#[test]
+fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Reservations.seed)",
@@ -37,7 +38,7 @@ fn stop(stage: &'static str) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             super::super::super::data::observe_iterations(move |_, _, actual, _| {
-                if actual == stage && !s.replace(true) {
+                if actual == "owned_call_missing_source" && !s.replace(true) {
                     a.set(true);
                 }
             });
@@ -73,7 +74,7 @@ fn stop(stage: &'static str) {
     assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
     for (i, answer) in stopped.answers.iter().enumerate().skip(2) {
         assert_eq!(answer.status, Decision::Undetermined);
-        if stage == "owned_call_missing_source" && i == 2 {
+        if i == 2 {
             // 全補完の収集前には、既に検査済みの元body評価だけを保持する。
             assert_eq!(answer.outputs.len(), 1);
             let evaluation = answer.outputs["evaluation"];
@@ -93,22 +94,14 @@ fn stop(stage: &'static str) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(reason)if reason==&expected))
         );
     }
-    if stage != "owned_call_missing" {
-        assert!(
-            stopped.answers[2]
-                .reasons
+    assert!(stopped.answers[2].reasons.iter().any(|r| {
+        matches!(r.kind, ReasonKind::Missing)
+            && r.missing
                 .iter()
-                .any(|r| matches!(r.kind, ReasonKind::Missing)
-                    && r.missing.iter().any(|f| f.subject == "p"
-                        && f.field.as_deref() == Some("Reservations.State.owner")))
-        );
-    }
+                .any(|f| f.subject == "p" && f.field.as_deref() == Some("Reservations.State.owner"))
+    }));
     // 停止後の全体の再検査は所有callの停止(owned_partial_call_tests)が代表する。
     stopped.wire();
-}
-#[test]
-fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
-    stop("owned_call_missing_source")
 }
 
 #[test]

@@ -12,7 +12,7 @@ fn resolved(asks: &[&str]) -> ResolvedRequests {
     let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
     resolve_inner(inputs.law(), inputs.archmap(), asks, &mut quiet(), None).unwrap()
 }
-fn invalid_case(asks: &[&str], code: RequestIssueCode, id: &str, argument: &str) {
+fn invalid_case(asks: &[&str], code: RequestIssueCode, argument: &str) {
     let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
     let Err(ResolveFailure::Invalid { issues, .. }) =
         resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), asks, &mut quiet())
@@ -22,7 +22,7 @@ fn invalid_case(asks: &[&str], code: RequestIssueCode, id: &str, argument: &str)
     assert!(
         issues
             .iter()
-            .any(|issue| issue.code == code && issue.request == id && issue.argument == argument),
+            .any(|issue| issue.code == code && issue.request == "b" && issue.argument == argument),
         "{issues:?}"
     );
 }
@@ -109,12 +109,11 @@ fn build_rejects_missing_unknown_and_duplicate_arguments_and_names() {
             "absent",
         ),
     ] {
-        invalid_case(&[ask], code, "b", argument);
+        invalid_case(&[ask], code, argument);
     }
     invalid_case(
         &["b=build(R,on=@v/A)", "b=build(R,on=@v/B)"],
         RequestIssueCode::DuplicateId,
-        "b",
         "b",
     );
 }
@@ -126,7 +125,7 @@ fn build_rejects_owned_entity_values_and_architecture_instead_of_root() {
         vec!["b=build(R,on=$a.object)", "a=build(R,on=@v/A)"],
         vec!["b=build(R,on=$a)", "a=evaluate(R.root,a=@v/A)"],
     ] {
-        invalid_case(&asks, RequestIssueCode::Type, "b", "on");
+        invalid_case(&asks, RequestIssueCode::Type, "on");
     }
 }
 #[test]

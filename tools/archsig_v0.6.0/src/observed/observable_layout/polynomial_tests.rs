@@ -51,9 +51,9 @@ fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
     Ok(())
 }
 #[allow(dead_code)]
-fn subject(g: &Graph, r: NodeRef, name: &str) -> String {
+fn subject(g: &Graph, r: NodeRef) -> String {
     let o = super::super::law_evaluation::origin(g, r).unwrap().unwrap();
-    let b = o.bindings.iter().find(|b| b.name == name).unwrap();
+    let b = o.bindings.iter().find(|b| b.name == "c").unwrap();
     let Scalar::Subject { subject, .. } = g.scalar(b.value).unwrap() else {
         panic!()
     };
@@ -340,7 +340,7 @@ fn missing_quantities_and_unavailable_presentations_retain_every_position_withou
             let q = l.data.objects[0]
                 .coordinates
                 .iter()
-                .position(|q| subject(&g, q.polynomial().unwrap().instance, "c") == "q")
+                .position(|q| subject(&g, q.polynomial().unwrap().instance) == "q")
                 .unwrap();
             assert_eq!(
                 checked

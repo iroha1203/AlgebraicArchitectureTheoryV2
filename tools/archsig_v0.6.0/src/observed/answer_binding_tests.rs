@@ -24,7 +24,8 @@ fn answer_binding_rechecks_original_values_types_support_scope_and_context() {
         items[0] = Scalar::Z(7.into());
     });
 }
-fn answer_binding_stop(recheck: bool) {
+#[test]
+fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Applications.abSeed)",
@@ -47,7 +48,6 @@ fn answer_binding_stop(recheck: bool) {
     let span = params[0].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -62,17 +62,12 @@ fn answer_binding_stop(recheck: bool) {
         }
     });
     let prepared = prepare_observed(fixture::input_mode("stop", "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, _| {
-                if at == span
-                    && ctx.request == 2
-                    && operation == "answer_binding_scan"
-                    && (!recheck || ph.get())
-                {
+                if at == span && ctx.request == 2 && operation == "answer_binding_scan" {
                     let old = s.get();
                     s.set(old + 1);
                     if old == 1 {
@@ -80,17 +75,6 @@ fn answer_binding_stop(recheck: bool) {
                     }
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     });
@@ -105,22 +89,9 @@ fn answer_binding_stop(recheck: bool) {
     );
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (index, a) in stopped.answers.iter().enumerate().skip(2) {
-        if recheck && index == 2 {
-            assert_eq!(a.status, Decision::Established);
-            assert_eq!(a.outputs, normal.answers[index].outputs);
-            assert_eq!(a.claim, normal.answers[index].claim);
-            assert_eq!(a.evidence, normal.answers[index].evidence);
-            assert!(a.reasons.iter().any(|r| {
-                matches!(r.kind, ReasonKind::Missing)
-                    && r.missing
-                        .iter()
-                        .any(|f| f.field.as_deref() == Some("Reservations.State.free"))
-            }));
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in stopped.answers.iter().skip(2) {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -134,8 +105,4 @@ fn answer_binding_stop(recheck: bool) {
         assert_eq!(reason.request, a.id);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
-    answer_binding_stop(false)
 }

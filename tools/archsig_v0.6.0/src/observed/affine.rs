@@ -411,8 +411,6 @@ impl Form {
                 return Ok(None);
             }
             tick(control)?;
-            #[cfg(test)]
-            observe(TestPoint::Constant);
             tick(control)?;
             let value = self.constant.clone();
             tick(control)?;
@@ -533,8 +531,6 @@ fn add_coefficient(
     control: &Control,
 ) -> Result<(), ValidationFailure> {
     tick(control)?;
-    #[cfg(test)]
-    observe(TestPoint::Coefficient);
     controlled(control, || {
         let value = match coefficients.get(fact) {
             Some(previous) => numeric::binary(BinOp::Add, previous, &coefficient, control)?,
@@ -1282,9 +1278,7 @@ pub(super) fn term_point(
 
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum TestPoint {
-    Coefficient,
-    Constant,
+enum TestPoint {
     Gcd,
     Universal,
     PartialUniversal,
@@ -1308,10 +1302,7 @@ fn observe(point: TestPoint) {
 }
 
 #[cfg(test)]
-pub(crate) fn with_observer<T>(
-    observer: impl FnMut(TestPoint) + 'static,
-    work: impl FnOnce() -> T,
-) -> T {
+fn with_observer<T>(observer: impl FnMut(TestPoint) + 'static, work: impl FnOnce() -> T) -> T {
     struct Restore(Option<Observer>);
     impl Drop for Restore {
         fn drop(&mut self) {

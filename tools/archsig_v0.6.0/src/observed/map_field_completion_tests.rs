@@ -78,7 +78,8 @@ fn map_field_totality_owned_key_image_and_duplicate_rows_are_rechecked() {
         Err(ValidationFailure::Internal(_))
     ));
 }
-fn stop(phase: &'static str, at: usize) {
+#[test]
+fn map_field_coverage_stop_never_promotes_unfinished_whole() {
     use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(true, false, false, false);
@@ -100,7 +101,6 @@ fn stop(phase: &'static str, at: usize) {
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
-    let pin_gate = Rc::new(Cell::new(false));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
     let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
@@ -111,51 +111,27 @@ fn stop(phase: &'static str, at: usize) {
             None
         }
     });
-    if phase == "map_reader" || phase == "map_cover" {
-        let (gate, a, s) = (pin_gate.clone(), armed.clone(), seen.clone());
-        crate::archmap::observe_map_validation(move |operation, index| {
-            if gate.get() && operation == phase && index == 0 {
-                assert!(!s.replace(true));
-                a.set(true);
-                gate.set(false);
-            }
-        });
-    }
     let prepared = prepare_observed(input, &asks, &mut c).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
-        if q.id == "hole" && phase != "answer" {
-            let (a, s, gate) = (armed.clone(), seen.clone(), pin_gate.clone());
+        if q.id == "hole" {
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |span, ctx, operation, index| {
                 if span == target
                     && ctx.request == 3
                     && ctx.case.is_none()
-                    && operation
-                        == if phase == "map_reader" || phase == "map_cover" {
-                            "completion_reference_constraints"
-                        } else {
-                            phase
-                        }
-                    && index == at
+                    && operation == "completion_coverage"
+                    && index == 0
                 {
-                    if phase == "map_reader" || phase == "map_cover" {
-                        gate.set(true);
-                    } else {
-                        assert!(!s.replace(true));
-                        a.set(true);
-                    }
+                    assert!(!s.replace(true));
+                    a.set(true);
                 }
             });
-        }
-        if q.id == "current" && phase == "answer" {
-            assert!(!seen.replace(true));
-            armed.set(true);
         }
         Ok(())
     })
     .unwrap();
     data::clear_iteration_observer();
-    crate::archmap::clear_map_validation_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
     assert_eq!(c.stop_reason(), Some(expected));
@@ -191,9 +167,8 @@ fn stop(phase: &'static str, at: usize) {
     let Json::Arr(sa) = &sw["answers"] else {
         panic!()
     };
-    let retained = if phase == "answer" { 4 } else { 3 };
-    assert_eq!(&sa[..retained], &na[..retained]);
-    for a in &stopped.answers[retained..] {
+    assert_eq!(&sa[..3], &na[..3]);
+    for a in &stopped.answers[3..] {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty() && a.claim.is_none() && a.evidence.is_empty());
         assert!(
@@ -202,22 +177,16 @@ fn stop(phase: &'static str, at: usize) {
                 .any(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&expected))
         );
     }
-    if phase != "answer" {
-        assert!(
-            !stopped
-                .nodes
-                .iter()
-                .enumerate()
-                .any(|(i, n)| stopped.contexts[i].request == 3
-                    && stopped.contexts[i].case.is_none()
-                    && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
-        );
-    }
+    assert!(
+        !stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(i, n)| stopped.contexts[i].request == 3
+                && stopped.contexts[i].case.is_none()
+                && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+    );
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn map_field_coverage_stop_never_promotes_unfinished_whole() {
-    stop("completion_coverage", 0);
 }
 
 #[test]

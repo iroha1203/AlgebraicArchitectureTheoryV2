@@ -42,22 +42,17 @@ fn owned_call_success_rechecks_value_body_arguments_owner_support_and_scope() {
         *subject = "q".into();
     });
 }
-fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
+fn owned_call_stop_in_batch() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Reservations.seed)",
         "prior=check(Reservations.prior)",
-        if failed_field {
-            "current=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)"
-        } else {
-            "current=evaluate(Reservations.parameter,a=@v/A,s=@v/p)"
-        },
+        "current=evaluate(Reservations.parameter,a=@v/A,s=@v/p)",
         "later=evaluate(Reservations.seed)",
     ];
     let normal = owned_call_result(&asks);
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -73,34 +68,16 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     });
     let prepared =
         prepare_observed(owned_call_fixture::input(false, true, "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
-            let (a, s, ph) = (armed.clone(), seen.clone(), phase.clone());
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, operation, _| {
-                if ctx.request == 2
-                    && operation
-                        == if failed_field {
-                            "failed_field"
-                        } else if recheck {
-                            "owned_call_constraint"
-                        } else {
-                            "owned_call_parameter"
-                        }
-                    && (!recheck || ph.get())
-                {
+                if ctx.request == 2 && operation == "owned_call_parameter" {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::new(normal.prepared.inputs(), &mut cc)?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     });
@@ -115,18 +92,9 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     );
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (i, a) in stopped.answers.iter().enumerate().skip(2) {
-        if recheck && i == 2 {
-            // fresh再検査の前に独立検査済みの確定Answerを、判断とともに保持する。
-            assert_eq!(a.status, normal.answers[i].status);
-            assert_eq!(a.outputs, normal.answers[i].outputs);
-            assert_eq!(a.claim, normal.answers[i].claim);
-            assert_eq!(a.evidence, normal.answers[i].evidence);
-            assert_eq!(a.scope, normal.answers[i].scope);
-        } else {
-            assert_eq!(a.status, Decision::Undetermined);
-            assert!(a.outputs.is_empty());
-        }
+    for a in stopped.answers.iter().skip(2) {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
         let reason = a
             .reasons
             .iter()
@@ -143,7 +111,7 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
 }
 #[test]
 fn owned_call_actual_constraint_stop_keeps_prior_value_refutation_and_prefix() {
-    owned_call_stop_in_batch(false, false)
+    owned_call_stop_in_batch()
 }
 #[test]
 fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {

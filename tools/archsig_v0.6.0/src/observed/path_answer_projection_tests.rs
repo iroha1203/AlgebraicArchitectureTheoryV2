@@ -5,7 +5,8 @@ mod fixture {
     include!("../../tests/common/path_answer_projections.rs");
 }
 
-fn stop(recheck: bool) {
+#[test]
+fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent_answers() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Walk.seed)",
@@ -29,7 +30,6 @@ fn stop(recheck: bool) {
     let span = params[0].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -44,36 +44,23 @@ fn stop(recheck: bool) {
         }
     });
     let prepared = prepare_observed(fixture::composed(false, "r1"), &asks, &mut control).unwrap();
-    let mut copy = control.clone();
     let stopped = evaluate_observed_with_validator(
         prepared,
         &mut control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "p" {
-                let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+                let (a, s) = (armed.clone(), seen.clone());
                 data::observe_iterations(move |at, context, operation, _| {
                     if at == span
                         && context.request == 3
                         && operation == "answer_projection_check_step"
-                        && (!recheck || ph.get())
                     {
                         assert_eq!(s.get(), 0);
                         s.set(1);
                         a.set(true);
                     }
                 });
-            }
-            if recheck && request.id == "take" {
-                let fresh = Environment::with_requests(
-                    normal.prepared.inputs(),
-                    normal.prepared.requests().requests(),
-                    &mut copy,
-                )?;
-                phase.set(true);
-                let result = fresh.validate_answer(graph, request, answer);
-                phase.set(false);
-                result?;
             }
             Ok(())
         },
@@ -88,21 +75,8 @@ fn stop(recheck: bool) {
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     assert!(stopped.answers[1].claim.is_some() && !stopped.answers[1].evidence.is_empty());
     for index in 3..5 {
-        if recheck && index == 3 {
-            assert_eq!(stopped.answers[index].status, normal.answers[index].status);
-            assert_eq!(
-                stopped.answers[index].outputs,
-                normal.answers[index].outputs
-            );
-            assert_eq!(stopped.answers[index].claim, normal.answers[index].claim);
-            assert_eq!(
-                stopped.answers[index].evidence,
-                normal.answers[index].evidence
-            );
-        } else {
-            assert_eq!(stopped.answers[index].status, Decision::Undetermined);
-            assert!(stopped.answers[index].outputs.is_empty());
-        }
+        assert_eq!(stopped.answers[index].status, Decision::Undetermined);
+        assert!(stopped.answers[index].outputs.is_empty());
         let reason = stopped.answers[index]
             .reasons
             .iter()
@@ -116,8 +90,4 @@ fn stop(recheck: bool) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent_answers() {
-    stop(false)
 }

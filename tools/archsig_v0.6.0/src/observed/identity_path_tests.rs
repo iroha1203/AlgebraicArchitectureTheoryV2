@@ -33,7 +33,7 @@ fn path_mut(node: &mut Node) -> &mut super::super::super::path_value::PathValue 
     };
     path
 }
-fn mutated_path(kinds: &[usize]) {
+fn mutated_path() {
     let r = example();
     let index = r
         .nodes
@@ -46,32 +46,17 @@ fn mutated_path(kinds: &[usize]) {
         .unwrap()
         .0;
     let original = &r.nodes[index];
-    let foreign = r
-        .nodes
-        .iter()
-        .enumerate()
-        .find(|(i, n)| {
-            r.contexts[*i].request == 0
-                && matches!(n.payload, Some(Payload::Scalar(Scalar::Subject { .. })))
-        })
-        .unwrap()
-        .0;
     let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..index]).unwrap();
     graph.active = r.contexts[index];
     let e = environment(&r);
     e.validate(&graph, original).unwrap();
-    for &kind in kinds {
+    for kind in [0, 1, 2, 3, 9] {
         let mut bad = original.clone();
         match kind {
             0 => path_mut(&mut bad).reading = "Other".into(),
             1 => path_mut(&mut bad).subject = "b".into(),
             2 => path_mut(&mut bad).snapshot = "w".into(),
             3 => path_mut(&mut bad).entity = "Paths.Ghost".into(),
-            4 => bad.arguments.clear(),
-            5 => bad.arguments[0] = NodeRef(foreign),
-            6 => bad.support.clear(),
-            7 => bad.scope.snapshots.clear(),
-            8 => bad.ty = NodeType::Value(Type::Ref("Paths.Node".into())),
             9 => path_mut(&mut bad).snapshot.clear(),
             _ => panic!(),
         }
@@ -104,7 +89,7 @@ fn mutated_path(kinds: &[usize]) {
 }
 #[test]
 fn identity_path_recheck_rejects_reading_subject_snapshot_and_entity_substitution() {
-    mutated_path(&[0, 1, 2, 3, 9]);
+    mutated_path();
 }
 #[test]
 fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers() {
@@ -231,7 +216,7 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
         Err(ValidationFailure::Internal(_))
     ));
 }
-fn stop(stage: &'static str) {
+fn stop() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Walk.seed)",
@@ -264,7 +249,7 @@ fn stop(stage: &'static str) {
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             super::super::super::path_value::observe(move |actual, _| {
-                if actual == stage && !s.replace(true) {
+                if actual == "identity" && !s.replace(true) {
                     a.set(true)
                 }
             });
@@ -293,5 +278,5 @@ fn stop(stage: &'static str) {
 }
 #[test]
 fn identity_value_cancel_preserves_verified_prefix_and_probe_freeze() {
-    stop("identity")
+    stop()
 }

@@ -30,20 +30,8 @@ impl Environment<'_> {
     ) -> Result<BTreeSet<&'t str>, ValidationFailure> {
         let mut owners = BTreeSet::new();
         let mut pending = vec![ty];
-        #[cfg(test)]
-        let mut index = 0;
         while let Some(ty) = pending.pop() {
             self.tick()?;
-            #[cfg(test)]
-            {
-                data::observe_actual(
-                    _span,
-                    self.context.get().unwrap_or_default(),
-                    "owned_binding_type",
-                    index,
-                );
-                index += 1;
-            }
             match ty {
                 Type::Owned(_, owner) => {
                     owners.insert(owner.as_str());
@@ -82,15 +70,8 @@ impl Environment<'_> {
         };
         let mut answer = matches!(value.value, Selector::Answer { .. });
         let mut fixed = 0;
-        for (_index, owner) in owners.into_iter().enumerate() {
+        for owner in owners {
             self.tick()?;
-            #[cfg(test)]
-            data::observe_actual(
-                p.span,
-                self.context.get().unwrap_or_default(),
-                "owned_binding_owner",
-                _index,
-            );
             let Some(owner) = selected(owner) else {
                 self.tick()?;
                 continue;
@@ -124,15 +105,8 @@ impl Environment<'_> {
         }
         let mut answer = false;
         let mut fixed_owners = BTreeSet::new();
-        for (_index, argument) in request.arguments.iter().enumerate() {
+        for argument in &request.arguments {
             self.tick()?;
-            #[cfg(test)]
-            data::observe_actual(
-                p.span,
-                self.context.get().unwrap_or_default(),
-                "deferred_owned_binding",
-                _index,
-            );
             if argument.name == format!("bind.{}", p.name) {
                 answer = matches!(argument.value, Selector::Answer { .. });
             }

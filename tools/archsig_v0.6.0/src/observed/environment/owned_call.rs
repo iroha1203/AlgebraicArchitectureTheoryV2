@@ -225,13 +225,6 @@ impl Environment<'_> {
         }
         let actual = data::set(ty.erase(), &keys, &self.control)?;
         let required = data::set(ty.erase(), &members.enumeration.values, &self.control)?;
-        #[cfg(test)]
-        data::observe_actual(
-            _span,
-            self.context.get().unwrap_or_default(),
-            "owned_call_map_domain",
-            0,
-        );
         self.tick()?;
         if !data::equal(&actual, &required, &self.control)? {
             checks.failure = Some((actual, required));
@@ -535,16 +528,6 @@ impl Environment<'_> {
             }
             checks.missing.push(fact);
             checks.blocked = true;
-            #[cfg(test)]
-            data::observe_actual(
-                _span,
-                self.context
-                    .get()
-                    .or(self.scoped_context.get())
-                    .unwrap_or_default(),
-                "owned_call_missing",
-                0,
-            );
             self.tick()?;
             return Ok(());
         };

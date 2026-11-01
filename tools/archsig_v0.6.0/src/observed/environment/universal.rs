@@ -273,16 +273,6 @@ impl Environment<'_> {
                 && var.span == parameter.binder
                 && var.name == parameter.name
             {
-                #[cfg(test)]
-                data::observe_actual(
-                    expression.span,
-                    self.scoped_context
-                        .get()
-                        .or(self.context.get())
-                        .unwrap_or_default(),
-                    "quantifier_kind",
-                    0,
-                );
                 return Ok(*kind);
             }
         }

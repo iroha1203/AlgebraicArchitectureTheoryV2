@@ -72,13 +72,13 @@ pub fn arrow() -> InputSources {
     script(i, owners::MAP_SCRIPT, ARROW_SCRIPT, map.into_bytes())
 }
 
-fn nested_base(body: &str, flags: [Option<bool>; 2], unknown: bool) -> InputSources {
+fn nested_base() -> InputSources {
     let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Dep","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Dep.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Child","meaning":"根に属する対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Leaf","meaning":"同じ根に属する別の対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[{"name":"ok","type":"Bool","meaning":"観測条件。"}],"alignments":[]}]}]}"#;
     let checked =
         archsig::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Dep"].digest;
     let law = format!(
-        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Inspect {{ use vocabulary Dep version \"1\" digest \"{digest}\"; {body} }}"
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Inspect {{ use vocabulary Dep version \"1\" digest \"{digest}\"; {NESTED_SCRIPT} }}"
     );
     let subjects = [
         ("A", "Root"),
@@ -92,21 +92,11 @@ fn nested_base(body: &str, flags: [Option<bool>; 2], unknown: bool) -> InputSour
     .map(|(id, ty)| format!(r#"{{"id":"{id}","type":"Dep.{ty}","origin":"scan"}}"#))
     .join(",");
     let mut atoms = Vec::new();
-    for (id, ty, owner) in [
-        ("p", "Child", "A"),
-        ("q", "Child", "B"),
-        ("l", "Leaf", "A"),
-        ("m", "Leaf", "B"),
-    ] {
-        if unknown && id == "p" {
-            continue;
-        }
+    for (id, ty, owner) in [("q", "Child", "B"), ("l", "Leaf", "A"), ("m", "Leaf", "B")] {
         atoms.push(format!(r#"{{"id":"{id}-owner","subject":"{id}","field":"Dep.{ty}.owner","value":["v","{owner}"],"origin":"scan"}}"#));
     }
-    for (id, flag) in ["l", "m"].into_iter().zip(flags) {
-        if let Some(flag) = flag {
-            atoms.push(format!(r#"{{"id":"{id}-ok","subject":"{id}","field":"Dep.Leaf.ok","value":{flag},"origin":"scan"}}"#));
-        }
+    for id in ["l", "m"] {
+        atoms.push(format!(r#"{{"id":"{id}-ok","subject":"{id}","field":"Dep.Leaf.ok","value":true,"origin":"scan"}}"#));
     }
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Dep","version":"1","digest":"{digest}"}}],"sources":[{{"id":"source","uri":"urn:fixture:dependent-extra","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],"origins":[{{"id":"scan","mode":"observed","method":"有限な対象と所属の観測。","locations":[{{"source":"source","path":"dependent.model","span":[0,1]}}]}}],"snapshots":[{{"id":"v","origin":"scan","subjects":[{subjects}],"atoms":[{}]}}]}}"#,
@@ -120,13 +110,8 @@ fn nested_base(body: &str, flags: [Option<bool>; 2], unknown: bool) -> InputSour
 }
 
 pub const NESTED_SCRIPT: &str = "law required each(a:Root,b:Child[a],c:Leaf[a]):c.ok;";
-pub fn nested(missing_flag: bool) -> InputSources {
-    let flags = if missing_flag {
-        [None, Some(false)]
-    } else {
-        [Some(true), Some(true)]
-    };
-    let i = nested_base(NESTED_SCRIPT, flags, true);
+pub fn nested() -> InputSources {
+    let i = nested_base();
     let map = String::from_utf8(i.archmap().bytes().to_vec()).unwrap();
     let atom = r#"{"id":"l-owner","subject":"l","field":"Dep.Leaf.owner","value":["v","A"],"origin":"scan"}"#;
     assert!(map.contains(&format!("{atom},")));

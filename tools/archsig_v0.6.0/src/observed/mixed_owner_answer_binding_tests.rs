@@ -188,7 +188,8 @@ fn completed_result() -> ObservedEvaluation {
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
-fn completion_stop(phase: &'static str, index: usize) {
+#[test]
+fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
     use std::{cell::Cell, rc::Rc};
     let normal = completed_result();
     let target = normal.prepared.inputs().law().declarations["Applications.mxTuple"].span;
@@ -221,8 +222,8 @@ fn completion_stop(phase: &'static str, index: usize) {
                 if span == target
                     && context.request == 3
                     && context.case.is_none()
-                    && operation == phase
-                    && at == index
+                    && operation == "completion_coverage"
+                    && at == 0
                 {
                     assert!(!hit.replace(true));
                     arm.set(true);
@@ -254,8 +255,4 @@ fn completion_stop(phase: &'static str, index: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-}
-#[test]
-fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
-    completion_stop("completion_coverage", 0)
 }

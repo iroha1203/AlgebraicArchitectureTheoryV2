@@ -1597,8 +1597,6 @@ impl Evaluator<'_, '_> {
                     })?;
                     local_domain = Some(domain);
                     nested_domains.push(domain);
-                    #[cfg(test)]
-                    data::observe_actual(expr.span, self.graph.active, "universal_local", 1);
                     self.tick(Checkpoint::FiniteIteration)?;
                 }
                 let body = self.universal_pointwise(plan, template, &nested_domains, *body)?;

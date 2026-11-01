@@ -74,7 +74,8 @@ fn finite_term_equality_does_not_evaluate_skipped_boolean_or_quantifier_comparis
     }
 }
 
-fn equality_stop_in_batch(recheck: bool) {
+#[test]
+fn finite_term_case_stop_preserves_prior_values_refutation_and_verified_prefix() {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Terms.seed)",
@@ -85,30 +86,13 @@ fn equality_stop_in_batch(recheck: bool) {
     let normal = equality_result(&asks);
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let in_recheck = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
-    let (a, phase, s, p, f) = (
-        armed.clone(),
-        in_recheck.clone(),
-        seen.clone(),
-        probes.clone(),
-        frozen.clone(),
-    );
-    let mut c = Control::new(move |checkpoint| {
+    let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
-        let stop = if recheck {
-            if phase.get() && checkpoint == Checkpoint::Expression {
-                assert!(!s.replace(true));
-                true
-            } else {
-                false
-            }
-        } else {
-            a.replace(false)
-        };
-        if stop {
+        if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
             Some(crate::result::Signal::Term)
         } else {
@@ -116,10 +100,9 @@ fn equality_stop_in_batch(recheck: bool) {
         }
     });
     let prepared = prepare_observed(equality_inputs("r1"), &asks, &mut c).unwrap();
-    let mut recheck_control = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
-        if request.id == "prior" && !recheck {
+        if request.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, operation, index| {
                 if ctx.request == 2 && operation == "term_extensional_case" && index == 1 {
@@ -127,13 +110,6 @@ fn equality_stop_in_batch(recheck: bool) {
                     a.set(true);
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::new(normal.prepared.inputs(), &mut recheck_control)?;
-            in_recheck.set(true);
-            let checked = fresh.validate_answer(g, request, answer);
-            in_recheck.set(false);
-            checked?;
         }
         Ok(())
     });
@@ -148,19 +124,10 @@ fn equality_stop_in_batch(recheck: bool) {
     );
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (index, answer) in stopped.answers.iter().enumerate().skip(2) {
+    for answer in stopped.answers.iter().skip(2) {
         assert!(answer.claim.is_none() && answer.evidence.is_empty());
-        if recheck && index == 2 {
-            // 元入力の独立検査を終えた値と判断を、fresh再検査の停止後も保持する。
-            assert_eq!(answer.status, normal.answers[index].status);
-            assert_eq!(answer.outputs, normal.answers[index].outputs);
-            assert_eq!(answer.claim, normal.answers[index].claim);
-            assert_eq!(answer.evidence, normal.answers[index].evidence);
-            assert_eq!(answer.scope, normal.answers[index].scope);
-        } else {
-            assert_eq!(answer.status, Decision::Undetermined);
-            assert!(answer.outputs.is_empty());
-        }
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.is_empty());
         let reason = answer
             .reasons
             .iter()
@@ -173,8 +140,4 @@ fn equality_stop_in_batch(recheck: bool) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn finite_term_case_stop_preserves_prior_values_refutation_and_verified_prefix() {
-    equality_stop_in_batch(false);
 }

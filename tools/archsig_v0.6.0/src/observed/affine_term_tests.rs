@@ -49,46 +49,25 @@ fn affine_term_application_rechecks_normalization_and_typed_algorithm_obligation
         steps.pop();
     });
 }
-fn affine_term_stop_in_batch(recheck: bool) {
+#[test]
+fn affine_term_actual_case_stop_preserves_prior_value_refutation_and_verified_prefix() {
     use std::{cell::Cell, rc::Rc};
-    let current = if recheck {
-        "current=evaluate(Terms.partial,s=@v/s)"
-    } else {
-        "current=evaluate(Terms.mixed)"
-    };
     let asks = [
         "seed=evaluate(Terms.seed)",
         "prior=check(Terms.prior)",
-        current,
+        "current=evaluate(Terms.mixed)",
         "later=evaluate(Terms.seed)",
     ];
     let normal = affine_term_result(&asks);
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let in_recheck = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
-    let (a, phase, s, p, f) = (
-        armed.clone(),
-        in_recheck.clone(),
-        seen.clone(),
-        probes.clone(),
-        frozen.clone(),
-    );
-    let mut c = Control::new(move |checkpoint| {
+    let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
-        let stop = if recheck {
-            if phase.get() && checkpoint == Checkpoint::Expression {
-                assert!(!s.replace(true));
-                true
-            } else {
-                false
-            }
-        } else {
-            a.replace(false)
-        };
-        if stop {
+        if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
             Some(crate::result::Signal::Term)
         } else {
@@ -96,10 +75,9 @@ fn affine_term_stop_in_batch(recheck: bool) {
         }
     });
     let prepared = prepare_observed(affine_term_inputs("r1"), &asks, &mut c).unwrap();
-    let mut recheck_control = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
-        if request.id == "prior" && !recheck {
+        if request.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |_, ctx, operation, index| {
                 if ctx.request == 2 && operation == "term_affine_case" && index == 1 {
@@ -107,13 +85,6 @@ fn affine_term_stop_in_batch(recheck: bool) {
                     a.set(true);
                 }
             });
-        }
-        if request.id == "current" && recheck {
-            let fresh = Environment::new(normal.prepared.inputs(), &mut recheck_control)?;
-            in_recheck.set(true);
-            let checked = fresh.validate_answer(g, request, answer);
-            in_recheck.set(false);
-            checked?;
         }
         Ok(())
     });
@@ -128,20 +99,10 @@ fn affine_term_stop_in_batch(recheck: bool) {
     );
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
-    for (index, answer) in stopped.answers.iter().enumerate().skip(2) {
+    for answer in stopped.answers.iter().skip(2) {
         assert!(answer.claim.is_none() && answer.evidence.is_empty());
-        if recheck && index == 2 {
-            // 元missingを伴う確定値はcomplete_answerで既に独立検査・保存されている。
-            assert_eq!(answer.status, Decision::Established);
-            assert_eq!(answer.outputs, normal.answers[index].outputs);
-            assert!(!normal.answers[index].reasons.is_empty());
-            for original in &normal.answers[index].reasons {
-                assert!(answer.reasons.iter().any(|r| r.wire() == original.wire()));
-            }
-        } else {
-            assert_eq!(answer.status, Decision::Undetermined);
-            assert!(answer.outputs.is_empty())
-        }
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.is_empty());
         let reason = answer
             .reasons
             .iter()
@@ -154,10 +115,6 @@ fn affine_term_stop_in_batch(recheck: bool) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn affine_term_actual_case_stop_preserves_prior_value_refutation_and_verified_prefix() {
-    affine_term_stop_in_batch(false)
 }
 #[test]
 fn affine_term_integer_point_rechecks_retained_forms_and_original_reapplication() {

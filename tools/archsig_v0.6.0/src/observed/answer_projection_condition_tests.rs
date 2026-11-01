@@ -116,18 +116,16 @@ fn projection_condition_undetermined_environment_rechecks_original_reasons_and_p
     g.checked_answers[position].1 = saved;
     e.validate_answer(&g, request, &r.answers[4]).unwrap();
 }
-fn stop(mode: usize) {
+#[test]
+fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutation_missing_and_prefix()
+ {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Applications.abSeed)",
         "prior=check(Applications.abPrior)",
         "missing=evaluate(Applications.adMissing,p=@v/p)",
         "empty=evaluate(Applications.acNestedNone)",
-        if mode >= 3 {
-            "take=evaluate(Applications.acRoot,a=$missing.evaluation.environment.root)"
-        } else {
-            "take=evaluate(Applications.abIdentity,x=$empty.value[0].some[0])"
-        },
+        "take=evaluate(Applications.abIdentity,x=$empty.value[0].some[0])",
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
@@ -141,19 +139,13 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
     );
-    let span = match &normal.prepared.inputs().law().declarations[if mode >= 3 {
-        "Applications.acRoot"
-    } else {
-        "Applications.abIdentity"
-    }]
-    .signature
-    {
-        Signature::View { params, .. } => params[0].span,
-        _ => panic!(),
-    };
+    let span =
+        match &normal.prepared.inputs().law().declarations["Applications.abIdentity"].signature {
+            Signature::View { params, .. } => params[0].span,
+            _ => panic!(),
+        };
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
-    let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -168,39 +160,20 @@ fn stop(mode: usize) {
         }
     });
     let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let mut cc = c.clone();
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "empty" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+            let (a, s) = (armed.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, index| {
-                let target = if mode == 4 {
-                    operation == "answer_binding_scan" && index == 2
-                } else if mode == 1 || mode == 3 {
-                    operation == "answer_projection_condition" && index == 3
-                } else {
-                    operation == "answer_projection_check_step" && index == 1
-                };
                 if at == span
                     && ctx.request == 4
-                    && target
-                    && (!(mode == 2 || mode == 4) || ph.get())
+                    && operation == "answer_projection_check_step"
+                    && index == 1
                 {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
-        }
-        if request.id == "take" && (mode == 2 || mode == 4) {
-            let fresh = Environment::with_requests(
-                normal.prepared.inputs(),
-                normal.prepared.requests().requests(),
-                &mut cc,
-            )?;
-            phase.set(true);
-            let result = fresh.validate_answer(g, request, answer);
-            phase.set(false);
-            result?;
         }
         Ok(())
     })
@@ -218,15 +191,9 @@ fn stop(mode: usize) {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::Missing))
     );
-    for (index, a) in stopped.answers.iter().enumerate().skip(4) {
+    for a in stopped.answers.iter().skip(4) {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty());
-        if index == 4 && (mode == 2 || mode == 4) {
-            for reason in &normal.answers[4].reasons {
-                assert!(a.reasons.contains(reason));
-            }
-            assert_eq!(a.scope, normal.answers[4].scope);
-        }
         let reason = a
             .reasons
             .iter()
@@ -240,9 +207,4 @@ fn stop(mode: usize) {
         assert_eq!(actual["details"], wanted["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
-}
-#[test]
-fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutation_missing_and_prefix()
- {
-    stop(0)
 }
