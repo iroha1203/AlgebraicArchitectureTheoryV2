@@ -1800,7 +1800,7 @@ impl Graph {
         if !matches!(node.payload, Some(Payload::Construction(_))) {
             return Err("native転記へ通常の導出を渡した".into());
         }
-        // 資源・signalはここでも凍結する。完成済みnative値の転記だけは
+        // signalはここでも凍結する。完成済みnative値の転記だけは
         // 最後まで保持し、凍結後に通常の推論を再開する権限を与えない。
         let _ = self
             .control

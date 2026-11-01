@@ -410,7 +410,7 @@ impl<E: InputError> Checker<'_, E> {
         if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
             // Capture the original diagnostic while the detected cycle is known.
             // Source spans are indexed before DFS, so no new search is needed
-            // after detection. A later budget retains this issue; cancellation wins.
+            // after detection; a later cancellation still wins.
             let span = first_spans[&n];
             let failure = cycle(span, format!("cyclic view calls involving `{n}`"));
             return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);

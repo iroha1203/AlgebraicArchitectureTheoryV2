@@ -122,6 +122,6 @@ fn stop(mode: usize) {
 }
 
 #[test]
-fn free_owner_answer_actual_fiber_budget_keeps_values_refutation_missing_and_prefix() {
+fn free_owner_answer_actual_fiber_stop_keeps_values_refutation_missing_and_prefix() {
     stop(1)
 }

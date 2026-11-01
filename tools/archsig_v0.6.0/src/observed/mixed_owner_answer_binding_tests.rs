@@ -42,7 +42,7 @@ fn mixed_owner_answer_fibers_recheck_original_fixed_ref_owner_domains_rows_suppo
     rejects_named_prefix(&r, &prefix);
 }
 
-// 停止の代表: 固定ownerの写像域の候補列挙で予算が尽きる。同じ問いの重複は外す。
+// 停止の代表: 固定ownerの写像域の候補列挙で取消が届く。同じ問いの重複は外す。
 const STOP_ASK: &[&str] = &[
     "seed=evaluate(Applications.seed)",
     "prior=check(Applications.prior)",
@@ -53,7 +53,7 @@ const STOP_ASK: &[&str] = &[
     "later=evaluate(Applications.seed)",
 ];
 #[test]
-fn mixed_owner_answer_map_domain_budget_keeps_values_refutation_missing_and_prefix() {
+fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix() {
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input("stop", "r1");
     let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut named_call_quiet()).unwrap();

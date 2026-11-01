@@ -122,7 +122,7 @@ fn stop(mode: usize) {
 }
 
 #[test]
-fn free_compound_answer_map_domain_budget_keeps_values_refutation_missing_and_prefix() {
+fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix() {
     stop(1)
 }
 

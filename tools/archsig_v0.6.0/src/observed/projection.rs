@@ -427,8 +427,7 @@ fn project_inner(
                 }
                 if index + 1 == ts.len() && out.is_empty() {
                     // Every candidate has now rejected this step. Form that
-                    // conclusion before the final iteration's post checkpoint,
-                    // including a budget latched by the last candidate's post.
+                    // conclusion before the final iteration's post checkpoint.
                     return finish_projection(Err("no type candidate exposes this projection".into()), control);
                 }
                 tick(control)?;
@@ -458,7 +457,7 @@ pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
         .expect("上限と取消通知のない制御")
 }
 
-/// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ予算と false を保持する。
+/// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ false を返す。
 pub fn can_bind_controlled(
     actual: &ProjectionType,
     expected: &Type,
