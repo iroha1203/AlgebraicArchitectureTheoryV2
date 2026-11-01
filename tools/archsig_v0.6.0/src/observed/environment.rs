@@ -7060,7 +7060,7 @@ impl<'a> Environment<'a> {
         }
         let mut result = variables.get(&lexical.name).ok_or("範囲検査の未知lexical名")?.clone();
         let projects = match lexical.source {
-            crate::law::ir::BindingSource::Plain => false,
+            crate::law::ir::BindingSource::Parameter | crate::law::ir::BindingSource::Let => false,
             crate::law::ir::BindingSource::Iteration | crate::law::ir::BindingSource::Pattern => true,
             crate::law::ir::BindingSource::TypeQuantifier => !self.universal_symbolic_type(&lexical.ty)?,
         };
@@ -8053,14 +8053,10 @@ impl<'a> Environment<'a> {
                             &self.control,
                         )?)
                     }
-                    ExprKind::Call { callee, args } if args.len() == 1 => {
-                        let mut target = *callee;
-                        while let ExprKind::Group(inner) = self.inputs.law().program.nodes[target].kind { self.tick()?; target = inner; }
-                        if let ExprKind::Dotted(parts) = &self.inputs.law().program.nodes[target].kind
-                            && parts.len() == 1 && matches!(parts[0].name.as_str(), "count" | "sum")
-                        {
+                    ExprKind::Call { args, .. } if args.len() == 1 => {
+                        if let Some(name @ ("count" | "sum")) = self.builtin(id)? {
                             self.symbolic_source(args[0], variables, base, reading)?.list_aggregate(
-                                &parts[0].name, self.inputs.law(), expression.span, &self.control,
+                                name, self.inputs.law(), expression.span, &self.control,
                             )?
                         } else { None }
                     }
@@ -10471,3 +10467,40 @@ pub(super) fn same_scalar_identity(
 
 #[cfg(test)]
 mod validation_snapshot_tests;
+
+#[cfg(test)]
+mod resolved_prefix_tests {
+    use super::*;
+
+    #[test]
+    fn rejected_short_quantifier_domain_retains_typed_prefix_metadata() {
+        let definitions = include_str!("../../tests/fixtures/counter.atoms.json")
+            .replace("\"type\": \"Z\"", "\"type\": [\"List\", \"Z\"]");
+        let checked = crate::definition::check_definitions(&[("counter", definitions.as_bytes())]).unwrap();
+        let digest = &checked.vocabularies()["Counter"].digest;
+        let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading CountCheck {{
+  use vocabulary Counter version "1" digest "{digest}";
+  view all(s: State): Bool = forall x in s.count . x = x;
+}}"#);
+        let map = include_str!("../../tests/fixtures/counter.archmap.json")
+            .replace("sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11", digest)
+            .replace("\"value\": \"2\"", "\"value\": [\"2\", \"3\"]");
+        let inputs = crate::input::check_inputs(
+            crate::input::InputSources::from_bytes(vec![definitions.into_bytes()], law.as_bytes().to_vec(), map.into_bytes()),
+            &mut Control::unlimited(),
+        ).unwrap();
+        let start = law.find("s.count").unwrap();
+        let environment = Environment::new(&inputs, &mut Control::unlimited()).unwrap();
+        let candidates = &inputs.law().program.dotted_candidates[&(start, start + 1)];
+        assert!(candidates.len() > 1, "short rejected and longer accepted candidates share the token prefix");
+        for (id, _) in candidates {
+            assert!(inputs.law().program.nodes[*id].lexical.is_some());
+        }
+        let (id, count) = environment.dotted_prefix((start, start + 1)).unwrap().unwrap();
+        assert_eq!(count, 1);
+        let types = environment.dotted_prefixes(id).unwrap();
+        assert_eq!(types[0].1, Type::Ref("Counter.State".into()));
+        assert_eq!(types[1].1, Type::List(Box::new(Type::Z)));
+    }
+}

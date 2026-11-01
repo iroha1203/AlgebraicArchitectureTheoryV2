@@ -172,7 +172,7 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Plain)?;
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
     }
     let ctx = expr::Ctx {
         reading: 0,
@@ -238,7 +238,7 @@ pub(crate) fn check_reading_term_body<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Plain)?;
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
     }
     let ctx = expr::Ctx {
         reading: index,

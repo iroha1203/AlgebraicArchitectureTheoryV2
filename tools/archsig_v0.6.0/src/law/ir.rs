@@ -26,7 +26,8 @@ pub(crate) struct Projection {
 }
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum BindingSource {
-    Plain,
+    Parameter,
+    Let,
     Iteration,
     Pattern,
     TypeQuantifier,
@@ -204,11 +205,13 @@ mod tests {
             include_bytes!("../../tests/fixtures/counter.atoms.json").as_slice(),
         )])
         .unwrap();
-        let law = check_law(
-            include_bytes!("../../tests/fixtures/counter.law"),
-            &definitions,
-        )
-        .unwrap();
+        let source = include_str!("../../tests/fixtures/counter.law")
+            .replace("s.count;", "(s).count;")
+            .replace("s.count >= 0", "amount(s) >= 0");
+        let law = check_law(source.as_bytes(), &definitions).unwrap();
+        let fields = law.program.nodes.iter().enumerate().filter_map(|(id, node)| node.field.clone().map(|field| (id, field))).collect::<Vec<_>>();
+        assert!(!fields.is_empty());
+        assert!(!law.program.callees.is_empty());
         let lexical = law
             .program
             .nodes
@@ -232,7 +235,7 @@ mod tests {
                 .iter()
                 .map(|(id, target)| (*id, target.clone()))
                 .collect::<Vec<_>>(),
-            &[],
+            &fields,
             &mut control,
         )
         .unwrap();
@@ -254,7 +257,7 @@ mod tests {
                     .iter()
                     .map(|(id, target)| (*id, target.clone()))
                     .collect::<Vec<_>>(),
-                &[],
+                &fields,
                 &mut control,
             );
             assert!(matches!(result, Err(CheckFailure::Stopped(_))));

@@ -63,9 +63,6 @@ struct Checkpoint {
     view_edges: usize,
     reading_edges: usize,
     vars: usize,
-    lexical: usize,
-    callees: usize,
-    fields: usize,
 }
 
 const RED_ZONE: usize = 128 * 1024;
@@ -111,9 +108,6 @@ impl<E: InputError> Checker<'_, E> {
             view_edges: self.view_edges.len(),
             reading_edges: self.reading_edges.len(),
             vars: env.vars.len(),
-            lexical: self.lexical.len(),
-            callees: self.callees.len(),
-            fields: self.resolved_fields.len(),
         }
     }
 
@@ -122,9 +116,8 @@ impl<E: InputError> Checker<'_, E> {
         self.view_edges.truncate(cp.view_edges);
         self.reading_edges.truncate(cp.reading_edges);
         env.vars.truncate(cp.vars);
-        self.lexical.truncate(cp.lexical);
-        self.callees.truncate(cp.callees);
-        self.resolved_fields.truncate(cp.fields);
+        // 型検査済みの未採用prefixはexpr_typesと共に残す。元tokenの
+        // prefix同一性を照合するため、参照metadataも同じ寿命にする。
     }
 
     fn span(&self, id: ExprId) -> Span {
@@ -359,7 +352,7 @@ impl<E: InputError> Checker<'_, E> {
             ExprKind::Let { name, value, body } => {
                 let t = self.check(value, None, env, ctx)?;
                 let mark = env.vars.len();
-                self.bind(env, &name, t, Origin::Other, super::ir::BindingSource::Plain)?;
+                self.bind(env, &name, t, Origin::Other, super::ir::BindingSource::Let)?;
                 let out = self.check(body, expected, env, ctx)?;
                 env.vars.truncate(mark);
                 Ok(out)
@@ -1027,7 +1020,7 @@ impl<E: InputError> Checker<'_, E> {
             for p in params {
                 self.cooperate()?;
                 let t = self.resolve_type_in(&p.ty, env, &term_ctx)?;
-                self.bind(env, &p.name, t.clone(), Origin::Other, super::ir::BindingSource::Plain)?;
+                self.bind(env, &p.name, t.clone(), Origin::Other, super::ir::BindingSource::Parameter)?;
                 types.push(t);
             }
             let ret_expected = match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
