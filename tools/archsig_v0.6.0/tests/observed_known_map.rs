@@ -1,4 +1,5 @@
 //! 検査済みMap表の値・等値を三入力から確認する。
+use crate::common::helpers::obj;
 use crate::common::known_map as maps;
 use crate::common::quiet;
 use archsig::{
@@ -7,7 +8,6 @@ use archsig::{
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
-use std::collections::BTreeMap;
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Maps"].digest;
@@ -16,12 +16,6 @@ fn sources(revision: &str) -> InputSources {
         maps::law(digest).into_bytes(),
         maps::archmap(digest, revision).into_bytes(),
     )
-}
-fn object(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(x) = j else {
-        panic!("object: {j:?}")
-    };
-    x
 }
 fn array(j: &Json) -> &[Json] {
     let Json::Arr(x) = j else {
@@ -36,7 +30,7 @@ fn text(j: &Json) -> &str {
     x
 }
 fn get<'a>(j: &'a Json, name: &str) -> &'a Json {
-    &object(j)[name]
+    &obj(j)[name]
 }
 fn answer<'a>(wire: &'a Json, id: &str) -> &'a Json {
     array(get(wire, "answers"))
@@ -156,7 +150,7 @@ fn known_map_wrappers_and_calls_keep_types_and_set_extensionality() {
     );
     let missing = answer(&wire, "absent");
     assert_eq!(get(missing, "status"), &Json::str("undetermined"));
-    assert!(!object(get(missing, "outputs")).contains_key("value"));
+    assert!(!obj(get(missing, "outputs")).contains_key("value"));
     assert!(missing.canonical().contains("Maps.Sample.missing"));
     assert!(missing.canonical().contains("missing_observation"));
     assert!(missing.canonical().contains("all_completions"));
@@ -249,10 +243,10 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
             assert!(rs.iter().all(|r| seen.contains(r)));
             assert!(seen.insert(text(get(node, "id")).to_string()));
             if get(node, "type") != &Json::str("Proposition") {
-                assert!(!object(node).contains_key("judgment"));
+                assert!(!obj(node).contains_key("judgment"));
             }
             for fact in array(get(node, "support")) {
-                if let Some(atom) = object(fact).get("atom") {
+                if let Some(atom) = obj(fact).get("atom") {
                     let map = result.prepared().inputs().archmap();
                     let subject = map
                         .snapshots()
@@ -325,9 +319,9 @@ fn known_map_type_domains_and_application_return_concrete_values() {
         .iter()
         .filter(|n| {
             get(n, "type") == &Json::str("Domain")
-                && object(n)
+                && obj(n)
                     .get("value")
-                    .is_some_and(|v| object(v).get("type") == Some(&map_type()))
+                    .is_some_and(|v| obj(v).get("type") == Some(&map_type()))
         })
         .collect();
     assert_eq!(domains.len(), 1);

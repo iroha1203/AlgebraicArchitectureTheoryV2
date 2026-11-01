@@ -54,7 +54,7 @@ fn empty_finite_law_family_localizes_and_diagnoses_without_inventing_instances()
             "out",
         ],
     );
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let answers = arr(get(&j, "answers"));
     assert_eq!(answers.len(), 4);

@@ -1,3 +1,4 @@
+use crate::common::helpers::add;
 use archsig::{
     construction::{
         ConstructionFailure,
@@ -79,14 +80,6 @@ fn expected(r: &FiniteValueTransport, source: &[&str], target: &[&str], images: 
     assert_eq!(wires(r.source()), source);
     assert_eq!(wires(r.target()), target);
     assert_eq!(wires(r.images()), images);
-}
-fn add(a: &str, subject: &str, ty: &str) -> String {
-    a.replace(
-        "\"subjects\": [",
-        &format!(
-            "\"subjects\": [\n{{\"id\":\"{subject}\",\"type\":\"{ty}\",\"origin\":\"model\"}},"
-        ),
-    )
 }
 fn many_to_one() -> String {
     add(A,"r","Left.Child").replace("\"atoms\": [", "\"atoms\": [\n{\"id\":\"r-owner\",\"subject\":\"r\",\"field\":\"Left.Child.owner\",\"value\":[\"v\",\"a\"],\"origin\":\"model\"},{\"id\":\"r-count\",\"subject\":\"r\",\"field\":\"Left.Child.count\",\"value\":\"20\",\"origin\":\"model\"},")

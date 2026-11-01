@@ -33,6 +33,33 @@ pub trait Io {
     fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()>;
 }
 
+/// 実ファイルの操作。
+pub struct FileIo;
+
+impl Io for FileIo {
+    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::remove_dir_all(path)
+    }
+
+    fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::create_dir(path)
+    }
+
+    fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+        use std::io::Write;
+        std::fs::File::create_new(path)?.write_all(bytes)
+    }
+
+    fn flush(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::File::open(path)?.sync_all()
+    }
+
+    fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()> {
+        use rustix::fs::{CWD, RenameFlags, renameat_with};
+        renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE).map_err(std::io::Error::from)
+    }
+}
+
 /// 実行の中で捕捉した signal。finalize の開始時に一度だけ確定する。
 pub trait Signals {
     /// 以後の signal を状態へ反映しないようにし、受信済み・pending の signal を確定する。

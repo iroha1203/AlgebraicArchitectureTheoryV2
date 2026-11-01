@@ -2,7 +2,7 @@ use archsig::{
     canonical::Json,
     construction::{
         ConstructionFailure, construct,
-        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
+        maps::{correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
     control::{Checkpoint, Control},
@@ -20,6 +20,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
+use crate::common::helpers::{declarations, edit, indices, remove, stop_at};
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -53,31 +54,6 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
-fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(i, "v", "m", "Before", Some("After"), &mut quiet()).unwrap();
-    assert!(r.missing().is_empty(), "{:?}", r.missing());
-    assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
-    declaration_correspondence(i, r.map().unwrap(), &mut quiet()).unwrap()
-}
-fn indices(i: &CheckedInputs, object: &str, view: &str, subject: &str) -> (usize, usize) {
-    let c = construct(i, "Before", "v", "a", &mut quiet()).unwrap();
-    let p = object_reading_instances(i, &c, &mut quiet()).unwrap();
-    (
-        p.objects()
-            .iter()
-            .position(|o| o.identity().subject().subject == object)
-            .unwrap(),
-        p.instances()
-            .iter()
-            .position(|r| {
-                r.declaration().name == format!("Before.{view}")
-                    && r.bindings()
-                        .iter()
-                        .any(|b| b.parameter().name == "c" && b.subject().subject == subject)
-            })
-            .unwrap(),
-    )
-}
 fn run(i: Arc<CheckedInputs>, object: &str, view: &str, subject: &str) -> ObjectLawTransport {
     let d = declarations(&i);
     let (o, r) = indices(&i, object, view, subject);
@@ -91,31 +67,6 @@ fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("{j:?}") };
     a
 }
-fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .map(|l| {
-            if l.contains(&key) {
-                assert!(l.contains(before));
-                l.replace(before, after)
-            } else {
-                l.into()
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-fn remove(map: &str, id: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .filter(|l| !l.contains(&key))
-        .collect::<Vec<_>>()
-        .join("\n")
-        .replace(",\n]", "\n]")
-}
-
 #[test]
 fn actual_truth_and_required_status_are_preserved_separately_from_lawfulness() {
     let i = inputs(L, A);
@@ -818,18 +769,6 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
             .any(|(name, f)| name == "y" && f.subject == "u")
     );
     r.operation().recheck(&i, &mut quiet()).unwrap();
-}
-
-fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let c = Control::new(move |p| {
-        if p == point {
-            seen.set(seen.get() + 1);
-        }
-        (seen.get() >= at).then_some(signal)
-    });
-    (c, count)
 }
 
 #[test]

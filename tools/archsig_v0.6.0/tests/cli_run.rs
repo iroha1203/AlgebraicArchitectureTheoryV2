@@ -27,7 +27,7 @@ fn inputs(name: &str, count: Option<&str>, law: &str) -> PathBuf {
 fn requests(dir: &Path, asks: &[&str]) -> Run {
     requests_with(dir, asks, run)
 }
-fn requests_with(dir: &Path, asks: &[&str], execute: fn(&Path, &[&str]) -> Run) -> Run {
+fn requests_with<R>(dir: &Path, asks: &[&str], execute: fn(&Path, &[&str]) -> R) -> R {
     let mut args = vec![
         "run",
         "--atom-definition",

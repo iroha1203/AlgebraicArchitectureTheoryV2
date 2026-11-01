@@ -878,13 +878,7 @@ fn explicit_local_instances_cover_each_owned_subject_and_keep_missing_values() {
                 "n=needed($l)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if missing { 2 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if missing { 2 } else { 1 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let a = answer(&j, "l");
         if missing {

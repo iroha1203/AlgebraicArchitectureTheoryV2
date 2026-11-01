@@ -34,7 +34,6 @@ fn execute(dir: &Path, asks: &[&str], saved: bool) -> Run {
     } else {
         without_file_changes(dir, || run(dir, &args))
     };
-    assert!(result.stderr.is_empty());
     if !saved {
         for trace in [
             "\"node\":",

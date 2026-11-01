@@ -14,123 +14,18 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{
+    aggregate_instance, arr, evaluation_span, expression, f, fp, index, obj, part, q, reached,
+    refs, span, target, text, tuple_type, val,
+};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
-}
-fn index(j: &Json) -> BTreeMap<&str, &Json> {
-    arr(f(j, "nodes"))
-        .iter()
-        .map(|n| (text(f(n, "id")), n))
-        .collect()
-}
-fn target<'a>(ns: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &Json) -> &'a Json {
-    assert_eq!(obj(reference).len(), 1);
-    let node = ns[text(f(reference, "node"))];
-    assert_eq!(f(node, "type"), ty);
-    node
-}
 fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
     arr(f(j, "answers"))
         .iter()
         .find(|a| text(f(a, "id")) == id)
         .unwrap()
 }
-fn refs(j: &Json, out: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => out.push(text(&m["node"]).into()),
-        Json::Obj(m) => {
-            for value in m.values() {
-                refs(value, out);
-            }
-        }
-        Json::Arr(a) => {
-            for value in a {
-                refs(value, out);
-            }
-        }
-        _ => {}
-    }
-}
-fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
-    let mut todo = vec![];
-    for root in roots {
-        refs(root, &mut todo);
-    }
-    let mut seen = BTreeSet::new();
-    while let Some(id) = todo.pop() {
-        if seen.insert(id.clone()) {
-            refs(ns[id.as_str()], &mut todo);
-        }
-    }
-    seen
-}
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
-}
-fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
-    target(
-        ns,
-        f(val(evaluation), "expression"),
-        &Json::str("Expression"),
-    )
-}
-fn evaluation_span(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
-    span(f(val(expression(ns, evaluation)), "location"))
-}
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
-fn aggregate_instance<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Option<&'a Json> {
-    let first = arr(f(evaluation, "arguments")).first()?;
-    let node = ns[text(f(first, "node"))];
-    (f(node, "type") == &Json::str("LawInstance")).then_some(node)
-}
-fn part(evaluation: &Json) -> &Json {
-    let parts = arr(f(val(evaluation), "parts"));
-    assert_eq!(parts.len(), 1);
-    &parts[0]
-}
-fn fp() -> Json {
-    Json::Arr(vec![Json::str("Fp"), Json::str("5")])
-}
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
-}
-fn tuple_type() -> Json {
-    Json::Arr(vec![
-        Json::str("Tuple"),
-        Json::str("Z"),
-        Json::str("Q"),
-        fp(),
-    ])
-}
 fn reference_type() -> Json {
     Json::Arr(vec![Json::str("Ref"), Json::str("Calls.Sample")])
 }

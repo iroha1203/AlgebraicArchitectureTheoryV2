@@ -14,37 +14,11 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{arr, f, index, obj, span, text};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
 fn payload(j: &Json) -> &Json {
     assert_eq!(f(j, "state"), &Json::str("value"));
     f(j, "value")
-}
-fn index(j: &Json) -> BTreeMap<&str, &Json> {
-    arr(f(j, "nodes"))
-        .iter()
-        .map(|n| (text(f(n, "id")), n))
-        .collect()
 }
 fn target<'a>(nodes: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &str) -> &'a Json {
     assert_eq!(obj(reference).len(), 1);
@@ -86,15 +60,6 @@ fn reachable(nodes: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String>
         }
     }
     found
-}
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
 }
 fn fact(field: &str) -> Json {
     Json::obj([

@@ -13,6 +13,7 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{fp, links, q, tuple_type, txt};
 use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -23,12 +24,6 @@ fn obj(j: &Json) -> &BTreeMap<String, Json> {
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(v) = j else {
         panic!("array {j:?}")
-    };
-    v
-}
-fn txt(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string {j:?}")
     };
     v
 }
@@ -56,22 +51,6 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
         .iter()
         .find(|a| txt(f(a, "id")) == id)
         .unwrap()
-}
-fn links(j: &Json, rs: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => rs.push(txt(&m["node"]).into()),
-        Json::Obj(m) => {
-            for v in m.values() {
-                links(v, rs);
-            }
-        }
-        Json::Arr(v) => {
-            for j in v {
-                links(j, rs);
-            }
-        }
-        _ => {}
-    }
 }
 fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
     let mut todo = vec![];
@@ -147,20 +126,6 @@ fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
         })
         .wire();
     (result, checked)
-}
-fn fp() -> Json {
-    Json::Arr(vec![Json::str("Fp"), Json::str("5")])
-}
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
-}
-fn tuple_type() -> Json {
-    Json::Arr(vec![
-        Json::str("Tuple"),
-        Json::str("Z"),
-        Json::str("Q"),
-        fp(),
-    ])
 }
 fn reference_type() -> Json {
     Json::Arr(vec![Json::str("Ref"), Json::str("Branch.Sample")])

@@ -52,12 +52,7 @@ fn finite_solve_returns_original_assignments_for_all_local_subjects() {
             "s=solve(Selected.valid,on=@v/root,using=Selected.choose)",
         ],
     );
-    assert!(
-        has(&run.receipt, "result"),
-        "{}\n{}",
-        run.stdout,
-        run.stderr
-    );
+    assert!(has(&run.receipt, "result"), "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(run.code, 0, "{}\n{:?}", run.stdout, result);
     let answer = &arr(get(&result, "answers"))[0];
@@ -107,12 +102,7 @@ fn unique_repair_is_consumed_by_evaluate_and_check() {
             "c=check(Selected.valid,on=$r.object)",
         ],
     );
-    assert!(
-        has(&run.receipt, "result"),
-        "{}\n{}",
-        run.stdout,
-        run.stderr
-    );
+    assert!(has(&run.receipt, "result"), "{}", run.stdout);
     let result = result_json(&dir, &run);
     assert_eq!(run.code, 0, "{}\n{:?}", run.stdout, result);
     for answer in arr(get(&result, "answers")) {

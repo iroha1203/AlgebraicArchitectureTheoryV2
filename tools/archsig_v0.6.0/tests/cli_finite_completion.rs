@@ -391,7 +391,7 @@ fn identical_completed_updates_deliver_native_repair_without_observing_missing_i
             "out",
         ],
     );
-    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
+    assert_eq!(result.code, 0, "{}", result.stdout);
     let saved = result_json(&dir, &result);
     let answers = arr(get(&saved, "answers"));
     let repair = &answers[0];
@@ -427,7 +427,7 @@ fn finite_branch_updates_preserve_unchanged_coordinates_in_each_candidate() {
             "out",
         ],
     );
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let a = &arr(get(&j, "answers"))[0];
     assert_eq!(s(get(a, "status")), "established");

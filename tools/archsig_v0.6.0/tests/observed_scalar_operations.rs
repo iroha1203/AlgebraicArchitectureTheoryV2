@@ -14,6 +14,7 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{links, txt};
 use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -24,12 +25,6 @@ fn obj(j: &Json) -> &BTreeMap<String, Json> {
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(v) = j else {
         panic!("array {j:?}")
-    };
-    v
-}
-fn txt(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string {j:?}")
     };
     v
 }
@@ -57,22 +52,6 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
         .iter()
         .find(|a| txt(f(a, "id")) == id)
         .unwrap()
-}
-fn links(j: &Json, rs: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => rs.push(txt(&m["node"]).into()),
-        Json::Obj(m) => {
-            for v in m.values() {
-                links(v, rs);
-            }
-        }
-        Json::Arr(v) => {
-            for j in v {
-                links(j, rs);
-            }
-        }
-        _ => {}
-    }
 }
 fn evaluation_tree<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> Vec<&'a Json> {
     let mut todo = vec![root];

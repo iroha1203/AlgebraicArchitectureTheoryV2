@@ -1,3 +1,4 @@
+use crate::common::helpers::stop_at;
 use archsig::{
     archmap::Fact as FactPointer,
     construction::{
@@ -552,18 +553,6 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
             assert_eq!(count.get(), at);
         }
     }
-}
-
-fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let c = Control::new(move |p| {
-        if p == point {
-            seen.set(seen.get() + 1);
-        }
-        (seen.get() >= at).then_some(signal)
-    });
-    (c, count)
 }
 
 #[test]

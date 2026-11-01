@@ -59,7 +59,6 @@ fn missing_handle_shapes_suggest_single_quotes_without_changing_the_error() {
             )
         });
         assert_eq!(r.code, 64, "{ask}: {}", r.stdout);
-        assert!(r.stderr.is_empty());
         assert_eq!(s(get(&r.receipt, "status")), "invalid");
         assert!(!has(&r.receipt, "result"));
         let issues = arr(get(&r.receipt, "issues"));
@@ -122,7 +121,6 @@ fn unrelated_errors_and_declaration_positions_do_not_get_the_shell_hint() {
             )
         });
         assert_eq!(r.code, 64, "{ask}: {}", r.stdout);
-        assert!(r.stderr.is_empty());
         assert!(!has(&r.receipt, "result"));
         for issue in arr(get(&r.receipt, "issues")) {
             assert!(

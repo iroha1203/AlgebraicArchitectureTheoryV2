@@ -93,7 +93,7 @@ fn source_uris_and_law_references_are_not_read() {
         .replace("\"locations\": [],", "\"locations\": [{\"source\": \"src\", \"path\": \"src/missing.rs\"}],");
     std::fs::write(dir.join("l2.law"), LAW).unwrap();
     std::fs::write(dir.join("a.json"), observed).unwrap();
-    let r = run_binary(
+    let r = run(
         &dir,
         &[
             "check",

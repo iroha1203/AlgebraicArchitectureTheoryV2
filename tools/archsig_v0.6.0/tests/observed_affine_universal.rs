@@ -10,32 +10,8 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::helpers::{arr, f, obj, q, span, text, val};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
-}
 fn index(wire: &Json) -> BTreeMap<&str, &Json> {
     arr(f(wire, "nodes"))
         .iter()
@@ -101,23 +77,11 @@ fn reachable<'a>(wire: &'a Json, root: &Json) -> Vec<&'a Json> {
         .filter(|n| seen.contains(text(f(n, "id"))))
         .collect()
 }
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
-}
 fn source(checked: &CheckedInputs, position: (usize, usize)) -> &[u8] {
     &checked.sources().law().bytes()[position.0..position.1]
 }
 fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
     target(ns, f(val(evaluation), "expression"), "Expression")
-}
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
 }
 fn numeric(ty: &str, value: &str) -> Json {
     if ty == "Q" {

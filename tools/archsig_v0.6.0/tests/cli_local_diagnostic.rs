@@ -3,6 +3,7 @@ use crate::common::cli;
 use archsig::{definition, json::JNode};
 use cli::*;
 use crate::common;
+use crate::common::helpers::execute;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
     let definitions = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
@@ -23,23 +24,6 @@ fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
         std::fs::write(dir.join(name), value).unwrap();
     }
     dir
-}
-fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        out,
-    ];
-    for ask in asks {
-        args.extend(["--ask", *ask]);
-    }
-    run(dir, &args)
 }
 fn node<'a>(r: &'a JNode, reference: &JNode) -> &'a JNode {
     arr(get(r, "nodes"))
@@ -75,13 +59,7 @@ fn fixed_state_diagnostic_keeps_empty_solutions_separate_from_identity_gluing() 
             ]);
         }
         let r = execute(&dir, "out", &asks);
-        assert_eq!(
-            r.code,
-            if value { 0 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if value { 0 } else { 1 }, "{}", r.stdout);
         let json = result_json(&dir, &r);
         assert_eq!(
             s(get(&arr(get(&json, "answers"))[1], "status")),
@@ -144,7 +122,7 @@ fn localize_defaults_select_required_law_and_fixed_unit_candidate() {
             "explicit=localize($a.object,law=Fixed.valid)",
         ],
     );
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let json = result_json(&dir, &r);
     let scope = get(&arr(get(&json, "answers"))[1], "scope");
     assert!(
@@ -187,7 +165,7 @@ fn localize_defaults_select_required_law_and_fixed_unit_candidate() {
             "v=evaluate(Fixed.current,on=$d.diagnostic.global.domain.states.base,s=@fixed/s)",
         ],
     );
-    assert_eq!(rejected.code, 64, "{} {}", rejected.stdout, rejected.stderr);
+    assert_eq!(rejected.code, 64, "{}", rejected.stdout);
 }
 #[test]
 fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
@@ -198,7 +176,7 @@ fn universal_laws_localize_fixed_objects_without_enumerating_numbers() {
     std::fs::write(dir.join("l.law"),law).unwrap();
     let asks=["a=map(Reservations.Migration,on=@v/m,reading=Reservations)","l=localize($a.candidate.source)","e=diagnose($l.system,degree=0)","s=diagnose($l.system,side=semantic,degree=0)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let system=get(output(&j,1,"system"),"value");
     for (states,solutions) in [("equation_states","solutions"),("semantic_states","parameters")] {
@@ -295,7 +273,7 @@ fn localize_checks_answer_bound_owners_before_using_the_values() {
                 "d=diagnose($l.system)",
             ],
         );
-        assert_eq!(r.code, code, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, code, "{}", r.stdout);
         let json = result_json(&dir, &r);
         if name == "valid" {
             assert_eq!(
@@ -345,7 +323,7 @@ fn short_circuit_truth_keeps_missing_local_reads_and_needed_slots() {
                 "n=needed($l)",
             ],
         );
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 2, "{}", r.stdout);
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
         assert!(!has(get(&answers[1], "outputs"), "system"));
@@ -391,7 +369,7 @@ fn missing_parameter_owner_domain_reaches_needed_without_becoming_unimplemented(
             "n=needed($l)",
         ],
     );
-    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 2, "{}", r.stdout);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
     assert!(!has(get(&answers[1], "outputs"), "system"));
@@ -434,9 +412,8 @@ fn boolean_law_forms_localize_with_their_actual_truth_and_missing_reads() {
                 Some(false) => 1,
                 Some(true) => 0,
             },
-            "{} {}",
-            r.stdout,
-            r.stderr
+            "{}",
+            r.stdout
         );
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
@@ -492,19 +469,12 @@ fn fixed_integer_comparison_is_a_finite_local_condition() {
         );
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
-        assert_eq!(
-            s(get(&answers[1], "status")),
-            "established",
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(s(get(&answers[1], "status")), "established", "{}", r.stdout);
         assert_eq!(
             s(get(&answers[2], "status")),
             if expected { "established" } else { "refuted" },
-            "{} {}",
-            r.stdout,
-            r.stderr
+            "{}",
+            r.stdout
         );
         assert_eq!(r.code, if expected { 0 } else { 1 });
         let system = get(output(&result, 1, "system"), "value");
@@ -549,9 +519,8 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
                 "refuted" => 1,
                 _ => 2,
             },
-            "{guard} / {body} / {value:?}: {} {}",
-            r.stdout,
-            r.stderr
+            "{guard} / {body} / {value:?}: {}",
+            r.stdout
         );
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
@@ -624,9 +593,8 @@ fn required_laws_on_the_same_support_are_all_retained_and_checked() {
                 Some(false) => 1,
                 None => 2,
             },
-            "{} {}",
-            r.stdout,
-            r.stderr
+            "{}",
+            r.stdout
         );
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
@@ -687,7 +655,7 @@ fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
             "l=localize($a.object)",
         ],
     );
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
     assert!(has(get(&answers[2], "outputs"), "system"));
@@ -724,7 +692,7 @@ fn finite_law_parameters_are_universal_and_keep_each_binding() {
             "s=diagnose($l.system,side=semantic)",
         ],
     );
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 1, "{}", r.stdout);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
     let system = get(output(&result, 1, "system"), "value");
@@ -784,7 +752,7 @@ fn binding_a_boolean_answer_selects_one_law_instance_without_changing_the_univer
             "do=diagnose($one.system)",
         ],
     );
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 1, "{}", r.stdout);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
     assert_eq!(
@@ -829,7 +797,7 @@ fn explicit_reference_read_and_false_guard_report_visibility_not_missing_observa
                 "v=evaluate(Fixed.current,on=$a.object,s=@fixed/s)",
             ],
         );
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let a = &arr(get(&j, "answers"))[1];
         assert_eq!(s(get(a, "status")), "undetermined");
@@ -859,13 +827,7 @@ fn explicit_local_guard_missing_is_an_observation_requirement_and_true_guard_hol
             "p=needed($l)",
         ];
         let r = execute(&dir, "out", &asks);
-        assert_eq!(
-            r.code,
-            if flag.is_some() { 0 } else { 2 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if flag.is_some() { 0 } else { 2 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let plan = get(output(&j, 2, "plan"), "value");
         if flag.is_none() {
@@ -934,13 +896,7 @@ fn explicit_multiple_reads_cover_distinct_law_supports_without_an_extra_patch() 
                 "s=diagnose($l.system,side=semantic)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if left && right { 0 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if left && right { 0 } else { 1 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         for i in [2, 3] {
             assert_eq!(
@@ -978,7 +934,7 @@ fn multiple_read_local_keeps_hidden_and_unobserved_fields_distinct() {
                 "v=evaluate(Fixed.current,on=$a.object,s=@fixed/s)",
             ],
         );
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let answer = &arr(get(&j, "answers"))[1];
         assert!(!has(get(answer, "outputs"), "system"));
@@ -1023,13 +979,7 @@ fn product_reads_preserve_the_typed_coordinate_and_each_component() {
                 "s=diagnose($l.system,side=semantic)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if left && right { 0 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if left && right { 0 } else { 1 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         for i in [2, 3] {
             assert_eq!(
@@ -1072,7 +1022,7 @@ fn product_read_does_not_publish_a_references_fields_or_fill_a_missing_component
             "p=needed($l)",
         ],
     );
-    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 2, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let answer = &arr(get(&j, "answers"))[1];
     assert!(!has(get(answer, "outputs"), "system"));
@@ -1147,13 +1097,7 @@ fn finite_diagnostics_compare_actual_identity_maps_on_both_sides() {
             "c=compare($d1.diagnostic,to=$d2.diagnostic,kind=diagnostics,along=$m.operation)",
         ];
         let r = execute(&dir, "out", &asks);
-        assert_eq!(
-            r.code,
-            if !valid && degree == 1 { 1 } else { 0 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if !valid && degree == 1 { 1 } else { 0 }, "{}", r.stdout);
         let result = result_json(&dir, &r);
         let answers = arr(get(&result, "answers"));
         assert_eq!(s(get(&answers[4], "status")), "established");
@@ -1202,7 +1146,7 @@ fn finite_diagnostic_comparison_rejects_incompatible_degree_side_and_non_operati
                 &compare,
             ],
         );
-        assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 64, "{}", r.stdout);
     }
 }
 
@@ -1261,7 +1205,7 @@ fn matching_values_require_identity_action_while_repeated_plans_compare() {
             "c=compare($d.diagnostic,to=$d.diagnostic,kind=diagnostics,along=$m.operation)",
         ],
     );
-    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 2, "{}", r.stdout);
     let result = result_json(&dir, &r);
     let answers = arr(get(&result, "answers"));
     assert!(has(get(&answers[0], "outputs"), "operation"));
@@ -1297,13 +1241,7 @@ fn implicit_support_cover_has_actual_intersections_and_matching_families() {
                 "v=evaluate(Fixed.current,on=$e.diagnostic.global.domain.base,s=@fixed/s)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if left && right { 0 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if left && right { 0 } else { 1 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let system = get(output(&j, 1, "system"), "value");
         assert_eq!(arr(get(system, "contexts")).len(), 4);
@@ -1376,7 +1314,7 @@ fn explicit_distinct_local_declarations_form_the_selected_cover() {
             "s=diagnose($l.system,side=semantic)",
         ],
     );
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 1, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let system = get(output(&j, 1, "system"), "value");
     assert_eq!(arr(get(system, "contexts")).len(), 4);
@@ -1419,7 +1357,7 @@ fn explicit_cover_does_not_turn_union_dependencies_into_a_visible_law() {
                 "n=needed($l)",
             ],
         );
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir, &r);
         let answer = &arr(get(&j, "answers"))[1];
         assert!(!has(get(answer, "outputs"), "system"));
@@ -1462,7 +1400,7 @@ fn tuple_intersections_retain_typed_component_projections() {
         "s=diagnose($l.system,side=semantic)",
     ];
     let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 1, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let system = get(output(&j, 1, "system"), "value");
     assert_eq!(arr(get(system, "contexts")).len(), 4);
@@ -1517,13 +1455,7 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
                 "s=diagnose($l.system,side=semantic)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if correlated { 1 } else { 0 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if correlated { 1 } else { 0 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         assert_eq!(s(get(&arr(get(&j, "answers"))[1], "status")), "established");
         assert_eq!(s(get(&arr(get(&j, "answers"))[2], "status")), "established");
@@ -1601,13 +1533,7 @@ fn finite_local_state_uniqueness_does_not_make_assignment_unique_or_fill_fixed_m
                 "r=repair(Fixed.valid,on=$a.object,using=Fixed.choose)",
             ],
         );
-        assert_eq!(
-            r.code,
-            if missing { 2 } else { 1 },
-            "{} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if missing { 2 } else { 1 }, "{}", r.stdout);
         let j = result_json(&dir, &r);
         if missing {
             assert!(!has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
@@ -1645,7 +1571,7 @@ fn unused_updated_field_has_a_typed_singleton_reading_and_actual_free_image() {
         });
         let asks = ["a=build(Fixed,on=@fixed/s)","l=localize($a.object,using=Fixed.choose)","e=diagnose($l.system)","s=diagnose($l.system,side=semantic)"];
         let r = execute(&dir,"out",&asks);
-        assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+        assert_eq!(r.code,0,"{}",r.stdout);
         let j = result_json(&dir,&r);
         let system = get(output(&j,1,"system"),"value");
         let cover = get(node(&j,get(system,"cover")),"value");
@@ -1686,7 +1612,7 @@ fn finite_explicit_local_keeps_visibility_and_variable_guard_limits() {
         let dir = implicit_multiple_input("finite-explicit-limit", false, Some(false));
         explicit_local(&dir, &format!("{local} change choose(t:State,b:Bool,c:Bool)=t with {{flag=b,other=c}};"));
         let r = execute(&dir, "out", &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,using=Fixed.choose)", "n=needed($l)"]);
-        assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+        assert_eq!(r.code, 2, "{}", r.stdout);
         let j = result_json(&dir,&r);
         let local = &arr(get(&j,"answers"))[1];
         assert!(!has(get(local,"outputs"),"system"));
@@ -1708,7 +1634,7 @@ fn finite_explicit_read_keeps_a_missing_fixed_field_in_needed() {
     if failure == 1 { explicit_local(&dir,"local zzz(t:State) when t.flag reads t.flag;"); }
     let asks = ["a=build(Fixed,on=@fixed/s)", "l=localize($a.object,law=Fixed.valid,using=Fixed.choose)", "n=needed($l)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,2,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let local=&arr(get(&j,"answers"))[1];
     assert!(!has(get(local,"outputs"),"system"));
@@ -1746,7 +1672,7 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
     let asks = ["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)",
         "d=diagnose($l.system)","n=needed($d)","rank=evaluate(Coordinates.rank,on=$a.object,n=$d.space.module.free_rank)","owner=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates.module.free_rank)"];
     let r = execute(&dir,"out",&asks);
-    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,1,"{}",r.stdout);
     let j = result_json(&dir,&r);
     assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established","{:?}",get(&j,"answers"));
     let answer = &arr(get(&j,"answers"))[2];
@@ -1785,7 +1711,7 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
     assert_eq!(s(get(output(&j,4,"value"),"value")),"1");
     assert_eq!(s(get(output(&j,5,"value"),"value")),"1");
     let invalid=execute(&dir,"invalid",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","d=diagnose($l.system)","bad=evaluate(Coordinates.rank,on=$a.object,n=$d.class.coordinates[0])"]);
-    assert_eq!(invalid.code,64,"{} {}",invalid.stdout,invalid.stderr);
+    assert_eq!(invalid.code,64,"{}",invalid.stdout);
 }
 
 #[test]
@@ -1798,7 +1724,7 @@ fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_imag
     }
     // equation側の三辺の類は integer_translation_local_system_generates_cech_group_and_actual_obstruction が見る。
     let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","s=diagnose($l.system,side=semantic)","n=needed($s)"]);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,2,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let semantic=&arr(get(&j,"answers"))[2];assert_eq!(s(get(semantic,"status")),"undetermined");assert!(!has(get(semantic,"outputs"),"class"));assert!(!has(semantic,"claim"));
     assert_eq!(s(get(&arr(get(&j,"answers"))[3],"status")),"established");
@@ -1828,7 +1754,7 @@ fn integer_local_owner_missing_reaches_needed_for_change_and_law_domains() {
     for (subject,field) in [("p","Point.owner"),("a","Shift.owner")] {
         let dir=integer_local_variant(&format!("integer-owner-{subject}"),|s|s,Some((subject,field)));
         let r=execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)","n=needed($l)"]);
-        assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+        assert_eq!(r.code,2,"{}",r.stdout);let j=result_json(&dir,&r);
         assert!(arr(get(&arr(get(&j,"answers"))[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
         let plan=get(output(&j,2,"plan"),"value");
         assert!(arr(get(plan,"requirements")).iter().any(|r|{let f=get(r,"field");s(get(f,"subject"))==subject&&s(get(f,"field"))==format!("Coordinates.{field}")}));
@@ -1843,7 +1769,7 @@ fn integer_local_zero_class_survives_a_refuted_gluing_condition() {
     let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"対角作用の試験。","locations":[],"note":"二座標の原始値。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
     let dir=workdir("integer-class-without-gluing");for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
     let r=execute(&dir,"out",&["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.diagonal)","d=diagnose($l.system,side=semantic)"]);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(r.code,0,"{}",r.stdout);let j=result_json(&dir,&r);
     let answer=&arr(get(&j,"answers"))[2];assert_eq!(s(get(answer,"status")),"established");assert!(has(get(answer,"outputs"),"class"));
     let space=get(output(&j,2,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),0);
     assert!(!has(answer,"counterexamples"));
@@ -1860,7 +1786,7 @@ fn integer_local_empty_cover_has_zero_cohomology() {
     std::fs::write(dir.join("a.json"),format!(r#"{prefix}"subjects":[{{"id":"root","type":"Coordinates.System","origin":"model"}}],"atoms":[]}}]}}"#)).unwrap();
     let r = execute(&dir,"out",&["a=build(Coordinates,on=@triangle/root)",
         "l=localize($a.object,using=Coordinates.move)","z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let j = result_json(&dir,&r);
     for i in [2,3] {
         let space = get(output(&j,i,"space"),"value");
@@ -1881,7 +1807,7 @@ fn integer_local_vectors_compare_only_in_the_same_module() {
         "e=diagnose($l.system,side=semantic)",
         "same=compare($d.class.coordinates,to=$d.class.coordinates,kind=value)",
         "different=compare($d.class.coordinates,to=$e.class.coordinates,kind=value)"]);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,2,"{}",r.stdout);
     let j = result_json(&dir,&r);
     let answers = arr(get(&j,"answers"));
     assert_eq!(s(get(&answers[4],"status")),"established");
@@ -1939,8 +1865,8 @@ fn integer_local_noninjective_reads_keep_the_image_and_cover_conditions() {
         let mut asks=vec!["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.movePair)"];
         if !matches!(mode,"sum-only"|"offset-missing") {asks.extend(["z=diagnose($l.system,degree=0)","d=diagnose($l.system)"]);}
         let r=execute(&dir,"out",&asks);
-        if mode=="offset-missing" {assert!(matches!(r.code,0|2),"{mode}: {} {}",r.stdout,r.stderr);}
-        else {assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {} {}",r.stdout,r.stderr);}
+        if mode=="offset-missing" {assert!(matches!(r.code,0|2),"{mode}: {}",r.stdout);}
+        else {assert_eq!(r.code,if mode=="sum-only"{2}else{0},"{mode}: {}",r.stdout);}
         let j=result_json(&dir,&r);
         if mode=="sum-only" {
             let reasons=arr(get(&arr(get(&j,"answers"))[1],"reasons"));
@@ -1988,7 +1914,7 @@ fn integer_local_actions_keep_parameter_kernel_stabilizer_and_effective_image_di
         let dir=workdir(&format!("integer-actions-{goal:?}-{guarded}"));
         for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
         let asks=["a=build(Motion,on=@v/s)","l=localize($a.object,using=Motion.move)","d=diagnose($l.system,side=semantic)"];
-        let r=execute(&dir,"out",&asks);assert!(matches!(r.code,0|2),"{goal:?}: {} {}",r.stdout,r.stderr);
+        let r=execute(&dir,"out",&asks);assert!(matches!(r.code,0|2),"{goal:?}: {}",r.stdout);
         let j=result_json(&dir,&r);let system=get(output(&j,1,"system"),"value");
         let mut nontrivial_allowed=false;let mut lawful=false;
         for action in arr(get(system,"actions")) {
@@ -2062,7 +1988,7 @@ fn integer_diagnostic_transport_moves_nonzero_classes_with_its_actual_matrix() {
         "r=localize($m.candidate.target,law=Reservations.loopShift,using=Reservations.move)",
         "d=diagnose($l.system)","e=diagnose($r.system)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"]);
-    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);
     let coordinates=|i| {
         let class=get(output(&j,i,"class"),"value");let vector=get(node(&j,get(class,"coordinates")),"value");
         arr(get(vector,"coordinates")).iter().map(|r|s(get(node(&j,r),"value")).parse::<i64>().unwrap()).collect::<Vec<_>>()
@@ -2096,7 +2022,7 @@ fn integer_diagnostic_transport_does_not_use_equal_ranks_as_a_state_map() {
         "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/r,using=Reservations.even)",
         "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(r.code,2,"{}",r.stdout);let j=result_json(&dir,&r);
     for i in [3,4] {let space=get(output(&j,i,"space"),"value");assert_eq!(num(get(get(node(&j,get(space,"module")),"value"),"free_rank")),1);}
     let answer=&arr(get(&j,"answers"))[5];assert_eq!(s(get(answer,"status")),"undetermined");
     assert!(!has(get(answer,"outputs"),"comparison"));
@@ -2116,7 +2042,7 @@ fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
         "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
         "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
-    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{}",r.stdout);
     let j=result_json(&dir,&r);let cmp=get(output(&j,5,"comparison"),"value");
     assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"refuted");
     let group=arr(get(cmp,"conditions")).iter().map(|r|node(&j,r)).find(|n| {
@@ -2198,7 +2124,7 @@ fn finite_localization_without_required_laws_keeps_equation_and_action_states_di
         "d=diagnose($l.system,side=equation,degree=0)",
         "e=diagnose($l.system,side=semantic,degree=0)"];
     let result = execute(&dir, "out", &asks);
-    assert_eq!(result.code, 0, "{} {}", result.stdout, result.stderr);
+    assert_eq!(result.code, 0, "{}", result.stdout);
     let j = result_json(&dir, &result);
     for answer in arr(get(&j, "answers")) { assert_eq!(s(get(answer, "status")), "established"); }
     for (index, expected) in [
@@ -2241,7 +2167,7 @@ fn empty_local_law_family_keeps_change_body_and_guard_missing_for_needed() {
             "l=localize($m.candidate.source,using=Reservations.observed)",
             "d=diagnose($l.system)", "n=needed($l)", "k=needed($d)"];
         let result = execute(&dir, "out", &asks);
-        assert_eq!(result.code, 2, "{guard}: {} {}", result.stdout, result.stderr);
+        assert_eq!(result.code, 2, "{guard}: {}", result.stdout);
         let j = result_json(&dir, &result);
         let local = &arr(get(&j, "answers"))[1];
         assert_eq!(s(get(local, "status")), "undetermined");
@@ -2264,7 +2190,7 @@ fn fixed_localization_without_laws_keeps_one_state_and_compares() {
         "l=localize($m.candidate.source)","r=localize($m.candidate.source)",
         "d=diagnose($l.system,side=equation,degree=0)","e=diagnose($r.system,side=equation,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
-    let result=execute(&dir,"out",&asks);assert_eq!(result.code,0,"{} {}",result.stdout,result.stderr);
+    let result=execute(&dir,"out",&asks);assert_eq!(result.code,0,"{}",result.stdout);
     let j=result_json(&dir,&result);
     for answer in arr(get(&j,"answers")) {assert_eq!(s(get(answer,"status")),"established");}
     let diagnostic=get(output(&j,3,"diagnostic"),"value");
@@ -2282,7 +2208,7 @@ fn fixed_empty_law_diagnostics_keep_unsupported_dependencies_without_inventing_a
         "r=localize($m.candidate.source,using=Reservations.choose)",
         "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)","h=diagnose($l.system,degree=2)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($h)","k=needed($c)"];
-    let result=execute(&dir,"out",&asks);assert_eq!(result.code,2,"{} {}",result.stdout,result.stderr);
+    let result=execute(&dir,"out",&asks);assert_eq!(result.code,2,"{}",result.stdout);
     let j=result_json(&dir,&result);let answers=arr(get(&j,"answers"));
     for i in [1,2,3,4,7,8] {assert_eq!(s(get(&answers[i],"status")),"established");}
     for i in [5,6] {
@@ -2305,7 +2231,7 @@ fn integer_diagnostic_transport_rejects_a_different_compound_binding() {
         "r=localize($m.candidate.target,law=Reservations.packedLaw,s=@v/transport_z,b=$y.value,using=Reservations.move)",
         "d=diagnose($l.system,degree=0)","e=diagnose($r.system,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"]);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(r.code,2,"{}",r.stdout);let j=result_json(&dir,&r);
     let answer=&arr(get(&j,"answers"))[7];assert_eq!(s(get(answer,"status")),"undetermined");
     assert!(!has(get(answer,"outputs"),"comparison"));
     assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="unsupported_algorithm"));
@@ -2326,7 +2252,7 @@ fn integer_local_laws_read_fields_through_bound_tuple_references() {
         "r=localize($m.candidate.target,law=Reservations.packedLaw,b=$y.value,using=Reservations.move)",
         "d=diagnose($l.system,side=equation,degree=0)","e=diagnose($r.system,side=equation,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)"];
-    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{}",r.stdout);let j=result_json(&dir,&r);
     for i in [5,6] {
         let space=get(output(&j,i,"space"),"value");let group=get(node(&j,get(space,"module")),"value");
         assert_eq!(num(get(group,"free_rank")),1);assert!(arr(get(group,"torsion")).is_empty());
@@ -2345,7 +2271,7 @@ fn finite_diagnostics_transport_actual_states_between_architectures() {
         "r=localize($m.candidate.target,law=Reservations.localValid,s=@v/transport_z,using=Reservations.choose)",
         "d=diagnose($l.system,side=semantic,degree=1)","e=diagnose($r.system,side=semantic,degree=1)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
-    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{}",r.stdout);let j=result_json(&dir,&r);
     let cmp=get(output(&j,5,"comparison"),"value");assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"established");
     let map=get(node(&j,get(cmp,"finite_map")),"value");node(&j,get(map,"source"));node(&j,get(map,"target"));
     let pairs=arr(get(map,"pairs"));assert_eq!(pairs.len(),2);
@@ -2366,7 +2292,7 @@ fn finite_diagnostic_inclusion_keeps_the_map_and_refutes_preservation() {
         "d=diagnose($l.system,side=semantic,degree=0)","e=diagnose($r.system,side=semantic,degree=0)",
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    assert_eq!(r.code,1,"{}",r.stdout);let j=result_json(&dir,&r);
     assert_eq!(s(get(&arr(get(&j,"answers"))[5],"status")),"refuted");
     let cmp=get(output(&j,5,"comparison"),"value");let map=get(node(&j,get(cmp,"finite_map")),"value");
     assert_eq!(arr(get(get(node(&j,get(map,"source")),"value"),"elements")).len(),1);
@@ -2501,13 +2427,7 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
             "n=needed($c)",
         ];
         let r = execute(&dir, "out", &asks);
-        assert_eq!(
-            r.code,
-            if linked { 0 } else { 2 },
-            "{linked}: {} {}",
-            r.stdout,
-            r.stderr
-        );
+        assert_eq!(r.code, if linked { 0 } else { 2 }, "{linked}: {}", r.stdout);
         let j = result_json(&dir, &r);
         let answer = &arr(get(&j, "answers"))[5];
         assert!(has(
@@ -2582,7 +2502,7 @@ fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
         "n=needed($l)",
     ];
     let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
     assert!(has(get(&arr(get(&j, "answers"))[1], "outputs"), "system"));
     let space = get(output(&j, 2, "space"), "value");
@@ -2634,7 +2554,7 @@ fn finite_integer_localization_keeps_missing_fixed_fields() {
         "n=needed($d)",
     ];
     let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 2, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let a = &arr(get(&j, "answers"))[1];
     assert!(!has(get(a, "outputs"), "system"));
@@ -2672,7 +2592,7 @@ fn finite_integer_declared_read_keeps_repaired_guard_and_affine_offset() {
         "old=evaluate(Reservations.held,on=$a.candidate.source,s=@v/p)",
     ];
     let r = execute(&dir,"out",&asks);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let system=get(output(&j,2,"system"),"value");
     let mut checked=false;
@@ -2724,7 +2644,7 @@ fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
     let dir=finite_integer_read_input("finite-integer-noninjective-missing",false,false);
     let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","n=needed($l)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,2,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let answer=&arr(get(&j,"answers"))[1];
     assert!(!has(get(answer,"outputs"),"system"));
@@ -2798,7 +2718,7 @@ fn rational_diagnostic_inclusion_has_field_cokernel() {
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
         "q=evaluate(Reservations.rank,on=$m.candidate.source,n=$c.comparison.cokernel.free_rank)"];
     let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
     let cmp = get(output(&j, 5, "comparison"), "value");
     assert_eq!(s(get(&arr(get(&j, "answers"))[5], "status")), "established");
@@ -2872,7 +2792,7 @@ fn diagnostic_comparison_rejects_different_coefficient_rings() {
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
     ];
     let r = execute(&dir, "out", &asks);
-    assert_eq!(r.code, 64, "{} {}", r.stdout, r.stderr);
+    assert_eq!(r.code, 64, "{}", r.stdout);
 }
 
 // Path値を束縛した局所系を両端で診断し、操作に沿って比較する。対応しない束縛値はunsupported。
@@ -2891,13 +2811,7 @@ fn path_binding_comparison(name: &str, evaluations: &[&str], left: &str, right: 
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
     ]);
     let r = execute(&dir, "out", &asks);
-    assert_eq!(
-        r.code,
-        if wrong { 2 } else { 0 },
-        "{name}: {} {}",
-        r.stdout,
-        r.stderr
-    );
+    assert_eq!(r.code, if wrong { 2 } else { 0 }, "{name}: {}", r.stdout);
     let j = result_json(&dir, &r);
     if wrong {
         let answer = arr(get(&j, "answers")).last().unwrap();
@@ -2966,7 +2880,7 @@ fn diagnostic_transport_compares_term_bindings_by_their_values() {
         "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)",
     ];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let cmp=get(output(&j,7,"comparison"),"value");
     for field in ["kernel","cokernel"] {
@@ -2991,7 +2905,7 @@ fn finite_integer_noninjective_reads_use_their_images_and_joint_cover() {
         "e=diagnose($l.system,side=equation,degree=0)","d=diagnose($l.system,side=equation,degree=1)",
         "s=diagnose($l.system,side=semantic,degree=0)"];
     let r=execute(&dir,"out",&asks);
-    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    assert_eq!(r.code,0,"{}",r.stdout);
     let j=result_json(&dir,&r);
     let system=get(output(&j,1,"system"),"value");
     let sum=arr(get(system,"contexts")).iter().find(|r|{
@@ -3040,7 +2954,7 @@ fn universal_laws_localize_integer_and_rational_affine_changes() {
             "d=diagnose($l.system,side=equation,degree=0)",
             "e=diagnose($l.system,side=semantic,degree=0)"];
         let r = execute(&dir,"out",&asks);
-        assert_eq!(r.code,0,"{rational}/{predicate}: {} {}",r.stdout,r.stderr);
+        assert_eq!(r.code,0,"{rational}/{predicate}: {}",r.stdout);
         let j = result_json(&dir,&r);
         for i in [2,3] {
             let space = get(output(&j,i,"space"),"value");

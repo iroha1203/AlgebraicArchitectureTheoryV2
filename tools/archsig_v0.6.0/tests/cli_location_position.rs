@@ -40,7 +40,6 @@ fn invoke(
     } else {
         run(&dir, &args)
     };
-    assert!(r.stderr.is_empty(), "{}", r.stderr);
     (dir, r)
 }
 

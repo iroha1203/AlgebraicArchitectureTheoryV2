@@ -1,10 +1,6 @@
 //! 数値が通常値でない部分Tupleの所属条件を元入力で確かめる。
 use crate::common::owned_partial_calls as fixture;
 use archsig::{canonical::Json, observed::evaluate_observed_bytes};
-fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
-    let Json::Obj(m) = j else { panic!("object") };
-    &m[k]
-}
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -15,6 +11,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .find(|a| get(a, "id") == &Json::str(id))
         .unwrap()
 }
+use crate::common::helpers::get;
 use crate::common::quiet;
 #[test]
 fn partial_owned_tuple_checks_members_beside_unbound_numbers() {

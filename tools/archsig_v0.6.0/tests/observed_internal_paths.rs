@@ -5,12 +5,8 @@ fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
 }
-fn array(j: &Json) -> &[Json] {
-    let Json::Arr(a) = j else { panic!() };
-    a
-}
 fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
-    array(f(w, "nodes"))
+    arr(f(w, "nodes"))
         .iter()
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
@@ -45,7 +41,7 @@ fn internal_arrow_path_keeps_original_generator_and_distinct_endpoints() {
     assert_eq!(r.prepared().inputs().sources(), &inputs);
     assert_eq!(r.status(), "complete", "{:?}", r.wire());
     let w = r.wire();
-    let a = &array(f(&w, "answers"))[0];
+    let a = &arr(f(&w, "answers"))[0];
     assert_eq!(f(a, "status"), &Json::str("established"));
     let path = node(&w, f(f(a, "outputs"), "value"));
     let value = f(path, "value");
@@ -57,13 +53,14 @@ fn internal_arrow_path_keeps_original_generator_and_distinct_endpoints() {
             &Json::Arr(vec![Json::str("v"), Json::str(subject)])
         );
     }
-    let generators = array(f(value, "generators"));
+    let generators = arr(f(value, "generators"));
     assert_eq!(generators.len(), 1);
     assert_eq!(
         f(node(&w, &generators[0]), "value"),
         &Json::Arr(vec![Json::str("v"), Json::str("e")])
     );
 }
+use crate::common::helpers::arr;
 use crate::common::internal_paths as small;
 fn run_small(mode: &str, asks: &[&str]) -> Json {
     let inputs = small::input(mode, "r1");
@@ -77,7 +74,7 @@ fn run_small(mode: &str, asks: &[&str]) -> Json {
     r.wire()
 }
 fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
-    array(f(w, "answers"))
+    arr(f(w, "answers"))
         .iter()
         .find(|a| f(a, "id") == &Json::str(id))
         .unwrap()
@@ -106,7 +103,7 @@ fn one_step_named_generators_compare_actual_action_and_keep_empty_identity_disti
         assert_eq!(f(answer(&w, id), "status"), &Json::str("established"));
         assert_eq!(answer_value(&w, id), &Json::Bool(v));
     }
-    assert_eq!(array(f(answer_value(&w, "word"), "generators")).len(), 1);
+    assert_eq!(arr(f(answer_value(&w, "word"), "generators")).len(), 1);
 }
 #[test]
 fn internal_path_known_reference_structure_mismatch_returns_original_condition_failure() {
@@ -122,7 +119,7 @@ fn internal_path_known_reference_structure_mismatch_returns_original_condition_f
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
     assert!(matches!(f(a,"outputs"),Json::Obj(o)if !o.contains_key("value")));
     assert!(
-        array(f(a, "reasons"))
+        arr(f(a, "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("condition_failed"))
     );
@@ -136,7 +133,7 @@ fn internal_path_missing_target_field_keeps_original_slot_without_fabricating_at
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
     assert!(matches!(f(a,"outputs"),Json::Obj(o)if !o.contains_key("value")));
     assert!(
-        array(f(a, "reasons"))
+        arr(f(a, "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("missing_observation")
                 && f(r, "missing").canonical().contains("Paths.Node.mark"))
@@ -160,13 +157,13 @@ fn internal_path_unknown_endpoint_keeps_correlated_cases_and_original_missing() 
         let a = answer(&w, id);
         assert_eq!(f(f(a, "scope"), "domain"), &Json::str("all_completions"));
         assert!(
-            array(f(a, "reasons"))
+            arr(f(a, "reasons"))
                 .iter()
                 .any(|r| f(r, "code") == &Json::str("missing_observation")
                     && f(r, "missing").canonical().contains("Paths.Hop.to"))
         );
         assert!(
-            !array(f(a, "reasons"))
+            !arr(f(a, "reasons"))
                 .iter()
                 .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
         );
@@ -191,19 +188,19 @@ fn internal_path_containers_lexical_calls_and_endpoints_keep_prior_typed_depende
     ]);
     let p = node(&w, f(answer_value(&w, "maybe"), "some"));
     assert_eq!(f(p, "type"), &path_ty);
-    assert_eq!(array(f(f(p, "value"), "generators")).len(), 1);
+    assert_eq!(arr(f(f(p, "value"), "generators")).len(), 1);
     let list = node(&w, f(answer_value(&w, "nested"), "some"));
-    let rows = array(f(list, "value"));
+    let rows = arr(f(list, "value"));
     assert_eq!(rows.len(), 2);
     for (row, flag) in rows.iter().zip([true, false]) {
         let row = node(&w, row);
-        let fields = array(f(row, "value"));
+        let fields = arr(f(row, "value"));
         assert_eq!(f(node(&w, &fields[0]), "value"), &Json::Bool(flag));
         let p = node(&w, &fields[1]);
         assert_eq!(f(p, "type"), &path_ty);
-        assert_eq!(array(f(f(p, "value"), "generators")).len(), 1);
+        assert_eq!(arr(f(f(p, "value"), "generators")).len(), 1);
     }
-    assert_eq!(array(f(answer_value(&w, "lexical"), "generators")).len(), 1);
+    assert_eq!(arr(f(answer_value(&w, "lexical"), "generators")).len(), 1);
     assert_eq!(
         answer_value(&w, "first"),
         &Json::Arr(vec![Json::str("v"), Json::str("p")])
@@ -249,7 +246,7 @@ fn internal_path_reference_list_order_and_duplicates_are_construction_conditions
     let w = run_small("list_mismatch", &["x=evaluate(Walk.step,e=@v/e)"]);
     assert_eq!(f(answer(&w, "x"), "status"), &Json::str("undetermined"));
     assert!(
-        array(f(answer(&w, "x"), "reasons"))
+        arr(f(answer(&w, "x"), "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("condition_failed"))
     );
@@ -261,7 +258,7 @@ fn internal_path_missing_source_field_keeps_original_requirement_without_partial
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
     assert!(matches!(f(a,"outputs"),Json::Obj(o)if !o.contains_key("value")));
     assert!(
-        array(f(a, "reasons"))
+        arr(f(a, "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("missing_observation")
                 && f(r, "missing").canonical().contains("Paths.Node.mark"))

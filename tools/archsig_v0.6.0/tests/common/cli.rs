@@ -45,37 +45,50 @@ pub struct Run {
     pub code: i32,
     pub receipt: JNode,
     pub stdout: String,
-    pub stderr: String,
     files_unchanged: bool,
 }
 
-/// 実ファイルの操作。製品の `FileIo` と同じく、既存の path を置き換えずに rename する。
-struct FileIo;
-impl archsig::run::Io for FileIo {
-    fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::create_dir(path)
-    }
-    fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-        use std::io::Write;
-        std::fs::File::create_new(path)?.write_all(bytes)
-    }
-    fn flush(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::File::open(path)?.sync_all()
-    }
-    fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()> {
-        rustix::fs::renameat_with(
-            rustix::fs::CWD,
-            from,
-            rustix::fs::CWD,
-            to,
-            rustix::fs::RenameFlags::NOREPLACE,
-        )
-        .map_err(std::io::Error::from)
-    }
-    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
-        std::fs::remove_dir_all(path)
+/// 実バイナリの実行。stderr に書かないことは、プロセスの性質としてここでだけ確かめられる。
+pub struct BinaryRun {
+    pub run: Run,
+    pub stderr: String,
+}
+impl std::ops::Deref for BinaryRun {
+    type Target = Run;
+    fn deref(&self) -> &Run {
+        &self.run
     }
 }
+
+/// プロセス内の実行と実バイナリの実行に共通の読み方。stderr は実バイナリだけが持つ。
+pub trait Executed {
+    fn result(&self) -> &Run;
+    fn executed(&mut self) -> &mut Run;
+    fn stderr(&self) -> Option<&str>;
+}
+impl Executed for Run {
+    fn result(&self) -> &Run {
+        self
+    }
+    fn executed(&mut self) -> &mut Run {
+        self
+    }
+    fn stderr(&self) -> Option<&str> {
+        None
+    }
+}
+impl Executed for BinaryRun {
+    fn result(&self) -> &Run {
+        &self.run
+    }
+    fn executed(&mut self) -> &mut Run {
+        &mut self.run
+    }
+    fn stderr(&self) -> Option<&str> {
+        Some(&self.stderr)
+    }
+}
+
 struct NoSignal;
 impl archsig::run::Signals for NoSignal {
     fn freeze(&mut self) -> Option<archsig::result::Signal> {
@@ -105,7 +118,7 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         );
     }
     let execute = move || {
-        let (io, signals) = (&mut FileIo, &mut NoSignal);
+        let (io, signals) = (&mut archsig::run::FileIo, &mut NoSignal);
         let outcome = match parse_args(&words) {
             Ok(Command::Check(check)) => run_check(io, signals, &check, &mut Control::unlimited()),
             Ok(Command::Run(request)) => {
@@ -127,30 +140,31 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         code: i32::from(code),
         receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
         stdout,
-        stderr: String::new(),
         files_unchanged: false,
     }
 }
 
 /// 実バイナリを起動する。main の責務(receipt の書出し・終了コード・signal・実ファイル)の確認に限る。
-pub fn run_binary(dir: &Path, args: &[&str]) -> Run {
+pub fn run_binary(dir: &Path, args: &[&str]) -> BinaryRun {
     run_binary_with_deadline(dir, args, CHILD_DEADLINE)
 }
 
 /// 長時間テストは監視時間を呼出箇所で明示する。
-pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> Run {
+pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> BinaryRun {
     let captured = watchdog::output(bin().current_dir(dir).args(args), deadline)
         .expect("CLIテストの子プロセスを実行");
     assert!(!captured.timed_out, "CLIテストの子プロセスが独立監視時間{deadline:?}を超過");
     let out = captured.output;
     let stdout = String::from_utf8(out.stdout).unwrap();
     assert_eq!(stdout.matches('\n').count(), 1, "stdout は一行: {stdout:?}");
-    Run {
-        code: out.status.code().unwrap(),
-        receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
-        stdout,
+    BinaryRun {
+        run: Run {
+            code: out.status.code().unwrap(),
+            receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
+            stdout,
+            files_unchanged: false,
+        },
         stderr: String::from_utf8(out.stderr).unwrap(),
-        files_unchanged: false,
     }
 }
 
@@ -191,11 +205,11 @@ fn fixture_entries(dir: &Path) -> std::collections::BTreeMap<PathBuf, FixtureEnt
     entries
 }
 /// 失敗を期待する実行だけ、入力・既存出力を含むfixture全体の非変更を確認する。
-pub fn without_file_changes(dir: &Path, execute: impl FnOnce() -> Run) -> Run {
+pub fn without_file_changes<R: Executed>(dir: &Path, execute: impl FnOnce() -> R) -> R {
     let before = fixture_entries(dir);
     let mut result = execute();
     assert_eq!(fixture_entries(dir), before, "失敗実行がfixtureを変更した");
-    result.files_unchanged = true;
+    result.executed().files_unchanged = true;
     result
 }
 
@@ -244,7 +258,7 @@ pub fn result_json(dir: &Path, r: &Run) -> JNode {
 
 /// receipt・result.json・実際の終了コードがそろい、check の requests/answers/nodes は空。
 pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
-    assert_eq!(r.code, code, "{}", r.stderr);
+    assert_eq!(r.code, code, "{}", r.stdout);
     assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
     assert_eq!(s(get(&r.receipt, "status")), status);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
@@ -260,10 +274,13 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
 }
 
 /// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
-pub fn notified(_dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+pub fn notified(_dir: &Path, r: &impl Executed, status: &str, code: i32) -> JNode {
+    if let Some(stderr) = r.stderr() {
+        assert!(stderr.is_empty(), "エラーは stdout のみ: {stderr}");
+    }
+    let r = r.result();
     assert!(r.files_unchanged, "失敗実行はwithout_file_changesで囲む");
-    assert!(r.stderr.is_empty(), "エラーは stdout のみ: {}", r.stderr);
-    assert_eq!(r.code, code, "{}", r.stderr);
+    assert_eq!(r.code, code, "{}", r.stdout);
     assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
     assert_eq!(s(get(&r.receipt, "status")), status);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
