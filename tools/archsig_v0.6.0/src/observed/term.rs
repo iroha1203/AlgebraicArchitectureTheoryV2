@@ -728,19 +728,6 @@ impl Term {
                                 }
                             }
                         }
-                        ExprKind::Match { scrutinee, arms } => {
-                            let v = self.eval(*scrutinee, vars, law, c)?;
-                            let mut result = None;
-                            for a in arms {
-                                tick(c)?;
-                                let mut local = copy_variables(vars, c)?;
-                                if self.pattern(&a.pattern, &v, &mut local, c)? {
-                                    result = Some(self.eval(a.body, &local, law, c)?);
-                                    break;
-                                }
-                            }
-                            result.ok_or("Term matchの元選択枝がない")?
-                        }
                         ExprKind::SetLit { items, .. } => {
                             let Type::Set(element) = ty else {
                                 return Err("Term Set型がない".into());
@@ -879,9 +866,7 @@ impl Term {
                                     .values
                                 }
                             };
-                            let mut result = *kind == QuantKind::Forall;
-                            for v in values {
-                                tick(c)?;
+                            let result = walk::quantifier(*kind, values, c, |v| {
                                 let mut local = copy_variables(vars, c)?;
                                 if local.insert(var.name.clone(), v).is_some() {
                                     return Err("Term量化束縛が重複する".into());
@@ -889,14 +874,9 @@ impl Term {
                                 let Scalar::Bool(b) = self.eval(*body, &local, law, c)? else {
                                     return Err("Term量化bodyがBoolでない".into());
                                 };
-                                if (*kind == QuantKind::Forall && !b)
-                                    || (*kind == QuantKind::Exists && b)
-                                {
-                                    result = b;
-                                    break;
-                                }
-                            }
-                            Scalar::Bool(result)
+                                Ok(Some(b))
+                            })?;
+                            Scalar::Bool(result.ok_or("Term量化bodyがBoolでない")?)
                         }
                         ExprKind::Fn { params, body } => {
                             let Type::Term(a, r) = ty else {
@@ -951,6 +931,25 @@ impl walk::Interpretation for Concrete {
     type Value = Scalar;
     fn item_tick(c: &Control) -> Result<(), ValidationFailure> {
         tick(c)
+    }
+    fn select_match(
+        term: &Term,
+        arms: &[crate::law::ast::Arm],
+        input: Scalar,
+        vars: &BTreeMap<String, Scalar>,
+        _law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Option<(usize, BTreeMap<String, Scalar>)>, ValidationFailure> {
+        let selected = walk::select_arm(arms, c, |pattern| {
+            let mut local = copy_variables(vars, c)?;
+            Ok(term
+                .pattern(pattern, &input, &mut local, c)?
+                .then_some(local))
+        })?;
+        Ok(Some(selected.ok_or("Term matchの元選択枝がない")?))
+    }
+    fn unmatched(_ty: &Type) -> Result<Scalar, ValidationFailure> {
+        Err("Term matchの元選択枝がない".into())
     }
     fn tuple(values: Vec<Scalar>) -> Scalar {
         Scalar::Tuple(values)

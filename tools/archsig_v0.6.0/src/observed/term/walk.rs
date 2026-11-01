@@ -5,6 +5,15 @@ use crate::law::ast::UnOp;
 pub(super) trait Interpretation {
     type Value: Clone;
     fn item_tick(c: &Control) -> Result<(), ValidationFailure>;
+    fn select_match(
+        term: &Term,
+        arms: &[crate::law::ast::Arm],
+        input: Self::Value,
+        vars: &BTreeMap<String, Self::Value>,
+        law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Option<(usize, BTreeMap<String, Self::Value>)>, ValidationFailure>;
+    fn unmatched(ty: &Type) -> Result<Self::Value, ValidationFailure>;
     fn tuple(values: Vec<Self::Value>) -> Self::Value;
     fn list_type(ty: &Type) -> Result<Type, ValidationFailure>;
     fn list(element: Type, values: Vec<Self::Value>) -> Self::Value;
@@ -67,6 +76,13 @@ pub(super) fn expression<I: Interpretation>(
     c: &Control,
 ) -> Result<Option<I::Value>, ValidationFailure> {
     Ok(Some(match &e.kind {
+        ExprKind::Match { scrutinee, arms } => {
+            let input = I::eval(term, *scrutinee, vars, law, c)?;
+            match I::select_match(term, arms, input, vars, law, c)? {
+                Some((body, local)) => I::eval(term, body, &local, law, c)?,
+                None => I::unmatched(ty)?,
+            }
+        }
         ExprKind::Tuple(children) => I::tuple(items::<I>(term, children, vars, law, c)?),
         ExprKind::ListLit {
             items: children, ..
@@ -135,4 +151,40 @@ pub(super) fn items<I: Interpretation>(
         I::item_tick(c)?;
     }
     Ok(values)
+}
+
+/// 既知のscrutineeは宣言順に枝を調べ、最初に合う枝だけを評価する。
+pub(super) fn select_arm<V>(
+    arms: &[crate::law::ast::Arm],
+    c: &Control,
+    mut bind: impl FnMut(&Pattern) -> Result<Option<V>, ValidationFailure>,
+) -> Result<Option<(usize, V)>, ValidationFailure> {
+    for arm in arms {
+        tick(c)?;
+        if let Some(local) = bind(&arm.pattern)? {
+            return Ok(Some((arm.body, local)));
+        }
+    }
+    Ok(None)
+}
+
+/// 有限域のbodyを順に読み、反例/証人で短絡する。未知のbodyは解釈側がNoneを返す。
+pub(super) fn quantifier(
+    kind: QuantKind,
+    values: Vec<Scalar>,
+    c: &Control,
+    mut body: impl FnMut(Scalar) -> Result<Option<bool>, ValidationFailure>,
+) -> Result<Option<bool>, ValidationFailure> {
+    let mut result = Some(kind == QuantKind::Forall);
+    for value in values {
+        tick(c)?;
+        match body(value)? {
+            Some(b) if (kind == QuantKind::Forall && !b) || (kind == QuantKind::Exists && b) => {
+                return Ok(Some(b));
+            }
+            None => result = None,
+            _ => {}
+        }
+    }
+    Ok(result)
 }

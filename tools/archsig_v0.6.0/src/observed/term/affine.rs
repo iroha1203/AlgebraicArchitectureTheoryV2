@@ -925,47 +925,6 @@ impl Term {
                     {
                         vars[&parts[0].name].clone()
                     }
-                    ExprKind::Match { scrutinee, arms } => {
-                        let input = self.symbolic(*scrutinee, vars, law, c)?;
-                        if let Some(value) = input.known(c)? {
-                            let mut answer = None;
-                            for arm in arms {
-                                tick(c)?;
-                                let mut bound = BTreeMap::new();
-                                if self.pattern(&arm.pattern, &value, &mut bound, c)? {
-                                    let mut local = vars.clone();
-                                    for (name, value) in bound {
-                                        tick(c)?;
-                                        local.insert(name, Value::Known(value));
-                                    }
-                                    answer = Some(self.symbolic(arm.body, &local, law, c)?);
-                                    break;
-                                }
-                            }
-                            answer.ok_or("Term記号matchの元選択枝がない")?
-                        } else if let Some((arm, bound)) = data::select_partial(
-                            arms,
-                            &input,
-                            c,
-                            &Value::data_parts,
-                            &|span, c| {
-                                self.reference(span, c).map(|value| {
-                                    value.and_then(|name| law.resolved_names().get(name).cloned())
-                                })
-                            },
-                        )? {
-                            let mut local = vars.clone();
-                            for (name, value) in bound {
-                                tick(c)?;
-                                if local.insert(name, value).is_some() {
-                                    return Err("Term記号matchの束縛名が重複する".into());
-                                }
-                            }
-                            self.symbolic(arms[arm].body, &local, law, c)?
-                        } else {
-                            unknown()
-                        }
-                    }
                     ExprKind::Quant {
                         kind,
                         var,
@@ -1006,9 +965,7 @@ impl Term {
                             }
                         };
                         if let Some(values) = values {
-                            let mut result = Some(*kind == QuantKind::Forall);
-                            for v in values {
-                                tick(c)?;
+                            let result = super::walk::quantifier(*kind, values, c, |v| {
                                 let mut local = BTreeMap::new();
                                 for (n, v) in vars {
                                     tick(c)?;
@@ -1018,18 +975,11 @@ impl Term {
                                     return Err("Term記号量化束縛が重複する".into());
                                 }
                                 match self.symbolic(*body, &local, law, c)?.known(c)? {
-                                    Some(Scalar::Bool(b)) => {
-                                        if (*kind == QuantKind::Forall && !b)
-                                            || (*kind == QuantKind::Exists && b)
-                                        {
-                                            result = Some(b);
-                                            break;
-                                        }
-                                    }
-                                    None => result = None,
-                                    _ => return Err("Term記号量化bodyがBoolでない".into()),
+                                    Some(Scalar::Bool(b)) => Ok(Some(b)),
+                                    None => Ok(None),
+                                    _ => Err("Term記号量化bodyがBoolでない".into()),
                                 }
-                            }
+                            })?;
                             result
                                 .map(|b| Value::Known(Scalar::Bool(b)))
                                 .unwrap_or_else(unknown)
@@ -1038,10 +988,7 @@ impl Term {
                         }
                     }
                     ExprKind::Call { callee, args } => {
-                        let a = args
-                            .iter()
-                            .map(|i| self.symbolic(*i, vars, law, c))
-                            .collect::<Result<Vec<_>, _>>()?;
+                        let a = super::walk::items::<Symbolic>(self, args, vars, law, c)?;
                         // Term bodyの組込みとconstructorの既知引数計算は元の実評価を再利用する。
                         let mut target = *callee;
                         while let ExprKind::Group(inner) =
@@ -1339,6 +1286,49 @@ impl super::walk::Interpretation for Symbolic {
     type Value = Value;
     fn item_tick(_c: &Control) -> Result<(), ValidationFailure> {
         Ok(())
+    }
+    fn select_match(
+        term: &Term,
+        arms: &[crate::law::ast::Arm],
+        input: Value,
+        vars: &BTreeMap<String, Value>,
+        law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Option<(usize, BTreeMap<String, Value>)>, ValidationFailure> {
+        if let Some(value) = input.known(c)? {
+            let selected = super::walk::select_arm(arms, c, |pattern| {
+                let mut bound = BTreeMap::new();
+                if !term.pattern(pattern, &value, &mut bound, c)? {
+                    return Ok(None);
+                }
+                let mut local = vars.clone();
+                for (name, value) in bound {
+                    tick(c)?;
+                    local.insert(name, Value::Known(value));
+                }
+                Ok(Some(local))
+            })?;
+            Ok(Some(selected.ok_or("Term記号matchの元選択枝がない")?))
+        } else if let Some((arm, bound)) =
+            data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| {
+                term.reference(span, c)
+                    .map(|value| value.and_then(|name| law.resolved_names().get(name).cloned()))
+            })?
+        {
+            let mut local = vars.clone();
+            for (name, value) in bound {
+                tick(c)?;
+                if local.insert(name, value).is_some() {
+                    return Err("Term記号matchの束縛名が重複する".into());
+                }
+            }
+            Ok(Some((arms[arm].body, local)))
+        } else {
+            Ok(None)
+        }
+    }
+    fn unmatched(ty: &Type) -> Result<Value, ValidationFailure> {
+        Ok(Value::Unsupported(ty.clone()))
     }
     fn tuple(values: Vec<Value>) -> Value {
         Value::Tuple(values)
