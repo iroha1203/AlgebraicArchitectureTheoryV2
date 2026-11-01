@@ -48,10 +48,7 @@ fn inputs() -> (CheckedLaw, CheckedArchMap) {
 fn rejects(asks: &[&str], expected: RequestIssueCode) {
     let (law, map) = inputs();
     match resolve_observed_requests(&law, &map, asks).unwrap_err() {
-        ResolveFailure::Invalid {
-            requests,
-            issues,
-        } => {
+        ResolveFailure::Invalid { requests, issues } => {
             assert!(requests.is_empty());
             assert_eq!(issues[0].code, expected, "{issues:?}");
             assert!(!issues[0].wire().canonical().contains("location"));
@@ -223,11 +220,7 @@ fn cycles_report_each_member_and_keep_the_graph_without_marking_downstream() {
         ],
     )
     .unwrap_err();
-    let ResolveFailure::Invalid {
-        requests,
-        issues,
-    } = error
-    else {
+    let ResolveFailure::Invalid { requests, issues } = error else {
         panic!("cycle");
     };
     assert_eq!(requests.len(), 3);

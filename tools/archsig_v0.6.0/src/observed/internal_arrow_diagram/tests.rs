@@ -603,7 +603,8 @@ fn kernel_and_planning_stops_leave_all_existing_objects_unchanged() {
         Checkpoint::InternalArrowRow,
         Checkpoint::ConfigurationOperation,
     ] {
-        let mut c = Control::new(move |point| (point == checkpoint).then_some(crate::result::Signal::Int));
+        let mut c =
+            Control::new(move |point| (point == checkpoint).then_some(crate::result::Signal::Int));
         let mut g = empty(&p);
         let a = build(&p, &mut g);
         let o = family(&p, &mut g, &a);

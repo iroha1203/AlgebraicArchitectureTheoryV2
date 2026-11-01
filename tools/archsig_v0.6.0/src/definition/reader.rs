@@ -1004,14 +1004,8 @@ mod interruption_tests {
                     0 => name::<Failure>(&mut control, "bad!", "definition0", "/name"),
                     1 => name::<Failure>(&mut control, "!bad", "definition0", "/name"),
                     2 => name::<Failure>(&mut control, "law", "definition0", "/name"),
-                    3 => ty::<Failure>(
-                        &mut control,
-                        &fp,
-                        "definition0",
-                        "/type",
-                        &mut Vec::new(),
-                    )
-                    .map(|_| ()),
+                    3 => ty::<Failure>(&mut control, &fp, "definition0", "/type", &mut Vec::new())
+                        .map(|_| ()),
                     _ => find::<Failure>(
                         entries,
                         "missing",

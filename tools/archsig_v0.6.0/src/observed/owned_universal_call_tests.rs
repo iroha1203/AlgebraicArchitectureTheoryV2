@@ -107,7 +107,7 @@ fn stop(stage: &'static str) {
     stopped.wire();
 }
 #[test]
-fn owned_call_missing_source_time_stop_keeps_verified_prefix_and_probe_freeze() {
+fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
     stop("owned_call_missing_source")
 }
 

@@ -1,9 +1,5 @@
 use super::*;
-use crate::{
-    canonical::Json,
-    input::check_inputs,
-    result::Signal,
-};
+use crate::{canonical::Json, input::check_inputs, result::Signal};
 use std::{cell::Cell, rc::Rc};
 fn quiet() -> Control {
     Control::unlimited()

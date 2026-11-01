@@ -268,11 +268,7 @@ fn request_failures_keep_the_exact_shared_bundle_and_existing_reasons() {
     let wire = failure.wire().unwrap();
     let PrepareFailure::Requests {
         inputs,
-        failure:
-            ResolveFailure::Invalid {
-                issues,
-                ..
-            },
+        failure: ResolveFailure::Invalid { issues, .. },
     } = failure
     else {
         panic!("missing binding")

@@ -1,11 +1,7 @@
 //! 元署名の単一Owned参照を実callと原始owner事実へ接続する。
 #[path = "common/owned_calls.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn quiet() -> Control {
     Control::unlimited()
 }

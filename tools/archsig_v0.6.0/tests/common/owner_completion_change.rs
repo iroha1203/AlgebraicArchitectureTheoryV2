@@ -1,8 +1,5 @@
 use super::*;
-use archsig::{
-    control::Control,
-    input::InputSources,
-};
+use archsig::{control::Control, input::InputSources};
 
 fn sources(
     two_roots: bool,

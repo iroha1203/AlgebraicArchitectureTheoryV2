@@ -1,8 +1,6 @@
 use super::*;
-use crate::{
-    observed::{
-        construction_result::ConstructionData as D, path_compose, public_path_compose::Part,
-    },
+use crate::observed::{
+    construction_result::ConstructionData as D, path_compose, public_path_compose::Part,
 };
 use std::{cell::Cell, rc::Rc};
 mod fixture {

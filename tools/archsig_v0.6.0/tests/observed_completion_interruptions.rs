@@ -230,7 +230,15 @@ fn all_owner_candidates_rejected_keep_the_exact_constraint_and_late_stop() {
     );
     let total = count_completion(&input, false);
     // 最後の候補のmember(false)、eval(false)、search(No)、feasible(No)、Issue返却。
-    for stop_after in [1, total / 2, total - 4, total - 3, total - 2, total - 1, total] {
+    for stop_after in [
+        1,
+        total / 2,
+        total - 4,
+        total - 3,
+        total - 2,
+        total - 1,
+        total,
+    ] {
         cancel_at(&input, stop_after);
     }
 }

@@ -339,10 +339,7 @@ fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate
 }
 #[test]
 fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_family() {
-    use crate::{
-        control::StopReason,
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = fixture::with_body(
         fixture::MAP,

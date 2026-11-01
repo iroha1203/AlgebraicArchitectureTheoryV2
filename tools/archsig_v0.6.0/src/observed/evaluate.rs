@@ -3231,12 +3231,10 @@ fn evaluate_observed_with_validator(
         .into_iter()
         .map(|a| a.expect("依存順は全要求を含む"))
         .collect();
-    let status = if matches!(control.stop_reason(), Some(StopReason::Cancelled(_))) {
+    let status = if control.stop_reason().is_some() {
         "interrupted"
     } else if internal || not_implemented.is_some() {
         "error"
-    } else if control.stop_reason().is_some() {
-        "interrupted"
     } else if answers.iter().any(|a| a.status == Decision::Undetermined) {
         "partial"
     } else {

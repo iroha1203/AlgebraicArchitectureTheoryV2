@@ -1,7 +1,5 @@
 use super::*;
-use crate::{
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");

@@ -110,11 +110,7 @@ fn dependent_family_missing_body_and_counterexample_remain_distinct_and_rechecke
     });
 }
 
-fn dependent_private_body_phase_stop(
-    declaration: &str,
-    phase: &'static str,
-    at: usize,
-) {
+fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at: usize) {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"

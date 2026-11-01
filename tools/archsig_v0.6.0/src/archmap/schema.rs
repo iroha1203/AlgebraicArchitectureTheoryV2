@@ -723,7 +723,7 @@ mod required_identifier_priority_tests {
     type E = CheckFailure<Box<Issue>>;
 
     #[test]
-    fn first_or_later_invalid_character_is_diagnosed_before_its_post_checkpoint() {
+    fn first_or_later_invalid_character_yields_to_cancellation() {
         for (text, at) in [("!", 3), ("x!", 5)] {
             let probe = || {
                 let seen = Rc::new(Cell::new(0));

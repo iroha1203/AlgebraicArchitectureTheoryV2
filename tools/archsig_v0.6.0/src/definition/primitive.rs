@@ -85,15 +85,9 @@ fn mismatch<T, E: InputError>(
     control: &mut Control,
 ) -> R<T, E> {
     let message = message.into();
-    let details: R<Details, E> = (|| {
-        Ok(Details::Type {
-            expected: expected.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
-            actual: actual.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
-        })
-    })();
-    let details = match details {
-        Ok(details) => details,
-        Err(stop) => return Err(stop),
+    let details = Details::Type {
+        expected: expected.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
+        actual: actual.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
     };
     Err(Box::new(Issue {
         code: Code::Type,

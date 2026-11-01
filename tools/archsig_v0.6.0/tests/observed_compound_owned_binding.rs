@@ -2,10 +2,7 @@
 #[path = "common/compound_owned_binding.rs"]
 mod fixture;
 use archsig::{
-    canonical::Json,
-    control::Control,
-    input::InputSources,
-    observed::evaluate_observed_bytes,
+    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
     Control::unlimited()

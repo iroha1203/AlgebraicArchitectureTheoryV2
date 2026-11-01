@@ -1,10 +1,6 @@
 #[path = "common/answer_projection_conditions.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]

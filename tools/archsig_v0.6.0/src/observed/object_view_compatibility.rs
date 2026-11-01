@@ -1163,7 +1163,11 @@ mod tests {
             None
         });
         object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
-        let (mut c, n) = stop(Checkpoint::ObjectViewCompatibility, count.get() + 1, Signal::Term);
+        let (mut c, n) = stop(
+            Checkpoint::ObjectViewCompatibility,
+            count.get() + 1,
+            Signal::Term,
+        );
         let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());

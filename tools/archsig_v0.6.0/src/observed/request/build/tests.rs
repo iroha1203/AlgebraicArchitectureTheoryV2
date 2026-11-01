@@ -1,7 +1,5 @@
 use super::*;
-use crate::{
-    input::check_inputs,
-};
+use crate::input::check_inputs;
 mod fixture {
     use crate as archsig;
     include!("../../../../tests/common/request_acceptance_data.rs");

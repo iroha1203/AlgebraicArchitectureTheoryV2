@@ -152,7 +152,7 @@ fn syntax_binding_dependency_and_projection_stop_at_start_middle_and_end() {
 }
 
 #[test]
-fn stopping_inside_cycle_walk_preserves_only_cycles_already_established() {
+fn stopping_inside_cycle_walk_reports_interruption() {
     let asks = [
         "a=evaluate(R.echo,s=$b.value)",
         "b=evaluate(R.echo,s=$a.value)",
@@ -274,10 +274,8 @@ fn a_stop_between_two_independent_cycles_is_reported_as_interrupted() {
         &mut baseline,
     )
     .unwrap_err();
-    assert!(
-        matches!(normal, ResolveFailure::Invalid { issues, .. }
-        if issues.iter().map(|i| i.request.as_str()).collect::<Vec<_>>() == ["a", "b", "c", "d"])
-    );
+    assert!(matches!(normal, ResolveFailure::Invalid { issues, .. }
+        if issues.iter().map(|i| i.request.as_str()).collect::<Vec<_>>() == ["a", "b", "c", "d"]));
     // Each candidate is the same fixed four-node graph, stopped at one of its finite checkpoints.
     for at in 1..=total.get() {
         let (mut control, count, reason) = interrupt(Checkpoint::RequestDependency, at);

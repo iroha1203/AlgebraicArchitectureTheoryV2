@@ -936,7 +936,11 @@ mod tests {
             None
         });
         evaluate(Arc::clone(&i), &mut c).unwrap();
-        let (mut c, n) = stop(Checkpoint::ObjectLawCompatibility, count.get() + 1, Signal::Term);
+        let (mut c, n) = stop(
+            Checkpoint::ObjectLawCompatibility,
+            count.get() + 1,
+            Signal::Term,
+        );
         let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());

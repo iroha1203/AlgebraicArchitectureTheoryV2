@@ -1606,44 +1606,40 @@ fn order(
     }
     // 未処理の下流も cycle とする誤りを避け、各自へ戻れる node だけを記録する。
     let mut cyclic = Vec::new();
-    let result = (|| {
-        for start in 0..requests.len() {
+    for start in 0..requests.len() {
+        checkpoint(control)?;
+        phase(control, Checkpoint::RequestDependency)?;
+        if done[start] {
+            phase(control, Checkpoint::RequestDependency)?;
+            continue;
+        }
+        let mut seen = BTreeSet::new();
+        let mut stack = Vec::new();
+        for &dependency in &deps[start] {
+            phase(control, Checkpoint::RequestDependency)?;
+            stack.push(dependency);
+            phase(control, Checkpoint::RequestDependency)?;
+        }
+        while let Some(i) = stack.pop() {
             checkpoint(control)?;
             phase(control, Checkpoint::RequestDependency)?;
-            if done[start] {
+            if i == start {
+                cyclic.push(start);
                 phase(control, Checkpoint::RequestDependency)?;
-                continue;
+                break;
             }
-            let mut seen = BTreeSet::new();
-            let mut stack = Vec::new();
-            for &dependency in &deps[start] {
-                phase(control, Checkpoint::RequestDependency)?;
-                stack.push(dependency);
-                phase(control, Checkpoint::RequestDependency)?;
-            }
-            while let Some(i) = stack.pop() {
-                checkpoint(control)?;
-                phase(control, Checkpoint::RequestDependency)?;
-                if i == start {
-                    cyclic.push(start);
+            if seen.insert(i) {
+                for &dependency in &deps[i] {
                     phase(control, Checkpoint::RequestDependency)?;
-                    break;
+                    stack.push(dependency);
+                    phase(control, Checkpoint::RequestDependency)?;
                 }
-                if seen.insert(i) {
-                    for &dependency in &deps[i] {
-                        phase(control, Checkpoint::RequestDependency)?;
-                        stack.push(dependency);
-                        phase(control, Checkpoint::RequestDependency)?;
-                    }
-                }
-                phase(control, Checkpoint::RequestDependency)?;
             }
             phase(control, Checkpoint::RequestDependency)?;
         }
         phase(control, Checkpoint::RequestDependency)?;
-        Ok(())
-    })();
-    result?;
+    }
+    phase(control, Checkpoint::RequestDependency)?;
     Ok((sorted, cyclic))
 }
 

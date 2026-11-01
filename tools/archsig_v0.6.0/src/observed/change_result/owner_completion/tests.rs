@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    input::InputSources,
-    observed::evaluate::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate::evaluate_observed_bytes};
 mod fixture {
     include!("../../../../tests/common/object_view_compatibility_data.rs");
 }

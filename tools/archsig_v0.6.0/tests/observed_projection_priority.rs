@@ -73,7 +73,8 @@ fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>, StopReason) {
         if point == Checkpoint::Projection {
             seen.set(seen.get() + 1);
         }
-        at.is_some_and(|at| seen.get() >= at).then_some(Signal::Term)
+        at.is_some_and(|at| seen.get() >= at)
+            .then_some(Signal::Term)
     });
     (control, count, StopReason::Cancelled(Signal::Term))
 }
@@ -156,7 +157,7 @@ fn known_projection_errors_yield_to_cancellation() {
 }
 
 #[test]
-fn early_projection_errors_use_the_same_priority_policy() {
+fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
     let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     for (ty, path, message) in [
         (
@@ -196,7 +197,7 @@ fn early_projection_errors_use_the_same_priority_policy() {
 }
 
 #[test]
-fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
+fn final_dynamic_rejection_yields_to_cancellation_at_every_checkpoint() {
     let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     let initial = ProjectionType::Dynamic(vec![
         ProjectionType::Law(Type::Bool),
@@ -210,7 +211,6 @@ fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
         Err(invalid.clone())
     );
     // Last candidate post = 10, last iteration post = 11, whole project post = 12.
-    // At 6 only the first candidate has rejected; the second remains untried.
     assert_eq!(total.get(), 12);
     for at in 1..=total.get() {
         let (mut control, count, reason) = probe(Some(at));
@@ -226,7 +226,7 @@ fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
 }
 
 #[test]
-fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results() {
+fn dynamic_projection_from_bytes_yields_to_cancellation_at_every_checkpoint() {
     let asks = [
         "bad=evaluate(R.echo,s=$choice.value[0].missing)",
         "choice=evaluate(R.choice)",
@@ -236,7 +236,7 @@ fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results
 }
 
 #[test]
-fn final_constructor_rejection_from_bytes_keeps_both_post_results() {
+fn final_constructor_rejection_from_bytes_yields_to_cancellation_at_every_checkpoint() {
     let asks = [
         "bad=evaluate(R.echo,s=$choice.value[1])",
         "choice=evaluate(R.choice)",
@@ -355,12 +355,7 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
         for at in 1..=total.get() {
             let (mut control, count, reason) = probe(Some(at));
             assert_eq!(
-                resolve_projection_controlled(
-                    checked.law(),
-                    initial.clone(),
-                    &path,
-                    &mut control
-                ),
+                resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
                 Err(ProjectionFailure::Interrupted(reason.clone()))
             );
             assert_eq!(count.get(), at);

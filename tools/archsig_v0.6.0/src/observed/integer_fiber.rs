@@ -286,9 +286,8 @@ mod tests {
             let seen = count.clone();
             let c = Control::new(move |_| {
                 seen.set(seen.get() + 1);
-                stop
-                        .filter(|n| *n == seen.get())
-                        .map(|_| crate::result::Signal::Term)
+                stop.filter(|n| *n == seen.get())
+                    .map(|_| crate::result::Signal::Term)
             });
             let result = solve(
                 &matrix(&[&[6, 4], &[2, 8]]),

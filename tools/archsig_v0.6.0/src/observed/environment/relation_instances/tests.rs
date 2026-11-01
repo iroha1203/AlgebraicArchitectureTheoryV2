@@ -1,6 +1,6 @@
 use super::*;
-use crate::result::Signal;
 use crate::input::{InputSources, check_inputs};
+use crate::result::Signal;
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
 mod arrow_fixture {

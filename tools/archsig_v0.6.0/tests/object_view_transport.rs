@@ -372,7 +372,7 @@ fn current_values_mapping_and_law_body_are_rechecked() {
     }
 }
 #[test]
-fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
+fn fixed_transport_checkpoints_latch_cancellation() {
     let i = inputs(L, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "amount", "p");

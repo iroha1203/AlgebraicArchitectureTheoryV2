@@ -1460,13 +1460,10 @@ impl Node {
             && !matches!(payload, Payload::Construction(v) if v.is_blocked())
         {
             let mut value = match payload {
-                Payload::Scalar(value) => super::path_value::wire(
-                    value,
-                    prior,
-                    &self.arguments,
-                    &Control::unlimited(),
-                )
-                .expect("挿入時に検査した値の既出 Ref 表示"),
+                Payload::Scalar(value) => {
+                    super::path_value::wire(value, prior, &self.arguments, &Control::unlimited())
+                        .expect("挿入時に検査した値の既出 Ref 表示")
+                }
                 other => other.wire(),
             };
             if matches!(

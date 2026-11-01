@@ -1,11 +1,7 @@
 //! 固定ownerと原始Owned参照の同batch束縛。
 #[path = "common/owned_binding.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn quiet() -> Control {
     Control::unlimited()
 }

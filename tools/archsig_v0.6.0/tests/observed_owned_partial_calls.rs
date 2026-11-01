@@ -1,11 +1,7 @@
 //! 数値が通常値でない部分Tupleの所属条件を元入力で確かめる。
 #[path = "common/owned_partial_calls.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]

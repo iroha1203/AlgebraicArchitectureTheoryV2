@@ -466,9 +466,7 @@ pub fn check_inputs(
         match check_archmap_controlled(failure.sources.archmap.bytes(), &definitions, control) {
             Ok(map) => map,
             Err(CheckFailure::Input(f)) => {
-                return Err(failure
-                    .with_checked_law(definitions, law)
-                    .input(f.issue));
+                return Err(failure.with_checked_law(definitions, law).input(f.issue));
             }
             Err(CheckFailure::Stopped(reason)) => {
                 return Err(failure.with_checked_law(definitions, law).stopped(reason));

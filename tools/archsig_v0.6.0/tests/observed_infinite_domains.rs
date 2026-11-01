@@ -2,11 +2,7 @@
 #[allow(dead_code)]
 #[path = "common/infinite_domains.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn field<'a>(json: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = json else {
         panic!("object")
@@ -210,12 +206,7 @@ fn infinite_nested_calls_keep_missing_reasons_prior_results_and_dependency() {
         "v=evaluate(Walk.current,n=@v/p)",
         "later=evaluate(Walk.keep,x=$v.value)",
     ];
-    let result = evaluate_observed_bytes(
-        inputs.clone(),
-        &asks,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let result = evaluate_observed_bytes(inputs.clone(), &asks, &mut Control::unlimited()).unwrap();
     let wire = result.wire();
     audit(&wire);
     assert_eq!(result.status(), "partial", "{:?}", field(&wire, "issues"));

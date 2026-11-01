@@ -1,7 +1,5 @@
 use super::*;
-use crate::{
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");

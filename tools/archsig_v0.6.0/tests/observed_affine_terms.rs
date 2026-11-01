@@ -2,10 +2,7 @@
 #[path = "common/affine_terms.rs"]
 mod fixture;
 use archsig::{
-    canonical::Json,
-    control::Control,
-    definition::check_definitions,
-    input::InputSources,
+    canonical::Json, control::Control, definition::check_definitions, input::InputSources,
     observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {

@@ -111,7 +111,7 @@ pub fn resolve_projection(
     match resolve_projection_controlled(law, initial, path, &mut Control::unlimited()) {
         Ok(plan) => Ok(plan),
         Err(ProjectionFailure::Invalid(message)) => Err(message),
-        Err(ProjectionFailure::Interrupted(_)) => unreachable!("上限と取消通知のない制御"),
+        Err(ProjectionFailure::Interrupted(_)) => unreachable!("取消通知のない制御"),
     }
 }
 
@@ -362,16 +362,10 @@ fn project_inner(
                 return Err("not a data type".into());
             };
             let mut ts = Vec::new();
-            for (index, c) in constructors.iter().enumerate() {
+            for c in constructors {
                 tick(control)?;
                 if let Some(t) = usize::try_from(*i).ok().and_then(|i| c.arguments.get(i)) {
                     push_unique(&mut ts, Law(t.clone()), control)?;
-                }
-                if index + 1 == constructors.len() && ts.is_empty() {
-                    return finish_projection(
-                        Err("index is out of range for all constructors".into()),
-                        control,
-                    );
                 }
                 tick(control)?;
             }
@@ -412,7 +406,7 @@ fn project_inner(
         (Dynamic(ts), _) => {
             let mut out = Vec::new();
             let mut used = None;
-            for (index, t) in ts.iter().enumerate() {
+            for t in ts {
                 tick(control)?;
                 match project(law, t, path, control) {
                     Ok((p, n)) => {
@@ -424,11 +418,6 @@ fn project_inner(
                     }
                     Err(ProjectionFailure::Invalid(_)) => {}
                     Err(stopped @ ProjectionFailure::Interrupted(_)) => return Err(stopped),
-                }
-                if index + 1 == ts.len() && out.is_empty() {
-                    // Every candidate has now rejected this step. Form that
-                    // conclusion before the final iteration's post checkpoint.
-                    return finish_projection(Err("no type candidate exposes this projection".into()), control);
                 }
                 tick(control)?;
             }
@@ -454,7 +443,7 @@ fn project_inner(
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
 pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
     can_bind_controlled(actual, expected, &mut Control::unlimited())
-        .expect("上限と取消通知のない制御")
+        .expect("取消通知のない制御")
 }
 
 /// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ false を返す。

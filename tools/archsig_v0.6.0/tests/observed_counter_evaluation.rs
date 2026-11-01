@@ -1785,9 +1785,10 @@ fn missing_reason_survives_the_first_source_expression_post_stop() {
     let result = missing_scope_survives_at_finite(low, Signal::Term);
     let expression = missing_source_expression_id(&result).unwrap();
     assert!(
-        !arr(field(&result, "nodes")).iter().any(|n| field(n, "type")
-            == &Json::str("Evaluation")
-            && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))]))
+        !arr(field(&result, "nodes"))
+            .iter()
+            .any(|n| field(n, "type") == &Json::str("Evaluation")
+                && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))]))
     );
 }
 

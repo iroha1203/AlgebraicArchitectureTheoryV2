@@ -326,5 +326,9 @@ fn input_failure_status(code: Code) -> Status {
 
 fn stopped(signals: &mut dyn Signals, reason: StopReason) -> Outcome {
     let StopReason::Cancelled(signal) = reason;
-    output::without_result(signals, Status::Interrupted, vec![ResultIssue::Cancelled(signal)])
+    output::without_result(
+        signals,
+        Status::Interrupted,
+        vec![ResultIssue::Cancelled(signal)],
+    )
 }

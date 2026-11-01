@@ -1,11 +1,7 @@
 #[path = "common/owned_partial_containers.rs"]
 #[allow(dead_code)]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = j else {
         panic!("object")
@@ -42,17 +38,8 @@ fn run_revision(unknown: bool, revision: &str, asks: &[&str]) -> Json {
     run_input(inputs, revision, asks)
 }
 fn run_input(inputs: archsig::input::InputSources, revision: &str, asks: &[&str]) -> Json {
-    let checked = archsig::input::check_inputs(
-        inputs.clone(),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let result = evaluate_observed_bytes(
-        inputs.clone(),
-        asks,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let checked = archsig::input::check_inputs(inputs.clone(), &mut Control::unlimited()).unwrap();
+    let result = evaluate_observed_bytes(inputs.clone(), asks, &mut Control::unlimited()).unwrap();
     assert_eq!(result.prepared().inputs().sources(), &inputs);
     assert_eq!(
         result.prepared().inputs().archmap().snapshots(),
@@ -321,11 +308,7 @@ fn two_owner_input() -> archsig::input::InputSources {
 #[test]
 fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let input = two_owner_input();
-    let checked = archsig::input::check_inputs(
-        input.clone(),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let checked = archsig::input::check_inputs(input.clone(), &mut Control::unlimited()).unwrap();
     let snapshot = checked
         .archmap()
         .snapshots()
@@ -503,11 +486,7 @@ fn small_owned_map_missing_table_keeps_all_four_tables_and_original_conditions()
         .collect();
     assert_eq!(values, expected);
     let i = small_map_input("unknown_owner");
-    archsig::input::check_inputs(
-        i.clone(),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    archsig::input::check_inputs(i.clone(), &mut Control::unlimited()).unwrap();
     let w = run_input(
         i,
         "r1",

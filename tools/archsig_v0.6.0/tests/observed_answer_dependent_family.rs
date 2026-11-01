@@ -1,11 +1,7 @@
 //! 固定Answer ownerから元snapshotの実依存fiberを構成する。
 #[path = "common/answer_dependent_family.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 use std::collections::BTreeMap;
 fn quiet() -> Control {
     Control::unlimited()

@@ -103,22 +103,17 @@ impl<'d, E: InputError> Checker<'d, E> {
         message: impl Into<String>,
     ) -> CResult<T, E> {
         let message = message.into();
-        let details: CResult<crate::issue::Details, E> = (|| {
-            Ok(crate::issue::Details::Type {
-                expected: self.erase_type(expected)?,
-                actual: self.erase_type(actual)?,
-            })
-        })();
-        let issue = match details {
-            Ok(details) => Issue {
-                code: Code::Type,
-                message,
-                location: Location::Law { span },
-                details,
-            },
-            Err(stop) => return Err(stop),
+        let details = crate::issue::Details::Type {
+            expected: self.erase_type(expected)?,
+            actual: self.erase_type(actual)?,
         };
-        Err(Box::new(issue).into())
+        Err(Box::new(Issue {
+            code: Code::Type,
+            message,
+            location: Location::Law { span },
+            details,
+        })
+        .into())
     }
     pub fn with_definitions(
         parser: Parser<E>,

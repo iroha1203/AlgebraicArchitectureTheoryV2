@@ -1219,8 +1219,6 @@ pub(crate) fn universal_equality(
     })
 }
 
-/// 正規化の実処理を固定点で中断する試験専用通知。時間・RSSは測定しない。
-
 /// 元Termの引数位置を独立座標にする。外側の観測missing/parameterを供給しない。
 pub(super) fn term_argument(key: TermArgument, c: &Control) -> Result<Form, ValidationFailure> {
     controlled(c, || {

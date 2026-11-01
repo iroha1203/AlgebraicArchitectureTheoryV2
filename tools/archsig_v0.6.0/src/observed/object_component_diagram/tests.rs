@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 fn quiet() -> Control {
     Control::unlimited()
 }

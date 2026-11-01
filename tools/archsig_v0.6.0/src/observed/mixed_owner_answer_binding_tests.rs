@@ -256,6 +256,6 @@ fn completion_stop(phase: &'static str, index: usize) {
     );
 }
 #[test]
-fn mixed_completion_coverage_memory_stop_preserves_cases_without_whole_claim() {
+fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
     completion_stop("completion_coverage", 0)
 }

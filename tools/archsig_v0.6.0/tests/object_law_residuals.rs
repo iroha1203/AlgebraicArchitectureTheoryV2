@@ -459,11 +459,7 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     r.recheck(i.clone(), &mut trace).unwrap();
     let nth = *count.borrow();
     assert!(nth > 0);
-    use archsig::{
-        construction::ConstructionFailure,
-        control::StopReason,
-        result::Signal,
-    };
+    use archsig::{construction::ConstructionFailure, control::StopReason, result::Signal};
     for signal in [Signal::Int, Signal::Term] {
         let calls = Rc::new(RefCell::new(0));
         let calls0 = calls.clone();

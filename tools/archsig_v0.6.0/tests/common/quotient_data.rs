@@ -91,10 +91,7 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
 
 #[test]
 fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
-    use archsig::{
-        control::Control,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     let singletons = vec![
         vec![(false, false)],
         vec![(false, true)],

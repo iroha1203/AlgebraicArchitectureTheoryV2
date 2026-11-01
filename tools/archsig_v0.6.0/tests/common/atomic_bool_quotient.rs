@@ -4,10 +4,7 @@ mod bool_fixture {
     include!("finite_data_quotient.rs");
 }
 fn bool_result(extra: &str, asks: &[&str]) -> JNode {
-    use archsig::{
-        control::Control,
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     let result = evaluate_observed_bytes(
         bool_fixture::sources("", extra),
         asks,
@@ -129,9 +126,7 @@ fn compound_bool_observations_preserve_equality_values() {
 #[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
     use archsig::{
-        control::Control,
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     let original = bool_fixture::sources(
         "",
@@ -247,9 +242,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
 #[test]
 fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
     use archsig::{
-        control::Control,
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     for (body, expected) in [
         ("if false then s.y else s.x", "established"),

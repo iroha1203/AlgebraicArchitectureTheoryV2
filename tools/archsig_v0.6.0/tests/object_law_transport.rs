@@ -579,7 +579,7 @@ fn stopping_inside_target_expression_keeps_completed_source_and_partial_target()
 }
 
 #[test]
-fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
+fn fixed_transport_checkpoints_latch_cancellation() {
     let i = inputs(L, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "bounded", "p");

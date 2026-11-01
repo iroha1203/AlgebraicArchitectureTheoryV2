@@ -69,7 +69,7 @@ fn required_delimiter_mismatch_yields_to_cancellation_at_the_first_false_post_fr
     ));
 }
 #[test]
-fn required_declaration_and_binding_searches_keep_their_final_rejection_from_bytes() {
+fn required_declaration_and_binding_searches_yield_to_cancellation_from_bytes() {
     // Repeat the complete first reading under a different name, without a second header.
     let extra = LAW
         .split_once("reading CountCheck")

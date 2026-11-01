@@ -1,10 +1,7 @@
 #[path = "common/identity_paths.rs"]
 mod fixture;
 use archsig::{
-    canonical::Json,
-    control::Control,
-    input::check_inputs,
-    observed::evaluate_observed_bytes,
+    canonical::Json, control::Control, input::check_inputs, observed::evaluate_observed_bytes,
 };
 use std::collections::BTreeMap;
 fn quiet() -> Control {

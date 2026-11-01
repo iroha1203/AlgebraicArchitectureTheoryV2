@@ -455,9 +455,7 @@ pub fn object_polynomial_observable(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        input::{InputSources, check_inputs},
-    };
+    use crate::input::{InputSources, check_inputs};
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");
     }

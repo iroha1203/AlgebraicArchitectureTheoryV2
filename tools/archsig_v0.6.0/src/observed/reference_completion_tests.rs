@@ -385,7 +385,7 @@ fn stop(phase: &'static str, at: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn reference_completion_coverage_memory_stop_keeps_cases_without_whole_claim() {
+fn reference_completion_coverage_stop_keeps_cases_without_whole_claim() {
     stop("completion_coverage", 0)
 }
 #[test]

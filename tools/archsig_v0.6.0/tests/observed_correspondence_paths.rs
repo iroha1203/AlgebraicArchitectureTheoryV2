@@ -1,8 +1,4 @@
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 #[path = "common/correspondence_paths.rs"]
 #[allow(dead_code)]
 mod fixture;
@@ -31,12 +27,7 @@ fn value<'a>(w: &'a Json, id: &str) -> &'a Json {
 }
 fn run(mode: &str, asks: &[&str]) -> Json {
     let input = fixture::input(mode, "r1");
-    let r = evaluate_observed_bytes(
-        input.clone(),
-        asks,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let r = evaluate_observed_bytes(input.clone(), asks, &mut Control::unlimited()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert!(
         matches!(r.status(), "complete" | "partial"),

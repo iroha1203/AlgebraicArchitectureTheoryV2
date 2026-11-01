@@ -236,7 +236,7 @@ mod lexical_priority_tests {
     use crate::result::Signal;
 
     #[test]
-    fn each_integer_refusal_is_materialized_before_its_first_post() {
+    fn each_integer_refusal_yields_to_cancellation_at_every_checkpoint() {
         for (text, total) in [
             ("1x", 5),
             ("", 2),

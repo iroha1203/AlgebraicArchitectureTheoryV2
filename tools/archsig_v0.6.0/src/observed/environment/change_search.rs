@@ -21,9 +21,7 @@ pub(in crate::observed) struct Search {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        observed::request::resolve_native_for_test,
-    };
+    use crate::observed::request::resolve_native_for_test;
     #[allow(dead_code)]
     mod fixture {
         include!("../../../tests/common/primitive_valuation_data.rs");

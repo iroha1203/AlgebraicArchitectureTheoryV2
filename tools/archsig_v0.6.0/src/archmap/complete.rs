@@ -105,7 +105,6 @@ impl<'a, E: InputError> Model<'a, E> {
         Ok(value)
     }
 
-
     fn field_index(&self, g: usize, name: &str) -> Result<usize, E> {
         self.checkpoint()?;
         for (i, f) in self.subjects[g].fields.iter().enumerate() {

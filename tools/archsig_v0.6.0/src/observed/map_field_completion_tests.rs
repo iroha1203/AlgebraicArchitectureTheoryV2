@@ -216,7 +216,7 @@ fn stop(phase: &'static str, at: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn map_field_coverage_memory_stop_never_promotes_unfinished_whole() {
+fn map_field_coverage_stop_never_promotes_unfinished_whole() {
     stop("completion_coverage", 0);
 }
 

@@ -1,11 +1,7 @@
 //! 複合署名の各実memberを、元ownerと観測された所属事実へ接続する。
 #[path = "common/owned_compound_calls.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::Control,
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn quiet() -> Control {
     Control::unlimited()
 }

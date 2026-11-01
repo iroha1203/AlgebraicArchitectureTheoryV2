@@ -1,8 +1,6 @@
 use super::*;
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 use crate::types::Type;
-use crate::{
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
 use std::sync::Arc;
 #[allow(dead_code)]
 mod fixture {

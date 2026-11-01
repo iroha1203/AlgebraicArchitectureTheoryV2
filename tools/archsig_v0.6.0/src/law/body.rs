@@ -288,7 +288,7 @@ impl<E: InputError> Checker<'_, E> {
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
         });
-        // 入力不正も、検査内で発生した取消・消尽を確認した後に返す。
+        // 入力不正も、検査内で発生した取消を確認した後に返す。
         let t = E::finish(result, &mut self.control.clone(), Checkpoint::LawChange)?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
