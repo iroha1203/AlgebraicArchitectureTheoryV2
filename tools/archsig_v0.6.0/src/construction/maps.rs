@@ -809,13 +809,7 @@ fn typed_reference_constraints_violation(
                 let name = field_map
                     .get(source_field.as_str())
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| {
-                        format!(
-                            "{}.{}",
-                            target.ty,
-                            source_field.short()
-                        )
-                    });
+                    .unwrap_or_else(|| format!("{}.{}", target.ty, source_field.short()));
                 let Some(tf) = field(target, &name, control)? else {
                     matches = false;
                     break;
@@ -1184,13 +1178,7 @@ pub fn correspondence_retained(
                 let target_field = field_map
                     .get(source_field.as_str())
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| {
-                        format!(
-                            "{}.{}",
-                            image_subject.ty,
-                            source_field.short()
-                        )
-                    });
+                    .unwrap_or_else(|| format!("{}.{}", image_subject.ty, source_field.short()));
                 let Some(tf) = field(image_subject, &target_field, control)? else {
                     result.counterexamples.push(Counterexample::Field {
                         source: fact.clone(),

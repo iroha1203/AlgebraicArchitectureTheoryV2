@@ -108,7 +108,9 @@ fn unknown_versions_come_before_unknown_fields() {
 }
 
 fn model(map: &str) -> String {
-    map_ok(RESERVATIONS_DEFINITION, map).model_digest().to_owned()
+    map_ok(RESERVATIONS_DEFINITION, map)
+        .model_digest()
+        .to_owned()
 }
 
 #[test]
@@ -150,7 +152,10 @@ fn set_tables_do_not_change_the_model_digest() {
     assert_ne!(reordered, RESERVATIONS_MAP);
     let other = map_ok(RESERVATIONS_DEFINITION, &reordered);
     assert_ne!(other.bytes_digest(), base.bytes_digest());
-    assert_eq!(other.model_digest().to_owned(), base.model_digest().to_owned());
+    assert_eq!(
+        other.model_digest().to_owned(),
+        base.model_digest().to_owned()
+    );
     // Set の値の順も model_digest を変えない。Map の行の順も同じ。
     let rows = RESERVATIONS_MAP.replace(
         r#"[[["v", "p"], ["v", "r"]], [["v", "q"], ["v", "s"]]]"#,
@@ -220,21 +225,25 @@ fn list_order_and_repetition_are_kept() {
         LISTS,
         &list_doc(r#"["1","2","2"]"#, r#"["1","2"]"#, r#""x""#),
     )
-    .model_digest().to_owned();
+    .model_digest()
+    .to_owned();
     let set_swapped = map_ok(
         LISTS,
         &list_doc(r#"["1","2","2"]"#, r#"["2","1"]"#, r#""x""#),
     )
-    .model_digest().to_owned();
+    .model_digest()
+    .to_owned();
     assert_eq!(a, set_swapped);
     let list_swapped = map_ok(
         LISTS,
         &list_doc(r#"["2","1","2"]"#, r#"["1","2"]"#, r#""x""#),
     )
-    .model_digest().to_owned();
+    .model_digest()
+    .to_owned();
     assert_ne!(a, list_swapped);
-    let list_shorter =
-        map_ok(LISTS, &list_doc(r#"["1","2"]"#, r#"["1","2"]"#, r#""x""#)).model_digest().to_owned();
+    let list_shorter = map_ok(LISTS, &list_doc(r#"["1","2"]"#, r#"["1","2"]"#, r#""x""#))
+        .model_digest()
+        .to_owned();
     assert_ne!(a, list_shorter);
 }
 
@@ -249,7 +258,10 @@ fn text_values_keep_unicode_and_control_characters() {
         "{canonical}"
     );
     let nfc = list_doc(r#"[]"#, r#"[]"#, r#""éé\u0001\n\"\\/\u007f😀""#);
-    assert_ne!(map_ok(LISTS, &nfc).model_digest().to_owned(), c.model_digest().to_owned());
+    assert_ne!(
+        map_ok(LISTS, &nfc).model_digest().to_owned(),
+        c.model_digest().to_owned()
+    );
     assert_eq!(c.model_digest().to_owned(), EXPECTED_TEXT_DIGEST);
 }
 

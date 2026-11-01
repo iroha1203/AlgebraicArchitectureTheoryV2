@@ -594,7 +594,10 @@ view prior(s: Sample): Z = s.zero;
             &Json::Bool(*flag)
         );
         if *flag {
-            assert_eq!(evaluation_span(&ns, ch[2]), checked.law().exprs()[*elem].span);
+            assert_eq!(
+                evaluation_span(&ns, ch[2]),
+                checked.law().exprs()[*elem].span
+            );
             assert_eq!(source(&checked, evaluation_span(&ns, ch[2])), b"x+1");
             assert_eq!(
                 val(target(&ns, f(val(ch[2]), "value"), &Json::str("Z"))),

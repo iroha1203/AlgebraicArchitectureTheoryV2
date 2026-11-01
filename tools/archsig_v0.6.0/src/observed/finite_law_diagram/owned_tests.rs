@@ -371,7 +371,12 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
     };
     env.recheck_finite_law_diagram(&g, value).unwrap();
     env.recheck_finite_law_diagram(&g, value).unwrap();
-    assert_eq!(env.results.verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>().len(), 1);
+    assert_eq!(
+        env.results
+            .verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>()
+            .len(),
+        1
+    );
     for mode in 0..8 {
         let mut changed = (*source).clone();
         match mode {
@@ -608,7 +613,12 @@ fn cache_hit_still_checks_the_actual_owned_architecture_node_and_root_request() 
             "cache mode {mode}"
         );
     }
-    assert_eq!(env.results.verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>().len(), 1);
+    assert_eq!(
+        env.results
+            .verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>()
+            .len(),
+        1
+    );
 }
 
 #[test]

@@ -1,7 +1,7 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{ast::Role, model::Signature};
+use crate::observed::environment::state::ScopedReplace;
 use crate::{control::CheckFailure, observed::value_equality};
 
 #[derive(Clone)]
@@ -130,7 +130,11 @@ impl Environment<'_> {
         &self,
         ty: &Type,
     ) -> Result<bool, ValidationFailure> {
-        super::super::finite::field_completion_supported(ty, self.indexes.inputs.law(), &self.control)
+        super::super::finite::field_completion_supported(
+            ty,
+            self.indexes.inputs.law(),
+            &self.control,
+        )
     }
 
     fn completion_has_references(&self, types: &[Type]) -> Result<bool, ValidationFailure> {
@@ -186,7 +190,9 @@ impl Environment<'_> {
                 for field in &subject.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &field.slot {
-                        all.scope.modes.insert(self.indexes.origin_mode(origin)?.into());
+                        all.scope
+                            .modes
+                            .insert(self.indexes.origin_mode(origin)?.into());
                         all.support.push(Fact {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
@@ -221,7 +227,8 @@ impl Environment<'_> {
             return Ok(None);
         }
         let holder = self.indexes.subject(&fact.snapshot, &fact.subject)?;
-        let field = self.indexes.field(&self.state,
+        let field = self.indexes.field(
+            &self.state,
             &fact.snapshot,
             &fact.subject,
             fact.field.as_deref().ok_or("補完slotに元fieldがない")?,
@@ -235,7 +242,8 @@ impl Environment<'_> {
             let Type::Owned(entity, name) = ty else {
                 return Ok(None);
             };
-            let field = self.indexes.field(&self.state,
+            let field = self.indexes.field(
+                &self.state,
                 &fact.snapshot,
                 &fact.subject,
                 &format!("{}.{name}", holder.ty),
@@ -253,7 +261,14 @@ impl Environment<'_> {
                 if member.snapshot != *snapshot || member.ty != *entity {
                     continue;
                 }
-                if self.indexes.field(&self.state, snapshot, &member.id, &format!("{entity}.owner"))?
+                if self
+                    .indexes
+                    .field(
+                        &self.state,
+                        snapshot,
+                        &member.id,
+                        &format!("{entity}.owner"),
+                    )?
                     .slot
                     == Slot::Missing
                 {
@@ -290,9 +305,10 @@ impl Environment<'_> {
             self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                self.indexes.reference_roster(&self.control, entity, &mut |index| {
-                    observer.borrow_mut()("ref_roster", index)
-                })
+                self.indexes
+                    .reference_roster(&self.control, entity, &mut |index| {
+                        observer.borrow_mut()("ref_roster", index)
+                    })
             },
             &mut |entity, name| {
                 known
@@ -364,7 +380,8 @@ impl Environment<'_> {
         let mut types = Vec::new();
         for fact in fields {
             self.tick()?;
-            let field = self.indexes.field(&self.state,
+            let field = self.indexes.field(
+                &self.state,
                 &fact.snapshot,
                 &fact.subject,
                 fact.field.as_deref().ok_or("補完slotに元field名がない")?,
@@ -414,14 +431,21 @@ impl Environment<'_> {
                 self.state.cutoff.get().min(graph.nodes.len()),
                 roots.iter().map(|r| r.0).collect(),
             );
-            let cached = self.results.cache.borrow().completion_slots.get(&key).cloned();
+            let cached = self
+                .results
+                .cache
+                .borrow()
+                .completion_slots
+                .get(&key)
+                .cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_slots_uncached(graph, roots)?;
             self.tick()?;
-            self.results.cache
+            self.results
+                .cache
                 .borrow_mut()
                 .completion_slots
                 .insert(key, value.clone());
@@ -580,7 +604,8 @@ impl Environment<'_> {
                 {
                     continue;
                 }
-                let field = self.indexes.field(&self.state,
+                let field = self.indexes.field(
+                    &self.state,
                     &fact.snapshot,
                     &fact.subject,
                     fact.field.as_deref().ok_or("欠測slotにfieldがない")?,
@@ -640,14 +665,21 @@ impl Environment<'_> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let key = self.completion_memo_key(graph, reference.0);
-            let cached = self.results.cache.borrow().completion_seeds.get(&key).cloned();
+            let cached = self
+                .results
+                .cache
+                .borrow()
+                .completion_seeds
+                .get(&key)
+                .cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_seed_uncached(graph, reference)?;
             self.tick()?;
-            self.results.cache
+            self.results
+                .cache
                 .borrow_mut()
                 .completion_seeds
                 .insert(key, value.clone());
@@ -684,7 +716,8 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("補完Seedの元Requestがない")?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -715,20 +748,22 @@ impl Environment<'_> {
         let expected_free: Vec<_> = params
             .iter()
             .filter(|p| {
-                !self.object_view_is_bound(p) && !request
-                    .arguments
-                    .iter()
-                    .any(|a| a.name == format!("bind.{}", p.name))
+                !self.object_view_is_bound(p)
+                    && !request
+                        .arguments
+                        .iter()
+                        .any(|a| a.name == format!("bind.{}", p.name))
             })
             .map(|p| (p.name.clone(), p.ty.erase()))
             .collect();
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                self.object_view_is_bound(p) || request
-                    .arguments
-                    .iter()
-                    .any(|a| a.name == format!("bind.{}", p.name))
+                self.object_view_is_bound(p)
+                    || request
+                        .arguments
+                        .iter()
+                        .any(|a| a.name == format!("bind.{}", p.name))
             })
             .collect();
         if parameters != &expected_free
@@ -825,14 +860,21 @@ impl Environment<'_> {
                 seed.reference.0,
                 domain.0,
             );
-            let cached = self.results.cache.borrow().completion_domains.get(&key).cloned();
+            let cached = self
+                .results
+                .cache
+                .borrow()
+                .completion_domains
+                .get(&key)
+                .cloned();
             if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }
             let value = self.completion_domain_uncached(graph, seed, domain)?;
             self.tick()?;
-            self.results.cache
+            self.results
+                .cache
                 .borrow_mut()
                 .completion_domains
                 .insert(key, value.clone());
@@ -918,14 +960,21 @@ impl Environment<'_> {
             let old_universal = self.state.universal_context.scoped(None);
             let result = (|| {
                 let key = self.completion_memo_key(graph, case);
-                let cached = self.results.cache.borrow().completion_cases.get(&key).cloned();
+                let cached = self
+                    .results
+                    .cache
+                    .borrow()
+                    .completion_cases
+                    .get(&key)
+                    .cloned();
                 if let Some(value) = cached {
                     self.tick()?;
                     return Ok(value);
                 }
                 let value = self.completion_values_uncached(graph, case)?;
                 self.tick()?;
-                self.results.cache
+                self.results
+                    .cache
                     .borrow_mut()
                     .completion_cases
                     .insert(key, value.clone());
@@ -961,7 +1010,11 @@ impl Environment<'_> {
         for (i, (&reference, value)) in record.values.iter().zip(values).enumerate() {
             self.tick()?;
             let node = graph.get(reference)?;
-            data::check(graph.scalar(reference)?, self.indexes.inputs.law(), &self.control)?;
+            data::check(
+                graph.scalar(reference)?,
+                self.indexes.inputs.law(),
+                &self.control,
+            )?;
             if reference.0 <= record.domain.0
                 || graph.context_at(reference.0) != seed.context
                 || node.ty != NodeType::Value(seed.types[i].clone())
@@ -1023,7 +1076,8 @@ impl Environment<'_> {
             .find(|b| b.name == parameter.name && b.ty == parameter.ty.erase())
             .ok_or("補完Seedに元固定Answer束縛がない")?;
         let request = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("補完固定Answerの元Requestがない")?;
         if self.object_view_is_bound(parameter) {
@@ -1070,7 +1124,8 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("補完caseの元Requestがない")?;
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1082,10 +1137,11 @@ impl Environment<'_> {
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                self.object_view_is_bound(p) || request
-                    .arguments
-                    .iter()
-                    .any(|a| a.name == format!("bind.{}", p.name))
+                self.object_view_is_bound(p)
+                    || request
+                        .arguments
+                        .iter()
+                        .any(|a| a.name == format!("bind.{}", p.name))
             })
             .collect();
         if bindings.len() != fixed.len() || seed.bindings.len() != fixed.len() {
@@ -1258,7 +1314,8 @@ impl Environment<'_> {
         }
         support.sort();
         support.dedup();
-        let outcome = value_equality::all_cases(&case_values, self.indexes.inputs.law(), &self.control)?;
+        let outcome =
+            value_equality::all_cases(&case_values, self.indexes.inputs.law(), &self.control)?;
         if outcome.unsupported {
             reasons.push(value_comparison_reason(
                 request,
@@ -1325,8 +1382,8 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
         let request = &graph.requests[seed.context.request];
-        let declaration =
-            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
+        let declaration = &self.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("元要求に宣言がない")?];
         let body = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => return Err("補完producer宣言がない".into()),
@@ -1827,7 +1884,8 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("Seed Requestがない")?;
         let d = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1863,20 +1921,22 @@ impl Environment<'_> {
         let free: Vec<_> = params
             .iter()
             .filter(|p| {
-                !self.object_view_is_bound(p) && !request
-                    .arguments
-                    .iter()
-                    .any(|a| a.name == format!("bind.{}", p.name))
+                !self.object_view_is_bound(p)
+                    && !request
+                        .arguments
+                        .iter()
+                        .any(|a| a.name == format!("bind.{}", p.name))
             })
             .map(|p| (p.name.clone(), p.ty.erase()))
             .collect();
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                self.object_view_is_bound(p) || request
-                    .arguments
-                    .iter()
-                    .any(|a| a.name == format!("bind.{}", p.name))
+                self.object_view_is_bound(p)
+                    || request
+                        .arguments
+                        .iter()
+                        .any(|a| a.name == format!("bind.{}", p.name))
             })
             .collect();
         if parameters != &free || fixed.len() != bindings.len() {

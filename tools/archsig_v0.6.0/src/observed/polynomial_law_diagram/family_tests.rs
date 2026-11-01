@@ -69,11 +69,16 @@ fn data(g: &Graph, r: NodeRef) -> &Data {
     d
 }
 fn terms(g: &Graph, r: NodeRef) -> Vec<(Json, Vec<usize>)> {
-    let Part::Polynomial { terms, parameters, .. } = data(g, r).part() else {
+    let Part::Polynomial {
+        terms, parameters, ..
+    } = data(g, r).part()
+    else {
         panic!("polynomial")
     };
     assert!(parameters.is_empty());
-    let Json::Obj(ref wire) = data(g, r).wire() else { panic!() };
+    let Json::Obj(ref wire) = data(g, r).wire() else {
+        panic!()
+    };
     assert!(!wire.contains_key("parameters"));
     terms
         .iter()
@@ -153,7 +158,11 @@ fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
         plan.recheck(&env, &g, a, &mut c),
         Err(ValidationFailure::Stop(_))
     ));
-    assert!(env.results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>().is_empty());
+    assert!(
+        env.results
+            .verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
+            .is_empty()
+    );
 }
 
 #[test]
@@ -166,7 +175,10 @@ fn tuple_guards_do_not_choose_a_numeric_parameter_value() {
 }
 #[test]
 fn list_guards_do_not_choose_a_numeric_parameter_value() {
-    guards_do_not_choose_a_numeric_parameter_value(&["list<Z>[n]=list<Z>[0]", "list<Z>[n]!=list<Z>[0]"]);
+    guards_do_not_choose_a_numeric_parameter_value(&[
+        "list<Z>[n]=list<Z>[0]",
+        "list<Z>[n]!=list<Z>[0]",
+    ]);
 }
 fn guards_do_not_choose_a_numeric_parameter_value(guards: &[&str]) {
     for guard in guards {
@@ -183,9 +195,11 @@ fn guards_do_not_choose_a_numeric_parameter_value(guards: &[&str]) {
         let Witness::Architecture(a) = &value.witness else {
             panic!("architecture witness")
         };
-        assert!(parameters::sources(&p.shared_inputs(), a, &mut quiet())
-            .unwrap()
-            .is_none());
+        assert!(
+            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+                .unwrap()
+                .is_none()
+        );
     }
 }
 #[test]
@@ -279,44 +293,82 @@ fn active_missing_parameter_products_keep_symbolic_equations_and_missing_reasons
 }
 #[test]
 fn inactive_parameter_families_keep_original_difference_without_required_generators() {
-    let p=prepared(false,false,"view active(n:Z):Bool=n+1=n;law required zero(c:Part,n:Z) when active(n):n=0;","root");
-    let (mut g,a)=built(&p);
-    let ds=retain_family(&mut g,p.shared_inputs(),a,&mut quiet()).unwrap();
+    let p = prepared(
+        false,
+        false,
+        "view active(n:Z):Bool=n+1=n;law required zero(c:Part,n:Z) when active(n):n=0;",
+        "root",
+    );
+    let (mut g, a) = built(&p);
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     assert!(!ds[0].coordinates.is_empty());
     for q in &ds[0].coordinates {
-        assert_eq!(q.guard,EquationGuard::AlwaysFalse);
+        assert_eq!(q.guard, EquationGuard::AlwaysFalse);
         assert!(q.epsilon.is_none());
-        assert!(terms(&g,q.residual.unwrap()).is_empty());
-        let Part::Polynomial { parameters, terms, .. }=data(&g,q.nu.unwrap()).part() else { panic!("family") };
-        assert_eq!(parameters,&vec![("n".into(),Type::Z)]); assert_eq!(terms.len(),1);
+        assert!(terms(&g, q.residual.unwrap()).is_empty());
+        let Part::Polynomial {
+            parameters, terms, ..
+        } = data(&g, q.nu.unwrap()).part()
+        else {
+            panic!("family")
+        };
+        assert_eq!(parameters, &vec![("n".into(), Type::Z)]);
+        assert_eq!(terms.len(), 1);
     }
     for ideal in &ds[0].required {
-        let Part::Ideal { generators, .. }=data(&g,*ideal).part() else { panic!("ideal") };
+        let Part::Ideal { generators, .. } = data(&g, *ideal).part() else {
+            panic!("ideal")
+        };
         assert!(generators.is_empty());
     }
-    replay(&p,&g,&g.nodes).unwrap();
+    replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
 fn cancelled_observation_families_share_constant_polynomial_and_residual() {
-    let p = prepared(false, false, "law required equal(c:Part,n:Z):n+c.quantity=c.quantity+1;", "root");
+    let p = prepared(
+        false,
+        false,
+        "law required equal(c:Part,n:Z):n+c.quantity=c.quantity+1;",
+        "root",
+    );
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     for coordinate in &ds[0].coordinates {
         let nu = coordinate.nu.unwrap();
         assert_eq!(coordinate.epsilon, Some(nu));
-        let Part::Polynomial { terms, parameters, .. } = data(&g, nu).part() else { panic!("polynomial") };
+        let Part::Polynomial {
+            terms, parameters, ..
+        } = data(&g, nu).part()
+        else {
+            panic!("polynomial")
+        };
         assert_eq!(parameters.len(), 1);
         assert_eq!(terms.len(), 1);
         assert!(terms[0].1.iter().all(|power| *power == 0));
-        let (_, family) = data(&g, nu).parameter_difference(&mut quiet()).unwrap().unwrap();
+        let (_, family) = data(&g, nu)
+            .parameter_difference(&mut quiet())
+            .unwrap()
+            .unwrap();
         assert_eq!(family.parameters.len(), 1);
-        assert_eq!(family.parameters[0].1, EquationPolynomial::constant(Scalar::Z(1.into()), &mut quiet()).unwrap());
-        let value = family.constant.evaluate(&[], &mut quiet()).unwrap().unwrap();
+        assert_eq!(
+            family.parameters[0].1,
+            EquationPolynomial::constant(Scalar::Z(1.into()), &mut quiet()).unwrap()
+        );
+        let value = family
+            .constant
+            .evaluate(&[], &mut quiet())
+            .unwrap()
+            .unwrap();
         assert_eq!(value.scalar(), &Scalar::Z((-1).into()));
     }
     replay(&p, &g, &g.nodes).unwrap();
     // 別の観測位置は実際の値が一致する場合でも相殺しない。
-    let mut p = prepared(false, false, "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;", "root");
+    let mut p = prepared(
+        false,
+        false,
+        "law required equal(c:Part,d:Part,n:Z):n+c.quantity=d.quantity+1;",
+        "root",
+    );
     let sources = p.inputs.sources();
     let map = std::str::from_utf8(sources.archmap().bytes()).unwrap();
     let inputs = crate::input::InputSources::new(
@@ -328,13 +380,34 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
         ),
     );
     p.inputs = Arc::new(crate::input::check_inputs(inputs, &mut quiet()).unwrap());
-    p.requests = resolve_native_for_test(p.inputs.law(), p.inputs.archmap(), &["b=build(Selected,on=@v/root)"], &mut quiet()).unwrap();
+    p.requests = resolve_native_for_test(
+        p.inputs.law(),
+        p.inputs.archmap(),
+        &["b=build(Selected,on=@v/root)"],
+        &mut quiet(),
+    )
+    .unwrap();
     let (g, a) = built(&p);
-    let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else { panic!("architecture") };
-    let Witness::Architecture(a) = &value.witness else { panic!("architecture witness") };
-    let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet()).unwrap().unwrap();
-    assert!(equations.iter().any(|(_, source)| source.ring.symbols.len() == 2
-        && source.difference.constant.terms.iter().filter(|term| !term.variables.is_empty()).count() == 2));
+    let Some(Payload::Construction(value)) = &g.nodes[a.0].payload else {
+        panic!("architecture")
+    };
+    let Witness::Architecture(a) = &value.witness else {
+        panic!("architecture witness")
+    };
+    let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert!(equations.iter().any(|(_, source)| {
+        source.ring.symbols.len() == 2
+            && source
+                .difference
+                .constant
+                .terms
+                .iter()
+                .filter(|term| !term.variables.is_empty())
+                .count()
+                == 2
+    }));
 }
 #[test]
 fn parameter_polynomials_keep_free_observation_variables() {
@@ -349,7 +422,12 @@ fn parameter_polynomials_keep_free_observation_variables() {
             ExprKind::Binary { op, lhs, rhs } => {
                 let lhs = expression(inputs, *lhs, n, x);
                 let rhs = expression(inputs, *rhs, n, x);
-                match op { BinOp::Add => lhs + rhs, BinOp::Sub => lhs - rhs, BinOp::Mul => lhs * rhs, _ => panic!("arithmetic") }
+                match op {
+                    BinOp::Add => lhs + rhs,
+                    BinOp::Sub => lhs - rhs,
+                    BinOp::Mul => lhs * rhs,
+                    _ => panic!("arithmetic"),
+                }
             }
             _ => panic!("numeric source"),
         }
@@ -358,42 +436,90 @@ fn parameter_polynomials_keep_free_observation_variables() {
         match data(g, r).part() {
             Part::Scalar(Scalar::Z(value)) => value.to_string().parse().unwrap(),
             Part::Source { expression: id, .. } => expression(&data(g, r).source.inputs, *id, n, x),
-            Part::Transform { operation: Transform::Substitute, operands, bindings, .. } => {
+            Part::Transform {
+                operation: Transform::Substitute,
+                operands,
+                bindings,
+                ..
+            } => {
                 assert_eq!(bindings.len(), 1);
                 assert_eq!(bindings[0].name, "n");
                 let value = coefficient(g, bindings[0].value, n, x);
                 coefficient(g, operands[0], value, x)
             }
-            Part::Transform { operation: Transform::Difference, operands, .. } => {
+            Part::Transform {
+                operation: Transform::Difference,
+                operands,
+                ..
+            } => {
                 assert_eq!(operands.len(), 2);
                 coefficient(g, operands[0], n, x) - coefficient(g, operands[1], n, x)
             }
-            Part::Transform { operation: Transform::Multiply, operands, .. } => {
-                coefficient(g, operands[0], n, x) * coefficient(g, operands[1], n, x)
-            }
+            Part::Transform {
+                operation: Transform::Multiply,
+                operands,
+                ..
+            } => coefficient(g, operands[0], n, x) * coefficient(g, operands[1], n, x),
             _ => panic!("numeric coefficient"),
         }
     }
-    for (body, parameter, observation, constant, cross) in [("n=c.quantity+2", 1, -1, -2), ("c.quantity+2=n", -1, 1, 2),
-        ("n+c.quantity=2", 1, 1, -2), ("n+c.quantity=2*n+1", -1, 1, -1),
-        ("2*(n+c.quantity)=2", 2, 2, -2), ("(n+c.quantity)*2=2", 2, 2, -2),
-        ("equalvalue(n+c.quantity)",1,1,-2), ("twice(n+c.quantity)",2,2,-2)].into_iter().map(|(body, p, o, c)| (body, p, o, c, 0))
-        .chain([("n*c.quantity=0",0,0,0,1), ("c.quantity*n=0",0,0,0,1),
-            ("2*(n*c.quantity)+c.quantity=3",0,1,-3,2), ("n*c.quantity-n*c.quantity=n",-1,0,0,0)]) {
-        let p = prepared(false, false, &format!("view equalvalue(n:Z):Bool=n=2;view twice(n:Z):Bool=equalvalue(2*n);law required equal(c:Part,n:Z):{body};"), "root");
+    for (body, parameter, observation, constant, cross) in [
+        ("n=c.quantity+2", 1, -1, -2),
+        ("c.quantity+2=n", -1, 1, 2),
+        ("n+c.quantity=2", 1, 1, -2),
+        ("n+c.quantity=2*n+1", -1, 1, -1),
+        ("2*(n+c.quantity)=2", 2, 2, -2),
+        ("(n+c.quantity)*2=2", 2, 2, -2),
+        ("equalvalue(n+c.quantity)", 1, 1, -2),
+        ("twice(n+c.quantity)", 2, 2, -2),
+    ]
+    .into_iter()
+    .map(|(body, p, o, c)| (body, p, o, c, 0))
+    .chain([
+        ("n*c.quantity=0", 0, 0, 0, 1),
+        ("c.quantity*n=0", 0, 0, 0, 1),
+        ("2*(n*c.quantity)+c.quantity=3", 0, 1, -3, 2),
+        ("n*c.quantity-n*c.quantity=n", -1, 0, 0, 0),
+    ]) {
+        let p = prepared(
+            false,
+            false,
+            &format!(
+                "view equalvalue(n:Z):Bool=n=2;view twice(n:Z):Bool=equalvalue(2*n);law required equal(c:Part,n:Z):{body};"
+            ),
+            "root",
+        );
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
         for coordinate in &ds[0].coordinates {
-            let Part::Polynomial { terms, .. } = data(&g, coordinate.nu.unwrap()).part() else { panic!("polynomial") };
+            let Part::Polynomial { terms, .. } = data(&g, coordinate.nu.unwrap()).part() else {
+                panic!("polynomial")
+            };
             if parameter != 0 || constant != 0 {
-                assert_eq!(terms.iter().filter(|(_, powers)| powers.iter().all(|p| *p == 0)).count(), 1);
+                assert_eq!(
+                    terms
+                        .iter()
+                        .filter(|(_, powers)| powers.iter().all(|p| *p == 0))
+                        .count(),
+                    1
+                );
             }
             for n in [-3, 0, 4] {
                 for x in [-5i64, 0, 7] {
-                    let actual: i64 = terms.iter().map(|(r, powers)| {
-                        coefficient(&g, *r, n, x) * powers.iter().map(|power| x.pow(*power as u32)).product::<i64>()
-                    }).sum();
-                    assert_eq!(actual, parameter * n + observation * x + constant + cross * n * x);
+                    let actual: i64 = terms
+                        .iter()
+                        .map(|(r, powers)| {
+                            coefficient(&g, *r, n, x)
+                                * powers
+                                    .iter()
+                                    .map(|power| x.pow(*power as u32))
+                                    .product::<i64>()
+                        })
+                        .sum();
+                    assert_eq!(
+                        actual,
+                        parameter * n + observation * x + constant + cross * n * x
+                    );
                 }
             }
         }
@@ -414,7 +540,12 @@ fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
     let original = d.source.clone();
     for change in 0..4 {
         let mut source = original.as_ref().clone();
-        let Part::Polynomial { parameters, terms, .. } = &mut source.parts[d.index] else { panic!() };
+        let Part::Polynomial {
+            parameters, terms, ..
+        } = &mut source.parts[d.index]
+        else {
+            panic!()
+        };
         match change {
             0 => parameters.clear(),
             1 => parameters[0].1 = Type::Q,
@@ -422,9 +553,15 @@ fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
             3 => terms[0].1.push(1),
             _ => unreachable!(),
         }
-        assert!(source.recheck(&p.inputs, &original.architecture, &mut quiet()).is_err());
+        assert!(
+            source
+                .recheck(&p.inputs, &original.architecture, &mut quiet())
+                .is_err()
+        );
     }
-    original.recheck(&p.inputs, &original.architecture, &mut quiet()).unwrap();
+    original
+        .recheck(&p.inputs, &original.architecture, &mut quiet())
+        .unwrap();
     replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
@@ -682,7 +819,10 @@ fn missing_shared_slot_omits_global_evaluation_but_keeps_known_original_epsilon(
                 let Scalar::Subject { subject, .. } = g.scalar(o.bindings[0].value).unwrap() else {
                     panic!("binding")
                 };
-                let applicable = d.coordinates.iter().any(|coordinate| coordinate.instance == q.instance && coordinate.guard == EquationGuard::AlwaysTrue);
+                let applicable = d.coordinates.iter().any(|coordinate| {
+                    coordinate.instance == q.instance
+                        && coordinate.guard == EquationGuard::AlwaysTrue
+                });
                 assert_eq!(q.epsilon.is_some(), subject == "p" && applicable);
             }
         }
@@ -755,7 +895,12 @@ fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
                 .find(|o| o.reference == q.instance)
                 .unwrap();
             assert!(original.parameters.is_empty());
-            assert!(original.bindings.iter().any(|b| b.name == "b" && b.ty == Type::Bool));
+            assert!(
+                original
+                    .bindings
+                    .iter()
+                    .any(|b| b.name == "b" && b.ty == Type::Bool)
+            );
         }
     }
     replay(&p, &g, &g.nodes).unwrap();
@@ -780,7 +925,12 @@ fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
                 assert!(q.epsilon.is_none());
                 assert!(terms(&g, q.residual.unwrap()).is_empty());
             } else {
-                assert!(data(&g, q.epsilon.unwrap()).parameter_difference(&mut quiet()).unwrap().is_some());
+                assert!(
+                    data(&g, q.epsilon.unwrap())
+                        .parameter_difference(&mut quiet())
+                        .unwrap()
+                        .is_some()
+                );
             }
         }
         assert!(
@@ -946,7 +1096,12 @@ fn shared_polynomial_family_rejects_foreign_root_request_input_and_cached_witnes
 
 #[test]
 fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
-    let p = prepared(false, false, "law required zero(c:Part,n:Z,b:Bool) when b:n*c.quantity=0;", "root");
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part,n:Z,b:Bool) when b:n*c.quantity=0;",
+        "root",
+    );
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     {
@@ -962,13 +1117,23 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
             let binding = original.bindings.iter().find(|b| b.name == "b").unwrap();
             assert_eq!(g.scalar(binding.value).unwrap(), &Scalar::Bool(value));
             let coordinate = &diagram.coordinates[ordinal];
-            assert_eq!(coordinate.guard, if value { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+            assert_eq!(
+                coordinate.guard,
+                if value {
+                    EquationGuard::AlwaysTrue
+                } else {
+                    EquationGuard::AlwaysFalse
+                }
+            );
             if !value {
                 assert_eq!(coordinate.status, EquationPresentationStatus::NotApplicable);
                 assert!(coordinate.epsilon.is_none());
                 assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
             }
-            let Part::Polynomial { parameters, .. } = data(&g, coordinate.nu.unwrap()).part() else { panic!("polynomial") };
+            let Part::Polynomial { parameters, .. } = data(&g, coordinate.nu.unwrap()).part()
+            else {
+                panic!("polynomial")
+            };
             assert_eq!(parameters, &vec![("n".into(), Type::Z)]);
         }
     }
@@ -981,7 +1146,9 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
     for node in &mut nodes {
         if let Some(Payload::Construction(value)) = &mut node.payload {
             if let D::PolynomialLaw(data) = &mut value.data {
-                if Arc::ptr_eq(&data.source, &d.source) { data.source = altered.clone(); }
+                if Arc::ptr_eq(&data.source, &d.source) {
+                    data.source = altered.clone();
+                }
             }
         }
     }
@@ -991,19 +1158,33 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
 #[test]
 fn boolean_case_products_cover_joint_guards_and_keep_inactive_ideals_empty() {
     for (guard, active) in [("b and d", 2usize), ("b and false", 0), ("b and n=n", 4)] {
-        let p = prepared(false, false, &format!("law required zero(c:Part,n:Z,b:Bool,d:Bool) when {guard}:n*c.quantity=0;"), "root");
+        let p = prepared(
+            false,
+            false,
+            &format!("law required zero(c:Part,n:Z,b:Bool,d:Bool) when {guard}:n*c.quantity=0;"),
+            "root",
+        );
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
         let diagram = &ds[0];
         assert_eq!(diagram.originals.len(), 8);
-        assert_eq!(diagram.coordinates.iter().filter(|q| q.guard == EquationGuard::AlwaysTrue).count(), active);
+        assert_eq!(
+            diagram
+                .coordinates
+                .iter()
+                .filter(|q| q.guard == EquationGuard::AlwaysTrue)
+                .count(),
+            active
+        );
         for original in &diagram.originals {
             assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
             assert_eq!(original.finite.len(), 2);
         }
         if active == 0 {
             for &ideal in &diagram.required {
-                let Part::Ideal { generators, .. } = data(&g, ideal).part() else { panic!("ideal") };
+                let Part::Ideal { generators, .. } = data(&g, ideal).part() else {
+                    panic!("ideal")
+                };
                 assert!(generators.is_empty());
             }
         }
@@ -1014,7 +1195,14 @@ fn boolean_case_products_cover_joint_guards_and_keep_inactive_ideals_empty() {
 #[test]
 fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
     for offset in [0, 1] {
-        let p = prepared(false, false, &format!("law required balanced(c:Part,n:Z,b:Bool) when b:n*c.quantity=n*c.quantity+{offset};"), "root");
+        let p = prepared(
+            false,
+            false,
+            &format!(
+                "law required balanced(c:Part,n:Z,b:Bool) when b:n*c.quantity=n*c.quantity+{offset};"
+            ),
+            "root",
+        );
         let (mut g, a) = built(&p);
         let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
         let diagram = &ds[0];
@@ -1028,9 +1216,19 @@ fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
             assert_eq!(original.quantifiers[0].name, "n");
             let coordinate = &diagram.coordinates[ordinal];
             let actual = terms(&g, coordinate.nu.unwrap());
-            if offset == 0 { assert!(actual.is_empty()); }
-            else { assert_eq!(actual, vec![(Scalar::Z((-1).into()).wire(), vec![0,0])]); }
-            assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+            if offset == 0 {
+                assert!(actual.is_empty());
+            } else {
+                assert_eq!(actual, vec![(Scalar::Z((-1).into()).wire(), vec![0, 0])]);
+            }
+            assert_eq!(
+                coordinate.guard,
+                if active {
+                    EquationGuard::AlwaysTrue
+                } else {
+                    EquationGuard::AlwaysFalse
+                }
+            );
             if !active {
                 assert!(coordinate.epsilon.is_none());
                 assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
@@ -1042,7 +1240,12 @@ fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
 
 #[test]
 fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
-    let p = prepared(false, false, "law required zero(c:Part,n:Z,k:Fp(3),b:Bool) when b and k+1=0:n*c.quantity=0;", "root");
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part,n:Z,k:Fp(3),b:Bool) when b and k+1=0:n*c.quantity=0;",
+        "root",
+    );
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     let diagram = &ds[0];
@@ -1051,7 +1254,19 @@ fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
     for (index, original) in diagram.originals.iter().enumerate() {
         let residue = (index % 6) / 2;
         let flag = index % 2 == 1;
-        assert_eq!(original.finite, vec![("k".into(), Scalar::Fp { modulus: "3".into(), value: residue.into() }), ("b".into(), Scalar::Bool(flag))]);
+        assert_eq!(
+            original.finite,
+            vec![
+                (
+                    "k".into(),
+                    Scalar::Fp {
+                        modulus: "3".into(),
+                        value: residue.into()
+                    }
+                ),
+                ("b".into(), Scalar::Bool(flag))
+            ]
+        );
         assert_eq!(original.parameters, vec![("n".into(), Type::Z)]);
         assert_eq!(original.quantifiers.len(), 1);
         assert_eq!(original.quantifiers[0].name, "n");
@@ -1060,7 +1275,14 @@ fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
         assert_eq!(g.scalar(binding.value).unwrap(), &original.finite[0].1);
         let coordinate = &diagram.coordinates[index];
         let active = residue == 2 && flag;
-        assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
+        assert_eq!(
+            coordinate.guard,
+            if active {
+                EquationGuard::AlwaysTrue
+            } else {
+                EquationGuard::AlwaysFalse
+            }
+        );
         if !active {
             assert!(coordinate.epsilon.is_none());
             assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
@@ -1071,13 +1293,21 @@ fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
 
 #[test]
 fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
-    let p = prepared(false, false, "law required zero(c:Part,n:Z,tag:(Fp(3),(Bool,Bool))) when tag.1.0 and tag.1.1 and tag.0+1=0:n*c.quantity=0;", "root");
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part,n:Z,tag:(Fp(3),(Bool,Bool))) when tag.1.0 and tag.1.1 and tag.0+1=0:n*c.quantity=0;",
+        "root",
+    );
     let (mut g, a) = built(&p);
     let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
     let diagram = &ds[0];
     assert_eq!(diagram.originals.len(), 24);
     assert_eq!(diagram.coordinates.len(), 24);
-    let ty = Type::Tuple(vec![Type::Fp("3".into()), Type::Tuple(vec![Type::Bool, Type::Bool])]);
+    let ty = Type::Tuple(vec![
+        Type::Fp("3".into()),
+        Type::Tuple(vec![Type::Bool, Type::Bool]),
+    ]);
     for (index, original) in diagram.originals.iter().enumerate() {
         assert_eq!(original.finite.len(), 1);
         assert_eq!(original.finite[0].0, "tag");
@@ -1087,13 +1317,31 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
         assert_eq!(original.quantifiers[0].name, "n");
         let binding = original.bindings.iter().find(|b| b.name == "tag").unwrap();
         assert_eq!(g.scalar(binding.value).unwrap(), &original.finite[0].1);
-        let value = Scalar::Tuple(vec![Scalar::Fp { modulus: "3".into(), value: ((index % 12) / 4).into() },
-            Scalar::Tuple(vec![Scalar::Bool(index % 4 >= 2), Scalar::Bool(index % 2 == 1)])]);
+        let value = Scalar::Tuple(vec![
+            Scalar::Fp {
+                modulus: "3".into(),
+                value: ((index % 12) / 4).into(),
+            },
+            Scalar::Tuple(vec![
+                Scalar::Bool(index % 4 >= 2),
+                Scalar::Bool(index % 2 == 1),
+            ]),
+        ]);
         assert_eq!(original.finite[0].1, value);
         let active = index % 12 == 11;
         let coordinate = &diagram.coordinates[index];
-        assert_eq!(coordinate.guard, if active { EquationGuard::AlwaysTrue } else { EquationGuard::AlwaysFalse });
-        if !active { assert!(coordinate.epsilon.is_none()); assert!(terms(&g, coordinate.residual.unwrap()).is_empty()); }
+        assert_eq!(
+            coordinate.guard,
+            if active {
+                EquationGuard::AlwaysTrue
+            } else {
+                EquationGuard::AlwaysFalse
+            }
+        );
+        if !active {
+            assert!(coordinate.epsilon.is_none());
+            assert!(terms(&g, coordinate.residual.unwrap()).is_empty());
+        }
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -1160,15 +1408,22 @@ fn finite_aggregate_guards_keep_the_free_numeric_parameter() {
             .unwrap()
             .unwrap_or_else(|| panic!("{rhs}"));
         assert!(!equations.is_empty(), "{rhs}");
-        assert!(equations.iter().all(|(_, source)| !source.finite.is_empty()), "{rhs}");
+        assert!(
+            equations
+                .iter()
+                .all(|(_, source)| !source.finite.is_empty()),
+            "{rhs}"
+        );
         if rhs == "n" {
             // n と比べる guard は n に依存したまま残り、定数の真偽に決まらない。
             assert!(equations.iter().all(|(_, source)| source.guard.dynamic()));
         }
         assert!(
-            equations
+            equations.iter().any(|(_, source)| source
+                .difference
+                .parameters
                 .iter()
-                .any(|(_, source)| source.difference.parameters.iter().any(|(p, _)| p.name == "n")),
+                .any(|(p, _)| p.name == "n")),
             "{rhs}"
         );
     }
@@ -1188,7 +1443,11 @@ fn finite_predicates_and_short_circuits_keep_numeric_axes() {
         ("", "false and n*n=1", vec![false]),
         ("", "true or n*n=1", vec![true]),
         ("", "rat(1,2)=rat(1,2)", vec![true]),
-        ("", "count(list<Bool>[true,false,true])=3 and sum(list<Z>[1,1])=2", vec![true]),
+        (
+            "",
+            "count(list<Bool>[true,false,true])=3 and sum(list<Z>[1,1])=2",
+            vec![true],
+        ),
         ("", "sum(list<Q>[rat(1,2),rat(1,2)])=1", vec![true]),
         ("", "count(list<Bool>[])=0 and sum(list<Q>[])=0", vec![true]),
         ("", "count(list<Bool>[])>0", vec![false]),
@@ -1271,7 +1530,11 @@ fn finite_set_cases_keep_all_subsets_and_numeric_axes() {
 }
 #[test]
 fn infinite_components_are_not_finite_case_samples() {
-    for (ty, guard) in [("(Z,Bool)", " when tag.1"), ("Option<Z>", ""), ("Set<Z>", "")] {
+    for (ty, guard) in [
+        ("(Z,Bool)", " when tag.1"),
+        ("Option<Z>", ""),
+        ("Set<Z>", ""),
+    ] {
         let p = prepared(
             false,
             false,

@@ -7,7 +7,9 @@ pub fn law_positions(mut expected: Json, law: &[u8]) -> Json {
             Json::Obj(fields) => {
                 if fields.get("input") == Some(&Json::str("law")) {
                     if let Some(Json::Arr(span)) = fields.get("span") {
-                        let Json::Nat(start) = span[0] else { panic!("span start") };
+                        let Json::Nat(start) = span[0] else {
+                            panic!("span start")
+                        };
                         let prefix = &law[..start as usize];
                         let lines: Vec<_> = prefix.split('\n').collect();
                         let line = lines.len() as u64;
@@ -16,9 +18,15 @@ pub fn law_positions(mut expected: Json, law: &[u8]) -> Json {
                         fields.insert("column".into(), Json::Nat(column));
                     }
                 }
-                for value in fields.values_mut() { visit(value, law); }
+                for value in fields.values_mut() {
+                    visit(value, law);
+                }
             }
-            Json::Arr(values) => for value in values { visit(value, law); },
+            Json::Arr(values) => {
+                for value in values {
+                    visit(value, law);
+                }
+            }
             _ => (),
         }
     }

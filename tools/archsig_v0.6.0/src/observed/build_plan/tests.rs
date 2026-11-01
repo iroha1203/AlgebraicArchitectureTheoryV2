@@ -63,10 +63,9 @@ fn universal_numeric_build_laws_preserve_parameter_functions() {
         )
         .unwrap();
         let table = plan.laws.as_ref().unwrap();
-        let circuits =
-            crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
-                .unwrap()
-                .unwrap();
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+            .unwrap()
+            .unwrap();
         assert_eq!(circuits.len(), 1);
         assert_eq!(
             circuits[0].parameters.len(),
@@ -1179,7 +1178,11 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
 
 #[test]
 fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_object() {
-    for (guard, unsupported) in [("n=c.quantity", false), ("n=c.quantity and n=0", false), ("(n-c.quantity)*(n-c.quantity)=0", true)] {
+    for (guard, unsupported) in [
+        ("n=c.quantity", false),
+        ("n=c.quantity and n=0", false),
+        ("(n-c.quantity)*(n-c.quantity)=0", true),
+    ] {
         let inputs = fixture::inputs(
             true,
             false,
@@ -1228,7 +1231,14 @@ fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_obj
                         && f.field.as_deref() == Some("Family.Part.quantity")))
         );
         // 別の対象で係数が観測済みなら、非線形guardの算法理由も独立に残る。
-        assert_eq!(answer.reasons.iter().any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. })), unsupported, "{guard}");
+        assert_eq!(
+            answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. })),
+            unsupported,
+            "{guard}"
+        );
     }
 }
 

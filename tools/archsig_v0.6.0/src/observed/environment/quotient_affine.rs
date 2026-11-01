@@ -143,7 +143,8 @@ pub(in crate::observed) fn compute(
                 ));
             };
             let value_type = original
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .expr_type(lhs)
                 .ok_or("商のLaw値型がない")?;
@@ -227,7 +228,8 @@ pub(in crate::observed) fn compute(
     if empty {
         return Ok(result);
     }
-    let mut env = Environment::with_primitive_valuation(original.indexes.inputs, &input.assignments, c)?;
+    let mut env =
+        Environment::with_primitive_valuation(original.indexes.inputs, &input.assignments, c)?;
     env.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
         original.indexes.inputs,
         input.witness.readings(),
@@ -286,7 +288,8 @@ pub(in crate::observed) fn compute(
     let value = env.scoped_ast(*body, &vars, &Scope::default(), &decl.reading)?;
     result.scope.merge(&value.scope);
     result.missing = env
-        .state.missing_slot_reads
+        .state
+        .missing_slot_reads
         .take()
         .ok_or("アフィン商の不足収集がない")?
         .into_iter()
@@ -353,8 +356,11 @@ pub(in crate::observed) fn compute(
         }
         // guard は選択した全アフィン域上で通常評価する。元parameterの一点には代入しない。
         let selected = if guard.is_some() {
-            let mut selected =
-                Environment::with_primitive_valuation(original.indexes.inputs, &input.assignments, c)?;
+            let mut selected = Environment::with_primitive_valuation(
+                original.indexes.inputs,
+                &input.assignments,
+                c,
+            )?;
             selected.indexes.object = env.indexes.object.clone();
             let matrix =
                 coefficients::multiply(ty, &linear.action, &result.embedding, dimensions, c)?;
@@ -420,7 +426,10 @@ pub(in crate::observed) fn compute(
             }
             let applies = if let Some(guard) = guard {
                 let selected = selected.as_ref().ok_or("商のguard評価域がない")?;
-                selected.state.missing_slot_reads.replace(Some(BTreeSet::new()));
+                selected
+                    .state
+                    .missing_slot_reads
+                    .replace(Some(BTreeSet::new()));
                 let value =
                     selected.scoped_ast(*guard, &vars, &Scope::default(), &declaration.reading)?;
                 result.scope.merge(&value.scope);
@@ -433,7 +442,8 @@ pub(in crate::observed) fn compute(
                     }
                 };
                 let missing = selected
-                    .state.missing_slot_reads
+                    .state
+                    .missing_slot_reads
                     .take()
                     .ok_or("商のguard不足収集がない")?;
                 if let Some(applies) = resolved {
@@ -492,7 +502,8 @@ pub(in crate::observed) fn compute(
                     let coordinates =
                         coefficients::view_coordinates(&symbolic, &linear.axes, ty, c)?;
                     let missing = env
-                        .state.missing_slot_reads
+                        .state
+                        .missing_slot_reads
                         .take()
                         .ok_or("商のLaw不足収集がない")?;
                     if value.condition_failed || value.condition_pending || coordinates.is_none() {
@@ -593,7 +604,8 @@ pub(in crate::observed) fn point(
     let expected = apply(&law.matrix, &law.offset, coordinates)?;
     let mut laws = vec![];
     for instance in &law.instances {
-        env.state.evaluation_capture
+        env.state
+            .evaluation_capture
             .replace(Some(quotient_evaluation::EvaluationCapture {
                 selected: std::iter::once(*body).chain(*guard).collect(),
                 nodes: vec![],
@@ -603,7 +615,8 @@ pub(in crate::observed) fn point(
         let evaluated =
             finite_law_valuations::evaluate_point(&env, declaration, &instance.bindings, 0);
         let capture = env
-            .state.evaluation_capture
+            .state
+            .evaluation_capture
             .take()
             .ok_or("商のLaw評価出現がない")?;
         let evaluated = evaluated?;

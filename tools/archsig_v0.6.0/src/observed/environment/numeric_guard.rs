@@ -1,8 +1,8 @@
 //! 通常評価の数値guardを正規化し、対応範囲と未決理由を部分表示に残す。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::construction::ConstructionFailure;
 use crate::law::ast::UnOp;
+use crate::observed::environment::state::ScopedReplace;
 use crate::observed::{
     affine::{self, Form},
     equation_polynomial::EquationPolynomial as Polynomial,

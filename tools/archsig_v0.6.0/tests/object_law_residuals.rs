@@ -170,7 +170,10 @@ fn outside_object_uses_typed_zero_without_inventing_raw_operands_or_fake_paramet
         .unwrap();
     for (j, row) in outside.rows.iter().enumerate() {
         assert!(row.complete);
-        assert_eq!(original.family().rows()[j].bindings()[0].1.wire(), Json::Bool(j == 1));
+        assert_eq!(
+            original.family().rows()[j].bindings()[0].1.wire(),
+            Json::Bool(j == 1)
+        );
         assert_eq!(row.cases.len(), 1);
         let c = &row.cases[0];
         assert_eq!(c.reading.application().value(), Some(false));
@@ -366,8 +369,14 @@ fn unbounded_identity_law_preserves_symbolic_zero_residuals() {
         assert_eq!(row.cases.len(), 1);
         assert_eq!(row.cases[0].reading.body(), Some(true));
         assert_eq!(row.cases[0].components.len(), 1);
-        assert_eq!(text(&row.cases[0].components[0].epsilon), Some("\"0\"".into()));
-        assert_eq!(row.cases[0].components[0].epsilon, row.cases[0].components[0].residual);
+        assert_eq!(
+            text(&row.cases[0].components[0].epsilon),
+            Some("\"0\"".into())
+        );
+        assert_eq!(
+            row.cases[0].components[0].epsilon,
+            row.cases[0].components[0].residual
+        );
     }
     r.recheck(i, &mut quiet()).unwrap();
 }
@@ -574,7 +583,10 @@ fn conditional_membership_keeps_unknown_residuals_and_the_original_owner_conditi
 
 #[test]
 fn conjunction_keeps_distinct_signed_residuals_and_original_operand_pairs() {
-    let i = inputs("law required both(c:Part):(c.quantity=0) and (c.quantity=3);", fixture::A);
+    let i = inputs(
+        "law required both(c:Part):(c.quantity=0) and (c.quantity=3);",
+        fixture::A,
+    );
     let r = run(i.clone());
     assert!(r.is_complete());
     for e in r.evaluations() {
@@ -591,7 +603,10 @@ fn conjunction_keeps_distinct_signed_residuals_and_original_operand_pairs() {
             assert_eq!(term.operand_evaluations.len(), 2);
             assert!(term.epsilon_producer.is_some());
         }
-        assert_ne!(case.conjuncts[0].operand_evaluations, case.conjuncts[1].operand_evaluations);
+        assert_ne!(
+            case.conjuncts[0].operand_evaluations,
+            case.conjuncts[1].operand_evaluations
+        );
     }
     r.recheck(i, &mut quiet()).unwrap();
 }

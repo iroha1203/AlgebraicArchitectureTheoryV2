@@ -201,11 +201,7 @@ fn update_value<'a>(
 ) -> Result<&'a (Fact, Scalar), ValidationFailure> {
     values
         .iter()
-        .find(|(f, _)| {
-            f.field
-                .as_ref()
-                .is_some_and(|field| field.short() == name)
-        })
+        .find(|(f, _)| f.field.as_ref().is_some_and(|field| field.short() == name))
         .ok_or_else(|| ValidationFailure::from("change移送の名前付き更新先がない"))
 }
 fn point(
@@ -284,9 +280,16 @@ fn point(
     if truth[0] == Some(false) {
         return Ok(());
     }
-    let fields = [0, 1].map(|side| names.iter().map(|pair| pair[side].clone()).collect::<Vec<_>>());
-    let left = change_evaluation::evaluate_on_fields(env, declarations[0], &bindings[0], &fields[0])?;
-    let right = change_evaluation::evaluate_on_fields(env, declarations[1], &bindings[1], &fields[1])?;
+    let fields = [0, 1].map(|side| {
+        names
+            .iter()
+            .map(|pair| pair[side].clone())
+            .collect::<Vec<_>>()
+    });
+    let left =
+        change_evaluation::evaluate_on_fields(env, declarations[0], &bindings[0], &fields[0])?;
+    let right =
+        change_evaluation::evaluate_on_fields(env, declarations[1], &bindings[1], &fields[1])?;
     for check in checks.iter_mut() {
         check
             .support
@@ -325,7 +328,8 @@ fn point(
             );
             continue;
         };
-        let equal = super::super::super::value_equality::equal(lv, rv, env.indexes.inputs.law(), c)?;
+        let equal =
+            super::super::super::value_equality::equal(lv, rv, env.indexes.inputs.law(), c)?;
         if equal.is_none() {
             pending(
                 &mut checks[i + 1],
@@ -428,37 +432,71 @@ pub(super) fn retain(
     };
     let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
     let mut names = vec![];
-    let (source_parameters, source_fields) = inputs.definitions().declarations()[st].signature
-        .record_fields().ok_or("change元型にfieldがない")?;
+    let (source_parameters, source_fields) = inputs.definitions().declarations()[st]
+        .signature
+        .record_fields()
+        .ok_or("change元型にfieldがない")?;
     for field in source_parameters.iter().chain(source_fields) {
         tick(c)?;
-        let moved = correspondence.field_target(inputs, &format!("{st}.{}", field.name), c)
+        let moved = correspondence
+            .field_target(inputs, &format!("{st}.{}", field.name), c)
             .map_err(failure)?;
-        let target = moved.as_deref().and_then(|name| name.strip_prefix(&format!("{tt}.")));
-        if items[0].fields.iter().any(|name| name == field.name.as_str())
+        let target = moved
+            .as_deref()
+            .and_then(|name| name.strip_prefix(&format!("{tt}.")));
+        if items[0]
+            .fields
+            .iter()
+            .any(|name| name == field.name.as_str())
             || target.is_some_and(|name| items[1].fields.iter().any(|field| field == name))
         {
-            let target = target.ok_or_else(|| unsupported(inputs, bodies[0],
-                "missing field correspondence for the change update target"))?;
+            let target = target.ok_or_else(|| {
+                unsupported(
+                    inputs,
+                    bodies[0],
+                    "missing field correspondence for the change update target",
+                )
+            })?;
             names.push([field.name.to_string(), target.to_owned()]);
         }
     }
-    if items[1].fields.iter().any(|field| !names.iter().any(|pair| &pair[1] == field)) {
-        return Err(unsupported(inputs, bodies[1], "missing source field for the change update target"));
+    if items[1]
+        .fields
+        .iter()
+        .any(|field| !names.iter().any(|pair| &pair[1] == field))
+    {
+        return Err(unsupported(
+            inputs,
+            bodies[1],
+            "missing source field for the change update target",
+        ));
     }
-    let different_fields = names.iter().any(|pair|
-        !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
-    let coefficient = params[0].get(1)
+    let different_fields = names
+        .iter()
+        .any(|pair| !items[0].fields.contains(&pair[0]) || !items[1].fields.contains(&pair[1]));
+    let coefficient = params[0]
+        .get(1)
         .and_then(|p| numeric_parameters::coefficient_type(&p.ty))
-        .filter(|ty| params[0][1..].iter().all(|p|
-            numeric_parameters::coefficient_type(&p.ty).as_ref() == Some(ty)));
+        .filter(|ty| {
+            params[0][1..]
+                .iter()
+                .all(|p| numeric_parameters::coefficient_type(&p.ty).as_ref() == Some(ty))
+        });
     let affine = coefficient.is_some();
     // Reuse the complete Z or Q guard fiber for symbolic arguments.
-    if different_fields && !affine && !super::super::super::finite::supported(
-        &Type::Tuple(params[0][1..].iter().map(|p| p.ty.erase()).collect()), inputs.law(), c)?
+    if different_fields
+        && !affine
+        && !super::super::super::finite::supported(
+            &Type::Tuple(params[0][1..].iter().map(|p| p.ty.erase()).collect()),
+            inputs.law(),
+            c,
+        )?
     {
-        return Err(unsupported(inputs, bodies[0],
-            "change transport with different update target sets requires finite or uniform Z/Q affine parameters"));
+        return Err(unsupported(
+            inputs,
+            bodies[0],
+            "change transport with different update target sets requires finite or uniform Z/Q affine parameters",
+        ));
     }
     let mut identity = vec![];
     for (s, t) in params[0][1..].iter().zip(&params[1][1..]) {
@@ -666,7 +704,10 @@ pub(super) fn retain(
             for side in 0..2 {
                 let mut metadata = change_affine::Pending::default();
                 let result = change_affine::change_guard_domain(
-                    env, declarations[side], &subjects[side], &mut metadata,
+                    env,
+                    declarations[side],
+                    &subjects[side],
+                    &mut metadata,
                     coefficient.as_ref().ok_or("数値changeの係数型がない")?,
                 );
                 for check in &mut checks {
@@ -693,12 +734,14 @@ pub(super) fn retain(
             if domains.len() != 2 {
                 continue;
             }
-            if let Some(witness) =
-                domains[0].outside(&domains[1], env)?.or(domains[1].outside(&domains[0], env)?)
+            if let Some(witness) = domains[0]
+                .outside(&domains[1], env)?
+                .or(domains[1].outside(&domains[0], env)?)
             {
-                let values = params[0][1..].iter().map(|p|
-                    numeric_parameters::point_value(&params[0][1..], p, &witness, c)
-                ).collect::<Result<Vec<_>,_>>()?;
+                let values = params[0][1..]
+                    .iter()
+                    .map(|p| numeric_parameters::point_value(&params[0][1..], p, &witness, c))
+                    .collect::<Result<Vec<_>, _>>()?;
                 point(
                     env,
                     b,
@@ -755,13 +798,21 @@ pub(super) fn retain(
                 let row = left_row
                     .iter()
                     .zip(right_row)
-                    .map(|(a, b)| super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, a, b, c))
-                    .collect::<Result<Vec<_>,_>>()?;
-                let rhs = super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, right_offset, left_offset, c)?;
+                    .map(|(a, b)| {
+                        super::super::super::numeric::binary(crate::law::ast::BinOp::Sub, a, b, c)
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let rhs = super::super::super::numeric::binary(
+                    crate::law::ast::BinOp::Sub,
+                    right_offset,
+                    left_offset,
+                    c,
+                )?;
                 if let Some(witness) = domains[0].violation(&row, &rhs, env)? {
-                    let values = params[0][1..].iter().map(|p|
-                        numeric_parameters::point_value(&params[0][1..], p, &witness, c)
-                    ).collect::<Result<Vec<_>,_>>()?;
+                    let values = params[0][1..]
+                        .iter()
+                        .map(|p| numeric_parameters::point_value(&params[0][1..], p, &witness, c))
+                        .collect::<Result<Vec<_>, _>>()?;
                     point(
                         env,
                         b,

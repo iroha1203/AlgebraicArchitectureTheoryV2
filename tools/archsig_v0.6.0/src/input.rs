@@ -78,12 +78,17 @@ impl InputSources {
     }
 
     pub fn add_location_positions(&self, wire: &mut Json) {
-        let definitions: Vec<_> = self.definitions.iter().enumerate()
+        let definitions: Vec<_> = self
+            .definitions
+            .iter()
+            .enumerate()
             .map(|(i, input)| (format!("definition{i}"), input.bytes()))
             .collect();
         crate::result::add_location_positions(
             wire,
-            definitions.iter().map(|(id, bytes)| (id.as_str(), *bytes))
+            definitions
+                .iter()
+                .map(|(id, bytes)| (id.as_str(), *bytes))
                 .chain([("law", self.law.bytes()), ("archmap", self.archmap.bytes())]),
         );
     }
@@ -389,7 +394,8 @@ pub fn check_inputs(
         };
         CheckFailure::Input(Box::new(Issue {
             code: Code::Reference,
-            message: "input IDs must be definition0, ... in argument order, law, and archmap".into(),
+            message: "input IDs must be definition0, ... in argument order, law, and archmap"
+                .into(),
             location,
             details: Details::Empty,
         }))

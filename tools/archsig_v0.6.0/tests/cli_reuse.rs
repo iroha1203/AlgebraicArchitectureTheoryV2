@@ -227,13 +227,29 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         *field_mut(&mut candidate, "command") = Json::str("check");
                     }
                     "command_check_empty" => {
-                        let Json::Obj(fields) = &mut candidate else { unreachable!() };
+                        let Json::Obj(fields) = &mut candidate else {
+                            unreachable!()
+                        };
                         fields.insert("command".into(), Json::str("check"));
                         for name in ["requests", "answers", "nodes"] {
                             fields.insert(name.into(), Json::Arr(vec![]));
                         }
-                        fields.insert("producer".into(), Json::obj([("version", Json::str("0.6.0")), ("build", Json::str("legacy"))]));
-                        fields.insert("reuse".into(), Json::obj([("requested", Json::Bool(false)), ("accepted_nodes", Json::Nat(0)), ("recomputed_nodes", Json::Nat(0)), ("rejected", Json::Arr(vec![]))]));
+                        fields.insert(
+                            "producer".into(),
+                            Json::obj([
+                                ("version", Json::str("0.6.0")),
+                                ("build", Json::str("legacy")),
+                            ]),
+                        );
+                        fields.insert(
+                            "reuse".into(),
+                            Json::obj([
+                                ("requested", Json::Bool(false)),
+                                ("accepted_nodes", Json::Nat(0)),
+                                ("recomputed_nodes", Json::Nat(0)),
+                                ("rejected", Json::Arr(vec![])),
+                            ]),
+                        );
                     }
                     "nat_exit" => {
                         *field_mut(&mut candidate, "exit_code") = Json::Nat(9_007_199_254_740_992);
@@ -264,18 +280,23 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         };
                         fields.insert("extra".into(), Json::Bool(true));
                     }
-                    "Z" | "Evaluation" | "Counterexample" | "Expression" | "LawInstance" | "Proposition"
-                    | "Domain" => {
+                    "Z" | "Evaluation" | "Counterexample" | "Expression" | "LawInstance"
+                    | "Proposition" | "Domain" => {
                         *field_mut(typed_node(&mut candidate, kind), "value") = Json::obj([]);
                     }
                     "judgment" => {
                         let Json::Obj(fields) = first_node(&mut candidate) else {
                             panic!("node")
                         };
-                        fields.insert("judgment".into(), Json::obj([("status", Json::str("refuted"))]));
+                        fields.insert(
+                            "judgment".into(),
+                            Json::obj([("status", Json::str("refuted"))]),
+                        );
                     }
                     "rule" | "scope" => {
-                        let Json::Obj(fields) = first_node(&mut candidate) else { panic!("node") };
+                        let Json::Obj(fields) = first_node(&mut candidate) else {
+                            panic!("node")
+                        };
                         fields.insert(kind.into(), Json::obj([]));
                     }
                     "support" => {

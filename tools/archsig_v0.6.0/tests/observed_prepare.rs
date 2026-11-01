@@ -73,7 +73,12 @@ fn request_failure_preserves_checked_input_tables() {
         panic!("入力検査は成功する")
     };
     assert_eq!(checked.sources(), &inputs());
-    assert!(checked.law().declarations().contains_key("CountCheck.amount"));
+    assert!(
+        checked
+            .law()
+            .declarations()
+            .contains_key("CountCheck.amount")
+    );
     let ResolveFailure::Invalid { requests, issues } = failure else {
         panic!("束縛不足")
     };
@@ -137,8 +142,7 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
     let ResolveFailure::Invalid { requests, issues } = (match &failure {
         PrepareFailure::Requests { failure, .. } => failure,
         _ => panic!("要求の循環"),
-    })
-    else {
+    }) else {
         panic!("invalid")
     };
     assert_eq!(requests.len(), 3);

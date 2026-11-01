@@ -40,7 +40,8 @@ impl Environment<'_> {
                 return Err("数値補完の同じ成分が重複する".into());
             }
             self.fact(&key.fact)?;
-            let field = self.indexes.field(&self.state,
+            let field = self.indexes.field(
+                &self.state,
                 &key.fact.snapshot,
                 &key.fact.subject,
                 key.fact.field.as_deref().ok_or("数値成分の元fieldがない")?,

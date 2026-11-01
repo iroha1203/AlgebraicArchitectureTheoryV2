@@ -1,7 +1,7 @@
 //! 元の公開selectorが実値に適合しない場合の構成条件。
-use crate::observed::environment::state::ScopedReplace;
 use super::owned_binding::ConditionInput;
 use super::*;
+use crate::observed::environment::state::ScopedReplace;
 
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct ProjectionFailurePlan {
@@ -24,13 +24,19 @@ impl Environment<'_> {
             .arguments
             .iter()
             .any(|a| matches!(a.value, Selector::Answer { .. }))
-            && !(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose)
-                && matches!(request.head, Selector::Answer { .. }))
+            && !(matches!(
+                request.kind,
+                QuestionKind::Compose
+                    | QuestionKind::Compare
+                    | QuestionKind::Localize
+                    | QuestionKind::Diagnose
+            ) && matches!(request.head, Selector::Answer { .. }))
         {
             return Ok(vec![]);
         }
         let index = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("射影条件のRequestが元入力にない")?;
         let previous = self.state.context.scoped(Some(super::super::call::Context {
@@ -50,7 +56,11 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
-        if request.kind==QuestionKind::Diagnose || (request.kind==QuestionKind::Localize && request.declaration().is_none()) {return Ok(vec![]);}
+        if request.kind == QuestionKind::Diagnose
+            || (request.kind == QuestionKind::Localize && request.declaration().is_none())
+        {
+            return Ok(vec![]);
+        }
         if matches!(
             request.kind,
             QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
@@ -114,7 +124,8 @@ impl Environment<'_> {
             return Ok(plans);
         }
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -129,24 +140,25 @@ impl Environment<'_> {
             let Selector::Answer { id, .. } = &argument.value else {
                 return Err("onの元Handleがない".into());
             };
-            let selected = match self.answer_binding(graph, &argument.value, (0, 0)) {
-                Ok(AnswerBinding::Inapplicable(r)) => Some(r),
-                Ok(AnswerBinding::Reference(r))
-                    if if request.kind == QuestionKind::Quotient {
-                        !matches!(graph.get(r)?.ty, NodeType::Construction(
+            let selected =
+                match self.answer_binding(graph, &argument.value, (0, 0)) {
+                    Ok(AnswerBinding::Inapplicable(r)) => Some(r),
+                    Ok(AnswerBinding::Reference(r))
+                        if if request.kind == QuestionKind::Quotient {
+                            !matches!(graph.get(r)?.ty, NodeType::Construction(
                             super::super::construction_result::ConstructionType::CandidateSpace |
                             super::super::construction_result::ConstructionType::SolutionSet))
-                    } else {
-                        graph.get(r)?.ty != NodeType::Construction(
+                        } else {
+                            graph.get(r)?.ty != NodeType::Construction(
                             super::super::construction_result::ConstructionType::Architecture)
-                    } =>
-                {
-                    Some(r)
-                }
-                Ok(AnswerBinding::Projection(n)) => n.arguments.first().copied(),
-                Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => None,
-                Err(e) => return Err(e),
-            };
+                        } =>
+                    {
+                        Some(r)
+                    }
+                    Ok(AnswerBinding::Projection(n)) => n.arguments.first().copied(),
+                    Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => None,
+                    Err(e) => return Err(e),
+                };
             if let Some(root) = selected {
                 let original = graph.get(root)?;
                 plans.push(ProjectionFailurePlan {
@@ -315,7 +327,8 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<(Vec<Reason>, Scope), ValidationFailure> {
         let current = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("射影条件の元Requestがない")?;
         let mut reasons = vec![];
@@ -379,7 +392,9 @@ impl Environment<'_> {
             for input in &plan.inputs {
                 self.control.clone().checkpoint(Checkpoint::Projection)?;
                 if let ConditionInput::Subject(node) = input
-                    && self.projection_subject_input(graph, node, plan.context)?.is_none()
+                    && self
+                        .projection_subject_input(graph, node, plan.context)?
+                        .is_none()
                 {
                     self.validate(graph, node)?;
                     graph.push((**node).clone())?;
@@ -530,7 +545,8 @@ impl Environment<'_> {
             return Err("射影条件が元Requestの束縛前contextでない".into());
         }
         let request = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|rs| rs.get(context.request))
             .ok_or("射影条件の元Requestがない")?;
         let plan = self

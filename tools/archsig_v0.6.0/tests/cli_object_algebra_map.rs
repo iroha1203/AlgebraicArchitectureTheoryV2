@@ -135,29 +135,48 @@ fn reference_pairs(result: &JNode, map: &JNode) -> Vec<(String, String)> {
         assert_eq!(s(&pair[0]), "v");
         s(&pair[1]).to_owned()
     };
-    let mut pairs: Vec<_> = arr(get(map, "subjects")).iter().map(|pair| {
-        let pair = arr(pair);
-        assert_eq!(pair.len(), 2);
-        (subject(&pair[0]), subject(&pair[1]))
-    }).collect();
+    let mut pairs: Vec<_> = arr(get(map, "subjects"))
+        .iter()
+        .map(|pair| {
+            let pair = arr(pair);
+            assert_eq!(pair.len(), 2);
+            (subject(&pair[0]), subject(&pair[1]))
+        })
+        .collect();
     pairs.sort();
     pairs
 }
 fn assert_reference_pairs(result: &JNode, map: &JNode, expected: &[(&str, &str)]) {
-    let expected: Vec<_> = expected.iter().map(|(a,b)| (a.to_string(),b.to_string())).collect();
+    let expected: Vec<_> = expected
+        .iter()
+        .map(|(a, b)| (a.to_string(), b.to_string()))
+        .collect();
     assert_eq!(reference_pairs(result, map), expected);
 }
 fn assert_json(actual: &JNode, expected: &str) {
-    assert_eq!(actual.value, archsig::json::parse(expected.as_bytes()).unwrap().value);
+    assert_eq!(
+        actual.value,
+        archsig::json::parse(expected.as_bytes()).unwrap().value
+    );
 }
-fn assert_local_clause(dir: &Path, result: &JNode, clause: &JNode, source: &str, target: &str, quantifiers: &[(&str, &str)]) {
+fn assert_local_clause(
+    dir: &Path,
+    result: &JNode,
+    clause: &JNode,
+    source: &str,
+    target: &str,
+    quantifiers: &[(&str, &str)],
+) {
     let law = std::fs::read(dir.join("l.law")).unwrap();
     for (key, expected) in [("source", source), ("target", target)] {
         let expression = value(result, get(clause, key));
         let location = get(expression, "location");
         assert_eq!(s(get(location, "input")), "law");
         let span = arr(get(location, "span"));
-        assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], expected.as_bytes());
+        assert_eq!(
+            &law[num(&span[0]) as usize..num(&span[1]) as usize],
+            expected.as_bytes()
+        );
     }
     let commutes = value(result, get(clause, "commutes"));
     let actual = arr(get(commutes, "quantifiers"));
@@ -311,9 +330,39 @@ fn assert_map_summary(normal: &Run, saved: &JNode) {
 #[test]
 fn change_transport_preserves_candidate_domains_and_simultaneous_updates() {
     for (mode, parameter, sg, tg, left, right, missing, code, status) in [
-        ("finite", "Bool", "", " when k or not k", "if n then s.free+1 else s.free", "if k then t.free+1 else t.free", false, 0, "established"),
-        ("integer-refuted", "Z", "", "", "s.free+n", "t.free+2*k", false, 1, "refuted"),
-        ("missing", "Z", "", "", "s.free+n", "t.free+k", true, 2, "undetermined"),
+        (
+            "finite",
+            "Bool",
+            "",
+            " when k or not k",
+            "if n then s.free+1 else s.free",
+            "if k then t.free+1 else t.free",
+            false,
+            0,
+            "established",
+        ),
+        (
+            "integer-refuted",
+            "Z",
+            "",
+            "",
+            "s.free+n",
+            "t.free+2*k",
+            false,
+            1,
+            "refuted",
+        ),
+        (
+            "missing",
+            "Z",
+            "",
+            "",
+            "s.free+n",
+            "t.free+k",
+            true,
+            2,
+            "undetermined",
+        ),
     ] {
         let dir = four_state_inputs(&format!("change-transport-{mode}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
@@ -321,24 +370,51 @@ fn change_transport_preserves_candidate_domains_and_simultaneous_updates() {
 reading Before {{{vocabulary} change tune(s:State,n:{parameter}){sg}=s with {{free={left},held=s.free}};}}
 reading After {{{vocabulary} change tune(t:State,k:{parameter}){tg}=t with {{held=t.free,free={right}}};}}"#)).unwrap();
         if missing {
-            let text=std::fs::read_to_string(dir.join("a.json")).unwrap();
-            std::fs::write(dir.join("a.json"),text.lines().filter(|line|!line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
+            let text = std::fs::read_to_string(dir.join("a.json")).unwrap();
+            std::fs::write(
+                dir.join("a.json"),
+                text.lines()
+                    .filter(|line| !line.contains(r#""id":"p-free""#))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            )
+            .unwrap();
         }
-        let requests=["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)","same=compare($m.operation,to=$m.operation,kind=action)","n=needed($m)"];
-        let run=asks(&dir,&requests);assert_eq!(run.code,code,"{mode}: {}",run.stdout);
-        let result=result_json(&dir,&run);let m=answer(&result,"m");
-        assert_eq!(s(get(m,"status")),status,"{mode}");assert_eq!(s(get(answer(&result,"same"),"status")),"established");
-        assert_eq!(has(get(m,"outputs"),"map"),code==0);
-        if code==0 {
-            let map=value(&result,get(get(m,"outputs"),"map"));let transport=value(&result,&arr(get(map,"transports"))[0]);
-            assert_eq!(s(get(transport,"kind")),"change");assert_json(get(transport,"parameters"),r#"[["s","t"],["n","k"]]"#);
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
+        let run = asks(&dir, &requests);
+        assert_eq!(run.code, code, "{mode}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        let m = answer(&result, "m");
+        assert_eq!(s(get(m, "status")), status, "{mode}");
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        assert_eq!(has(get(m, "outputs"), "map"), code == 0);
+        if code == 0 {
+            let map = value(&result, get(get(m, "outputs"), "map"));
+            let transport = value(&result, &arr(get(map, "transports"))[0]);
+            assert_eq!(s(get(transport, "kind")), "change");
+            assert_json(get(transport, "parameters"), r#"[["s","t"],["n","k"]]"#);
         }
-        if code==1 {let examples=arr(get(m,"counterexamples"));assert!(!examples.is_empty());
-            let data=get(value(&result,&examples[0]),"data");let bindings=arr(get(data,"bindings"));assert_eq!(bindings.len(),2);
-            assert_eq!(s(get(&bindings[1],"name")),"n");
-            assert_eq!(s(value(&result,get(&bindings[1],"value"))),"1");
+        if code == 1 {
+            let examples = arr(get(m, "counterexamples"));
+            assert!(!examples.is_empty());
+            let data = get(value(&result, &examples[0]), "data");
+            let bindings = arr(get(data, "bindings"));
+            assert_eq!(bindings.len(), 2);
+            assert_eq!(s(get(&bindings[1], "name")), "n");
+            assert_eq!(s(value(&result, get(&bindings[1], "value"))), "1");
         }
-        if code==2 {let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"subject"))=="p"));}
+        if code == 2 {
+            let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "subject")) == "p")
+            );
+        }
     }
 }
 
@@ -349,30 +425,50 @@ fn change_transport_uses_explicit_field_alignments_instead_of_same_names() {
         let dir = four_state_inputs(&format!("change-fix-{mode}"));
         let old = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
         let definition = std::fs::read_to_string(dir.join("d.json")).unwrap().replacen(r#""alignments": []"#,r#""alignments":[{"source":"Reservations.State.free","target":"Reservations.State.held","meaning":"数量位置の交換。"},{"source":"Reservations.State.held","target":"Reservations.State.free","meaning":"数量位置の交換。"}]"#,1);
-        let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        let checked =
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = checked.vocabularies()["Reservations"].digest.clone();
         std::fs::write(dir.join("d.json"), definition).unwrap();
-        let archmap = std::fs::read_to_string(dir.join("a.json")).unwrap().replace(old, &digest);
-        let archmap = archmap.lines().map(|line| {
-            let mut text = line.to_string();
-            if line.contains("Reservations.State.free") || line.contains("Reservations.State.held") {
-                for n in ["1", "2", "3", "4", "19"] {
-                    text = text.replace(&format!(r#""value":"{n}""#), r#""value":"0""#);
+        let archmap = std::fs::read_to_string(dir.join("a.json"))
+            .unwrap()
+            .replace(old, &digest);
+        let archmap = archmap
+            .lines()
+            .map(|line| {
+                let mut text = line.to_string();
+                if line.contains("Reservations.State.free")
+                    || line.contains("Reservations.State.held")
+                {
+                    for n in ["1", "2", "3", "4", "19"] {
+                        text = text.replace(&format!(r#""value":"{n}""#), r#""value":"0""#);
+                    }
                 }
-            }
-            text
-        }).collect::<Vec<_>>().join("\n");
+                text
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
         std::fs::write(dir.join("a.json"), archmap).unwrap();
-        let (tf, th) = if preserve { ("0", "if k then 1 else 0") } else { ("if k then 1 else 0", "0") };
+        let (tf, th) = if preserve {
+            ("0", "if k then 1 else 0")
+        } else {
+            ("if k then 1 else 0", "0")
+        };
         std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{use vocabulary Reservations version "1" digest "{digest}";change tune(s:State,n:Bool)=s with {{free=if n then 1 else 0,held=0}};}}
 reading After {{use vocabulary Reservations version "1" digest "{digest}";change tune(t:State,k:Bool)=t with {{free={tf},held={th}}};}}"#)).unwrap();
-        let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"];
+        let requests = [
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ];
         let run = asks(&dir, &requests);
         assert_eq!(run.code, code, "{mode}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
-        assert_eq!(s(get(m, "status")), if code == 0 { "established" } else { "refuted" });
+        assert_eq!(
+            s(get(m, "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         assert_eq!(has(get(m, "outputs"), "map"), code == 0);
         if code == 0 {
@@ -382,7 +478,10 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
             let target = value(&result, get(clause, "target"));
             let span = arr(get(get(target, "location"), "span"));
             let law = std::fs::read(dir.join("l.law")).unwrap();
-            assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize], th.as_bytes());
+            assert_eq!(
+                &law[num(&span[0]) as usize..num(&span[1]) as usize],
+                th.as_bytes()
+            );
             let q = &arr(get(value(&result, get(clause, "commutes")), "quantifiers"))[0];
             let domain = value(&result, get(q, "domain"));
             assert_eq!(arr(get(domain, "elements")).len(), 2);
@@ -571,56 +670,155 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}"; law r
 fn local_multiple_reference_parameters_keep_read_order_and_value_types() {
     let dir = inputs("local-multiple-reference-transport");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-    std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(s:State,root:System,other:State) reads root,s,other,root;}}
-reading After {{{vocabulary} local here(t:State,world:System,u:State) reads world,(t),u,world;}}"#)).unwrap();
-    let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
-    let run=asks(&dir,&[request]);
-    assert_eq!(run.code,0,"{}",run.stdout);
-    let result=result_json(&dir,&run);
-    let map=value(&result,get(get(answer(&result,"m"),"outputs"),"map"));
-    let transport=value(&result,&arr(get(map,"transports"))[0]);
-    assert_json(get(transport,"parameters"), r#"[["s","t"],["root","world"],["other","u"]]"#);
-    let clauses=arr(get(transport,"clauses"));
-    assert_eq!(clauses.len(),4);
-    assert_eq!(get(&clauses[0],"values").value,get(&clauses[3],"values").value);
-    assert_eq!(get(&clauses[1],"values").value,get(&clauses[2],"values").value);
-    assert_ne!(get(&clauses[0],"values").value,get(&clauses[1],"values").value);
-    let arguments=value(&result,get(&clauses[0],"arguments"));
+reading After {{{vocabulary} local here(t:State,world:System,u:State) reads world,(t),u,world;}}"#
+        ),
+    )
+    .unwrap();
+    let request =
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+    let run = asks(&dir, &[request]);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let transport = value(&result, &arr(get(map, "transports"))[0]);
+    assert_json(
+        get(transport, "parameters"),
+        r#"[["s","t"],["root","world"],["other","u"]]"#,
+    );
+    let clauses = arr(get(transport, "clauses"));
+    assert_eq!(clauses.len(), 4);
+    assert_eq!(
+        get(&clauses[0], "values").value,
+        get(&clauses[3], "values").value
+    );
+    assert_eq!(
+        get(&clauses[1], "values").value,
+        get(&clauses[2], "values").value
+    );
+    assert_ne!(
+        get(&clauses[0], "values").value,
+        get(&clauses[1], "values").value
+    );
+    let arguments = value(&result, get(&clauses[0], "arguments"));
     for key in ["source_type", "target_type"] {
-        assert_json(get(arguments,key), r#"["Tuple",["Ref","Reservations.State"],["Ref","Reservations.System"],["Ref","Reservations.State"]]"#);
+        assert_json(
+            get(arguments, key),
+            r#"["Tuple",["Ref","Reservations.State"],["Ref","Reservations.System"],["Ref","Reservations.State"]]"#,
+        );
     }
-    assert_reference_pairs(&result, arguments, &[("A","B"),("B","B"),("p","r"),("q","s"),("r","r"),("s","s")]);
-    for (index, (source,target,ty)) in [("root","world","Reservations.System"),("s","(t)","Reservations.State"),("other","u","Reservations.State"),("root","world","Reservations.System")].iter().enumerate() {
+    assert_reference_pairs(
+        &result,
+        arguments,
+        &[
+            ("A", "B"),
+            ("B", "B"),
+            ("p", "r"),
+            ("q", "s"),
+            ("r", "r"),
+            ("s", "s"),
+        ],
+    );
+    for (index, (source, target, ty)) in [
+        ("root", "world", "Reservations.System"),
+        ("s", "(t)", "Reservations.State"),
+        ("other", "u", "Reservations.State"),
+        ("root", "world", "Reservations.System"),
+    ]
+    .iter()
+    .enumerate()
+    {
         let clause = &clauses[index];
-        assert_eq!(get(clause,"arguments").value,get(&clauses[0],"arguments").value);
-        let values=value(&result,get(clause,"values"));
-        for key in ["source_type","target_type"] {assert_json(get(values,key), &format!(r#"["Ref","{ty}"]"#));}
-        if *ty == "Reservations.System" {
-            assert_reference_pairs(&result,values,&[("A","B"),("B","B")]);
-        } else {
-            assert_reference_pairs(&result,values,&[("p","r"),("q","s"),("r","r"),("s","s")]);
+        assert_eq!(
+            get(clause, "arguments").value,
+            get(&clauses[0], "arguments").value
+        );
+        let values = value(&result, get(clause, "values"));
+        for key in ["source_type", "target_type"] {
+            assert_json(get(values, key), &format!(r#"["Ref","{ty}"]"#));
         }
-        assert_local_clause(&dir,&result,clause,source,target,&[("s","Reservations.State"),("root","Reservations.System"),("other","Reservations.State")]);
+        if *ty == "Reservations.System" {
+            assert_reference_pairs(&result, values, &[("A", "B"), ("B", "B")]);
+        } else {
+            assert_reference_pairs(
+                &result,
+                values,
+                &[("p", "r"), ("q", "s"), ("r", "r"), ("s", "s")],
+            );
+        }
+        assert_local_clause(
+            &dir,
+            &result,
+            clause,
+            source,
+            target,
+            &[
+                ("s", "Reservations.State"),
+                ("root", "Reservations.System"),
+                ("other", "Reservations.State"),
+            ],
+        );
     }
 }
 
 #[test]
 fn local_guard_domains_preserve_source_rows_and_keep_unknown_distinct() {
     for (mode, source, target, read, missing, code, status) in [
-        ("expansion", "s.free=2", "t.free>0", "field", "", 0, "established"),
-        ("guard-refuted", "s.free=2", "t.free=1", "reference", "", 1, "refuted"),
-        ("source-missing", "s.free=2", "true", "reference", "p", 2, "undetermined"),
+        (
+            "expansion",
+            "s.free=2",
+            "t.free>0",
+            "field",
+            "",
+            0,
+            "established",
+        ),
+        (
+            "guard-refuted",
+            "s.free=2",
+            "t.free=1",
+            "reference",
+            "",
+            1,
+            "refuted",
+        ),
+        (
+            "source-missing",
+            "s.free=2",
+            "true",
+            "reference",
+            "p",
+            2,
+            "undetermined",
+        ),
     ] {
         let dir = four_state_inputs(&format!("local-domain-{mode}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-        let (sr, tr) = if read == "reference" { ("s", "t") } else { ("s.free", "t.free") };
-        std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        let (sr, tr) = if read == "reference" {
+            ("s", "t")
+        } else {
+            ("s.free", "t.free")
+        };
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(s:State) when {source} reads {sr};}}
-reading After {{{vocabulary} local here(t:State) when {target} reads {tr};}}"#)).unwrap();
+reading After {{{vocabulary} local here(t:State) when {target} reads {tr};}}"#
+            ),
+        )
+        .unwrap();
         if !missing.is_empty() {
             let text = std::fs::read_to_string(dir.join("a.json")).unwrap();
-            let text = text.lines().filter(|line| !line.contains(&format!(r#""id":"{missing}-free""#))).collect::<Vec<_>>().join("\n");
+            let text = text
+                .lines()
+                .filter(|line| !line.contains(&format!(r#""id":"{missing}-free""#)))
+                .collect::<Vec<_>>()
+                .join("\n");
             std::fs::write(dir.join("a.json"), text).unwrap();
         }
         let requests = [
@@ -633,7 +831,11 @@ reading After {{{vocabulary} local here(t:State) when {target} reads {tr};}}"#))
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(s(get(m, "status")), status, "{mode}");
-        assert_eq!(s(get(answer(&result, "same"), "status")), "established", "{mode}");
+        assert_eq!(
+            s(get(answer(&result, "same"), "status")),
+            "established",
+            "{mode}"
+        );
         assert_eq!(has(get(m, "outputs"), "map"), code == 0);
         if code == 1 {
             let examples = arr(get(m, "counterexamples"));
@@ -644,7 +846,11 @@ reading After {{{vocabulary} local here(t:State) when {target} reads {tr};}}"#))
         }
         if code == 2 {
             let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-            assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "subject")) == missing));
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "subject")) == missing)
+            );
         }
     }
 }
@@ -654,8 +860,7 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
     let dir = four_state_inputs("local-reference-field-preserved");
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
     let definition = old.replace(r#"{"name": "free", "type": "Z""#, r#"{"name":"other","type":["Ref","Reservations.State"],"meaning":"別の参照先。"}, {"name":"peer","type":["Ref","Reservations.State"],"meaning":"参照先。"}, {"name": "free", "type": "Z""#);
-    let checked =
-        archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let checked = archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Reservations"].digest;
     std::fs::write(dir.join("d.json"), definition).unwrap();
     let old_digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
@@ -663,12 +868,7 @@ fn local_reference_fields_follow_the_map_instead_of_raw_equality() {
         .unwrap()
         .replace(old_digest, digest);
     let mut facts = String::new();
-    for (subject, peer) in [
-        ("p", "p"),
-        ("q", "p"),
-        ("r", "r"),
-        ("s", "r"),
-    ] {
+    for (subject, peer) in [("p", "p"), ("q", "p"), ("r", "r"), ("s", "r")] {
         facts.push_str(&format!(r#"{{"id":"{subject}-peer","subject":"{subject}","field":"Reservations.State.peer","value":["v","{peer}"],"origin":"model"}},"#));
         let other = match peer {
             "p" => "q",
@@ -829,10 +1029,17 @@ fn reuse_recomputes_object_maps_and_rejects_an_omitted_object() {
     // 小さいfixture(状態4つ)とguardのないlocal一つのLawで、保存結果の照合だけを確かめる。
     let dir = four_state_inputs("public-object-map-reuse");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(s:State) reads s.free;}}
-reading After {{{vocabulary} local here(t:State) reads t.free;}}"#)).unwrap();
-    let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+reading After {{{vocabulary} local here(t:State) reads t.free;}}"#
+        ),
+    )
+    .unwrap();
+    let request =
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
     let first = asks(&dir, &[request]);
     assert_eq!(first.code, 0, "{}", first.stdout);
     let original = result_json(&dir, &first);
@@ -926,8 +1133,15 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
 fn four_state_map(preserve: bool) -> String {
     let mut a = include_str!("fixtures/object-configuration-map.archmap.json").to_string();
     if preserve {
-        a = a.replace(r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"4""#, r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"2""#)
-            .replace(r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#, r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#);
+        a = a
+            .replace(
+                r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"4""#,
+                r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"2""#,
+            )
+            .replace(
+                r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#,
+                r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#,
+            );
     }
     a.lines()
         .filter(|line| {
@@ -951,7 +1165,8 @@ fn four_state_inputs(name: &str) -> PathBuf {
     let dir = inputs(name);
     std::fs::write(dir.join("a.json"), four_state_map(true)).unwrap();
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-    let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{
 {vocabulary}
 view choice(s: State, take: Bool, mode: Fp(2)): Z = if take then (if mode = 0 then s.free else s.held) else 0;
@@ -962,7 +1177,8 @@ view choice(s: State, keep: Bool, which: Fp(2)): Z = if keep then (if which = 0 
 view yes(): Bool = true;
 view zero(): Fp(2) = 0;
 view one(): Fp(2) = 1;
-}}"#);
+}}"#
+    );
     std::fs::write(dir.join("l.law"), law).unwrap();
     dir
 }
@@ -1238,13 +1454,11 @@ reading After {{ {vocabulary} relation paths(t:Reserve,u:State,keep:Bool) {tg}:p
 
 #[test]
 fn relation_transport_reports_infinite_parameter_cases_as_pending() {
-    for (name, source, target) in [
-        (
-            "infinite",
-            "relation paths(e:Reserve,n:Z) when n>0:path(e)=path(e);",
-            "relation paths(t:Reserve,k:Z) when k>0:path(t)=path(t);",
-        ),
-    ] {
+    for (name, source, target) in [(
+        "infinite",
+        "relation paths(e:Reserve,n:Z) when n>0:path(e)=path(e);",
+        "relation paths(t:Reserve,k:Z) when k>0:path(t)=path(t);",
+    )] {
         let dir = four_state_inputs(&format!("relation-unsupported-{name}"));
         let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
         std::fs::write(
@@ -1686,12 +1900,11 @@ reading After {{{vocabulary} local here(p:Unit,y:State,q:Unit,x:State) reads {tr
     let data = get(value(&result, &examples[0]), "data");
     let bs = arr(get(data, "bindings"));
     assert_eq!(bs.len(), 4);
-    for ((b, name), expected) in bs.iter().zip(["t", "z", "u", "a"]).zip([
-        "[]",
-        r#"["v","q"]"#,
-        "[]",
-        r#"["v","p"]"#,
-    ]) {
+    for ((b, name), expected) in
+        bs.iter()
+            .zip(["t", "z", "u", "a"])
+            .zip(["[]", r#"["v","q"]"#, "[]", r#"["v","p"]"#])
+    {
         assert_eq!(s(get(b, "name")), name);
         assert_json(value(&result, get(b, "value")), expected);
     }
@@ -1848,9 +2061,11 @@ reading After {{{vocabulary} local here(y:State,pick:Choice,spare:Choice) reads 
             "Reservations.Choice.Empty",
             "Reservations.Choice.Full",
         ] {
-            assert!(arr(get(map, "declarations")).iter().any(|pair| {
-                arr(pair).iter().map(s).collect::<Vec<_>>() == [family, family]
-            }));
+            assert!(
+                arr(get(map, "declarations")).iter().any(|pair| {
+                    arr(pair).iter().map(s).collect::<Vec<_>>() == [family, family]
+                })
+            );
         }
     }
 }
@@ -2033,7 +2248,12 @@ fn finite_local_map_inputs(name: &str) -> (PathBuf, String) {
 fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
     for (case, sr, tr, code) in [
         ("projection", "table", "chosen", 0),
-        ("infinite-refuted", "(table,left.free)", "(chosen,right.free+1)", 1),
+        (
+            "infinite-refuted",
+            "(table,left.free)",
+            "(chosen,right.free+1)",
+            1,
+        ),
     ] {
         let (dir, vocabulary) = finite_local_map_inputs(&format!("local-map-{case}"));
         let ty = if case == "projection" {
@@ -2041,9 +2261,15 @@ fn local_map_arguments_preserve_total_images_reads_guards_and_missing() {
         } else {
             "Map<Key,State>"
         };
-        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(left:State,table:{ty},take:Bool,key:Key) reads {sr};}}
-reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:Key) reads {tr};}}"#)).unwrap();
+reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:Key) reads {tr};}}"#
+            ),
+        )
+        .unwrap();
         let requests = [
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -2068,8 +2294,14 @@ reading After {{{vocabulary} local here(right:State,chosen:{ty},keep:Bool,which:
             assert_eq!(bindings.len(), 4);
             assert_eq!(s(get(&bindings[0], "name")), "left");
             assert_json(value(&result, get(&bindings[0], "value")), r#"["v","p"]"#);
-            assert_json(value(&result, get(data, "left")), r#"[[[["v","k"],["v","p"]]],"2"]"#);
-            assert_json(value(&result, get(data, "right")), r#"[[[["v","k"],["v","r"]]],"3"]"#);
+            assert_json(
+                value(&result, get(data, "left")),
+                r#"[[[["v","k"],["v","p"]]],"2"]"#,
+            );
+            assert_json(
+                value(&result, get(data, "right")),
+                r#"[[[["v","k"],["v","r"]]],"3"]"#,
+            );
         } else {
             let map = value(&result, get(get(m, "outputs"), "map"));
             let transport = value(&result, &arr(get(map, "transports"))[0]);
@@ -2134,9 +2366,15 @@ fn local_read_type_maps_do_not_require_a_matching_parameter() {
         }
         .replace("left", "right")
         .replace("take", "keep");
-        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(left:State,take:Bool) reads {source_read};}}
-reading After {{{vocabulary} local here(right:State,keep:Bool) reads {target_read};}}"#)).unwrap();
+reading After {{{vocabulary} local here(right:State,keep:Bool) reads {target_read};}}"#
+            ),
+        )
+        .unwrap();
         let requests = [
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -2431,9 +2669,15 @@ fn local_reference_product_reads_extend_total_reference_maps_with_scalar_identit
         .replace("left", "right")
         .replace("other", "spare")
         .replace("take", "keep");
-        std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(left:State,other:State,take:Bool) reads {read};}}
-reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool) reads {target};}}"#)).unwrap();
+reading After {{{vocabulary} local here(right:State,spare:State,keep:Bool) reads {target};}}"#
+            ),
+        )
+        .unwrap();
         let requests = [
             "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
             "same=compare($m.operation,to=$m.operation,kind=action)",
@@ -2493,7 +2737,9 @@ fn local_reference_products_check_unread_reference_values_before_false_guards() 
             .replace("@RIGHT_DIGEST@", rd);
         let bridge = if case.starts_with("data-payload") {
             bridge.replacen(r#""declarations": ["#, r#""declarations": [{"kind":"data","name":"Bridge.Choice","meaning":"参照を持つ選択","constructors":[{"name":"Empty","arguments":[],"meaning":"空"},{"name":"Full","arguments":[["Ref","Left.Child"],"Z",["Data","Bridge.Choice"]],"meaning":"再帰payload"}]},"#, 1)
-        } else { bridge };
+        } else {
+            bridge
+        };
         let checked = archsig::definition::check_definitions(&[
             ("left", left),
             ("right", right),
@@ -2615,13 +2861,18 @@ reading After {{{imports} local here(keep:Bool) when false reads {target_read};}
                             == archsig::json::parse(br#"["v","h"]"#).unwrap().value)
                 );
             } else if case.starts_with("data-payload") {
-                let domains: Vec<_> = arr(get(condition, "operands")).iter()
+                let domains: Vec<_> = arr(get(condition, "operands"))
+                    .iter()
                     .map(|r| value(&result, r))
                     .filter(|v| has(v, "kind") && s(get(v, "kind")) == "type")
                     .collect();
                 for ty in [r#"["Ref","Left.Child"]"#, r#"["Ref","Right.Child"]"#] {
                     let expected = archsig::json::parse(ty.as_bytes()).unwrap();
-                    assert!(domains.iter().any(|v| get(v, "type").value == expected.value));
+                    assert!(
+                        domains
+                            .iter()
+                            .any(|v| get(v, "type").value == expected.value)
+                    );
                 }
             } else {
                 for text in [&source_read, &target_read] {
@@ -2683,11 +2934,9 @@ fn local_direct_compound_fields_share_evaluation_transport_and_missing() {
         let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
         let definition=old.replace(r#"{"name": "free", "type": "Z""#,
             &format!(r#"{{"name":"box","type":{wire},"meaning":"複合値"}},{{"name":"alternate","type":{wire},"meaning":"別の複合値"}},{{"name": "free", "type": "Z""#));
-        let before =
-            archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
+        let before = archsig::definition::check_definitions(&[("d", old.as_bytes())]).unwrap();
         let checked =
-            archsig::definition::check_definitions(&[("d", definition.as_bytes())])
-                .unwrap();
+            archsig::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
         let digest = &checked.vocabularies()["Reservations"].digest;
         let mut map = std::fs::read_to_string(dir.join("a.json"))
             .unwrap()
@@ -2731,8 +2980,7 @@ fn local_direct_compound_fields_share_evaluation_transport_and_missing() {
         } else {
             format!("({target})")
         };
-        let vocabulary =
-            format!(r#"use vocabulary Reservations version "1" digest "{digest}";"#);
+        let vocabulary = format!(r#"use vocabulary Reservations version "1" digest "{digest}";"#);
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(left:State,other:State,take:Bool) reads {source_read};}}
@@ -3081,12 +3329,13 @@ reading Before {{{vocabulary} local here(q:Q) when 2*q=1 reads q;}} reading Afte
 #[test]
 fn local_mixed_numeric_guards_on_either_side_are_unsupported_with_a_reason() {
     // Z/Qを混ぜた引数のguard。target側のZのguardと、source側のQのguardの代表。
-    for (params, source_guard, target_guard) in [
-        ("q:Q,n:Z", "", " when n=0"),
-        ("n:Z,q:Q", " when 2*q=1", ""),
-    ] {
-        let (dir, vocabulary) =
-            rational_local_parameter_inputs(&format!("local-q-mixed-{}", params.starts_with('n')), false);
+    for (params, source_guard, target_guard) in
+        [("q:Q,n:Z", "", " when n=0"), ("n:Z,q:Q", " when 2*q=1", "")]
+    {
+        let (dir, vocabulary) = rational_local_parameter_inputs(
+            &format!("local-q-mixed-{}", params.starts_with('n')),
+            false,
+        );
         std::fs::write(
             dir.join("l.law"),
             format!(
@@ -3098,7 +3347,9 @@ reading After {{{vocabulary} local here({params}){target_guard} reads q;}}"#
         .unwrap();
         let run = asks(
             &dir,
-            &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            ],
         );
         assert_eq!(run.code, 2, "{params}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3145,15 +3396,14 @@ reading After {{{vocabulary} local here({tp}) reads {right};}}"#
             ),
         )
         .unwrap();
-        let run = asks(&dir, &[
-            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-            "same=compare($m.operation,to=$m.operation,kind=action)",
-        ]);
-        assert_eq!(
-            run.code, code,
-            "{name}/{reverse}: {}",
-            run.stdout
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
         );
+        assert_eq!(run.code, code, "{name}/{reverse}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
         assert_eq!(
@@ -3234,11 +3484,14 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
             ),
         )
         .unwrap();
-        let run=asks(&dir,&[
-            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-            "same=compare($m.operation,to=$m.operation,kind=action)",
-            "n=needed($m)",
-        ]);
+        let run = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ],
+        );
         assert_eq!(run.code, 2, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
         let m = answer(&result, "m");
@@ -3247,20 +3500,24 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
         assert!(!has(get(m, "outputs"), "map"));
         assert!(!has(m, "counterexamples") || arr(get(m, "counterexamples")).is_empty());
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
-        assert!(arr(get(m, "reasons"))
-            .iter()
-            .any(|reason| s(get(reason, "code"))
-                == if missing {
-                    "missing_observation"
-                } else {
-                    "unsupported_algorithm"
-                }));
+        assert!(
+            arr(get(m, "reasons"))
+                .iter()
+                .any(|reason| s(get(reason, "code"))
+                    == if missing {
+                        "missing_observation"
+                    } else {
+                        "unsupported_algorithm"
+                    })
+        );
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
         let requirements = arr(get(plan, "requirements"));
         if missing {
-            assert!(requirements
-                .iter()
-                .any(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free"));
+            assert!(
+                requirements
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free")
+            );
         } else {
             assert!(requirements.is_empty());
         }
@@ -3269,10 +3526,7 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) reads {right};}}"#
 
 #[test]
 fn local_mixed_numeric_tuple_witnesses_restore_all_axes() {
-    for (name, left, right) in [
-        ("integer", "pair.1.1", "0"),
-        ("rational", "q", "rat(0,1)"),
-    ] {
+    for (name, left, right) in [("integer", "pair.1.1", "0"), ("rational", "q", "rat(0,1)")] {
         let (dir, vocabulary) =
             rational_local_parameter_inputs(&format!("local-mixed-nested-{name}"), false);
         std::fs::write(
@@ -3284,7 +3538,7 @@ reading After {{{vocabulary} local here(next:(Z,(Z,Z)),y:Q) reads {right};}}"#
             ),
         )
         .unwrap();
-        let request="m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
+        let request = "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)";
         let run = asks(&dir, &[request]);
         assert_eq!(run.code, 1, "{name}: {}", run.stdout);
         let result = result_json(&dir, &run);
@@ -3393,20 +3647,45 @@ fn local_mixed_numeric_guards_keep_only_needed_observations() {
     // free欠測のfixture。guardの判定に要る欠測だけを残し、恒偽のguardの下の読取りは要求しない。
     for (name, source_guard, target_guard, left, right, code) in [
         ("source-unknown", "s.free=0", "true", "q", "y", 2),
-        ("known-false", "false and s.free=0", "true", "s.free+q", "t.free+y", 0),
+        (
+            "known-false",
+            "false and s.free=0",
+            "true",
+            "s.free+q",
+            "t.free+y",
+            0,
+        ),
     ] {
-        let (dir, vocabulary) = rational_local_parameter_inputs(&format!("mixed-guard-{name}"), true);
-        std::fs::write(dir.join("l.law"), format!(
-            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+        let (dir, vocabulary) =
+            rational_local_parameter_inputs(&format!("mixed-guard-{name}"), true);
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} local here(n:Z,s:State,q:Q) when {source_guard} reads {left};}}
 reading After {{{vocabulary} local here(m:Z,t:State,y:Q) when {target_guard} reads {right};}}"#
-        )).unwrap();
-        let r = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
-            "same=compare($m.operation,to=$m.operation,kind=action)", "n=needed($m)"]);
+            ),
+        )
+        .unwrap();
+        let r = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+                "n=needed($m)",
+            ],
+        );
         assert_eq!(r.code, code, "{name}: {}", r.stdout);
         let j = result_json(&dir, &r);
         let m = answer(&j, "m");
-        assert_eq!(s(get(m, "status")), if code == 0 { "established" } else { "undetermined" });
+        assert_eq!(
+            s(get(m, "status")),
+            if code == 0 {
+                "established"
+            } else {
+                "undetermined"
+            }
+        );
         assert!(has(get(m, "outputs"), "operation"));
         assert_eq!(has(get(m, "outputs"), "map"), code == 0);
         assert_eq!(s(get(answer(&j, "same"), "status")), "established");
@@ -3414,8 +3693,16 @@ reading After {{{vocabulary} local here(m:Z,t:State,y:Q) when {target_guard} rea
         let requirements = arr(get(plan, "requirements"));
         assert_eq!(requirements.is_empty(), code == 0, "{name}");
         if code == 2 {
-            assert!(requirements.iter().all(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free"));
-            assert!(arr(get(m, "reasons")).iter().any(|r| s(get(r, "code")) == "missing_observation"));
+            assert!(
+                requirements
+                    .iter()
+                    .all(|r| s(get(get(r, "field"), "field")) == "Reservations.State.free")
+            );
+            assert!(
+                arr(get(m, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "missing_observation")
+            );
             assert!(!has(m, "counterexamples") || arr(get(m, "counterexamples")).is_empty());
         }
     }
@@ -3564,7 +3851,11 @@ reading After {{{vocabulary} local here(chosen:Option<Bool>,keep:Bool,t:State) r
         let m = answer(&result, "m");
         assert_eq!(
             s(get(m, "status")),
-            if code == 0 { "established" } else { "undetermined" }
+            if code == 0 {
+                "established"
+            } else {
+                "undetermined"
+            }
         );
         assert!(has(get(m, "outputs"), "operation"));
         assert_eq!(has(get(m, "outputs"), "map"), code == 0);
@@ -3598,38 +3889,63 @@ fn change_transport_compares_different_fieldsets_on_all_finite_arguments() {
     std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} change tune(s:State,n:Bool,m:Bool)=s with {{free=s.free}};}}
 reading After {{{vocabulary} change tune(t:State,k:Bool,l:Bool)=t with {{held=if k and l then t.held+1 else t.held,free=t.free}};}}"#)).unwrap();
-    let requests = ["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)", "same=compare($m.operation,to=$m.operation,kind=action)"];
+    let requests = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+    ];
     let run = asks(&dir, &requests);
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let map = answer(&result, "m");
     assert_eq!(s(get(map, "status")), "refuted");
-    assert!(!has(get(map,"outputs"),"map"));
-    assert_eq!(s(get(answer(&result,"same"),"status")), "established");
-    let evidence = value(&result, &arr(get(map,"counterexamples"))[0]);
-    let data = get(evidence,"data");
-    let bindings = arr(get(data,"bindings"));
+    assert!(!has(get(map, "outputs"), "map"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    let evidence = value(&result, &arr(get(map, "counterexamples"))[0]);
+    let data = get(evidence, "data");
+    let bindings = arr(get(data, "bindings"));
     assert_eq!(bindings.len(), 3);
-    for binding in &bindings[1..] { assert_eq!(value(&result,get(binding,"value")).value, archsig::json::parse(b"true").unwrap().value); }
-    let left = s(value(&result,get(data,"left"))).parse::<i64>().unwrap();
-    let right = s(value(&result,get(data,"right"))).parse::<i64>().unwrap();
-    assert_eq!(right, left+1);
+    for binding in &bindings[1..] {
+        assert_eq!(
+            value(&result, get(binding, "value")).value,
+            archsig::json::parse(b"true").unwrap().value
+        );
+    }
+    let left = s(value(&result, get(data, "left"))).parse::<i64>().unwrap();
+    let right = s(value(&result, get(data, "right")))
+        .parse::<i64>()
+        .unwrap();
+    assert_eq!(right, left + 1);
 }
 
 #[test]
 fn integer_change_keeps_earlier_missing_reads_when_a_later_update_is_unsupported() {
-    let dir=four_state_inputs("integer-change-earlier-missing");
-    let text=std::fs::read_to_string(dir.join("a.json")).unwrap();
-    std::fs::write(dir.join("a.json"),text.lines().filter(|line|!line.contains(r#""id":"p-free""#)).collect::<Vec<_>>().join("\n")).unwrap();
+    let dir = four_state_inputs("integer-change-earlier-missing");
+    let text = std::fs::read_to_string(dir.join("a.json")).unwrap();
+    std::fs::write(
+        dir.join("a.json"),
+        text.lines()
+            .filter(|line| !line.contains(r#""id":"p-free""#))
+            .collect::<Vec<_>>()
+            .join("\n"),
+    )
+    .unwrap();
     std::fs::write(dir.join("l.law"),r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 change tune(s:State,n:Z)=s with {free=s.free,held=n*n};law required zero(s:State):s.held=0;}"#).unwrap();
-    let run=asks(&dir,&["r=solve(Before.zero,on=@v/A,using=Before.tune)","n=needed($r)"]);
-    assert_eq!(run.code,2,"{}",run.stdout);
-    let result=result_json(&dir,&run);assert_eq!(s(get(answer(&result,"r"),"status")),"undetermined");
-    let plan=value(&result,get(get(answer(&result,"n"),"outputs"),"plan"));
-    assert!(arr(get(plan,"requirements")).iter().any(|r|{
-        let pointer=get(r,"field");s(get(pointer,"subject"))=="p"&&s(get(pointer,"field"))=="Reservations.State.free"
+    let run = asks(
+        &dir,
+        &[
+            "r=solve(Before.zero,on=@v/A,using=Before.tune)",
+            "n=needed($r)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(answer(&result, "r"), "status")), "undetermined");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(arr(get(plan, "requirements")).iter().any(|r| {
+        let pointer = get(r, "field");
+        s(get(pointer, "subject")) == "p" && s(get(pointer, "field")) == "Reservations.State.free"
     }));
 }
 
@@ -3756,7 +4072,10 @@ reading After {{{uses} view affine(s:State,renamed:{ty}):{ty}={target};}}"#
 fn multiple_unsupported_views_keep_each_original_reason() {
     let dir = four_state_inputs("multiple-unsupported-views");
     let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
-    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Before {{{vocabulary} view first(s:State,z:Z):Z=z*z;view second(s:State,z:Z):Z=z*z+1;}}
 reading After {{{vocabulary} view first(s:State,z:Z):Z=z*z;view second(s:State,z:Z):Z=z*z+1;}}"#
         ),
@@ -4162,11 +4481,14 @@ reading Alternative {
 use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 view holdings(s: State): (Z, Z) = (s.free,s.held);
 }"#).unwrap();
-    let run = asks(&dir, &[
-        "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
-        "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
-        "same=compare($m.operation,to=$base.operation,kind=action)",
-    ]);
+    let run = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+            "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
+            "same=compare($m.operation,to=$base.operation,kind=action)",
+        ],
+    );
     assert_eq!(run.code, 1, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let m = answer(&result, "m");

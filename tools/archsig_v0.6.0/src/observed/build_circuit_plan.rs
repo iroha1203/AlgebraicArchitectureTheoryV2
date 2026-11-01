@@ -70,7 +70,9 @@ fn constant_nonzero(
     let D::PolynomialLaw(data) = &v.data else {
         return Err("circuitの成分残差が既存の環表示でない".into());
     };
-    let Some((_, terms)) = data.polynomial() else { return Ok(None) };
+    let Some((_, terms)) = data.polynomial() else {
+        return Ok(None);
+    };
     let zero = numeric::zero(ty, c)?;
     let mut nonzero = false;
     for (coefficient, powers) in terms {
@@ -78,7 +80,9 @@ fn constant_nonzero(
         if powers.iter().any(|n| *n != 0) {
             return Ok(None);
         }
-        if matches!(g.get(*coefficient)?.ty, NodeType::Expression(_)) { return Ok(None); }
+        if matches!(g.get(*coefficient)?.ty, NodeType::Expression(_)) {
+            return Ok(None);
+        }
         let coefficient = g.scalar(*coefficient)?;
         if coefficient.ty() != *ty {
             return Err("circuitの成分残差の係数型が違う".into());
@@ -127,16 +131,29 @@ pub(super) fn closed(
             .position(|r| *r == coordinate.index)
             .ok_or("circuitの元Law添字がない")?;
         let mut cases = vec![];
-        let parameters = if let Source::Polynomial(q) = &coordinate.source && q.row.is_none() {
-            let original = diagrams.first().and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
+        let parameters = if let Source::Polynomial(q) = &coordinate.source
+            && q.row.is_none()
+        {
+            let original = diagrams
+                .first()
+                .and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
                 .ok_or("circuitの元parameter宣言がない")?;
             let parameters = &original.parameters;
             // guardの自由引数もwhenの型域へ保持する。本文の差が定数でも消さない。
-            if original.guard.is_some() { parameters.clone() } else if let Some(reference) = q.nu
+            if original.guard.is_some() {
+                parameters.clone()
+            } else if let Some(reference) = q.nu
                 && let Some(Payload::Construction(value)) = &g.get(reference)?.payload
                 && let D::PolynomialLaw(data) = &value.data
-                && data.parameter_family(parameters) { parameters.clone() } else { vec![] }
-        } else { vec![] };
+                && data.parameter_family(parameters)
+            {
+                parameters.clone()
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        };
         for (object, row) in layout.data.objects.iter().enumerate() {
             tick(c)?;
             let current = row
@@ -203,9 +220,15 @@ pub(super) fn closed(
             } else if let Some(value) = constant_nonzero(g, epsilon, &ty, c)? {
                 Some(value)
             } else if !parameters.is_empty() {
-                let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else { return Ok(None) };
-                let D::PolynomialLaw(data) = &value.data else { return Ok(None) };
-                if !data.parameter_family(&parameters) { return Ok(None); }
+                let Some(Payload::Construction(value)) = &g.get(epsilon)?.payload else {
+                    return Ok(None);
+                };
+                let D::PolynomialLaw(data) = &value.data else {
+                    return Ok(None);
+                };
+                if !data.parameter_family(&parameters) {
+                    return Ok(None);
+                }
                 None
             } else {
                 return Ok(None);

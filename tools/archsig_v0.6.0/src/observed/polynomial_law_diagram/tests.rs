@@ -412,10 +412,16 @@ fn owned_architecture_keeps_containing_root_and_outside_object_residual_without_
             assert_eq!(source.object, index);
             if q.guard == EquationGuard::OutsideObject {
                 let nu = q.nu.unwrap();
-                assert!(terms(&g, nu).iter().any(|(_, powers)| powers.iter().any(|p| *p == 1)));
+                assert!(
+                    terms(&g, nu)
+                        .iter()
+                        .any(|(_, powers)| powers.iter().any(|p| *p == 1))
+                );
                 assert!(q.epsilon.is_none());
                 assert!(terms(&g, q.residual.unwrap()).is_empty());
-                let Part::Ideal { generators, .. } = data(&g, q.witness.unwrap()).part() else { panic!("ideal") };
+                let Part::Ideal { generators, .. } = data(&g, q.witness.unwrap()).part() else {
+                    panic!("ideal")
+                };
                 assert_eq!(generators, &vec![nu]);
             } else {
                 assert_eq!(q.guard, EquationGuard::AlwaysTrue);
@@ -540,7 +546,12 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
     let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
-    assert_eq!(env.results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>().len(), 1);
+    assert_eq!(
+        env.results
+            .verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
+            .len(),
+        1
+    );
     for mode in 0..4 {
         let mut forged = (**value).clone();
         let D::PolynomialLaw(data) = &mut forged.data else {
@@ -691,7 +702,12 @@ fn identical_polynomial_values_from_different_readings_keep_separate_origins_and
         };
         env.recheck_polynomial_law_diagram(&g, v).unwrap();
     }
-    assert_eq!(env.results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>().len(), 2);
+    assert_eq!(
+        env.results
+            .verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
+            .len(),
+        2
+    );
     let Some(Payload::Construction(v)) = &g.nodes[results[0].rings[0].0].payload else {
         panic!("native")
     };

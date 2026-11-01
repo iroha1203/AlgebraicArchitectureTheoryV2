@@ -1,8 +1,8 @@
 //! 元の内部arrowから、共通Atom carrier上の1段作用を再構成する。
-use crate::observed::environment::state::ScopedReplace;
 use super::super::path_value::{PathValue, Step};
 use super::*;
 use crate::definition::model::PrimitiveSignature;
+use crate::observed::environment::state::ScopedReplace;
 
 pub(in crate::observed) struct PathResult {
     pub(in crate::observed) value: Option<Scalar>,
@@ -208,8 +208,16 @@ impl Environment<'_> {
         name: &str,
     ) -> Result<&crate::archmap::Field, ValidationFailure> {
         self.tick()?;
-        self.indexes.inputs.law().resolved_names().get(name)
-            .and_then(|name| self.indexes.fields.get(&(owner.snapshot.clone(), owner.id.clone(), name.clone())))
+        self.indexes
+            .inputs
+            .law()
+            .resolved_names()
+            .get(name)
+            .and_then(|name| {
+                self.indexes
+                    .fields
+                    .get(&(owner.snapshot.clone(), owner.id.clone(), name.clone()))
+            })
             .copied()
             .ok_or_else(|| "Path構造の元fieldがない".into())
     }
@@ -233,7 +241,8 @@ impl Environment<'_> {
         };
         match &field.slot {
             Slot::Known { atom, origin, .. } => {
-                out.scope.merge(&self.indexes.scope(owner, reading, Some(origin))?);
+                out.scope
+                    .merge(&self.indexes.scope(owner, reading, Some(origin))?);
                 let mut fact = position;
                 fact.atom = Some(atom.clone());
                 out.support.push(self.path_atom_support(&fact));
@@ -257,7 +266,8 @@ impl Environment<'_> {
         field: &'b crate::archmap::Field,
     ) -> Result<Option<&'b Value>, ValidationFailure> {
         if self.path_reads_value(&field.ty)? {
-            self.indexes.field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
+            self.indexes
+                .field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         }
         let position = Fact {
             snapshot: owner.snapshot.clone(),
@@ -266,7 +276,8 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(value) = self
-            .indexes.primitive_input_valuation
+            .indexes
+            .primitive_input_valuation
             .as_ref()
             .and_then(|v| v.get(&position))
         {
@@ -281,7 +292,8 @@ impl Environment<'_> {
         let mut position = fact.clone();
         position.atom = None;
         if self
-            .indexes.primitive_valuation
+            .indexes
+            .primitive_valuation
             .as_ref()
             .is_some_and(|v| v.contains_key(&position))
         {
@@ -298,7 +310,8 @@ impl Environment<'_> {
         out: &mut PathResult,
     ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
-        self.indexes.field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
+        self.indexes
+            .field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         let position = Fact {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
@@ -306,7 +319,8 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(value) = self
-            .indexes.primitive_valuation
+            .indexes
+            .primitive_valuation
             .as_ref()
             .and_then(|v| v.get(&position))
         {
@@ -326,7 +340,8 @@ impl Environment<'_> {
                 value,
                 ..
             } => {
-                out.scope.merge(&self.indexes.scope(owner, reading, Some(origin))?);
+                out.scope
+                    .merge(&self.indexes.scope(owner, reading, Some(origin))?);
                 out.support.push(Fact {
                     snapshot: owner.snapshot.clone(),
                     subject: owner.id.clone(),
@@ -346,7 +361,8 @@ impl Environment<'_> {
                 };
                 out.missing.push(fact.clone());
                 Ok(self
-                    .state.completion_values
+                    .state
+                    .completion_values
                     .borrow()
                     .iter()
                     .find(|(f, _, _)| {
@@ -377,7 +393,8 @@ impl Environment<'_> {
             return Err("pathの元引数が原始参照1個でない".into());
         };
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .definitions()
             .declarations()
             .get(entity)
@@ -417,7 +434,8 @@ impl Environment<'_> {
             return Err("pathの元引数が原始参照1個でない".into());
         };
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .definitions()
             .declarations()
             .get(entity)
@@ -431,13 +449,15 @@ impl Environment<'_> {
         }
         let from = self.path_slot(
             arrow,
-            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
+            self.indexes
+                .field(&self.state, snapshot, subject, &format!("{entity}.from"))?,
             reading,
             &mut out,
         )?;
         let to = self.path_slot(
             arrow,
-            self.indexes.field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
+            self.indexes
+                .field(&self.state, snapshot, subject, &format!("{entity}.to"))?,
             reading,
             &mut out,
         )?;
@@ -487,7 +507,8 @@ impl Environment<'_> {
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
-                        out.scope.merge(&self.indexes.scope(s, reading, Some(origin))?);
+                        out.scope
+                            .merge(&self.indexes.scope(s, reading, Some(origin))?);
                         universe.insert(Fact {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
@@ -597,7 +618,8 @@ impl Environment<'_> {
             #[cfg(test)]
             data::observe_actual(
                 _span,
-                self.state.scoped_context
+                self.state
+                    .scoped_context
                     .get()
                     .or(self.state.context.get())
                     .unwrap_or_default(),
@@ -643,7 +665,8 @@ impl Environment<'_> {
             let old = self.state.completion_values.scoped(vec![]);
             let result = (|| {
                 if let Some(case) = actual_context.case {
-                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() =
+                        self.completion_values(graph, case)?;
                 }
                 self.path_operation(id, values)
             })();
@@ -772,7 +795,11 @@ impl Environment<'_> {
         };
         let bindings = self.expression_bindings(graph, source)?;
         let Some(value) = self
-            .analyze_source(graph, self.indexes.inputs.law().exprs()[args[0]].span, bindings)?
+            .analyze_source(
+                graph,
+                self.indexes.inputs.law().exprs()[args[0]].span,
+                bindings,
+            )?
             .known_value
         else {
             return Ok(None);

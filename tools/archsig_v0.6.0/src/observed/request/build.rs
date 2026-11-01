@@ -31,7 +31,11 @@ pub(super) fn resolve(
 ) -> Result<Request, ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     let Selector::Declaration { name } = &raw.head else {
-        return Err(error(&raw.id, "head", "build head must be a fully qualified reading name"));
+        return Err(error(
+            &raw.id,
+            "head",
+            "build head must be a fully qualified reading name",
+        ));
     };
     namespaces(law, name, &raw.id, c)?;
     let mut dependencies = vec![];
@@ -39,7 +43,11 @@ pub(super) fn resolve(
     for (key, value) in raw.arguments {
         phase(c, Checkpoint::RequestBinding)?;
         if key != "on" {
-            return Err(error(&raw.id, &key, "build only accepts the fixed argument on"));
+            return Err(error(
+                &raw.id,
+                &key,
+                "build only accepts the fixed argument on",
+            ));
         }
         match &value {
             Selector::Subject { .. } => {}
@@ -82,7 +90,7 @@ fn roots(
 ) -> Result<(), ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     match ty {
-        ProjectionType::ArchitectureRoot(_) if !architecture => {},
+        ProjectionType::ArchitectureRoot(_) if !architecture => {}
         ProjectionType::Law(Type::Ref(name)) | ProjectionType::ArchitectureRoot(name) => {
             if let Some(declaration) = law.definitions().declarations().get(name) {
                 if visible.contains(&declaration.namespace)
@@ -97,7 +105,7 @@ fn roots(
         }
         ProjectionType::Dynamic(options) => {
             for option in options {
-                roots(law, option, visible, c, found,architecture)?;
+                roots(law, option, visible, c, found, architecture)?;
             }
         }
         _ => {}
@@ -125,7 +133,14 @@ pub(super) fn root_types(
             .ok_or_else(|| error(&r.id, "on", "missing build on"))?;
         let (plan, _) = selector_type(law, map, requests, names, &on.value, c, (&r.id, "on"))?;
         let mut found = BTreeSet::new();
-        roots(law, &plan.ty, &visible, c, &mut found,matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair))?;
+        roots(
+            law,
+            &plan.ty,
+            &visible,
+            c,
+            &mut found,
+            matches!(r.kind, QuestionKind::Solve | QuestionKind::Repair),
+        )?;
         if found.is_empty() {
             return Err(error(
                 &r.id,

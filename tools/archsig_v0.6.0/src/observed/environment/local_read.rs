@@ -1,6 +1,6 @@
 //! 明示localの各instanceが公開する直接読取り。依存と読取り権限を分ける。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
+use crate::observed::environment::state::ScopedReplace;
 use crate::observed::{build_result::Builder, change_result, local_result};
 use crate::{
     canonical::Json,
@@ -77,10 +77,8 @@ fn evaluate_read(
     let outer_missing = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let outer_reads = env.state.primitive_reads.scoped(Some(BTreeSet::new()));
     let value = env.scoped_ast(id, variables, scope, reading);
-    let reads = outer_reads.restore()
-        .ok_or("localの読取り収集がない")?;
-    let missing = outer_missing.restore()
-        .ok_or("localの欠測収集がない")?;
+    let reads = outer_reads.restore().ok_or("localの読取り収集がない")?;
+    let missing = outer_missing.restore().ok_or("localの欠測収集がない")?;
     if let Some(outer) = env.state.primitive_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
@@ -93,7 +91,8 @@ fn evaluate_read(
         missing
             .into_iter()
             .filter(|f| {
-                !env.indexes.primitive_valuation
+                !env.indexes
+                    .primitive_valuation
                     .as_ref()
                     .is_some_and(|v| v.contains_key(f))
             })
@@ -102,8 +101,11 @@ fn evaluate_read(
 }
 // 値/guardに必要な欠測を収集する。局所幾何の全読取り位置の収集とは区別する。
 fn evaluate_value(
-    env: &Environment<'_>, id: usize, variables: &BTreeMap<String, SourceValue>,
-    scope: &Scope, reading: &str,
+    env: &Environment<'_>,
+    id: usize,
+    variables: &BTreeMap<String, SourceValue>,
+    scope: &Scope,
+    reading: &str,
 ) -> Result<(SourceValue, Vec<Fact>, Vec<Fact>), ValidationFailure> {
     let outer = env.state.value_read.scoped(true);
     let result = evaluate_read(env, id, variables, scope, reading);
@@ -199,7 +201,8 @@ pub(in crate::observed) fn read_value(
     reading: &str,
 ) -> Result<(Option<Scalar>, Vec<Fact>, Scope, Vec<Fact>), ValidationFailure> {
     let ty = env
-        .indexes.inputs
+        .indexes
+        .inputs
         .law()
         .expr_type(id)
         .ok_or("local readの型がない")?
@@ -248,13 +251,15 @@ pub(in crate::observed) fn implicit_support(
     implicit_support_with_parameters(env, id, bindings, &[], reading, c)
 }
 pub(in crate::observed) fn implicit_support_with_parameters(
-    env: &Environment<'_>, id: usize, bindings: &[(String, Scalar)],
-    parameters: &[crate::law::model::Param], reading: &str, c: &mut Control,
+    env: &Environment<'_>,
+    id: usize,
+    bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param],
+    reading: &str,
+    c: &mut Control,
 ) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
     let (mut variables, _) = change_affine::law_variables(env, parameters, &[])?;
-    variables.extend(bindings
-        .iter()
-        .map(|(n, v)| (n.clone(), known(v.clone()))));
+    variables.extend(bindings.iter().map(|(n, v)| (n.clone(), known(v.clone()))));
     let (value, reads, missing) = evaluate_read(env, id, &variables, &Scope::default(), reading)?;
     if !missing.is_empty() {
         return Err("確定した暗黙読取りに欠測がある".into());
@@ -300,7 +305,11 @@ pub(in crate::observed) fn read_bindings(
             | ExprKind::Field { base: child, .. }
             | ExprKind::Unary { operand: child, .. } => pending.push(*child),
             ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs, *rhs]),
-            ExprKind::If { cond, then_branch, else_branch } => {
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
                 pending.extend([*cond, *then_branch, *else_branch]);
             }
             ExprKind::Tuple(items) => pending.extend(items),
@@ -352,7 +361,8 @@ fn projections(
                     subject: slot.subject.clone(),
                     entity: owner.ty.to_string(),
                 };
-                let declaration = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
+                let declaration =
+                    &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
                 let (params, fields) = declaration
                     .signature
                     .record_fields()
@@ -360,7 +370,12 @@ fn projections(
                 let field = params
                     .iter()
                     .chain(fields)
-                    .find(|f| slot.field.as_ref().is_some_and(|name| name.owner() == Some(owner.ty.as_str()) && name.short() == f.name.as_str()))
+                    .find(|f| {
+                        slot.field.as_ref().is_some_and(|name| {
+                            name.owner() == Some(owner.ty.as_str())
+                                && name.short() == f.name.as_str()
+                        })
+                    })
                     .ok_or("末端fieldの宣言がない")?;
                 let mut carrier = vec![];
                 subject_carrier(value, &mut carrier, c)?;
@@ -402,7 +417,10 @@ fn projections(
     }
     Ok(())
 }
-fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a str, Vec<&'a crate::names::QualifiedName>)>, ValidationFailure> {
+fn field_path<'a>(
+    env: &'a Environment<'_>,
+    mut id: usize,
+) -> Result<Option<(&'a str, Vec<&'a crate::names::QualifiedName>)>, ValidationFailure> {
     let mut fields = vec![];
     loop {
         env.control.clone().checkpoint(Checkpoint::Localize)?;
@@ -410,11 +428,18 @@ fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a
         match &expression.kind {
             ExprKind::Group(child) => id = *child,
             ExprKind::Field { base, .. } => {
-                fields.push(expression.field.as_ref().ok_or("局所fieldの静的解決がない")?);
+                fields.push(
+                    expression
+                        .field
+                        .as_ref()
+                        .ok_or("局所fieldの静的解決がない")?,
+                );
                 id = *base;
             }
             ExprKind::Dotted(_) => {
-                let Some(lexical) = &expression.lexical else { return Ok(None); };
+                let Some(lexical) = &expression.lexical else {
+                    return Ok(None);
+                };
                 fields.extend(lexical.projections.iter().rev().map(|p| &p.name));
                 fields.reverse();
                 return Ok(Some((lexical.name.as_str(), fields)));
@@ -436,26 +461,51 @@ fn visible_slots(
         env.control.clone().checkpoint(Checkpoint::Localize)?;
         let expr = &env.indexes.inputs.law().exprs()[id];
         match &expr.kind {
-            ExprKind::Group(child) => { pending.push(*child); continue; }
-            ExprKind::Tuple(items) => { pending.extend(items.iter().rev()); continue; }
+            ExprKind::Group(child) => {
+                pending.push(*child);
+                continue;
+            }
+            ExprKind::Tuple(items) => {
+                pending.extend(items.iter().rev());
+                continue;
+            }
             ExprKind::Bool(_) | ExprKind::Int(_) | ExprKind::Str(_) | ExprKind::Unit => continue,
             _ => {}
         }
         let (variable, fields) = field_path(env, id)?
             .ok_or_else(|| unsupported(expr.span, "明示localの複合読取りの因子分解は未実装"))?;
-        let (_, root) = bindings.iter().find(|(n, _)| n == variable)
+        let (_, root) = bindings
+            .iter()
+            .find(|(n, _)| n == variable)
             .ok_or_else(|| unsupported(expr.span, "明示localの読取り元が束縛でない"))?;
-        let Some((last, prefix)) = fields.split_last() else { continue; };
+        let Some((last, prefix)) = fields.split_last() else {
+            continue;
+        };
         let mut owner = known(root.clone());
         for field in prefix {
             env.control.clone().checkpoint(Checkpoint::Localize)?;
             owner = env.scoped_field(owner, field, &Scope::default(), reading, expr.span)?;
         }
-        let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
-            return Err(unsupported(expr.span, "明示localのfield読取り元が確定した参照でない"));
+        let Some(Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        }) = &owner.known_value
+        else {
+            return Err(unsupported(
+                expr.span,
+                "明示localのfield読取り元が確定した参照でない",
+            ));
         };
-        if last.owner() != Some(entity.as_str()) { return Err("局所fieldのowner型が違う".into()); }
-        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some((*last).clone()), atom: None });
+        if last.owner() != Some(entity.as_str()) {
+            return Err("局所fieldのowner型が違う".into());
+        }
+        visible.push(Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some((*last).clone()),
+            atom: None,
+        });
     }
     visible.sort();
     visible.dedup();
@@ -464,21 +514,31 @@ fn visible_slots(
 /// 固定状態の参照経路では、中間参照を値座標の公開要件へ混ぜない。
 /// let/helper等の一般因子分解はここで推測せず、従来の支持検査へ戻す。
 pub(in crate::observed) fn fixed_chain_visibility(
-    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)],
-    parameters: &[crate::law::model::Param], reading: &str,
+    env: &Environment<'_>,
+    roots: &[usize],
+    bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param],
+    reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, parameters, reading, c, true)
 }
 pub(in crate::observed) fn state_visibility(
-    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)], reading: &str,
+    env: &Environment<'_>,
+    roots: &[usize],
+    bindings: &[(String, Scalar)],
+    reading: &str,
     c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, &[], reading, c, false)
 }
 pub(in crate::observed) fn state_visibility_with_parameters(
-    env: &Environment<'_>, roots: &[usize], bindings: &[(String, Scalar)],
-    parameters: &[crate::law::model::Param], reading: &str, c: &mut Control,
+    env: &Environment<'_>,
+    roots: &[usize],
+    bindings: &[(String, Scalar)],
+    parameters: &[crate::law::model::Param],
+    reading: &str,
+    c: &mut Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, parameters, reading, c, false)
 }
@@ -496,9 +556,7 @@ fn state_visibility_inner(
         subject_carrier(value, &mut carrier, c)?;
     }
     let (mut variables, _) = change_affine::law_variables(env, parameters, &[])?;
-    variables.extend(bindings
-        .iter()
-        .map(|(n, v)| (n.clone(), known(v.clone()))));
+    variables.extend(bindings.iter().map(|(n, v)| (n.clone(), known(v.clone()))));
     let mut pending = roots
         .iter()
         .map(|id| (*id, variables.clone()))
@@ -541,32 +599,56 @@ fn state_visibility_inner(
             ExprKind::Index { .. } if !require_chain => {
                 // 束縛済み値の射影は固定係数。観測fieldの射影を自由座標から消さない。
                 let value = env.scoped_ast(id, &variables, &Scope::default(), reading)?;
-                if value.condition_failed || value.condition_pending
-                    || value.support.iter().any(|f| f.field.is_some()) {
+                if value.condition_failed
+                    || value.condition_pending
+                    || value.support.iter().any(|f| f.field.is_some())
+                {
                     return Ok(None);
                 }
-                let Some(value) = value.known_value else { return Ok(None); };
+                let Some(value) = value.known_value else {
+                    return Ok(None);
+                };
                 subject_carrier(&value, &mut carrier, c)?;
             }
             ExprKind::Dotted(_) | ExprKind::Field { .. } => {
                 let Some((name, fields)) = field_path(env, id)? else {
-                    let ExprKind::Field { base, name } = &env.indexes.inputs.law().exprs()[id].kind else {
+                    let ExprKind::Field { base, name } = &env.indexes.inputs.law().exprs()[id].kind
+                    else {
                         return Ok(None);
                     };
                     let owner = env.scoped_ast(*base, &variables, &Scope::default(), reading)?;
-                    if owner.condition_failed || owner.condition_pending
-                        || owner.support.iter().any(|f| f.field.is_some()) {
+                    if owner.condition_failed
+                        || owner.condition_pending
+                        || owner.support.iter().any(|f| f.field.is_some())
+                    {
                         return Ok(None);
                     }
-                    let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
+                    let Some(Scalar::Subject {
+                        snapshot,
+                        subject,
+                        entity,
+                    }) = &owner.known_value
+                    else {
                         return Ok(None);
                     };
-                    visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(),
-                        field: Some(env.input_name(&format!("{entity}.{}",name.name))?), atom: None });
-                    subject_carrier(owner.known_value.as_ref().ok_or("局所読取り元がない")?, &mut carrier, c)?;
+                    visible.push(Fact {
+                        snapshot: snapshot.clone(),
+                        subject: subject.clone(),
+                        field: Some(env.input_name(&format!("{entity}.{}", name.name))?),
+                        atom: None,
+                    });
+                    subject_carrier(
+                        owner.known_value.as_ref().ok_or("局所読取り元がない")?,
+                        &mut carrier,
+                        c,
+                    )?;
                     let value = env.scoped_ast(id, &variables, &Scope::default(), reading)?;
-                    if value.condition_failed || value.condition_pending { return Ok(None); }
-                    if let Some(value) = value.known_value { subject_carrier(&value,&mut carrier,c)?; }
+                    if value.condition_failed || value.condition_pending {
+                        return Ok(None);
+                    }
+                    if let Some(value) = value.known_value {
+                        subject_carrier(&value, &mut carrier, c)?;
+                    }
                     chain = true;
                     continue;
                 };
@@ -623,7 +705,17 @@ pub(in crate::observed) fn materialize(
     states: &[Environment<'_>],
     c: &mut Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
-    materialize_with_free(env, b, declaration, request, coordinates, states, &[], None, c)
+    materialize_with_free(
+        env,
+        b,
+        declaration,
+        request,
+        coordinates,
+        states,
+        &[],
+        None,
+        c,
+    )
 }
 pub(in crate::observed) fn materialize_with_free(
     env: &Environment<'_>,
@@ -712,7 +804,10 @@ fn free_coefficient(env: &Environment<'_>, slots: &[Fact]) -> Result<Type, Valid
     let mut coefficient = None;
     for slot in slots {
         env.tick()?;
-        let ty = env.indexes.field(&env.state,
+        let ty = env
+            .indexes
+            .field(
+                &env.state,
                 &slot.snapshot,
                 &slot.subject,
                 slot.field.as_ref().ok_or("自由位置にfieldがない")?,
@@ -782,10 +877,10 @@ fn affine_read_image(
     read_type: &Type,
     c: &mut Control,
 ) -> Result<(NodeRef, Vec<Fact>, crate::observed::field_fiber::Matrix), ValidationFailure> {
+    use crate::observed::{change_result::field_linear_result as scalar_wire, numeric};
     use crate::observed::{
         change_result::linear_result as wire, construction_result::ConstructionType as CT,
     };
-    use crate::observed::{numeric, change_result::field_linear_result as scalar_wire};
     let slots = visible
         .iter()
         .filter(|f| free.contains(f))
@@ -796,9 +891,22 @@ fn affine_read_image(
     let mut arbitrary = Environment::with_primitive_valuation(env.indexes.inputs, &assignments, c)?;
     arbitrary.indexes.object = env.object_domain();
     for slot in free {
-        arbitrary
-            .indexes.affine_valuation
-            .insert(slot.clone(), crate::observed::affine::Form::typed_state(&env.indexes.field(&env.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase(), slot, c)?);
+        arbitrary.indexes.affine_valuation.insert(
+            slot.clone(),
+            crate::observed::affine::Form::typed_state(
+                &env.indexes
+                    .field(
+                        &env.state,
+                        &slot.snapshot,
+                        &slot.subject,
+                        slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                    )?
+                    .ty
+                    .erase(),
+                slot,
+                c,
+            )?,
+        );
     }
     let variables = bindings
         .iter()
@@ -823,9 +931,11 @@ fn affine_read_image(
                     )
                 })?;
                 let coordinates = if coefficient == Type::Z {
-                    form.state_coordinates(&slots, c)?.map(|(v,row)| (v.map(Scalar::Z),row.into_iter().map(Scalar::Z).collect()))
+                    form.state_coordinates(&slots, c)?.map(|(v, row)| {
+                        (v.map(Scalar::Z), row.into_iter().map(Scalar::Z).collect())
+                    })
                 } else {
-                    form.rational_state_coordinates(&slots,c)?
+                    form.rational_state_coordinates(&slots, c)?
                 };
                 let (constant, row) = coordinates.ok_or_else(|| {
                     unsupported(
@@ -835,7 +945,10 @@ fn affine_read_image(
                 })?;
                 matrix.push(row);
                 offset.push(constant.ok_or_else(|| {
-                    unsupported(env.indexes.inputs.law().exprs()[id].span, "局所読取りの定数部が欠測")
+                    unsupported(
+                        env.indexes.inputs.law().exprs()[id].span,
+                        "局所読取りの定数部が欠測",
+                    )
                 })?);
             }
             _ => {
@@ -849,7 +962,10 @@ fn affine_read_image(
     let ring = b.push(
         NodeType::Construction(CT::Ring),
         "ring",
-        Json::obj([("kind", Json::str("scalar")), ("scalar", coefficient.wire())]),
+        Json::obj([
+            ("kind", Json::str("scalar")),
+            ("scalar", coefficient.wire()),
+        ]),
         vec![],
         None,
         None,
@@ -910,13 +1026,18 @@ fn affine_read_image(
         None,
         None,
     )?;
-    let origin = scalar_wire::vector(b, source_module, &vec![numeric::zero(&coefficient,c)?; slots.len()], c)?;
-    let zero=numeric::zero(&coefficient,c)?;
-    let one=numeric::literal("1",&coefficient,c)?;
+    let origin = scalar_wire::vector(
+        b,
+        source_module,
+        &vec![numeric::zero(&coefficient, c)?; slots.len()],
+        c,
+    )?;
+    let zero = numeric::zero(&coefficient, c)?;
+    let one = numeric::literal("1", &coefficient, c)?;
     let identity = (0..slots.len())
         .map(|i| {
             (0..slots.len())
-                .map(|j| if i==j {one.clone()} else {zero.clone()})
+                .map(|j| if i == j { one.clone() } else { zero.clone() })
                 .collect()
         })
         .collect();
@@ -1036,7 +1157,11 @@ pub(in crate::observed) fn materialize_positions(
             .find(|f| name == &format!("{}.{}", owner.ty, f.name))
             .ok_or("暗黙読取りのfield宣言がない")?;
         let subject_ref = change_result::value(b, &subject)?;
-        let ty = env.indexes.field(&env.state, &slot.snapshot, &slot.subject, name)?.ty.erase();
+        let ty = env
+            .indexes
+            .field(&env.state, &slot.snapshot, &slot.subject, name)?
+            .ty
+            .erase();
         let expression = b.push(
             NodeType::Expression(ty.clone()),
             "expression",
@@ -1231,9 +1356,22 @@ fn materialize_instance(
                     Environment::with_primitive_valuation(env.indexes.inputs, &assignments, c)?;
                 arbitrary.indexes.object = env.object_domain();
                 for slot in free {
-                    arbitrary
-                        .indexes.affine_valuation
-                        .insert(slot.clone(), crate::observed::affine::Form::typed_state(&env.indexes.field(&env.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase(), slot, c)?);
+                    arbitrary.indexes.affine_valuation.insert(
+                        slot.clone(),
+                        crate::observed::affine::Form::typed_state(
+                            &env.indexes
+                                .field(
+                                    &env.state,
+                                    &slot.snapshot,
+                                    &slot.subject,
+                                    slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                                )?
+                                .ty
+                                .erase(),
+                            slot,
+                            c,
+                        )?,
+                    );
                 }
                 let (all, _, _) =
                     evaluate_read(&arbitrary, *id, &variables, &scope, &declaration.reading)?;
@@ -1331,7 +1469,10 @@ fn materialize_instance(
                 dependencies.extend(positions);
                 let state_visible = if !free.is_empty() {
                     state_visibility(state, &[*id], bindings, &declaration.reading, c)?
-                        .ok_or_else(|| unsupported(declaration.span, "整数読取りの支持を構成できない"))?.1
+                        .ok_or_else(|| {
+                            unsupported(declaration.span, "整数読取りの支持を構成できない")
+                        })?
+                        .1
                 } else if read.known_value.is_some() && !read.condition_pending {
                     visible_slots(state, *id, bindings, &declaration.reading)?
                 } else {
@@ -1402,8 +1543,14 @@ fn materialize_instance(
             let ty = ty.clone();
             let information_before = information.len();
             let image = if visible.iter().any(|slot| free.contains(slot)) {
-                if matches!(ty, Type::Z | Type::Q) && visible.len() == 1 && field_path(env, *id)?.is_some() {
-                    information.push((visible.clone(), vec![vec![crate::observed::numeric::literal("1", &ty, c)?]]));
+                if matches!(ty, Type::Z | Type::Q)
+                    && visible.len() == 1
+                    && field_path(env, *id)?.is_some()
+                {
+                    information.push((
+                        visible.clone(),
+                        vec![vec![crate::observed::numeric::literal("1", &ty, c)?]],
+                    ));
                     b.push(
                         NodeType::Domain,
                         "domain",
@@ -1495,7 +1642,7 @@ fn materialize_instance(
             slots.sort();
             slots.dedup();
             let coefficient = free_coefficient(env, &slots)?;
-            let zero = crate::observed::numeric::zero(&coefficient,c)?;
+            let zero = crate::observed::numeric::zero(&coefficient, c)?;
             let mut matrix = vec![];
             for (local, rows) in &information {
                 for row in rows {
@@ -1531,7 +1678,8 @@ fn materialize_instance(
                     entity: owner.ty.to_string(),
                 };
                 let name = slot.field.as_ref().ok_or("復元するfieldがない")?;
-                let definition = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
+                let definition =
+                    &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
                 let (params, fields) = definition
                     .signature
                     .record_fields()
@@ -1556,7 +1704,11 @@ fn materialize_instance(
                     arguments: out.read_refs.clone(),
                     field: Some((subject, field.location.clone())),
                     values: value.into_iter().collect(),
-                    ty: env.indexes.field(&env.state, &slot.snapshot, &slot.subject, name)?.ty.erase(),
+                    ty: env
+                        .indexes
+                        .field(&env.state, &slot.snapshot, &slot.subject, name)?
+                        .ty
+                        .erase(),
                     support: local_result::geometry::Support {
                         carrier: vec![],
                         positions: vec![slot.clone()],
@@ -1742,7 +1894,10 @@ pub(in crate::observed) fn affine_transport(
     expressions: [usize; 2],
     ty: &Type,
 ) -> Result<AffineTransport, ValidationFailure> {
-    use crate::observed::{affine, environment::{change_affine, numeric_parameters}};
+    use crate::observed::{
+        affine,
+        environment::{change_affine, numeric_parameters},
+    };
     let mut out = AffineTransport {
         status: Decision::Established,
         point: None,
@@ -1770,7 +1925,11 @@ pub(in crate::observed) fn affine_transport(
         }
         let (source, all_axes) = numeric_parameters::law_variables(env, params[0], bindings[0])?;
         let mixed = all_axes.iter().any(|axis| axis.kind.ty() != *ty);
-        let axes = all_axes.iter().filter(|axis| axis.kind.ty() == *ty).cloned().collect::<Vec<_>>();
+        let axes = all_axes
+            .iter()
+            .filter(|axis| axis.kind.ty() == *ty)
+            .cloned()
+            .collect::<Vec<_>>();
         let (mut target, _) = numeric_parameters::law_variables(env, params[1], bindings[1])?;
         // The target's numeric argument is the same source coordinate at that position.
         for (s, t) in params[0].iter().zip(params[1]) {
@@ -1793,14 +1952,24 @@ pub(in crate::observed) fn affine_transport(
                 // Keep only observations still needed to decide the guard. In
                 // particular, a known false source has no read obligations.
                 let outer = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
-                let evaluated = evaluate_value(env, id, vars, &Scope::default(), &declarations[side].reading);
-                let collected = outer.restore()
+                let evaluated = evaluate_value(
+                    env,
+                    id,
+                    vars,
+                    &Scope::default(),
+                    &declarations[side].reading,
+                );
+                let collected = outer
+                    .restore()
                     .ok_or("mixed guard missing-read collector is absent")?;
                 let (value, _, missing) = match evaluated {
                     Ok(value) => value,
                     Err(error) => {
                         pending.facts.extend(collected.into_iter().filter(|fact| {
-                            !env.indexes.primitive_valuation.as_ref().is_some_and(|values| values.contains_key(fact))
+                            !env.indexes
+                                .primitive_valuation
+                                .as_ref()
+                                .is_some_and(|values| values.contains_key(fact))
                         }));
                         return Err(error);
                     }
@@ -1811,7 +1980,9 @@ pub(in crate::observed) fn affine_transport(
                     if let Some(Scalar::Bool(holds)) = value.known_value {
                         guards[side] = None;
                         if !holds {
-                            if side == 0 { return Ok(()) }
+                            if side == 0 {
+                                return Ok(());
+                            }
                             empty_target = true;
                         }
                         continue;
@@ -1850,11 +2021,13 @@ pub(in crate::observed) fn affine_transport(
         // On p + K R^d (R = Z or Q), the value at p and every kernel
         // coefficient must vanish. The solver for R determines the full domain.
         let zero = numeric::zero(ty, &env.control)?;
-        let mut point = if empty_target { domain.particular.clone() } else { None };
+        let mut point = if empty_target {
+            domain.particular.clone()
+        } else {
+            None
+        };
         for (row, rhs) in target_domain.equations.iter().zip(&target_domain.rhs) {
-            if let Some(values) =
-                domain.violation(row, rhs, env)?
-            {
+            if let Some(values) = domain.violation(row, rhs, env)? {
                 point = Some(values);
                 break;
             }
@@ -1909,24 +2082,35 @@ pub(in crate::observed) fn affine_transport(
                 out.status = Decision::Undetermined;
                 return Ok(());
             };
-            point = domain.violation(&coefficients, &numeric::binary(BinOp::Sub, &zero, &constant, &env.control)?, env)?;
+            point = domain.violation(
+                &coefficients,
+                &numeric::binary(BinOp::Sub, &zero, &constant, &env.control)?,
+                env,
+            )?;
         }
         if let Some(point) = point {
             out.status = Decision::Refuted;
             // The other coefficient domain remains independent. Choose its zero
             // only for this witness, after finding a violation on the full read domain.
             let mut coordinates = point.into_iter();
-            let point = all_axes.iter().map(|axis| {
-                if axis.kind.ty() == *ty {
-                    coordinates.next().ok_or_else(|| "local witness coordinate missing".into())
-                } else {
-                    numeric::zero(&axis.kind.ty(), &env.control)
-                }
-            }).collect::<Result<Vec<_>, ValidationFailure>>()?;
+            let point = all_axes
+                .iter()
+                .map(|axis| {
+                    if axis.kind.ty() == *ty {
+                        coordinates
+                            .next()
+                            .ok_or_else(|| "local witness coordinate missing".into())
+                    } else {
+                        numeric::zero(&axis.kind.ty(), &env.control)
+                    }
+                })
+                .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let mut values = vec![];
-            let numeric = params[0].iter()
+            let numeric = params[0]
+                .iter()
                 .filter(|p| !bindings[0].iter().any(|(name, _)| *name == p.name))
-                .cloned().collect::<Vec<_>>();
+                .cloned()
+                .collect::<Vec<_>>();
             for p in params[0] {
                 env.tick()?;
                 values.push(
@@ -1942,10 +2126,12 @@ pub(in crate::observed) fn affine_transport(
         Ok(())
     })();
     outer_value.restore();
-    let missing = outer_missing.restore()
+    let missing = outer_missing
+        .restore()
         .ok_or("numeric local missing-read collector is absent")?;
     pending.facts.extend(missing.into_iter().filter(|fact| {
-        !env.indexes.primitive_valuation
+        !env.indexes
+            .primitive_valuation
             .as_ref()
             .is_some_and(|values| values.contains_key(fact))
     }));

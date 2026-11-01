@@ -146,10 +146,7 @@ impl Value {
                         E::checkpoint(control, point)?;
                     }
                     Json::obj([
-                        (
-                            "tag",
-                            Json::str(constructor.short()),
-                        ),
+                        ("tag", Json::str(constructor.short())),
                         ("args", Json::Arr(out)),
                     ])
                 }
@@ -328,10 +325,18 @@ impl<E: InputError> Reader<'_, '_, E> {
                 })?;
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
                 if !d.is_positive() {
-                    return Err((syntax(&pointer_push(ptr, "1"), "Q denominator must be positive")).into());
+                    return Err((syntax(
+                        &pointer_push(ptr, "1"),
+                        "Q denominator must be positive",
+                    ))
+                    .into());
                 }
                 if !n.gcd(&d).is_one() {
-                    return Err((syntax(ptr, "Q must be a reduced fraction (zero is [\"0\",\"1\"])")).into());
+                    return Err((syntax(
+                        ptr,
+                        "Q must be a reduced fraction (zero is [\"0\",\"1\"])",
+                    ))
+                    .into());
                 }
                 Value::Q(n, d)
             }
@@ -346,7 +351,11 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let v: BigUint = s.parse().expect("非負整数");
                 let p: BigUint = p.parse().expect("法");
                 if v >= p {
-                    return Err((syntax(ptr, format!("Fp value must be at least 0 and less than {p}"))).into());
+                    return Err((syntax(
+                        ptr,
+                        format!("Fp value must be at least 0 and less than {p}"),
+                    ))
+                    .into());
                 }
                 Value::Fp(v)
             }
@@ -423,11 +432,10 @@ impl<E: InputError> Reader<'_, '_, E> {
                         let inserted = if seen.insert(key) {
                             Ok(())
                         } else {
-                            Err((syntax(
-                                &pointer_push(ptr, &i.to_string()),
-                                "duplicate Set value",
-                            ))
-                            .into())
+                            Err(
+                                (syntax(&pointer_push(ptr, &i.to_string()), "duplicate Set value"))
+                                    .into(),
+                            )
                         };
                         E::finish(inserted, &mut self.control, Checkpoint::ArchMapCanonical)?;
                     }
@@ -438,7 +446,9 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Option(t) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "Option must be {\"none\":true} or {\"some\":v}")).into());
+                    return Err(
+                        (syntax(ptr, "Option must be {\"none\":true} or {\"some\":v}")).into(),
+                    );
                 };
                 match entries.as_slice() {
                     [(k, v)] if k == "none" && v.value == JValue::Bool(true) => Value::Option(None),
@@ -448,15 +458,19 @@ impl<E: InputError> Reader<'_, '_, E> {
                         &pointer_push(ptr, "some"),
                     )?))),
                     _ => {
-                        return Err(
-                            (syntax(ptr, "Option must be {\"none\":true} or {\"some\":v}")).into()
-                        );
+                        return Err((syntax(
+                            ptr,
+                            "Option must be {\"none\":true} or {\"some\":v}",
+                        ))
+                        .into());
                     }
                 }
             }
             Type::Data(d) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}")).into());
+                    return Err(
+                        (syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}")).into(),
+                    );
                 };
                 if entries.len() != 2 {
                     return Err(
@@ -514,7 +528,10 @@ impl<E: InputError> Reader<'_, '_, E> {
                 if items.len() != c.arguments.len() {
                     return Err((syntax(
                         &aptr,
-                        format!("constructor `{tag}` requires {} arguments", c.arguments.len()),
+                        format!(
+                            "constructor `{tag}` requires {} arguments",
+                            c.arguments.len()
+                        ),
                     ))
                     .into());
                 }
@@ -570,10 +587,14 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Term(args, ret) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err((syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}")).into());
+                    return Err(
+                        (syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}")).into(),
+                    );
                 };
                 if entries.len() != 2 {
-                    return Err((syntax(ptr, "Term must contain only params and body fields")).into());
+                    return Err(
+                        (syntax(ptr, "Term must contain only params and body fields")).into(),
+                    );
                 }
                 let params = super::schema::field_map::<E, _>(
                     entries,
@@ -596,9 +617,11 @@ impl<E: InputError> Reader<'_, '_, E> {
                     return Err((syntax(&pptr, "params must be an array")).into());
                 };
                 if names.len() != args.len() {
-                    return Err(
-                        (syntax(&pptr, format!("Term requires {} parameters", args.len()))).into(),
-                    );
+                    return Err((syntax(
+                        &pptr,
+                        format!("Term requires {} parameters", args.len()),
+                    ))
+                    .into());
                 }
                 let mut ps = Vec::new();
                 let mut seen = std::collections::HashSet::new();

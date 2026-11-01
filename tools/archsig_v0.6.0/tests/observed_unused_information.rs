@@ -260,7 +260,10 @@ fn retained_metadata(checked: &CheckedInputs, result: &Json) {
     for declaration in checked.law().infos() {
         assert_eq!(
             named(result, "declarations", "name", &declaration.name),
-            &positions::law_positions(declaration_wire(declaration), checked.sources().law().bytes())
+            &positions::law_positions(
+                declaration_wire(declaration),
+                checked.sources().law().bytes()
+            )
         );
         let (start, end) = declaration.span;
         let script = std::str::from_utf8(checked.sources().law().bytes()).unwrap();

@@ -63,8 +63,11 @@ impl<'a> Environment<'a> {
             {
                 return Err("候補代入の位置が重複・fieldなし・観測Atom付きである".into());
             }
-            let subject = environment.indexes.subject(&position.snapshot, &position.subject)?;
-            let field = environment.indexes.field(&environment.state,
+            let subject = environment
+                .indexes
+                .subject(&position.snapshot, &position.subject)?;
+            let field = environment.indexes.field(
+                &environment.state,
                 &position.snapshot,
                 &position.subject,
                 position.field.as_deref().ok_or("候補代入のfieldがない")?,

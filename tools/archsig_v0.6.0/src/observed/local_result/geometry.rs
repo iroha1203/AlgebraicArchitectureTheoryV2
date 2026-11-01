@@ -1,10 +1,14 @@
 //! 支持contextと有限局所系。係数計算は整数実装を使う。
 use super::*;
-#[path = "../local_finite_state.rs"] mod finite_state;
+#[path = "../local_finite_state.rs"]
+mod finite_state;
 mod mixed_equation {
     use super::*;
     use crate::observed::change_result::linear_result as wire;
-    use crate::observed::{environment::change_affine, integer_fiber::{self,Matrix}};
+    use crate::observed::{
+        environment::change_affine,
+        integer_fiber::{self, Matrix},
+    };
     use num_bigint::BigInt as Z;
     use num_traits::Zero;
     include!("../local_mixed_equation.rs");

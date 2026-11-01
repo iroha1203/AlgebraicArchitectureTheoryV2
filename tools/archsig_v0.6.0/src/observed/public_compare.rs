@@ -15,9 +15,9 @@ use crate::{
     input::CheckedInputs,
     result::Signal,
 };
-pub(super) mod values;
 pub(in crate::observed) mod relation_sources;
 pub(in crate::observed) mod relations;
+pub(super) mod values;
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
 pub(crate) struct CompareWitness {
@@ -60,8 +60,14 @@ impl Eq for CompareWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Part {
     RelationSource(relation_sources::Data),
-    Reading { path: NodeRef, value: Scalar },
-    RelationDerived { index: usize, data: Box<relations::Data> },
+    Reading {
+        path: NodeRef,
+        value: Scalar,
+    },
+    RelationDerived {
+        index: usize,
+        data: Box<relations::Data>,
+    },
     Derived {
         index: usize,
         data: Box<values::Data>,
@@ -342,8 +348,10 @@ pub(super) fn validate_origin(
     r: &Request,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    let kind = super::request::comparison::kind(r).map_err(|error|ValidationFailure::Internal(format!("元比較kind: {error:?}")))?;
-    if kind != w.kind || r.kind != QuestionKind::Compare
+    let kind = super::request::comparison::kind(r)
+        .map_err(|error| ValidationFailure::Internal(format!("元比較kind: {error:?}")))?;
+    if kind != w.kind
+        || r.kind != QuestionKind::Compare
         || r != &w.request
         || env.indexes.inputs.sources() != w.inputs.sources()
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
@@ -351,8 +359,8 @@ pub(super) fn validate_origin(
     {
         return Err("比較が現在の三入力・要求・元Refと違う".into());
     }
-    if w.kind=="relation" && w.relation_plan.is_none() && w.relation_family.is_none() {
-        relations::validate_incompatible(graph,w)?;
+    if w.kind == "relation" && w.relation_plan.is_none() && w.relation_family.is_none() {
+        relations::validate_incompatible(graph, w)?;
     }
     Ok(())
 }
@@ -360,9 +368,13 @@ pub(super) fn validate_position(
     value: &ConstructionValue,
     position: usize,
 ) -> Result<(), ValidationFailure> {
-    if let (Witness::Compare(w), D::Comparison(Part::RelationDerived { index, .. })) = (&value.witness, &value.data) {
+    if let (Witness::Compare(w), D::Comparison(Part::RelationDerived { index, .. })) =
+        (&value.witness, &value.data)
+    {
         let base = w.relation_plan.as_ref().ok_or("元relation導出がない")?.base;
-        if base.checked_add(*index) != Some(position) { return Err("元relation導出の生成位置が違う".into()); }
+        if base.checked_add(*index) != Some(position) {
+            return Err("元relation導出の生成位置が違う".into());
+        }
     }
     if let (Witness::Compare(w), D::Comparison(Part::Derived { index, .. })) =
         (&value.witness, &value.data)
@@ -385,8 +397,12 @@ pub(super) fn validate_node(
     if let D::Comparison(Part::RelationSource(data)) = &v.data {
         return relation_sources::validate_node(graph, n, w, data);
     }
-    if w.relation_plan.is_some() { return relations::validate_node(graph,n,w); }
-    if w.kind=="relation" && w.relation_family.is_some() { return Err("元relation Sourceを比較の結論として使えない".into()); }
+    if w.relation_plan.is_some() {
+        return relations::validate_node(graph, n, w);
+    }
+    if w.kind == "relation" && w.relation_family.is_some() {
+        return Err("元relation Sourceを比較の結論として使えない".into());
+    }
     if n.ty != v.ty()
         || n.rule != v.rule()
         || n.arguments != v.arguments()
@@ -422,8 +438,19 @@ pub(super) fn validate_node(
     match p {
         Part::RelationSource(_) | Part::RelationDerived { .. } => return Err(fail()),
         Part::Reading { path, value } => {
-            let Scalar::Path(actual)=graph.scalar(*path)? else { return Err(fail()); };
-            if w.kind!="relation" || ![w.left,w.right].contains(path) || value!=&Scalar::Text(actual.reading.clone()) || w.equal.is_some() || w.incompatible.is_none() || n.judgment.is_some() || !n.evidence.is_empty() { return Err(fail()); }
+            let Scalar::Path(actual) = graph.scalar(*path)? else {
+                return Err(fail());
+            };
+            if w.kind != "relation"
+                || ![w.left, w.right].contains(path)
+                || value != &Scalar::Text(actual.reading.clone())
+                || w.equal.is_some()
+                || w.incompatible.is_none()
+                || n.judgment.is_some()
+                || !n.evidence.is_empty()
+            {
+                return Err(fail());
+            }
         }
         Part::Derived { index, data } => {
             let expected = w
@@ -579,7 +606,9 @@ pub(super) fn validate_failure(graph: &Graph, r: &Reason) -> Result<(), Validati
     let Witness::Compare(w) = &v.witness else {
         return Err("比較の元検査がない".into());
     };
-    if w.relation_plan.is_some() { return relations::validate_failure(graph,r,condition,w); }
+    if w.relation_plan.is_some() {
+        return relations::validate_failure(graph, r, condition, w);
+    }
     if w.incompatible.is_none()
         || r != &failed(&w.request, condition)
         || !matches!(part(graph, condition, w)?, Part::Endpoints { .. })
@@ -594,8 +623,8 @@ pub(super) fn validate_answer(
     r: &Request,
     a: &Answer,
 ) -> Result<(), ValidationFailure> {
-    if super::request::comparison::kind(r).is_ok_and(|k|k=="diagnostics") {
-        return super::local_result::validate_answer(env,graph,r,a);
+    if super::request::comparison::kind(r).is_ok_and(|k| k == "diagnostics") {
+        return super::local_result::validate_answer(env, graph, r, a);
     }
     if let Some(expected) = super::public_map::unavailable(env, graph, r)? {
         if a != &expected {
@@ -733,35 +762,70 @@ fn completed_operation<T>(
     }
 }
 // 同じModuleの表示ベクトルの差が、関係の生成する部分加群に入るかを解く。
-fn vector_equal(graph:&Graph,left:NodeRef,right:NodeRef,c:&Control) -> Result<bool,ValidationFailure> {
+fn vector_equal(
+    graph: &Graph,
+    left: NodeRef,
+    right: NodeRef,
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
     use num_bigint::BigInt as Z;
-    let NodeType::Vector(module) = graph.get(left)?.ty else { return Err("比較のVector型がない".into()); };
-    if graph.get(right)?.ty != NodeType::Vector(module) { return Err("比較のModuleが違う".into()); }
-    let scalar = |owner:NodeRef,wire:&Json| -> Result<Z,ValidationFailure> {
-        let r = graph.get(owner)?.arguments.iter().find(|r|r.wire()==*wire)
+    let NodeType::Vector(module) = graph.get(left)?.ty else {
+        return Err("比較のVector型がない".into());
+    };
+    if graph.get(right)?.ty != NodeType::Vector(module) {
+        return Err("比較のModuleが違う".into());
+    }
+    let scalar = |owner: NodeRef, wire: &Json| -> Result<Z, ValidationFailure> {
+        let r = graph
+            .get(owner)?
+            .arguments
+            .iter()
+            .find(|r| r.wire() == *wire)
             .ok_or("Vector比較の座標参照がない")?;
-        let Scalar::Z(z) = graph.scalar(*r)? else { return Err("整数Moduleの座標がZでない".into()); };
+        let Scalar::Z(z) = graph.scalar(*r)? else {
+            return Err("整数Moduleの座標がZでない".into());
+        };
         Ok(z.clone())
     };
-    let coordinates = |r| -> Result<Vec<Z>,ValidationFailure> {
-        let Json::Obj(ref wire) = value(graph,r)?.wire() else { return Err("Vector表示がない".into()); };
-        let Some(Json::Arr(xs)) = wire.get("coordinates") else { return Err("Vector座標がない".into()); };
-        xs.iter().map(|x|scalar(r,x)).collect()
+    let coordinates = |r| -> Result<Vec<Z>, ValidationFailure> {
+        let Json::Obj(ref wire) = value(graph, r)?.wire() else {
+            return Err("Vector表示がない".into());
+        };
+        let Some(Json::Arr(xs)) = wire.get("coordinates") else {
+            return Err("Vector座標がない".into());
+        };
+        xs.iter().map(|x| scalar(r, x)).collect()
     };
     let a = coordinates(left)?;
     let b = coordinates(right)?;
-    if a.len()!=b.len() { return Err("同じModuleの座標数が違う".into()); }
-    let Json::Obj(ref wire) = value(graph,module)?.wire() else { return Err("Module表示がない".into()); };
-    let Some(Json::Arr(relations)) = wire.get("relations") else { return Err("Module関係がない".into()); };
-    let mut matrix = vec![vec![];a.len()];
+    if a.len() != b.len() {
+        return Err("同じModuleの座標数が違う".into());
+    }
+    let Json::Obj(ref wire) = value(graph, module)?.wire() else {
+        return Err("Module表示がない".into());
+    };
+    let Some(Json::Arr(relations)) = wire.get("relations") else {
+        return Err("Module関係がない".into());
+    };
+    let mut matrix = vec![vec![]; a.len()];
     for relation in relations {
         c.clone().checkpoint(Checkpoint::FiniteIteration)?;
-        let Json::Arr(row) = relation else { return Err("Module関係が座標列でない".into()); };
-        if row.len()!=a.len() { return Err("Module関係の座標数が違う".into()); }
-        for (i,x) in row.iter().enumerate() { matrix[i].push(scalar(module,x)?); }
+        let Json::Arr(row) = relation else {
+            return Err("Module関係が座標列でない".into());
+        };
+        if row.len() != a.len() {
+            return Err("Module関係の座標数が違う".into());
+        }
+        for (i, x) in row.iter().enumerate() {
+            matrix[i].push(scalar(module, x)?);
+        }
     }
-    let difference = a.iter().zip(&b).map(|(a,b)|a-b).collect::<Vec<_>>();
-    Ok(super::integer_fiber::solve(&matrix,relations.len(),&difference,c)?.particular.is_some())
+    let difference = a.iter().zip(&b).map(|(a, b)| a - b).collect::<Vec<_>>();
+    Ok(
+        super::integer_fiber::solve(&matrix, relations.len(), &difference, c)?
+            .particular
+            .is_some(),
+    )
 }
 pub(super) fn evaluate(
     prepared: &PreparedObserved,
@@ -770,8 +834,8 @@ pub(super) fn evaluate(
     r: &Request,
     control: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    if super::request::comparison::kind(r).is_ok_and(|k|k=="diagnostics") {
-        return super::local_result::evaluate(prepared,env,graph,r,control);
+    if super::request::comparison::kind(r).is_ok_and(|k| k == "diagnostics") {
+        return super::local_result::evaluate(prepared, env, graph, r, control);
     }
     control.checkpoint(Checkpoint::FiniteIteration)?;
     env.commit_projection_conditions(graph, r)?;
@@ -786,8 +850,8 @@ pub(super) fn evaluate(
     if kind == "relation" {
         let a = relations::operand_path(graph, left)?;
         let b = relations::operand_path(graph, right)?;
-        if a.reading==b.reading && a.object()==b.object() && a.target()==b.target() {
-            return relations::evaluate(prepared,env,graph,r,left,right,control);
+        if a.reading == b.reading && a.object() == b.object() && a.target() == b.target() {
+            return relations::evaluate(prepared, env, graph, r, left, right, control);
         }
     }
     let mut support = graph.get(left)?.support.clone();
@@ -801,8 +865,8 @@ pub(super) fn evaluate(
     let mut facts = vec![];
     let mut stopped = None;
     let mut value_plan = None;
-    let equal = if kind == "value" && matches!(graph.get(left)?.ty,NodeType::Vector(_)) {
-        Some(vector_equal(graph,left,right,control)?)
+    let equal = if kind == "value" && matches!(graph.get(left)?.ty, NodeType::Vector(_)) {
+        Some(vector_equal(graph, left, right, control)?)
     } else if kind == "value"
         && super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)?
     {
@@ -841,11 +905,17 @@ pub(super) fn evaluate(
         };
         a.check(control)?;
         b.check(control)?;
-        if kind == "relation" && a.reading != b.reading && a.object()==b.object() && a.target()==b.target() {
-            incompatible = Some((NodeRef(graph.nodes.len()),NodeRef(graph.nodes.len()+1)));
-            incompatible_readings = Some((a.reading.clone(),b.reading.clone()));
+        if kind == "relation"
+            && a.reading != b.reading
+            && a.object() == b.object()
+            && a.target() == b.target()
+        {
+            incompatible = Some((NodeRef(graph.nodes.len()), NodeRef(graph.nodes.len() + 1)));
+            incompatible_readings = Some((a.reading.clone(), b.reading.clone()));
             None
-        } else if matches!(kind.as_str(), "action" | "relation") && (a.object() != b.object() || a.target() != b.target()) {
+        } else if matches!(kind.as_str(), "action" | "relation")
+            && (a.object() != b.object() || a.target() != b.target())
+        {
             let (x, y) = if a.object() != b.object() {
                 (a.object(), b.object())
             } else {
@@ -881,7 +951,9 @@ pub(super) fn evaluate(
     } else {
         let a = super::public_compose::op(graph, left)?;
         let b = super::public_compose::op(graph, right)?;
-        if matches!(kind.as_str(), "action" | "relation") && (a.source() != b.source() || a.target() != b.target()) {
+        if matches!(kind.as_str(), "action" | "relation")
+            && (a.source() != b.source() || a.target() != b.target())
+        {
             let (asource, atarget, _, _) = super::public_compose::components(graph, left)?;
             let (bsource, btarget, _, _) = super::public_compose::components(graph, right)?;
             incompatible = Some(if a.source() != b.source() {
@@ -928,10 +1000,30 @@ pub(super) fn evaluate(
         relation_family: None,
         relation_plan: None,
     });
-    if let Some((a,b))=incompatible_readings {
-        let x=node(graph,&w,Part::Reading{path:left,value:Scalar::Text(a)},vec![],None)?;
-        let y=node(graph,&w,Part::Reading{path:right,value:Scalar::Text(b)},vec![],None)?;
-        if w.incompatible!=Some((x,y)) { return Err("reading条件の転記位置が違う".into()); }
+    if let Some((a, b)) = incompatible_readings {
+        let x = node(
+            graph,
+            &w,
+            Part::Reading {
+                path: left,
+                value: Scalar::Text(a),
+            },
+            vec![],
+            None,
+        )?;
+        let y = node(
+            graph,
+            &w,
+            Part::Reading {
+                path: right,
+                value: Scalar::Text(b),
+            },
+            vec![],
+            None,
+        )?;
+        if w.incompatible != Some((x, y)) {
+            return Err("reading条件の転記位置が違う".into());
+        }
     }
     if let Some(plan) = &w.value_plan {
         for (index, data) in plan.nodes.iter().enumerate() {

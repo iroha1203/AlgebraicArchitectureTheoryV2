@@ -53,11 +53,17 @@ impl Builder<'_> {
                 .original
                 .parameters
                 .iter()
-                .filter(|(name,_)| !locals.iter().any(|b| b.name == *name))
+                .filter(|(name, _)| !locals.iter().any(|b| b.name == *name))
                 .cloned()
                 .chain(locals.iter().map(|b| (b.name.clone(), b.ty.clone())))
                 .collect(),
-            bindings: self.original.bindings.iter().filter(|b| !locals.iter().any(|local| local.name == b.name)).cloned().collect(),
+            bindings: self
+                .original
+                .bindings
+                .iter()
+                .filter(|b| !locals.iter().any(|local| local.name == b.name))
+                .cloned()
+                .collect(),
         })?;
         if locals.is_empty() {
             return Ok((source, ty));
@@ -97,13 +103,16 @@ impl Builder<'_> {
         self.pair_at(body, None)
     }
     fn pair_at(
-        &mut self, body: usize, equality: Option<usize>,
+        &mut self,
+        body: usize,
+        equality: Option<usize>,
     ) -> Result<((NodeRef, Type), (NodeRef, Type)), ValidationFailure> {
-        let eq = if equality.is_some() { equality } else { super::super::object_law_residuals::predicate_equation(
-            self.inputs,
-            body,
-            self.control,
-        ).map_err(|e| construction_failure(&e))? };
+        let eq = if equality.is_some() {
+            equality
+        } else {
+            super::super::object_law_residuals::predicate_equation(self.inputs, body, self.control)
+                .map_err(|e| construction_failure(&e))?
+        };
         let Some(eq) = eq else {
             // 一般条件の原bodyを保持し、恒真は固定のUnit等値として構成する。
             let unit = self.put(Part::Scalar(Scalar::Unit))?;
@@ -132,13 +141,21 @@ impl Builder<'_> {
             {
                 ExprKind::Group(child) => current = *child,
                 ExprKind::Call { .. } => {
-                    let Some((params, body, args)) = super::super::object_law_residuals::predicate_call(self.inputs,current) else { return Err("多項式operandの述語呼出しがない".into()) };
+                    let Some((params, body, args)) =
+                        super::super::object_law_residuals::predicate_call(self.inputs, current)
+                    else {
+                        return Err("多項式operandの述語呼出しがない".into());
+                    };
                     let params = params.to_vec();
                     let args = args.to_vec();
                     let mut bindings = vec![];
                     for (parameter, argument) in params.iter().zip(args) {
                         let (value, ty) = self.closed(argument, &locals)?;
-                        bindings.push(Binding { name: parameter.name.clone(), value, ty });
+                        bindings.push(Binding {
+                            name: parameter.name.clone(),
+                            value,
+                            ty,
+                        });
                     }
                     locals = bindings;
                     current = body;
@@ -175,9 +192,17 @@ impl Builder<'_> {
                     }
                     current = next;
                 }
-                ExprKind::Binary { op: crate::law::ast::BinOp::And, .. } => {
-                    current = super::super::object_law_residuals::conjunction_child(self.inputs, current, eq)
-                        .ok_or("多項式operandの連言に等式がない")?.0;
+                ExprKind::Binary {
+                    op: crate::law::ast::BinOp::And,
+                    ..
+                } => {
+                    current = super::super::object_law_residuals::conjunction_child(
+                        self.inputs,
+                        current,
+                        eq,
+                    )
+                    .ok_or("多項式operandの連言に等式がない")?
+                    .0;
                 }
                 _ => return Err("多項式operandの元等式までの束縛が違う".into()),
             }
@@ -244,9 +269,15 @@ fn original(
     original_bound(readings, inputs, actual, instance, row, &[], parts, base, c)
 }
 fn original_bound(
-    readings: &crate::construction::readings::ObjectReadingInstances, inputs: &CheckedInputs,
-    actual: Option<&super::super::object_law_transport::LawReadingRow>, instance: usize, row: Option<usize>,
-    finite: &[(String, Scalar)], parts: &mut Vec<Part>, base: usize, c: &mut Control,
+    readings: &crate::construction::readings::ObjectReadingInstances,
+    inputs: &CheckedInputs,
+    actual: Option<&super::super::object_law_transport::LawReadingRow>,
+    instance: usize,
+    row: Option<usize>,
+    finite: &[(String, Scalar)],
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
 ) -> Result<Original, ValidationFailure> {
     tick(c)?;
     let original = readings
@@ -284,41 +315,46 @@ fn original_bound(
                     .collect::<Vec<_>>()
             })
             .unwrap_or_default();
-        let (value, ty) = if let Some((_, value)) = finite.iter().find(|(name, _)| name == &parameter.name) {
-            if parameter.ty.erase() != value.ty() || !refs.is_empty() || !values.is_empty() { return Err("有限ケースの束縛型または重複が不正".into()); }
-            (Some(value.clone()), value.ty())
-        } else { match (refs.as_slice(), values.as_slice()) {
-            ([binding], []) => {
-                let entity = match &parameter.ty {
-                    Type::Ref(t) | Type::Owned(t, _) => t.clone(),
-                    _ => return Err("多項式Lawの参照束縛型が違う".into()),
-                };
-                let fact = binding.subject();
-                (
-                    Some(Scalar::Subject {
-                        snapshot: fact.snapshot.clone(),
-                        subject: fact.subject.clone(),
-                        entity: entity.clone(),
-                    }),
-                    Type::Ref(entity),
-                )
-            }
-            ([], [(_, value)]) => {
-                let ty = erased(&parameter.ty, c)?;
-                if value.ty() != ty {
-                    return Err("多項式Lawの値束縛型が違う".into());
-                };
-                (Some(value.scalar().clone()), ty)
-            }
-            ([], []) => {
-                let ty = erased(&parameter.ty, c)?;
-                if actual.is_some() {
-                    return Err("多項式Lawの実行の値束縛がない".into());
-                };
-                (None, ty)
-            }
-            _ => return Err("多項式Lawの束縛が重複した".into()),
-        }};
+        let (value, ty) =
+            if let Some((_, value)) = finite.iter().find(|(name, _)| name == &parameter.name) {
+                if parameter.ty.erase() != value.ty() || !refs.is_empty() || !values.is_empty() {
+                    return Err("有限ケースの束縛型または重複が不正".into());
+                }
+                (Some(value.clone()), value.ty())
+            } else {
+                match (refs.as_slice(), values.as_slice()) {
+                    ([binding], []) => {
+                        let entity = match &parameter.ty {
+                            Type::Ref(t) | Type::Owned(t, _) => t.clone(),
+                            _ => return Err("多項式Lawの参照束縛型が違う".into()),
+                        };
+                        let fact = binding.subject();
+                        (
+                            Some(Scalar::Subject {
+                                snapshot: fact.snapshot.clone(),
+                                subject: fact.subject.clone(),
+                                entity: entity.clone(),
+                            }),
+                            Type::Ref(entity),
+                        )
+                    }
+                    ([], [(_, value)]) => {
+                        let ty = erased(&parameter.ty, c)?;
+                        if value.ty() != ty {
+                            return Err("多項式Lawの値束縛型が違う".into());
+                        };
+                        (Some(value.scalar().clone()), ty)
+                    }
+                    ([], []) => {
+                        let ty = erased(&parameter.ty, c)?;
+                        if actual.is_some() {
+                            return Err("多項式Lawの実行の値束縛がない".into());
+                        };
+                        (None, ty)
+                    }
+                    _ => return Err("多項式Lawの束縛が重複した".into()),
+                }
+            };
         if let Some(value) = value {
             let value = super::super::finite_law_diagram::canonical_value(&value, c)?;
             let value = push(parts, base, Part::Scalar(value), c)?;
@@ -335,7 +371,9 @@ fn original_bound(
     if row.is_none() {
         for parameter in original.parameters() {
             tick(c)?;
-            if finite.iter().any(|(name, _)| name == &parameter.name) { continue; }
+            if finite.iter().any(|(name, _)| name == &parameter.name) {
+                continue;
+            }
             quantifiers.push(Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
                 name: parameter.name.clone(),
@@ -460,7 +498,8 @@ pub(super) fn append(
                 tick(c)?;
                 let parameter = domain.parameter();
                 let ty = erased(&parameter.ty, c)?;
-                if expected != &(parameter.name.clone(), ty.clone()) || !domain.missing().is_empty() {
+                if expected != &(parameter.name.clone(), ty.clone()) || !domain.missing().is_empty()
+                {
                     return Err("元Law族のparameter型域が違う".into());
                 }
                 let mut values = vec![];
@@ -520,15 +559,32 @@ pub(super) fn append(
             base,
             control: c,
         };
-        let shape = &core.base().evaluations().iter().find(|e| e.position == q.position)
-            .ok_or("多項式の元Law成分がない")?.shape;
-        let (term, path) = shape.component(&q.component).ok_or("多項式の連言成分がない")?;
-        let (left, right) = if matches!(shape, super::super::object_law_residuals::LawNumericShape::Conjunction { .. }) {
-            let super::super::object_law_residuals::LawNumericShape::Equality { body, equality, .. } = term else {
+        let shape = &core
+            .base()
+            .evaluations()
+            .iter()
+            .find(|e| e.position == q.position)
+            .ok_or("多項式の元Law成分がない")?
+            .shape;
+        let (term, path) = shape
+            .component(&q.component)
+            .ok_or("多項式の連言成分がない")?;
+        let (left, right) = if matches!(
+            shape,
+            super::super::object_law_residuals::LawNumericShape::Conjunction { .. }
+        ) {
+            let super::super::object_law_residuals::LawNumericShape::Equality {
+                body,
+                equality,
+                ..
+            } = term
+            else {
                 return Err("多項式の連言成分が等式でない".into());
             };
             b.pair_at(*body, Some(*equality))?
-        } else { original.operands.clone().ok_or("多項式の元左右式がない")? };
+        } else {
+            original.operands.clone().ok_or("多項式の元左右式がない")?
+        };
         let lhs = b.project(left.0, left.1, path)?;
         let rhs = b.project(right.0, right.1, path)?;
         result.push((original.reference, lhs, rhs));
@@ -558,14 +614,30 @@ pub(super) fn symbolic(
 }
 
 pub(super) fn symbolic_bound(
-    inputs: &CheckedInputs, readings: &crate::construction::readings::ObjectReadingInstances,
-    equations: &[(usize, crate::observed::object_equation_presentation::ParameterEquation)],
-    parts: &mut Vec<Part>, base: usize, c: &mut Control,
+    inputs: &CheckedInputs,
+    readings: &crate::construction::readings::ObjectReadingInstances,
+    equations: &[(
+        usize,
+        crate::observed::object_equation_presentation::ParameterEquation,
+    )],
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
 ) -> Result<Vec<Original>, ValidationFailure> {
     let mut result = vec![];
     for (instance, equation) in equations {
         tick(c)?;
-        result.push(original_bound(readings, inputs, None, *instance, None, &equation.finite, parts, base, c)?);
+        result.push(original_bound(
+            readings,
+            inputs,
+            None,
+            *instance,
+            None,
+            &equation.finite,
+            parts,
+            base,
+            c,
+        )?);
     }
     Ok(result)
 }

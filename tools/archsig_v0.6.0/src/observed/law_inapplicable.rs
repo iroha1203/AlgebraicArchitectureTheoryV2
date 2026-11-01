@@ -258,7 +258,13 @@ pub(super) fn check(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<Option<Answer>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, origin, architecture, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        env,
+        graph,
+        origin,
+        architecture,
+        c,
+    ))
 }
 
 impl super::result_kind::ResultKind for Data {

@@ -232,7 +232,9 @@ fn missing_observation_omits_evaluation_and_epsilon_without_pruning_symbolic_dom
         .unwrap();
     let environment = Environment::new(e.prepared.inputs(), &mut quiet()).unwrap();
     assert!(matches!(
-        environment.indexes.field(&environment.state, "v", "q", "Finite.Part.quantity")
+        environment
+            .indexes
+            .field(&environment.state, "v", "q", "Finite.Part.quantity")
             .unwrap()
             .slot,
         Slot::Missing
@@ -708,7 +710,11 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
                 let Slot::Known {
                     value: crate::archmap::Value::Ref { snapshot, subject },
                     ..
-                } = &env.indexes.field(&env.state, "v", subject, "Finite.Part.owner").unwrap().slot
+                } = &env
+                    .indexes
+                    .field(&env.state, "v", subject, "Finite.Part.owner")
+                    .unwrap()
+                    .slot
                 else {
                     panic!("original owner")
                 };

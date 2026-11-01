@@ -1,8 +1,6 @@
 //! native Law行の固定値・未束縛数値parameter・対象を通常Sourceの再検査へ渡す。
 use super::*;
-use crate::observed::{
-    law_evaluation as frames,
-};
+use crate::observed::law_evaluation as frames;
 impl Environment<'_> {
     pub(in crate::observed) fn recheck_law_evaluation_inputs(
         &self,
@@ -35,21 +33,39 @@ impl Environment<'_> {
         // guardが全域で真、または正確な適用fiberと型付き残差の全域表示を持つ
         // 場合に、その本文を構成できる。後者はguardの真偽を確定しない。固定Architectureの読取りはこの全域計算の
         // 入力であり、未観測値や一つのparameter代入を真として補完しない。
-        if let Some(inputs) = frames::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
+        if let Some(inputs) =
+            frames::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
             && let Some(guard) = inputs.origin.guard
         {
             let law = self.indexes.inputs.law();
-            let body = law.exprs().get(inputs.origin.body).ok_or("元Law body式がない")?.span;
+            let body = law
+                .exprs()
+                .get(inputs.origin.body)
+                .ok_or("元Law body式がない")?
+                .span;
             let guard_span = law.exprs().get(guard).ok_or("元Law guard式がない")?.span;
             if body.0 <= span.0 && span.1 <= body.1 {
-                if !inputs.origin.body_allowed { return Ok(false); }
-                let request = graph.requests.get(self.current_context(graph).request).ok_or("元Law要求がない")?;
+                if !inputs.origin.body_allowed {
+                    return Ok(false);
+                }
+                let request = graph
+                    .requests
+                    .get(self.current_context(graph).request)
+                    .ok_or("元Law要求がない")?;
                 if let Some(plan) = self.universal_family_plan(graph, request, &inputs.bindings)?
                     && plan.guard == Some(guard)
                     && !plan.parameters.is_empty()
-                    && plan.parameters.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
+                    && plan
+                        .parameters
+                        .iter()
+                        .all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                 {
-                    let guard = self.universal_template_source_analysis(graph, &plan, guard_span, &inputs.bindings)?;
+                    let guard = self.universal_template_source_analysis(
+                        graph,
+                        &plan,
+                        guard_span,
+                        &inputs.bindings,
+                    )?;
                     if guard.analysis.known_value == Some(Scalar::Bool(true))
                         || inputs.origin.zero_residual
                         || inputs.origin.guarded_family
@@ -59,8 +75,12 @@ impl Environment<'_> {
                 }
             }
         }
-        let (allowed, guard) =
-            frames::body_guard(graph, index, span, self.state.cutoff.get().min(graph.nodes.len()))?;
+        let (allowed, guard) = frames::body_guard(
+            graph,
+            index,
+            span,
+            self.state.cutoff.get().min(graph.nodes.len()),
+        )?;
         if let Some(guard) = guard {
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
@@ -77,7 +97,8 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         if let Some(index) = self.current_context(graph).instance {
             let span = self
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .exprs()
                 .get(expression)
@@ -108,7 +129,8 @@ impl Environment<'_> {
             || inputs.bindings != bindings
             || inputs.origin.body_allowed
             || self
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .exprs()
                 .get(inputs.origin.body)
@@ -118,19 +140,37 @@ impl Environment<'_> {
         {
             return Ok(None);
         }
-        let request = graph.requests.get(context.request).ok_or("元Law要求がない")?;
-        let universal_false = if let Some(plan) = self.universal_family_plan(graph, request, bindings)?
-            && plan.parameters.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
-            && let Some(guard) = plan.guard {
+        let request = graph
+            .requests
+            .get(context.request)
+            .ok_or("元Law要求がない")?;
+        let universal_false = if let Some(plan) =
+            self.universal_family_plan(graph, request, bindings)?
+            && plan
+                .parameters
+                .iter()
+                .all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
+            && let Some(guard) = plan.guard
+        {
             // 全域templateのSourceは実guard評価より先に保持される。元guardを
             // 全parameter上で再計算し、falseの場合だけ値のないbodyを保持する。
-            let guard = self.universal_template_source_analysis(graph, &plan,
-                self.indexes.inputs.law().exprs()[guard].span, bindings)?;
+            let guard = self.universal_template_source_analysis(
+                graph,
+                &plan,
+                self.indexes.inputs.law().exprs()[guard].span,
+                bindings,
+            )?;
             guard.analysis.known_value == Some(Scalar::Bool(false))
-        } else { false };
+        } else {
+            false
+        };
         if !universal_false {
-            let (allowed, guard) =
-                frames::body_guard(graph, index, span, self.state.cutoff.get().min(graph.nodes.len()))?;
+            let (allowed, guard) = frames::body_guard(
+                graph,
+                index,
+                span,
+                self.state.cutoff.get().min(graph.nodes.len()),
+            )?;
             let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
@@ -199,12 +239,23 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.indexes.inputs.law().declarations().get(&inputs.origin.declaration)
+        let declaration = self
+            .indexes
+            .inputs
+            .law()
+            .declarations()
+            .get(&inputs.origin.declaration)
             .ok_or("元Lawの宣言がない")?;
         if let crate::law::model::Signature::Law { params, .. } = &declaration.signature {
             for parameter in params {
-                if !variables.contains_key(&parameter.name) && numeric_parameters::numeric_width(&parameter.ty).is_some() {
-                    let (free, _) = numeric_parameters::law_variables(self, std::slice::from_ref(parameter), &[])?;
+                if !variables.contains_key(&parameter.name)
+                    && numeric_parameters::numeric_width(&parameter.ty).is_some()
+                {
+                    let (free, _) = numeric_parameters::law_variables(
+                        self,
+                        std::slice::from_ref(parameter),
+                        &[],
+                    )?;
                     variables.extend(free);
                 }
             }

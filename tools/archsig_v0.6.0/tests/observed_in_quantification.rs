@@ -1006,9 +1006,10 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
         assert_eq!(children(&ns, root(&wire, "d")).len(), 1);
         assert!(evaluations_at(&wire, checked.law().exprs()[body].span).is_empty());
         assert!(
-            !obj(val(
-                evaluations_at(&wire, checked.law().exprs()[domain].span)[0]
-            ))
+            !obj(val(evaluations_at(
+                &wire,
+                checked.law().exprs()[domain].span
+            )[0]))
             .contains_key("value")
         );
     }

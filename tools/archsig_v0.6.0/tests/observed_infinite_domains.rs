@@ -275,7 +275,11 @@ fn infinite_domains_preserve_current_provenance_without_changing_mathematical_an
         let origin = checked.origins().iter().find(|o| &o.id == origin).unwrap();
         assert!(!origin.locations.is_empty());
         for at in &origin.locations {
-            let source = checked.sources().iter().find(|s| s.id == at.source).unwrap();
+            let source = checked
+                .sources()
+                .iter()
+                .find(|s| s.id == at.source)
+                .unwrap();
             assert_eq!(source.revision, revision);
             assert_eq!(
                 at.span,

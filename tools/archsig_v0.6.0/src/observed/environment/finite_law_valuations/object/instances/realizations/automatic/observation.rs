@@ -40,7 +40,8 @@ fn collect(
     let mut known = vec![];
     for (index, position) in family.positions().iter().enumerate() {
         step(c)?;
-        let field = e.indexes.field(&e.state,
+        let field = e.indexes.field(
+            &e.state,
             &position.snapshot,
             &position.subject,
             position.field.as_deref().ok_or("有限観測の元fieldがない")?,

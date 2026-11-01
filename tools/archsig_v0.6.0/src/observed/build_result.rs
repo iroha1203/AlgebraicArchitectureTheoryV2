@@ -32,7 +32,11 @@ fn bindings(v: &[Binding]) -> Json {
     )
 }
 fn parameters(v: &[(String, Type)]) -> Json {
-    Json::Arr(v.iter().map(|(name, ty)| Json::obj([("name", Json::str(name)), ("type", ty.wire())])).collect())
+    Json::Arr(
+        v.iter()
+            .map(|(name, ty)| Json::obj([("name", Json::str(name)), ("type", ty.wire())]))
+            .collect(),
+    )
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -274,29 +278,48 @@ fn compute_inner(
                     if coordinate.status != super::object_equation_presentation::EquationPresentationStatus::UnsupportedAlgorithm {
                         continue;
                     }
-                    let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance)
+                    let original = diagram
+                        .originals
+                        .iter()
+                        .find(|o| o.reference == coordinate.instance)
                         .ok_or("非対応方程式の元Lawがない")?;
                     let origin = super::law_evaluation::origin(g, original.reference)?
                         .ok_or("非対応方程式の宣言がない")?;
-                    let declaration = env.indexes.inputs.law().declarations().get(&origin.declaration)
+                    let declaration = env
+                        .indexes
+                        .inputs
+                        .law()
+                        .declarations()
+                        .get(&origin.declaration)
                         .ok_or("非対応方程式の宣言が現在の入力にない")?;
-                    let crate::law::model::Signature::Law { body, .. } = declaration.signature else {
+                    let crate::law::model::Signature::Law { body, .. } = declaration.signature
+                    else {
                         return Err("非対応方程式の元宣言がLawでない".into());
                     };
                     let mut body = body;
-                    while let crate::law::ast::ExprKind::Group(inner) = env.indexes.inputs.law().exprs()[body].kind {
+                    while let crate::law::ast::ExprKind::Group(inner) =
+                        env.indexes.inputs.law().exprs()[body].kind
+                    {
                         tick(c)?;
                         body = inner;
                     }
                     let crate::law::ast::ExprKind::Binary {
-                        op: crate::law::ast::BinOp::Lt | crate::law::ast::BinOp::Le
-                            | crate::law::ast::BinOp::Gt | crate::law::ast::BinOp::Ge,
-                        lhs, rhs,
-                    } = env.indexes.inputs.law().exprs()[body].kind else { continue; };
+                        op:
+                            crate::law::ast::BinOp::Lt
+                            | crate::law::ast::BinOp::Le
+                            | crate::law::ast::BinOp::Gt
+                            | crate::law::ast::BinOp::Ge,
+                        lhs,
+                        rhs,
+                    } = env.indexes.inputs.law().exprs()[body].kind
+                    else {
+                        continue;
+                    };
                     // Z上の順序述語は多項式等式でも全operand有限域でもない。
                     // 有限Bool域の欠測などを算法非対応へ変換しない。
                     if env.indexes.inputs.law().expr_types()[lhs].as_ref() != Some(&Type::Z)
-                        || env.indexes.inputs.law().expr_types()[rhs].as_ref() != Some(&Type::Z) {
+                        || env.indexes.inputs.law().expr_types()[rhs].as_ref() != Some(&Type::Z)
+                    {
                         continue;
                     }
                     let mut dependencies = vec![original.body];
@@ -309,7 +332,10 @@ fn compute_inner(
                             operand_types: vec![Type::Z, Type::Z],
                             method: "integer_order_equation_presentation".into(),
                         },
-                        request: request.id.clone(), dependencies, missing: vec![], location: None,
+                        request: request.id.clone(),
+                        dependencies,
+                        missing: vec![],
+                        location: None,
                     });
                 }
             }
@@ -409,33 +435,51 @@ fn compute_inner(
             tick(c)?;
             let mut cases = vec![];
             for case in detector.cases {
-                let equal = b.expression("equal", vec![case.lhs, case.rhs], &case.bindings, &detector.parameters)?;
-                let negation = b.expression("not", vec![equal], &case.bindings, &detector.parameters)?;
+                let equal = b.expression(
+                    "equal",
+                    vec![case.lhs, case.rhs],
+                    &case.bindings,
+                    &detector.parameters,
+                )?;
+                let negation =
+                    b.expression("not", vec![equal], &case.bindings, &detector.parameters)?;
                 let when = if let Some(guard) = case.guard {
-                    b.expression("and", vec![guard, negation], &case.bindings, &detector.parameters)?
-                } else { negation };
-                let value = case.when.map(|value| b.push(
-                    NodeType::Value(Type::Bool),
-                    "binding",
-                    Json::Bool(value),
-                    vec![case.epsilon, case.evaluation],
-                    Some(Scalar::Bool(value)),
-                    None,
-                )).transpose()?;
+                    b.expression(
+                        "and",
+                        vec![guard, negation],
+                        &case.bindings,
+                        &detector.parameters,
+                    )?
+                } else {
+                    negation
+                };
+                let value = case
+                    .when
+                    .map(|value| {
+                        b.push(
+                            NodeType::Value(Type::Bool),
+                            "binding",
+                            Json::Bool(value),
+                            vec![case.epsilon, case.evaluation],
+                            Some(Scalar::Bool(value)),
+                            None,
+                        )
+                    })
+                    .transpose()?;
                 let mut evaluation_wire = Json::obj([
-                        ("expression", when.wire()),
-                        ("bindings", bindings(&case.bindings)),
-                        ("environment", case.architecture.wire()),
-                        ("applicability", Json::str("applicable")),
-                        (
-                            "parts",
-                            Json::Arr(vec![Json::obj([
-                                ("location", crate::result::location_wire(&case.location)),
-                                ("children", refs(&[case.evaluation])),
-                                ("residual", case.epsilon.wire()),
-                            ])]),
-                        ),
-                    ]);
+                    ("expression", when.wire()),
+                    ("bindings", bindings(&case.bindings)),
+                    ("environment", case.architecture.wire()),
+                    ("applicability", Json::str("applicable")),
+                    (
+                        "parts",
+                        Json::Arr(vec![Json::obj([
+                            ("location", crate::result::location_wire(&case.location)),
+                            ("children", refs(&[case.evaluation])),
+                            ("residual", case.epsilon.wire()),
+                        ])]),
+                    ),
+                ]);
                 if let (Some(value), Json::Obj(fields)) = (value, &mut evaluation_wire) {
                     fields.insert("value".into(), value.wire());
                 }
@@ -443,12 +487,10 @@ fn compute_inner(
                     NodeType::Evaluation(Type::Bool),
                     "evaluation",
                     evaluation_wire,
-                    [
-                        when,
-                        case.architecture,
-                        case.evaluation,
-                        case.epsilon,
-                    ].into_iter().chain(value).collect(),
+                    [when, case.architecture, case.evaluation, case.epsilon]
+                        .into_iter()
+                        .chain(value)
+                        .collect(),
                     None,
                     None,
                 )?;
@@ -674,7 +716,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c))
 }
 fn evaluate_inner(
     prepared: &PreparedObserved,
@@ -743,8 +785,12 @@ pub(super) fn validate_node(
         };
         let ConstructionValue {
             witness: Witness::Architecture(origin),
-            data: D::Pending { ty: T::Architecture, .. },
-        } = value.as_ref() else {
+            data: D::Pending {
+                ty: T::Architecture,
+                ..
+            },
+        } = value.as_ref()
+        else {
             return Err("未完成buildの元Architectureが部分構成でない".into());
         };
         let context = g.context_at(architecture.reference.0);

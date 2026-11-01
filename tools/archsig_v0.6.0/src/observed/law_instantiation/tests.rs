@@ -367,23 +367,47 @@ fn unbound_integer_specialization_preserves_the_original_symbolic_family() {
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     assert!(ds.iter().all(|d| d.unavailable.is_none()));
-    assert!(ds.iter().flat_map(|d| &d.originals).all(|o| o.row.is_none() && o.parameters == vec![("k".into(), crate::types::Type::Z)]));
+    assert!(
+        ds.iter()
+            .flat_map(|d| &d.originals)
+            .all(|o| o.row.is_none() && o.parameters == vec![("k".into(), crate::types::Type::Z)])
+    );
     for base in &ds[0].originals {
         for target in &ds[1].originals {
             let source = frames::origin(&g, base.reference).unwrap().unwrap();
             let target_origin = frames::origin(&g, target.reference).unwrap().unwrap();
-            let valid = target_origin.outside && target_origin.bindings.iter().all(|fixed| source.bindings.iter().any(|b| b.name == fixed.name && b.ty == fixed.ty && g.scalar(b.value).unwrap() == g.scalar(fixed.value).unwrap()));
+            let valid = target_origin.outside
+                && target_origin.bindings.iter().all(|fixed| {
+                    source.bindings.iter().any(|b| {
+                        b.name == fixed.name
+                            && b.ty == fixed.ty
+                            && g.scalar(b.value).unwrap() == g.scalar(fixed.value).unwrap()
+                    })
+                });
             let before = g.nodes.len();
-            let result = instantiate(&env, &mut g, base.reference, target.reference, objects[1], &mut quiet());
+            let result = instantiate(
+                &env,
+                &mut g,
+                base.reference,
+                target.reference,
+                objects[1],
+                &mut quiet(),
+            );
             assert_eq!(result.is_ok(), valid);
             if let Ok(row) = result {
                 assert_eq!(g.nodes.len(), before + 1);
-                assert_eq!(g.nodes[row.0].scope.quantifiers, g.nodes[base.reference.0].scope.quantifiers);
+                assert_eq!(
+                    g.nodes[row.0].scope.quantifiers,
+                    g.nodes[base.reference.0].scope.quantifiers
+                );
                 let specialized = frames::origin(&g, row).unwrap().unwrap();
                 assert!(specialized.outside && !specialized.ready && !specialized.body_allowed);
                 assert_eq!(specialized.bindings, source.bindings);
                 assert_eq!(specialized.body, source.body);
-                let Some(Payload::Construction(original)) = &g.nodes[base.reference.0].payload else { panic!("original") };
+                let Some(Payload::Construction(original)) = &g.nodes[base.reference.0].payload
+                else {
+                    panic!("original")
+                };
                 assert_eq!(native(&g, row).wire(), original.wire());
             } else {
                 assert_eq!(g.nodes.len(), before);

@@ -408,7 +408,10 @@ pub(super) fn finite_type_domain_failure(
     for value in source.values {
         tick(control)?;
         let moved = candidate_image(inputs, declarations, declaration, &value, control)?;
-        if target_index(&moved, &target.values, inputs, control)?.0.is_none() {
+        if target_index(&moved, &target.values, inputs, control)?
+            .0
+            .is_none()
+        {
             return Ok(Some(value));
         }
     }
@@ -455,11 +458,13 @@ fn image(
                     Scalar::Subject {
                         snapshot: to.snapshot.clone(),
                         subject: to.subject.clone(),
-                        entity: actual.ok_or_else(|| {
-                            ConstructionFailure::Inconsistent(format!(
-                                "参照値の像がない: {target_type}"
-                            ))
-                        })?.to_string(),
+                        entity: actual
+                            .ok_or_else(|| {
+                                ConstructionFailure::Inconsistent(format!(
+                                    "参照値の像がない: {target_type}"
+                                ))
+                            })?
+                            .to_string(),
                     }
                 } else {
                     value.clone()
@@ -611,7 +616,8 @@ pub fn finite_declaration_value_transport(
 ) -> Result<FiniteValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
-    let (source_type, target_type) = selected_types(inputs, declarations, declaration, position, control)?;
+    let (source_type, target_type) =
+        selected_types(inputs, declarations, declaration, position, control)?;
     let source = domain(inputs, &source_type, control)?;
     let target = domain(inputs, &target_type, control)?;
     let mut snapshots = source.scope.snapshots.clone();
@@ -885,7 +891,6 @@ mod tests {
             )
             .is_err()
         );
-
     }
 
     #[test]
@@ -1188,9 +1193,17 @@ mod tests {
             &mut Control::unlimited(),
         )
         .unwrap();
-        assert!(finite_type_domain_failure(
-            &i, &d, "Before.returned", coherent.source_type(), &mut Control::unlimited(),
-        ).unwrap().is_none());
+        assert!(
+            finite_type_domain_failure(
+                &i,
+                &d,
+                "Before.returned",
+                coherent.source_type(),
+                &mut Control::unlimited(),
+            )
+            .unwrap()
+            .is_none()
+        );
         assert_eq!(coherent.source().len(), 4);
         assert_eq!(coherent.target().len(), 1);
         assert!(coherent.bijection().is_none());
@@ -1216,10 +1229,25 @@ mod tests {
         )
         .unwrap();
         let witness = finite_type_domain_failure(
-            &i, &d, "Before.returned", result.source_type(), &mut Control::unlimited(),
-        ).unwrap().expect("全Map域のキー合流反例");
-        let moved = candidate_image(&i, &d, "Before.returned", &witness, &mut Control::unlimited()).unwrap();
-        let Scalar::Map { pairs, .. } = &moved else { panic!("Map image"); };
+            &i,
+            &d,
+            "Before.returned",
+            result.source_type(),
+            &mut Control::unlimited(),
+        )
+        .unwrap()
+        .expect("全Map域のキー合流反例");
+        let moved = candidate_image(
+            &i,
+            &d,
+            "Before.returned",
+            &witness,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let Scalar::Map { pairs, .. } = &moved else {
+            panic!("Map image");
+        };
         assert_eq!(pairs.len(), 2);
         assert_eq!(pairs[0].0, pairs[1].0);
         assert_ne!(pairs[0].1, pairs[1].1);

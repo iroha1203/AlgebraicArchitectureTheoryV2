@@ -250,8 +250,8 @@ fn restrict_variables(
     }
     for (index, axis) in axes.iter().enumerate() {
         e.tick()?;
-        let mut form = affine::constant(&particular[index], &e.control)?
-            .ok_or("数値特解の式がない")?;
+        let mut form =
+            affine::constant(&particular[index], &e.control)?.ok_or("数値特解の式がない")?;
         for (coefficient, free) in domain.kernel[index].iter().zip(axes) {
             e.tick()?;
             let coefficient = affine::constant(coefficient, &e.control)?;
@@ -402,7 +402,10 @@ fn row_value(
             &axes,
             &declaration.reading,
             &mut metadata,
-            &match axes[0].kind { affine::NumberType::Z => Type::Z, affine::NumberType::Q => Type::Q },
+            &match axes[0].kind {
+                affine::NumberType::Z => Type::Z,
+                affine::NumberType::Q => Type::Q,
+            },
         );
         out.support.extend(metadata.support);
         out.scope.merge(&metadata.scope);
@@ -491,7 +494,8 @@ fn row(
     *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
     let result = row_value(e, d, bindings, numeric_families, numeric_domain);
     let missing = e
-        .state.missing_slot_reads
+        .state
+        .missing_slot_reads
         .borrow_mut()
         .take()
         .ok_or("relationの不足位置読取りがない")?;

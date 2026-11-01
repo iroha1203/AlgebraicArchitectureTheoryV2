@@ -10,18 +10,47 @@ const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c
 fn partial_data_known_component_selects_checked_arm() {
     let definition = numeric_data_definition("Z").replace(r#""meaning":"数量。"}"#, r#""meaning":"数量。"},{"name":"payload","type":["Data","Build.Payload"],"meaning":"未観測の包装。"}"#)
         .replace(r#""declarations":["#, r#""declarations":[{"kind":"data","name":"Build.Flag","meaning":"選択。","constructors":[{"name":"Off","arguments":[],"meaning":"偽。"},{"name":"On","arguments":[],"meaning":"真。"}]},{"kind":"data","name":"Build.Pair","meaning":"包装と選択。","constructors":[{"name":"Join","arguments":[["Data","Build.Payload"],["Data","Build.Flag"]],"meaning":"組。"}]},"#);
-    let dir = files_with_definition("partial-data-arm", "law required short(c:Part):match Pair.Join(c.payload,Flag.Off){Join(Packed(_),On)=>false;_=>true;};law required uncertain(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};", false, &definition);
-    let requests = ["b=check(R.short,c=@v/q)", "u=check(R.uncertain,c=@v/q)", "n=needed($u)"];
+    let dir = files_with_definition(
+        "partial-data-arm",
+        "law required short(c:Part):match Pair.Join(c.payload,Flag.Off){Join(Packed(_),On)=>false;_=>true;};law required uncertain(c:Part):match c.payload{Empty=>true;Packed(x)=>x=0;};",
+        false,
+        &definition,
+    );
+    let requests = [
+        "b=check(R.short,c=@v/q)",
+        "u=check(R.uncertain,c=@v/q)",
+        "n=needed($u)",
+    ];
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "partial", 2);
     assert_eq!(s(get(answer(&result, "b"), "status")), "established");
     assert_eq!(s(get(answer(&result, "u"), "status")), "undetermined");
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
-    assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload"));
-    let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace("Flag.Off", "Flag.On");
+    assert!(
+        arr(get(plan, "requirements"))
+            .iter()
+            .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.payload")
+    );
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace("Flag.Off", "Flag.On");
     std::fs::write(dir.join("l.law"), law).unwrap();
-    let mut args = vec!["run", "--atom-definition", "d.json", "--law", "l.law", "--archmap", "a.json", "--out", "changed", "--reuse", "out"];
-    for request in requests { args.extend(["--ask", request]); }
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "changed",
+        "--reuse",
+        "out",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
     let changed = cli::run(&dir, &args);
     let changed = saved(&dir, &changed, "partial", 2);
     assert_eq!(s(get(answer(&changed, "b"), "status")), "undetermined");
@@ -35,7 +64,13 @@ fn numeric_data_definition(ty: &str) -> String {
 #[test]
 fn logical_connective_guards_preserve_numeric_products() {
     // 前件が定数のimplies、and、右辺が定数のorの腕。
-    known_numeric_product("connectives", DEFINITION, "", "(false implies n*n=1) and n=n and (n=0 or true)", "n*c.quantity");
+    known_numeric_product(
+        "connectives",
+        DEFINITION,
+        "",
+        "(false implies n*n=1) and n=n and (n=0 or true)",
+        "n*c.quantity",
+    );
 }
 #[test]
 fn constant_order_guards_preserve_numeric_products() {
@@ -45,26 +80,54 @@ fn constant_order_guards_preserve_numeric_products() {
 #[test]
 fn container_inequality_guards_preserve_numeric_products() {
     // option構成子の違いと、Textを含むtupleの記号的な不等。
-    known_numeric_product("containers", DEFINITION, "", r#"some(n)!=none<Z> and (n,"ready")!=(n,"done")"#, "n*c.quantity");
+    known_numeric_product(
+        "containers",
+        DEFINITION,
+        "",
+        r#"some(n)!=none<Z> and (n,"ready")!=(n,"done")"#,
+        "n*c.quantity",
+    );
 }
 #[test]
 fn list_sum_guard_preserves_numeric_products() {
     // 明示listのsum(Zの相殺とQの和)。
-    known_numeric_product("symbolic-list-sum", DEFINITION, "", "sum(list<Z>[n,-n])=0 and sum(list<Q>[rat(1,2),rat(1,2)])=1", "n*c.quantity");
+    known_numeric_product(
+        "symbolic-list-sum",
+        DEFINITION,
+        "",
+        "sum(list<Z>[n,-n])=0 and sum(list<Q>[rat(1,2),rat(1,2)])=1",
+        "n*c.quantity",
+    );
 }
 #[test]
 fn explicit_list_count_uses_shape_with_numeric_parameters() {
     // 要素に数値parameterを含む明示listのcountは、値でなく形(要素数)で決まる。
-    known_numeric_product("symbolic-list-count", DEFINITION, "", "count(list<Z>[n,n])=2", "n*c.quantity");
+    known_numeric_product(
+        "symbolic-list-count",
+        DEFINITION,
+        "",
+        "count(list<Z>[n,n])=2",
+        "n*c.quantity",
+    );
 }
 #[test]
 fn known_data_payload_match_preserves_numeric_products() {
     // data構成子をhelperのmatchで取り出した係数。
     let definition = numeric_data_definition("Z");
-    known_numeric_product("data-helper", &definition, "view unpack(p:Payload):Z=match p{Empty=>0;Packed(x)=>x;};", "", "unpack(Payload.Packed(n))*c.quantity");
+    known_numeric_product(
+        "data-helper",
+        &definition,
+        "view unpack(p:Payload):Z=match p{Empty=>0;Packed(x)=>x;};",
+        "",
+        "unpack(Payload.Packed(n))*c.quantity",
+    );
 }
 fn known_numeric_product(name: &str, definition: &str, helpers: &str, guard: &str, product: &str) {
-    let when = if guard.is_empty() { String::new() } else { format!(" when {guard}") };
+    let when = if guard.is_empty() {
+        String::new()
+    } else {
+        format!(" when {guard}")
+    };
     let body = format!("{helpers}law required zero(c:Part,n:Z){when}:{product}=0;");
     let dir = files_with_definition(&format!("known-product-{name}"), &body, false, definition);
     let requests = [
@@ -80,29 +143,40 @@ fn known_numeric_product(name: &str, definition: &str, helpers: &str, guard: &st
 #[test]
 fn observed_parameter_products_keep_rational_coefficients() {
     // 未束縛parameterと観測値のhelperを通した積。直接の積は上のguardの試験が通る。
-    let body = "view product(x:Z,y:Z):Z=x*y;law required zero(c:Part,n:Z,m:Z):product(n,c.quantity)=0;";
+    let body =
+        "view product(x:Z,y:Z):Z=x*y;law required zero(c:Part,n:Z,m:Z):product(n,c.quantity)=0;";
     let dir = files("products-reuse", body, false);
-    let requests = ["b=build(R,on=@v/root)", "p=check(R.zero,on=$b.object,c=@v/p)", "q=check(R.zero,on=$b.object,c=@v/q)"];
+    let requests = [
+        "b=build(R,on=@v/root)",
+        "p=check(R.zero,on=$b.object,c=@v/p)",
+        "q=check(R.zero,on=$b.object,c=@v/q)",
+    ];
     let r = asks(&dir, &requests);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
-    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
+    assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+    assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
 }
 #[test]
 fn boolean_parameter_guard_keeps_numeric_products_and_applicability() {
     // 有限parameterの行ごとの適用性。有限型の扱いは型によらず同じ経路なのでBoolで見る。
     let body = "view off():Bool=false;view on():Bool=true;law required zero(c:Part,n:Z,b:Bool) when b:n*c.quantity=0;";
     let dir = files("boolean-product-reuse", body, false);
-    let requests = ["a=build(R,on=@v/root)", "f=evaluate(R.off,on=$a.object)", "t=evaluate(R.on,on=$a.object)",
-        "p=check(R.zero,on=$a.object,c=@v/p)", "q=check(R.zero,on=$a.object,c=@v/q)",
-        "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)", "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)"];
+    let requests = [
+        "a=build(R,on=@v/root)",
+        "f=evaluate(R.off,on=$a.object)",
+        "t=evaluate(R.on,on=$a.object)",
+        "p=check(R.zero,on=$a.object,c=@v/p)",
+        "q=check(R.zero,on=$a.object,c=@v/q)",
+        "off=check(R.zero,on=$a.object,c=@v/q,b=$f.value)",
+        "on=check(R.zero,on=$a.object,c=@v/q,b=$t.value)",
+    ];
     let r = asks(&dir, &requests);
     let j = saved(&dir, &r, "complete", 1);
-    assert_eq!(s(get(answer(&j,"p"),"status")), "established");
-    assert_eq!(s(get(answer(&j,"q"),"status")), "refuted");
-    assert_eq!(s(get(answer(&j,"off"),"status")), "established");
-    assert_eq!(s(get(answer(&j,"off"),"applicability")), "not_applicable");
-    assert_eq!(s(get(answer(&j,"on"),"status")), "refuted");
+    assert_eq!(s(get(answer(&j, "p"), "status")), "established");
+    assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
+    assert_eq!(s(get(answer(&j, "off"), "status")), "established");
+    assert_eq!(s(get(answer(&j, "off"), "applicability")), "not_applicable");
+    assert_eq!(s(get(answer(&j, "on"), "status")), "refuted");
 }
 #[test]
 fn active_parameter_product_keeps_missing_observation_undetermined() {
@@ -122,18 +196,29 @@ fn active_parameter_product_keeps_missing_observation_undetermined() {
         assert_eq!(s(get(answer, "status")), "undetermined");
         let reasons = arr(get(answer, "reasons"));
         assert!(!reasons.is_empty());
-        assert!(reasons.iter().all(|r| s(get(r, "code")) == "missing_observation"));
+        assert!(
+            reasons
+                .iter()
+                .all(|r| s(get(r, "code")) == "missing_observation")
+        );
     }
     assert_eq!(s(get(answer(&j, "p"), "status")), "established");
     assert!(has(get(answer(&j, "b"), "outputs"), "object"));
     assert!(!has(get(answer(&j, "b"), "outputs"), "algebra"));
     let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
-    assert!(arr(get(plan, "requirements")).iter().any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"
-        && s(get(get(r, "field"), "subject")) == "q"));
+    assert!(
+        arr(get(plan, "requirements"))
+            .iter()
+            .any(
+                |r| s(get(get(r, "field"), "field")) == "Build.Part.quantity"
+                    && s(get(get(r, "field"), "subject")) == "q"
+            )
+    );
 }
 #[test]
 fn correlated_missing_products_decide_constant_differences() {
-    let body = "view amount(c:Part):Z=c.quantity;law required zero(c:Part,n:Z):n*c.quantity=c.quantity*n;";
+    let body =
+        "view amount(c:Part):Z=c.quantity;law required zero(c:Part,n:Z):n*c.quantity=c.quantity*n;";
     let dir = files("correlated-missing-product", body, true);
     let requests = [
         "a=build(R,on=@v/root)",
@@ -177,10 +262,7 @@ fn different_missing_product_slots_remain_independent() {
     );
     let j = saved(&dir, &r, "partial", 2);
     assert_eq!(s(get(answer(&j, "same"), "status")), "established");
-    assert_eq!(
-        s(get(answer(&j, "different"), "status")),
-        "undetermined"
-    );
+    assert_eq!(s(get(answer(&j, "different"), "status")), "undetermined");
     let reasons = arr(get(answer(&j, "different"), "reasons"));
     assert!(
         reasons
@@ -248,11 +330,19 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability(row: usiz
         ("false", false, true),
         ("c.quantity+1<=c.quantity", true, false),
     ][row];
-    let view = if read_missing { "view amount(c:Part):Z=c.quantity;" } else { "" };
+    let view = if read_missing {
+        "view amount(c:Part):Z=c.quantity;"
+    } else {
+        ""
+    };
     let body = format!(
         "view inactive(n:Z):Bool=n+1=n;{view}law required zero(c:Part,n:Z) when {guard}:n*c.quantity=0;"
     );
-    let dir = files(&format!("inactive-product-{guard_reads}-{read_missing}"), &body, true);
+    let dir = files(
+        &format!("inactive-product-{guard_reads}-{read_missing}"),
+        &body,
+        true,
+    );
     let mut requests = vec![
         "b=build(R,on=@v/root)",
         "p=check(R.zero,on=$b.object,c=@v/p)",
@@ -293,36 +383,99 @@ fn inactive_parameter_product_keeps_missing_body_outside_applicability(row: usiz
 }
 #[test]
 fn predicate_helper_guards_keep_missing_reads_separate_from_constant_truth() {
-    let dir=files("predicate-guard-missing", "view active(x:Z,y:Z):Bool=x=x;view zero():Z=0;view one():Z=1;law required equal(c:Part,n:Z) when active(n,c.quantity):n=0;",true);
-    let r=asks(&dir,&["b=build(R,on=@v/root)","z=evaluate(R.zero,on=$b.object)","o=evaluate(R.one,on=$b.object)","p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)","q=check(R.equal,on=$b.object,c=@v/q,n=$o.value)","n=needed($b)"]);
-    let j=saved(&dir,&r,"partial",2);
-    assert_eq!(s(get(answer(&j,"p"),"status")),"established");
+    let dir = files(
+        "predicate-guard-missing",
+        "view active(x:Z,y:Z):Bool=x=x;view zero():Z=0;view one():Z=1;law required equal(c:Part,n:Z) when active(n,c.quantity):n=0;",
+        true,
+    );
+    let r = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "z=evaluate(R.zero,on=$b.object)",
+            "o=evaluate(R.one,on=$b.object)",
+            "p=check(R.equal,on=$b.object,c=@v/p,n=$z.value)",
+            "q=check(R.equal,on=$b.object,c=@v/q,n=$o.value)",
+            "n=needed($b)",
+        ],
+    );
+    let j = saved(&dir, &r, "partial", 2);
+    assert_eq!(s(get(answer(&j, "p"), "status")), "established");
     // 未観測yのどの補完でもguardは真。n=1の本体は反証できるが、読取りの欠測は残る。
-    assert_eq!(s(get(answer(&j,"q"),"status")),"refuted");
-    let plan=value(&j,get(get(answer(&j,"n"),"outputs"),"plan"));
-    assert!(arr(get(plan,"requirements")).iter().any(|r| s(get(get(r,"field"),"field"))=="Build.Part.quantity"));
+    assert_eq!(s(get(answer(&j, "q"), "status")), "refuted");
+    let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+    assert!(
+        arr(get(plan, "requirements"))
+            .iter()
+            .any(|r| s(get(get(r, "field"), "field")) == "Build.Part.quantity")
+    );
 }
 #[test]
 fn parameter_predicate_helpers_keep_caller_bindings() {
     // 未束縛の数値parameterと観測の一次式。全称は反証、各束縛で成立と反証が分かれる。
     // helper内のlet nが呼出し側のnを捕獲すれば、成立と反証が入れ替わる。
-    let dir = files("predicate-helper-bindings", "view eq(x:Z,y:Z):Bool=let n=x in n=y;view flipped(m:Z,n:Z):Bool=eq(n,m);view one():Z=1;view two():Z=2;law required equal(c:Part,n:Z,m:Z):flipped(m,n+c.quantity);", false);
-    let requests = ["b=build(R,on=@v/root)","i=evaluate(R.one,on=$b.object)","j=evaluate(R.two,on=$b.object)","all=check(R.equal,on=$b.object,c=@v/p)","p=check(R.equal,on=$b.object,c=@v/p,n=$i.value,m=$i.value)","q0=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$i.value)","q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$j.value)"];
-    let r=asks(&dir,&requests); let j=saved(&dir,&r,"complete",1);
-    for (id,status) in [("all","refuted"),("p","established"),("q0","refuted"),("q1","established")] { assert_eq!(s(get(answer(&j,id),"status")),status); }
+    let dir = files(
+        "predicate-helper-bindings",
+        "view eq(x:Z,y:Z):Bool=let n=x in n=y;view flipped(m:Z,n:Z):Bool=eq(n,m);view one():Z=1;view two():Z=2;law required equal(c:Part,n:Z,m:Z):flipped(m,n+c.quantity);",
+        false,
+    );
+    let requests = [
+        "b=build(R,on=@v/root)",
+        "i=evaluate(R.one,on=$b.object)",
+        "j=evaluate(R.two,on=$b.object)",
+        "all=check(R.equal,on=$b.object,c=@v/p)",
+        "p=check(R.equal,on=$b.object,c=@v/p,n=$i.value,m=$i.value)",
+        "q0=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$i.value)",
+        "q1=check(R.equal,on=$b.object,c=@v/q,n=$i.value,m=$j.value)",
+    ];
+    let r = asks(&dir, &requests);
+    let j = saved(&dir, &r, "complete", 1);
+    for (id, status) in [
+        ("all", "refuted"),
+        ("p", "established"),
+        ("q0", "refuted"),
+        ("q1", "established"),
+    ] {
+        assert_eq!(s(get(answer(&j, id), "status")), status);
+    }
 }
 #[test]
 fn affine_parameter_families_feed_localization_and_diagnosis() {
-    let dir = files("affine-family-local", "law required zero(c:Part,n:Z):n+c.quantity=0; local each(c:Part) reads (c.owner,c.quantity);", false);
-    let r = asks(&dir, &["b=build(R,on=@v/root)", "l=localize($b.object)", "e=diagnose($l.system)", "s=diagnose($l.system,side=semantic)"]);
+    let dir = files(
+        "affine-family-local",
+        "law required zero(c:Part,n:Z):n+c.quantity=0; local each(c:Part) reads (c.owner,c.quantity);",
+        false,
+    );
+    let r = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "l=localize($b.object)",
+            "e=diagnose($l.system)",
+            "s=diagnose($l.system,side=semantic)",
+        ],
+    );
     let j = saved(&dir, &r, "complete", 1);
-    for id in ["e", "s"] { assert_eq!(s(get(answer(&j,id),"status")),"refuted", "{id}"); }
+    for id in ["e", "s"] {
+        assert_eq!(s(get(answer(&j, id), "status")), "refuted", "{id}");
+    }
 }
 #[test]
 fn constant_numeric_families_build_without_samples() {
     // Zの恒等的な族は成立、Qの定数差の族は反証。同じbuildで両方を見る。
-    let dir = files("constant-family", "law required zfamily(c:Part,n:Z,m:Z):let a=n+m in a=n+m+0;law required qfamily(c:Part,n:Q,m:Q):let a=n+m in a=n+m+1;", false);
-    let run = asks(&dir, &["b=build(R,on=@v/root)", "z=check(R.zfamily,on=$b.object,c=@v/p)", "q=check(R.qfamily,on=$b.object,c=@v/p)"]);
+    let dir = files(
+        "constant-family",
+        "law required zfamily(c:Part,n:Z,m:Z):let a=n+m in a=n+m+0;law required qfamily(c:Part,n:Q,m:Q):let a=n+m in a=n+m+1;",
+        false,
+    );
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "z=check(R.zfamily,on=$b.object,c=@v/p)",
+            "q=check(R.qfamily,on=$b.object,c=@v/p)",
+        ],
+    );
     let result = saved(&dir, &run, "complete", 1);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(get(answer(&result, "z"), "status")), "established");
@@ -330,8 +483,16 @@ fn constant_numeric_families_build_without_samples() {
 }
 #[test]
 fn parameter_families_coexist_with_closed_numeric_laws() {
-    let dir = files("parameter-closed", "law required zero(c:Part,n:Z):n=0;law required plain(c:Part):0=0;", false);
-    let requests = ["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/q)", "p=check(R.plain,on=$b.object,c=@v/p)"];
+    let dir = files(
+        "parameter-closed",
+        "law required zero(c:Part,n:Z):n=0;law required plain(c:Part):0=0;",
+        false,
+    );
+    let requests = [
+        "b=build(R,on=@v/root)",
+        "q=check(R.zero,on=$b.object,c=@v/q)",
+        "p=check(R.plain,on=$b.object,c=@v/p)",
+    ];
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "complete", 1);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
@@ -340,13 +501,23 @@ fn parameter_families_coexist_with_closed_numeric_laws() {
 }
 #[test]
 fn parameter_family_build_compares_identical_patterns() {
-    let dir = files("parameter-identical-patterns", "law required zero(c:Part,n:Z):n=0;", false);
+    let dir = files(
+        "parameter-identical-patterns",
+        "law required zero(c:Part,n:Z):n=0;",
+        false,
+    );
     let map = std::fs::read_to_string(dir.join("a.json")).unwrap()
         .replace(r#",{"id":"q","type":"Build.Part","origin":"model"}"#, "")
         .replace(r#",{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}"#, "")
         .replace(r#",{"id":"xq","subject":"q","field":"Build.Part.quantity","value":"1","origin":"model"}"#, "");
     std::fs::write(dir.join("a.json"), map).unwrap();
-    let run = asks(&dir, &["b=build(R,on=@v/root)", "q=check(R.zero,on=$b.object,c=@v/p)"]);
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "q=check(R.zero,on=$b.object,c=@v/p)",
+        ],
+    );
     let result = saved(&dir, &run, "complete", 1);
     assert!(has(get(answer(&result, "b"), "outputs"), "algebra"));
     assert_eq!(s(get(answer(&result, "q"), "status")), "refuted");
@@ -354,16 +525,27 @@ fn parameter_family_build_compares_identical_patterns() {
 #[test]
 fn numeric_parameter_circuits_keep_pointwise_conditions() {
     // 束縛ごとの成立と反証の分かれ方は parameter_predicate_helpers_keep_caller_bindings でも見る。
-    let dir = files("parameter-circuit", "view zero():Z=0;view difference(n:Z,m:Z):Z=n-m;law required balanced(c:Part,n:Z,m:Z):2*difference(n,m)=0;", false);
-    let requests = ["b=build(R,on=@v/root)", "z=evaluate(R.zero,on=$b.object)", "all=check(R.balanced,on=$b.object,c=@v/q)",
-        "zero=check(R.balanced,on=$b.object,c=@v/q,n=$z.value,m=$z.value)"];
+    let dir = files(
+        "parameter-circuit",
+        "view zero():Z=0;view difference(n:Z,m:Z):Z=n-m;law required balanced(c:Part,n:Z,m:Z):2*difference(n,m)=0;",
+        false,
+    );
+    let requests = [
+        "b=build(R,on=@v/root)",
+        "z=evaluate(R.zero,on=$b.object)",
+        "all=check(R.balanced,on=$b.object,c=@v/q)",
+        "zero=check(R.balanced,on=$b.object,c=@v/q,n=$z.value,m=$z.value)",
+    ];
     let run = asks(&dir, &requests);
     let result = saved(&dir, &run, "complete", 1);
     for (id, status) in [("all", "refuted"), ("zero", "established")] {
         assert_eq!(s(get(answer(&result, id), "status")), status);
     }
     // Law parameterは環の新しい観測変数へ置換せず、各circuitのparameterに残す。
-    let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
+    let algebra = value(
+        &result,
+        get(get(answer(&result, "b"), "outputs"), "algebra"),
+    );
     let equations = value(&result, get(algebra, "equations"));
     let base_row = &arr(get(equations, "objects"))[0];
     let presentation = value(&result, &arr(get(base_row, "presentations"))[0]);
@@ -508,9 +690,9 @@ fn missing_readings_keep_the_constructed_object_and_the_actual_needed_slot() {
         assert_eq!(s(get(n, "status")), "undetermined");
         assert!(arr(get(n, "reasons")).iter().any(|r| {
             s(get(r, "code")) == "missing_observation"
-                && arr(get(r, "missing"))
-                    .iter()
-                    .any(|p| s(get(p, "subject")) == "q" && s(get(p, "field")) == "Build.Part.quantity")
+                && arr(get(r, "missing")).iter().any(|p| {
+                    s(get(p, "subject")) == "q" && s(get(p, "field")) == "Build.Part.quantity"
+                })
         }));
         assert!(has(get(answer(&result, "plan"), "outputs"), "plan"));
         std::fs::remove_dir_all(dir).unwrap();
@@ -738,10 +920,10 @@ fn mixed_tuple_fields_and_lexical_aliases_preserve_each_scalar_component() {
     let body = "view passPair(x:(Z,Q)):(Z,Q)=match x {n=>n;};view amount(c:Part):Z=c.quantity.0;law required aliased(c:Part):let x=c.quantity in passPair(x)=(0,rat(1,2));law required fraction(c:Part):c.quantity=(0,rat(1,2));";
     let dir = files("public-build-mixed-tuple", body, false);
     let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
-    let old = archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
-        .unwrap();
-    let new = archsig::definition::check_definitions(&[("definition0", definition.as_bytes())])
-        .unwrap();
+    let old =
+        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+    let new =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
     std::fs::write(dir.join("d.json"), definition).unwrap();
     for name in ["l.law", "a.json"] {
         let text = std::fs::read_to_string(dir.join(name))
@@ -768,8 +950,16 @@ fn mixed_tuple_fields_and_lexical_aliases_preserve_each_scalar_component() {
     let result = saved(&dir, &run, "complete", 1);
     assert_eq!(s(get(answer(&result, "b"), "status")), "established");
     for law in ["aliased", "fraction"] {
-        assert_eq!(s(get(answer(&result, &format!("bad{law}")), "status")), "refuted", "{law}");
-        assert_eq!(s(get(answer(&result, &format!("good{law}")), "status")), "established", "{law}");
+        assert_eq!(
+            s(get(answer(&result, &format!("bad{law}")), "status")),
+            "refuted",
+            "{law}"
+        );
+        assert_eq!(
+            s(get(answer(&result, &format!("good{law}")), "status")),
+            "established",
+            "{law}"
+        );
     }
     assert_eq!(
         s(value(
@@ -921,9 +1111,21 @@ fn missing_owner_keeps_build_partial_and_needed() {
         }
         let requests = ["b=build(R,on=@v/root)", "n=needed($b)"];
         let result_run = asks(&dir, &requests);
-        let result = saved(&dir, &result_run, if missing { "partial" } else { "complete" }, if missing { 2 } else { 0 });
+        let result = saved(
+            &dir,
+            &result_run,
+            if missing { "partial" } else { "complete" },
+            if missing { 2 } else { 0 },
+        );
         let b = answer(&result, "b");
-        assert_eq!(s(get(b, "status")), if missing { "undetermined" } else { "established" });
+        assert_eq!(
+            s(get(b, "status")),
+            if missing {
+                "undetermined"
+            } else {
+                "established"
+            }
+        );
         assert_eq!(has(get(b, "outputs"), "object"), !missing);
         assert_eq!(has(get(b, "outputs"), "algebra"), !missing);
         let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
@@ -941,7 +1143,11 @@ fn missing_owner_keeps_build_partial_and_needed() {
 
 #[test]
 fn numeric_tuple_view_families_build_and_evaluate() {
-    let dir = files("numeric-tuple-view", "law required balanced(c:Part):c.quantity=c.quantity;view combine(c:Part,pair:(Q,(Q,Q)),take:Bool):(Q,Z)=(if take then pair.0+pair.1.1 else pair.1.1-pair.0,c.quantity);view seed():(Q,(Q,Q))=(rat(1,2),(1,rat(3,2)));view no():Bool=false;", false);
+    let dir = files(
+        "numeric-tuple-view",
+        "law required balanced(c:Part):c.quantity=c.quantity;view combine(c:Part,pair:(Q,(Q,Q)),take:Bool):(Q,Z)=(if take then pair.0+pair.1.1 else pair.1.1-pair.0,c.quantity);view seed():(Q,(Q,Q))=(rat(1,2),(1,rat(3,2)));view no():Bool=false;",
+        false,
+    );
     // else腕は有理数の差 3/2-1/2 と観測pの値を返す。
     let requests = [
         "b=build(R,on=@v/root)",
@@ -1030,9 +1236,12 @@ fn required_tuple_law_case(case: &str) {
                     get(value(&result, get(data, "second_result")), "value"),
                 );
                 assert_ne!(first.value, second.value);
-                assert!(arr(get(data, "fields")).iter().any(
-                    |f| s(get(f, "subject")) == "q" && s(get(f, "field")) == "Build.Part.quantity"
-                ));
+                assert!(
+                    arr(get(data, "fields"))
+                        .iter()
+                        .any(|f| s(get(f, "subject")) == "q"
+                            && s(get(f, "field")) == "Build.Part.quantity")
+                );
             }
             assert_eq!(s(get(answer(&result, "p"), "status")), "established");
             assert!(arr(get(plan, "requirements")).iter().any(|r| {

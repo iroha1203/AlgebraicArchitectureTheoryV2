@@ -3,9 +3,7 @@
 
 mod canonical;
 mod complete;
-pub use complete::{
-    FieldAssignment, check_completion_with_values, check_valuation_with_values,
-};
+pub use complete::{FieldAssignment, check_completion_with_values, check_valuation_with_values};
 mod model;
 mod schema;
 pub use schema::nat_value;
@@ -276,10 +274,13 @@ fn check_document_inner<E: InputError>(
         E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     }
     let mode_of = |id: &str, ptr: &str| -> AResult<Mode> {
-        origins
-            .get(id)
-            .map(|o| o.mode)
-            .ok_or_else(|| issue(Code::Reference, ptr, format!("origin `{id}` does not exist")))
+        origins.get(id).map(|o| o.mode).ok_or_else(|| {
+            issue(
+                Code::Reference,
+                ptr,
+                format!("origin `{id}` does not exist"),
+            )
+        })
     };
     // subject の型と、語彙 binding。
     let mut subject_types = BTreeSet::new();
@@ -307,7 +308,10 @@ fn check_document_inner<E: InputError>(
                     return Err((issue(
                         Code::Reference,
                         &format!("{}/type", s.pointer),
-                        format!("`{}` is not an entity, arrow, or correspondence declaration", s.ty),
+                        format!(
+                            "`{}` is not an entity, arrow, or correspondence declaration",
+                            s.ty
+                        ),
                     ))
                     .into());
                 }
@@ -343,7 +347,8 @@ fn check_document_inner<E: InputError>(
                 "digest"
             };
             error.location = Location::ArchMap {
-                pointer: format!("{ptr}/{field}"), span: None,
+                pointer: format!("{ptr}/{field}"),
+                span: None,
             };
             return Err(error.into());
         }
@@ -361,7 +366,8 @@ fn check_document_inner<E: InputError>(
                     vocabulary.version, vocabulary.digest
                 ),
                 location: Location::ArchMap {
-                    pointer: "/vocabularies".into(), span: None,
+                    pointer: "/vocabularies".into(),
+                    span: None,
                 },
                 details: Details::Vocabulary {
                     namespace,
@@ -369,7 +375,8 @@ fn check_document_inner<E: InputError>(
                     found_digest: None,
                     expected_digest: vocabulary.digest.clone(),
                 },
-            }).into());
+            })
+            .into());
         }
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }

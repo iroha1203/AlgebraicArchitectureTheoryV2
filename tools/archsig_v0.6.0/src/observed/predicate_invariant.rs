@@ -160,8 +160,9 @@ fn evaluation_parts(
             applicability,
             ..
         }) if !parameters => (*value, *applicability, vec![e]),
-        Some(Payload::Evaluation { applicability, .. }) if parameters =>
-            (None, *applicability, vec![e]),
+        Some(Payload::Evaluation { applicability, .. }) if parameters => {
+            (None, *applicability, vec![e])
+        }
         Some(Payload::Construction(v)) => match &v.data {
             D::OutsideLaw(d) => match &d.kind {
                 super::law_inapplicable::Kind::Evaluation { value } => {
@@ -474,7 +475,7 @@ pub(super) fn retain(
     t: Arc<Table>,
     c: &mut Control,
 ) -> Result<Vec<Invariant>, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, t, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, t, c))
 }
 pub(super) fn validate_node(
     g: &Graph,

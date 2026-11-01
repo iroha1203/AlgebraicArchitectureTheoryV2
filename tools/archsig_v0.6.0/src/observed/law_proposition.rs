@@ -31,7 +31,8 @@ pub(super) fn check(
         .ok_or("元Law判断のRequestがない")?
         .clone();
     let declaration = env
-        .indexes.inputs
+        .indexes
+        .inputs
         .law()
         .declarations()
         .get(&row.declaration)

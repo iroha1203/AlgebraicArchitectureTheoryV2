@@ -169,7 +169,10 @@ fn missing_command_message_has_no_leading_separator() {
     assert_eq!(r.code, 64);
     let issue = &arr(get(&r.receipt, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "");
-    assert_eq!(s(get(issue, "message")), "specify command check, run, or version");
+    assert_eq!(
+        s(get(issue, "message")),
+        "specify command check, run, or version"
+    );
 }
 
 #[test]
@@ -179,15 +182,38 @@ fn english_messages_preserve_the_input_argument() {
     assert_eq!(r.code, 64);
     let issue = &arr(get(&r.receipt, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "usage");
-    assert_eq!(s(get(get(issue, "details"), "argument")), "--入力者の文字列");
-    assert!(s(get(issue, "message")).contains("unknown flag or positional argument `--入力者の文字列`"));
-    let r = without_file_changes(&dir, || run(&dir, &[
-        "run", "--atom-definition", "d.json", "--law", "l.law",
-        "--archmap", "a.json", "--ask", "ok=check(CountCheck.nonnegativ,s=@v/s)",
-    ]));
+    assert_eq!(
+        s(get(get(issue, "details"), "argument")),
+        "--入力者の文字列"
+    );
+    assert!(
+        s(get(issue, "message")).contains("unknown flag or positional argument `--入力者の文字列`")
+    );
+    let r = without_file_changes(&dir, || {
+        run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "ok=check(CountCheck.nonnegativ,s=@v/s)",
+            ],
+        )
+    });
     assert_eq!(r.code, 64);
     let issue = &arr(get(&r.receipt, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "usage");
-    assert_eq!(s(get(get(issue, "details"), "argument")), "CountCheck.nonnegativ");
-    assert_eq!(s(get(issue, "message")), "declaration name does not exist or is ambiguous: CountCheck.nonnegativ");
+    assert_eq!(
+        s(get(get(issue, "details"), "argument")),
+        "CountCheck.nonnegativ"
+    );
+    assert_eq!(
+        s(get(issue, "message")),
+        "declaration name does not exist or is ambiguous: CountCheck.nonnegativ"
+    );
 }

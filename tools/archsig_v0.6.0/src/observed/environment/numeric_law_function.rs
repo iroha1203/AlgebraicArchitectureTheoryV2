@@ -213,7 +213,14 @@ fn read(
         c,
     )? {
         Source::Outside => return outside(c, facts),
-        Source::Unknown => return Ok(unknown(inputs.law().exprs()[*body].span, vec![], facts, None)),
+        Source::Unknown => {
+            return Ok(unknown(
+                inputs.law().exprs()[*body].span,
+                vec![],
+                facts,
+                None,
+            ));
+        }
         Source::Value(value) => *value,
     };
     facts.extend(value.support);
@@ -643,14 +650,16 @@ pub(in crate::observed) fn on_guard(
         .collect::<Vec<_>>();
     let reading = read(inputs, readings, position, &names, false, finite, c)?;
     if let Some(pending) = reading.pending {
-        return Ok(if pending.missing.is_empty() && !pending.unsupported_numeric {
-            None
-        } else {
-            Some(GuardValue::Pending {
-                pending,
-                support: reading.facts,
-            })
-        });
+        return Ok(
+            if pending.missing.is_empty() && !pending.unsupported_numeric {
+                None
+            } else {
+                Some(GuardValue::Pending {
+                    pending,
+                    support: reading.facts,
+                })
+            },
+        );
     }
     let (Some(guard), Some(body)) = (reading.condition, reading.body.or(reading.residual)) else {
         return Ok(None);

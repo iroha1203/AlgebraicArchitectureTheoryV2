@@ -20,9 +20,7 @@ fn inputs(name: &str, extra: &str, map: Option<&str>) -> PathBuf {
 fn small_map() -> String {
     use archsig::canonical::Json;
     fixture::changed_map(|j| {
-        let unused = |value: Option<&Json>| {
-            matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()))
-        };
+        let unused = |value: Option<&Json>| matches!(value, Some(Json::Str(id)) if ["h", "k", "l", "t", "n", "mm", "z"].contains(&id.as_str()));
         {
             let Json::Arr(snapshots) = fixture::field(j, "snapshots") else {
                 panic!("snapshots")
@@ -35,7 +33,9 @@ fn small_map() -> String {
         let atoms = fixture::atoms(j);
         atoms.retain(|atom| !matches!(atom, Json::Obj(o) if unused(o.get("subject"))));
         for atom in atoms {
-            let Json::Obj(atom) = atom else { panic!("atom") };
+            let Json::Obj(atom) = atom else {
+                panic!("atom")
+            };
             if atom.get("id") == Some(&Json::str("m-reserves")) {
                 let reference = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
                 atom.insert(
@@ -136,7 +136,11 @@ fn public_architecture_on_scopes_root_families_and_retains_the_actual_environmen
         ("target", "target"),
         ("after", "target"),
     ] {
-        assert_eq!(get(get(answer(&j, id), "outputs"), "environment"), get(candidate, side), "{id}");
+        assert_eq!(
+            get(get(answer(&j, id), "outputs"), "environment"),
+            get(candidate, side),
+            "{id}"
+        );
     }
     let observed = get(answer(&j, "observed"), "outputs");
     assert!(!has(observed, "environment"));
@@ -172,11 +176,7 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
     );
     assert_eq!(r.code, 0, "{}", r.stdout);
     let j = result_json(&dir, &r);
-    for (id, expected) in [
-        ("a", true),
-        ("external", true),
-        ("composite", false),
-    ] {
+    for (id, expected) in [("a", true), ("external", true), ("composite", false)] {
         assert_eq!(
             value(&j, get(get(answer(&j, id), "outputs"), "value")),
             &archsig::json::parse(if expected { b"true" } else { b"false" }).unwrap(),
@@ -191,7 +191,10 @@ law required dependent(a:System,s:State[a]):s.free+s.held=2;
         assert_eq!(s(get(answer(&j, id), "status")), "established", "{id}");
     }
     let root = value(&j, get(get(answer(&j, "m"), "outputs"), "candidate"));
-    assert_eq!(get(get(answer(&j, "product"), "outputs"), "environment"), get(root, "source"));
+    assert_eq!(
+        get(get(answer(&j, "product"), "outputs"), "environment"),
+        get(root, "source")
+    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 
@@ -369,7 +372,10 @@ fn public_architecture_root_domains_exclude_other_snapshots_and_empty_families_r
         );
         assert_eq!(s(get(answer(&j, "c"), "status")), "established");
         let internal = internal_graph(&dir, &j);
-        let evaluation = value(&internal, get(get(answer(&internal, "c"), "outputs"), "evaluation"));
+        let evaluation = value(
+            &internal,
+            get(get(answer(&internal, "c"), "outputs"), "evaluation"),
+        );
         assert_eq!(
             arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
             count,
@@ -596,7 +602,10 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
                 &saved,
                 get(get(answer(&saved, "m"), "outputs"), "candidate"),
             );
-            assert_eq!(get(get(answer(&saved, "a"), "outputs"), "environment"), get(candidate, "source"));
+            assert_eq!(
+                get(get(answer(&saved, "a"), "outputs"), "environment"),
+                get(candidate, "source")
+            );
         }
         assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
             !e.unwrap()
@@ -716,7 +725,10 @@ fn available_environment_root_binds_independently_of_the_producer_value() {
             if supplied {
                 assert!(arr(get(a, "reasons")).is_empty());
                 let internal = internal.as_ref().unwrap();
-                let evaluation = value(&internal, get(get(answer(&internal,id), "outputs"), "evaluation"));
+                let evaluation = value(
+                    &internal,
+                    get(get(answer(&internal, id), "outputs"), "evaluation"),
+                );
                 assert_eq!(
                     value(&internal, get(evaluation, "value")),
                     &archsig::json::parse(b"true").unwrap()

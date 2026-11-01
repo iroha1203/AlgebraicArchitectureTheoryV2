@@ -164,10 +164,7 @@ fn deliver(
     control: &Control,
 ) -> Outcome {
     let (mut status, mut code) = match evaluation.status() {
-        "complete" => (
-            Status::Complete,
-            u8::from(evaluation.has_refuted_answer()),
-        ),
+        "complete" => (Status::Complete, u8::from(evaluation.has_refuted_answer())),
         "partial" => (Status::Partial, 2),
         "interrupted" => (Status::Interrupted, 75),
         _ => (Status::Error, 70),

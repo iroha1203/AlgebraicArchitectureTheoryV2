@@ -189,10 +189,16 @@ fn unchanged(before: &CheckedInputs, after: &CheckedInputs) {
         sha256_digest(after.sources().law().bytes())
     );
     assert_eq!(before.archmap().snapshots(), after.archmap().snapshots());
-    assert_eq!(before.archmap().vocabularies(), after.archmap().vocabularies());
+    assert_eq!(
+        before.archmap().vocabularies(),
+        after.archmap().vocabularies()
+    );
     assert_eq!(before.archmap().origins(), after.archmap().origins());
     assert_eq!(before.archmap().sources(), after.archmap().sources());
-    assert_eq!(before.archmap().model_digest(), after.archmap().model_digest());
+    assert_eq!(
+        before.archmap().model_digest(),
+        after.archmap().model_digest()
+    );
     assert_eq!(
         after.archmap().bytes_digest(),
         sha256_digest(after.sources().archmap().bytes())

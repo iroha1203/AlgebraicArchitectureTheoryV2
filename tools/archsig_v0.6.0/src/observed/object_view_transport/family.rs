@@ -812,7 +812,10 @@ pub(super) fn same(
                 return Ok(false);
             }
         }
-        (Some(ViewFamilyReturnMap::PrimitiveIdentity(a)), Some(ViewFamilyReturnMap::PrimitiveIdentity(b))) => {
+        (
+            Some(ViewFamilyReturnMap::PrimitiveIdentity(a)),
+            Some(ViewFamilyReturnMap::PrimitiveIdentity(b)),
+        ) => {
             if a != b {
                 return Ok(false);
             }

@@ -57,10 +57,15 @@ impl Environment<'_> {
             if let Some(scalar) = v.scalar_projection(path) {
                 data::check(&scalar, self.indexes.inputs.law(), &self.control)?;
                 return Ok(AnswerBinding::Projection(Node {
-                    ty: NodeType::Value(scalar.ty()), payload: Some(Payload::Scalar(scalar)),
-                    rule: Rule::Projection(path.to_vec()), arguments: vec![root],
-                    support: original.support.clone(), scope: original.scope.clone(),
-                    evidence: vec![], judgment: None, reasons: vec![],
+                    ty: NodeType::Value(scalar.ty()),
+                    payload: Some(Payload::Scalar(scalar)),
+                    rule: Rule::Projection(path.to_vec()),
+                    arguments: vec![root],
+                    support: original.support.clone(),
+                    scope: original.scope.clone(),
+                    evidence: vec![],
+                    judgment: None,
+                    reasons: vec![],
                 }));
             }
             let Some((selected, used)) = v.project(path) else {
@@ -251,20 +256,30 @@ impl Environment<'_> {
             return Err("射影nodeが元Requestの束縛前contextでない".into());
         }
         let request = self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("射影の元Requestがない")?;
         if request.kind == QuestionKind::Build {
             super::super::architecture_result::selected_build(self, graph, request)?;
-            let selector = &request.arguments.iter().find(|a| a.name == "on")
-                .ok_or("build射影の元onがない")?.value;
-            if let AnswerBinding::Projection(expected) = self.answer_binding(graph, selector, (0, 0))?
-                && expected == *node {
+            let selector = &request
+                .arguments
+                .iter()
+                .find(|a| a.name == "on")
+                .ok_or("build射影の元onがない")?
+                .value;
+            if let AnswerBinding::Projection(expected) =
+                self.answer_binding(graph, selector, (0, 0))?
+                && expected == *node
+            {
                 return Ok(());
             }
             return Err("buildのroot射影が元Handle・値・型・支持・Scopeと違う".into());
         }
-        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
+        if matches!(
+            request.kind,
+            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+        ) {
             for constraint in &request.constraints {
                 if !matches!(constraint.selector, Selector::Answer { .. }) {
                     continue;
@@ -280,7 +295,8 @@ impl Environment<'_> {
             return Err("map射影nodeが元on・型・値・支持・Scopeと違う".into());
         }
         let declaration = self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)

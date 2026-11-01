@@ -206,10 +206,7 @@ fn false_value_and_guarded_inapplicability_are_distinct() {
     assert_eq!(s(get(value, "type")), "Bool");
     assert!(matches!(get(value, "value").value, JValue::Bool(false)));
     assert_eq!(s(get(answer(&res, "v"), "status")), "established");
-    assert_eq!(
-        s(get(answer(&res, "g"), "applicability")),
-        "not_applicable"
-    );
+    assert_eq!(s(get(answer(&res, "g"), "applicability")), "not_applicable");
     assert_eq!(s(get(answer(&res, "g"), "status")), "established");
 }
 
@@ -237,13 +234,15 @@ fn backward_references_keep_answer_order_and_cycles_explain_edges() {
         "2"
     );
     let dir = inputs("cycle", Some("2"), &law);
-    let r = without_file_changes(&dir, || requests(
-        &dir,
-        &[
-            "a=evaluate(CountCheck.relay,x=$b.value)",
-            "b=evaluate(CountCheck.relay,x=$a.value)",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        requests(
+            &dir,
+            &[
+                "a=evaluate(CountCheck.relay,x=$b.value)",
+                "b=evaluate(CountCheck.relay,x=$a.value)",
+            ],
+        )
+    });
     let res = notified(&dir, &r, "invalid", 64);
     let issues = arr(get(&res, "issues"));
     assert_eq!(issues.len(), 2);
@@ -468,12 +467,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
             .map(|s| s.to_string())
             .collect();
         let mut signals = NoSignal::default();
-        let outcome = archsig::run::run_requests(
-            &mut TestIo,
-            &mut signals,
-            &args,
-            &mut control,
-        );
+        let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args, &mut control);
         assert_eq!(outcome.exit_code, 130);
         assert_eq!(signals.freezes, 1);
         let res =
@@ -498,12 +492,8 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
     let args = run_args(&dir);
     let mut control =
         Control::new(|point| (point == Checkpoint::BeforeDefinitions).then_some(Signal::Int));
-    let outcome = archsig::run::run_requests(
-        &mut TestIo,
-        &mut NoSignal::default(),
-        &args,
-        &mut control,
-    );
+    let outcome =
+        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &mut control);
     assert_eq!(outcome.exit_code, 130);
     assert!(outcome.result.is_none());
     assert!(!dir.join("out").exists());
@@ -599,12 +589,8 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
         }
         None
     });
-    let outcome = archsig::run::run_requests(
-        &mut TestIo,
-        &mut NoSignal::default(),
-        &args,
-        &mut control,
-    );
+    let outcome =
+        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &mut control);
     assert_eq!(outcome.exit_code, 0);
     let total = seen.get();
     let before_evaluation = before_evaluation.get().unwrap();
@@ -622,12 +608,8 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
                 (count.get() >= at).then_some(signal)
             });
             let mut signals = NoSignal::default();
-            let outcome = archsig::run::run_requests(
-                &mut TestIo,
-                &mut signals,
-                &args,
-                &mut control,
-            );
+            let outcome =
+                archsig::run::run_requests(&mut TestIo, &mut signals, &args, &mut control);
             assert_eq!(outcome.exit_code, code);
             assert_eq!(seen.get(), at, "停止後にprobeしない");
             assert_eq!(signals.freezes, 1);

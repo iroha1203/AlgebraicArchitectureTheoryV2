@@ -1,7 +1,7 @@
 //! 元changeの束縛と同時更新。右辺はすべて変更前の同じ環境で評価する。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::model::{Declaration, Signature};
+use crate::observed::environment::state::ScopedReplace;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum State {
@@ -66,11 +66,11 @@ pub(in crate::observed) fn evaluate_on_fields(
     fields: &[String],
 ) -> Result<Update, ValidationFailure> {
     let outer = environment
-        .state.missing_slot_reads
+        .state
+        .missing_slot_reads
         .scoped(Some(BTreeSet::new()));
     let result = evaluate_inner(environment, declaration, bindings, fields);
-    let missing = outer.restore()
-        .ok_or("changeの不足位置収集がない")?;
+    let missing = outer.restore().ok_or("changeの不足位置収集がない")?;
     if let Some(reads) = environment.state.missing_slot_reads.borrow_mut().as_mut() {
         reads.extend(missing.iter().cloned());
     }
@@ -78,7 +78,8 @@ pub(in crate::observed) fn evaluate_on_fields(
     if result.state == State::Undetermined {
         result.missing.extend(missing.into_iter().filter(|f| {
             !environment
-                .indexes.primitive_valuation
+                .indexes
+                .primitive_valuation
                 .as_ref()
                 .is_some_and(|v| v.contains_key(f))
         }));
@@ -115,7 +116,11 @@ fn evaluate_inner(
         if parameter.name != *name || parameter.ty.erase() != value.ty() {
             return Err("changeの元parameter名または型が違う".into());
         }
-        data::check(value, environment.indexes.inputs.law(), &environment.control)?;
+        data::check(
+            value,
+            environment.indexes.inputs.law(),
+            &environment.control,
+        )?;
         environment.owned_call_value_check(
             &parameter.ty,
             &super::super::term::affine::Value::Known(value.clone()),
@@ -222,7 +227,9 @@ fn evaluate_inner(
                             Fact {
                                 snapshot: snapshot.clone(),
                                 subject: subject.clone(),
-                                field: Some(environment.input_name(&format!("{entity}.{}", field.name))?),
+                                field: Some(
+                                    environment.input_name(&format!("{entity}.{}", field.name))?,
+                                ),
                                 atom: None,
                             },
                             value,
@@ -235,14 +242,23 @@ fn evaluate_inner(
                         continue;
                     }
                     let value = environment.scoped_field(
-                        target.clone(), &environment.input_name(&format!("{entity}.{name}"))?, &base, &declaration.reading, declaration.span,
+                        target.clone(),
+                        &environment.input_name(&format!("{entity}.{name}"))?,
+                        &base,
+                        &declaration.reading,
+                        declaration.span,
                     )?;
                     result.retain(&value);
                     if let Some(value) = value.known_value {
-                        result.values.push((Fact {
-                            snapshot: snapshot.clone(), subject: subject.clone(),
-                            field: Some(environment.input_name(&format!("{entity}.{name}"))?), atom: None,
-                        }, value));
+                        result.values.push((
+                            Fact {
+                                snapshot: snapshot.clone(),
+                                subject: subject.clone(),
+                                field: Some(environment.input_name(&format!("{entity}.{name}"))?),
+                                atom: None,
+                            },
+                            value,
+                        ));
                     }
                 }
                 break;
@@ -375,11 +391,16 @@ pub(in crate::observed) fn candidates(
             &mut |_| {},
         )?;
         for point in domain.values {
-            environment.control.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+            environment
+                .control
+                .clone()
+                .checkpoint(Checkpoint::PrimitiveValuation)?;
             let Scalar::Tuple(parameters) = &point else {
                 return Err("change parameterの直積がTupleでない".into());
             };
-            result.rows.push(candidate(environment,declaration,subjects,&parameters)?);
+            result
+                .rows
+                .push(candidate(environment, declaration, subjects, &parameters)?);
         }
         result.complete = true;
         Ok(())
@@ -523,7 +544,11 @@ pub(in crate::observed) fn solution_row(
         State::Undetermined => return Ok(row),
         State::Ready => {}
     }
-    let mut assignments = environment.indexes.primitive_valuation.clone().unwrap_or_default();
+    let mut assignments = environment
+        .indexes
+        .primitive_valuation
+        .clone()
+        .unwrap_or_default();
     assignments.extend(candidate.update.values.iter().cloned());
     let assignments = assignments.into_iter().collect::<Vec<_>>();
     let Some(mut updated) = Environment::try_primitive_valuation(
@@ -543,16 +568,19 @@ pub(in crate::observed) fn solution_row(
             .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
         let declaration = environment
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .declarations()
             .get(name)
             .ok_or("候補の元Lawがない")?;
-        let outer = updated.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let outer = updated
+            .state
+            .missing_slot_reads
+            .scoped(Some(BTreeSet::new()));
         let evaluated =
             finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point);
-        let missing = outer.restore()
-            .ok_or("候補Lawの不足位置収集がない")?;
+        let missing = outer.restore().ok_or("候補Lawの不足位置収集がない")?;
         if let Some(reads) = updated.state.missing_slot_reads.borrow_mut().as_mut() {
             reads.extend(missing.iter().cloned());
         }

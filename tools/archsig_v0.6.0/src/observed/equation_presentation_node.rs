@@ -263,7 +263,9 @@ impl Dependencies {
             tick(c)?;
             let field = f.field.as_deref().ok_or("評価省略の元fieldがない")?;
             if matches!(
-                env.indexes.field(&env.state, &f.snapshot, &f.subject, field)?.slot,
+                env.indexes
+                    .field(&env.state, &f.snapshot, &f.subject, field)?
+                    .slot,
                 crate::archmap::Slot::Missing
             ) {
                 missing.push(Fact {
@@ -329,6 +331,9 @@ pub(super) fn dependencies(
     }
     tick(c)?;
     Ok(Dependencies {
-        slots: slots.into_values().map(|(node,name)| (node,name.to_string())).collect(),
+        slots: slots
+            .into_values()
+            .map(|(node, name)| (node, name.to_string()))
+            .collect(),
     })
 }

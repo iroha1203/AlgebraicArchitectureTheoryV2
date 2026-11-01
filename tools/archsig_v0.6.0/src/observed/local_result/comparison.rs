@@ -144,10 +144,12 @@ pub(super) fn compute(
     let data = local(g, left_system)?;
     let system = data.source.system.as_ref().ok_or("固定局所系がない")?;
     let operation = public_compose::op(g, along)?;
-    operation.recheck(env.indexes.inputs, c).map_err(|e| match e {
-        crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-        e => ValidationFailure::Internal(format!("診断比較のOperation: {e:?}")),
-    })?;
+    operation
+        .recheck(env.indexes.inputs, c)
+        .map_err(|e| match e {
+            crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
+            e => ValidationFailure::Internal(format!("診断比較のOperation: {e:?}")),
+        })?;
     let (from, to, _, _) = public_compose::components(g, along)?;
     let object = field(g, left_system, "base")?;
     let candidate = operation.map().candidate();
@@ -183,8 +185,14 @@ pub(super) fn compute(
         .integer
         .as_ref()
         .is_some_and(|d| !d.equation_only || equation_side);
-    let rational_side = system.rational.as_ref().is_some_and(|d| !d.equation_only || equation_side);
-    let right_rational_side = right_plan.rational.as_ref().is_some_and(|d| !d.equation_only || equation_side);
+    let rational_side = system
+        .rational
+        .as_ref()
+        .is_some_and(|d| !d.equation_only || equation_side);
+    let right_rational_side = right_plan
+        .rational
+        .as_ref()
+        .is_some_and(|d| !d.equation_only || equation_side);
     let equivalent_finite = !rational_side
         && !right_rational_side
         && !integer_side
@@ -409,15 +417,17 @@ pub(super) fn compute(
                 ),
             )?;
             let zero = change_result::value(&mut b, &Scalar::Z(num_bigint::BigInt::from(0)))?;
-            vec![b.proposition(
-                "equal",
-                vec![count, zero],
-                [global_map, matching_map]
-                    .into_iter()
-                    .chain(outside_image.iter().copied())
-                    .collect(),
-                status,
-            )?]
+            vec![
+                b.proposition(
+                    "equal",
+                    vec![count, zero],
+                    [global_map, matching_map]
+                        .into_iter()
+                        .chain(outside_image.iter().copied())
+                        .collect(),
+                    status,
+                )?,
+            ]
         };
         conditions.push(b.proposition(
             "naturality",

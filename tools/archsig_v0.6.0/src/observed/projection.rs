@@ -191,46 +191,96 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
-        (ProjectionType::FixedSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::FixedCandidateSpace),
-        (ProjectionType::EquationSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::EquationSpace),
-        (ProjectionType::FixedCandidateSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),"states"=>exact(ProjectionType::FixedStateSpace),"action"=>exact(ProjectionType::StateMap),_=>Err("CandidateSpace projection is not public".into())},
-        (ProjectionType::EquationSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),_=>Err("EquationSpace projection is not public".into())},
-        (ProjectionType::LocalSystem,Field(f)) => match f.as_str() {
-            "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystem projection is not public".into()),
+        (ProjectionType::FixedSolutionSet, Field(f)) if f == "domain" => {
+            exact(ProjectionType::FixedCandidateSpace)
+        }
+        (ProjectionType::EquationSolutionSet, Field(f)) if f == "domain" => {
+            exact(ProjectionType::EquationSpace)
+        }
+        (ProjectionType::FixedCandidateSpace, Field(f)) => match f.as_str() {
+            "base" => exact(ProjectionType::Architecture),
+            "parameters" => exact(ProjectionType::Domain),
+            "states" => exact(ProjectionType::FixedStateSpace),
+            "action" => exact(ProjectionType::StateMap),
+            _ => Err("CandidateSpace projection is not public".into()),
         },
-        (ProjectionType::Comparison,Field(f)) if f=="finite_map" => conditional(ProjectionType::StateMap),
-        (ProjectionType::Comparison,Field(f)) if f=="cohomology_map" => conditional(ProjectionType::ModuleMap),
-        (ProjectionType::Comparison,Field(f)) if matches!(f.as_str(),"kernel"|"cokernel") => conditional(ProjectionType::Module),
-        (ProjectionType::Comparison,Field(f)) if f=="class_transport" => conditional(ProjectionType::Proposition),
-        (ProjectionType::ModuleMap,Field(f)) if matches!(f.as_str(),"source"|"target") => exact(ProjectionType::Module),
-        (ProjectionType::Module,Field(f)) => match f.as_str() {
-            "ring"=>exact(ProjectionType::Ring), "free_rank"=>exact(ProjectionType::Law(Type::Z)),
-            "torsion"=>exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))), _=>Err("Module projection is not public".into()),
+        (ProjectionType::EquationSpace, Field(f)) => match f.as_str() {
+            "base" => exact(ProjectionType::Architecture),
+            "parameters" => exact(ProjectionType::Domain),
+            _ => Err("EquationSpace projection is not public".into()),
         },
-        (ProjectionType::Vector,Field(f)) if f=="module"=>exact(ProjectionType::Module),
-        (ProjectionType::Cohomology,Field(f)) if f=="module"=>exact(ProjectionType::Module),
-        (ProjectionType::Class,Field(f)) if f=="cohomology"=>exact(ProjectionType::Cohomology),
-        (ProjectionType::Class,Field(f)) if f=="coordinates"=>exact(ProjectionType::Vector),
-        (ProjectionType::Diagnostic,Field(f)) => match f.as_str() {
-            "space"=>conditional(ProjectionType::Cohomology), "class"=>conditional(ProjectionType::Class), "system"=>exact(ProjectionType::LocalSystem), "global"=>exact(ProjectionType::Dynamic(vec![ProjectionType::FixedSolutionSet,ProjectionType::EquationSolutionSet])), "matching"=>exact(ProjectionType::Domain), "restriction"=>exact(ProjectionType::StateMap),_=>Err("Diagnostic projection is not implemented".into()),
+        (ProjectionType::LocalSystem, Field(f)) => match f.as_str() {
+            "base" => exact(ProjectionType::Architecture),
+            "cover" => exact(ProjectionType::Cover),
+            "topology" => exact(ProjectionType::Topology),
+            _ => Err("LocalSystem projection is not public".into()),
         },
-        (ProjectionType::Quotient(domain),Field(f)) => match f.as_str() {
-            "domain"=>exact((**domain).clone()),
-            "classes"=>exact(ProjectionType::Domain),
-            "projection"|"descent"=>exact(ProjectionType::StateMap),
-            _=>Err("Quotient projection is not public".into()),
+        (ProjectionType::Comparison, Field(f)) if f == "finite_map" => {
+            conditional(ProjectionType::StateMap)
+        }
+        (ProjectionType::Comparison, Field(f)) if f == "cohomology_map" => {
+            conditional(ProjectionType::ModuleMap)
+        }
+        (ProjectionType::Comparison, Field(f)) if matches!(f.as_str(), "kernel" | "cokernel") => {
+            conditional(ProjectionType::Module)
+        }
+        (ProjectionType::Comparison, Field(f)) if f == "class_transport" => {
+            conditional(ProjectionType::Proposition)
+        }
+        (ProjectionType::ModuleMap, Field(f)) if matches!(f.as_str(), "source" | "target") => {
+            exact(ProjectionType::Module)
+        }
+        (ProjectionType::Module, Field(f)) => match f.as_str() {
+            "ring" => exact(ProjectionType::Ring),
+            "free_rank" => exact(ProjectionType::Law(Type::Z)),
+            "torsion" => exact(ProjectionType::Law(Type::List(Box::new(Type::Z)))),
+            _ => Err("Module projection is not public".into()),
         },
-        (ProjectionType::Repair(root),Field(f))=>match f.as_str(){"domain"=>exact(ProjectionType::CandidateSpace(root.clone())),"solutions"=>exact(ProjectionType::SolutionSet(root.clone())),"parameters"=>exact(ProjectionType::Assignment(root.clone())),"object"=>exact(ProjectionType::ArchitectureRoot(root.clone())),_=>Err("Repair projection is not public".into())},
-        (ProjectionType::Assignment(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
-        (ProjectionType::CandidateSpace(root),Field(f)) => match f.as_str() {
-            "base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
-            "parameters"=>exact(ProjectionType::Domain),
-            "states"=>exact(ProjectionType::StateSpace(root.clone())),
-            "action"=>exact(ProjectionType::StateMap),
-            _=>Err("CandidateSpace projection is not public".into()),
+        (ProjectionType::Vector, Field(f)) if f == "module" => exact(ProjectionType::Module),
+        (ProjectionType::Cohomology, Field(f)) if f == "module" => exact(ProjectionType::Module),
+        (ProjectionType::Class, Field(f)) if f == "cohomology" => exact(ProjectionType::Cohomology),
+        (ProjectionType::Class, Field(f)) if f == "coordinates" => exact(ProjectionType::Vector),
+        (ProjectionType::Diagnostic, Field(f)) => match f.as_str() {
+            "space" => conditional(ProjectionType::Cohomology),
+            "class" => conditional(ProjectionType::Class),
+            "system" => exact(ProjectionType::LocalSystem),
+            "global" => exact(ProjectionType::Dynamic(vec![
+                ProjectionType::FixedSolutionSet,
+                ProjectionType::EquationSolutionSet,
+            ])),
+            "matching" => exact(ProjectionType::Domain),
+            "restriction" => exact(ProjectionType::StateMap),
+            _ => Err("Diagnostic projection is not implemented".into()),
         },
-        (ProjectionType::SolutionSet(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
-        (ProjectionType::StateMap,Field(f)) if matches!(f.as_str(),"source"|"target")=>exact(ProjectionType::Domain),
+        (ProjectionType::Quotient(domain), Field(f)) => match f.as_str() {
+            "domain" => exact((**domain).clone()),
+            "classes" => exact(ProjectionType::Domain),
+            "projection" | "descent" => exact(ProjectionType::StateMap),
+            _ => Err("Quotient projection is not public".into()),
+        },
+        (ProjectionType::Repair(root), Field(f)) => match f.as_str() {
+            "domain" => exact(ProjectionType::CandidateSpace(root.clone())),
+            "solutions" => exact(ProjectionType::SolutionSet(root.clone())),
+            "parameters" => exact(ProjectionType::Assignment(root.clone())),
+            "object" => exact(ProjectionType::ArchitectureRoot(root.clone())),
+            _ => Err("Repair projection is not public".into()),
+        },
+        (ProjectionType::Assignment(root), Field(f)) if f == "domain" => {
+            exact(ProjectionType::CandidateSpace(root.clone()))
+        }
+        (ProjectionType::CandidateSpace(root), Field(f)) => match f.as_str() {
+            "base" => exact(ProjectionType::ArchitectureRoot(root.clone())),
+            "parameters" => exact(ProjectionType::Domain),
+            "states" => exact(ProjectionType::StateSpace(root.clone())),
+            "action" => exact(ProjectionType::StateMap),
+            _ => Err("CandidateSpace projection is not public".into()),
+        },
+        (ProjectionType::SolutionSet(root), Field(f)) if f == "domain" => {
+            exact(ProjectionType::CandidateSpace(root.clone()))
+        }
+        (ProjectionType::StateMap, Field(f)) if matches!(f.as_str(), "source" | "target") => {
+            exact(ProjectionType::Domain)
+        }
 
         (ProjectionType::ComposedOperation(shape), Field(f)) => match f.as_str() {
             "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
@@ -412,7 +462,9 @@ fn project_inner(
                 match project(law, t, path, control) {
                     Ok((p, n)) => {
                         if used.is_some_and(|u| u != n) {
-                            return Err("projection structure differs across type candidates".into());
+                            return Err(
+                                "projection structure differs across type candidates".into()
+                            );
                         }
                         used = Some(n);
                         push_unique(&mut out, p.ty, control)?;
@@ -443,8 +495,7 @@ fn project_inner(
 
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
 pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
-    can_bind_controlled(actual, expected, &mut Control::unlimited())
-        .expect("取消通知のない制御")
+    can_bind_controlled(actual, expected, &mut Control::unlimited()).expect("取消通知のない制御")
 }
 
 /// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ false を返す。

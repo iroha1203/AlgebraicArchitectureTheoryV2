@@ -776,7 +776,8 @@ fn compare_spelling(map: &[u8], decision: &str, left: Option<&str>) {
     assert_ne!(a.sources().law().bytes(), b.sources().law().bytes());
     assert_ne!(a.law().model_digest(), b.law().model_digest());
     let body_span = |c: &CheckedInputs| {
-        let Signature::Law { body, .. } = &c.law().declarations()["Reservations.conserved"].signature
+        let Signature::Law { body, .. } =
+            &c.law().declarations()["Reservations.conserved"].signature
         else {
             panic!("Law")
         };

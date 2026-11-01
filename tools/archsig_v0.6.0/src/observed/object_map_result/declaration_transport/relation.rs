@@ -4,7 +4,10 @@ use crate::{
     definition::model::PrimitiveSignature,
     observed::{
         change_result,
-        environment::{numeric_parameters, relation_instances::{self, RelationState}},
+        environment::{
+            numeric_parameters,
+            relation_instances::{self, RelationState},
+        },
         path_compose,
         path_value::PathValue,
     },
@@ -149,15 +152,15 @@ fn witness_bindings(
             let value =
                 if let Some((_, value)) = row.bindings.iter().find(|(name, _)| name == &p.name) {
                     value.clone()
-                } else if row.numeric_parameters.contains(p) && numeric_parameters::numeric_width(&p.ty).is_some() {
+                } else if row.numeric_parameters.contains(p)
+                    && numeric_parameters::numeric_width(&p.ty).is_some()
+                {
                     if let Some(point) = numeric_point.or_else(|| {
                         row.numeric_domain
                             .as_ref()
                             .and_then(|domain| domain.particular.as_deref())
                     }) {
-                        numeric_parameters::point_value(
-                            &row.numeric_parameters, p, point, c,
-                        )?
+                        numeric_parameters::point_value(&row.numeric_parameters, p, point, c)?
                     } else {
                         crate::observed::numeric::zero(&p.ty, c)?
                     }

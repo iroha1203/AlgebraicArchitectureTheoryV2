@@ -65,13 +65,15 @@ fn malformed_build_reports_concrete_usage_before_execution_support() {
 #[test]
 fn build_cycle_stdout_identifies_requests_and_dependency_edges() {
     let dir = files("build-cycle");
-    let run = without_file_changes(&dir, || ask(
-        &dir,
-        &[
-            "a=build(R,on=$b.object.root)",
-            "b=build(R,on=$a.algebra.base.subject)",
-        ],
-    ));
+    let run = without_file_changes(&dir, || {
+        ask(
+            &dir,
+            &[
+                "a=build(R,on=$b.object.root)",
+                "b=build(R,on=$a.algebra.base.subject)",
+            ],
+        )
+    });
     notified(&dir, &run, "invalid", 64);
     let issues = arr(get(&run.receipt, "issues"));
     for id in ["a", "b"] {

@@ -232,18 +232,23 @@ fn valid_paths_compose_without_operation_promotion_and_cycles_keep_edges() {
     let j = saved(&dir, &r, "complete", 0);
     let outputs = get(answer(&j, "c"), "outputs");
     assert!(!has(outputs, "map"));
-    assert_eq!(s(&arr(get(node(&j, get(outputs, "operation")), "type"))[0]), "Path");
+    assert_eq!(
+        s(&arr(get(node(&j, get(outputs, "operation")), "type"))[0]),
+        "Path"
+    );
     assert!(arr(get(value(&j, get(outputs, "operation")), "generators")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
     let dir = inputs("compose-cycle", A);
-    let r = without_file_changes(&dir, || asks(
-        &dir,
-        &[
-            M,
-            "a=compose($b.operation,then=$m.operation)",
-            "b=compose($a.operation,then=$m.operation)",
-        ],
-    ));
+    let r = without_file_changes(&dir, || {
+        asks(
+            &dir,
+            &[
+                M,
+                "a=compose($b.operation,then=$m.operation)",
+                "b=compose($a.operation,then=$m.operation)",
+            ],
+        )
+    });
     notified(&dir, &r, "invalid", 64);
     assert!(r.stdout.contains("cycle") && r.stdout.contains("a") && r.stdout.contains("b"));
     std::fs::remove_dir_all(dir).unwrap();
@@ -367,8 +372,12 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
         .into_iter()
         .enumerate()
     {
-        texts.push(format!("read{i}=evaluate(Reservations.sourceOf,m=$c.{path})"));
-        texts.push(format!("mapped{i}=map(Reservations.Migration,on=$c.{path},reading=Reservations)"));
+        texts.push(format!(
+            "read{i}=evaluate(Reservations.sourceOf,m=$c.{path})"
+        ));
+        texts.push(format!(
+            "mapped{i}=map(Reservations.Migration,on=$c.{path},reading=Reservations)"
+        ));
         texts.push(format!("readPlan{i}=needed($read{i})"));
         texts.push(format!("mapPlan{i}=needed($mapped{i})"));
         pairs.push((format!("read{i}"), format!("readPlan{i}")));

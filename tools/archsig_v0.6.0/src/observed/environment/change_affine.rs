@@ -1,7 +1,7 @@
 //! 通常の式評価器から整数changeの作用と選択Lawの線形系を得る。
-use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::model::{Declaration, Signature};
+use crate::observed::environment::state::ScopedReplace;
 use crate::observed::{
     affine::{self, Form, NumberType, Parameter},
     integer_fiber::{self, Fiber, Matrix},
@@ -65,12 +65,18 @@ fn value(env: &Environment<'_>, scalar: Scalar) -> Result<SourceValue, Validatio
 }
 /// 未束縛の数値Law引数は標本値ではなく、元binderの全域記号として評価する。
 pub(super) fn law_variables(
-    env: &Environment<'_>, params: &[crate::law::model::Param], bindings: &[(String, Scalar)],
+    env: &Environment<'_>,
+    params: &[crate::law::model::Param],
+    bindings: &[(String, Scalar)],
 ) -> Result<(BTreeMap<String, SourceValue>, Vec<Parameter>), ValidationFailure> {
     let mut names = std::collections::BTreeSet::new();
     for (name, scalar) in bindings {
         env.tick()?;
-        if !names.insert(name) || !params.iter().any(|p| p.name == *name && p.ty.erase() == scalar.ty()) {
+        if !names.insert(name)
+            || !params
+                .iter()
+                .any(|p| p.name == *name && p.ty.erase() == scalar.ty())
+        {
             return Err("Law束縛の名前・型または重複が不正".into());
         }
     }
@@ -82,10 +88,16 @@ pub(super) fn law_variables(
             vars.insert(p.name.clone(), value(env, scalar.clone())?);
         } else {
             let kind = match p.ty.erase() {
-                Type::Z => NumberType::Z, Type::Q => NumberType::Q,
+                Type::Z => NumberType::Z,
+                Type::Q => NumberType::Q,
                 _ => return Err("未束縛の局所Law引数がZ/Qでない".into()),
             };
-            let parameter = Parameter { binder: p.span, name: p.name.clone(), context: env.state.context.get().unwrap_or_default(), kind };
+            let parameter = Parameter {
+                binder: p.span,
+                name: p.name.clone(),
+                context: env.state.context.get().unwrap_or_default(),
+                kind,
+            };
             let mut v = value(env, numeric::zero(&kind.ty(), &env.control)?)?;
             v.known_value = None;
             v.scalar_scope = None;
@@ -124,9 +136,17 @@ pub(super) fn affine_guard_forms(
 }
 
 #[derive(Clone, Copy)]
-enum Axes<'a> { Parameters(&'a [Parameter]), State(&'a [Fact]) }
+enum Axes<'a> {
+    Parameters(&'a [Parameter]),
+    State(&'a [Fact]),
+}
 impl Axes<'_> {
-    fn len(self) -> usize { match self { Self::Parameters(xs) => xs.len(), Self::State(xs) => xs.len() } }
+    fn len(self) -> usize {
+        match self {
+            Self::Parameters(xs) => xs.len(),
+            Self::State(xs) => xs.len(),
+        }
+    }
 }
 fn coordinates(
     env: &Environment<'_>,
@@ -136,16 +156,22 @@ fn coordinates(
     missing: &mut Pending,
 ) -> Result<(Option<Z>, Vec<Z>), ValidationFailure> {
     (match axes {
-        Axes::Parameters(xs) => form.integer_coordinates(xs, &env.control)?.map(|(v,row)|(Some(v),row)),
-        Axes::State(xs) => { missing.facts.extend(form.missing_facts()); form.state_coordinates(xs, &env.control)? },
-    }).ok_or_else(|| {
+        Axes::Parameters(xs) => form
+            .integer_coordinates(xs, &env.control)?
+            .map(|(v, row)| (Some(v), row)),
+        Axes::State(xs) => {
             missing.facts.extend(form.missing_facts());
-            unsupported(
-                env,
-                id,
-                "整数changeの係数に欠測または元parameter以外の記号がある",
-            )
-        })
+            form.state_coordinates(xs, &env.control)?
+        }
+    })
+    .ok_or_else(|| {
+        missing.facts.extend(form.missing_facts());
+        unsupported(
+            env,
+            id,
+            "整数changeの係数に欠測または元parameter以外の記号がある",
+        )
+    })
 }
 pub(super) fn numeric_condition(
     env: &Environment<'_>,
@@ -160,9 +186,12 @@ pub(super) fn numeric_condition(
         match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(body) | ExprKind::Let { body, .. } => id = *body,
             ExprKind::Binary { lhs, rhs, .. } => {
-                return Ok([lhs, rhs]
-                    .iter()
-                    .all(|id| matches!(env.indexes.inputs.law().expr_type(**id), Some(Type::Z | Type::Q))));
+                return Ok([lhs, rhs].iter().all(|id| {
+                    matches!(
+                        env.indexes.inputs.law().expr_type(**id),
+                        Some(Type::Z | Type::Q)
+                    )
+                }));
             }
             _ => return Ok(false),
         }
@@ -178,7 +207,19 @@ fn equations(
     rhs: &mut Vec<Option<Z>>,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
-    super::conjunction::walk(&mut IntegerEquations { axes, matrix, rhs, missing }, env, id, vars, &Scope::default(), reading)
+    super::conjunction::walk(
+        &mut IntegerEquations {
+            axes,
+            matrix,
+            rhs,
+            missing,
+        },
+        env,
+        id,
+        vars,
+        &Scope::default(),
+        reading,
+    )
 }
 
 struct AffineGuard;
@@ -557,7 +598,7 @@ fn collect_updates(
                     _ => {
                         missing.expression = Some(*cond);
                         if numeric_condition(env, *cond, &v)? {
-                            missing.unsupported=Some("numeric_change_condition");
+                            missing.unsupported = Some("numeric_change_condition");
                         }
                         return Err(unsupported(
                             env,
@@ -592,16 +633,24 @@ fn collect_updates(
                     missing.scope.merge(&v.scope);
                     usable(env, *id, &v)?;
                     let form = v.affine.ok_or_else(|| {
-                        if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Z | Type::Q)) {
+                        if matches!(
+                            env.indexes.inputs.law().expr_type(*id),
+                            Some(Type::Z | Type::Q)
+                        ) {
                             missing.unsupported = Some("nonlinear_numeric_change");
                         }
                         unsupported(env, *id, "数値changeの更新式がアフィンでない")
                     })?;
                     if axes.first().is_some_and(|axis| axis.kind == NumberType::Q) {
-                        form.rational_coordinates(axes, &env.control)?.ok_or_else(|| {
-                            missing.facts.extend(form.missing_facts());
-                            unsupported(env, *id, "有理changeの係数に欠測または元parameter以外の記号がある")
-                        })?;
+                        form.rational_coordinates(axes, &env.control)?
+                            .ok_or_else(|| {
+                                missing.facts.extend(form.missing_facts());
+                                unsupported(
+                                    env,
+                                    *id,
+                                    "有理changeの係数に欠測または元parameter以外の記号がある",
+                                )
+                            })?;
                     } else {
                         coordinates(env, *id, &form, Axes::Parameters(axes), missing)?;
                     }
@@ -641,9 +690,14 @@ pub(in crate::observed) fn compute_update(
     let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数候補がchangeでない".into());
     };
-    let ty = params.get(1).and_then(|p| numeric_parameters::coefficient_type(&p.ty));
-    if ty.is_none() || params[1..].iter().any(|p|
-        numeric_parameters::coefficient_type(&p.ty) != ty) {
+    let ty = params
+        .get(1)
+        .and_then(|p| numeric_parameters::coefficient_type(&p.ty));
+    if ty.is_none()
+        || params[1..]
+            .iter()
+            .any(|p| numeric_parameters::coefficient_type(&p.ty) != ty)
+    {
         return Err(unsupported(
             env,
             *body,
@@ -660,32 +714,54 @@ pub(in crate::observed) fn compute_update(
         .collect();
     missing.expression = Some(*body);
     let mut updates = BTreeMap::new();
-    with_missing(env, missing, |missing| collect_updates(
-        env, *body, &change.reading, &mut vars, &axes, missing, Some(field), &mut updates,
-    ))?;
+    with_missing(env, missing, |missing| {
+        collect_updates(
+            env,
+            *body,
+            &change.reading,
+            &mut vars,
+            &axes,
+            missing,
+            Some(field),
+            &mut updates,
+        )
+    })?;
     let form = if let Some(form) = updates.into_values().next() {
         form
     } else {
         // The selected coordinate is unchanged by the original simultaneous update.
         let source = env.scoped_field(
             value(env, subject.clone())?,
-            &env.input_name(&format!("{}.{}", params[0].ty.ref_target().ok_or("更新対象型がRefでない")?, field))?,
-            &Scope::default(), &change.reading, change.span,
+            &env.input_name(&format!(
+                "{}.{}",
+                params[0].ty.ref_target().ok_or("更新対象型がRefでない")?,
+                field
+            ))?,
+            &Scope::default(),
+            &change.reading,
+            change.span,
         )?;
         missing.support.extend(source.support.iter().cloned());
         missing.scope.merge(&source.scope);
         usable(env, *body, &source)?;
-        *source.affine.ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?
+        *source
+            .affine
+            .ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?
     };
     let coordinates = match ty {
-        Type::Z => form.integer_coordinates(&axes, &env.control)?.map(|(value, row)|
-            (Scalar::Z(value), row.into_iter().map(Scalar::Z).collect())),
+        Type::Z => form
+            .integer_coordinates(&axes, &env.control)?
+            .map(|(value, row)| (Scalar::Z(value), row.into_iter().map(Scalar::Z).collect())),
         Type::Q => form.rational_coordinates(&axes, &env.control)?,
         _ => return Err("数値changeの係数型が違う".into()),
     };
     let (constant, row) = coordinates.ok_or_else(|| {
         missing.facts.extend(form.missing_facts());
-        unsupported(env, *body, "数値changeの係数に欠測または元parameter以外の記号がある")
+        unsupported(
+            env,
+            *body,
+            "数値changeの係数に欠測または元parameter以外の記号がある",
+        )
     })?;
     Ok((row, constant))
 }
@@ -762,7 +838,14 @@ pub(in crate::observed) fn compute(
         }
         missing.expression = Some(*body);
         collect_updates(
-            env, *body, &change.reading, &mut vars, &axes, missing, None, &mut updates,
+            env,
+            *body,
+            &change.reading,
+            &mut vars,
+            &axes,
+            missing,
+            None,
+            &mut updates,
         )?;
     }
     let mut slots = vec![];
@@ -805,7 +888,8 @@ pub(in crate::observed) fn compute(
         None
     };
     let assignments = env
-        .indexes.primitive_valuation
+        .indexes
+        .primitive_valuation
         .as_ref()
         .map(|v| {
             v.iter()
@@ -813,8 +897,11 @@ pub(in crate::observed) fn compute(
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    let mut updated =
-        Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &mut env.control.clone())?;
+    let mut updated = Environment::with_primitive_valuation(
+        env.indexes.inputs,
+        &assignments,
+        &mut env.control.clone(),
+    )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
     let (mut matrix, rhs) =
@@ -925,20 +1012,40 @@ pub(in crate::observed) fn state_equations(
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let assignments = env.fixed_values();
-    let mut state = Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &mut env.control.clone())?;
+    let mut state = Environment::with_primitive_valuation(
+        env.indexes.inputs,
+        &assignments,
+        &mut env.control.clone(),
+    )?;
     state.indexes.object = env.object_domain();
     for slot in slots {
         env.tick()?;
-        if env.indexes.field(&env.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase() != Type::Z {
+        if env
+            .indexes
+            .field(
+                &env.state,
+                &slot.snapshot,
+                &slot.subject,
+                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+            )?
+            .ty
+            .erase()
+            != Type::Z
+        {
             return Err("整数局所状態の自由位置がZでない".into());
         }
-        state.indexes.affine_valuation.insert(slot.clone(), Form::state(slot, &env.control)?);
+        state
+            .indexes
+            .affine_valuation
+            .insert(slot.clone(), Form::state(slot, &env.control)?);
     }
     requirement_equations(&state, Axes::State(slots), requirements, missing)
 }
 fn requirement_equations(
-    env: &Environment<'_>, axes: Axes<'_>,
-    requirements: &[(String, Vec<(String, Scalar)>)], missing: &mut Pending,
+    env: &Environment<'_>,
+    axes: Axes<'_>,
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let mut matrix = vec![];
     let mut rhs = vec![];
@@ -956,7 +1063,10 @@ fn requirement_equations(
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
         for (name, v) in bindings {
-            let p = law_params.iter().find(|p| p.name == *name).ok_or("整数Lawの束縛名が異なる")?;
+            let p = law_params
+                .iter()
+                .find(|p| p.name == *name)
+                .ok_or("整数Lawの束縛名が異なる")?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),
@@ -984,12 +1094,13 @@ fn requirement_equations(
                 _ => {
                     missing.expression = Some(*guard);
                     missing.bindings = bindings.clone();
-                    missing.parameters = law_params.iter()
+                    missing.parameters = law_params
+                        .iter()
                         .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
                         .map(|p| (p.name.clone(), p.ty.clone()))
                         .collect();
                     if numeric_condition(env, *guard, &v)? {
-                        missing.unsupported=Some("numeric_change_condition");
+                        missing.unsupported = Some("numeric_change_condition");
                     }
                     return Err(unsupported(
                         env,
@@ -1001,8 +1112,11 @@ fn requirement_equations(
         }
         missing.expression = Some(*body);
         missing.bindings = bindings.clone();
-        missing.parameters = law_params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name))
-            .map(|p| (p.name.clone(), p.ty.clone())).collect();
+        missing.parameters = law_params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect();
         equations(
             env,
             *body,
@@ -1037,9 +1151,7 @@ pub(super) fn numeric_guard_domain(
 ) -> Result<NumericGuard, ValidationFailure> {
     with_missing(env, pending, |pending| match ty {
         Type::Z => {
-            let guard = parameter_guard_domain(
-                env, guard, vars, axes, reading, pending,
-            )?;
+            let guard = parameter_guard_domain(env, guard, vars, axes, reading, pending)?;
             let scalars = |row: Vec<num_bigint::BigInt>| -> Result<Vec<Scalar>, ValidationFailure> {
                 row.into_iter()
                     .map(|value| {
@@ -1081,7 +1193,6 @@ pub(super) fn numeric_guard_domain(
     })
 }
 
-
 // 通常評価器とcacheが既に保持する実読取りを使い、式形ごとの再走査を行わない。
 pub(super) fn with_missing<T>(
     env: &Environment<'_>,
@@ -1101,8 +1212,7 @@ pub(super) fn capture_missing<T>(
 ) -> Result<(T, Vec<Fact>), ValidationFailure> {
     let outer = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let result = operation();
-    let reads = outer.restore()
-        .ok_or("数値式の不足位置収集がない")?;
+    let reads = outer.restore().ok_or("数値式の不足位置収集がない")?;
     if let Some(outer) = env.state.missing_slot_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
@@ -1111,7 +1221,8 @@ pub(super) fn capture_missing<T>(
         reads
             .into_iter()
             .filter(|fact| {
-                !env.indexes.primitive_valuation
+                !env.indexes
+                    .primitive_valuation
                     .as_ref()
                     .is_some_and(|values| values.contains_key(fact))
                     && !env.indexes.affine_valuation.contains_key(fact)
@@ -1123,10 +1234,17 @@ pub(super) fn capture_missing<T>(
 impl NumericGuard {
     // On the solver's full p + K R^d, a linear form is determined by p and K.
     pub(in crate::observed) fn violation(
-        &self, row: &[Scalar], rhs: &Scalar, env: &Environment<'_>,
+        &self,
+        row: &[Scalar],
+        rhs: &Scalar,
+        env: &Environment<'_>,
     ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
-        let Some(origin) = &self.particular else { return Ok(None); };
-        if row.len() != origin.len() { return Err("数値parameterの次元が違う".into()); }
+        let Some(origin) = &self.particular else {
+            return Ok(None);
+        };
+        if row.len() != origin.len() {
+            return Err("数値parameterの次元が違う".into());
+        }
         let zero = numeric::zero(&rhs.ty(), &env.control)?;
         let dot = |point: &[Scalar]| -> Result<Scalar, ValidationFailure> {
             let mut value = zero.clone();
@@ -1137,38 +1255,61 @@ impl NumericGuard {
             }
             Ok(value)
         };
-        if dot(origin)? != *rhs { return Ok(Some(origin.clone())); }
+        if dot(origin)? != *rhs {
+            return Ok(Some(origin.clone()));
+        }
         for column in 0..origin.len() - self.rank {
-            let direction = self.kernel.iter().map(|r| r[column].clone()).collect::<Vec<_>>();
+            let direction = self
+                .kernel
+                .iter()
+                .map(|r| r[column].clone())
+                .collect::<Vec<_>>();
             if dot(&direction)? != zero {
-                return origin.iter().zip(direction).map(|(a,b)| {
-                    env.tick()?;
-                    numeric::binary(BinOp::Add, a, &b, &env.control)
-                }).collect::<Result<Vec<_>,_>>().map(Some);
+                return origin
+                    .iter()
+                    .zip(direction)
+                    .map(|(a, b)| {
+                        env.tick()?;
+                        numeric::binary(BinOp::Add, a, &b, &env.control)
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+                    .map(Some);
             }
         }
         Ok(None)
     }
     pub(in crate::observed) fn outside(
-        &self, target: &Self, env: &Environment<'_>,
+        &self,
+        target: &Self,
+        env: &Environment<'_>,
     ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
-        if self.particular.is_none() { return Ok(None); }
-        if target.particular.is_none() { return Ok(self.particular.clone()); }
+        if self.particular.is_none() {
+            return Ok(None);
+        }
+        if target.particular.is_none() {
+            return Ok(self.particular.clone());
+        }
         for (row, rhs) in target.equations.iter().zip(&target.rhs) {
-            if let Some(point) = self.violation(row, rhs, env)? { return Ok(Some(point)); }
+            if let Some(point) = self.violation(row, rhs, env)? {
+                return Ok(Some(point));
+            }
         }
         Ok(None)
     }
 }
 
 pub(in crate::observed) fn change_guard_domain(
-    env: &Environment<'_>, change: &Declaration, subject: &Scalar,
-    missing: &mut Pending, ty: &Type,
+    env: &Environment<'_>,
+    change: &Declaration,
+    subject: &Scalar,
+    missing: &mut Pending,
+    ty: &Type,
 ) -> Result<NumericGuard, ValidationFailure> {
-    let Signature::Change {params, guard, ..} = &change.signature else {
+    let Signature::Change { params, guard, .. } = &change.signature else {
         return Err("数値guardの元宣言がchangeでない".into());
     };
     let first = params.first().ok_or("changeの第1引数がない")?;
-    let (vars, axes) = numeric_parameters::law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
+    let (vars, axes) =
+        numeric_parameters::law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
     numeric_guard_domain(env, *guard, &vars, &axes, &change.reading, missing, ty)
 }

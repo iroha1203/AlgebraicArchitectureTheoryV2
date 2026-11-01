@@ -112,7 +112,12 @@ fn normalization_visits_nested_types_each_field_and_escaped_string_character() {
         assert_eq!(ordinary, controlled);
         assert_eq!(
             controlled.vocabularies()["V"].digest,
-            sha256_digest(controlled.vocabularies()["V"].manifest.canonical().as_bytes())
+            sha256_digest(
+                controlled.vocabularies()["V"]
+                    .manifest
+                    .canonical()
+                    .as_bytes()
+            )
         );
         total.get()
     };

@@ -139,9 +139,10 @@ impl<E: InputError> Parser<E> {
                 self.pos += 1;
                 Ok(id)
             }
-            Some(t) if t.kind == TokenKind::Name => {
-                self.err(format!("reserved word `{}` cannot be used as a name", t.text))
-            }
+            Some(t) if t.kind == TokenKind::Name => self.err(format!(
+                "reserved word `{}` cannot be used as a name",
+                t.text
+            )),
             _ => self.err("expected a name"),
         }
     }
@@ -1168,7 +1169,9 @@ impl<E: InputError> Parser<E> {
                         .peek_at(1)
                         .is_some_and(|n| n.kind == TokenKind::Sym && n.text == "(")
                     {
-                        return parser.err("reserved word `then` is only allowed in composition applications");
+                        return parser.err(
+                            "reserved word `then` is only allowed in composition applications",
+                        );
                     }
                     parser.pos += 1;
                     Ok(parser.push(ExprKind::ThenOp, t.span))

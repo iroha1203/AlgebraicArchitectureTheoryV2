@@ -395,8 +395,11 @@ fn polynomial_empty_and_symbolic_scalar_families_do_not_invent_concrete_readings
         assert!(d.unavailable.is_none());
         assert!(!d.coordinates.is_empty());
         for coordinate in &d.coordinates {
-            let Part::Polynomial { parameters, .. } = data(&g,coordinate.nu.unwrap()).part() else { panic!("polynomial family") };
-            assert_eq!(parameters, &vec![("k".into(),Type::Z)]);
+            let Part::Polynomial { parameters, .. } = data(&g, coordinate.nu.unwrap()).part()
+            else {
+                panic!("polynomial family")
+            };
+            assert_eq!(parameters, &vec![("k".into(), Type::Z)]);
         }
         assert!(
             d.originals

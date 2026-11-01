@@ -5,8 +5,8 @@ pub mod ast;
 mod body;
 pub(crate) mod check;
 mod expr;
-pub mod lexer;
 pub mod ir;
+pub mod lexer;
 mod metadata;
 pub mod model;
 pub mod parser;
@@ -193,7 +193,13 @@ pub fn check_definition_term_body_inner<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
+        checker.bind(
+            &mut env,
+            &id,
+            ty.clone(),
+            expr::Origin::Other,
+            ir::BindingSource::Parameter,
+        )?;
     }
     let ctx = expr::Ctx {
         reading: 0,
@@ -259,7 +265,13 @@ pub fn check_reading_term_body<E: InputError>(
             span: (0, 0),
             tok: 0,
         };
-        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other, ir::BindingSource::Parameter)?;
+        checker.bind(
+            &mut env,
+            &id,
+            ty.clone(),
+            expr::Origin::Other,
+            ir::BindingSource::Parameter,
+        )?;
     }
     let ctx = expr::Ctx {
         reading: index,
@@ -453,8 +465,16 @@ fn check_law_processing<E: InputError>(
     expr_types.resize(checker.parser.exprs.len(), None);
     let resolved_names = resolve_names::<E>(definitions, &declarations, &infos, control)
         .map_err(|i| fail(i, Some(digest.clone())))?;
-    let program = ir::Program::build::<E>(&checker.parser.exprs, &expr_types, &infos, &checker.lexical, &checker.callees, &checker.resolved_fields, control)
-        .map_err(|i| fail(i, Some(digest.clone())))?;
+    let program = ir::Program::build::<E>(
+        &checker.parser.exprs,
+        &expr_types,
+        &infos,
+        &checker.lexical,
+        &checker.callees,
+        &checker.resolved_fields,
+        control,
+    )
+    .map_err(|i| fail(i, Some(digest.clone())))?;
     Ok(CheckedLaw {
         program,
         resolved_names,

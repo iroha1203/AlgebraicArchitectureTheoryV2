@@ -544,7 +544,10 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
             "[[[\"v\",\"p\"],[\"v\",\"r\"]],[[\"v\",\"r\"],[\"v\",\"p\"]]]",
         )
         .replace("@LEFT_DIGEST@", &definitions.vocabularies()["Left"].digest)
-        .replace("@RIGHT_DIGEST@", &definitions.vocabularies()["Right"].digest)
+        .replace(
+            "@RIGHT_DIGEST@",
+            &definitions.vocabularies()["Right"].digest,
+        )
         .replace("@BRIDGE_DIGEST@", new_bridge);
     let i = check_inputs(
         InputSources::from_bytes(

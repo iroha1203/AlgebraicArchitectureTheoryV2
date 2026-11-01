@@ -82,14 +82,20 @@ impl ObjectEvaluationTable {
                 tick(control)?;
                 let same = a.evaluation.same_origin(&b.evaluation)
                     && match (a.evaluation.outcome(), b.evaluation.outcome()) {
-                    (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
-                        super::object_view_family::same_family_checked(a, b, control).map_err(|f| match f {
-                            super::result::ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-                            other => ConstructionFailure::Inconsistent(format!("有限view表の再照合: {other:?}")),
-                        })?
-                    }
-                    _ => same_evaluation(Some(&a.evaluation), Some(&b.evaluation)),
-                };
+                        (
+                            ObjectEvaluationOutcome::FiniteView(a),
+                            ObjectEvaluationOutcome::FiniteView(b),
+                        ) => super::object_view_family::same_family_checked(a, b, control)
+                            .map_err(|f| match f {
+                                super::result::ValidationFailure::Stop(s) => {
+                                    ConstructionFailure::Stopped(s)
+                                }
+                                other => ConstructionFailure::Inconsistent(format!(
+                                    "有限view表の再照合: {other:?}"
+                                )),
+                            })?,
+                        _ => same_evaluation(Some(&a.evaluation), Some(&b.evaluation)),
+                    };
                 equal &= a.position == b.position && same;
             }
             tick(control)?;
@@ -185,10 +191,14 @@ mod tests {
                     &mut quiet(),
                 )
                 .unwrap(),
-                _ => {
-                    evaluate_object_instance(Arc::clone(&inputs), &foreign_readings, 0, 0, &mut quiet())
-                        .unwrap()
-                }
+                _ => evaluate_object_instance(
+                    Arc::clone(&inputs),
+                    &foreign_readings,
+                    0,
+                    0,
+                    &mut quiet(),
+                )
+                .unwrap(),
             };
             let mut original = std::mem::replace(&mut table.rows[index].evaluation, replacement);
             let original_family = std::mem::replace(
@@ -214,7 +224,6 @@ mod tests {
             assert_eq!(partial.pending(), None);
         }
     }
-
 }
 #[derive(Debug)]
 pub struct ObjectEvaluationTableFailure {

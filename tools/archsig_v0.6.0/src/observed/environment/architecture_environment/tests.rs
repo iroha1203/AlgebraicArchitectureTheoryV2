@@ -265,7 +265,9 @@ fn state_values(
     context: &ArchitectureContext,
     compound: bool,
 ) -> Vec<String> {
-    let mut domain = env.indexes.reference_roster(&env.control, "Reservations.State", &mut |_| {})
+    let mut domain = env
+        .indexes
+        .reference_roster(&env.control, "Reservations.State", &mut |_| {})
         .unwrap();
     let ty = if compound {
         Type::Tuple(vec![Type::Ref("Reservations.State".into()), Type::Bool])
@@ -339,7 +341,9 @@ fn native_owned_environments_keep_the_containing_root_reading_and_exact_subject_
         .select_architecture(&graph, d.architectures[1])
         .unwrap()
         .unwrap();
-    let mut roster = env.indexes.reference_roster(&env.control, "Reservations.Migration", &mut |_| {})
+    let mut roster = env
+        .indexes
+        .reference_roster(&env.control, "Reservations.Migration", &mut |_| {})
         .unwrap();
     let original = roster.values.clone();
     let mut values = Some(roster.values);

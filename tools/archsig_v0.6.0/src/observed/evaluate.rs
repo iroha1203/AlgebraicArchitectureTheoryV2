@@ -93,8 +93,13 @@ pub(in crate::observed) struct RelationSide {
     pub reasons: Vec<Reason>,
 }
 pub(in crate::observed) fn instance_expression<'a>(
-    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
-    request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
+    environment: &'a Environment<'a>,
+    graph: &mut Graph,
+    control: &mut Control,
+    request: &'a Request,
+    declaration: &'a Declaration,
+    instance: usize,
+    expression: usize,
 ) -> Result<RelationSide, ValidationFailure> {
     let previous = graph.active;
     let record = graph
@@ -106,27 +111,51 @@ pub(in crate::observed) fn instance_expression<'a>(
         ..record.caller
     };
     let result = (|| {
-        let _architecture=environment.enter_architecture(graph)?;
+        let _architecture = environment.enter_architecture(graph)?;
         let (bindings, base) = environment.instance_evaluation_bindings(graph, instance)?;
         let mut evaluator = Evaluator {
-            environment, graph, control, request, declaration, bindings,
-            lexical: BTreeMap::new(), formal: BTreeMap::new(), base,
-            retained_scope: Scope::default(), reasons: vec![], completed: BTreeMap::new(),
-            answer_evaluation: None, verified_observed: None, completing: false,
-            finite_universal: None, sources: BTreeMap::new(),
+            environment,
+            graph,
+            control,
+            request,
+            declaration,
+            bindings,
+            lexical: BTreeMap::new(),
+            formal: BTreeMap::new(),
+            base,
+            retained_scope: Scope::default(),
+            reasons: vec![],
+            completed: BTreeMap::new(),
+            answer_evaluation: None,
+            verified_observed: None,
+            completing: false,
+            finite_universal: None,
+            sources: BTreeMap::new(),
         };
         evaluator
             .environment
             .require_native_law_expression(evaluator.graph, expression)?;
-        let plan = environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)?;
+        let plan =
+            environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)?;
         let result = if let Some(plan) = plan {
             evaluator.universal_expression_evaluation(plan, expression)
-        } else { evaluator.eval(expression) };
+        } else {
+            evaluator.eval(expression)
+        };
         match result {
-            Ok(value) => Ok(RelationSide { expression: value.expression, evaluation: value.evaluation, value: value.value, support: value.support, scope: value.scope, reasons: value.reasons }),
+            Ok(value) => Ok(RelationSide {
+                expression: value.expression,
+                evaluation: value.evaluation,
+                value: value.value,
+                support: value.support,
+                scope: value.scope,
+                reasons: value.reasons,
+            }),
             Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
             Err(Failure::Internal(s)) => Err(ValidationFailure::Internal(s)),
-            Err(Failure::NotImplemented { location, feature }) => Err(ValidationFailure::UnsupportedExpression { location, feature }),
+            Err(Failure::NotImplemented { location, feature }) => {
+                Err(ValidationFailure::UnsupportedExpression { location, feature })
+            }
         }
     })();
     graph.active = previous;
@@ -134,32 +163,63 @@ pub(in crate::observed) fn instance_expression<'a>(
 }
 
 pub(in crate::observed) fn instance_law<'a>(
-    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
-    request: &'a Request, declaration: &'a Declaration, instance: usize,
+    environment: &'a Environment<'a>,
+    graph: &mut Graph,
+    control: &mut Control,
+    request: &'a Request,
+    declaration: &'a Declaration,
+    instance: usize,
 ) -> Result<Answer, ValidationFailure> {
     let previous = graph.active;
-    let record=graph.instances.get(instance).ok_or("Law判断の元instanceがない")?;
-    graph.active=super::call::Context {instance:Some(instance),..record.caller};
-    let result=(|| {
-        let Signature::Law {params,guard,body,role}=&declaration.signature else {
+    let record = graph
+        .instances
+        .get(instance)
+        .ok_or("Law判断の元instanceがない")?;
+    graph.active = super::call::Context {
+        instance: Some(instance),
+        ..record.caller
+    };
+    let result = (|| {
+        let Signature::Law {
+            params,
+            guard,
+            body,
+            role,
+        } = &declaration.signature
+        else {
             return Err("Law判断の元宣言がLawでない".into());
         };
-        let _architecture=environment.enter_architecture(graph)?;
-        let (bindings,base)=environment.instance_evaluation_bindings(graph,instance)?;
-        let mut evaluator=Evaluator {
-            environment,graph,control,request,declaration,bindings,
-            lexical:BTreeMap::new(),formal:BTreeMap::new(),base,
-            retained_scope:Scope::default(),reasons:vec![],completed:BTreeMap::new(),
-            answer_evaluation:None,verified_observed:None,completing:false,
-            finite_universal:None,sources:BTreeMap::new(),
+        let _architecture = environment.enter_architecture(graph)?;
+        let (bindings, base) = environment.instance_evaluation_bindings(graph, instance)?;
+        let mut evaluator = Evaluator {
+            environment,
+            graph,
+            control,
+            request,
+            declaration,
+            bindings,
+            lexical: BTreeMap::new(),
+            formal: BTreeMap::new(),
+            base,
+            retained_scope: Scope::default(),
+            reasons: vec![],
+            completed: BTreeMap::new(),
+            answer_evaluation: None,
+            verified_observed: None,
+            completing: false,
+            finite_universal: None,
+            sources: BTreeMap::new(),
         };
-        let plan = if let Some(plan) = environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)? {
+        let plan = if let Some(plan) =
+            environment.universal_family_plan(evaluator.graph, request, &evaluator.bindings)?
+        {
             Some(plan)
         } else if guard.is_none()
             && matches!(
                 environment.indexes.inputs.law().exprs()[*body].kind,
                 ExprKind::Quant { .. }
-            ) {
+            )
+        {
             environment.universal_quantifier_plan(evaluator.graph, *body, &evaluator.bindings)?
         } else {
             None
@@ -170,10 +230,12 @@ pub(in crate::observed) fn instance_law<'a>(
             evaluator.answer_regular(params, *guard, *body, Some(*role))
         };
         match answer {
-            Ok(value)=>Ok(value),
-            Err(Failure::Stop(s))=>Err(ValidationFailure::Stop(s)),
-            Err(Failure::Internal(s))=>Err(ValidationFailure::Internal(s)),
-            Err(Failure::NotImplemented {location,feature})=>Err(ValidationFailure::UnsupportedExpression {location,feature}),
+            Ok(value) => Ok(value),
+            Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
+            Err(Failure::Internal(s)) => Err(ValidationFailure::Internal(s)),
+            Err(Failure::NotImplemented { location, feature }) => {
+                Err(ValidationFailure::UnsupportedExpression { location, feature })
+            }
         }
     })();
     graph.active = previous;
@@ -189,7 +251,15 @@ pub(in crate::observed) fn relation_side<'a>(
     instance: usize,
     expression: usize,
 ) -> Result<RelationSide, ValidationFailure> {
-    instance_expression(environment,graph,control,request,declaration,instance,expression)
+    instance_expression(
+        environment,
+        graph,
+        control,
+        request,
+        declaration,
+        instance,
+        expression,
+    )
 }
 
 /// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。
@@ -436,13 +506,17 @@ impl Evaluator<'_, '_> {
             let Some(argument) = found else {
                 if let Some(node) = self.environment.object_view_binding(self.graph, p)? {
                     self.base.merge(&node.scope);
-                    let value = if let Some(value) = self.environment.completion_fixed_binding(self.graph, p)? {
+                    let value = if let Some(value) =
+                        self.environment.completion_fixed_binding(self.graph, p)?
+                    {
                         value
                     } else {
                         self.push(node)?
                     };
                     self.bindings.push(Binding {
-                        name: p.name.clone(), value, ty: p.ty.erase(),
+                        name: p.name.clone(),
+                        value,
+                        ty: p.ty.erase(),
                     });
                     continue;
                 }
@@ -473,7 +547,10 @@ impl Evaluator<'_, '_> {
                         }
                         self.tick(Checkpoint::FiniteIteration)?;
                     }
-                    let scope = self.environment.indexes.scope(s, &self.declaration.reading, None)?;
+                    let scope =
+                        self.environment
+                            .indexes
+                            .scope(s, &self.declaration.reading, None)?;
                     self.base.merge(&scope);
                     let r = self.value(
                         scalar,
@@ -537,9 +614,8 @@ impl Evaluator<'_, '_> {
                     let value = match plan {
                         super::environment::AnswerBinding::Reference(value) => value,
                         super::environment::AnswerBinding::Projection(node) => {
-                            if let Some(value) = self
-                                .environment
-                                .completion_fixed_binding(self.graph, p)?
+                            if let Some(value) =
+                                self.environment.completion_fixed_binding(self.graph, p)?
                             {
                                 value
                             } else {
@@ -658,7 +734,8 @@ impl Evaluator<'_, '_> {
             let span = expr.span;
             let ty = self
                 .environment
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .expr_type(id)
                 .ok_or_else(|| Failure::Internal("元式の型がない".into()))?
@@ -673,8 +750,12 @@ impl Evaluator<'_, '_> {
                 ExprKind::Int(_) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {}
                 ExprKind::Bool(_) => {}
                 ExprKind::Dotted(_)
-                    if data::expression(self.environment.indexes.inputs.law(), id, self.control)?
-                        .is_some() =>
+                    if data::expression(
+                        self.environment.indexes.inputs.law(),
+                        id,
+                        self.control,
+                    )?
+                    .is_some() =>
                 {
                     self.environment
                         .composite_children(id)?
@@ -727,7 +808,11 @@ impl Evaluator<'_, '_> {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
                     if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !data::supported(&ty, self.environment.indexes.inputs.law(), self.control)?
+                        && !data::supported(
+                            &ty,
+                            self.environment.indexes.inputs.law(),
+                            self.control,
+                        )?
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
@@ -782,12 +867,17 @@ impl Evaluator<'_, '_> {
                 ExprKind::Binary { op, lhs, rhs } => {
                     let input_ty = self
                         .environment
-                        .indexes.inputs
+                        .indexes
+                        .inputs
                         .law()
                         .expr_type(*lhs)
                         .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                    if !supports_binary(*op, input_ty, self.environment.indexes.inputs.law(), self.control)?
-                    {
+                    if !supports_binary(
+                        *op,
+                        input_ty,
+                        self.environment.indexes.inputs.law(),
+                        self.control,
+                    )? {
                         return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
                     self.prepare_source_child(*lhs)?;
@@ -1044,7 +1134,8 @@ impl Evaluator<'_, '_> {
         let span = expr.span;
         let ty = self
             .environment
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .expr_type(id)
             .ok_or_else(|| Failure::Internal("原式の型がない".into()))?
@@ -1077,7 +1168,8 @@ impl Evaluator<'_, '_> {
                 self.finish(span, ty, Some(v), vec![], vec![], None, None, None)
             }
             ExprKind::Dotted(_)
-                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?.is_some() =>
+                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?
+                    .is_some() =>
             {
                 self.composite(id, span, ty)
             }
@@ -1085,9 +1177,10 @@ impl Evaluator<'_, '_> {
                 let Some(first) = parts.first() else {
                     return Err(Failure::Internal("空のドット式".into()));
                 };
-                let lexical = expr.lexical.as_ref().ok_or_else(|| {
-                    self.unsupported(span, "束縛変数以外を先頭とするドット式")
-                })?;
+                let lexical = expr
+                    .lexical
+                    .as_ref()
+                    .ok_or_else(|| self.unsupported(span, "束縛変数以外を先頭とするドット式"))?;
                 let parameter = matches!(lexical.source, crate::law::ir::BindingSource::Parameter);
                 let mut found = None;
                 for binding in &self.bindings {
@@ -1099,17 +1192,41 @@ impl Evaluator<'_, '_> {
                 }
                 // 宣言parameter と lexical alias を区別する。欠測の alias は
                 // RHS Evaluation を指し、通常の Binding.value を捏造しない。
-                let type_iteration = if matches!(lexical.source, crate::law::ir::BindingSource::TypeQuantifier) {
-                    self.environment.type_iteration_argument(self.graph, first.span, &lexical.name, &self.bindings)?
-                } else { None };
-                let iteration = if matches!(lexical.source, crate::law::ir::BindingSource::Iteration) {
-                    self.environment.iteration_argument(self.graph, first.span, &lexical.name, &self.bindings)?
-                } else { None };
+                let type_iteration = if matches!(
+                    lexical.source,
+                    crate::law::ir::BindingSource::TypeQuantifier
+                ) {
+                    self.environment.type_iteration_argument(
+                        self.graph,
+                        first.span,
+                        &lexical.name,
+                        &self.bindings,
+                    )?
+                } else {
+                    None
+                };
+                let iteration =
+                    if matches!(lexical.source, crate::law::ir::BindingSource::Iteration) {
+                        self.environment.iteration_argument(
+                            self.graph,
+                            first.span,
+                            &lexical.name,
+                            &self.bindings,
+                        )?
+                    } else {
+                        None
+                    };
                 let pattern = if matches!(lexical.source, crate::law::ir::BindingSource::Pattern) {
-                    self.environment.pattern_argument(self.graph, first.span, &lexical.name, &self.bindings)?
-                } else { None };
-                let mut current = if let Some((domain, known)) = type_iteration
-                {
+                    self.environment.pattern_argument(
+                        self.graph,
+                        first.span,
+                        &lexical.name,
+                        &self.bindings,
+                    )?
+                } else {
+                    None
+                };
+                let mut current = if let Some((domain, known)) = type_iteration {
                     let scope = self
                         .sources
                         .get(&first.span)
@@ -1144,7 +1261,8 @@ impl Evaluator<'_, '_> {
                 } else if let Some((input, known)) = pattern {
                     let child = self.evaluated_reference(input)?;
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
-                } else if parameter && let Some(argument) = self.formal.get(&lexical.name).cloned() {
+                } else if parameter && let Some(argument) = self.formal.get(&lexical.name).cloned()
+                {
                     let NodeType::Evaluation(parameter_ty) =
                         &self.graph.get(argument.evaluation)?.ty
                     else {
@@ -1171,7 +1289,9 @@ impl Evaluator<'_, '_> {
                         None,
                         None,
                     )?
-                } else if matches!(lexical.source, crate::law::ir::BindingSource::Let) && let Some(rhs) = self.lexical.get(&lexical.name).cloned() {
+                } else if matches!(lexical.source, crate::law::ir::BindingSource::Let)
+                    && let Some(rhs) = self.lexical.get(&lexical.name).cloned()
+                {
                     let ty = lexical.ty.clone();
                     self.finish(
                         first.span,
@@ -1207,7 +1327,14 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Field { base, .. } => {
                 let base = self.eval(*base)?;
-                self.field(base, expr.field.as_ref().ok_or_else(|| Failure::Internal("元fieldの静的解決がない".into()))?, span, false)
+                self.field(
+                    base,
+                    expr.field
+                        .as_ref()
+                        .ok_or_else(|| Failure::Internal("元fieldの静的解決がない".into()))?,
+                    span,
+                    false,
+                )
             }
             ExprKind::Family { owner, .. } => self.owned_family(id, *owner, span, ty),
             ExprKind::Quant { .. } => self.quantification(id),
@@ -1314,11 +1441,17 @@ impl Evaluator<'_, '_> {
             ExprKind::Binary { op, lhs, rhs } => {
                 let input_ty = self
                     .environment
-                    .indexes.inputs
+                    .indexes
+                    .inputs
                     .law()
                     .expr_type(*lhs)
                     .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                if !supports_binary(*op, input_ty, self.environment.indexes.inputs.law(), self.control)? {
+                if !supports_binary(
+                    *op,
+                    input_ty,
+                    self.environment.indexes.inputs.law(),
+                    self.control,
+                )? {
                     return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                 }
                 let left = self.eval(*lhs)?;
@@ -1493,7 +1626,8 @@ impl Evaluator<'_, '_> {
     }
 
     fn quantification(&mut self, id: usize) -> Result<Evaluated, Failure> {
-        let spec = super::quantifier::spec(self.environment.indexes.inputs.law(), id, self.control)?;
+        let spec =
+            super::quantifier::spec(self.environment.indexes.inputs.law(), id, self.control)?;
         let input = spec.domain.map(|domain| self.eval(domain)).transpose()?;
         let source = self
             .sources
@@ -2258,7 +2392,10 @@ impl Evaluator<'_, '_> {
         if name.owner() != Some(entity.as_str()) {
             return Err(Failure::Internal("field owner 型が合わない".into()));
         }
-        let field = self.environment.indexes.field(&self.environment.state, &s.snapshot, &s.id, name)?;
+        let field =
+            self.environment
+                .indexes
+                .field(&self.environment.state, &s.snapshot, &s.id, name)?;
         if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
             && !data::supported(
                 &field.ty.erase(),
@@ -2274,8 +2411,17 @@ impl Evaluator<'_, '_> {
             field: Some(field.name.clone()),
             atom: None,
         };
-        if let Some((assigned,_))=self.environment.state.architecture_value(&fact) {
-            return self.finish(span,field.ty.erase(),Some(assigned),vec![base],vec![],None,None,None);
+        if let Some((assigned, _)) = self.environment.state.architecture_value(&fact) {
+            return self.finish(
+                span,
+                field.ty.erase(),
+                Some(assigned),
+                vec![base],
+                vec![],
+                None,
+                None,
+                None,
+            );
         }
         if self.environment.completion_type_supported(&field.ty)?
             && matches!(field.slot, Slot::Missing)
@@ -2330,10 +2476,11 @@ impl Evaluator<'_, '_> {
                 let mut fact = fact;
                 fact.atom = Some(atom.clone());
                 let mut scope = self.base.clone();
-                scope.merge(
-                    &self
-                        .environment.indexes.scope(s, &self.declaration.reading, Some(origin))?,
-                );
+                scope.merge(&self.environment.indexes.scope(
+                    s,
+                    &self.declaration.reading,
+                    Some(origin),
+                )?);
                 let mut arguments = vec![reference];
                 if chain {
                     // chain の中間参照も、同じ slot を読む別出現の producer で
@@ -2666,7 +2813,11 @@ impl Evaluator<'_, '_> {
                     instance,
                     lhs: left,
                     rhs: right,
-                    residual: if conditional || body.comparison.is_none() { None } else { body.residual },
+                    residual: if conditional || body.comparison.is_none() {
+                        None
+                    } else {
+                        body.residual
+                    },
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: vec![instance, evaluation],
@@ -2797,7 +2948,8 @@ fn evaluate_observed_with_validator(
             }
             // 公開する内部障害は失敗した処理名で示し、照合のdebug表現を出力へ渡さない。
             if internal {
-                let reason = Reason::internal(&request.id, "previous derivation verification".into());
+                let reason =
+                    Reason::internal(&request.id, "previous derivation verification".into());
                 issues.push(reason.clone());
                 answers[index] = Some(Answer {
                     id: request.id.clone(),
@@ -2821,16 +2973,23 @@ fn evaluate_observed_with_validator(
             if matches!(
                 request.kind,
                 QuestionKind::Build
-                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
+                    | QuestionKind::Solve
+                    | QuestionKind::Repair
+                    | QuestionKind::Quotient
+                    | QuestionKind::Localize
+                    | QuestionKind::Diagnose
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
             ) {
                 let evaluate = if request.kind == QuestionKind::Build {
                     super::build_result::evaluate
-                } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
+                } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
                     super::change_result::evaluate
-                } else if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose) {
+                } else if matches!(
+                    request.kind,
+                    QuestionKind::Localize | QuestionKind::Diagnose
+                ) {
                     super::local_result::evaluate
                 } else if request.kind == QuestionKind::Quotient {
                     super::quotient_result::evaluate
@@ -2890,10 +3049,28 @@ fn evaluate_observed_with_validator(
                         let reason = match failure {
                             ValidationFailure::Stop(stop) => Reason::stopped(&request.id, stop),
                             ValidationFailure::UnsupportedExpression { location, feature }
-                                if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose) => {
-                                not_implemented = Some((request.declaration().unwrap_or(request.kind.wire()).to_owned(), location, feature.clone()));
+                                if matches!(
+                                    request.kind,
+                                    QuestionKind::Solve
+                                        | QuestionKind::Repair
+                                        | QuestionKind::Quotient
+                                        | QuestionKind::Localize
+                                        | QuestionKind::Diagnose
+                                ) =>
+                            {
+                                not_implemented = Some((
+                                    request
+                                        .declaration()
+                                        .unwrap_or(request.kind.wire())
+                                        .to_owned(),
+                                    location,
+                                    feature.clone(),
+                                ));
                                 internal = true;
-                                Reason::internal(&request.id, format!("{} evaluation (not implemented)", request.kind.wire()))
+                                Reason::internal(
+                                    &request.id,
+                                    format!("{} evaluation (not implemented)", request.kind.wire()),
+                                )
                             }
                             _other => {
                                 internal = true;
@@ -3029,7 +3206,10 @@ fn evaluate_observed_with_validator(
             let result = match result {
                 Err(Failure::NotImplemented { location, feature }) => {
                     not_implemented = Some((declaration.name.clone(), location, feature.clone()));
-                    Err(Failure::Internal(format!("{} evaluation (not implemented)", request.kind.wire())))
+                    Err(Failure::Internal(format!(
+                        "{} evaluation (not implemented)",
+                        request.kind.wire()
+                    )))
                 }
                 result => result,
             };
@@ -3055,7 +3235,10 @@ fn evaluate_observed_with_validator(
                         Failure::Stop(reason) => Reason::stopped(&request.id, reason),
                         Failure::Internal(_operation) => {
                             internal = true;
-                            Reason::internal(&request.id, format!("{} evaluation", request.kind.wire()))
+                            Reason::internal(
+                                &request.id,
+                                format!("{} evaluation", request.kind.wire()),
+                            )
                         }
                         _ => unreachable!(),
                     };
@@ -3213,8 +3396,12 @@ pub fn evaluate_observed_with_rejected_answer(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
-    mod public_compare_tests { include!("public_compare_tests.rs"); }
-    mod public_path_compose_tests { include!("public_path_compose_tests.rs"); }
+    mod public_compare_tests {
+        include!("public_compare_tests.rs");
+    }
+    mod public_path_compose_tests {
+        include!("public_path_compose_tests.rs");
+    }
     mod public_compose_tests {
         include!("public_compose_tests.rs");
     }
@@ -4020,11 +4207,18 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             let reason = &answer.reasons[0];
             assert!(matches!(&reason.kind, ReasonKind::Internal(value) if value == operation));
             let wire = reason.wire();
-            let Json::Obj(wire) = &wire else { unreachable!() };
-            let Json::Str(message) = &wire["message"] else { unreachable!() };
+            let Json::Obj(wire) = &wire else {
+                unreachable!()
+            };
+            let Json::Str(message) = &wire["message"] else {
+                unreachable!()
+            };
             assert!(message.is_ascii());
             assert!(message.contains(operation));
-            assert_eq!(wire["details"], Json::obj([("operation", Json::str(operation))]));
+            assert_eq!(
+                wire["details"],
+                Json::obj([("operation", Json::str(operation))])
+            );
             assert_eq!(reason.request, answer.id);
             assert!(reason.location.is_none());
             assert!(

@@ -11,7 +11,7 @@ pub(super) struct ArchitectureContext {
     reference: NodeRef,
     domain: Arc<ObjectDomain>,
     scope: Scope,
-    overrides: BTreeMap<Fact,(NodeRef,Scalar,Scope)>,
+    overrides: BTreeMap<Fact, (NodeRef, Scalar, Scope)>,
 }
 /// 依存producerの再検査中に別の根を選んでも、呼出し側の環境を復元する。
 pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
@@ -20,12 +20,16 @@ pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
 }
 impl Drop for ArchitectureGuard<'_, '_> {
     fn drop(&mut self) {
-        self.environment.state.architecture.replace(self.previous.take());
+        self.environment
+            .state
+            .architecture
+            .replace(self.previous.take());
     }
 }
 impl<'i> Environment<'i> {
     pub(super) fn object_domain(&self) -> Option<Arc<ObjectDomain>> {
-        self.state.architecture
+        self.state
+            .architecture
             .borrow()
             .as_ref()
             .map(|c| Arc::clone(&c.domain))
@@ -38,15 +42,24 @@ impl<'i> Environment<'i> {
         let context = self.current_context(graph);
         let selected = (|| {
             if let Some(index) = context.instance {
-                if let Some(reference)=crate::observed::object_reading_evaluation::architecture(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
-                    return self.select_architecture(graph,reference);
+                if let Some(reference) = crate::observed::object_reading_evaluation::architecture(
+                    graph,
+                    index,
+                    self.state.cutoff.get().min(graph.nodes.len()),
+                )? {
+                    return self.select_architecture(graph, reference);
                 }
-                if let Some(reference)=crate::observed::law_evaluation::architecture(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
-                    return self.select_architecture(graph,reference);
+                if let Some(reference) = crate::observed::law_evaluation::architecture(
+                    graph,
+                    index,
+                    self.state.cutoff.get().min(graph.nodes.len()),
+                )? {
+                    return self.select_architecture(graph, reference);
                 }
             }
             let Some(request) = self
-                .indexes.original_requests
+                .indexes
+                .original_requests
                 .and_then(|rs| rs.get(context.request))
             else {
                 return Ok(None);
@@ -54,13 +67,21 @@ impl<'i> Environment<'i> {
             if !graph.requests.is_empty() && graph.requests.get(context.request) != Some(request) {
                 return Err("環境選択のRequestが元入力と違う".into());
             }
-            if !matches!(request.kind, QuestionKind::Evaluate | QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair) {
+            if !matches!(
+                request.kind,
+                QuestionKind::Evaluate
+                    | QuestionKind::Check
+                    | QuestionKind::Solve
+                    | QuestionKind::Repair
+            ) {
                 return Ok(None);
             }
             let Some(argument) = request.arguments.iter().find(|a| a.name == "on") else {
                 return Ok(None);
             };
-            if matches!(argument.value,Selector::Subject{..}) {return Ok(None);}
+            if matches!(argument.value, Selector::Subject { .. }) {
+                return Ok(None);
+            }
             #[cfg(test)]
             crate::observed::data::observe_actual((0, 0), context, "architecture_environment", 0);
             self.control
@@ -97,7 +118,10 @@ impl<'i> Environment<'i> {
         }
         if !matches!(
             value.data,
-            ConstructionData::Architecture { .. } | ConstructionData::ObjectComponents(_) | ConstructionData::Change(_) | ConstructionData::Quotient(_)
+            ConstructionData::Architecture { .. }
+                | ConstructionData::ObjectComponents(_)
+                | ConstructionData::Change(_)
+                | ConstructionData::Quotient(_)
         ) {
             return Ok(None);
         }
@@ -106,18 +130,36 @@ impl<'i> Environment<'i> {
             return Err("環境Architectureの元構成がない".into());
         };
         let object = match &value.data {
-            ConstructionData::Architecture { .. } | ConstructionData::Change(_) | ConstructionData::Quotient(_) => 0,
+            ConstructionData::Architecture { .. }
+            | ConstructionData::Change(_)
+            | ConstructionData::Quotient(_) => 0,
             ConstructionData::ObjectComponents(data) => data.architecture_object(reference)?,
             _ => return Err("環境Architectureの構成が違う".into()),
         };
-        let domain =
-            ObjectDomain::from_readings(self.indexes.inputs, witness.readings(), object, &self.control)?;
+        let domain = ObjectDomain::from_readings(
+            self.indexes.inputs,
+            witness.readings(),
+            object,
+            &self.control,
+        )?;
         self.tick()?;
         Ok(Some(ArchitectureContext {
             reference,
             domain: Arc::new(domain),
             scope: node.scope.clone(),
-            overrides:match &value.data {ConstructionData::Change(d)=>d.overrides(graph)?.into_iter().map(|(f,r,v)|Ok((f,(r,v,graph.get(r)?.scope.clone())))).collect::<Result<_,ValidationFailure>>()?,ConstructionData::Quotient(d)=>d.overrides(graph)?.into_iter().map(|(f,r,v)|Ok((f,(r,v,graph.get(r)?.scope.clone())))).collect::<Result<_,ValidationFailure>>()?,_=>BTreeMap::new()},
+            overrides: match &value.data {
+                ConstructionData::Change(d) => d
+                    .overrides(graph)?
+                    .into_iter()
+                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
+                    .collect::<Result<_, ValidationFailure>>()?,
+                ConstructionData::Quotient(d) => d
+                    .overrides(graph)?
+                    .into_iter()
+                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
+                    .collect::<Result<_, ValidationFailure>>()?,
+                _ => BTreeMap::new(),
+            },
         }))
     }
     pub(super) fn validate_evaluation_environment(
@@ -148,10 +190,40 @@ impl EvaluationState {
     pub(in crate::observed) fn architecture_ref(&self) -> Option<NodeRef> {
         self.architecture.borrow().as_ref().map(|c| c.reference)
     }
-    pub(in crate::observed) fn architecture_value(&self,fact:&Fact)->Option<(NodeRef,Scalar)> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(r,v,_)|(*r,v.clone()))}
-    pub(in crate::observed) fn architecture_scalar_scope(&self,fact:&Fact)->Option<Scope> {self.architecture.borrow().as_ref()?.overrides.get(fact).map(|(_,_,s)|s.clone())}
-    pub(super) fn architecture_has_value(&self,reference:NodeRef)->bool {self.architecture.borrow().as_ref().is_some_and(|a|a.overrides.values().any(|(r,_,_)|*r==reference))}
-    pub(in crate::observed) fn architecture_values(&self)->Vec<(Fact,Scalar)> {self.architecture.borrow().as_ref().map(|a|a.overrides.iter().map(|(f,(_,v,_))|(f.clone(),v.clone())).collect()).unwrap_or_default()}
+    pub(in crate::observed) fn architecture_value(&self, fact: &Fact) -> Option<(NodeRef, Scalar)> {
+        self.architecture
+            .borrow()
+            .as_ref()?
+            .overrides
+            .get(fact)
+            .map(|(r, v, _)| (*r, v.clone()))
+    }
+    pub(in crate::observed) fn architecture_scalar_scope(&self, fact: &Fact) -> Option<Scope> {
+        self.architecture
+            .borrow()
+            .as_ref()?
+            .overrides
+            .get(fact)
+            .map(|(_, _, s)| s.clone())
+    }
+    pub(super) fn architecture_has_value(&self, reference: NodeRef) -> bool {
+        self.architecture
+            .borrow()
+            .as_ref()
+            .is_some_and(|a| a.overrides.values().any(|(r, _, _)| *r == reference))
+    }
+    pub(in crate::observed) fn architecture_values(&self) -> Vec<(Fact, Scalar)> {
+        self.architecture
+            .borrow()
+            .as_ref()
+            .map(|a| {
+                a.overrides
+                    .iter()
+                    .map(|(f, (_, v, _))| (f.clone(), v.clone()))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
     pub(in crate::observed) fn architecture_scope(&self) -> Scope {
         self.architecture
             .borrow()

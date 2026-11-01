@@ -134,7 +134,7 @@ fn equations(
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
                 else {
                     if change_affine::numeric_condition(env, id, &v)? {
-                        missing.unsupported=Some("numeric_change_condition");
+                        missing.unsupported = Some("numeric_change_condition");
                     }
                     return Err(unsupported(
                         env,
@@ -316,7 +316,7 @@ fn compute_inner(
                         _ => {
                             missing.expression = Some(*cond);
                             if change_affine::numeric_condition(env, *cond, &v)? {
-                                missing.unsupported=Some("numeric_change_condition");
+                                missing.unsupported = Some("numeric_change_condition");
                             }
                             return Err(unsupported(env, *cond, "有理changeの未確定分岐は未実装"));
                         }
@@ -342,7 +342,7 @@ fn compute_inner(
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
                             if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q)) {
-                                missing.unsupported=Some("nonlinear_numeric_change");
+                                missing.unsupported = Some("nonlinear_numeric_change");
                             }
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
                         })?;
@@ -448,7 +448,10 @@ pub(in crate::observed) fn state_equations(
     state.indexes.object = env.object_domain();
     for slot in slots {
         env.tick()?;
-        if env.indexes.field(&env.state,
+        if env
+            .indexes
+            .field(
+                &env.state,
                 &slot.snapshot,
                 &slot.subject,
                 slot.field.as_ref().ok_or("自由位置にfieldがない")?,
@@ -490,7 +493,10 @@ fn requirement_equations(
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
         for (name, v) in bindings {
-            let p = law_params.iter().find(|p| p.name == *name).ok_or("有理Lawの束縛名が異なる")?;
+            let p = law_params
+                .iter()
+                .find(|p| p.name == *name)
+                .ok_or("有理Lawの束縛名が異なる")?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),
@@ -518,12 +524,13 @@ fn requirement_equations(
                 _ => {
                     missing.expression = Some(*guard);
                     missing.bindings = bindings.clone();
-                    missing.parameters = law_params.iter()
+                    missing.parameters = law_params
+                        .iter()
                         .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
                         .map(|p| (p.name.clone(), p.ty.clone()))
                         .collect();
                     if change_affine::numeric_condition(env, *guard, &v)? {
-                        missing.unsupported=Some("numeric_change_condition");
+                        missing.unsupported = Some("numeric_change_condition");
                     }
                     return Err(unsupported(
                         env,
@@ -535,8 +542,11 @@ fn requirement_equations(
         }
         missing.expression = Some(*body);
         missing.bindings = bindings.clone();
-        missing.parameters = law_params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name))
-            .map(|p| (p.name.clone(), p.ty.clone())).collect();
+        missing.parameters = law_params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect();
         equations(
             env,
             *body,

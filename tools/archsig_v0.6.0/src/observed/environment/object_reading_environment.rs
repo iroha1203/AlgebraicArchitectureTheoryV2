@@ -1,17 +1,15 @@
 //! 元view instanceの値と対象を通常Sourceの検査へ戻す。
 use super::*;
-use crate::observed::{
-    object_reading_evaluation as reading,
-};
+use crate::observed::object_reading_evaluation as reading;
 impl Environment<'_> {
-
     pub(super) fn native_view_source_inputs(
         &self,
         g: &Graph,
         index: usize,
     ) -> Result<Option<FrameInputs>, ValidationFailure> {
         self.tick()?;
-        let Some(i) = reading::instance_inputs(g, index, self.state.cutoff.get().min(g.nodes.len()))?
+        let Some(i) =
+            reading::instance_inputs(g, index, self.state.cutoff.get().min(g.nodes.len()))?
         else {
             return Ok(None);
         };
@@ -51,7 +49,12 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.indexes.inputs.law().declarations().get(&i.origin.declaration)
+        let declaration = self
+            .indexes
+            .inputs
+            .law()
+            .declarations()
+            .get(&i.origin.declaration)
             .ok_or("元viewの宣言がない")?;
         if let crate::law::model::Signature::View { params, .. } = &declaration.signature {
             for parameter in params {
@@ -60,7 +63,9 @@ impl Environment<'_> {
                     && numeric_parameters::numeric_width(&parameter.ty).is_some()
                 {
                     let (free, _) = numeric_parameters::law_variables(
-                        self, std::slice::from_ref(parameter), &[],
+                        self,
+                        std::slice::from_ref(parameter),
+                        &[],
                     )?;
                     variables.extend(free);
                 }
@@ -94,7 +99,8 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("view全体評価の元Requestがない")?;
         if self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .is_none_or(|rs| rs.get(context.request) != Some(request))
         {
             return Err("view全体評価の元Requestが現在の入力と違う".into());
@@ -131,7 +137,6 @@ impl Environment<'_> {
     }
 }
 impl Environment<'_> {
-
     pub(super) fn validate_view_family_evaluation(
         &self,
         g: &Graph,
@@ -158,7 +163,8 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("全view族の元Requestがない")?;
         if self
-            .indexes.original_requests
+            .indexes
+            .original_requests
             .is_none_or(|ps| ps.get(context.request) != Some(request))
         {
             return Err("全view族の元Requestが現在の入力と違う".into());

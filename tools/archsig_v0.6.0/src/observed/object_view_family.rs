@@ -102,7 +102,10 @@ pub struct FiniteObjectView {
 }
 impl FiniteObjectView {
     #[cfg(test)]
-    pub(super) fn row_evaluation_mut_for_test(&mut self, index: usize) -> Option<&mut ObservedEvaluation> {
+    pub(super) fn row_evaluation_mut_for_test(
+        &mut self,
+        index: usize,
+    ) -> Option<&mut ObservedEvaluation> {
         self.rows.get_mut(index).map(|row| &mut row.evaluation)
     }
     pub fn missing(&self) -> &[Fact] {
@@ -1333,7 +1336,8 @@ mod empty_list_composite_tests {
                     constructor: format!(
                         "Instances.ListBox.{}",
                         if index % 2 == 0 { "Absent" } else { "Pack" }
-                    ).into(),
+                    )
+                    .into(),
                     args: if index % 2 == 0 {
                         vec![]
                     } else {

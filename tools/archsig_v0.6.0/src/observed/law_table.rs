@@ -192,7 +192,9 @@ fn cell(
     Ok(())
 }
 impl Table {
-    pub(super) fn component_source(&self) -> NodeRef { self.component_source }
+    pub(super) fn component_source(&self) -> NodeRef {
+        self.component_source
+    }
     pub(super) fn diagrams(&self) -> Result<Vec<Diagram>, ValidationFailure> {
         self.plan.diagrams()
     }
@@ -333,14 +335,22 @@ pub(super) fn retain(
             let t = evaluated_origin(g, d, t)?;
             let answer = if !t.parameters.is_empty() {
                 let answer = super::law_family::check(env, g, t.reference, row.architecture, c)?;
-                if answer.is_none() && t.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some()) {
-                    let origin = frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
+                if answer.is_none()
+                    && t.parameters
+                        .iter()
+                        .all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
+                {
+                    let origin =
+                        frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
                     if origin.outside {
                         super::law_inapplicable::check(env, g, t.reference, row.architecture, c)?
                     } else {
-                        super::law_proposition::check(env, g, t.reference, row.architecture, c)?.answer
+                        super::law_proposition::check(env, g, t.reference, row.architecture, c)?
+                            .answer
                     }
-                } else { answer }
+                } else {
+                    answer
+                }
             } else {
                 let origin = frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
                 if origin.outside {

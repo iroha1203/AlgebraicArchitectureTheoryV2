@@ -99,7 +99,13 @@ fn negative_baseline(in_law: bool) -> (Issue, usize) {
     let (mut baseline, total) = probe(in_law, usize::MAX);
     let failure = check_inputs(source, &mut baseline).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
-    assert_eq!(failure.issues(), [positions::law_positions(ResultIssue::Input(issue.clone()).wire(), sources(in_law, "49").law().bytes())]);
+    assert_eq!(
+        failure.issues(),
+        [positions::law_positions(
+            ResultIssue::Input(issue.clone()).wire(),
+            sources(in_law, "49").law().bytes()
+        )]
+    );
     empty_stage(&failure);
     assert!(total.get() > 10);
     (issue, total.get())

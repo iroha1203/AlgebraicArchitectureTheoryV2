@@ -15,8 +15,8 @@ use super::{
 use crate::control::Control;
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
-mod law_result;
 mod affine_result;
+mod law_result;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -38,10 +38,15 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
-    pub(super) fn overrides(&self, g: &Graph) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
+    pub(super) fn overrides(
+        &self,
+        g: &Graph,
+    ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
         change_result::architecture_overrides(g, self.part())
     }
-    pub(super) fn request(&self) -> &Request { &self.source.request }
+    pub(super) fn request(&self) -> &Request {
+        &self.source.request
+    }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
@@ -111,7 +116,12 @@ impl Data {
 fn refs(items: &[NodeRef]) -> Json {
     Json::Arr(items.iter().map(|r| r.wire()).collect())
 }
-fn domain(b: &mut Builder<'_>, ty: &Type, items: &[NodeRef], dependencies: &[NodeRef]) -> Result<NodeRef, ValidationFailure> {
+fn domain(
+    b: &mut Builder<'_>,
+    ty: &Type,
+    items: &[NodeRef],
+    dependencies: &[NodeRef],
+) -> Result<NodeRef, ValidationFailure> {
     b.push(
         NodeType::Domain,
         "domain",
@@ -147,8 +157,8 @@ fn compute(
             return affine_result::compute(env, g, input, reference, request, base, c);
         }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
-        let declaration =
-            &env.indexes.inputs.law().declarations()[request.declaration().ok_or("商のviewがない")?];
+        let declaration = &env.indexes.inputs.law().declarations()
+            [request.declaration().ok_or("商のviewがない")?];
         let Signature::View { body, .. } = &declaration.signature else {
             return Err("商のviewが違う".into());
         };
@@ -161,16 +171,28 @@ fn compute(
             .bindings
             .iter()
             .map(|(name, v)| {
-                let selector = &request.arguments.iter().find(|a| a.name == format!("bind.{name}"))
-                    .ok_or("商の元束縛がない")?.value;
+                let selector = &request
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == format!("bind.{name}"))
+                    .ok_or("商の元束縛がない")?
+                    .value;
                 let reference = if matches!(selector, Selector::Answer { .. }) {
                     match env.answer_binding(g, selector, (0, 0))? {
                         AnswerBinding::Reference(r) => r,
-                        AnswerBinding::Projection(node) => g.nodes.iter().position(|n| *n == node)
-                            .map(NodeRef).ok_or("商の公開射影が保持されていない")?,
-                        AnswerBinding::Inapplicable(_) => return Err(ValidationFailure::from("商の束縛射影が不適合")),
+                        AnswerBinding::Projection(node) => g
+                            .nodes
+                            .iter()
+                            .position(|n| *n == node)
+                            .map(NodeRef)
+                            .ok_or("商の公開射影が保持されていない")?,
+                        AnswerBinding::Inapplicable(_) => {
+                            return Err(ValidationFailure::from("商の束縛射影が不適合"));
+                        }
                     }
-                } else { change_result::value(&mut b, v)? };
+                } else {
+                    change_result::value(&mut b, v)?
+                };
                 Ok((name.clone(), reference))
             })
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
@@ -181,17 +203,38 @@ fn compute(
         expression_part.arguments.dedup();
         expression_part.scope.merge(&g.get(reference)?.scope);
         expression_part.scope.merge(&table.scope);
-        expression_part.scope.readings.insert(declaration.reading.clone());
+        expression_part
+            .scope
+            .readings
+            .insert(declaration.reading.clone());
         let law_expression = if let Some((name, _)) = &table.law {
-            let Signature::Law {params, body, ..} = &env.indexes.inputs.law().declarations()[name].signature else {unreachable!()};
-            let selected = bindings.iter().filter(|(name,_)|params.iter().any(|p| &p.name==name)).cloned().collect::<Vec<_>>();
-            let parameters = params.iter().filter(|p|!selected.iter().any(|(n,_)|n==&p.name)).map(|p|(p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
-            let law_expression=change_result::source_expression(&mut b,env,*body,&selected,&parameters)?;
-            let part=&mut b.parts[law_expression.0-base];
-            part.arguments.push(reference); part.arguments.sort_by_key(|r|r.0); part.arguments.dedup();
-            part.scope.merge(&table.scope); part.scope.merge(&g.get(reference)?.scope);
+            let Signature::Law { params, body, .. } =
+                &env.indexes.inputs.law().declarations()[name].signature
+            else {
+                unreachable!()
+            };
+            let selected = bindings
+                .iter()
+                .filter(|(name, _)| params.iter().any(|p| &p.name == name))
+                .cloned()
+                .collect::<Vec<_>>();
+            let parameters = params
+                .iter()
+                .filter(|p| !selected.iter().any(|(n, _)| n == &p.name))
+                .map(|p| (p.name.clone(), p.ty.clone()))
+                .collect::<Vec<_>>();
+            let law_expression =
+                change_result::source_expression(&mut b, env, *body, &selected, &parameters)?;
+            let part = &mut b.parts[law_expression.0 - base];
+            part.arguments.push(reference);
+            part.arguments.sort_by_key(|r| r.0);
+            part.arguments.dedup();
+            part.scope.merge(&table.scope);
+            part.scope.merge(&g.get(reference)?.scope);
             Some(law_expression)
-        } else {None};
+        } else {
+            None
+        };
         if !table.missing.is_empty() {
             let reason = Reason {
                 kind: ReasonKind::Missing,
@@ -214,11 +257,16 @@ fn compute(
                 base,
                 parts: b.parts,
                 answer: Answer {
-                    id: request.id.clone(), status: Decision::Undetermined,
-                    outputs: BTreeMap::new(), claim: None, evidence: vec![],
-                    reasons: vec![reason], scope,
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs: BTreeMap::new(),
+                    claim: None,
+                    evidence: vec![],
+                    reasons: vec![reason],
+                    scope,
                 },
-                request: request.clone(), witness: input.witness,
+                request: request.clone(),
+                witness: input.witness,
                 domain_type: input.domain_type,
             });
         }
@@ -227,7 +275,8 @@ fn compute(
         let mut images = BTreeMap::new();
         if let Some((name, ty)) = &table.law {
             for row in &table.rows {
-                let (family, rows) = law_result::row(&mut b, env, &input, row, name, ty, expression)?;
+                let (family, rows) =
+                    law_result::row(&mut b, env, &input, row, name, ty, expression)?;
                 evaluations.extend(rows);
                 families.insert(row.parameters.wire().canonical(), family);
                 images.insert(row.parameters.wire().canonical(), row.image.clone());
@@ -277,7 +326,8 @@ fn compute(
                     let family = &families[&member.wire().canonical()];
                     if separating.is_none() && !super::data::equal(family, first_family, c)? {
                         let other = change_result::value(&mut b, family)?;
-                        let view = change_result::value(&mut b, &images[&member.wire().canonical()])?;
+                        let view =
+                            change_result::value(&mut b, &images[&member.wire().canonical()])?;
                         separating = Some((points[0], *point, view, first_ref, other));
                     }
                 }
@@ -292,7 +342,12 @@ fn compute(
             if let Some(family) = family_values.last().filter(|_| table.law.is_some()) {
                 descent_pairs.push(Json::Arr(vec![class.wire(), family.wire()]));
             }
-            let preimage = domain(&mut b, &table.parameter_type, &points, &[reference, expression])?;
+            let preimage = domain(
+                &mut b,
+                &table.parameter_type,
+                &points,
+                &[reference, expression],
+            )?;
             for point in &points {
                 projection_pairs.push(Json::Arr(vec![point.wire(), class.wire()]));
             }
@@ -342,16 +397,40 @@ fn compute(
         arguments.extend(law_expression);
         let descent = if let Some((name, ty)) = &table.law {
             if separating.is_none() {
-                family_values.sort_by_key(|r|r.0); family_values.dedup();
-                let mut dependencies=vec![reference,expression]; dependencies.extend(law_expression); dependencies.extend(&evaluations);
-                let target = domain(&mut b, &law_result::family_type(env, name, ty)?, &family_values, &dependencies)?;
-                let mut args = vec![classes_domain, target]; args.extend(&family_values);
-                let map = b.push(NodeType::Construction(T::StateMap), "state_map", Json::obj([
-                    ("source",classes_domain.wire()),("target",target.wire()),("kind",Json::str("finite")),("pairs",Json::Arr(descent_pairs)),
-                ]),args,None,None)?;
-                arguments.push(map); Some(map)
-            } else {None}
-        } else {None};
+                family_values.sort_by_key(|r| r.0);
+                family_values.dedup();
+                let mut dependencies = vec![reference, expression];
+                dependencies.extend(law_expression);
+                dependencies.extend(&evaluations);
+                let target = domain(
+                    &mut b,
+                    &law_result::family_type(env, name, ty)?,
+                    &family_values,
+                    &dependencies,
+                )?;
+                let mut args = vec![classes_domain, target];
+                args.extend(&family_values);
+                let map = b.push(
+                    NodeType::Construction(T::StateMap),
+                    "state_map",
+                    Json::obj([
+                        ("source", classes_domain.wire()),
+                        ("target", target.wire()),
+                        ("kind", Json::str("finite")),
+                        ("pairs", Json::Arr(descent_pairs)),
+                    ]),
+                    args,
+                    None,
+                    None,
+                )?;
+                arguments.push(map);
+                Some(map)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         let quotient = b.push(
             NodeType::Construction(T::Quotient),
             "quotient",
@@ -390,22 +469,43 @@ fn compute(
         let mut claim = None;
         let mut status = Decision::Established;
         if let Some((name, _)) = &table.law {
-            let Json::Obj(wire) = &mut b.parts[quotient.0-base].wire else {unreachable!()};
+            let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
+                unreachable!()
+            };
             wire.insert("law".into(), Json::str(name));
-            if let Some(descent) = descent { wire.insert("descent".into(), descent.wire()); }
+            if let Some(descent) = descent {
+                wire.insert("descent".into(), descent.wire());
+            }
             if let Some((first, second, view, left, right)) = separating {
                 status = Decision::Refuted;
-                evidence.push(b.push(NodeType::Evidence,"evidence",Json::obj([
-                    ("kind",Json::str("separating_pair")),("data",Json::obj([
-                        ("domain",reference.wire()),("first",first.wire()),("second",second.wire()),
-                        ("view_values",refs(&[view,view])),("law_values",refs(&[left,right])),
-                    ])),
-                ]),vec![reference,first,second,view,left,right],None,None)?);
+                evidence.push(b.push(
+                    NodeType::Evidence,
+                    "evidence",
+                    Json::obj([
+                        ("kind", Json::str("separating_pair")),
+                        (
+                            "data",
+                            Json::obj([
+                                ("domain", reference.wire()),
+                                ("first", first.wire()),
+                                ("second", second.wire()),
+                                ("view_values", refs(&[view, view])),
+                                ("law_values", refs(&[left, right])),
+                            ]),
+                        ),
+                    ]),
+                    vec![reference, first, second, view, left, right],
+                    None,
+                    None,
+                )?);
             }
-            let proposition = b.proposition("sufficient",vec![quotient],evidence.clone(),status)?;
-            let part = &mut b.parts[proposition.0-base];
-            part.evidence = evidence.clone(); part.judgment.as_mut().ok_or("十分性判断がない")?.evidence = evidence.clone();
-            outputs.insert("proposition".into(),proposition); claim=Some(proposition);
+            let proposition =
+                b.proposition("sufficient", vec![quotient], evidence.clone(), status)?;
+            let part = &mut b.parts[proposition.0 - base];
+            part.evidence = evidence.clone();
+            part.judgment.as_mut().ok_or("十分性判断がない")?.evidence = evidence.clone();
+            outputs.insert("proposition".into(), proposition);
+            claim = Some(proposition);
         }
         let scope = b.parts[quotient.0 - base].scope.clone();
         Ok(Source {
@@ -433,7 +533,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -513,10 +613,17 @@ pub(super) fn validate_answer(
             Err("商の依存停止が違う".into())
         };
     }
-    let r = answer.outputs.get("quotient").or_else(|| {
-        answer.reasons.iter().find(|r| matches!(r.kind, ReasonKind::Missing))
-            .and_then(|r| r.dependencies.first())
-    }).ok_or("商の出力・不足の元式がない")?;
+    let r = answer
+        .outputs
+        .get("quotient")
+        .or_else(|| {
+            answer
+                .reasons
+                .iter()
+                .find(|r| matches!(r.kind, ReasonKind::Missing))
+                .and_then(|r| r.dependencies.first())
+        })
+        .ok_or("商の出力・不足の元式がない")?;
     let Some(Payload::Construction(v)) = &g.get(*r)?.payload else {
         return Err("商がnativeでない".into());
     };

@@ -62,7 +62,9 @@ fn subject<'a>(
     environment: &'a Environment<'_>,
     fact: &Fact,
 ) -> Result<&'a crate::archmap::Subject, ValidationFailure> {
-    environment.indexes.subject(&fact.snapshot, &fact.subject)
+    environment
+        .indexes
+        .subject(&fact.snapshot, &fact.subject)
         .map_err(Into::into)
 }
 pub(super) fn selected(
@@ -135,12 +137,21 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
-    if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose)
-        || (request.kind == QuestionKind::Compare
-            && super::request::comparison::kind(request).is_ok_and(|k| k == "diagnostics"))
-    {return super::local_result::validate_origin(environment,request,value);}
-    if request.kind == QuestionKind::Quotient {return super::quotient_result::validate_origin(environment,request,value);}
-    if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
+    if matches!(
+        request.kind,
+        QuestionKind::Localize | QuestionKind::Diagnose
+    ) || (request.kind == QuestionKind::Compare
+        && super::request::comparison::kind(request).is_ok_and(|k| k == "diagnostics"))
+    {
+        return super::local_result::validate_origin(environment, request, value);
+    }
+    if request.kind == QuestionKind::Quotient {
+        return super::quotient_result::validate_origin(environment, request, value);
+    }
+    if matches!(
+        request.kind,
+        QuestionKind::Build | QuestionKind::Solve | QuestionKind::Repair
+    ) {
         return super::architecture_result::validate_build_origin(
             environment,
             graph,
@@ -148,14 +159,21 @@ pub(super) fn validate_origin(
             value,
         );
     }
-    if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
+    if let Witness::PathCompose(c) = &value.witness {
+        return super::public_path_compose::validate_origin(environment, graph, request, c);
+    }
     if let Witness::Compare(c) = &value.witness {
         if let D::Comparison(super::public_compare::Part::RelationSource(data)) = &value.data {
-            let family = c.relation_family.as_ref().ok_or("relation Sourceの元族がない")?;
+            let family = c
+                .relation_family
+                .as_ref()
+                .ok_or("relation Sourceの元族がない")?;
             environment.recheck_relation_source(family, data.scalar())?;
         }
-        if c.relation_plan.is_some() { environment.recheck_relation_comparison(graph, c)?; }
-        return super::public_compare::validate_origin(environment,graph,request,c);
+        if c.relation_plan.is_some() {
+            environment.recheck_relation_comparison(graph, c)?;
+        }
+        return super::public_compare::validate_origin(environment, graph, request, c);
     }
     if let Witness::Compose(c) = &value.witness {
         return super::public_compose::validate_origin(environment, graph, request, c);
@@ -201,11 +219,7 @@ pub(super) fn validate_origin(
             let holder = subject(environment, &on)?;
             let mut matches = false;
             for (key, reading_key) in [("from", "reading"), ("to", "to_reading")] {
-                let Some(endpoint) = holder
-                    .fields
-                    .iter()
-                    .find(|f| f.name.short() == key)
-                else {
+                let Some(endpoint) = holder.fields.iter().find(|f| f.name.short() == key) else {
                     continue;
                 };
                 if let Slot::Known {
@@ -342,7 +356,8 @@ pub(super) fn unavailable(
     if let Some(name) = request.declaration() {
         scope.readings.insert(
             environment
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .declarations()
                 .get(name)
@@ -351,8 +366,14 @@ pub(super) fn unavailable(
         );
     }
     let selectors = request.arguments.iter().map(|a| &a.value).chain(
-        matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose)
-            .then_some(&request.head),
+        matches!(
+            request.kind,
+            QuestionKind::Compose
+                | QuestionKind::Compare
+                | QuestionKind::Localize
+                | QuestionKind::Diagnose
+        )
+        .then_some(&request.head),
     );
     for selector in selectors {
         let Selector::Answer { id, .. } = selector else {
@@ -369,7 +390,12 @@ pub(super) fn unavailable(
             .any(|a| a.name == "on" && &a.value == selector)
             && !matches!(
                 request.kind,
-                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
+                QuestionKind::Map
+                    | QuestionKind::Compose
+                    | QuestionKind::Compare
+                    | QuestionKind::Quotient
+                    | QuestionKind::Localize
+                    | QuestionKind::Diagnose
             )
             && !matches!(
                 graph.requests[producer_index].kind,
@@ -412,7 +438,15 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose) {
+    if matches!(
+        request.kind,
+        QuestionKind::Map
+            | QuestionKind::Compose
+            | QuestionKind::Compare
+            | QuestionKind::Quotient
+            | QuestionKind::Localize
+            | QuestionKind::Diagnose
+    ) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);

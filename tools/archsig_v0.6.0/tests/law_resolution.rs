@@ -728,7 +728,11 @@ fn full_primitive_names_precede_relative_constructor_candidates() {
     );
     let c = ok(QUALIFIED_PRIMITIVES, &src);
     assert!(c.definitions().declarations().contains_key("Counter.State"));
-    assert!(c.definitions().declarations().contains_key("Counter.Counter"));
+    assert!(
+        c.definitions()
+            .declarations()
+            .contains_key("Counter.Counter")
+    );
     for name in ["Helpers.amount", "R.direct", "R.via_alias"] {
         let i = info(&c, name);
         assert_eq!(

@@ -34,7 +34,8 @@ fn symbolic(p: &Parameter) -> bool {
     p.values.is_none() && numeric_parameters::numeric_width(&p.declaration.ty).is_some()
 }
 pub(super) fn pending_parameters(ps: &[Parameter]) -> bool {
-    ps.iter().any(|p| (!symbolic(p) && p.values.is_none()) || !p.missing.is_empty())
+    ps.iter()
+        .any(|p| (!symbolic(p) && p.values.is_none()) || !p.missing.is_empty())
 }
 fn parameters(
     env: &Environment<'_>,
@@ -147,8 +148,17 @@ impl Part {
                 ("kind", Json::str("object_reading")),
                 ("object", o.component.wire()),
                 ("declaration", Json::str(&o.declaration)),
-                ("parameters", Json::Arr(o.parameters.iter().map(|(name, ty)|
-                    Json::obj([("name", Json::str(name)), ("type", ty.wire())])).collect())),
+                (
+                    "parameters",
+                    Json::Arr(
+                        o.parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
                 (
                     "bindings",
                     Json::Arr(
@@ -370,7 +380,9 @@ fn build_source(
         }
         support.extend(p.support.iter().cloned());
         scope.merge(&p.scope);
-        if symbolic(p) { continue; }
+        if symbolic(p) {
+            continue;
+        }
         let vs = p
             .values
             .as_ref()
@@ -476,7 +488,9 @@ fn build_source(
             if let [b] = fixed.as_slice() {
                 bindings.push((*b).clone());
             } else if fixed.is_empty() {
-                if numeric_parameters::numeric_width(&p.ty).is_some() { continue; }
+                if numeric_parameters::numeric_width(&p.ty).is_some() {
+                    continue;
+                }
                 let i = ps
                     .iter()
                     .filter(|p| !symbolic(p))
@@ -494,7 +508,8 @@ fn build_source(
         let expression = NodeRef(base.checked_add(parts.len()).ok_or("view行位置が範囲外")?);
         let mut row = o.clone();
         row.expression = expression;
-        row.parameters.retain(|(_, ty)| numeric_parameters::numeric_width(ty).is_some());
+        row.parameters
+            .retain(|(_, ty)| numeric_parameters::numeric_width(ty).is_some());
         row.bindings = bindings;
         rows.push(push(
             &mut parts,
@@ -719,7 +734,11 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
         return Err("全view族が通常Evaluationでない".into());
     };
     if reading::numeric_parameters(&reading::origin(g, *expression)?.1)
-        && !n.arguments.iter().any(|r| source_at(g, *r).is_ok_and(|d| *r == d.source.product)) {
+        && !n
+            .arguments
+            .iter()
+            .any(|r| source_at(g, *r).is_ok_and(|d| *r == d.source.product))
+    {
         return whole::validate(g, n, at);
     }
     let [part] = parts.as_slice() else {
@@ -753,7 +772,7 @@ pub(super) fn evaluate(
     expression: NodeRef,
     c: &mut Control,
 ) -> Result<Outcome, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c))
 }
 
 impl Environment<'_> {

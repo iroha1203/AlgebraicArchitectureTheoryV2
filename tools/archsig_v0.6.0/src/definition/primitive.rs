@@ -376,10 +376,18 @@ fn check_type_inner<E: InputError>(
         Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text => {}
         Type::Fp(modulus) => {
             let Ok(n) = modulus.parse::<BigUint>() else {
-                return fail(Code::Syntax, at, "Fp modulus must be a positive decimal integer string");
+                return fail(
+                    Code::Syntax,
+                    at,
+                    "Fp modulus must be a positive decimal integer string",
+                );
             };
             if !is_prime_controlled::<E>(&n, control, Checkpoint::DefinitionSemantics)? {
-                return fail(Code::Syntax, at, format!("Fp modulus {modulus} is not prime"));
+                return fail(
+                    Code::Syntax,
+                    at,
+                    format!("Fp modulus {modulus} is not prime"),
+                );
             }
         }
         Type::Ref(name) | Type::Data(name) | Type::Owned(name, _) => {
@@ -404,7 +412,9 @@ fn check_type_inner<E: InputError>(
                         root.ok_or_else(|| {
                             E::from(Box::new(Issue {
                                 code: Code::Syntax,
-                                message: format!("`{name}` must be an entity or arrow without an owner"),
+                                message: format!(
+                                    "`{name}` must be an entity or arrow without an owner"
+                                ),
                                 location: at.clone(),
                                 details: Details::Empty,
                             }))
@@ -488,7 +498,11 @@ fn check_type_inner<E: InputError>(
             check_type::<E>(defs, props, a, &child(at, "1"), earlier, control)?;
             check_type::<E>(defs, props, b, &child(at, "2"), earlier, control)?;
             if a.ref_target().is_none() || b.ref_target().is_none() {
-                return fail(Code::Syntax, at, "Map domain and codomain must be reference types");
+                return fail(
+                    Code::Syntax,
+                    at,
+                    "Map domain and codomain must be reference types",
+                );
             }
         }
         Type::Term(args, ret) => {
@@ -1060,7 +1074,10 @@ fn check_correspondence<E: InputError>(
                                 &child(&tf.location, "name"),
                                 &moved,
                                 &tf.ty,
-                                format!("types of `{e}.{}` and `{f}.{}` do not correspond", sf.name, tf.name),
+                                format!(
+                                    "types of `{e}.{}` and `{f}.{}` do not correspond",
+                                    sf.name, tf.name
+                                ),
                                 &mut diagnostic_control,
                             );
                         }

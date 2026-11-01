@@ -67,9 +67,12 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
     // 数値binderを架空のScalar/固定Bindingにしない。
     let mut symbolic_tuple = 0;
     let law = r.prepared().inputs().law();
-    let declared_parameters: std::collections::BTreeSet<_> = law.infos().iter()
+    let declared_parameters: std::collections::BTreeSet<_> = law
+        .infos()
+        .iter()
         .flat_map(|info| &info.parameters)
-        .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical())).collect();
+        .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical()))
+        .collect();
     let mut numeric_parameters = std::collections::BTreeSet::new();
     for n in arr(get(&w, "nodes")) {
         if get(n, "type") == &Json::str("Expression") {
@@ -77,7 +80,13 @@ fn partial_owned_calls_keep_nested_list_return_and_z_q_binders() {
             if let Json::Obj(m) = v {
                 if let Some(Json::Arr(ps)) = m.get("parameters") {
                     for p in ps {
-                        assert!(declared_parameters.contains(&(get(p, "name").canonical(), get(p, "type").canonical())), "parameter: {p:?}; declared: {declared_parameters:?}");
+                        assert!(
+                            declared_parameters.contains(&(
+                                get(p, "name").canonical(),
+                                get(p, "type").canonical()
+                            )),
+                            "parameter: {p:?}; declared: {declared_parameters:?}"
+                        );
                         if [Json::str("Z"), Json::str("Q")].contains(get(p, "type")) {
                             numeric_parameters.insert(get(p, "type").canonical());
                         }
@@ -652,9 +661,9 @@ fn partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_
                 panic!("span")
             };
             law[*start as usize..*end as usize].starts_with("pcAccept(")
-                && arr(get(condition, "support")).iter().any(
-                    |f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))),
-                )
+                && arr(get(condition, "support"))
+                    .iter()
+                    .any(|f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))))
         })
         .expect("独立な既知owner不等を保持する");
     let c = node(&w, get(get(failed, "details"), "condition"));

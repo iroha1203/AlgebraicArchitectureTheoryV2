@@ -165,9 +165,11 @@ fn path_compose_late_stops_publish_only_checked_values_with_consistent_status_an
         assert_eq!(s(get(answer, "status")), "established");
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "operation"));
-        assert!(arr(get(&result, "nodes"))
-            .iter()
-            .all(|n| s(get(n, "state")) == "value"));
+        assert!(
+            arr(get(&result, "nodes"))
+                .iter()
+                .all(|n| s(get(n, "state")) == "value")
+        );
         assert!(!dir.read_dir().unwrap().any(|e| {
             e.unwrap()
                 .file_name()
@@ -193,12 +195,7 @@ fn path_compose_write_failures_remove_only_this_runs_temporary_directory() {
             ..Files::default()
         };
         let mut signals = Finalize::default();
-        let outcome = run_requests(
-            &mut io,
-            &mut signals,
-            &args,
-            &mut Control::unlimited(),
-        );
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut Control::unlimited());
         assert_eq!(outcome.status, Status::Error);
         assert_eq!(outcome.exit_code, 74);
         assert!(outcome.result.is_none());

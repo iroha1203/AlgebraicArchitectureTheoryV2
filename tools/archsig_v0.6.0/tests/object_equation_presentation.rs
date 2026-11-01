@@ -316,7 +316,11 @@ fn outside_selected_object_keeps_finite_rows_and_symbolic_equation_without_body_
         assert!(q.epsilon_constant.is_none());
         assert_eq!(number(&q.residual), Some("\"0\"".into()));
     }
-    assert!(r.rings().iter().all(|ring| ring.required_generators.is_empty()));
+    assert!(
+        r.rings()
+            .iter()
+            .all(|ring| ring.required_generators.is_empty())
+    );
     r.recheck(i, &mut quiet()).unwrap();
 }
 #[test]

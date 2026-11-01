@@ -372,7 +372,11 @@ impl Evaluator<'_, '_> {
             };
             bindings.push(Binding { name, ty, value });
         }
-        self.environment.universal_order_counterexample_bindings(self.graph,original,&mut bindings)?;
+        self.environment.universal_order_counterexample_bindings(
+            self.graph,
+            original,
+            &mut bindings,
+        )?;
         Ok(bindings)
     }
 
@@ -529,7 +533,8 @@ impl Evaluator<'_, '_> {
         &mut self,
         plan: &UniversalPlan,
     ) -> Result<(NodeRef, NodeRef, Option<NodeRef>), Failure> {
-        let (body, body_analysis) = self.universal_raw_source(plan, plan.template_span, Type::Bool)?;
+        let (body, body_analysis) =
+            self.universal_raw_source(plan, plan.template_span, Type::Bool)?;
         let Some(guard) = plan.guard else {
             return Ok((body, body, None));
         };
@@ -580,16 +585,28 @@ impl Evaluator<'_, '_> {
         })
     }
 
-    pub(super) fn universal_expression_evaluation(&mut self, plan: UniversalPlan, expression: usize) -> Result<Evaluated, Failure> {
-        let ty = self.environment.indexes.inputs.law().expr_type(plan.body)
-            .ok_or_else(|| Failure::Internal("全域式の戻り型がない".into()))?.clone();
+    pub(super) fn universal_expression_evaluation(
+        &mut self,
+        plan: UniversalPlan,
+        expression: usize,
+    ) -> Result<Evaluated, Failure> {
+        let ty = self
+            .environment
+            .indexes
+            .inputs
+            .law()
+            .expr_type(plan.body)
+            .ok_or_else(|| Failure::Internal("全域式の戻り型がない".into()))?
+            .clone();
         let template = if plan.guard.is_some() {
             self.universal_template(&plan)?.0
         } else {
             self.universal_raw_source(&plan, plan.template_span, ty)?.0
         };
         let domains = self.universal_parameter_domains(&plan, template)?;
-        Ok(self.universal_pointwise(&plan, template, &domains, expression)?.evaluated)
+        Ok(self
+            .universal_pointwise(&plan, template, &domains, expression)?
+            .evaluated)
     }
 
     #[inline(never)]
@@ -602,7 +619,11 @@ impl Evaluator<'_, '_> {
         self.universal_evaluation_with_domains(plan, template, raw_body, raw_guard, domains)
     }
 
-    fn universal_parameter_domains(&mut self, plan: &UniversalPlan, template: NodeRef) -> Result<Vec<NodeRef>, Failure> {
+    fn universal_parameter_domains(
+        &mut self,
+        plan: &UniversalPlan,
+        template: NodeRef,
+    ) -> Result<Vec<NodeRef>, Failure> {
         let mut domains = Vec::new();
         for parameter in &plan.parameters {
             self.universal_observe(plan.template_span, 0)?;
@@ -628,7 +649,14 @@ impl Evaluator<'_, '_> {
         Ok(domains)
     }
 
-    fn universal_evaluation_with_domains(&mut self, plan: UniversalPlan, template: NodeRef, raw_body: NodeRef, raw_guard: Option<NodeRef>, domains: Vec<NodeRef>) -> Result<UniversalEvaluation, Failure> {
+    fn universal_evaluation_with_domains(
+        &mut self,
+        plan: UniversalPlan,
+        template: NodeRef,
+        raw_body: NodeRef,
+        raw_guard: Option<NodeRef>,
+        domains: Vec<NodeRef>,
+    ) -> Result<UniversalEvaluation, Failure> {
         let analyzed =
             self.environment
                 .universal_analysis(self.graph, template, &domains, &self.bindings)?;
@@ -641,7 +669,8 @@ impl Evaluator<'_, '_> {
         } else {
             let id = self
                 .environment
-                .indexes.inputs
+                .indexes
+                .inputs
                 .law()
                 .exprs()
                 .iter()
@@ -765,8 +794,15 @@ impl Evaluator<'_, '_> {
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
             && !analyzed.analysis.condition_pending
-            && !(reasons.iter().any(|r| matches!(r.kind, ReasonKind::Missing))
-                && self.environment.universal_missing_parameter_equation(self.graph, &plan, &self.bindings, &analyzed)?)
+            && !(reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing))
+                && self.environment.universal_missing_parameter_equation(
+                    self.graph,
+                    &plan,
+                    &self.bindings,
+                    &analyzed,
+                )?)
             && !reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
@@ -1331,7 +1367,8 @@ impl Evaluator<'_, '_> {
         let expr = self.environment.indexes.inputs.law().exprs()[id].clone();
         let ty = self
             .environment
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .expr_type(id)
             .ok_or_else(|| Failure::Internal("全域元式の型がない".into()))?
@@ -1381,7 +1418,8 @@ impl Evaluator<'_, '_> {
         let children = match &expr.kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
             ExprKind::Dotted(_)
-                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?.is_some() =>
+                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?
+                    .is_some() =>
             {
                 vec![]
             }
@@ -1511,7 +1549,11 @@ impl Evaluator<'_, '_> {
                     self.graph,
                     id,
                     &self.bindings,
-                    input.evaluated.value.map(|value| self.graph.scalar(value)).transpose()?,
+                    input
+                        .evaluated
+                        .value
+                        .map(|value| self.graph.scalar(value))
+                        .transpose()?,
                     input.evaluated.expression,
                 )?;
                 let mut children = vec![input];

@@ -20,7 +20,11 @@ pub(super) fn resolve(
     for (key, value) in raw.arguments {
         phase(control, Checkpoint::RequestBinding)?;
         if key != "then" {
-            return Err(error(&raw.id, &key, "compose only accepts the fixed argument then"));
+            return Err(error(
+                &raw.id,
+                &key,
+                "compose only accepts the fixed argument then",
+            ));
         }
         arguments.push(RequestArgument {
             name: key,
@@ -83,7 +87,11 @@ pub(super) fn selected(
     match plan.ty {
         ProjectionType::Operation(s) => {
             let Selector::Answer { id, .. } = value else {
-                return Err(error(&request.id, key, "missing source request for Operation"));
+                return Err(error(
+                    &request.id,
+                    key,
+                    "missing source request for Operation",
+                ));
             };
             let producer = &requests[names[id]];
             Ok(Shape::Operation(OperationProjection {

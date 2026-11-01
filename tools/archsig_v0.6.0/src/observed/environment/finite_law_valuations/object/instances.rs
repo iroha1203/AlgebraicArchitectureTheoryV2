@@ -164,9 +164,11 @@ fn populate_with_environment(
         for position in fixed {
             tick(c)?;
             let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
-            entry
-                .scope
-                .merge(&env.indexes.scope(subject, result.selection.identity().reading(), None)?);
+            entry.scope.merge(&env.indexes.scope(
+                subject,
+                result.selection.identity().reading(),
+                None,
+            )?);
             entry.support.push(position.clone());
         }
         entry.support.sort();

@@ -159,15 +159,7 @@ pub(super) fn field_candidates(
     owned: &mut OwnedRoster<'_>,
     visitor: &mut dyn FnMut(usize),
 ) -> Result<Enumeration, ValidationFailure> {
-    enumerate_values(
-        ty,
-        law,
-        control,
-        roster,
-        owned,
-        visitor,
-        true,
-    )
+    enumerate_values(ty, law, control, roster, owned, visitor, true)
 }
 
 /// 原始field候補は部分Mapを含め、全域性・所属は全代入を同時に検査する。
@@ -683,7 +675,11 @@ fn enumerate_values_maybe(
                                     &mut values,
                                     Scalar::Data {
                                         family: family.clone(),
-                                        constructor: law.resolved_names().get(&format!("{family}.{}", ctor.name)).ok_or("constructorの検査済み名がない")?.clone(),
+                                        constructor: law
+                                            .resolved_names()
+                                            .get(&format!("{family}.{}", ctor.name))
+                                            .ok_or("constructorの検査済み名がない")?
+                                            .clone(),
                                         args,
                                     },
                                     control,

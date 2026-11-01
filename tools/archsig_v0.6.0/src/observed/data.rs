@@ -177,8 +177,14 @@ pub(super) fn resolved(
     for target in law.program().references.get(&span).into_iter().flatten() {
         tick(control)?;
         if let Some(family) = target.owner()
-            && matches!(law.definitions().declarations().get(family).map(|d| &d.signature),
-                Some(PrimitiveSignature::Data { .. })) {
+            && matches!(
+                law.definitions()
+                    .declarations()
+                    .get(family)
+                    .map(|d| &d.signature),
+                Some(PrimitiveSignature::Data { .. })
+            )
+        {
             constructor(law, family, target, control)?;
             if found.as_ref().is_some_and(|previous| previous != target) {
                 return Err("constructor静的解決が一意でない".into());
@@ -196,12 +202,20 @@ pub(super) fn expression(
 ) -> Result<Option<(crate::names::QualifiedName, Vec<usize>)>, ValidationFailure> {
     let (target, args) = match &law.program().nodes[id].kind {
         ExprKind::Call { callee, args } => {
-            let Some(crate::law::ir::Callee::Ctor(family, index)) = law.program().callees.get(callee) else {
+            let Some(crate::law::ir::Callee::Ctor(family, index)) =
+                law.program().callees.get(callee)
+            else {
                 return Ok(None);
             };
-            let ctor = constructors(law, family)?.get(*index).ok_or("constructor元indexがない")?;
+            let ctor = constructors(law, family)?
+                .get(*index)
+                .ok_or("constructor元indexがない")?;
             let full = format!("{family}.{}", ctor.name);
-            let target = law.resolved_names().get(&full).ok_or("constructor検査済み名がない")?.clone();
+            let target = law
+                .resolved_names()
+                .get(&full)
+                .ok_or("constructor検査済み名がない")?
+                .clone();
             (target, args.clone())
         }
         ExprKind::Dotted(_) => {
@@ -331,12 +345,7 @@ pub(super) fn input_json(
             Scalar::Data {
                 constructor, args, ..
             } => Json::obj([
-                (
-                    "tag",
-                    Json::str(
-                        constructor.short(),
-                    ),
-                ),
+                ("tag", Json::str(constructor.short())),
                 ("args", Json::Arr(children(args)?)),
             ]),
             Scalar::Term(term) => {
@@ -597,9 +606,14 @@ pub(super) fn select_partial<T: Clone>(
     resolve: &impl Fn(Span, &Control) -> Result<Option<crate::names::QualifiedName>, ValidationFailure>,
 ) -> Result<Option<(usize, BTreeMap<String, T>)>, ValidationFailure> {
     fn walk<T: Clone>(
-        pattern: &Pattern, value: &T, control: &Control,
+        pattern: &Pattern,
+        value: &T,
+        control: &Control,
         parts: &impl Fn(&T, &Control) -> Result<Option<(String, Vec<T>)>, ValidationFailure>,
-        resolve: &impl Fn(Span, &Control) -> Result<Option<crate::names::QualifiedName>, ValidationFailure>,
+        resolve: &impl Fn(
+            Span,
+            &Control,
+        ) -> Result<Option<crate::names::QualifiedName>, ValidationFailure>,
         bound: &mut BTreeMap<String, T>,
     ) -> Result<Option<bool>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -607,16 +621,24 @@ pub(super) fn select_partial<T: Clone>(
             let (span, patterns) = match pattern {
                 Pattern::Wild(_) => return Ok(Some(true)),
                 Pattern::Name(name) if resolve(name.span, control)?.is_none() => {
-                    if bound.insert(name.name.clone(), value.clone()).is_some() { return Err("部分matchの束縛名が重複する".into()) }
+                    if bound.insert(name.name.clone(), value.clone()).is_some() {
+                        return Err("部分matchの束縛名が重複する".into());
+                    }
                     return Ok(Some(true));
                 }
                 Pattern::Name(name) => (name.span, &[][..]),
                 Pattern::Ctor { name, args, .. } => (name.span(), args.as_slice()),
             };
             let target = resolve(span, control)?.ok_or("部分matchのconstructor参照がない")?;
-            let Some((constructor, values)) = parts(value, control)? else { return Ok(None) };
-            if constructor != target { return Ok(Some(false)) }
-            if patterns.len() != values.len() { return Err("部分matchのconstructor arityが違う".into()) }
+            let Some((constructor, values)) = parts(value, control)? else {
+                return Ok(None);
+            };
+            if constructor != target {
+                return Ok(Some(false));
+            }
+            if patterns.len() != values.len() {
+                return Err("部分matchのconstructor arityが違う".into());
+            }
             let mut known = true;
             for (pattern, value) in patterns.iter().zip(&values) {
                 match walk(pattern, value, control, parts, resolve, bound)? {

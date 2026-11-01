@@ -78,11 +78,12 @@ impl Evaluator<'_, '_> {
                     .iter()
                     .find(|b| {
                         b.name == p.name
-                            && (self.environment.object_view_is_bound(p) || self
-                                .request
-                                .arguments
-                                .iter()
-                                .any(|a| a.name == format!("bind.{}", p.name)))
+                            && (self.environment.object_view_is_bound(p)
+                                || self
+                                    .request
+                                    .arguments
+                                    .iter()
+                                    .any(|a| a.name == format!("bind.{}", p.name)))
                     })
                     .cloned()
             })
@@ -121,7 +122,8 @@ impl Evaluator<'_, '_> {
             let seed = self.push(Node {
                 ty: NodeType::Expression(
                     self.environment
-                        .indexes.inputs
+                        .indexes
+                        .inputs
                         .law()
                         .expr_type(body)
                         .ok_or_else(|| Failure::Internal("補完元型がない".into()))?
@@ -322,7 +324,8 @@ impl Evaluator<'_, '_> {
                     crate::observed::environment::completion::value_comparison_reason(
                         self.request,
                         self.environment
-                            .indexes.inputs
+                            .indexes
+                            .inputs
                             .law()
                             .expr_type(body)
                             .ok_or_else(|| Failure::Internal("補完元型がない".into()))?,
@@ -412,7 +415,8 @@ impl Evaluator<'_, '_> {
             let evaluation = self.push_law_evaluation(Node {
                 ty: NodeType::Evaluation(
                     self.environment
-                        .indexes.inputs
+                        .indexes
+                        .inputs
                         .law()
                         .expr_type(body)
                         .unwrap()

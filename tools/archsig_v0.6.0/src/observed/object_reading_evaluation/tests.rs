@@ -3,7 +3,8 @@ use crate::{
     input::InputSources,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
-const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
+const DEFINITION: &[u8] =
+    include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 use crate::control::quiet;

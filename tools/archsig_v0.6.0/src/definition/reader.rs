@@ -133,13 +133,22 @@ impl<'a, E: InputError> Obj<'a, E> {
                         es,
                         k,
                         control,
-                        Some(error(Code::Syntax, input, p, format!("missing required field `{k}`"))),
+                        Some(error(
+                            Code::Syntax,
+                            input,
+                            p,
+                            format!("missing required field `{k}`"),
+                        )),
                     )?
                     .is_none()
                     {
-                        return Err(
-                            error(Code::Syntax, input, p, format!("missing required field `{k}`")).into()
-                        );
+                        return Err(error(
+                            Code::Syntax,
+                            input,
+                            p,
+                            format!("missing required field `{k}`"),
+                        )
+                        .into());
                     }
                     Ok(())
                 })?;
@@ -244,7 +253,13 @@ fn qname<E: InputError>(
             })?;
         }
         if parts.len() != count {
-            return Err(error(Code::Syntax, input, p, "invalid number of fully qualified name components").into());
+            return Err(error(
+                Code::Syntax,
+                input,
+                p,
+                "invalid number of fully qualified name components",
+            )
+            .into());
         }
         for part in parts {
             name::<E>(control, part, input, p)?;
@@ -298,7 +313,12 @@ pub(super) fn read<E: InputError>(
                 entries,
                 "format",
                 control,
-                Some(error(Code::Syntax, input, "", "missing required field `format`")),
+                Some(error(
+                    Code::Syntax,
+                    input,
+                    "",
+                    "missing required field `format`",
+                )),
             )?
             .ok_or_else(|| error(Code::Syntax, input, "", "missing required field `format`"))?,
             input,
@@ -347,7 +367,13 @@ pub(super) fn read<E: InputError>(
         )?;
         let (nodes, p) = o.array("vocabularies")?;
         if nodes.is_empty() {
-            return Err((error(Code::Syntax, input, &p, "at least one Vocabulary is required")).into());
+            return Err((error(
+                Code::Syntax,
+                input,
+                &p,
+                "at least one Vocabulary is required",
+            ))
+            .into());
         }
         let mut vs = Vec::new();
         let mut ds = Vec::new();
@@ -364,9 +390,21 @@ pub(super) fn read<E: InputError>(
                     entries,
                     "semantics",
                     control,
-                    Some(error(Code::Syntax, input, &vp, "missing required field `semantics`")),
+                    Some(error(
+                        Code::Syntax,
+                        input,
+                        &vp,
+                        "missing required field `semantics`",
+                    )),
                 )?
-                .ok_or_else(|| error(Code::Syntax, input, &vp, "missing required field `semantics`"))?;
+                .ok_or_else(|| {
+                    error(
+                        Code::Syntax,
+                        input,
+                        &vp,
+                        "missing required field `semantics`",
+                    )
+                })?;
                 let semantics = string(semantics_node, input, &pointer_push(&vp, "semantics"))?;
                 if semantics != SEMANTICS {
                     let mut e = error(
@@ -792,19 +830,26 @@ fn ty_inner<E: InputError>(
         ("Fp", 2) => {
             let v = string(&a[1], input, &child(1))?;
             if v.starts_with('0') || v.is_empty() {
-                return Err(
-                    error(Code::Syntax, input, &child(1), "expected a positive decimal integer string").into(),
-                );
+                return Err(error(
+                    Code::Syntax,
+                    input,
+                    &child(1),
+                    "expected a positive decimal integer string",
+                )
+                .into());
             }
             for b in v.bytes() {
                 step::<E, _>(control, |_| {
                     if b.is_ascii_digit() {
                         Ok(())
                     } else {
-                        Err(
-                            error(Code::Syntax, input, &child(1), "expected a positive decimal integer string")
-                                .into(),
+                        Err(error(
+                            Code::Syntax,
+                            input,
+                            &child(1),
+                            "expected a positive decimal integer string",
                         )
+                        .into())
                     }
                 })?;
             }

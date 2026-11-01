@@ -22,7 +22,11 @@ fn shape(
         .get(name)
         .ok_or_else(|| error(id, "head", "missing correspondence declaration"))?;
     let PrimitiveSignature::Correspondence { from, to, .. } = &d.signature else {
-        return Err(error(id, "head", "map requires a primitive correspondence declaration"));
+        return Err(error(
+            id,
+            "head",
+            "map requires a primitive correspondence declaration",
+        ));
     };
     Ok(MapProjection {
         declaration: name.into(),
@@ -49,13 +53,21 @@ pub(super) fn resolve(
     control: &mut Control,
 ) -> Result<Request, ResolveFailure> {
     let Selector::Declaration { name } = &raw.head else {
-        return Err(error(&raw.id, "head", "map head must be a correspondence declaration"));
+        return Err(error(
+            &raw.id,
+            "head",
+            "map head must be a correspondence declaration",
+        ));
     };
     let mut found = Vec::new();
     for (candidate, d) in law.definitions().declarations() {
         phase(control, Checkpoint::RequestBinding)?;
         if candidate == name
-            || (!name.contains('.') && law.resolved_names().get(candidate).is_some_and(|parts| parts.short() == name))
+            || (!name.contains('.')
+                && law
+                    .resolved_names()
+                    .get(candidate)
+                    .is_some_and(|parts| parts.short() == name))
         {
             found.push((candidate, d));
         }
@@ -88,7 +100,11 @@ pub(super) fn resolve(
         .get("on")
         .ok_or_else(|| error(&raw.id, "on", "map requires on"))?;
     if !matches!(on.value, Selector::Subject { .. } | Selector::Answer { .. }) {
-        return Err(error(&raw.id, "on", "on must be a correspondence instance Handle"));
+        return Err(error(
+            &raw.id,
+            "on",
+            "on must be a correspondence instance Handle",
+        ));
     }
     let mut dependencies = vec![];
     if let Selector::Answer { id, path } = &on.value {
@@ -102,7 +118,11 @@ pub(super) fn resolve(
         .ok_or_else(|| error(&raw.id, "reading", "map requires reading"))?
         .value
     else {
-        return Err(error(&raw.id, "reading", "specify a fully qualified reading name"));
+        return Err(error(
+            &raw.id,
+            "reading",
+            "specify a fully qualified reading name",
+        ));
     };
     let reading = reading.clone();
     args.entry("to_reading".into())
@@ -122,7 +142,11 @@ pub(super) fn resolve(
             origin: ArgumentOrigin::Defaulted,
         });
     let Selector::Declaration { name: to } = &args["to_reading"].value else {
-        return Err(error(&raw.id, "to_reading", "specify a fully qualified to_reading name"));
+        return Err(error(
+            &raw.id,
+            "to_reading",
+            "specify a fully qualified to_reading name",
+        ));
     };
     for (key, r, ty) in [
         ("reading", reading.as_str(), signature.source.as_str()),
@@ -215,7 +239,11 @@ pub(super) fn constraints(
         selector_type(law, map, requests, names, &on.value, control, (&r.id, "on"))?;
     let ty = Type::Ref(name.clone());
     if !projection::can_bind_controlled(&plan.ty, &ty, control).map_err(stopped)? {
-        return Err(error(&r.id, "on", "on type does not match the correspondence declaration"));
+        return Err(error(
+            &r.id,
+            "on",
+            "on type does not match the correspondence declaration",
+        ));
     }
     let dynamic = plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_));
     Ok(vec![BindingConstraint {

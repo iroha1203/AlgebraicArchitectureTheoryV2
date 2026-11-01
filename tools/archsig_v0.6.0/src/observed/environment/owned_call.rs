@@ -1,8 +1,8 @@
 //! Owned参照とcontainerのcall境界を元署名・実引数・原始owner事実から検査する。
-use crate::observed::environment::state::ScopedReplace;
 use super::super::term::affine::Value as PartialValue;
 use super::*;
 use crate::law::model::{Declaration, Signature};
+use crate::observed::environment::state::ScopedReplace;
 
 #[derive(Default)]
 pub(in crate::observed) struct Checks {
@@ -249,10 +249,16 @@ impl Environment<'_> {
         Ok(Self::owned_source_argument(
             &analysis.known_value,
             analysis.symbolic.as_deref(),
-            self.indexes.inputs
+            self.indexes
+                .inputs
                 .law()
                 .expr_type(
-                    *self.indexes.inputs.law().program().expressions
+                    *self
+                        .indexes
+                        .inputs
+                        .law()
+                        .program()
+                        .expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("部分引数の元式がない")?,
                 )
@@ -269,7 +275,12 @@ impl Environment<'_> {
         children: &[NodeRef],
     ) -> Result<Vec<super::super::result::Reason>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let kind = self.indexes.inputs.law().program().expressions
+        let kind = self
+            .indexes
+            .inputs
+            .law()
+            .program()
+            .expressions
             .get(&span)
             .map(|id| &self.indexes.inputs.law().exprs()[*id].kind);
         let mut required = vec![true; children.len()];
@@ -375,7 +386,8 @@ impl Environment<'_> {
             return Err("Owned callの参照型が元署名と違う".into());
         }
         let root = match &self
-            .indexes.inputs
+            .indexes
+            .inputs
             .law()
             .definitions()
             .declarations()
@@ -404,9 +416,11 @@ impl Environment<'_> {
         checks
             .scope
             .merge(&self.indexes.scope(subject_input, reading, None)?);
-        checks
-            .scope
-            .merge(&self.indexes.scope(self.indexes.subject(os, oi)?, reading, None)?);
+        checks.scope.merge(
+            &self
+                .indexes
+                .scope(self.indexes.subject(os, oi)?, reading, None)?,
+        );
         checks.support.extend([
             Fact {
                 snapshot: snapshot.clone(),
@@ -429,7 +443,8 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(actual) = self
-            .indexes.primitive_valuation
+            .indexes
+            .primitive_valuation
             .as_ref()
             .and_then(|values| values.get(&position))
         {
@@ -441,7 +456,9 @@ impl Environment<'_> {
             else {
                 return Err("候補ownerがRefでない".into());
             };
-            if actual_root != root || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root {
+            if actual_root != root
+                || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root
+            {
                 return Err("候補owner型が元署名と違う".into());
             }
             checks.scope.assignments = true;
@@ -474,7 +491,10 @@ impl Environment<'_> {
             atom,
             origin,
             ..
-        } = &self.indexes.field(&self.state, snapshot, subject, &field)?.slot
+        } = &self
+            .indexes
+            .field(&self.state, snapshot, subject, &field)?
+            .slot
         else {
             checks.scope.completions = true;
             let fact = Fact {
@@ -487,7 +507,8 @@ impl Environment<'_> {
                 .and_then(|values| values.get(&fact))
                 .cloned()
                 .or_else(|| {
-                    self.state.completion_values
+                    self.state
+                        .completion_values
                         .borrow()
                         .iter()
                         .find(|(f, _, _)| f == &fact)
@@ -502,7 +523,9 @@ impl Environment<'_> {
                 else {
                     return Err("補完ownerがRefでない".into());
                 };
-                if entity != root || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root {
+                if entity != root
+                    || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root
+                {
                     return Err("補完owner型が元署名と違う".into());
                 }
                 checks.scope.merge(&self.indexes.scope(
@@ -660,7 +683,8 @@ impl Environment<'_> {
             let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
-                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() =
+                        self.completion_values(graph, case)?;
                 }
                 #[cfg(test)]
                 data::observe_actual(span, graph.active, "owned_call_case", 0);
@@ -1137,7 +1161,8 @@ impl Environment<'_> {
             || node.arguments != expected
             || node.ty
                 != NodeType::Evaluation(
-                    self.indexes.inputs
+                    self.indexes
+                        .inputs
                         .law()
                         .expr_type(id)
                         .ok_or("Owned callの元型がない")?

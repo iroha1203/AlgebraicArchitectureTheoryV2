@@ -24,7 +24,14 @@ impl Environment<'_> {
         }
         let span = self.expression_span(graph, *own)?;
         let law = self.indexes.inputs.law();
-        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("Term証拠の元ASTがない")?;
+        let id = *self
+            .indexes
+            .inputs
+            .law()
+            .program()
+            .expressions
+            .get(&span)
+            .ok_or("Term証拠の元ASTがない")?;
         let ExprKind::Binary {
             op: BinOp::Eq | BinOp::Ne,
             lhs,

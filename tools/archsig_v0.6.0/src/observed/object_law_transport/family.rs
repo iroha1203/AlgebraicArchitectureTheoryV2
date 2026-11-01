@@ -1,7 +1,9 @@
 //! 有限Law parameterの全型域と既存family DAGの各行を接続する。
 use super::*;
 use crate::observed::{
-    data, finite, environment::numeric_parameters,
+    data,
+    environment::numeric_parameters,
+    finite,
     result::{NodeType, ValidationFailure},
     value_transport::{
         DeclarationValuePosition, FiniteTransportValue, FiniteValueTransport,
@@ -300,13 +302,28 @@ impl LawReadingFamily {
         c: &mut Control,
     ) -> Result<Vec<NodeRef>, ConstructionFailure> {
         if row.is_none() {
-            if self.uniform.as_ref().is_some_and(|r| r.application.value() == Some(false))
-                && e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
-                && let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() {
-                return Ok(g.answers.first().and_then(|a| a.outputs.get("evaluation"))
-                    .copied().into_iter().collect());
+            if self
+                .uniform
+                .as_ref()
+                .is_some_and(|r| r.application.value() == Some(false))
+                && e.instance()
+                    .parameters()
+                    .iter()
+                    .all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
+                && let ObjectEvaluationOutcome::Evaluated(g) = e.outcome()
+            {
+                return Ok(g
+                    .answers
+                    .first()
+                    .and_then(|a| a.outputs.get("evaluation"))
+                    .copied()
+                    .into_iter()
+                    .collect());
             }
-            return Ok(constant_numeric_family(e, c)?.map(|(root, _, _)| root).into_iter().collect());
+            return Ok(constant_numeric_family(e, c)?
+                .map(|(root, _, _)| root)
+                .into_iter()
+                .collect());
         }
         let (ObjectEvaluationOutcome::Evaluated(g), Some(row)) = (e.outcome(), row) else {
             return Ok(vec![]);
@@ -403,68 +420,121 @@ impl LawReadingFamily {
 /// 元評価器が全parameter上で正規化した、各対象でparameterに依存しない数値差。
 /// 全称Boolだけでは非定数関数の一様性を判断しない。
 pub(in crate::observed) fn constant_numeric_family(
-    e: &ObjectEvaluation, c: &mut Control,
+    e: &ObjectEvaluation,
+    c: &mut Control,
 ) -> Result<Option<(NodeRef, NodeRef, Scalar)>, ConstructionFailure> {
-    use crate::law::{ast::{BinOp, ExprKind}, model::Signature};
+    use crate::law::{
+        ast::{BinOp, ExprKind},
+        model::Signature,
+    };
     tick(c)?;
     if e.instance().parameters().is_empty()
-        || !e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty.erase()).is_some()) {
+        || !e
+            .instance()
+            .parameters()
+            .iter()
+            .all(|p| numeric_parameters::numeric_width(&p.ty.erase()).is_some())
+    {
         return Ok(None);
     }
-    let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else { return Ok(None) };
+    let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else {
+        return Ok(None);
+    };
     let law = g.prepared().inputs().law();
-    let Signature::Law { body, guard, .. } = &law.declarations()
-        .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
-    else { return Ok(None) };
-    let symbolic_constant = super::super::object_equation_presentation::parameter_constant_source_value(g.prepared().inputs(), e.instance(), c)?;
+    let Signature::Law { body, guard, .. } = &law
+        .declarations()
+        .get(&e.instance().declaration().name)
+        .ok_or_else(|| inconsistent("元数値族の宣言がない"))?
+        .signature
+    else {
+        return Ok(None);
+    };
+    let symbolic_constant =
+        super::super::object_equation_presentation::parameter_constant_source_value(
+            g.prepared().inputs(),
+            e.instance(),
+            c,
+        )?;
     if symbolic_constant.is_none() {
-    // 本文の共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
-    // 観測時の定数へ畳んで記号的な差と取り違えない。
-    let names = Arc::new(e.instance().parameters().iter().map(|p| p.name.clone()).collect::<std::collections::BTreeSet<_>>());
-    let mut pending = vec![(*body, names.clone())];
-    let mut helpers = std::collections::BTreeSet::new();
-    while let Some((id, names)) = pending.pop() {
-        tick(c)?;
-        match &law.exprs()[id].kind {
-            ExprKind::Int(_) | ExprKind::Bool(_) => {},
-            ExprKind::Dotted(path) if path.len() == 1 && names.contains(&path[0].name) => {},
-            ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push((*child, names)),
-            ExprKind::Binary { lhs, rhs, .. } => {
-                pending.push((*lhs, names.clone()));
-                pending.push((*rhs, names));
-            },
-            ExprKind::Let { name, value, body } => {
-                pending.push((*value, names.clone()));
-                let mut inner = (*names).clone();
-                inner.insert(name.name.clone());
-                pending.push((*body, Arc::new(inner)));
-            },
-            ExprKind::Call { callee, args } => {
-                let mut callee = *callee;
-                while let ExprKind::Group(inner) = law.exprs()[callee].kind {
-                    tick(c)?;
-                    callee = inner;
+        // 本文の共有は数値parameterと算術だけの式に限る。対象の量化・参照・fieldを
+        // 観測時の定数へ畳んで記号的な差と取り違えない。
+        let names = Arc::new(
+            e.instance()
+                .parameters()
+                .iter()
+                .map(|p| p.name.clone())
+                .collect::<std::collections::BTreeSet<_>>(),
+        );
+        let mut pending = vec![(*body, names.clone())];
+        let mut helpers = std::collections::BTreeSet::new();
+        while let Some((id, names)) = pending.pop() {
+            tick(c)?;
+            match &law.exprs()[id].kind {
+                ExprKind::Int(_) | ExprKind::Bool(_) => {}
+                ExprKind::Dotted(path) if path.len() == 1 && names.contains(&path[0].name) => {}
+                ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => {
+                    pending.push((*child, names))
                 }
-                if matches!(&law.exprs()[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat") {
-                    if args.len() != 2 || !args.iter().all(|arg| matches!(law.exprs()[*arg].kind, ExprKind::Int(_))) { return Ok(None); }
-                } else {
-                    let span = law.exprs()[callee].span;
-                    let target = law.infos().iter().flat_map(|info| &info.references).find_map(|(at, name)| (*at == span).then_some(name));
-                    let Some(target) = target else { return Ok(None) };
-                    let declaration = law.declarations().get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
-                    let Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
-                    if params.len() != args.len() || !params.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
-                        || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q | Type::Bool)) { return Ok(None); }
-                    pending.extend(args.iter().map(|arg| (*arg, names.clone())));
-                    if helpers.insert(target.clone()) {
-                        let parameters = params.iter().map(|p| p.name.clone()).collect();
-                        pending.push((*body, Arc::new(parameters)));
+                ExprKind::Binary { lhs, rhs, .. } => {
+                    pending.push((*lhs, names.clone()));
+                    pending.push((*rhs, names));
+                }
+                ExprKind::Let { name, value, body } => {
+                    pending.push((*value, names.clone()));
+                    let mut inner = (*names).clone();
+                    inner.insert(name.name.clone());
+                    pending.push((*body, Arc::new(inner)));
+                }
+                ExprKind::Call { callee, args } => {
+                    let mut callee = *callee;
+                    while let ExprKind::Group(inner) = law.exprs()[callee].kind {
+                        tick(c)?;
+                        callee = inner;
+                    }
+                    if matches!(&law.exprs()[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat")
+                    {
+                        if args.len() != 2
+                            || !args
+                                .iter()
+                                .all(|arg| matches!(law.exprs()[*arg].kind, ExprKind::Int(_)))
+                        {
+                            return Ok(None);
+                        }
+                    } else {
+                        let span = law.exprs()[callee].span;
+                        let target = law
+                            .infos()
+                            .iter()
+                            .flat_map(|info| &info.references)
+                            .find_map(|(at, name)| (*at == span).then_some(name));
+                        let Some(target) = target else {
+                            return Ok(None);
+                        };
+                        let declaration = law
+                            .declarations()
+                            .get(target)
+                            .ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
+                        let Signature::View { params, body, .. } = &declaration.signature else {
+                            return Ok(None);
+                        };
+                        if params.len() != args.len()
+                            || !params
+                                .iter()
+                                .all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
+                            || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q | Type::Bool))
+                        {
+                            return Ok(None);
+                        }
+                        pending.extend(args.iter().map(|arg| (*arg, names.clone())));
+                        if helpers.insert(target.clone()) {
+                            let parameters = params.iter().map(|p| p.name.clone()).collect();
+                            pending.push((*body, Arc::new(parameters)));
+                        }
                     }
                 }
-            },
-            _ => return Ok(None),
+                _ => return Ok(None),
+            }
         }
-    }
     }
     let mut expression = *body;
     loop {
@@ -475,22 +545,57 @@ pub(in crate::observed) fn constant_numeric_family(
             _ => return Ok(None),
         }
     }
-    let Some(root) = g.answers.first().and_then(|a| a.outputs.get("evaluation")).copied() else { return Ok(None) };
-    let node = g.nodes.get(root.0).ok_or_else(|| inconsistent("元数値族の評価がない"))?;
-    let Some(Payload::Evaluation { parts, applicability: "applicable" | "undetermined", .. }) = &node.payload else { return Ok(None) };
+    let Some(root) = g
+        .answers
+        .first()
+        .and_then(|a| a.outputs.get("evaluation"))
+        .copied()
+    else {
+        return Ok(None);
+    };
+    let node = g
+        .nodes
+        .get(root.0)
+        .ok_or_else(|| inconsistent("元数値族の評価がない"))?;
+    let Some(Payload::Evaluation {
+        parts,
+        applicability: "applicable" | "undetermined",
+        ..
+    }) = &node.payload
+    else {
+        return Ok(None);
+    };
     let part = match (guard, parts.as_slice()) {
         (None, [body]) => body,
         (Some(_), [_, body]) => body,
         _ => return Ok(None),
     };
-    let Some(residual) = part.residual else { return Ok(None) };
-    let Some(Payload::Evaluation { expression, value: Some(value), .. }) = g.nodes.get(residual.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
-    if !matches!(g.nodes.get(expression.0).and_then(|n| n.payload.as_ref()),
-        Some(Payload::ParameterizedTransform { operation: super::super::result::TransformOp::Difference, .. })) {
+    let Some(residual) = part.residual else {
+        return Ok(None);
+    };
+    let Some(Payload::Evaluation {
+        expression,
+        value: Some(value),
+        ..
+    }) = g.nodes.get(residual.0).and_then(|n| n.payload.as_ref())
+    else {
+        return Ok(None);
+    };
+    if !matches!(
+        g.nodes.get(expression.0).and_then(|n| n.payload.as_ref()),
+        Some(Payload::ParameterizedTransform {
+            operation: super::super::result::TransformOp::Difference,
+            ..
+        })
+    ) {
         return Ok(None);
     }
-    let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else { return Ok(None) };
-    if !matches!(value.ty(), Type::Z | Type::Q) { return Ok(None) }
+    let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else {
+        return Ok(None);
+    };
+    if !matches!(value.ty(), Type::Z | Type::Q) {
+        return Ok(None);
+    }
     let zero_body = guard.is_some()
         && matches!(value, Scalar::Z(n) | Scalar::Q(n, _) if n == &num_bigint::BigInt::from(0));
     // 全域で零と実評価した本文ではguardの真偽に依存しない。guardの支持・
@@ -515,7 +620,10 @@ pub(in crate::observed) fn constant_numeric_family(
             return Ok(None);
         }
     }
-    if symbolic_constant.as_ref().is_some_and(|constant| constant != value) {
+    if symbolic_constant
+        .as_ref()
+        .is_some_and(|constant| constant != value)
+    {
         return Err(inconsistent("元記号差と数値族の実残差が違う"));
     }
     Ok(Some((root, residual, value.clone())))
@@ -834,7 +942,10 @@ pub(in crate::observed) fn read_native_family(
         .map_err(ConstructionFailure::from)?;
     let value = reading(e, c)?;
     let inactive_numeric = value.application.value() == Some(false)
-        && e.instance().parameters().iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some());
+        && e.instance()
+            .parameters()
+            .iter()
+            .all(|p| numeric_parameters::numeric_width(&p.ty).is_some());
     if inactive_numeric || constant_numeric_family(e, c)?.is_some() {
         result.uniform = Some(value);
         result.complete = true;

@@ -172,25 +172,48 @@ mod notice_tests {
     use super::*;
     #[test]
     fn repeated_missing_uses_keep_distinct_targets_and_other_reasons() {
-        let reason = |subject: &str, field: &str, location: u64| Json::obj([
-            ("code", Json::str("missing_observation")),
-            ("missing", Json::Arr(vec![Json::obj([
-                ("subject", Json::str(subject)), ("field", Json::str(field)),
-            ])])),
-            ("location", Json::Nat(location)),
+        let reason = |subject: &str, field: &str, location: u64| {
+            Json::obj([
+                ("code", Json::str("missing_observation")),
+                (
+                    "missing",
+                    Json::Arr(vec![Json::obj([
+                        ("subject", Json::str(subject)),
+                        ("field", Json::str(field)),
+                    ])]),
+                ),
+                ("location", Json::Nat(location)),
+            ])
+        };
+        let other = Json::obj([
+            ("code", Json::str("condition_failed")),
+            ("location", Json::Nat(3)),
         ]);
-        let other = Json::obj([("code", Json::str("condition_failed")), ("location", Json::Nat(3))]);
-        let empty = Json::obj([("code", Json::str("missing_observation")), ("missing", Json::Arr(vec![])), ("location", Json::Nat(4))]);
-        let mut reasons = vec![reason("p", "x", 1), reason("p", "x", 2), reason("q", "x", 1), reason("p", "y", 1), other.clone(), empty.clone()];
+        let empty = Json::obj([
+            ("code", Json::str("missing_observation")),
+            ("missing", Json::Arr(vec![])),
+            ("location", Json::Nat(4)),
+        ]);
+        let mut reasons = vec![
+            reason("p", "x", 1),
+            reason("p", "x", 2),
+            reason("q", "x", 1),
+            reason("p", "y", 1),
+            other.clone(),
+            empty.clone(),
+        ];
         concise_reasons(&mut reasons);
         assert_eq!(reasons.len(), 5);
         assert_eq!(reasons[3], other);
         assert_eq!(reasons[4], empty);
-        let targets: Vec<_> = reasons[..3].iter().map(|reason| {
-            let Json::Obj(fields) = reason else { panic!() };
-            assert!(!fields.contains_key("location"));
-            fields["missing"].canonical()
-        }).collect();
+        let targets: Vec<_> = reasons[..3]
+            .iter()
+            .map(|reason| {
+                let Json::Obj(fields) = reason else { panic!() };
+                assert!(!fields.contains_key("location"));
+                fields["missing"].canonical()
+            })
+            .collect();
         assert_eq!(targets.iter().collect::<BTreeSet<_>>().len(), 3);
     }
 }
@@ -423,7 +446,10 @@ pub(super) fn compact(
         let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
         let mut children = BTreeSet::new();
         refs(&old[index], &mut children);
-        if matches!(native[index].ty, NodeType::Construction(super::super::construction_result::ConstructionType::Quotient)) {
+        if matches!(
+            native[index].ty,
+            NodeType::Construction(super::super::construction_result::ConstructionType::Quotient)
+        ) {
             quotient_maps(&old[index], native, &mut children, control, point)?;
         }
         for child in children {

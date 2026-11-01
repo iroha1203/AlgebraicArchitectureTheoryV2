@@ -9,8 +9,18 @@ use crate::{
 };
 
 fn observation_free_difference(source: &ParameterEquation) -> bool {
-    source.difference.constant.terms.iter().all(|term| term.variables.is_empty())
-        && source.difference.parameters.iter().all(|(_, coefficient)| coefficient.terms.iter().all(|term| term.variables.is_empty()))
+    source
+        .difference
+        .constant
+        .terms
+        .iter()
+        .all(|term| term.variables.is_empty())
+        && source.difference.parameters.iter().all(|(_, coefficient)| {
+            coefficient
+                .terms
+                .iter()
+                .all(|term| term.variables.is_empty())
+        })
 }
 
 fn difference(
@@ -61,10 +71,24 @@ pub(super) fn sources(
             tick(c)?;
             match &parameter.ty {
                 ty if numeric_parameters::numeric_width(ty).is_some() => (),
-                Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) | Type::Set(_) => {
-                    if !super::super::finite::completion_supported(&parameter.ty, inputs.law(), c)? { return Ok(None); }
-                    let values = super::super::finite::values(&parameter.ty, inputs.law(), c,
-                        &mut |_| Err("有限値型に参照rosterはない".into()), &mut |_| {})?;
+                Type::Unit
+                | Type::Bool
+                | Type::Fp(_)
+                | Type::Tuple(_)
+                | Type::Option(_)
+                | Type::Data(_)
+                | Type::Set(_) => {
+                    if !super::super::finite::completion_supported(&parameter.ty, inputs.law(), c)?
+                    {
+                        return Ok(None);
+                    }
+                    let values = super::super::finite::values(
+                        &parameter.ty,
+                        inputs.law(),
+                        c,
+                        &mut |_| Err("有限値型に参照rosterはない".into()),
+                        &mut |_| {},
+                    )?;
                     let mut next = vec![];
                     for case in cases {
                         for value in &values.values {
@@ -133,21 +157,14 @@ pub(super) fn plans(
     )?;
     let bases: Vec<_> = shared
         .iter()
-        .map(|b| {
-            Ok((
-                b.ty.clone(),
-                b.scalar,
-                b.ring,
-                b.domain,
-                b.evaluation,
-            ))
-        })
+        .map(|b| Ok((b.ty.clone(), b.scalar, b.ring, b.domain, b.evaluation)))
         .collect::<Result<_, ValidationFailure>>()?;
     let mut result = vec![];
     let mut indicators = vec![];
     for object in 0..a.readings().objects().len() {
         tick(c)?;
-        let originals = super::sources::symbolic_bound(inputs, a.readings(), equations, parts, base, c)?;
+        let originals =
+            super::sources::symbolic_bound(inputs, a.readings(), equations, parts, base, c)?;
         let mut out = Diagram {
             unavailable: None,
             context: None,
@@ -200,8 +217,15 @@ pub(super) fn plans(
                     Some(&shared),
                     c,
                 )?
-            } else if source.difference.parameters.iter().any(|(_, coefficient)| coefficient.terms.iter().any(|term| !term.variables.is_empty())) {
-                parameter_polynomial(inputs, original, source, *ring, &ty, &shared, parts, base, c)?
+            } else if source.difference.parameters.iter().any(|(_, coefficient)| {
+                coefficient
+                    .terms
+                    .iter()
+                    .any(|term| !term.variables.is_empty())
+            }) {
+                parameter_polynomial(
+                    inputs, original, source, *ring, &ty, &shared, parts, base, c,
+                )?
             } else if !observation_free_difference(source) {
                 // 差Dの全引数を零へ同時代入したD(0)は観測多項式。
                 // D-D(0)へ定数項を戻して、元式由来の引数係数を作る。
@@ -209,22 +233,34 @@ pub(super) fn plans(
                 for (name, parameter_type) in &original.parameters {
                     let zero = super::super::numeric::zero(parameter_type, c)?;
                     let value = push(parts, base, Part::Scalar(zero), c)?;
-                    bindings.push(Binding { name: name.clone(), ty: parameter_type.clone(), value });
+                    bindings.push(Binding {
+                        name: name.clone(),
+                        ty: parameter_type.clone(),
+                        value,
+                    });
                 }
-                let at_zero = push(parts, base, Part::Transform {
-                    quantifiers: original.quantifiers.clone(),
-                    operation: Transform::Substitute,
-                    parameters: vec![],
-                    ty: ty.clone(),
-                    operands: vec![expression],
-                    bindings,
-                    position: None,
-                }, c)?;
-                let mut coefficient = difference(parts, base, original, &ty, expression, at_zero, c)?;
+                let at_zero = push(
+                    parts,
+                    base,
+                    Part::Transform {
+                        quantifiers: original.quantifiers.clone(),
+                        operation: Transform::Substitute,
+                        parameters: vec![],
+                        ty: ty.clone(),
+                        operands: vec![expression],
+                        bindings,
+                        position: None,
+                    },
+                    c,
+                )?;
+                let mut coefficient =
+                    difference(parts, base, original, &ty, expression, at_zero, c)?;
                 let mut field = source.difference.constant.clone();
                 if let Some(term) = field.terms.iter().find(|term| term.variables.is_empty()) {
                     let negative = super::super::numeric::unary(
-                        crate::law::ast::UnOp::Neg, term.coefficient.scalar(), c,
+                        crate::law::ast::UnOp::Neg,
+                        term.coefficient.scalar(),
+                        c,
                     )?;
                     let constant = push(parts, base, Part::Scalar(negative), c)?;
                     coefficient = difference(parts, base, original, &ty, coefficient, constant, c)?;
@@ -309,20 +345,30 @@ pub(super) fn plans(
                     c,
                 )?)
             };
-            let residual = if outside || source.guard.is_false() || source.guard.zero_at(object,c)? {
-                let zero = EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
-                    .map_err(|e| construction_failure(&e))?;
-                Some(polynomial(parts, base, &zero, *ring, &ty, variables, c)?)
-            } else if source.guard.pending_at(object).is_some() {
-                None
-            } else if source.guard.dynamic() {
-                match epsilon {
-                    Some(epsilon) => Some(guarded_residual(parts, base, original, epsilon, &ty, &mut indicators, c)?),
-                    None => None,
-                }
-            } else {
-                epsilon
-            };
+            let residual =
+                if outside || source.guard.is_false() || source.guard.zero_at(object, c)? {
+                    let zero =
+                        EquationPolynomial::constant(super::super::numeric::zero(&ty, c)?, c)
+                            .map_err(|e| construction_failure(&e))?;
+                    Some(polynomial(parts, base, &zero, *ring, &ty, variables, c)?)
+                } else if source.guard.pending_at(object).is_some() {
+                    None
+                } else if source.guard.dynamic() {
+                    match epsilon {
+                        Some(epsilon) => Some(guarded_residual(
+                            parts,
+                            base,
+                            original,
+                            epsilon,
+                            &ty,
+                            &mut indicators,
+                            c,
+                        )?),
+                        None => None,
+                    }
+                } else {
+                    epsilon
+                };
             let witness = push(
                 parts,
                 base,
@@ -404,8 +450,17 @@ pub(super) fn plans(
             .flat_map(|b| b.variables.iter().map(|v| v.field.clone()))
             .collect::<Vec<_>>();
         for (_, source) in equations {
-            positions.extend(source.guard.support_at(object).iter().filter(|f| f.field.is_some()).cloned());
-            if let Some(pending) = source.guard.pending_at(object) { positions.extend(pending.missing.iter().cloned()); }
+            positions.extend(
+                source
+                    .guard
+                    .support_at(object)
+                    .iter()
+                    .filter(|f| f.field.is_some())
+                    .cloned(),
+            );
+            if let Some(pending) = source.guard.pending_at(object) {
+                positions.extend(pending.missing.iter().cloned());
+            }
         }
         positions.sort();
         positions.dedup();
@@ -486,11 +541,22 @@ pub(super) fn plans(
                 .iter()
                 .filter(|q| q.ring == Some(*ring))
                 .collect::<Vec<_>>();
-            let mut missing_positions = coordinates.iter()
-                .filter(|q| !matches!(q.guard, EquationGuard::AlwaysFalse | EquationGuard::OutsideObject) && q.epsilon.is_none())
+            let mut missing_positions = coordinates
+                .iter()
+                .filter(|q| {
+                    !matches!(
+                        q.guard,
+                        EquationGuard::AlwaysFalse | EquationGuard::OutsideObject
+                    ) && q.epsilon.is_none()
+                })
                 .flat_map(|q| equations[q.occurrence].1.ring.symbols.iter())
                 .filter(|s| s.value.is_none())
-                .map(|s| Fact { snapshot: s.slot.snapshot.clone(), subject: s.slot.subject.clone(), field: Some(s.slot.field.clone()), atom: None })
+                .map(|s| Fact {
+                    snapshot: s.slot.snapshot.clone(),
+                    subject: s.slot.subject.clone(),
+                    field: Some(s.slot.field.clone()),
+                    atom: None,
+                })
                 .collect::<Vec<_>>();
             for q in &coordinates {
                 if let Some(pending) = equations[q.occurrence].1.guard.pending_at(object) {
@@ -499,9 +565,16 @@ pub(super) fn plans(
             }
             missing_positions.sort();
             missing_positions.dedup();
-            let mut omissions = dependencies.missing_reasons(inputs, &missing_positions,
-                &out.originals.iter().flat_map(|o| std::iter::once(o.body).chain(o.guard)).collect::<Vec<_>>(),
-                Witness::Architecture(a.clone()).request(), c)?;
+            let mut omissions = dependencies.missing_reasons(
+                inputs,
+                &missing_positions,
+                &out.originals
+                    .iter()
+                    .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+                    .collect::<Vec<_>>(),
+                Witness::Architecture(a.clone()).request(),
+                c,
+            )?;
             let request_witness = Witness::Architecture(a.clone());
             let request = request_witness.request();
             for q in &coordinates {
@@ -571,13 +644,37 @@ pub(super) fn plans(
 }
 
 fn parameter_polynomial(
-    inputs: &CheckedInputs, original: &Original, source: &ParameterEquation,
-    ring: NodeRef, ty: &Type, shared: &[family::Basis], parts: &mut Vec<Part>, base: usize, c: &mut Control,
+    inputs: &CheckedInputs,
+    original: &Original,
+    source: &ParameterEquation,
+    ring: NodeRef,
+    ty: &Type,
+    shared: &[family::Basis],
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    let constant = family::polynomial(parts, base, &source.difference.constant, ring, ty, &source.ring, Some(shared), c)?;
-    let Part::Polynomial { terms, .. } = &parts[constant.0 - base] else { return Err("引数族の定数項が多項式でない".into()) };
+    let constant = family::polynomial(
+        parts,
+        base,
+        &source.difference.constant,
+        ring,
+        ty,
+        &source.ring,
+        Some(shared),
+        c,
+    )?;
+    let Part::Polynomial { terms, .. } = &parts[constant.0 - base] else {
+        return Err("引数族の定数項が多項式でない".into());
+    };
     let mut result = terms.clone();
-    let Part::Source { location: Location::Law { span }, .. } = &parts[original.body.0 - base] else { return Err("引数族の元bodyがない".into()) };
+    let Part::Source {
+        location: Location::Law { span },
+        ..
+    } = &parts[original.body.0 - base]
+    else {
+        return Err("引数族の元bodyがない".into());
+    };
     let span = *span;
     for (parameter, coefficient) in &source.difference.parameters {
         tick(c)?;
@@ -585,23 +682,75 @@ fn parameter_polynomial(
             inputs.law().expr_type(*id) == Some(ty) && expression.span.0 >= span.0 && expression.span.1 <= span.1 &&
                 matches!(&expression.kind, crate::law::ast::ExprKind::Dotted(names) if names.len() == 1 && names[0].name == parameter.name)
         }).ok_or("引数族の元parameter参照がない")?;
-        let argument = push(parts, base, Part::Source { quantifiers: original.quantifiers.clone(), instance: original.instance, row: original.row,
-            expression, location: Location::Law { span: node.span }, ty: ty.clone(), parameters: original.parameters.clone(), bindings: original.bindings.clone() }, c)?;
-        let polynomial = family::polynomial(parts, base, coefficient, ring, ty, &source.ring, Some(shared), c)?;
-        let Part::Polynomial { terms, .. } = &parts[polynomial.0 - base] else { return Err("引数係数が多項式でない".into()) };
+        let argument = push(
+            parts,
+            base,
+            Part::Source {
+                quantifiers: original.quantifiers.clone(),
+                instance: original.instance,
+                row: original.row,
+                expression,
+                location: Location::Law { span: node.span },
+                ty: ty.clone(),
+                parameters: original.parameters.clone(),
+                bindings: original.bindings.clone(),
+            },
+            c,
+        )?;
+        let polynomial = family::polynomial(
+            parts,
+            base,
+            coefficient,
+            ring,
+            ty,
+            &source.ring,
+            Some(shared),
+            c,
+        )?;
+        let Part::Polynomial { terms, .. } = &parts[polynomial.0 - base] else {
+            return Err("引数係数が多項式でない".into());
+        };
         for (scalar, powers) in terms.clone() {
-            let product = push(parts, base, Part::Transform { quantifiers: original.quantifiers.clone(), operation: Transform::Multiply,
-                parameters: original.parameters.clone(), ty: ty.clone(), operands: vec![argument, scalar], bindings: vec![], position: None }, c)?;
+            let product = push(
+                parts,
+                base,
+                Part::Transform {
+                    quantifiers: original.quantifiers.clone(),
+                    operation: Transform::Multiply,
+                    parameters: original.parameters.clone(),
+                    ty: ty.clone(),
+                    operands: vec![argument, scalar],
+                    bindings: vec![],
+                    position: None,
+                },
+                c,
+            )?;
             // 同じ単項式の係数は差を用いて正確に加える。
             if let Some((previous, _)) = result.iter_mut().find(|(_, old)| old == &powers) {
-                let zero = push(parts, base, Part::Scalar(super::super::numeric::zero(ty, c)?), c)?;
+                let zero = push(
+                    parts,
+                    base,
+                    Part::Scalar(super::super::numeric::zero(ty, c)?),
+                    c,
+                )?;
                 let negative = difference(parts, base, original, ty, zero, product, c)?;
                 *previous = difference(parts, base, original, ty, *previous, negative, c)?;
-            } else { result.push((product, powers)); }
+            } else {
+                result.push((product, powers));
+            }
         }
     }
     result.sort_by(|a, b| a.1.cmp(&b.1));
-    push(parts, base, Part::Polynomial { ring, parameters: original.parameters.clone(), terms: result }, c)
+    push(
+        parts,
+        base,
+        Part::Polynomial {
+            ring,
+            parameters: original.parameters.clone(),
+            terms: result,
+        },
+        c,
+    )
 }
 
 // Bool全域の型付き写像 false→0,true→1 を元guardへ後合成し、εへ掛ける。

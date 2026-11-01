@@ -2,8 +2,16 @@
 use super::*;
 use crate::observed::public_compare::relation_sources;
 impl Environment<'_> {
-    pub(in crate::observed) fn recheck_relation_comparison(&self, graph: &Graph, witness: &crate::observed::public_compare::CompareWitness) -> Result<(), ValidationFailure> {
-        crate::observed::public_compare::relations::recheck(graph, witness, &mut self.control.clone())
+    pub(in crate::observed) fn recheck_relation_comparison(
+        &self,
+        graph: &Graph,
+        witness: &crate::observed::public_compare::CompareWitness,
+    ) -> Result<(), ValidationFailure> {
+        crate::observed::public_compare::relations::recheck(
+            graph,
+            witness,
+            &mut self.control.clone(),
+        )
     }
 
     pub(in crate::observed) fn recheck_relation_source(
@@ -16,7 +24,8 @@ impl Environment<'_> {
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         if self
-            .results.verified::<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>()
             .iter()
             .any(|known| std::sync::Arc::ptr_eq(known, family))
         {
@@ -35,8 +44,14 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<Option<String>, ValidationFailure> {
-        if let Some(declaration)=crate::observed::object_reading_evaluation::declaration(graph,index)? { return Ok(Some(declaration)); }
-        if let Some(declaration)=crate::observed::law_evaluation::declaration(graph,index)? { return Ok(Some(declaration)); }
+        if let Some(declaration) =
+            crate::observed::object_reading_evaluation::declaration(graph, index)?
+        {
+            return Ok(Some(declaration));
+        }
+        if let Some(declaration) = crate::observed::law_evaluation::declaration(graph, index)? {
+            return Ok(Some(declaration));
+        }
         relation_sources::instance_declaration(graph, index)
     }
     pub(in crate::observed::environment) fn relation_source_inputs(

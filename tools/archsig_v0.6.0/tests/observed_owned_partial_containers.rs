@@ -147,16 +147,25 @@ fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
     }
     assert!(seen.len() >= 3);
     let law = r.prepared().inputs().law();
-    let declared_parameters: std::collections::BTreeSet<_> = law.infos().iter()
+    let declared_parameters: std::collections::BTreeSet<_> = law
+        .infos()
+        .iter()
         .flat_map(|info| &info.parameters)
-        .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical())).collect();
+        .map(|(name, ty)| (Json::str(name).canonical(), ty.erase().wire().canonical()))
+        .collect();
     let mut axes = std::collections::BTreeSet::new();
     for n in arr(get(&w, "nodes")) {
         if get(n, "type") == &Json::str("Expression") {
             if let Json::Obj(v) = get(n, "value") {
                 if let Some(Json::Arr(ps)) = v.get("parameters") {
                     for p in ps {
-                        assert!(declared_parameters.contains(&(get(p, "name").canonical(), get(p, "type").canonical())), "parameter: {p:?}; declared: {declared_parameters:?}");
+                        assert!(
+                            declared_parameters.contains(&(
+                                get(p, "name").canonical(),
+                                get(p, "type").canonical()
+                            )),
+                            "parameter: {p:?}; declared: {declared_parameters:?}"
+                        );
                         if [Json::str("Z"), Json::str("Q")].contains(get(p, "type")) {
                             axes.insert(get(p, "type").canonical());
                         }

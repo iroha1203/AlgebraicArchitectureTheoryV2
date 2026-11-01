@@ -64,7 +64,11 @@ impl Data {
         self.part().ty.clone()
     }
     pub(super) fn scope_domain_type(&self) -> Option<&crate::types::Type> {
-        if self.part().ty == NodeType::Domain { self.part().domain_type.as_ref() } else { None }
+        if self.part().ty == NodeType::Domain {
+            self.part().domain_type.as_ref()
+        } else {
+            None
+        }
     }
     pub(super) fn construction(&self) -> &'static str {
         self.part().construction
@@ -177,7 +181,14 @@ pub(super) fn extend(
     configuration: Answer,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, configuration, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        prepared,
+        env,
+        g,
+        request,
+        configuration,
+        c,
+    ))
 }
 
 fn compute(
@@ -193,7 +204,15 @@ fn compute(
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     env.validation_graph_session(g, || {
         compute_inner(
-            env, g, witness, configuration, algebras, pending, base, request, c,
+            env,
+            g,
+            witness,
+            configuration,
+            algebras,
+            pending,
+            base,
+            request,
+            c,
         )
     })
 }
@@ -255,7 +274,8 @@ fn compute_inner(
             let D::Build(data) = &value.data else {
                 return Err("端点buildの命題が別種".into());
             };
-            if data.plan().architecture.reference != expected || data.answer().claim != Some(claim) {
+            if data.plan().architecture.reference != expected || data.answer().claim != Some(claim)
+            {
                 return Err("端点buildの元Architectureまたは命題が違う".into());
             }
             env.recheck_build(g, value, claim.0)?;
@@ -283,11 +303,12 @@ fn compute_inner(
         declaration_evidence.dedup();
     }
     if preserved && pending.is_none() {
-        if declarations
-            .candidates()
-            .iter()
-            .any(|d| !matches!(d.source().kind, "law" | "view" | "local" | "change" | "relation"))
-        {
+        if declarations.candidates().iter().any(|d| {
+            !matches!(
+                d.source().kind,
+                "law" | "view" | "local" | "change" | "relation"
+            )
+        }) {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
         let [left, right] = algebras.ok_or("ObjectAlgebra mapの端点がない")?;
@@ -485,7 +506,14 @@ fn compute_inner(
                     .iter()
                     .map(|a| (&a.source, &a.target))
                     .chain(implicit.iter().map(|(s, t)| (s, t)))
-                    .filter(|(s, _)| inputs.law().resolved_names().get(s.as_str()).and_then(|name| name.owner()) == Some(source.as_str()))
+                    .filter(|(s, _)| {
+                        inputs
+                            .law()
+                            .resolved_names()
+                            .get(s.as_str())
+                            .and_then(|name| name.owner())
+                            == Some(source.as_str())
+                    })
                     .map(|(s, t)| Json::Arr(vec![Json::str(s), Json::str(t)]))
                     .collect::<Vec<_>>();
                 fields.sort_by_key(Json::canonical);
@@ -531,7 +559,13 @@ fn compute_inner(
                 )?);
             }
             let views = super::object_view_map::retain(
-                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], request, c,
+                env,
+                &mut b,
+                &origin.shared_inputs(),
+                &declarations,
+                [a, z],
+                request,
+                c,
             )?;
             preserved &= views.preserved;
             let view_pending = views.pending;
@@ -542,18 +576,31 @@ fn compute_inner(
             dependencies.extend(views.conditions);
             dependencies.extend(invariant_maps.iter().copied());
             if views.preserved && view_pending.is_empty() {
-                signature = Some(b.push(
-                    NodeType::Construction(T::SignatureMap),
-                    "signature_map",
-                    Json::obj([("axes", Json::Arr(views.axes))]),
-                    signature_dependencies.into_iter().chain([left, right]).collect(),
-                    None,
-                    None,
-                )?);
+                signature = Some(
+                    b.push(
+                        NodeType::Construction(T::SignatureMap),
+                        "signature_map",
+                        Json::obj([("axes", Json::Arr(views.axes))]),
+                        signature_dependencies
+                            .into_iter()
+                            .chain([left, right])
+                            .collect(),
+                        None,
+                        None,
+                    )?,
+                );
             }
             dependencies.extend(equation_map);
             dependencies.extend(signature);
-            let transported = declaration_transport::retain(env, &mut b, &inputs, &declarations, &[left,right], request, c)?;
+            let transported = declaration_transport::retain(
+                env,
+                &mut b,
+                &inputs,
+                &declarations,
+                &[left, right],
+                request,
+                c,
+            )?;
             dependencies.extend(transported.failed_arguments);
             declaration_transports = transported.transports;
             declaration_status = transported.status;
@@ -587,7 +634,11 @@ fn compute_inner(
             declaration_evidence.extend(view_evidence);
             dependencies.extend(declaration_transports.iter().copied());
             dependencies.extend(declaration_evidence.iter().copied());
-            dependencies.extend(declaration_reasons.iter().flat_map(|r| r.dependencies.iter().copied()));
+            dependencies.extend(
+                declaration_reasons
+                    .iter()
+                    .flat_map(|r| r.dependencies.iter().copied()),
+            );
         }
     }
     let status = if preserved {
@@ -632,9 +683,15 @@ fn compute_inner(
     }
     let part = &mut b.parts[claim.0 - base];
     part.reasons = reasons.clone();
-    part.judgment.as_mut().ok_or("ObjectAlgebra mapの判断がない")?.reasons = reasons.clone();
+    part.judgment
+        .as_mut()
+        .ok_or("ObjectAlgebra mapの判断がない")?
+        .reasons = reasons.clone();
     part.evidence = declaration_evidence.clone();
-    part.judgment.as_mut().ok_or("ObjectAlgebra mapの判断がない")?.evidence = declaration_evidence.clone();
+    part.judgment
+        .as_mut()
+        .ok_or("ObjectAlgebra mapの判断がない")?
+        .evidence = declaration_evidence.clone();
     outputs.insert("proposition".into(), claim);
     if status == Decision::Established {
         let [left, right] = algebras.ok_or("構成済みalgebraがない")?;
@@ -659,7 +716,10 @@ fn compute_inner(
                     Json::Arr(invariant_maps.iter().map(|r| r.wire()).collect()),
                 ),
                 ("signature", signature.ok_or("SignatureMapがない")?.wire()),
-                ("transports", Json::Arr(declaration_transports.iter().map(|r|r.wire()).collect())),
+                (
+                    "transports",
+                    Json::Arr(declaration_transports.iter().map(|r| r.wire()).collect()),
+                ),
             ]),
             dependencies,
             None,

@@ -107,9 +107,9 @@ impl<'a, E: InputError> Obj<'a, E> {
             for r in required {
                 step::<E, _>(control, |control| {
                     field_map::<E, _>(entries, r, control, |found| {
-                        found
-                            .map(|_| ())
-                            .ok_or_else(|| syntax(pointer, format!("missing required field `{r}`")).into())
+                        found.map(|_| ()).ok_or_else(|| {
+                            syntax(pointer, format!("missing required field `{r}`")).into()
+                        })
                     })
                 })?;
             }
@@ -403,11 +403,17 @@ fn read_document_inner<'a, E: InputError>(
             Some(&|| syntax(&format!("{pointer}/namespace"), "namespace must be a name")),
         )?;
         if crate::names::is_reserved(&namespace) {
-            return Err((syntax(&format!("{pointer}/namespace"), "namespace must be a name")).into());
+            return Err(
+                (syntax(&format!("{pointer}/namespace"), "namespace must be a name")).into(),
+            );
         }
         let version = o.string("version")?;
         if version.is_empty() {
-            return Err((syntax(&format!("{pointer}/version"), "version must be a nonempty string")).into());
+            return Err((syntax(
+                &format!("{pointer}/version"),
+                "version must be a nonempty string",
+            ))
+            .into());
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
@@ -504,7 +510,9 @@ fn read_document_inner<'a, E: InputError>(
         };
         let method = o.string("method")?;
         if method.is_empty() {
-            return Err((syntax(&format!("{p}/method"), "method must be a nonempty string")).into());
+            return Err(
+                (syntax(&format!("{p}/method"), "method must be a nonempty string")).into(),
+            );
         }
         let note = match o.get("note")? {
             Some((v, np)) => Some(as_string(v, &np)?),
@@ -517,9 +525,11 @@ fn read_document_inner<'a, E: InputError>(
             locations.push(read_location::<E>(l, &format!("{lptr}/{j}"), control)?);
         }
         if mode == Mode::Observed && locations.is_empty() {
-            return Err(
-                (syntax(&format!("{p}/locations"), "observed requires at least one location")).into(),
-            );
+            return Err((syntax(
+                &format!("{p}/locations"),
+                "observed requires at least one location",
+            ))
+            .into());
         }
         if mode != Mode::Observed
             && locations.is_empty()

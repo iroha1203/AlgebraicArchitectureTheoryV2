@@ -35,7 +35,11 @@ fn transport(
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("view保存cacheの元入力が違う".into());
     }
-    for e in env.results.verified::<crate::observed::object_view_map::KernelCacheEntry>().iter() {
+    for e in env
+        .results
+        .verified::<crate::observed::object_view_map::KernelCacheEntry>()
+        .iter()
+    {
         tick(c)?;
         if e.object == object && e.instance == instance && e.declarations == *d {
             return Ok(e.result.clone());
@@ -50,11 +54,11 @@ fn transport(
             })?,
     );
     env.results.remember(KernelCacheEntry {
-            declarations: d.clone(),
-            object,
-            instance,
-            result: result.clone(),
-        });
+        declarations: d.clone(),
+        object,
+        instance,
+        result: result.clone(),
+    });
     Ok(result)
 }
 pub(super) struct Output {
@@ -95,9 +99,16 @@ pub(super) fn counterexample(
     let mut values = vec![];
     for (ty, value) in [(source, &example.left), (target, &example.right)] {
         let value = if optional {
-            let Type::Option(element) = ty else { return Err("数値反例の読取り型がOptionでない".into()) };
-            Scalar::Option { element: (**element).clone(), value: Some(Box::new(value.clone())) }
-        } else { value.clone() };
+            let Type::Option(element) = ty else {
+                return Err("数値反例の読取り型がOptionでない".into());
+            };
+            Scalar::Option {
+                element: (**element).clone(),
+                value: Some(Box::new(value.clone())),
+            }
+        } else {
+            value.clone()
+        };
         let r = b.push(
             NodeType::Value(ty.clone()),
             "binding",
@@ -193,7 +204,11 @@ fn supported_parameter(
             || super::finite::supported(ty, inputs.law(), c)?,
     )
 }
-pub(super) fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
+pub(super) fn quantify_parameters(
+    b: &mut Builder<'_>,
+    r: NodeRef,
+    parameters: &[crate::law::model::Param],
+) {
     let p = &mut b.parts[r.0 - b.base];
     let mut quantifiers = vec![];
     for parameter in parameters {
@@ -285,10 +300,10 @@ fn finite_action(
         let transport =
             crate::construction::maps::reference_type_transport(inputs, declarations, &entity, c)
                 .map_err(|e| {
-                    c.stop_reason()
-                        .map(ValidationFailure::Stop)
-                        .unwrap_or_else(|| format!("有限view参照型の全域検査: {e:?}").into())
-                })?;
+                c.stop_reason()
+                    .map(ValidationFailure::Stop)
+                    .unwrap_or_else(|| format!("有限view参照型の全域検査: {e:?}").into())
+            })?;
         if transport.bijection().is_none() {
             return Ok(None);
         }
@@ -656,13 +671,23 @@ pub(super) fn retain(
                             &instance.declaration().name
                         };
                         let declaration = &inputs.law().declarations()[name];
-                        let crate::law::model::Signature::View { body, params, returns } = &declaration.signature else {
+                        let crate::law::model::Signature::View {
+                            body,
+                            params,
+                            returns,
+                        } = &declaration.signature
+                        else {
                             return Err("元viewのbodyがない".into());
                         };
                         let mut reason = pending("affine_numeric_view_transport", missing);
-                        if let ReasonKind::UnsupportedAlgorithm { operand_types, .. } = &mut reason.kind {
-                            *operand_types = params.iter().map(|p| p.ty.clone())
-                                .chain(std::iter::once(returns.clone())).collect();
+                        if let ReasonKind::UnsupportedAlgorithm { operand_types, .. } =
+                            &mut reason.kind
+                        {
+                            *operand_types = params
+                                .iter()
+                                .map(|p| p.ty.clone())
+                                .chain(std::iter::once(returns.clone()))
+                                .collect();
                         }
                         reason.location = Some(crate::issue::Location::Law {
                             span: inputs.law().exprs()[*body].span,

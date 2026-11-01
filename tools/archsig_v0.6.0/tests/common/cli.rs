@@ -153,7 +153,10 @@ pub fn run_binary(dir: &Path, args: &[&str]) -> BinaryRun {
 pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -> BinaryRun {
     let captured = watchdog::output(bin().current_dir(dir).args(args), deadline)
         .expect("CLIテストの子プロセスを実行");
-    assert!(!captured.timed_out, "CLIテストの子プロセスが独立監視時間{deadline:?}を超過");
+    assert!(
+        !captured.timed_out,
+        "CLIテストの子プロセスが独立監視時間{deadline:?}を超過"
+    );
     let out = captured.output;
     let stdout = String::from_utf8(out.stdout).unwrap();
     assert_eq!(stdout.matches('\n').count(), 1, "stdout は一行: {stdout:?}");
@@ -295,7 +298,11 @@ pub fn notified(_dir: &Path, r: &impl Executed, status: &str, code: i32) -> JNod
     parse(r.stdout.trim_end().as_bytes()).unwrap()
 }
 pub fn warnings(result: &JNode) -> &[JNode] {
-    if has(result, "warnings") { arr(get(result, "warnings")) } else { &[] }
+    if has(result, "warnings") {
+        arr(get(result, "warnings"))
+    } else {
+        &[]
+    }
 }
 
 /// 導出の検査は内部APIで行い、利用者用の保存形式に証明データを要求しない。
@@ -305,8 +312,15 @@ pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
         std::fs::read(dir.join("l.law")).unwrap(),
         std::fs::read(dir.join("a.json")).unwrap(),
     );
-    let asks: Vec<_> = arr(get(saved, "requests")).iter().map(|r| s(get(r,"text"))).collect();
-    let result = archsig::observed::evaluate_observed_bytes(sources, &asks,
-        &mut archsig::control::Control::unlimited()).unwrap();
+    let asks: Vec<_> = arr(get(saved, "requests"))
+        .iter()
+        .map(|r| s(get(r, "text")))
+        .collect();
+    let result = archsig::observed::evaluate_observed_bytes(
+        sources,
+        &asks,
+        &mut archsig::control::Control::unlimited(),
+    )
+    .unwrap();
     parse(result.wire().canonical().as_bytes()).unwrap()
 }

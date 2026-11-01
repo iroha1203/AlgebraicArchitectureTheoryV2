@@ -27,9 +27,9 @@ use crate::{
 use std::sync::Arc;
 
 mod family;
+mod parameters;
 mod reading;
 mod sources;
-mod parameters;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
@@ -50,10 +50,18 @@ fn indices(values: &[usize]) -> Json {
     Json::Arr(values.iter().map(|n| Json::Nat(*n as u64)).collect())
 }
 fn with_parameters(mut value: Json, parameters: &[(String, Type)]) -> Json {
-    if !parameters.is_empty() && let Json::Obj(fields) = &mut value {
-        fields.insert("parameters".into(), Json::Arr(parameters.iter().map(|(name, ty)| {
-            Json::obj([("name", Json::str(name)), ("type", ty.wire())])
-        }).collect()));
+    if !parameters.is_empty()
+        && let Json::Obj(fields) = &mut value
+    {
+        fields.insert(
+            "parameters".into(),
+            Json::Arr(
+                parameters
+                    .iter()
+                    .map(|(name, ty)| Json::obj([("name", Json::str(name)), ("type", ty.wire())]))
+                    .collect(),
+            ),
+        );
     }
     value
 }
@@ -257,8 +265,14 @@ impl Part {
                 .chain(std::iter::once(*body))
                 .collect(),
 
-            Self::FiniteMap { source, target, pairs } => [*source, *target].into_iter()
-                .chain(pairs.iter().flat_map(|(a,z)| [*a,*z])).collect(),
+            Self::FiniteMap {
+                source,
+                target,
+                pairs,
+            } => [*source, *target]
+                .into_iter()
+                .chain(pairs.iter().flat_map(|(a, z)| [*a, *z]))
+                .collect(),
             Self::Domain { ring, .. } => vec![*ring],
             Self::Ring { base, .. } => vec![*base],
             Self::Polynomial { ring, terms, .. } => std::iter::once(*ring)
@@ -387,9 +401,23 @@ impl Part {
                 value
             }
 
-            Self::FiniteMap { source, target, pairs } => Json::obj([
-                ("kind", Json::str("finite")), ("source", source.wire()), ("target",target.wire()),
-                ("pairs", Json::Arr(pairs.iter().map(|(a,z)| Json::Arr(vec![a.wire(),z.wire()])).collect())),
+            Self::FiniteMap {
+                source,
+                target,
+                pairs,
+            } => Json::obj([
+                ("kind", Json::str("finite")),
+                ("source", source.wire()),
+                ("target", target.wire()),
+                (
+                    "pairs",
+                    Json::Arr(
+                        pairs
+                            .iter()
+                            .map(|(a, z)| Json::Arr(vec![a.wire(), z.wire()]))
+                            .collect(),
+                    ),
+                ),
             ]),
             Self::ReadingDomain { ty, elements } => match elements {
                 Some(elements) => Json::obj([
@@ -411,36 +439,46 @@ impl Part {
                     Json::Arr(variables.iter().map(Variable::wire).collect()),
                 ),
             ]),
-            Self::Polynomial { ring, terms, parameters } => with_parameters(Json::obj([
-                ("ring", ring.wire()),
-                (
-                    "terms",
-                    Json::Arr(
-                        terms
-                            .iter()
-                            .map(|(coefficient, powers)| {
-                                Json::obj([
-                                    ("coefficient", coefficient.wire()),
-                                    ("powers", indices(powers)),
-                                ])
-                            })
-                            .collect(),
+            Self::Polynomial {
+                ring,
+                terms,
+                parameters,
+            } => with_parameters(
+                Json::obj([
+                    ("ring", ring.wire()),
+                    (
+                        "terms",
+                        Json::Arr(
+                            terms
+                                .iter()
+                                .map(|(coefficient, powers)| {
+                                    Json::obj([
+                                        ("coefficient", coefficient.wire()),
+                                        ("powers", indices(powers)),
+                                    ])
+                                })
+                                .collect(),
+                        ),
                     ),
-                ),
-            ]), parameters),
+                ]),
+                parameters,
+            ),
             Self::Ideal {
                 ring,
                 generators,
                 required,
                 parameters,
-            } => with_parameters(Json::obj([
-                ("ring", ring.wire()),
-                ("generators", refs(generators)),
-                (
-                    "kind",
-                    Json::str(if *required { "obstruction" } else { "witness" }),
-                ),
-            ]), parameters),
+            } => with_parameters(
+                Json::obj([
+                    ("ring", ring.wire()),
+                    ("generators", refs(generators)),
+                    (
+                        "kind",
+                        Json::str(if *required { "obstruction" } else { "witness" }),
+                    ),
+                ]),
+                parameters,
+            ),
             Self::Evaluation {
                 source,
                 target,
@@ -549,48 +587,102 @@ impl Data {
                 })
             })
     }
-    pub(super) fn parameter_difference(&self, c: &mut Control) -> Result<Option<(NodeRef, super::object_equation_presentation::PolynomialFamily)>, ValidationFailure> {
-        let Part::Polynomial { ring, parameters, .. } = self.part() else { return Ok(None) };
-        if self.guarded_parameter_family() { return Ok(None); }
-        if parameters.is_empty() { return Ok(None); }
+    pub(super) fn parameter_difference(
+        &self,
+        c: &mut Control,
+    ) -> Result<
+        Option<(
+            NodeRef,
+            super::object_equation_presentation::PolynomialFamily,
+        )>,
+        ValidationFailure,
+    > {
+        let Part::Polynomial {
+            ring, parameters, ..
+        } = self.part()
+        else {
+            return Ok(None);
+        };
+        if self.guarded_parameter_family() {
+            return Ok(None);
+        }
+        if parameters.is_empty() {
+            return Ok(None);
+        }
         let reference = NodeRef(self.source.base + self.index);
-        let diagrams = std::iter::once(&self.source.outputs).chain(self.source.owned_outputs.iter().flatten());
+        let diagrams =
+            std::iter::once(&self.source.outputs).chain(self.source.owned_outputs.iter().flatten());
         for diagram in diagrams {
             for coordinate in &diagram.coordinates {
                 tick(c)?;
-                if coordinate.residual != Some(reference) { continue; }
-                let original = diagram.originals.iter().find(|o| o.reference == coordinate.instance).ok_or("数値族の元出現がない")?;
-                if !self.parameter_family(&original.parameters) { return Ok(None); }
-                let instance = self.source.architecture.readings().instances().get(original.instance).ok_or("数値族の元instanceがない")?;
-                let mut source = match super::object_equation_presentation::parameter_source_difference_bound(
-                    &self.source.inputs,
-                    instance,
-                    &original.finite,
-                    c,
-                )
-                .map_err(|e| construction_failure(&e))?
-                {
-                    Some(source) => source,
-                    None => super::object_equation_presentation::parameter_source_on_guard_fiber(
+                if coordinate.residual != Some(reference) {
+                    continue;
+                }
+                let original = diagram
+                    .originals
+                    .iter()
+                    .find(|o| o.reference == coordinate.instance)
+                    .ok_or("数値族の元出現がない")?;
+                if !self.parameter_family(&original.parameters) {
+                    return Ok(None);
+                }
+                let instance = self
+                    .source
+                    .architecture
+                    .readings()
+                    .instances()
+                    .get(original.instance)
+                    .ok_or("数値族の元instanceがない")?;
+                let mut source =
+                    match super::object_equation_presentation::parameter_source_difference_bound(
                         &self.source.inputs,
-                        self.source.architecture.readings(),
-                        original.instance,
+                        instance,
                         &original.finite,
                         c,
                     )
                     .map_err(|e| construction_failure(&e))?
-                    .ok_or("数値族の原式差がない")?,
-                };
+                    {
+                        Some(source) => source,
+                        None => {
+                            super::object_equation_presentation::parameter_source_on_guard_fiber(
+                                &self.source.inputs,
+                                self.source.architecture.readings(),
+                                original.instance,
+                                &original.finite,
+                                c,
+                            )
+                            .map_err(|e| construction_failure(&e))?
+                            .ok_or("数値族の原式差がない")?
+                        }
+                    };
                 if !source.ring.symbols.is_empty() {
-                    let values = source.ring.symbols.iter().map(|s| s.value.clone()).collect::<Vec<_>>();
-                    let value = source.difference.constant.evaluate(&values, c).map_err(|e| construction_failure(&e))?
+                    let values = source
+                        .ring
+                        .symbols
+                        .iter()
+                        .map(|s| s.value.clone())
+                        .collect::<Vec<_>>();
+                    let value = source
+                        .difference
+                        .constant
+                        .evaluate(&values, c)
+                        .map_err(|e| construction_failure(&e))?
                         .ok_or("数値族の残差の実観測値がない")?;
-                    source.difference.constant = EquationPolynomial::constant(value.scalar().clone(), c).map_err(|e| construction_failure(&e))?;
+                    source.difference.constant =
+                        EquationPolynomial::constant(value.scalar().clone(), c)
+                            .map_err(|e| construction_failure(&e))?;
                     for (_, coefficient) in &mut source.difference.parameters {
-                        let value = coefficient.evaluate(&values, c).map_err(|e| construction_failure(&e))?.ok_or("引数係数の実観測値がない")?;
-                        *coefficient = EquationPolynomial::constant(value.scalar().clone(), c).map_err(|e| construction_failure(&e))?;
+                        let value = coefficient
+                            .evaluate(&values, c)
+                            .map_err(|e| construction_failure(&e))?
+                            .ok_or("引数係数の実観測値がない")?;
+                        *coefficient = EquationPolynomial::constant(value.scalar().clone(), c)
+                            .map_err(|e| construction_failure(&e))?;
                     }
-                    source.difference.parameters.retain(|(_, coefficient)| !coefficient.terms.is_empty());
+                    source
+                        .difference
+                        .parameters
+                        .retain(|(_, coefficient)| !coefficient.terms.is_empty());
                 }
                 return Ok(Some((*ring, source.difference)));
             }
@@ -598,14 +690,27 @@ impl Data {
         Ok(None)
     }
     pub(super) fn parameter_family(&self, expected: &[(String, Type)]) -> bool {
-        let Part::Polynomial { terms, parameters, .. } = self.part() else { return false };
-        if parameters != expected || parameters.is_empty() { return false; }
+        let Part::Polynomial {
+            terms, parameters, ..
+        } = self.part()
+        else {
+            return false;
+        };
+        if parameters != expected || parameters.is_empty() {
+            return false;
+        }
         let mut expression = false;
         for (coefficient, powers) in terms {
-            let Some(index) = coefficient.0.checked_sub(self.source.base) else { return false };
+            let Some(index) = coefficient.0.checked_sub(self.source.base) else {
+                return false;
+            };
             match self.source.parts.get(index) {
                 Some(Part::Scalar(_)) => (),
-                Some(Part::Transform { operation: Transform::Difference | Transform::Multiply, parameters, .. }) if parameters == expected => expression = true,
+                Some(Part::Transform {
+                    operation: Transform::Difference | Transform::Multiply,
+                    parameters,
+                    ..
+                }) if parameters == expected => expression = true,
                 _ => return false,
             }
         }
@@ -613,7 +718,11 @@ impl Data {
     }
     pub(super) fn polynomial(&self) -> Option<(NodeRef, &[(NodeRef, Vec<usize>)])> {
         match self.source.parts.get(self.index) {
-            Some(Part::Polynomial { ring, terms, parameters }) if parameters.is_empty() => Some((*ring, terms)),
+            Some(Part::Polynomial {
+                ring,
+                terms,
+                parameters,
+            }) if parameters.is_empty() => Some((*ring, terms)),
             _ => None,
         }
     }
@@ -724,25 +833,43 @@ impl Data {
             .find(|(_, d)| d.originals.iter().any(|o| o.reference == reference))
             .ok_or("元多項式Law行が出力表にない")?;
         let reading = diagram.readings.iter().find(|r| r.instance == reference);
-        let original = diagram.originals.iter().find(|o| o.reference == reference)
+        let original = diagram
+            .originals
+            .iter()
+            .find(|o| o.reference == reference)
             .ok_or("元Lawの出現がない")?;
-        let application = self.source.architecture.readings().instances().get(original.instance)
+        let application = self
+            .source
+            .architecture
+            .readings()
+            .instances()
+            .get(original.instance)
             .and_then(|instance| instance.applications().get(object))
             .ok_or("元Lawの対象適用がない")?;
-        let true_guard = guard.is_none() || (self.source.core.is_none() && diagram.unavailable.is_none()
-            && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysTrue));
-        let known_guard = true_guard || (self.source.core.is_none() && diagram.unavailable.is_none()
-            && diagram.coordinates.iter().any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysFalse));
+        let true_guard = guard.is_none()
+            || (self.source.core.is_none()
+                && diagram.unavailable.is_none()
+                && diagram
+                    .coordinates
+                    .iter()
+                    .any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysTrue));
+        let known_guard = true_guard
+            || (self.source.core.is_none()
+                && diagram.unavailable.is_none()
+                && diagram
+                    .coordinates
+                    .iter()
+                    .any(|q| q.instance == reference && q.guard == EquationGuard::AlwaysFalse));
         let zero_guarded = diagram.unavailable.is_none()
             && diagram.coordinates.iter().any(|q| {
                 q.instance == reference
-                    && q.status == EquationPresentationStatus::Ready
-                    && q.residual
-                        .and_then(|r| r.0.checked_sub(self.source.base))
-                        .and_then(|i| self.source.parts.get(i))
-                        .is_some_and(
-                            |part| matches!(part, Part::Polynomial { terms, .. } if terms.is_empty()),
-                        )
+                && q.status == EquationPresentationStatus::Ready
+                && q.residual
+                    .and_then(|r| r.0.checked_sub(self.source.base))
+                    .and_then(|i| self.source.parts.get(i))
+                    .is_some_and(
+                        |part| matches!(part, Part::Polynomial { terms, .. } if terms.is_empty()),
+                    )
             });
         let guarded_family = diagram.unavailable.is_none()
             && diagram.coordinates.iter().any(|q| {
@@ -757,8 +884,12 @@ impl Data {
                             .guarded_parameter_family()
                         })
             });
-        let numeric_family = (known_guard || zero_guarded || guarded_family) && original.row.is_none()
-            && original.parameters.iter().all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
+        let numeric_family = (known_guard || zero_guarded || guarded_family)
+            && original.row.is_none()
+            && original
+                .parameters
+                .iter()
+                .all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
             match self
@@ -779,13 +910,17 @@ impl Data {
             body_reference: *body,
             guard: guard.map(expr).transpose()?,
             guard_reference: *guard,
-            ready: numeric_family || reading.is_some_and(|r| {
-                matches!(
-                    r.application,
-                    Some(super::object_law_transport::LawApplication::Guard(_))
-                )
-            }),
-            outside: matches!(application, crate::construction::readings::InstanceApplication::NotApplicable),
+            ready: numeric_family
+                || reading.is_some_and(|r| {
+                    matches!(
+                        r.application,
+                        Some(super::object_law_transport::LawApplication::Guard(_))
+                    )
+                }),
+            outside: matches!(
+                application,
+                crate::construction::readings::InstanceApplication::NotApplicable
+            ),
             zero_residual: numeric_family && zero_guarded,
             guarded_family: numeric_family && guarded_family,
             body_allowed: (numeric_family && (true_guard || zero_guarded || guarded_family))
@@ -1404,7 +1539,8 @@ fn metadata(
     for ring in core.into_iter().flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
             tick(c)?;
-            let slot = env.indexes.field(&env.state,
+            let slot = env.indexes.field(
+                &env.state,
                 &symbol.slot.snapshot,
                 &symbol.slot.subject,
                 &symbol.slot.field,
@@ -1722,7 +1858,9 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, object, c,))
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        graph, inputs, reference, object, c,
+    ))
 }
 #[derive(Clone, Debug)]
 pub(super) struct FamilyPlan(Arc<Source>);
@@ -1757,7 +1895,8 @@ impl FamilyPlan {
         // 計画本体は元三入力と不変のArchitectureだけに依存する。
         // Graph上の元参照・Architecture同一性は、cache利用時も上で照合する。
         if !env
-            .results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &self.0))
         {
@@ -1915,7 +2054,8 @@ impl Environment<'_> {
         };
         self.recheck_object_components(graph, consumer)?;
         if self
-            .results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
+            .results
+            .verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -1933,7 +2073,6 @@ mod tests;
 
 #[cfg(test)]
 mod family_tests;
-
 
 impl super::result_kind::ResultKind for Data {
     type Input<'a, 'input: 'a> = (

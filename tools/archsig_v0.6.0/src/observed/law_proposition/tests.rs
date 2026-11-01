@@ -527,7 +527,10 @@ fn native_propositions_reject_forged_truth_evidence_role_binding_and_environment
             };
             *right = *left;
         }
-        assert!(replay_nodes(&p, &g, nodes.into_vec()).is_err(), "forgery {mode}");
+        assert!(
+            replay_nodes(&p, &g, nodes.into_vec()).is_err(),
+            "forgery {mode}"
+        );
     }
     replay(&p, &g).unwrap();
 }
@@ -547,10 +550,11 @@ fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples(
     for (object, d) in ds.iter().enumerate().take(2) {
         assert!(d.unavailable.is_none());
         for o in &d.originals {
-            assert!(o
-                .parameters
-                .iter()
-                .any(|(n, t)| n == "k" && t == &parameter_type));
+            assert!(
+                o.parameters
+                    .iter()
+                    .any(|(n, t)| n == "k" && t == &parameter_type)
+            );
             let before = g.nodes.len();
             let r = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
             if frames::origin(&g, o.reference).unwrap().unwrap().outside {

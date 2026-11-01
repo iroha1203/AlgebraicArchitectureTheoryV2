@@ -192,12 +192,16 @@ fn optional_path_projections_compose_and_absent_paths_keep_dynamic_reasons() {
         );
         if absent {
             let reasons = arr(get(c, "reasons"));
-            assert!(reasons
-                .iter()
-                .any(|r| s(get(r, "code")) == "condition_failed"));
-            assert!(reasons
-                .iter()
-                .any(|r| s(get(r, "code")) == "dependency_blocked"));
+            assert!(
+                reasons
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "condition_failed")
+            );
+            assert!(
+                reasons
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "dependency_blocked")
+            );
         }
         std::fs::remove_dir_all(d).unwrap();
     }
@@ -248,9 +252,11 @@ fn path_missing_producers_preserve_original_slots_through_needed() {
     let c = answer(&j, "c");
     assert_eq!(s(get(c, "status")), "undetermined");
     assert!(!has(get(c, "outputs"), "operation"));
-    assert!(arr(get(c, "reasons"))
-        .iter()
-        .any(|r| s(get(r, "code")) == "dependency_blocked"));
+    assert!(
+        arr(get(c, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "dependency_blocked")
+    );
     let plan = value(&j, get(get(answer(&j, "plan"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).iter().any(|r| {
         let f = get(r, "field");
@@ -431,9 +437,11 @@ fn composition_rejects_generators_outside_its_reading_and_preserves_the_reason()
     assert_eq!(s(value(&j, get(data, "right"))), "Reservations");
     assert_eq!(s(get(answer(&j, "blocked"), "status")), "undetermined");
     let plan = value(&j, get(get(answer(&j, "plan"), "outputs"), "plan"));
-    assert!(arr(get(plan, "blockers"))
-        .iter()
-        .any(|r| s(get(r, "code")) == "condition_failed"));
+    assert!(
+        arr(get(plan, "blockers"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "condition_failed")
+    );
     std::fs::remove_dir_all(dir).unwrap();
     let dir = visibility_inputs("path-invisible-alone");
     let r = asks(

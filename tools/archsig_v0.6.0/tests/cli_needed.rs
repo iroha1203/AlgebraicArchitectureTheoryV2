@@ -453,12 +453,8 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
             stopped.then_some(Signal::Int)
         });
         let mut signals = NoSignal::default();
-        let outcome = archsig::run::run_requests(
-            &mut TestIo,
-            &mut signals,
-            &args(&dir),
-            &mut control,
-        );
+        let outcome =
+            archsig::run::run_requests(&mut TestIo, &mut signals, &args(&dir), &mut control);
         assert_eq!(outcome.exit_code, 130, "{at}");
         assert_eq!(signals.0, 1);
         assert_eq!(count.get(), at, "停止後probeなし");
