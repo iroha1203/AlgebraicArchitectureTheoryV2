@@ -799,6 +799,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = ();
     type Input<'a, 'input: 'a> = (&'a Environment<'input>, &'a mut Graph, NodeRef, &'a Control);
     type Output = Outcome;
     fn compute_and_retain<'a, 'input: 'a>(

@@ -471,6 +471,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a Environment<'input>,
         &'a mut Graph,

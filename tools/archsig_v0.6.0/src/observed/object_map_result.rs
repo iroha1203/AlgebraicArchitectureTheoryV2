@@ -782,7 +782,7 @@ impl Environment<'_> {
         d.position(at)?;
         let c = self.control.clone();
         d.source.boundary.recheck(self, g, at, &c)?;
-        if self.object_map_source_checked(&d.source) {
+        if self.results.source_checked(&d.source) {
             return Ok(());
         }
         let request = g
@@ -812,7 +812,7 @@ impl Environment<'_> {
         if parts != d.source.parts || answer != d.source.answer {
             return Err("ObjectAlgebra mapの再構成が違う".into());
         }
-        self.remember_object_map_source(d.source.clone());
+        self.results.remember(d.source.clone());
         Ok(())
     }
 }
@@ -863,6 +863,7 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = std::sync::Arc<Source>;
     type Input<'a, 'input: 'a> = (
         &'a PreparedObserved,
         &'a Environment<'input>,

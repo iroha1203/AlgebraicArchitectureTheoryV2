@@ -271,6 +271,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
+    type Stored = ();
     type Input<'a, 'input: 'a> = (
         &'a Environment<'input>,
         &'a mut Graph,

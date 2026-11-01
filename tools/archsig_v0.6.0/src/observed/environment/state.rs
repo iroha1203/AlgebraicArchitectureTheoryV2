@@ -76,7 +76,7 @@ impl EvaluationState {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             let depth = self.validation_depth.get();
             if depth == 0 {
-                *results.cache.borrow_mut() = ValidationCache::default();
+                results.clear_validation();
                 results.validation_snapshot.replace(None);
             }
             let depth_guard = self.validation_depth.scoped(depth + 1);
@@ -84,7 +84,7 @@ impl EvaluationState {
             depth_guard.restore();
             // Graphのprefixを確認できないroot解析では、成功も失敗も必ず破棄する。
             if depth == 0 {
-                *results.cache.borrow_mut() = ValidationCache::default();
+                results.clear_validation();
                 results.validation_snapshot.replace(None);
             }
             result

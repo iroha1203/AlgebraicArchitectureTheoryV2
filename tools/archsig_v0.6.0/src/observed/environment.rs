@@ -342,11 +342,6 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
-    changes: Vec<std::sync::Arc<super::change_result::Source>>,
-    quotients: Vec<std::sync::Arc<super::quotient_result::Source>>,
-    locals: Vec<std::sync::Arc<super::local_result::Source>>,
-    object_maps: Vec<std::sync::Arc<super::object_map_result::Source>>,
-    builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
@@ -392,23 +387,6 @@ impl<'a> Environment<'a> {
             .ok_or_else(|| "原始fieldの検査済み名がない".into())
     }
 
-    pub(super) fn change_source_checked(
-        &self,
-        source: &std::sync::Arc<super::change_result::Source>,
-    ) -> bool {
-        self.results
-            .cache
-            .borrow()
-            .changes
-            .iter()
-            .any(|s| std::sync::Arc::ptr_eq(s, source))
-    }
-    pub(super) fn remember_change_source(
-        &self,
-        source: std::sync::Arc<super::change_result::Source>,
-    ) {
-        self.results.cache.borrow_mut().changes.push(source);
-    }
     pub(super) fn local_point(
         &self,
         declaration: &crate::law::model::Declaration,
@@ -481,75 +459,7 @@ impl<'a> Environment<'a> {
         ));
         Ok(())
     }
-    pub(super) fn quotient_source_checked(
-        &self,
-        source: &std::sync::Arc<super::quotient_result::Source>,
-    ) -> bool {
-        self.results
-            .cache
-            .borrow()
-            .quotients
-            .iter()
-            .any(|s| std::sync::Arc::ptr_eq(s, source))
-    }
-    pub(super) fn local_source_checked(
-        &self,
-        source: &std::sync::Arc<super::local_result::Source>,
-    ) -> bool {
-        self.results
-            .cache
-            .borrow()
-            .locals
-            .iter()
-            .any(|s| std::sync::Arc::ptr_eq(s, source))
-    }
-    pub(super) fn remember_quotient_source(
-        &self,
-        source: std::sync::Arc<super::quotient_result::Source>,
-    ) {
-        self.results.cache.borrow_mut().quotients.push(source);
-    }
-    pub(super) fn remember_local_source(
-        &self,
-        source: std::sync::Arc<super::local_result::Source>,
-    ) {
-        self.results.cache.borrow_mut().locals.push(source);
-    }
-    pub(super) fn object_map_source_checked(
-        &self,
-        source: &std::sync::Arc<super::object_map_result::Source>,
-    ) -> bool {
-        self.results
-            .cache
-            .borrow()
-            .object_maps
-            .iter()
-            .any(|s| std::sync::Arc::ptr_eq(s, source))
-    }
-    pub(super) fn remember_object_map_source(
-        &self,
-        source: std::sync::Arc<super::object_map_result::Source>,
-    ) {
-        self.results.cache.borrow_mut().object_maps.push(source);
-    }
 
-    pub(super) fn build_source_checked(
-        &self,
-        source: &std::sync::Arc<super::build_result::Source>,
-    ) -> bool {
-        self.results
-            .cache
-            .borrow()
-            .builds
-            .iter()
-            .any(|s| std::sync::Arc::ptr_eq(s, source))
-    }
-    pub(super) fn remember_build_source(
-        &self,
-        source: std::sync::Arc<super::build_result::Source>,
-    ) {
-        self.results.cache.borrow_mut().builds.push(source);
-    }
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
         control: &Control,
@@ -825,13 +735,13 @@ impl<'a> Environment<'a> {
             let same = match same {
                 Ok(value) => value.unwrap_or(false),
                 Err(failure) => {
-                    *self.results.cache.borrow_mut() = ValidationCache::default();
+                    self.results.clear_validation();
                     self.results.validation_snapshot.replace(None);
                     return Err(failure);
                 }
             };
             if !same {
-                *self.results.cache.borrow_mut() = ValidationCache::default();
+                self.results.clear_validation();
             }
             let depth_guard = self.state.validation_depth.scoped(1);
             let result = self.state.validation_session(&self.results, run);
@@ -849,12 +759,12 @@ impl<'a> Environment<'a> {
                     Ok(())
                 })();
                 if let Err(failure) = saved {
-                    *self.results.cache.borrow_mut() = ValidationCache::default();
+                    self.results.clear_validation();
                     self.results.validation_snapshot.replace(None);
                     return Err(failure);
                 }
             } else {
-                *self.results.cache.borrow_mut() = ValidationCache::default();
+                self.results.clear_validation();
                 self.results.validation_snapshot.replace(None);
             }
             result
