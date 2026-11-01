@@ -7071,7 +7071,7 @@ impl<'a> Environment<'a> {
         for projection in lexical.projections.iter().take(count - 1) {
             self.tick()?;
             result = self.scoped_field(
-                result, projection.name.short(), base, reading,
+                result, &projection.name, base, reading,
                 (expression.span.0, projection.span.1),
             )?;
             self.tick()?;
@@ -7377,7 +7377,7 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Field { base: owner, .. } => self.scoped_field(
                     self.scoped_ast(*owner, variables, base, reading)?,
-                    expression.field.as_ref().ok_or("元fieldの静的解決がない")?.short(),
+                    expression.field.as_ref().ok_or("元fieldの静的解決がない")?,
                     base,
                     reading,
                     expression.span,
@@ -8379,7 +8379,7 @@ impl<'a> Environment<'a> {
     fn scoped_field(
         &self,
         base: SourceValue,
-        name: &str,
+        name: &crate::names::QualifiedName,
         request_base: &Scope,
         reading: &str,
         span: (usize, usize),
@@ -8422,7 +8422,10 @@ impl<'a> Environment<'a> {
         if owner.ty != entity {
             return Err("範囲検査のfield owner型不一致".into());
         }
-        let field = self.field(&snapshot, &subject, &format!("{entity}.{name}"))?;
+        if name.owner() != Some(entity.as_str()) {
+            return Err("範囲検査のfield owner型不一致".into());
+        }
+        let field = self.field(&snapshot, &subject, name)?;
         let position = Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
