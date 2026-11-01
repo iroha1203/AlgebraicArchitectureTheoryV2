@@ -943,13 +943,7 @@ impl Term {
         law: &CheckedLaw,
         c: &Control,
     ) -> Result<Vec<Scalar>, ValidationFailure> {
-        let mut values = Vec::new();
-        for i in items {
-            tick(c)?;
-            values.push(self.eval(*i, vars, law, c)?);
-            tick(c)?;
-        }
-        Ok(values)
+        walk::items::<Concrete>(self, items, vars, law, c)
     }
 }
 struct Concrete;
