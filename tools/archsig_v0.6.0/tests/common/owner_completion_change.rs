@@ -49,14 +49,12 @@ fn sources(
     )
 }
 fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
-    let prepared = observed::prepare_observed(sources, asks, &mut control()).unwrap();
-    let evaluation = observed::evaluate_observed(prepared, &mut control()).unwrap();
+    let prepared = observed::prepare_observed(sources, asks, &mut quiet()).unwrap();
+    let evaluation = observed::evaluate_observed(prepared, &mut quiet()).unwrap();
     assert!(!evaluation.wire().canonical().contains("not implemented"));
     archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
-fn control() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn evidence(j: &archsig::json::JNode) -> &archsig::json::JNode {
     arr(get(j, "nodes"))
         .iter()
@@ -288,7 +286,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         source.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let failure = archsig::input::check_inputs(invalid, &mut control()).unwrap_err();
+    let failure = archsig::input::check_inputs(invalid, &mut quiet()).unwrap_err();
     assert!(
         failure.issues().iter().any(|issue| issue
             .canonical()
@@ -325,7 +323,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         let evaluated = observed::evaluate_observed_bytes(
             input,
             &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-            &mut control(),
+            &mut quiet(),
         );
         if additional {
             let evaluated = evaluated.unwrap();
@@ -370,7 +368,7 @@ fn finite_owner_completion_missing_finite_guard_is_exhausted_without_an_excludin
     let completed = observed::evaluate_observed_bytes(
         input,
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut control(),
+        &mut quiet(),
     )
     .unwrap();
     let j = archsig::json::parse(completed.wire().canonical().as_bytes()).unwrap();

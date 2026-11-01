@@ -2940,7 +2940,6 @@ reading Before {{{vocabulary} local here(n:Z) reads n;}} reading After {{{vocabu
 }
 
 fn rational_local_parameter_inputs(name: &str, missing: bool) -> (PathBuf, String) {
-    #[allow(dead_code)]
     use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let (dir, _) = finite_local_parameter_inputs(name);

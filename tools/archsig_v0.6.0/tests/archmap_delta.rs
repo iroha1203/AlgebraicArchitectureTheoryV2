@@ -1,6 +1,5 @@
 //! 差分を独立な全量表と照合し、同じCLI評価へ接続する。
 use crate::common::cli;
-#[allow(dead_code)]
 use crate::common::object_view_compatibility_data as fixture;
 use archsig::{
     archmap::{self, Slot},

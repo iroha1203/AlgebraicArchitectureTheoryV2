@@ -4,7 +4,6 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/composed_paths.rs");
 }
-use crate::control::quiet;
 fn example(bad: bool) -> ObservedEvaluation {
     let current = if bad {
         "current=evaluate(Walk.join,e=@v/e,f=@v/self)"

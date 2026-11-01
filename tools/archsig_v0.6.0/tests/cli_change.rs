@@ -1,6 +1,5 @@
 //! 元changeのparameter全域を公開solveで解く。
 use crate::common::cli;
-#[allow(dead_code)]
 use crate::common::object_view_compatibility_data as fixture;
 fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
     let definitions = fixture::D.replace(

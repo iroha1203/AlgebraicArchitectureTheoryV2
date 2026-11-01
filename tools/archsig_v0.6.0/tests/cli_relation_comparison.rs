@@ -1,5 +1,4 @@
 use crate::common::cli;
-#[allow(dead_code)]
 use crate::common::public_relation as fixture;
 use archsig::json::JNode;
 use cli::*;

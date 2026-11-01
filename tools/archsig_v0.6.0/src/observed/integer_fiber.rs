@@ -239,9 +239,7 @@ pub(super) fn solve(
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn control() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     fn matrix(rows: &[&[i64]]) -> Matrix {
         rows.iter()
             .map(|r| r.iter().copied().map(Z::from).collect())
@@ -249,7 +247,7 @@ mod tests {
     }
     #[test]
     fn small_signed_matrices_have_unimodular_smith_certificates() {
-        let c = control();
+        let c = quiet();
         let determinant = |m: &Matrix| &m[0][0] * &m[1][1] - &m[0][1] * &m[1][0];
         for a in -2..=2 {
             for b in -2..=2 {
@@ -308,7 +306,7 @@ mod tests {
     }
     #[test]
     fn exact_integer_fibers_keep_all_directions_and_divisibility_obstructions() {
-        let c = control();
+        let c = quiet();
         for (a, n, b) in [
             (matrix(&[&[1, 1]]), 2, vec![1]),
             (matrix(&[&[1, 1], &[1, 0]]), 2, vec![1, 0]),

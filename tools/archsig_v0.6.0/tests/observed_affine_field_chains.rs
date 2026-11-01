@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 use crate::common::affine_field_chains as fixture;
 use crate::common::quiet;
 use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};

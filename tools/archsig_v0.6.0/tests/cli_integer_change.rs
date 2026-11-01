@@ -1,6 +1,5 @@
 //! 整数全解、元Assignmentの非一意・一意、修復後の通常評価。
 use crate::common::cli;
-#[allow(dead_code)]
 use crate::common::object_view_compatibility_data as local_fixture;
 use archsig::{definition, json::JNode};
 use cli::*;

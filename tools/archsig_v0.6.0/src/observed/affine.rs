@@ -1318,9 +1318,7 @@ fn with_observer<T>(observer: impl FnMut(TestPoint) + 'static, work: impl FnOnce
 mod tests {
     use super::*;
 
-    fn control() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
 
     fn binder(kind: NumberType) -> Parameter {
         Parameter {
@@ -1362,7 +1360,7 @@ mod tests {
 
     #[test]
     fn order_comparison_requires_constant_difference() {
-        let control = control();
+        let control = quiet();
         for (ty, kind, offset) in [
             (Type::Z, NumberType::Z, z(1)),
             (Type::Q, NumberType::Q, Scalar::Q(1.into(), 2.into())),
@@ -1382,7 +1380,7 @@ mod tests {
     }
     #[test]
     fn universal_parameter_identity_is_distinct_from_missing() {
-        let control = control();
+        let control = quiet();
         let key = binder(NumberType::Z);
         let p = parameter(&Type::Z, &key, &control).unwrap().unwrap();
         let h = missing(&Type::Z, &slot("h"), &control).unwrap().unwrap();
@@ -1429,7 +1427,7 @@ mod tests {
 
     #[test]
     fn parameter_substitution_preserves_missing_and_unassigned_identity() {
-        let control = control();
+        let control = quiet();
         let p = binder(NumberType::Z);
         let mut q = p.clone();
         q.binder = (3, 4);
@@ -1472,7 +1470,7 @@ mod tests {
 
     #[test]
     fn universal_integer_completion_uses_bezout_and_divisibility() {
-        let control = control();
+        let control = quiet();
         let h = missing(&Type::Z, &slot("h"), &control).unwrap().unwrap();
         let k = missing(&Type::Z, &slot("k"), &control).unwrap().unwrap();
         let sum = add(
@@ -1563,7 +1561,7 @@ mod tests {
 
     #[test]
     fn universal_rational_completion_constructs_exact_solutions() {
-        let control = control();
+        let control = quiet();
         let h = missing(&Type::Q, &slot("h"), &control).unwrap().unwrap();
         let coefficient = Scalar::Q((-2).into(), 3.into());
         let offset = Scalar::Q(5.into(), 7.into());
@@ -1619,7 +1617,7 @@ mod tests {
 
     #[test]
     fn universal_nonzero_parameters_do_not_invent_shared_witnesses() {
-        let control = control();
+        let control = quiet();
         let key = binder(NumberType::Z);
         let p = parameter(&Type::Z, &key, &control).unwrap().unwrap();
         let h = missing(&Type::Z, &slot("h"), &control).unwrap().unwrap();
@@ -1680,7 +1678,7 @@ mod tests {
 
     #[test]
     fn partial_forall_retains_outer_parameter_predicate() {
-        let control = control();
+        let control = quiet();
         for kind in [NumberType::Z, NumberType::Q] {
             let x = binder(kind);
             let mut y = x.clone();
@@ -1718,7 +1716,7 @@ mod tests {
 
     #[test]
     fn partial_forall_classifies_only_local_inner_coefficients() {
-        let control = control();
+        let control = quiet();
         for kind in [NumberType::Z, NumberType::Q] {
             let x = binder(kind);
             let mut y = x.clone();
@@ -1759,7 +1757,7 @@ mod tests {
 
     #[test]
     fn partial_forall_distinguishes_context_and_rejects_binder_mutations() {
-        let control = control();
+        let control = quiet();
         let mut first = binder(NumberType::Z);
         first.context.frame = Some(0);
         let mut second = first.clone();
@@ -1818,7 +1816,7 @@ mod tests {
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
-        let baseline = control();
+        let baseline = quiet();
         let x = binder(NumberType::Z);
         let mut y = x.clone();
         y.binder = (3, 4);
@@ -1883,7 +1881,7 @@ mod tests {
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
-        let baseline = control();
+        let baseline = quiet();
         let h = missing(&Type::Z, &slot("h"), &baseline).unwrap().unwrap();
         let form = add(
             &mul(&c(z(2), &baseline), &h, &baseline),

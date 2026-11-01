@@ -14,9 +14,7 @@ use std::{
     rc::Rc,
 };
 
-fn control() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")
@@ -130,9 +128,9 @@ reading Calc {{
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut control()).unwrap();
+    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
     (
-        evaluate_observed_bytes(inputs, asks, &mut control())
+        evaluate_observed_bytes(inputs, asks, &mut quiet())
             .unwrap()
             .wire(),
         checked,
