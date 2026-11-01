@@ -360,7 +360,7 @@ fn projections(
                 let field = params
                     .iter()
                     .chain(fields)
-                    .find(|f| slot.field.as_ref() == Some(&format!("{}.{}", owner.ty, f.name).into()))
+                    .find(|f| slot.field.as_ref().is_some_and(|name| name.owner() == Some(owner.ty.as_str()) && name.short() == f.name.as_str()))
                     .ok_or("末端fieldの宣言がない")?;
                 let mut carrier = vec![];
                 subject_carrier(value, &mut carrier, c)?;

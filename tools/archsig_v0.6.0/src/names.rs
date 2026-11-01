@@ -65,7 +65,7 @@ pub fn is_reserved(name: &str) -> bool {
 }
 
 /// 入力検査で分解した名前。元の綴りと所属・末尾名を一緒に保持する。
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct QualifiedName {
     full: String,
     namespace_end: usize,
@@ -100,6 +100,11 @@ impl QualifiedName {
     }
     pub fn is_owner(&self) -> bool {
         self.owner_field
+    }
+}
+impl std::hash::Hash for QualifiedName {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.full, state);
     }
 }
 impl std::ops::Deref for QualifiedName {
@@ -173,6 +178,15 @@ impl std::borrow::Borrow<String> for QualifiedName {
 #[cfg(test)]
 mod qualified_tests {
     use super::QualifiedName;
+
+    #[test]
+    fn borrowed_hash_lookup_preserves_the_name_key() {
+        let mut names = std::collections::HashMap::new();
+        names.insert(QualifiedName::from("Mesh.Part.owner"), 7);
+        assert_eq!(names.get("Mesh.Part.owner"), Some(&7));
+        assert_eq!(names.get(&String::from("Mesh.Part.owner")), Some(&7));
+        assert_eq!(names.get("Mesh.Part.value"), None);
+    }
 
     #[test]
     fn parsed_parts_preserve_the_original_spelling_and_owner_role() {

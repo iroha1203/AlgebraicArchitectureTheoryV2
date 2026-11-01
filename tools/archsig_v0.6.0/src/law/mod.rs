@@ -428,26 +428,8 @@ fn check_law_processing<E: InputError>(
     }
     let mut expr_types = std::mem::take(&mut checker.expr_types);
     expr_types.resize(checker.parser.exprs.len(), None);
-    // 元入力が持つ名前の区切りは、評価へ渡す前に一度だけ確定する。
-    let mut resolved_names = BTreeMap::new();
-    let mut remember = |name: String| {
-        resolved_names.entry(name.clone()).or_insert_with(|| name.into());
-    };
-    for (name, declaration) in &definitions.declarations {
-        remember(name.clone());
-        if let Some((parameters, fields)) = declaration.signature.record_fields() {
-            for field in parameters.iter().chain(fields) {
-                remember(format!("{name}.{}", field.name));
-            }
-        }
-        if let crate::definition::PrimitiveSignature::Data { constructors } = &declaration.signature {
-            for constructor in constructors { remember(format!("{name}.{}", constructor.name)); }
-        }
-    }
-    for name in declarations.keys() { remember(name.clone()); }
-    for info in &infos {
-        for (_, name) in &info.references { remember(name.clone()); }
-    }
+    let resolved_names = resolve_names::<E>(definitions, &declarations, &infos, control)
+        .map_err(|i| fail(i, Some(digest.clone())))?;
     Ok(CheckedLaw {
         resolved_names,
         bytes_digest,
@@ -461,6 +443,47 @@ fn check_law_processing<E: InputError>(
     })
 }
 
+// 元入力が持つ名前の区切りは、評価へ渡す前に一度だけ確定する。
+fn resolve_names<E: InputError>(
+    definitions: &CheckedDefinitions,
+    declarations: &BTreeMap<String, Declaration>,
+    infos: &[DeclarationInfo],
+    control: &mut Control,
+) -> Result<BTreeMap<String, crate::names::QualifiedName>, E> {
+    let mut names = BTreeMap::new();
+    let mut remember = |name: String, control: &mut Control| -> Result<(), E> {
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+        names.entry(name.clone()).or_insert_with(|| name.into());
+        E::checkpoint(control, Checkpoint::LawIteration)
+    };
+    for (name, declaration) in &definitions.declarations {
+        remember(name.clone(), control)?;
+        if let Some((parameters, fields)) = declaration.signature.record_fields() {
+            for field in parameters.iter().chain(fields) {
+                remember(format!("{name}.{}", field.name), control)?;
+            }
+        }
+        if let crate::definition::PrimitiveSignature::Data { constructors } = &declaration.signature
+        {
+            for constructor in constructors {
+                remember(format!("{name}.{}", constructor.name), control)?;
+            }
+        }
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+    }
+    for name in declarations.keys() {
+        remember(name.clone(), control)?;
+    }
+    for info in infos {
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+        for (_, name) in &info.references {
+            remember(name.clone(), control)?;
+        }
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+    }
+    Ok(names)
+}
+
 #[cfg(test)]
 mod entry_control_tests {
     use super::*;
@@ -469,6 +492,51 @@ mod entry_control_tests {
 
     thread_local! {
         pub(super) static BYTES_DIGEST_STARTS: Cell<usize> = const { Cell::new(0) };
+    }
+
+    #[test]
+    fn name_index_stops_at_each_iteration_checkpoint() {
+        let definitions = crate::definition::check_definitions(&[(
+            "counter.atoms.json",
+            include_bytes!("../../tests/fixtures/counter.atoms.json").as_slice(),
+        )])
+        .unwrap();
+        let law = check_law(
+            include_bytes!("../../tests/fixtures/counter.law"),
+            &definitions,
+        )
+        .unwrap();
+        let samples = Rc::new(Cell::new(0));
+        let observed = samples.clone();
+        let mut control = Control::new(move |_| {
+            observed.set(observed.get() + 1);
+            None
+        });
+        let names = resolve_names::<CheckFailure<Box<Issue>>>(
+            &definitions,
+            &law.declarations,
+            &law.infos,
+            &mut control,
+        )
+        .unwrap();
+        assert_eq!(names, law.resolved_names);
+        assert!(samples.get() > names.len());
+        for stop_at in 1..=samples.get() {
+            let count = Rc::new(Cell::new(0));
+            let observed = count.clone();
+            let mut control = Control::new(move |_| {
+                observed.set(observed.get() + 1);
+                (observed.get() == stop_at).then_some(Signal::Int)
+            });
+            let result = resolve_names::<CheckFailure<Box<Issue>>>(
+                &definitions,
+                &law.declarations,
+                &law.infos,
+                &mut control,
+            );
+            assert!(matches!(result, Err(CheckFailure::Stopped(_))));
+            assert_eq!(count.get(), stop_at);
+        }
     }
 
     #[test]
