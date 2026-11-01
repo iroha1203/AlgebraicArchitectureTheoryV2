@@ -181,17 +181,10 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
     use std::{cell::Cell, rc::Rc};
     let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
     for case in [0, 3, 6] {
-        let seen = Rc::new(Cell::new(0));
-        let count = seen.clone();
-        let mut c = Control::new(move |point| {
-            if point == Checkpoint::Quotient {
-                count.set(count.get() + 1);
-            }
-            let stop = if case == 6 {
-                count.get() >= 2 && point == Checkpoint::FiniteLawOperand
-            } else {
-                count.get() == 2
-            };
+        let seen=Rc::new(Cell::new(0));let count=seen.clone();
+        let mut c=Control::new(move|point|{
+            if point==Checkpoint::Quotient {count.set(count.get()+1);}
+            let stop=if case==6 {count.get()>=2 && point==Checkpoint::FiniteLawOperand} else {count.get()==2};
             stop.then_some(archsig::result::Signal::Term)
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
@@ -203,12 +196,8 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
         assert!(!has(get(&answers[1],"outputs"),"quotient"));
 
         for answer in &answers[1..] {
-            assert_eq!(s(get(answer, "status")), "undetermined");
-            assert!(
-                arr(get(answer, "reasons"))
-                    .iter()
-                    .any(|r| s(get(r, "code")) == "cancelled")
-            );
+            assert_eq!(s(get(answer,"status")),"undetermined");
+            assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="cancelled"));
         }
     }
 }

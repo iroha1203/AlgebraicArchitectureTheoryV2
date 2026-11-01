@@ -838,7 +838,8 @@ impl<E: InputError> Checker<'_, E> {
 
     fn non_callable_error<T>(&self, span: Span, ty: &Type) -> CResult<T, E> {
         let wire = ty.wire_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
-        let text = wire.canonical_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
+        let text =
+            wire.canonical_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
         syntax(span, format!("value of type {text} cannot be applied"))
     }
 
