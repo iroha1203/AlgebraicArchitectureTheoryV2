@@ -1336,7 +1336,7 @@ impl<E: InputError> Checker<'_, E> {
 mod semantic_finish_tests {
     use super::*;
     use crate::{
-        control::{CheckFailure, Checkpoint as StopPoint, Control, StopReason},
+        control::{CheckFailure, Checkpoint as StopPoint, Control},
         definition::CheckedDefinitions,
         issue::{Code, Details, Issue},
         law::parser::Parser,
@@ -1466,8 +1466,8 @@ mod semantic_finish_tests {
             let Failure::Stopped(reason) = failure else {
                 panic!("unfinished inference must stop before producing a type")
             };
-            assert_eq!(control.stop_reason(), Some(reason.clone()));
-            assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+            assert_eq!(control.stop_reason(), Some(reason));
+            assert_eq!(reason, Signal::Term);
         }
     }
     #[test]
@@ -1515,10 +1515,7 @@ mod semantic_finish_tests {
         armed.set(true);
         let failure = bool_mismatch(&mut check).unwrap_err();
         assert_eq!(seen.get(), final_step);
-        assert!(matches!(
-            failure,
-            Failure::Stopped(StopReason::Cancelled(Signal::Term))
-        ));
+        assert!(matches!(failure, Failure::Stopped(Signal::Term)));
     }
     #[test]
     fn resolve_type_error_checks_its_exit_before_returning_invalid() {
@@ -1547,10 +1544,7 @@ mod semantic_finish_tests {
         armed.set(true);
         let failure = check.resolve_type(&ast, &ctx).unwrap_err();
         assert_eq!(count.get(), exit);
-        assert!(matches!(
-            failure,
-            Failure::Stopped(StopReason::Cancelled(Signal::Term))
-        ));
+        assert!(matches!(failure, Failure::Stopped(Signal::Term)));
     }
     #[test]
     fn known_type_mismatch_diagnostic_stops_at_each_checkpoint() {
@@ -1573,10 +1567,7 @@ mod semantic_finish_tests {
             let failure = check
                 .type_error::<()>((0, 4), &expected, &actual, "mismatch")
                 .unwrap_err();
-            assert!(matches!(
-                failure,
-                Failure::Stopped(StopReason::Cancelled(Signal::Term))
-            ));
+            assert!(matches!(failure, Failure::Stopped(Signal::Term)));
         }
     }
     #[test]
@@ -1601,10 +1592,7 @@ mod semantic_finish_tests {
             let check = checker(&mut control);
             armed.set(true);
             let failure = check.non_callable_error::<()>((0, 4), &ty).unwrap_err();
-            assert!(matches!(
-                failure,
-                Failure::Stopped(StopReason::Cancelled(Signal::Term))
-            ));
+            assert!(matches!(failure, Failure::Stopped(Signal::Term)));
         }
     }
 
@@ -1712,10 +1700,7 @@ mod semantic_finish_tests {
                 .check(root, None, &mut Env::default(), &ctx())
                 .unwrap_err();
             assert!(observed.get(), "last candidate error was not constructed");
-            assert!(matches!(
-                failure.0,
-                CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-            ));
+            assert!(matches!(failure.0, CheckFailure::Stopped(Signal::Term)));
         }
     }
     #[test]

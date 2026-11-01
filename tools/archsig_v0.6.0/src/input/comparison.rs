@@ -1306,7 +1306,7 @@ mod tests {
     use crate::{
         archmap::value::{TermValue, Value},
         canonical::Json,
-        control::{CheckFailure, StopReason},
+        control::CheckFailure,
         law::{
             TermBody,
             ast::{Builtin, Ident, Pattern, TypeAst},
@@ -1338,7 +1338,7 @@ mod tests {
             });
             assert!(matches!(
                 compare(a, b, &mut control),
-                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
+                Err(CheckFailure::Stopped(Signal::Term))
             ));
         }
     }
@@ -1422,10 +1422,7 @@ mod tests {
         let mut comparison = Comparison::new(&mut control, Location::Law { span: (0, 1) });
         let result = comparison.eq(&false, &true);
         assert!(comparison.mismatched);
-        assert!(matches!(
-            result,
-            Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Int)))
-        ));
+        assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Int))));
     }
 
     #[test]

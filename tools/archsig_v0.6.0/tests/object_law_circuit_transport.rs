@@ -341,10 +341,7 @@ fn changed_current_inputs_reject_previous_transport() {
 }
 #[test]
 fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_frozen_probes() {
-    use archsig::{
-        control::{Checkpoint as C, StopReason},
-        result::Signal,
-    };
+    use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required measure(c:Left.Child,b:Bool):(if b then 1 else 0,1)=(0,0);",
@@ -369,7 +366,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
         let h = hits.clone();
         let probes = Rc::new(RefCell::new(0));
         let p = probes.clone();
-        let expected = StopReason::Cancelled(Signal::Int);
+        let expected = Signal::Int;
         let mut c = Control::new(move |point| {
             *p.borrow_mut() += 1;
             if point == at {
@@ -389,7 +386,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
         else {
             panic!("new comparison stage")
         };
-        assert_eq!(cause, ConstructionFailure::Stopped(expected.clone()));
+        assert_eq!(cause, ConstructionFailure::Stopped(expected));
         assert_eq!(c.stop_reason(), Some(expected));
         assert_eq!(*hits.borrow(), nth);
         assert_eq!(partial.base().object().subject().subject, "p");
@@ -689,10 +686,7 @@ fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence(
 }
 #[test]
 fn side_construction_stops_retain_the_already_refuted_original_condition() {
-    use archsig::{
-        control::{Checkpoint as C, StopReason},
-        result::Signal,
-    };
+    use archsig::{control::Checkpoint as C, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = ground("2=0", "0=0");
     let d = declarations(&i);
@@ -716,7 +710,7 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                 let h = hits.clone();
                 let probes = Rc::new(Cell::new(0));
                 let p = probes.clone();
-                let expected = StopReason::Cancelled(signal);
+                let expected = signal;
                 let mut c = Control::new(move |at| {
                     p.set(p.get() + 1);
                     if at == checkpoint {
@@ -730,7 +724,7 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                 };
                 assert_eq!(partial.outcome(), baseline.outcome());
                 assert!(partial.points().is_empty());
-                assert_eq!(c.stop_reason(), Some(expected.clone()));
+                assert_eq!(c.stop_reason(), Some(expected));
                 let complete = checkpoint == C::ObjectLawCircuitTransport && nth == count;
                 assert_eq!(partial.is_complete(), complete);
                 if checkpoint == C::ObjectLawCircuitTransport {

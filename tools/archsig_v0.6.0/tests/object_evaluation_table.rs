@@ -259,7 +259,7 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
         let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
         let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
         assert!(
-            matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
+            matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(*r)==c.stop_reason())
         );
         let partial = f.partial().unwrap();
         let kept = ((at - 1) / 2).min(n);
@@ -323,7 +323,7 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
         let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
         let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
         assert!(
-            matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(r.clone())==c.stop_reason())
+            matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(*r)==c.stop_reason())
         );
         let partial = f.partial().unwrap();
         assert!(partial.is_complete());

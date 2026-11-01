@@ -1,7 +1,7 @@
 //! 小さい意味検査の成功・既知不正・表示の末尾へ共有制御が届くことを確認する。
 use archsig::result::Signal;
 use archsig::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed},
 };
@@ -52,10 +52,7 @@ fn prepared_byte_inputs_report_a_late_stop_after_known_semantic_invalid() {
         assert!(failure.primitives().is_empty());
         assert!(failure.vocabularies().is_empty());
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert!(matches!(
-            control.stop_reason(),
-            Some(StopReason::Cancelled(Signal::Term))
-        ));
+        assert!(matches!(control.stop_reason(), Some(Signal::Term)));
     }
 }
 #[test]
@@ -74,10 +71,7 @@ fn nested_type_erasure_and_invalid_call_diagnostics_remain_interruptible_from_by
             let failure = check_inputs(sources(body), &mut control).unwrap_err();
             assert_eq!(seen.get(), at);
             assert_eq!(failure.status(), InputStatus::Interrupted);
-            assert!(matches!(
-                control.stop_reason(),
-                Some(StopReason::Cancelled(Signal::Term))
-            ));
+            assert!(matches!(control.stop_reason(), Some(Signal::Term)));
         }
     }
 }

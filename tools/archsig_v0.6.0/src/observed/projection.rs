@@ -1,6 +1,7 @@
 //! 観測評価の公開射影の静的型付け。動的な constructor・index・owner 条件は評価へ残す。
 
-use crate::control::{Checkpoint, Control, StopReason};
+use crate::control::{Checkpoint, Control};
+use crate::result::Signal;
 use crate::{canonical::Json, definition::PrimitiveSignature, law::CheckedLaw, types::Type};
 
 /// Law の型と、計算結果だけに存在する record 型を区別する。
@@ -89,15 +90,15 @@ pub struct ProjectionPlan {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ProjectionFailure {
     Invalid(String),
-    Interrupted(StopReason),
+    Interrupted(Signal),
 }
 impl From<&str> for ProjectionFailure {
     fn from(message: &str) -> Self {
         Self::Invalid(message.into())
     }
 }
-impl From<StopReason> for ProjectionFailure {
-    fn from(reason: StopReason) -> Self {
+impl From<Signal> for ProjectionFailure {
+    fn from(reason: Signal) -> Self {
         Self::Interrupted(reason)
     }
 }
@@ -140,7 +141,7 @@ pub fn resolve_projection_controlled(
     Ok(plan)
 }
 
-fn tick(control: &mut Control) -> Result<(), StopReason> {
+fn tick(control: &mut Control) -> Result<(), Signal> {
     control.checkpoint(Checkpoint::Projection)
 }
 
@@ -451,7 +452,7 @@ pub fn can_bind_controlled(
     actual: &ProjectionType,
     expected: &Type,
     control: &mut Control,
-) -> Result<bool, StopReason> {
+) -> Result<bool, Signal> {
     tick(control)?;
     let mut candidates = vec![actual];
     while let Some(actual) = candidates.pop() {
@@ -482,7 +483,7 @@ pub fn can_bind_controlled(
 }
 
 /// 取消は判定より優先する。呼出し側で、一候補の不一致と全候補の不適合を区別する。
-fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, StopReason> {
+fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, Signal> {
     tick(control).map(|()| same)
 }
 
@@ -492,7 +493,7 @@ fn law_types_match(
     right: &Type,
     erase_owner: bool,
     control: &mut Control,
-) -> Result<bool, StopReason> {
+) -> Result<bool, Signal> {
     let mut pending = vec![(left, right)];
     while let Some((left, right)) = pending.pop() {
         tick(control)?;
@@ -561,7 +562,7 @@ fn push_unique(
     candidates: &mut Vec<ProjectionType>,
     candidate: ProjectionType,
     control: &mut Control,
-) -> Result<(), StopReason> {
+) -> Result<(), Signal> {
     tick(control)?;
     for existing in candidates.iter() {
         tick(control)?;
@@ -580,7 +581,7 @@ fn projection_types_match(
     left: &ProjectionType,
     right: &ProjectionType,
     control: &mut Control,
-) -> Result<bool, StopReason> {
+) -> Result<bool, Signal> {
     let mut pending = vec![(left, right)];
     while let Some((left, right)) = pending.pop() {
         tick(control)?;

@@ -1,7 +1,7 @@
 //! 原始定義の意味検査へ届いた共有中断が、入力不正や false に変わらないことを確かめる。
 use archsig::{
     canonical::Json,
-    control::{CheckFailure, Checkpoint, Control, StopReason},
+    control::{CheckFailure, Checkpoint, Control},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputSources, InputStatus, check_inputs},
     issue::Code,
@@ -89,10 +89,7 @@ fn data_validation_cancellation_is_typed_before_eventual_invalid_self_reference(
     let stopped = check_definitions_controlled(&[("definition0", source.as_bytes())], &mut control)
         .expect_err("停止を Syntax に変換しない");
     assert_eq!(calls.get(), 3);
-    assert!(matches!(
-        stopped,
-        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-    ));
+    assert!(matches!(stopped, CheckFailure::Stopped(Signal::Term)));
 }
 
 #[test]

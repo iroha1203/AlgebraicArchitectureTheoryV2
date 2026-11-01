@@ -1,7 +1,7 @@
 //! Schema helper の内部と入力不正を確定した後の停止優先順位。
 use crate::common;
 use archsig::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed},
     result::Signal,
@@ -92,9 +92,6 @@ fn schema_version_and_relative_path_errors_do_not_outrank_signals() {
         let failure = check_inputs(make(), &mut control).unwrap_err();
         assert_eq!(seen.get(), last);
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(
-            control.stop_reason(),
-            Some(StopReason::Cancelled(Signal::Term))
-        );
+        assert_eq!(control.stop_reason(), Some(Signal::Term));
     }
 }

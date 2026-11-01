@@ -3,11 +3,12 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
     law::check_law,
-    result::{ResultIssue, Signal},
+    result::ResultIssue,
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -97,9 +98,9 @@ fn assert_cancel_after_cycle(law: &str) {
     let (_, total) = baseline(law);
     let mut control = injected(total);
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
-    let reason = StopReason::Cancelled(Signal::Term);
+    let reason = Signal::Term;
     assert_eq!(failure.status(), InputStatus::Interrupted);
-    assert_eq!(failure.issues(), [reason.wire()]);
+    assert_eq!(failure.issues(), [reason.issue()]);
     assert_eq!(control.stop_reason(), Some(reason));
 }
 
@@ -110,10 +111,7 @@ fn assert_stop_before_cycle(law: &str) {
     let mut control = injected(total - 1);
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
-    assert_eq!(
-        failure.issues(),
-        [StopReason::Cancelled(Signal::Term).wire()]
-    );
+    assert_eq!(failure.issues(), [Signal::Term.issue()]);
 }
 
 #[test]

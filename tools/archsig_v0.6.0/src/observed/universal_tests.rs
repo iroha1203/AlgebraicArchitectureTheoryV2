@@ -583,7 +583,7 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
             Decision::Established
         }
     );
-    let expected = StopReason::Cancelled(Signal::Term);
+    let expected = Signal::Term;
     let ready = Rc::new(Cell::new(false));
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -644,7 +644,7 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
     data::clear_iteration_observer();
     let stopped = stopped.unwrap();
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     let Json::Obj(ref normal_wire) = normal.wire() else {
         unreachable!()
     };
@@ -674,7 +674,7 @@ fn universal_private_stop_with_current(stage: usize, current: &str, request: &st
         let Json::Obj(ref actual) = reason.wire() else {
             unreachable!()
         };
-        let Json::Obj(ref expected) = expected.wire() else {
+        let Json::Obj(ref expected) = expected.issue() else {
             unreachable!()
         };
         assert_eq!(actual["details"], expected["details"]);

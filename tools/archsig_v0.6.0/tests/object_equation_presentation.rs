@@ -350,11 +350,7 @@ fn changed_current_input_and_invalid_object_are_rejected() {
 }
 #[test]
 fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_completion() {
-    use archsig::{
-        construction::ConstructionFailure,
-        control::{Checkpoint as C, StopReason},
-        result::Signal,
-    };
+    use archsig::{construction::ConstructionFailure, control::Checkpoint as C, result::Signal};
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
         "law required first(c:Part) when true or c.quantity>0:(match c { d=>d.quantity; })=0;law required second(c:Part) when c.quantity-c.quantity=0:(match c.quantity { x=>x*x; })=1;",
@@ -375,7 +371,7 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
             let h = hits.clone();
             let probes = Rc::new(RefCell::new(0));
             let p = probes.clone();
-            let expected = StopReason::Cancelled(Signal::Int);
+            let expected = Signal::Int;
             let mut c = Control::new(move |point| {
                 *p.borrow_mut() += 1;
                 if point == at {
@@ -1158,10 +1154,7 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
-    use archsig::{
-        control::{Checkpoint, StopReason},
-        result::Signal,
-    };
+    use archsig::{control::Checkpoint, result::Signal};
     let i = inputs_with(
         fixture::D,
         "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",
@@ -1192,7 +1185,7 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
         };
         assert_eq!(
             cause,
-            archsig::construction::ConstructionFailure::Stopped(StopReason::Cancelled(Signal::Int))
+            archsig::construction::ConstructionFailure::Stopped(Signal::Int)
         );
         assert!(!partial.is_complete());
         assert_eq!(partial.status(), S::Undetermined);

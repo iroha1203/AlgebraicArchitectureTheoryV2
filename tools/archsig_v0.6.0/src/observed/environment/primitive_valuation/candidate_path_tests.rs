@@ -427,7 +427,7 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
                     Err(e) => e,
                     Ok(_) => panic!("停止が成功"),
                 };
-                let reason = StopReason::Cancelled(signal);
+                let reason = signal;
                 assert!(matches!(error,ValidationFailure::Stop(ref s)if s==&reason));
                 let before = calls.get();
                 assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(reason));

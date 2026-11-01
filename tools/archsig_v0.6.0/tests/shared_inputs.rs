@@ -336,7 +336,7 @@ fn sharing_does_not_reset_the_control_or_probe_again_after_a_stop() {
             panic!("stop in resolution")
         };
         assert!(Arc::ptr_eq(&inputs, &shared));
-        assert_eq!(Some(reason.clone()), control.stop_reason());
+        assert_eq!(Some(reason), control.stop_reason());
         let before = count.get();
         let failure =
             prepare_shared_observed(inputs, &["c=check(CountCheck.nonnegative)"], &mut control)

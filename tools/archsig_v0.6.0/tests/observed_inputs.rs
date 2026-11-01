@@ -3,7 +3,7 @@
 use archsig::{
     archmap::check_archmap,
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{CheckedInputs, InputBytes, InputSources, InputStatus, check_inputs},
     law::check_law,
@@ -181,10 +181,7 @@ fn cancellation_after_multiple_iterations_stops_inside_each_checker() {
         let failure = check_inputs(sources(), &mut control).unwrap_err();
         assert_eq!(seen.get(), stop_after);
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(
-            control.stop_reason(),
-            Some(StopReason::Cancelled(Signal::Term))
-        );
+        assert_eq!(control.stop_reason(), Some(Signal::Term));
         assert_eq!(
             !failure.declarations().is_empty(),
             point == Checkpoint::ArchMapIteration
@@ -226,7 +223,7 @@ fn cloned_controls_share_stop_and_never_resume_after_cancellation() {
     let mut helper = control.clone();
     control.checkpoint(Checkpoint::Resolve).unwrap();
     let stopped = helper.checkpoint(Checkpoint::FiniteIteration).unwrap_err();
-    assert_eq!(stopped, StopReason::Cancelled(Signal::Term));
+    assert_eq!(stopped, Signal::Term);
     assert_eq!(
         control.checkpoint(Checkpoint::Expression).unwrap_err(),
         stopped

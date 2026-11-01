@@ -1252,7 +1252,7 @@ impl Environment<'_> {
             )
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
-            if let ReasonKind::Stop(stop) = &r.kind { Some(stop.clone()) } else { None }
+            if let ReasonKind::Stop(stop) = &r.kind { Some(*stop) } else { None }
         }) {
             return Err(ValidationFailure::Stop(stop));
         }
@@ -1320,7 +1320,7 @@ pub(super) fn validate_answer(
             compute(env, g, request, g.nodes.len(), &mut env.control.clone())
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
-            if let ReasonKind::Stop(stop) = &r.kind { Some(stop.clone()) } else { None }
+            if let ReasonKind::Stop(stop) = &r.kind { Some(*stop) } else { None }
         }) { return Err(ValidationFailure::Stop(stop)); }
         return if rebuilt.parts.is_empty() && rebuilt.answer == *answer {
             Ok(())

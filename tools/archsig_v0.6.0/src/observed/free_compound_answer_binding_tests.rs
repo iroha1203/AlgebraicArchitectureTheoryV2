@@ -28,7 +28,7 @@ fn stop(mode: usize) {
         Signature::Law { params, .. } => params[2].span,
         _ => panic!(),
     };
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -79,7 +79,7 @@ fn stop(mode: usize) {
     data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..5], &normal.answers[..5]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -112,7 +112,7 @@ fn stop(mode: usize) {
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if *s==expected))
             .unwrap();
         assert_eq!(reason.request, a.id);
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!()
         };

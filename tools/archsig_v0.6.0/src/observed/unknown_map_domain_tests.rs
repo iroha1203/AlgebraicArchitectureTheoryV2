@@ -86,7 +86,7 @@ fn stop(stage: &'static str) {
     let inputs = fixture::input("empty_varying", "r1");
     let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -118,7 +118,7 @@ fn stop(stage: &'static str) {
     super::super::super::data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert!(stopped.nodes.len() < normal.nodes.len());
     macro_rules! prefix {
         ($field:ident) => {

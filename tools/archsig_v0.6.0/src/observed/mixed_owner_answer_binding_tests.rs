@@ -65,7 +65,7 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
         Signature::Law { params, .. } => params[2].span,
         _ => panic!(),
     };
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -102,7 +102,7 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
     data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..5], &normal.answers[..5]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -121,7 +121,7 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if *s==expected))
             .unwrap();
         assert_eq!(reason.request, a.id);
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!()
         };
@@ -192,7 +192,7 @@ fn completion_stop(phase: &'static str, index: usize) {
     use std::{cell::Cell, rc::Rc};
     let normal = completed_result();
     let target = normal.prepared.inputs().law().declarations["Applications.mxTuple"].span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -235,7 +235,7 @@ fn completion_stop(phase: &'static str, index: usize) {
     data::clear_iteration_observer();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);

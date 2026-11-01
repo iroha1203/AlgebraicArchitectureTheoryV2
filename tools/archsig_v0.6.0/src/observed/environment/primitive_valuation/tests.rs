@@ -437,7 +437,7 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
                         .err()
                         .expect("未完成環境を返さない")
                 };
-                let expected = StopReason::Cancelled(kind);
+                let expected = kind;
                 assert!(matches!(failure,ValidationFailure::Stop(s) if s==expected));
                 let frozen = count.get();
                 assert_eq!(frozen, at);
@@ -674,7 +674,7 @@ fn fixed_owner_family_stops_keep_candidates_out_of_observation_evidence() {
             let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
             active.set(true);
             let error = family(&e, "root").err().expect("族の途中値を返さない");
-            let expected = StopReason::Cancelled(kind);
+            let expected = kind;
             assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
             assert_eq!(count.get(), at);
             assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
@@ -779,7 +779,7 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
                 let error = owned_helper(&e, name, "r2")
                     .err()
                     .expect("Owned検査の途中値を返さない");
-                let expected = StopReason::Cancelled(kind);
+                let expected = kind;
                 assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
                 assert_eq!(count.get(), at);
                 assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
@@ -1016,7 +1016,7 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
                 let error = Environment::with_primitive_valuation(&i, &values, &mut c)
                     .err()
                     .expect("入れ子候補の途中環境を返さない");
-                let expected = StopReason::Cancelled(kind);
+                let expected = kind;
                 assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
                 assert_eq!(count.get(), at);
                 assert_eq!(c.checkpoint(point), Err(expected));
@@ -1142,7 +1142,7 @@ fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
             let error = Environment::with_primitive_valuation(&i, &values, &mut c)
                 .err()
                 .expect("元Termの再検査途中を成功にしない");
-            let expected = StopReason::Cancelled(kind);
+            let expected = kind;
             assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
             assert_eq!(count.get(), at);
             assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));

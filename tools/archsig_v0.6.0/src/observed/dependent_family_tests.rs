@@ -138,7 +138,7 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
             .flat_map(|r| &r.missing)
             .any(|f| f.subject == "l" && f.field.as_deref() == Some("Dep.Leaf.ok"))
     );
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
@@ -185,7 +185,7 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     let retained = if phase == "answer" { 4 } else { 3 };
     assert_eq!(&stopped.answers[..retained], &normal.answers[..retained]);
     for answer in &stopped.answers[retained..] {
@@ -199,7 +199,7 @@ fn dependent_private_body_phase_stop(declaration: &str, phase: &'static str, at:
         let Json::Obj(ref reason_wire) = reason.wire() else {
             unreachable!()
         };
-        let Json::Obj(ref expected_wire) = expected.wire() else {
+        let Json::Obj(ref expected_wire) = expected.issue() else {
             unreachable!()
         };
         assert_eq!(reason_wire["details"], expected_wire["details"]);

@@ -100,7 +100,7 @@ fn the_same_control_reaches_request_resolution() {
             .contains_key("CountCheck.nonnegative")
     );
     assert!(matches!(failure, ResolveFailure::Interrupted { .. }));
-    assert_eq!(control.stop_reason().unwrap().code(), "cancelled");
+    assert_eq!(control.stop_reason(), Some(Signal::Int));
 }
 
 #[test]

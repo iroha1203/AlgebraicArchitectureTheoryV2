@@ -1824,7 +1824,6 @@ mod tests {
 
     #[test]
     fn partial_forall_control_preserves_free_predicate_and_freezes() {
-        use crate::control::StopReason;
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
@@ -1854,7 +1853,7 @@ mod tests {
             probe_calls.set(probe_calls.get() + 1);
             probe_ready.get().then_some(Signal::Int)
         });
-        let expected = StopReason::Cancelled(Signal::Int);
+        let expected = Signal::Int;
         let seen = notifications.clone();
         with_observer(
             move |point| {
@@ -1868,7 +1867,7 @@ mod tests {
                     matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
                 Err(ValidationFailure::Stop(reason)) if reason == expected)
                 );
-                assert_eq!(controlled.stop_reason(), Some(expected.clone()));
+                assert_eq!(controlled.stop_reason(), Some(expected));
                 let frozen_calls = calls.get();
                 let frozen_notifications = notifications.get();
                 assert!(
@@ -1890,7 +1889,6 @@ mod tests {
 
     #[test]
     fn universal_control_freezes_at_gcd_and_proof_selection() {
-        use crate::control::StopReason;
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
@@ -1919,7 +1917,7 @@ mod tests {
                 probe_calls.set(probe_calls.get() + 1);
                 probe_ready.get().then_some(Signal::Int)
             });
-            let expected = StopReason::Cancelled(Signal::Int);
+            let expected = Signal::Int;
             let seen = notifications.clone();
             with_observer(
                 move |actual| {
@@ -1934,7 +1932,7 @@ mod tests {
                     );
                     let frozen_calls = calls.get();
                     let frozen_notifications = notifications.get();
-                    assert_eq!(controlled.stop_reason(), Some(expected.clone()));
+                    assert_eq!(controlled.stop_reason(), Some(expected));
                     assert!(
                         matches!(universal_equality(Some(&form), Some(&zero), &[], &controlled), Err(ValidationFailure::Stop(reason)) if reason == expected)
                     );

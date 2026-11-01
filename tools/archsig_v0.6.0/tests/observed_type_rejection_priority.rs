@@ -3,12 +3,13 @@
 mod positions;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
     law::check_law,
-    result::{ResultIssue, Signal},
+    result::ResultIssue,
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -117,9 +118,9 @@ fn terminal_priority(input: InputSources, in_law: bool, point: Checkpoint, unwin
         assert_eq!(seen.get(), at, "{point:?} at {at}/{total}");
         empty_stage(&failure);
         let reason = control.stop_reason().expect("shared terminal stop");
-        assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+        assert_eq!(reason, Signal::Term);
         assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [reason.wire()]);
+        assert_eq!(failure.issues(), [reason.issue()]);
     }
     issue
 }
@@ -147,7 +148,7 @@ fn definition_set_and_term_rejections_keep_original_pointer_and_stop() {
         let failure = check_inputs(input.clone(), &mut control).unwrap_err();
         assert_eq!(failure.status(), InputStatus::Interrupted);
         empty_stage(&failure);
-        assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
+        assert_eq!(failure.issues(), [control.stop_reason().unwrap().issue()]);
     }
 }
 
@@ -277,5 +278,5 @@ fn data_property_true_remains_an_intermediate_fact_when_a_stop_interrupts_it() {
     assert_eq!(seen.get(), 10);
     assert_eq!(failure.status(), InputStatus::Interrupted);
     empty_stage(&failure);
-    assert_eq!(failure.issues(), [control.stop_reason().unwrap().wire()]);
+    assert_eq!(failure.issues(), [control.stop_reason().unwrap().issue()]);
 }

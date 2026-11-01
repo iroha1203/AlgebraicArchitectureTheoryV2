@@ -27,7 +27,7 @@ fn stop(recheck: bool) {
         panic!()
     };
     let span = params[0].span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
@@ -82,7 +82,7 @@ fn stop(recheck: bool) {
     data::clear_iteration_observer();
     assert_eq!(seen.get(), 1);
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -109,7 +109,7 @@ fn stop(recheck: bool) {
             .find(|reason| matches!(&reason.kind, ReasonKind::Stop(actual) if actual == &expected))
             .unwrap();
         assert_eq!(reason.request, stopped.answers[index].id);
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!()
         };

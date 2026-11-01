@@ -78,7 +78,7 @@ fn projection_stop(recheck: bool, law: bool) {
         assert!(normal.answers[5].claim.is_some());
         assert!(!normal.answers[5].evidence.is_empty());
     }
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
@@ -131,7 +131,7 @@ fn projection_stop(recheck: bool, law: bool) {
     data::clear_iteration_observer();
     assert_eq!(seen.get(), if law { 2 } else { 3 });
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..5], &normal.answers[..5]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -156,7 +156,7 @@ fn projection_stop(recheck: bool, law: bool) {
             .iter()
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if *s==expected))
             .unwrap();
-        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.wire())
+        let (Json::Obj(ref actual), Json::Obj(ref wanted)) = (reason.wire(), expected.issue())
         else {
             panic!()
         };

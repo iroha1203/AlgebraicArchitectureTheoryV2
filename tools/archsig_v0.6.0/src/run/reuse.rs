@@ -3,7 +3,8 @@ use crate::canonical::Json;
 use crate::json::{JNode, JValue};
 use crate::result::ResultIssue;
 use crate::{
-    control::{CheckFailure, Checkpoint, Control, StopReason},
+    control::{CheckFailure, Checkpoint, Control},
+    result::Signal,
     observed::ObservedEvaluation,
 };
 use std::{
@@ -32,7 +33,7 @@ impl Candidate {
         mut self,
         evaluation: &ObservedEvaluation,
         control: &mut Control,
-    ) -> (Vec<Json>, Option<StopReason>) {
+    ) -> (Vec<Json>, Option<Signal>) {
         if let Some(document) = &self.document
             && matches!(evaluation.status(), "complete" | "partial")
         {
@@ -45,7 +46,7 @@ impl Candidate {
         (self.rejected, None)
     }
 }
-pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Candidate, StopReason> {
+pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Candidate, Signal> {
     let mut candidate = Candidate {
         path: path.unwrap_or_else(|| Path::new("")).to_owned(),
         document: None,
@@ -110,10 +111,10 @@ pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Cand
 }
 enum Failure {
     Rejected(String),
-    Stopped(StopReason),
+    Stopped(Signal),
 }
-impl From<StopReason> for Failure {
-    fn from(reason: StopReason) -> Self {
+impl From<Signal> for Failure {
+    fn from(reason: Signal) -> Self {
         Self::Stopped(reason)
     }
 }

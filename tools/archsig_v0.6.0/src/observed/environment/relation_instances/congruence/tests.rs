@@ -442,7 +442,7 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
             failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
             None
         );
-        let expected = StopReason::Cancelled(Signal::Int);
+        let expected = Signal::Int;
         assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
         let frozen = samples.get();
         assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());

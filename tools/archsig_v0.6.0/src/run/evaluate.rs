@@ -4,7 +4,7 @@ use super::{Io, Outcome, RunArgs, Signals, output, read};
 use crate::canonical::Json;
 use crate::result::{ResultIssue, Signal, Status, exit_code};
 use crate::{
-    control::{Control, StopReason},
+    control::Control,
     input::{InputSources, InputStatus},
     observed::{
         EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
@@ -30,7 +30,7 @@ fn failure(signals: &mut dyn Signals, operation: &str, message: String) -> Outco
 
 fn prior_signal(control: &Control) -> Option<Signal> {
     match control.stop_reason() {
-        Some(StopReason::Cancelled(s)) => Some(s),
+        Some(s) => Some(s),
         _ => None,
     }
 }
@@ -123,7 +123,7 @@ pub fn run_requests(
                     Status::Interrupted,
                     75,
                     prior_signal(control),
-                    vec![reason.wire()],
+                    vec![reason.issue()],
                 );
             }
             ResolveFailure::NotApplicable {
@@ -154,7 +154,7 @@ pub fn run_requests(
                 Status::Interrupted,
                 75,
                 prior_signal(control),
-                vec![reason.wire()],
+                vec![reason.issue()],
             );
         }
     };
@@ -181,7 +181,7 @@ fn deliver(
     args: &RunArgs,
     evaluation: ObservedEvaluation,
     rejected: Vec<Json>,
-    reuse_stop: Option<StopReason>,
+    reuse_stop: Option<Signal>,
     control: &Control,
 ) -> Outcome {
     let (mut status, mut code) = match evaluation.status() {
@@ -202,7 +202,7 @@ fn deliver(
     if let Some(reason) = &reuse_stop {
         status = Status::Interrupted;
         code = 75;
-        issues.push(reason.wire());
+        issues.push(reason.issue());
     }
     let internal = evaluation
         .issues
@@ -226,7 +226,7 @@ fn deliver(
             })
             .collect();
         if let Some(reason) = reuse_stop {
-            issues.push(reason.wire());
+            issues.push(reason.issue());
         }
         return output::notify(
             signals,
@@ -298,7 +298,7 @@ fn deliver(
         document.insert("warnings".into(), Json::Arr(rejected));
     }
     let Json::Arr(saved_issues) = document.get_mut("issues").unwrap() else { unreachable!() };
-    if let Some(reason) = reuse_stop { saved_issues.push(reason.wire()); }
+    if let Some(reason) = reuse_stop { saved_issues.push(reason.issue()); }
     if prior_signal(control).is_none() && let Some(signal) = frozen {
         saved_issues.push(ResultIssue::Cancelled(signal).wire());
     }

@@ -462,7 +462,7 @@ fn stop_preserves_established_value_and_refuted_counterexample() {
             );
         }
     }
-    let reason = low_control.stop_reason().unwrap().wire();
+    let reason = low_control.stop_reason().unwrap().issue();
     let details = Json::obj([("signal", Json::str("SIGTERM"))]);
     assert_eq!(field(&reason, "details"), &details);
     for id in ["missing", "later"] {

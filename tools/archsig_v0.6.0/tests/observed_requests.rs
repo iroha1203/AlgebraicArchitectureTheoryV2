@@ -2,7 +2,7 @@
 use crate::common;
 use archsig::{
     archmap::CheckedArchMap,
-    control::{Control, StopReason},
+    control::Control,
     law::CheckedLaw,
     observed::{
         projection::{ProjectionStep, ProjectionType},
@@ -256,7 +256,7 @@ fn request_resolution_uses_the_same_latched_interrupt_control() {
     assert!(matches!(
         error,
         ResolveFailure::Interrupted {
-            reason: StopReason::Cancelled(Signal::Term)
+            reason: Signal::Term
         }
     ));
 }

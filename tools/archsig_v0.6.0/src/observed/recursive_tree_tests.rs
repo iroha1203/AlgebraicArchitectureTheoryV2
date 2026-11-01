@@ -80,7 +80,7 @@ fn recursive_tree_private_stop(after_answer: bool) {
         "later=evaluate(Trees.seed)",
     ];
     let normal = recursive_tree_private_result(&asks);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -126,7 +126,7 @@ fn recursive_tree_private_stop(after_answer: bool) {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     assert_eq!(stopped.answers[0].status, Decision::Refuted);
     assert_eq!(
         format!("{:?}", stopped.answers[0]),
@@ -150,7 +150,7 @@ fn recursive_tree_private_stop(after_answer: bool) {
         let Json::Obj(ref actual) = reason.wire() else {
             unreachable!()
         };
-        let Json::Obj(ref expected) = expected.wire() else {
+        let Json::Obj(ref expected) = expected.issue() else {
             unreachable!()
         };
         assert_eq!(actual["details"], expected["details"]);

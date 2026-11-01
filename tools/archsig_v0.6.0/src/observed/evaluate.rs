@@ -20,7 +20,8 @@ use crate::{
     types::Type,
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
+    result::Signal,
     input::InputSources,
 };
 use std::collections::BTreeMap;
@@ -45,7 +46,7 @@ pub fn evaluate_observed_bytes(
 
 #[derive(Debug)]
 enum Failure {
-    Stop(StopReason),
+    Stop(Signal),
     Internal(String),
     NotImplemented { location: Location, feature: String },
 }
@@ -65,8 +66,8 @@ impl From<String> for Failure {
         Self::Internal(s)
     }
 }
-impl From<StopReason> for Failure {
-    fn from(s: StopReason) -> Self {
+impl From<Signal> for Failure {
+    fn from(s: Signal) -> Self {
         Self::Stop(s)
     }
 }
@@ -3647,7 +3648,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         for target in [chain[3], chain[4], chain[5], chain[6]] {
             rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=target]).unwrap();
         }
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         let ready = Rc::new(Cell::new(false));
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
@@ -3702,7 +3703,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
         };
@@ -3738,7 +3739,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             let Json::Obj(ref actual) = reason.wire() else {
                 unreachable!()
             };
-            let Json::Obj(ref expected) = expected.wire() else {
+            let Json::Obj(ref expected) = expected.issue() else {
                 unreachable!()
             };
             assert_eq!(actual["details"], expected["details"]);
@@ -3909,7 +3910,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 .iter()
                 .any(|reason| matches!(reason.kind, ReasonKind::Missing))
         );
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let ready = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
@@ -3967,7 +3968,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
         };
@@ -4004,7 +4005,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             let Json::Obj(ref reason_wire) = reason.wire() else {
                 unreachable!()
             };
-            let Json::Obj(ref expected_wire) = expected.wire() else {
+            let Json::Obj(ref expected_wire) = expected.issue() else {
                 unreachable!()
             };
             assert_eq!(reason_wire["details"], expected_wire["details"]);
@@ -5800,7 +5801,7 @@ reading R {{
             if position == 1 {
                 assert!(baseline.starts_with(&[0, 1]), "{phase}: {baseline:?}");
             }
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
@@ -5846,7 +5847,7 @@ reading R {{
                 "{phase}: {:?}",
                 stopped.issues
             );
-            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(control.stop_reason(), Some(expected));
             let wire = stopped.wire();
             let Json::Obj(ref fields) = wire else {
                 unreachable!()
@@ -5869,7 +5870,7 @@ reading R {{
                     .iter()
                     .find(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
                     .unwrap();
-                let expected_wire = expected.wire();
+                let expected_wire = expected.issue();
                 let Json::Obj(ref expected_fields) = expected_wire else {
                     unreachable!()
                 };
@@ -7015,7 +7016,7 @@ reading Calc {{
             case: None,
         };
         let mut problems = Vec::new();
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
@@ -7065,7 +7066,7 @@ reading Calc {{
             "停止したparameter評価をcommitせず新nodeを追加しない"
         );
         assert_eq!(&*seen.borrow(), &[(parameter_span, target_context)]);
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         assert_eq!(
             Some(probes.get()),
             frozen.get(),
@@ -7629,7 +7630,7 @@ reading Calc {{
             let Json::Arr(normal_answers) = &normal_wire["answers"] else {
                 unreachable!()
             };
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
@@ -7678,7 +7679,7 @@ reading Calc {{
                 scalar,
                 "未完成のcontainer/sum値をcommitしない"
             );
-            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(control.stop_reason(), Some(expected));
             assert_eq!(result.status(), "interrupted", "{:?}", result.issues);
             assert!(
                 result
@@ -9129,7 +9130,7 @@ reading Calc {{
         } else {
             None
         };
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
@@ -9173,7 +9174,7 @@ reading Calc {{
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(seen.borrow().last(), Some(&at));
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
@@ -9227,7 +9228,7 @@ reading Calc {{
             let Json::Obj(ref wire) = reason.wire() else {
                 unreachable!()
             };
-            let Json::Obj(ref expected_wire) = expected.wire() else {
+            let Json::Obj(ref expected_wire) = expected.issue() else {
                 unreachable!()
             };
             assert_eq!(wire.get("details"), expected_wire.get("details"));
@@ -9730,7 +9731,7 @@ reading Calc {{
         } else {
             None
         };
-        let expected = StopReason::Cancelled(Signal::Term);
+        let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
@@ -9774,7 +9775,7 @@ reading Calc {{
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(seen.borrow().last(), Some(&at));
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
@@ -9828,7 +9829,7 @@ reading Calc {{
             let Json::Obj(ref wire) = reason.wire() else {
                 unreachable!()
             };
-            let Json::Obj(ref expected_wire) = expected.wire() else {
+            let Json::Obj(ref expected_wire) = expected.issue() else {
                 unreachable!()
             };
             assert_eq!(wire.get("details"), expected_wire.get("details"));
@@ -10104,7 +10105,7 @@ reading Calc {{
                     &[0, 1][..]
                 }
             );
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
@@ -10148,7 +10149,7 @@ reading Calc {{
             data::clear_iteration_observer();
             let stopped = stopped.unwrap();
             assert_eq!(seen.borrow().last(), Some(&at));
-            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(control.stop_reason(), Some(expected));
             assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
             let Json::Obj(ref normal_wire) = normal.wire() else {
                 unreachable!()
@@ -10174,7 +10175,7 @@ reading Calc {{
                 let Json::Obj(ref rw) = reason.wire() else {
                     unreachable!()
                 };
-                let Json::Obj(ref ew) = expected.wire() else {
+                let Json::Obj(ref ew) = expected.issue() else {
                     unreachable!()
                 };
                 assert_eq!(rw.get("details"), ew.get("details"));
@@ -10322,7 +10323,7 @@ reading Calc {{
             let Json::Arr(normal_answers) = &normal_wire["answers"] else {
                 unreachable!()
             };
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             let armed = Rc::new(Cell::new(false));
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
@@ -10363,7 +10364,7 @@ reading Calc {{
             let stopped = stopped.unwrap();
             assert_eq!(&*seen.borrow(), &[0, 1]);
             assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(control.stop_reason(), Some(expected));
             let Json::Obj(ref wire) = stopped.wire() else {
                 unreachable!()
             };
@@ -10387,7 +10388,7 @@ reading Calc {{
                 assert!(answer.reasons.iter().any(
                     |reason| matches!(&reason.kind,ReasonKind::Stop(actual) if actual==&expected)
                 ));
-                let Json::Obj(ref expected_wire) = expected.wire() else {
+                let Json::Obj(ref expected_wire) = expected.issue() else {
                     unreachable!()
                 };
                 let reason=answer.reasons.iter().find(|reason|matches!(&reason.kind,ReasonKind::Stop(actual) if actual==&expected)).unwrap();

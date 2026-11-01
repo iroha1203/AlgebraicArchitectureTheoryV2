@@ -48,7 +48,7 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
     let normal = engine_private_result(&asks, false);
     assert_eq!(normal.answers[0].status, Decision::Established);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -76,7 +76,7 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
         .unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -97,7 +97,7 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
         let Json::Obj(ref actual) = reason.wire() else {
             panic!("reason")
         };
-        let Json::Obj(ref wanted) = expected.wire() else {
+        let Json::Obj(ref wanted) = expected.issue() else {
             panic!("details")
         };
         assert_eq!(actual["details"], wanted["details"]);

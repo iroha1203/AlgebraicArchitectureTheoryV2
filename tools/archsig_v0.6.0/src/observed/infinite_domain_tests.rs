@@ -176,7 +176,7 @@ fn committed_reason_stop() {
     assert!(matches!(original.location, Some(Location::Law { .. })));
     assert_eq!(original.dependencies.len(), 1);
     assert!(original.dependencies[0].0 < target);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let run_at = |position| {
         let phase = Rc::new(Cell::new(false));
         let seen = Rc::new(Cell::new(0));
@@ -207,11 +207,8 @@ fn committed_reason_stop() {
         let stopped = evaluate_observed(prepared, &mut control).unwrap();
         assert_eq!(stopped.status(), "interrupted");
         assert_eq!(seen.get(), position);
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
-        assert_eq!(
-            control.checkpoint(Checkpoint::Expression),
-            Err(expected.clone())
-        );
+        assert_eq!(control.stop_reason(), Some(expected));
+        assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
         (stopped, point.get().unwrap())
     };
     // Find the first checkpoint after this exact Evaluation was committed.

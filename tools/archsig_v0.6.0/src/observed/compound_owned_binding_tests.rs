@@ -87,7 +87,7 @@ fn stop(mode: usize) {
         assert!(!normal.answers[6].evidence.is_empty());
     }
     let span = params[if mode == 0 { 1 } else { 2 }].span;
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -156,7 +156,7 @@ fn stop(mode: usize) {
     assert!(seen.get());
     assert!(!later_member.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(&stopped.answers[..6], &normal.answers[..6]);
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
@@ -189,7 +189,7 @@ fn stop(mode: usize) {
             .find(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&expected))
             .unwrap();
         assert_eq!(reason.request, a.id);
-        let (Json::Obj(actual), Json::Obj(wanted)) = (&reason.wire(), &expected.wire()) else {
+        let (Json::Obj(actual), Json::Obj(wanted)) = (&reason.wire(), &expected.issue()) else {
             panic!()
         };
         assert_eq!(actual["details"], wanted["details"]);

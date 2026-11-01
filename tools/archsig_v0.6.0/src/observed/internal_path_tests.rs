@@ -246,7 +246,7 @@ fn stopped(stage: &'static str, unknown: bool) {
     ];
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
-    let reason = StopReason::Cancelled(crate::result::Signal::Term);
+    let reason = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -282,7 +282,7 @@ fn stopped(stage: &'static str, unknown: bool) {
     let result = result.unwrap();
     assert!(seen.get(), "{stage}");
     assert_eq!(result.status(), "interrupted");
-    assert_eq!(control.stop_reason(), Some(reason.clone()));
+    assert_eq!(control.stop_reason(), Some(reason));
     assert!(result.nodes.len() < normal.nodes.len());
     assert_eq!(
         result.frames.as_slice(),

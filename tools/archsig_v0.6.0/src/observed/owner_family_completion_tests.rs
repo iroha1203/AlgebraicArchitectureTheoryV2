@@ -325,7 +325,7 @@ fn stop(phase: &'static str, at: usize) {
     } else {
         target
     };
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -368,7 +368,7 @@ fn stop(phase: &'static str, at: usize) {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
-    assert_eq!(control.stop_reason(), Some(expected.clone()));
+    assert_eq!(control.stop_reason(), Some(expected));
     assert_eq!(
         stopped.frames.as_slice(),
         &normal.frames[..stopped.frames.len()]

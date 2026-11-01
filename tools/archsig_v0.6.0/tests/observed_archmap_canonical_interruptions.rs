@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     result::Signal,
 };
@@ -74,10 +74,7 @@ fn interrupted(sources: InputSources, point: Checkpoint, at: usize) {
     for key in ["requests", "answers", "nodes"] {
         assert_eq!(wire[key], Json::Arr(vec![]));
     }
-    assert_eq!(
-        control.stop_reason(),
-        Some(StopReason::Cancelled(Signal::Term))
-    );
+    assert_eq!(control.stop_reason(), Some(Signal::Term));
 }
 
 fn invalid(sources: InputSources, code: &str, pointer: &str) {

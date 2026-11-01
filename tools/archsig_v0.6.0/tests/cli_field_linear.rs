@@ -1235,14 +1235,11 @@ fn quotient_guarded_family_preserves_nested_operand_type() {
 fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
     use archsig::result::Signal;
     use archsig::{
-        control::{Checkpoint, Control, StopReason},
+        control::{Checkpoint, Control},
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
-    for (signal, expected) in [
-        (Signal::Int, StopReason::Cancelled(Signal::Int)),
-        (Signal::Term, StopReason::Cancelled(Signal::Term)),
-    ] {
+    for (signal, expected) in [(Signal::Int, Signal::Int), (Signal::Term, Signal::Term)] {
         let hit = Rc::new(Cell::new(false));
         let seen = hit.clone();
         let mut control = Control::new(move |point| {
@@ -1267,13 +1264,13 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
             panic!("guarded quotient stop must preserve completed solve")
         };
         assert!(hit.get(), "stop must occur inside guarded family assembly");
-        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(control.stop_reason(), Some(expected));
         let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answers = arr(get(&j, "answers"));
         assert_eq!(answers.len(), 3);
         assert_eq!(s(get(&answers[0], "status")), "established");
         assert!(has(get(&answers[0], "outputs"), "solutions"));
-        let expected_wire = archsig::json::parse(expected.wire().canonical().as_bytes()).unwrap();
+        let expected_wire = archsig::json::parse(expected.issue().canonical().as_bytes()).unwrap();
         for (answer, id) in answers[1..].iter().zip(["q", "later"]) {
             assert_eq!(s(get(answer, "id")), id);
             assert_eq!(s(get(answer, "status")), "undetermined");
@@ -1283,7 +1280,7 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
             assert!(outputs.is_empty());
             let reasons = arr(get(answer, "reasons"));
             assert_eq!(reasons.len(), 1);
-            assert_eq!(s(get(&reasons[0], "code")), expected.code());
+            assert_eq!(s(get(&reasons[0], "code")), "cancelled");
             assert_eq!(
                 get(&reasons[0], "details").value,
                 get(&expected_wire, "details").value

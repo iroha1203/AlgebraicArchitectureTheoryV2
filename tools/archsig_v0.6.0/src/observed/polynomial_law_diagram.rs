@@ -1459,9 +1459,7 @@ fn metadata(
 }
 fn construction_failure(e: &crate::construction::ConstructionFailure) -> ValidationFailure {
     match e {
-        crate::construction::ConstructionFailure::Stopped(stop) => {
-            ValidationFailure::Stop(stop.clone())
-        }
+        crate::construction::ConstructionFailure::Stopped(stop) => ValidationFailure::Stop(*stop),
         crate::construction::ConstructionFailure::InvalidSelection(message)
         | crate::construction::ConstructionFailure::Inconsistent(message) => {
             format!("元多項式: {message}").into()

@@ -23,7 +23,8 @@ use crate::{
     law::{ast::Role, model::ExpressionKind},
 };
 use crate::{
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
+    result::Signal,
     input::CheckedInputs,
 };
 use std::sync::Arc;
@@ -49,7 +50,7 @@ pub enum ObjectLawTransportFailure {
         failure: Box<ObjectEvaluationFailure>,
     },
     Stopped {
-        reason: StopReason,
+        reason: Signal,
         operation: Box<ConfigurationOperation>,
         partial: Option<Box<ObjectLawTransportPartial>>,
         evaluation: Option<Box<ObjectEvaluationFailure>>,
@@ -367,7 +368,7 @@ fn checked_transport(
         configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
             match failure.cause() {
                 ConstructionFailure::Stopped(reason) => {
-                    let reason = reason.clone();
+                    let reason = *reason;
                     let (_, transport) = failure.into_parts();
                     ObjectLawTransportFailure::Stopped {
                         reason,

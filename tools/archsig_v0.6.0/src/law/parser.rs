@@ -1328,7 +1328,7 @@ impl<E: InputError> Parser<E> {
 #[cfg(test)]
 mod qname_interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -1358,7 +1358,7 @@ mod qname_interruption_tests {
                     visits += 1;
                     (visits == at).then_some(Signal::Int)
                 });
-                let expected = StopReason::Cancelled(Signal::Int);
+                let expected = Signal::Int;
                 let mut parser = Parser::<CheckFailure<Box<Issue>>>::with_error(
                     tokens.clone(),
                     text.len(),
@@ -1389,7 +1389,7 @@ mod qname_interruption_tests {
                 Parser::<CheckFailure<Box<Issue>>>::with_error(tokens.clone(), 1, control);
             assert!(matches!(
                 controlled.qname(),
-                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
+                Err(CheckFailure::Stopped(Signal::Term))
             ));
         }
     }
@@ -1443,7 +1443,7 @@ mod qname_interruption_tests {
                     }
                     (visits == at).then_some(Signal::Term)
                 });
-                let expected = StopReason::Cancelled(Signal::Term);
+                let expected = Signal::Term;
                 let stopped = run(text, operation, control.clone()).unwrap_err();
                 match stopped {
                     CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
@@ -1458,11 +1458,7 @@ mod qname_interruption_tests {
 #[cfg(test)]
 pub(super) mod candidate_priority_tests {
     use super::*;
-    use crate::{
-        control::{CheckFailure, StopReason},
-        issue::Location,
-        result::Signal,
-    };
+    use crate::{control::CheckFailure, issue::Location, result::Signal};
     use std::{
         cell::{Cell, RefCell},
         rc::Rc,
@@ -1540,10 +1536,7 @@ pub(super) mod candidate_priority_tests {
             let (control, _arm, observed) = stop_after_issue(span);
             let failure = run(text, change, control.clone()).unwrap_err();
             assert!(observed.get(), "{text}: candidate error was not reached");
-            assert!(matches!(
-                failure.0,
-                CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-            ));
+            assert!(matches!(failure.0, CheckFailure::Stopped(Signal::Term)));
         }
     }
     #[test]

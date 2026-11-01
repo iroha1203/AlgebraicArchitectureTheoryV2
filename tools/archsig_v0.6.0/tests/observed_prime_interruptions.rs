@@ -3,12 +3,13 @@
 mod positions;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
     law::{check_law, check_law_controlled},
-    result::{ResultIssue, Signal},
+    result::ResultIssue,
+    result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 
@@ -119,8 +120,8 @@ fn fp_internal_iteration_stops_from_bytes_keep_empty_definition_and_law_stages()
             assert_eq!(failure.status(), InputStatus::Interrupted);
             empty_stage(&failure);
             let reason = control.stop_reason().expect("shared stop");
-            assert_eq!(failure.issues(), [reason.wire()]);
-            assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+            assert_eq!(failure.issues(), [reason.issue()]);
+            assert_eq!(reason, Signal::Term);
         }
     }
 }
@@ -138,7 +139,7 @@ fn completed_composite_checks_yield_to_a_stop_at_terminal_checks() {
             empty_stage(&failure);
             let reason = control.stop_reason().expect("terminal stop");
             assert_eq!(failure.status(), InputStatus::Interrupted);
-            assert_eq!(failure.issues(), [reason.wire()]);
+            assert_eq!(failure.issues(), [reason.issue()]);
         }
         // The previous pre-iteration sample precedes finding divisor 7.
         let (mut control, _) = probe(in_law, primality_post - 1);

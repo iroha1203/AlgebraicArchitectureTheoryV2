@@ -394,7 +394,6 @@ fn an_empty_law_family_keeps_the_empty_block_product_and_all_objects_without_a_f
 }
 #[test]
 fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_request_context() {
-    use crate::control::StopReason;
     use std::{cell::Cell, rc::Rc};
     let p = prepared(fixture::inputs(
         false,
@@ -434,7 +433,7 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
         });
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
         let mut g = copy(&initial, &c);
-        let expected = StopReason::Cancelled(crate::result::Signal::Int);
+        let expected = crate::result::Signal::Int;
         assert!(matches!(
             retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &mut c),
             Err(ValidationFailure::Stop(reason)) if reason == expected

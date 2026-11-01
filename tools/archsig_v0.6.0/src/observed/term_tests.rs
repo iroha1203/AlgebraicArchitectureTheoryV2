@@ -130,7 +130,7 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
         "later=evaluate(Terms.seed)",
     ];
     let normal = term_private_result(&asks);
-    let expected = StopReason::Cancelled(crate::result::Signal::Term);
+    let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -163,7 +163,7 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted");
-    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(c.stop_reason(), Some(expected));
     assert_eq!(
         format!("{:?}", &stopped.answers[..2]),
         format!("{:?}", &normal.answers[..2])
@@ -181,7 +181,7 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
         let Json::Obj(ref actual) = reason.wire() else {
             panic!("reason")
         };
-        let Json::Obj(ref wanted) = expected.wire() else {
+        let Json::Obj(ref wanted) = expected.issue() else {
             panic!("stop")
         };
         assert_eq!(actual["details"], wanted["details"]);

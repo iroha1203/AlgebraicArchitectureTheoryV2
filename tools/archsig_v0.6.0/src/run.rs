@@ -10,7 +10,7 @@ pub use args::parse_args;
 
 use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
-use crate::control::{CheckFailure, Control, StopReason};
+use crate::control::{CheckFailure, Control};
 use crate::definition::check_definitions_controlled;
 use crate::issue::Code;
 use crate::law::check_law_controlled;
@@ -229,7 +229,7 @@ pub fn run_check(
         let identities = match &definitions {
             Ok(d) => &d.inputs,
             Err(CheckFailure::Input(f)) => &f.inputs,
-            Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason.clone()),
+            Err(CheckFailure::Stopped(reason)) => return stopped(signals, *reason),
         };
         for (id, checked) in definition_ids.iter_mut().zip(identities) {
             id.model_digest = checked.model_digest.clone();
@@ -324,8 +324,8 @@ fn input_failure_status(code: Code) -> Status {
     }
 }
 
-fn stopped(signals: &mut dyn Signals, reason: StopReason) -> Outcome {
-    let StopReason::Cancelled(signal) = reason;
+fn stopped(signals: &mut dyn Signals, reason: Signal) -> Outcome {
+    let signal = reason;
     output::without_result(
         signals,
         Status::Interrupted,

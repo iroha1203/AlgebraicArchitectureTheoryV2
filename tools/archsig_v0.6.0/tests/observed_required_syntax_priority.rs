@@ -1,7 +1,7 @@
 //! 必須の構文・参照・schema拒否が確定した直後にも、取消の停止が優先されることを検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, StopReason},
+    control::{Checkpoint, Control},
     input::{InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed, request::ResolveFailure},
     result::Signal,
@@ -49,7 +49,7 @@ fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
         failure,
         PrepareFailure::Requests {
             failure: ResolveFailure::Interrupted {
-                reason: StopReason::Cancelled(Signal::Term)
+                reason: Signal::Term
             },
             ..
         }

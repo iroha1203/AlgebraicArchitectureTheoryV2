@@ -866,7 +866,7 @@ fn ty_inner<E: InputError>(
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, StopReason};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -895,7 +895,7 @@ mod interruption_tests {
                 visits += 1;
                 (visits == at).then_some(Signal::Term)
             });
-            let expected = StopReason::Cancelled(Signal::Term);
+            let expected = Signal::Term;
             let failure = run(&mut control).expect_err("helper 内の前後境界で停止");
             let CheckFailure::Stopped(reason) = failure else {
                 panic!("signal takes priority at {at}/{total}");
